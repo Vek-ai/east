@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         Remember this Device
                       </label>
                     </div>
-                    <a class="text-primary fw-medium" href="reset.php">Forgot Password</a>
+                    <a class="text-primary fw-medium" href="page=reset">Forgot Password</a>
                   </div>
                   <button type="submit" class="btn btn-primary w-100 py-8 mb-4">Sign In</button>
                 </form>
