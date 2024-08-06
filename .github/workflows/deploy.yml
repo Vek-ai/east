@@ -22,4 +22,4 @@ jobs:
           port: ${{ secrets.FTP_PORT }}
           protocol: ftp
           local-dir: ./ # Local directory to upload (current directory)
-          server-dir: /home/benguetf/metal.ilearnwebtech.com/ # Remote directory
+          server-dir: /metal.ilearnwebtech.com/ # Remote directory
