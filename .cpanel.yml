@@ -1,7 +1,4 @@
-deploy_job:
-  stage: deploy
-  script:
+deployment:
+  tasks:
     - export DEPLOYPATH=/home/benguetf/east.ilearnwebtech.com/
     - /bin/cp -R * $DEPLOYPATH
-  only:
-    - dev
