@@ -1,0 +1,97 @@
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+require '../includes/dbconn.php';
+
+if(isset($_REQUEST['action'])) {
+    $action = $_REQUEST['action'];
+
+    if ($action == "add_update") {
+        $emp_role_id = mysqli_real_escape_string($conn, $_POST['emp_role_id']);
+        $emp_role = mysqli_real_escape_string($conn, $_POST['emp_role']);
+        $role_desc = mysqli_real_escape_string($conn, $_POST['role_desc']);
+
+        $userid = mysqli_real_escape_string($conn, $_POST['userid']);
+
+        // SQL query to check if the record exists
+        $checkQuery = "SELECT * FROM staff_roles WHERE emp_role_id = '$emp_role_id'";
+        $result = mysqli_query($conn, $checkQuery);
+
+        if (mysqli_num_rows($result) > 0) {
+            // Record exists, fetch current values
+            $row = mysqli_fetch_assoc($result);
+            $current_emp_role = $row['emp_role'];
+
+            $duplicates = array();
+
+            // Check for duplicates only if the new values are different from the current values
+            if ($emp_role != $current_emp_role) {
+                $checkCategory = "SELECT * FROM staff_roles WHERE emp_role = '$current_emp_role'";
+                $resultCategory = mysqli_query($conn, $checkCategory);
+                if (mysqli_num_rows($resultCategory) > 0) {
+                    $duplicates[] = "Employee Role";
+                }
+            }
+
+            if (!empty($duplicates)) {
+                $msg = implode(", ", $duplicates);
+                echo "$msg already exist! Please change to a unique value";
+            } else {
+                // No duplicates, proceed with update
+                $updateQuery = "UPDATE staff_roles SET emp_role = '$emp_role', role_desc = '$role_desc', last_edit = NOW(), edited_by = '$userid'  WHERE emp_role_id = '$emp_role_id'";
+                if (mysqli_query($conn, $updateQuery)) {
+                    echo "Employee role updated successfully.";
+                } else {
+                    echo "Error updating employee role: " . mysqli_error($conn);
+                }
+            }
+        } else {
+            // Record does not exist, perform duplicate checks before inserting
+            $duplicates = array();
+            $checkCategory = "SELECT * FROM staff_roles WHERE emp_role = '$emp_role'";
+            $resultCategory = mysqli_query($conn, $checkCategory);
+            if (mysqli_num_rows($resultCategory) > 0) {
+                $duplicates[] = "Employee Role";
+            }
+
+            if(!empty($duplicates)){
+                $msg = implode(", ", $duplicates);
+                echo "$msg already exist! Please change to a unique value";
+            } else {
+                $insertQuery = "INSERT INTO staff_roles (emp_role, role_desc, added_date, added_by) VALUES ('$emp_role', '$role_desc', NOW(), '$userid')";
+                if (mysqli_query($conn, $insertQuery)) {
+                    echo "New employee role added successfully.";
+                } else {
+                    echo "Error adding employee role: " . mysqli_error($conn);
+                }
+            }
+        }
+    } 
+    
+    if ($action == "change_status") {
+        $emp_role_id = mysqli_real_escape_string($conn, $_POST['emp_role_id']);
+        $status = mysqli_real_escape_string($conn, $_POST['status']);
+        $new_status = ($status == '0') ? '1' : '0';
+
+        $statusQuery = "UPDATE staff_roles SET status = '$new_status' WHERE emp_role_id = '$emp_role_id'";
+        if (mysqli_query($conn, $statusQuery)) {
+            echo "success";
+        } else {
+            echo "Error updating status: " . mysqli_error($conn);
+        }
+    }
+
+    if ($action == 'hide_employee_role') {
+        $emp_role_id = mysqli_real_escape_string($conn, $_POST['emp_role_id']);
+        $query = "UPDATE staff_roles SET hidden='1' WHERE emp_role_id='$emp_role_id'";
+        if (mysqli_query($conn, $query)) {
+            echo 'success';
+        } else {
+            echo 'error';
+        }
+    }
+    mysqli_close($conn);
+}
+?>

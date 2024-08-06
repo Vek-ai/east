@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angle and Length Calculator</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            border: 1px solid black;
+            cursor: crosshair;
+        }
+
+        .controls {
+            margin-top: 10px;
+        }
+
+        label {
+            margin-right: 10px;
+        }
+
+        input {
+            width: 80px;
+            margin-right: 10px;
+        }
+
+        select {
+            margin-right: 10px;
+        }
+
+        .length-angle-pair {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        #totalLength,
+        #totalCost {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .button-container button {
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p>Sample code for Line drawing that we can integrate, the colors would be the colors of the selected product.</p>
+        <p>Its not yet optimized for touchscreen, please use Desktop to test.</p>
+        <canvas id="drawingCanvas" width="800" height="600"></canvas>
+        <div class="controls" id="controls">
+            <div id="totalLength"></div>
+            <div id="totalCost"></div>
+            <div id="lengthAnglePairs"></div>
+            <div class="button-container">
+                <button id="clearButton">Clear</button>
+                <button id="createQuoteButton">Create Quote</button>
+                <button id="sendJobButton">Send Job</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const totalLengthDiv = document.getElementById('totalLength');
+        const totalCostDiv = document.getElementById('totalCost');
+        const lengthAnglePairs = document.getElementById('lengthAnglePairs');
+        const clearButton = document.getElementById('clearButton');
+        const createQuoteButton = document.getElementById('createQuoteButton');
+        const sendJobButton = document.getElementById('sendJobButton');
+
+        let points = [];
+        let lengths = [];
+        let angles = [];
+        let colors = [];
+        let currentStartPoint = null;
+        const pixelsPerInch = 96; // Conversion factor
+
+        const colorPrices = {
+            black: 1.9,
+            red: 2.0,
+            green: 2.1,
+            blue: 2.3,
+            yellow: 2.5
+        };
+
+        // Function to draw "Draw here" text on the canvas
+        function drawPlaceholderText() {
+            ctx.font = "30px Arial";
+            ctx.fillStyle = "lightgray";
+            ctx.textAlign = "center";
+            ctx.fillText("Draw here", canvas.width / 2, canvas.height / 2);
+        }
+
+        drawPlaceholderText();
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            let selectedPoint = { x, y };
+
+            // Check if clicked on an existing point
+            for (let point of points) {
+                if (Math.hypot(point.x - x, point.y - y) < 5) {
+                    selectedPoint = point;
+                    break;
+                }
+            }
+
+            if (currentStartPoint) {
+                points.push(selectedPoint);
+                colors.push('black'); // Default color
+                drawLine(currentStartPoint, selectedPoint, 'black');
+                const length = calculateDistance(currentStartPoint, selectedPoint);
+                lengths.push(length);
+                if (points.length > 2) {
+                    const angle = calculateInteriorAngle(points[points.length - 3], points[points.length - 2], points[points.length - 1]);
+                    angles.push(angle);
+                    drawAngleArc(points[points.length - 3], points[points.length - 2], points[points.length - 1], angle);
+                }
+                updateLengthAnglePairs();
+                currentStartPoint = null;
+            } else {
+                currentStartPoint = selectedPoint;
+                if (!points.includes(selectedPoint)) {
+                    points.push(selectedPoint);
+                }
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (currentStartPoint) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                redrawCanvas();
+                drawTemporaryLine(currentStartPoint, { x, y });
+            }
+        });
+
+        clearButton.addEventListener('click', () => {
+            clearCanvas();
+            points = [];
+            lengths = [];
+            angles = [];
+            colors = [];
+            currentStartPoint = null;
+            updateLengthAnglePairs();
+            drawPlaceholderText();
+        });
+
+        createQuoteButton.addEventListener('click', () => {
+            alert('Quote Created:\n' + totalCostDiv.textContent);
+        });
+
+        sendJobButton.addEventListener('click', () => {
+            alert('Job Sent:\n' + totalCostDiv.textContent);
+        });
+
+        function drawLine(point1, point2, color) {
+            ctx.beginPath();
+            ctx.moveTo(point1.x, point1.y);
+            ctx.lineTo(point2.x, point2.y);
+            ctx.strokeStyle = color;
+            ctx.stroke();
+        }
+
+        function drawTemporaryLine(point1, point2) {
+            ctx.beginPath();
+            ctx.moveTo(point1.x, point1.y);
+            ctx.lineTo(point2.x, point2.y);
+            ctx.strokeStyle = 'gray';
+            ctx.stroke();
+            ctx.strokeStyle = 'black';
+        }
+
+        function calculateDistance(point1, point2) {
+            const distanceInPixels = Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
+            return (distanceInPixels / pixelsPerInch).toFixed(2); // Convert to inches
+        }
+
+        function calculateInteriorAngle(p1, p2, p3) {
+            const angle = Math.atan2(p3.y - p2.y, p3.x - p2.x) - Math.atan2(p1.y - p2.y, p1.x - p2.x);
+            let degrees = (angle * 180 / Math.PI) % 360;
+            if (degrees < 0) {
+                degrees += 360;
+            }
+            if (degrees > 180) {
+                degrees = 360 - degrees;
+            }
+            return degrees;
+        }
+
+        function drawAngleArc(p1, p2, p3, angle) {
+            const radius = 30; // Radius of the angle arc
+            const startAngle = Math.atan2(p1.y - p2.y, p1.x - p2.x);
+            const endAngle = Math.atan2(p3.y - p2.y, p3.x - p2.x);
+
+            ctx.beginPath();
+            ctx.arc(p2.x, p2.y, radius, startAngle, endAngle, endAngle < startAngle);
+            ctx.strokeStyle = 'red';
+            ctx.stroke();
+            ctx.strokeStyle = 'black'; // Reset to default color
+        }
+
+        function updateLengthAnglePairs() {
+            lengthAnglePairs.innerHTML = '';
+            let totalLength = 0;
+            let totalCost = 0;
+
+            lengths.forEach((length, index) => {
+                const pair = document.createElement('div');
+                pair.classList.add('length-angle-pair');
+
+                const lengthDiv = document.createElement('div');
+                lengthDiv.textContent = `Line ${index + 1}: ${length} inches`;
+                totalLength += parseFloat(length);
+
+                pair.appendChild(lengthDiv);
+
+                if (index < angles.length) {
+                    const angleInput = document.createElement('input');
+                    angleInput.type = 'number';
+                    angleInput.value = angles[index].toFixed(2);
+                    angleInput.addEventListener('change', (e) => {
+                        const newAngle = parseFloat(e.target.value);
+                        angles[index] = newAngle;
+                        const newPoint = calculateNewPoint(points[index - 1], points[index], lengths[index], newAngle);
+                        points[index + 1] = newPoint;
+                        redrawCanvas();
+                    });
+
+                    const angleLabel = document.createElement('label');
+                    angleLabel.textContent = 'Angle (°): ';
+                    pair.appendChild(angleLabel);
+                    pair.appendChild(angleInput);
+                }
+
+                const colorSelect = document.createElement('select');
+                const colorsOptions = Object.keys(colorPrices);
+                colorsOptions.forEach((color) => {
+                    const option = document.createElement('option');
+                    option.value = color;
+                    option.textContent = color.charAt(0).toUpperCase() + color.slice(1);
+                    colorSelect.appendChild(option);
+                });
+                colorSelect.value = colors[index];
+                colorSelect.addEventListener('change', (e) => {
+                    colors[index] = e.target.value;
+                    updateLengthAnglePairs(); // Recalculate total cost when color changes
+                    redrawCanvas();
+                });
+
+                pair.appendChild(colorSelect);
+
+                const price = colorPrices[colors[index]];
+                const lineTotal = parseFloat(length) * price;
+                totalCost += lineTotal;
+
+                const priceDiv = document.createElement('div');
+                priceDiv.textContent = `Price: $${price.toFixed(2)}`;
+                pair.appendChild(priceDiv);
+
+                const totalDiv = document.createElement('div');
+                totalDiv.textContent = `Total: $${lineTotal.toFixed(2)}`;
+                pair.appendChild(totalDiv);
+
+                lengthAnglePairs.appendChild(pair);
+            });
+
+            totalLengthDiv.textContent = `Total Length: ${totalLength.toFixed(2)} inches`;
+            totalCostDiv.textContent = `Total Cost: $${totalCost.toFixed(2)}`;
+        }
+
+        function calculateNewPoint(p1, p2, length, angle) {
+            const radians = (angle * Math.PI) / 180;
+            const dx = length * Math.cos(radians);
+            const dy = length * Math.sin(radians);
+            return { x: p2.x + dx, y: p2.y + dy };
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function redrawCanvas() {
+            clearCanvas();
+            for (let i = 1; i < points.length; i++) {
+                drawLine(points[i - 1], points[i], colors[i - 1]);
+            }
+            for (let i = 2; i < points.length; i++) {
+                drawAngleArc(points[i - 2], points[i - 1], points[i], angles[i - 2]);
+            }
+            if (points.length === 0) {
+                drawPlaceholderText();
+            }
+        }
+    </script>
+</body>
+</html>
