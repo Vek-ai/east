@@ -16,10 +16,10 @@ jobs:
       - name: Deploy to FTP server
         uses: SamKirkland/FTP-Deploy-Action@4.2.0
         with:
-          ftp-server: ${{ secrets.FTP_SERVER }}
-          ftp-username: ${{ secrets.FTP_USERNAME }}
-          ftp-password: ${{ secrets.FTP_PASSWORD }}
-          ftp-port: ${{ secrets.FTP_PORT }}
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftp
           local-dir: ./ # Local directory to upload (current directory)
           server-dir: /home/benguetf/metal.ilearnwebtech.com/ # Remote directory
-          method: ftp # or ftps for secure FTP
