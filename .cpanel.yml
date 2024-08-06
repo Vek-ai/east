@@ -1,5 +1,5 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/benguetf/east.ilearnwebtech.com/
+    - export DEPLOYPATH=/home/benguetf/eastkentuckymetal.ilearnwebtech.com
     - /bin/cp -R . $DEPLOYPATH
