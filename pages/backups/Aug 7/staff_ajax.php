@@ -4,6 +4,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require '../includes/dbconn.php';
+require '../includes/functions.php';
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -114,7 +115,7 @@ if(isset($_REQUEST['action'])) {
             if (in_array($fileExtension, $allowedfileExtensions)) {
                 if(move_uploaded_file($fileTmpPath, $dest_path)) {
                     $profile_path = mysqli_real_escape_string($conn, $dest_path);
-                    $sql = "UPDATE staff SET profile_path='images/staff/$newFileName' WHERE staff_id='$staff_id'";
+                    $sql = "UPDATE staff SET profile_path='$profile_path' WHERE staff_id='$staff_id'";
                     if (!$conn->query($sql)) {
                         echo "Error updating record: " . $conn->error;
                     }
@@ -134,20 +135,6 @@ if(isset($_REQUEST['action'])) {
             
         }
     }
-
-    if ($action == "change_status") {
-        $staff_id = mysqli_real_escape_string($conn, $_POST['staff_id']);
-        $status = mysqli_real_escape_string($conn, $_POST['status']);
-        $new_status = ($status == '0') ? '1' : '0';
-
-        $statusQuery = "UPDATE staff SET status = '$new_status' WHERE staff_id = '$staff_id'";
-        if (mysqli_query($conn, $statusQuery)) {
-            echo "success";
-        } else {
-            echo "Error updating status: " . mysqli_error($conn);
-        }
-    }
-    
 
     if ($action == "fetch_modal") {
         $staff_id = mysqli_real_escape_string($conn, $_POST['staff_id']);
@@ -311,7 +298,86 @@ if(isset($_REQUEST['action'])) {
         }
     } 
     
+
+    if ($action == "fetch_info") {
+        $staff_id = mysqli_real_escape_string($conn, $_REQUEST['staff_id']);
+
+        $checkQuery = "SELECT * FROM staff WHERE staff_id = '$staff_id'";
+        $result = mysqli_query($conn, $checkQuery);
+
+        if (mysqli_num_rows($result) > 0) {
+            // Record exists, fetch current values
+            $row = mysqli_fetch_assoc($result);
+
+            if(!empty($row['profile_path'])){
+                $profile_path = $row['profile_path'];
+            }else{
+                $profile_path = "../assets/images/profile/user-3.jpg";
+            }
+        ?>
+            <div class="hstack align-items-start mb-7 pb-1 align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                <img src="<?= $profile_path ?>" alt="user4" width="72" height="72" class="rounded-circle">
+                <div>
+                    <h6 class="fw-semibold fs-4 mb-0"><?= $row['staff_fname'] ." " .$row['staff_lname'] ?></h6>
+                    <p class="mb-0"><?= get_role_name($row['role']) ?></p>
+                </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4 mb-7">
+                <p class="mb-1 fs-2">Phone number</p>
+                <h6 class="fw-semibold mb-0"><?= $row['phone'] ?></h6>
+                </div>
+                <div class="col-8 mb-7">
+                <p class="mb-1 fs-2">Email address</p>
+                <h6 class="fw-semibold mb-0"><?= $row['email'] ?></h6>
+                </div>
+                <div class="col-12 mb-9">
+                <p class="mb-1 fs-2">Address</p>
+                <h6 class="fw-semibold mb-0"><?= $row['address'] ?></h6>
+                </div>
+                <div class="col-4 mb-7">
+                <p class="mb-1 fs-2">City</p>
+                <h6 class="fw-semibold mb-0"><?= $row['city'] ?></h6>
+                </div>
+                <div class="col-4 mb-7">
+                <p class="mb-1 fs-2">State</p>
+                <h6 class="fw-semibold mb-0"><?= $row['state'] ?></h6>
+                </div>
+                <div class="col-4 mb-7">
+                <p class="mb-1 fs-2">Zip</p>
+                <h6 class="fw-semibold mb-0"><?= $row['zip'] ?></h6>
+                </div>
+
+                <div class="col-6 mb-7">
+                <p class="mb-1 fs-2">Emergency Contact Name</p>
+                <h6 class="fw-semibold mb-0"><?= $row['emergency_contact_name'] ?></h6>
+                </div>
+                <div class="col-6 mb-7">
+                <p class="mb-1 fs-2">Emergency Contact Phone</p>
+                <h6 class="fw-semibold mb-0"><?= $row['emergency_contact_phone'] ?></h6>
+                </div>
+
+                <div class="col-4 mb-7">
+                <p class="mb-1 fs-2">Driver Medical Certificate</p>
+                <h6 class="fw-semibold mb-0"><?= $row['driver_med_cert'] ?></h6>
+                </div>
+                <div class="col-4 mb-7">
+                <p class="mb-1 fs-2">Driver Class</p>
+                <h6 class="fw-semibold mb-0"><?= $row['driver_class'] ?></h6>
+                </div>
+                <div class="col-4 mb-7">
+                <p class="mb-1 fs-2">License Renewal Date</p>
+                <h6 class="fw-semibold mb-0"><?= $row['license_renewal_date'] ?></h6>
+                </div>
+            </div>
+        <?php
+        }
+
+    }
     
     mysqli_close($conn);
 }
 ?>
+
