@@ -1288,9 +1288,6 @@ if (!isset($_SESSION['userid'])) {
 
       <div class="body-wrapper">
         <div class="container-fluid">
-          <div>
-            <h4>Test to see if github works</h4>
-          </div>
           <?php 
             if (empty($_REQUEST['page'])) {include 'pages/home.php';}
             if ($_REQUEST['page'] == "category") {include 'pages/category.php';}
