@@ -304,9 +304,7 @@ require 'includes/functions.php';
                             </div>
                             </div>
 
-                            
-
-                            </div>
+                          
 
                             <div class="row pt-3">
                            
