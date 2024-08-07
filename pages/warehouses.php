@@ -61,7 +61,7 @@ require 'includes/functions.php';
             </a>
             </div>
             <button type="button" id="addWarehouseModalLabel" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addWarehouseModal">
-                <i class="ti ti-users text-white me-1 fs-5"></i> Add Warehouse
+                <i class="ti ti-warehouse text-white me-1 fs-5"></i> Add Warehouse
             </button>
         </div>
         </div>
@@ -218,7 +218,7 @@ require 'includes/functions.php';
     $(document).ready(function() {
 
         $('#warehouseList').DataTable({
-            "order": [[1, "asc"]] // Column index is 0-based, so column 2 is index 1
+            "order": [[0, "asc"]] // Column index is 0-based, so column 2 is index 1
         });
 
         $(document).on('click', '.changeStatus', function(event) {
