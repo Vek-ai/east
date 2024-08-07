@@ -12,10 +12,15 @@ require 'includes/functions.php';
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                <a class="text-muted text-decoration-none" href="">Home
-                </a>
+                    <a class="text-muted text-decoration-none" href="/">
+                        Home
+                    </a>
                 </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Warehouse</li>
+                <li class="breadcrumb-item text-muted" aria-current="page">
+                    <a class="text-muted text-decoration-none" href="#">
+                        Warehouses
+                    </a>
+                </li>
                 <li class="breadcrumb-item text-muted" aria-current="page">Warehouse Details</li>
             </ol>
             </nav>
