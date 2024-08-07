@@ -1302,6 +1302,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "employee_roles") {include 'pages/staff_role.php';}
             if ($_REQUEST['page'] == "staff") {include 'pages/staff.php';}
             if ($_REQUEST['page'] == "product") {include 'pages/product.php';}
+            if ($_REQUEST['page'] == "warehouses_test") {include 'pages/warehouses_test.php';}
           ?>
         </div>
       </div>

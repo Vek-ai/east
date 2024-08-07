@@ -185,7 +185,7 @@ require 'includes/functions.php';
                     <!-- start row -->
                     <tr class="search-items">
                         <td>
-                            <a href="?page=warehouse_products">
+                            <a href="?page=warehouse_details&warehouse_id=<?= $row_warehouse['WarehouseID'] ?>">
                                 <?= $row_warehouse['WarehouseName'] ?>
                             </a>
                         </td>

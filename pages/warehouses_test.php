@@ -248,7 +248,7 @@ require 'includes/functions.php';
             warehouse_id = getUrlParameter('warehouse_id');
 
             $.ajax({
-                    url: 'pages/warehouses_ajax.php',
+                    url: 'pages/warehouses_ajax_test.php',
                     type: 'POST',
                     data: {
                         warehouse_id: warehouse_id,
@@ -268,7 +268,7 @@ require 'includes/functions.php';
             });
 
             $.ajax({
-                    url: 'pages/warehouses_ajax.php',
+                    url: 'pages/warehouses_ajax_test.php',
                     type: 'POST',
                     data: {
                         warehouse_id: warehouse_id,
@@ -288,7 +288,7 @@ require 'includes/functions.php';
             event.preventDefault(); 
             warehouse_id = $(this).data('id');
             $.ajax({
-                    url: 'pages/warehouses_ajax.php',
+                    url: 'pages/warehouses_ajax_test.php',
                     type: 'POST',
                     data: {
                         warehouse_id: warehouse_id,
@@ -308,7 +308,7 @@ require 'includes/functions.php';
             });
 
             $.ajax({
-                    url: 'pages/warehouses_ajax.php',
+                    url: 'pages/warehouses_ajax_test.php',
                     type: 'POST',
                     data: {
                         warehouse_id: warehouse_id,
@@ -331,7 +331,7 @@ require 'includes/functions.php';
             formData.append('action', 'add_update');
 
             $.ajax({
-                url: 'pages/warehouses_ajax.php',
+                url: 'pages/warehouses_ajax_test.php',
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -373,7 +373,7 @@ require 'includes/functions.php';
             formData.append('action', 'add_update');
 
             $.ajax({
-                url: 'pages/warehouses_ajax.php',
+                url: 'pages/warehouses_ajax_test.php',
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -414,7 +414,7 @@ require 'includes/functions.php';
             formData.append('action', 'add_update_bin');
 
             $.ajax({
-                url: 'pages/warehouses_ajax.php',
+                url: 'pages/warehouses_ajax_test.php',
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -455,7 +455,7 @@ require 'includes/functions.php';
             formData.append('action', 'add_update_row');
 
             $.ajax({
-                url: 'pages/warehouses_ajax.php',
+                url: 'pages/warehouses_ajax_test.php',
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -496,7 +496,7 @@ require 'includes/functions.php';
             formData.append('action', 'add_update_shelf');
 
             $.ajax({
-                url: 'pages/warehouses_ajax.php',
+                url: 'pages/warehouses_ajax_test.php',
                 type: 'POST',
                 data: formData,
                 processData: false,
