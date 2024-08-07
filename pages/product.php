@@ -283,38 +283,8 @@ require 'includes/functions.php';
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                <label class="form-label">Quantity In Stock</label>
-                                <input type="text" id="quantityInStock" name="quantityInStock" class="form-control"  />
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="row pt-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Quantity Quoted</label>
-                                <input type="text" id="quantityQuoted" name="quantityQuoted" class="form-control"  />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Quantity Committed</label>
-                                <input type="text" id="quantityCommitted" name="quantityCommitted" class="form-control"  />
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="row pt-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Quantity Available</label>
-                                <input type="text" id="quantityAvailable" name="quantityAvailable" class="form-control"  />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">QuantityInTransit</label>
-                                <input type="text" id="quantityInTransit" name="quantityInTransit" class="form-control"  />
+                                <label class="form-label">Unit of Measure</label>
+                                <input type="text" id="unitofMeasure" name="unitofMeasure" class="form-control"  />
                                 </div>
                             </div>
                             </div>
@@ -328,49 +298,18 @@ require 'includes/functions.php';
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                <label class="form-label">Date Added</label>
-                                <input type="date" id="dateAdded" name="dateAdded" class="form-control"  />
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="row pt-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Date Modified</label>
-                                <input type="date" id="dateModified" name="dateModified" class="form-control"  />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Last Ordered Date</label>
-                                <input type="date" id="lastOrderedDate" name="lastOrderedDate" class="form-control"  />
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="row pt-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Last Sold Date</label>
-                                <input type="date" id="lastSoldDate" name="lastSoldDate" class="form-control"  />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
                                 <label class="form-label">UPC</label>
                                 <input type="text" id="upc" name="upc" class="form-control"  />
                                 </div>
                             </div>
                             </div>
 
-                            <div class="row pt-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Unit of Measure</label>
-                                <input type="text" id="unitofMeasure" name="unitofMeasure" class="form-control"  />
-                                </div>
+                            
+
                             </div>
+
+                            <div class="row pt-3">
+                           
                             <div class="col-md-6">
                                 <div class="mb-3">
                                 <label class="form-label">Unit Cost</label>
