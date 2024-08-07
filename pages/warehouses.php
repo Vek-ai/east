@@ -61,7 +61,7 @@ require 'includes/functions.php';
             </a>
             </div>
             <button type="button" id="addWarehouseModalLabel" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addWarehouseModal">
-                <i class="ti ti-warehouse text-white me-1 fs-5"></i> Add Warehouse
+                <i class="fas fa-warehouse text-white me-1 fs-5"></i> Add Warehouse
             </button>
         </div>
         </div>
