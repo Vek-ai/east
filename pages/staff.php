@@ -316,7 +316,7 @@ if(!empty($_REQUEST['staff_id'])){
     $(document).ready(function() {
 
         $('#staffList').DataTable({
-            "order": [[1, "asc"]] // Column index is 0-based, so column 2 is index 1
+            "order": [[0, "asc"]] // Column index is 0-based, so column 2 is index 1
         });
 
         $(document).on('click', '#upload_profile_add', function(event) {
