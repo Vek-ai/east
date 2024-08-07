@@ -126,7 +126,7 @@ if(isset($_REQUEST['action'])) {
                                         </div>
                                         <div class="col-8 mb-6">
                                             <label class="form-label">Contact Phone</label>
-                                            <input type="text" id="contact_phone" name="contact_phone" class="form-control" value="<?= $row['contact_phone'] ?>" />
+                                            <input type="text" id="contact_phone" name="contact_phone" class="form-control phone-inputmask" value="<?= $row['contact_phone'] ?>" />
                                         </div>
                                         <div class="col-12 mb-6">
                                             <label class="form-label">Contact Email</label>
@@ -149,6 +149,9 @@ if(isset($_REQUEST['action'])) {
                 </div>
                 <!-- /.modal-content -->
             </div>
+            <script>
+                $(".phone-inputmask").inputmask("(999) 999-9999");
+            </script>
             <?php
         }
     } 

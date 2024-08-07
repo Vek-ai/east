@@ -105,7 +105,7 @@ require 'includes/functions.php';
                                     </div>
                                     <div class="col-6 mb-7">
                                         <label class="form-label">Contact Phone</label>
-                                        <input type="text" id="contact_phone" name="contact_phone" class="form-control" />
+                                        <input type="text" id="contact_phone" name="contact_phone" class="form-control phone-inputmask" />
                                     </div>
                                     <div class="col-6 mb-9">
                                         <label class="form-label">Contact Email</label>
@@ -292,9 +292,9 @@ require 'includes/functions.php';
                 contentType: false,
                 success: function(response) {
                     $('#updateWarehouseModal').modal('hide');
-                    if (response === "Warehouse updated successfully.") {
+                    if (response === "success") {
                         $('#responseHeader').text("Success");
-                        $('#responseMsg').text(response);
+                        $('#responseMsg').text("Warehouse updated successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");
@@ -333,9 +333,9 @@ require 'includes/functions.php';
                 contentType: false,
                 success: function(response) {
                     $('#addWarehouseModal').modal('hide');
-                    if (response === "New warehouse added successfully.") {
+                    if (response === "succes") {
                         $('#responseHeader').text("Success");
-                        $('#responseMsg').text(response);
+                        $('#responseMsg').text("New warehouse added successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");
