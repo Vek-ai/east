@@ -1295,6 +1295,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "product_line") {include 'pages/product_line.php';}
             if ($_REQUEST['page'] == "product_type") {include 'pages/product_type.php';}
             if ($_REQUEST['page'] == "warehouse") {include 'pages/warehouse.php';}
+            if ($_REQUEST['page'] == "warehouse_details") {include 'pages/warehouse_details.php';}
             if ($_REQUEST['page'] == "product_supplier") {include 'pages/supplier.php';}
             if ($_REQUEST['page'] == "supplier_type") {include 'pages/supplier_type.php';}
             if ($_REQUEST['page'] == "warehouses") {include 'pages/warehouses.php';}
