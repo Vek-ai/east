@@ -1,7 +1,7 @@
 <?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 
 require '../includes/dbconn.php';
 
@@ -48,6 +48,8 @@ if(isset($_REQUEST['action'])) {
         $unit_gross_margin = mysqli_real_escape_string($conn, $_POST['unitGrossMargin']);
         $product_usage = mysqli_real_escape_string($conn, $_POST['product_usage']);
         $comment = mysqli_real_escape_string($conn, $_POST['comment']);
+
+        $correlatedProducts = $_POST['correlatedProducts'];
     
         // SQL query to check if the record exists
         $checkQuery = "SELECT * FROM product WHERE product_id = '$product_id'";
@@ -99,6 +101,20 @@ if(isset($_REQUEST['action'])) {
             WHERE product_id = '$product_id'";
     
             if (mysqli_query($conn, $updateQuery)) {
+                
+                $query_delete = "DELETE FROM correlated_product WHERE main_correlated_product_id = '$product_id'";
+                if (!mysqli_query($conn, $query_delete)) {
+                    echo "Error: " . mysqli_error($conn);
+                }else{
+                    foreach ($correlatedProducts as $correlated_product_id) {
+                        $query_correlated = "INSERT INTO correlated_product (`correlated_id`, `main_correlated_product_id`) VALUES ('$correlated_product_id','$product_id')";
+                        if (mysqli_query($conn, $query_correlated)) {
+                        } else {
+                            echo "Error: " . mysqli_error($conn);
+                        }    
+                    }
+                }
+
                 echo "success";
             } else {
                 echo "Error updating product: " . mysqli_error($conn);
@@ -188,6 +204,20 @@ if(isset($_REQUEST['action'])) {
             )";
     
             if (mysqli_query($conn, $insertQuery)) {
+                $product_id = $conn->insert_id;
+                $query_delete = "DELETE FROM correlated_product WHERE main_correlated_product_id = '$product_id'";
+                if (!mysqli_query($conn, $query_delete)) {
+                    echo "Error: " . mysqli_error($conn);
+                }else{
+                    foreach ($correlatedProducts as $correlated_product_id) {
+                        $query_correlated = "INSERT INTO correlated_product (`correlated_id`, `main_correlated_product_id`) VALUES ('$correlated_product_id','$product_id')";
+                        if (mysqli_query($conn, $query_correlated)) {
+                        } else {
+                            echo "Error: " . mysqli_error($conn);
+                        }    
+                    }
+                }
+
                 echo "success";
             } else {
                 echo "Error adding product: " . mysqli_error($conn);
@@ -300,6 +330,35 @@ if(isset($_REQUEST['action'])) {
                                 <label class="form-label">Description</label>
                                 <textarea class="form-control" id="description" name="description" rows="5"><?= $row['product_item']?></textarea>
                                 </div>
+
+                                <div class="row pt-3">
+                                    <div class="col-md-12">
+                                    <label class="form-label">Correlated products</label>
+                                    <select id="correlatedProducts" name="correlatedProducts[]" class="select2 form-control" multiple="multiple">
+                                        <optgroup label="Select Correlated Products">
+                                            <?php
+                                            $correlated_product_ids = [];
+                                            $product_id = mysqli_real_escape_string($conn, $row['product_id']);
+                                            $query_correlated = "SELECT correlated_id FROM correlated_product WHERE main_correlated_product_id = '$product_id'";
+                                            $result_correlated = mysqli_query($conn, $query_correlated);
+                                            
+                                            while ($row_correlated = mysqli_fetch_assoc($result_correlated)) {
+                                                $correlated_product_ids[] = $row_correlated['correlated_id'];
+                                            }
+                                            
+                                            $query_products = "SELECT * FROM product";
+                                            $result_products = mysqli_query($conn, $query_products);            
+                                            while ($row_products = mysqli_fetch_array($result_products)) {
+                                                $selected = in_array($row_products['product_id'], $correlated_product_ids) ? 'selected' : '';
+                                            ?>
+                                                <option value="<?= $row_products['product_id'] ?>" <?= $selected ?> ><?= $row_products['product_item'] ?></option>
+                                            <?php   
+                                            }
+                                            ?>
+                                        </optgroup>
+                                    </select>
+                                    </div>
+                                </div>  
 
                                 <div class="row pt-3">
                                 <div class="col-md-6">
@@ -556,6 +615,20 @@ if(isset($_REQUEST['action'])) {
                 </div>
                 <!-- /.modal-content -->
             </div>
+
+            <script>
+            $(document).ready(function() {
+                $(".select2").select2({});
+
+                $('#addProductModal').on('shown.bs.modal', function () {
+                    $('.select2').select2({
+                        width: '100%',
+                        placeholder: "Select Correlated Products",
+                        allowClear: true
+                    });
+                });
+            });
+            </script>
             <?php
         }
     } 

@@ -165,7 +165,7 @@ require 'includes/functions.php';
                             <div class="row pt-3">
                                 <div class="col-md-12">
                                 <label class="form-label">Correlated products</label>
-                                <select id="correlatedProducts" name="correlatedProducts" class="select2 form-control" multiple="multiple">
+                                <select id="correlatedProducts" name="correlatedProducts[]" class="select2 form-control" multiple="multiple">
                                     <optgroup label="Select Correlated Products">
                                         <?php
                                         $query_products = "SELECT * FROM product";
@@ -576,10 +576,6 @@ $(document).ready(function() {
             placeholder: "Select Correlated Products",
             allowClear: true
         });
-    });
-
-    $('#correlatedProducts').on('change', function () {
-        console.log($(this).val());
     });
 });
 </script>
