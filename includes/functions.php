@@ -60,4 +60,13 @@ function getProductTypeName($product_type_id){
     $product_type = $row['product_type'] ?? '';
     return  $product_type;
 }
+
+function getPaintProviderName($provider_id){
+    global $conn;
+    $query = "SELECT provider_name FROM paint_providers WHERE provider_id = '$provider_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $provider_name = $row['provider_name'] ?? '';
+    return  $provider_name;
+}
 ?>
