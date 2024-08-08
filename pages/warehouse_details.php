@@ -69,7 +69,13 @@ if(!empty($_REQUEST['warehouse_id'])){
         <div class="col-12 ">
             <div class="card">
                 <div class="card-body">
+                    
                     <div class="row">
+                        <div class="col-12">
+                            <h4 class="card-title d-flex justify-content-between align-items-center py-0 m-0">  
+                                <a href="/?page=warehouses" class="btn btn-primary" style="border-radius: 10%; ">Back</a>
+                            </h4>
+                        </div>
                         <div class="col">
                             <div class="card-body">
                                 <!-- Warehouse Details -->
@@ -78,8 +84,8 @@ if(!empty($_REQUEST['warehouse_id'])){
                                         <div class="card">
                                             <div class="card-body">
                                                 
-                                                <h6 class="fw-semibold fs-4 mb-0"><?= $WarehouseName ?></h6>
-                                                <span class="mb-0"><?= $Location ?></span>
+                                                <h3 ><?= $WarehouseName ?></h3>
+                                                <h5 ><?= $Location ?></h5>
 
                                                 <div class="row mt-5">
                                                     <div class="col-4 mb-7">
@@ -102,7 +108,7 @@ if(!empty($_REQUEST['warehouse_id'])){
 
                                 <!-- Tables -->
                                 <div class="row">
-                                    <div class="datatables col">
+                                    <div class="datatables col-12">
                                         <div class="card">
                                             <div class="card-body">
                                                 <h4 class="card-title d-flex justify-content-between align-items-center">List of Bins  
@@ -122,7 +128,7 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                         </thead>
                                                         <tbody>
                                                             <?php
-                                                            $query_wh_bins = "SELECT * FROM bins WHERE WarehouseID = '$warehouse_id'";
+                                                            $query_wh_bins = "SELECT * FROM bins WHERE WarehouseID = '$WarehouseID'";
                                                             $result_wh_bins = mysqli_query($conn, $query_wh_bins);            
                                                             while ($row_wh_bins = mysqli_fetch_array($result_wh_bins)) {
                                                             ?>
@@ -140,7 +146,7 @@ if(!empty($_REQUEST['warehouse_id'])){
                                         </div>
                                     </div>
 
-                                    <div class="datatables col">
+                                    <div class="datatables col-6">
                                         <div class="card">
                                             <div class="card-body">
                                                 <h4 class="card-title d-flex justify-content-between align-items-center">List of Rows  
@@ -160,8 +166,8 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                         </thead>
                                                         <tbody>
                                                             <?php
-                                                            $query_wh_rows = "SELECT * FROM warehouse_rows WHERE WarehouseID = '$warehouse_id'";
-                                                            $result_wh_rows = mysqli_query($conn, $query_wh_rows);            
+                                                            $query_wh_rows = "SELECT * FROM warehouse_rows WHERE WarehouseID = '$WarehouseID'";
+                                                            $result_wh_rows = mysqli_query($conn, $query_wh_rows);   
                                                             while ($row_wh_rows = mysqli_fetch_array($result_wh_rows)) {
                                                             ?>
                                                                 <tr>
@@ -178,7 +184,7 @@ if(!empty($_REQUEST['warehouse_id'])){
                                         </div>
                                     </div>
 
-                                    <div class="datatables col">
+                                    <div class="datatables col-6">
                                         <div class="card">
                                             <div class="card-body">
                                                 <h4 class="card-title d-flex justify-content-between align-items-center">List of Shelves  
@@ -203,7 +209,7 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                 SELECT s.* 
                                                                 FROM shelves s
                                                                 INNER JOIN warehouse_rows wr ON s.WarehouseRowID = wr.WarehouseRowID
-                                                                WHERE wr.WarehouseID = '$warehouse_id'
+                                                                WHERE wr.WarehouseID = '$WarehouseID'
                                                             ";
                                                             $result_wh_shelves = mysqli_query($conn, $query_wh_shelves);
 
@@ -238,7 +244,7 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                         <div class="card">
                                                             <div class="card-body">
                                                                 <input type="hidden" id="BinID" name="BinID" class="form-control"/>
-                                                                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $row['WarehouseID'] ?>" />
+                                                                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $WarehouseID ?>" />
 
                                                                 <div class="row pt-3">
                                                                     <div class="col-md-6">
@@ -291,7 +297,7 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                         <div class="card">
                                                             <div class="card-body">
                                                                 <input type="hidden" id="WarehouseRowID" name="WarehouseRowID" class="form-control" />
-                                                                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $row['WarehouseID'] ?>"/>
+                                                                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $WarehouseID ?>"/>
 
                                                                 <div class="row pt-3">
                                                                     <div class="col-md-6">
@@ -344,7 +350,7 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                         <div class="card">
                                                             <div class="card-body">
                                                                 <input type="hidden" id="ShelfID" name="ShelfID" class="form-control"/>
-                                                                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $row['WarehouseID'] ?>"/>
+                                                                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $WarehouseID ?>"/>
 
                                                                 <div class="row pt-3">
                                                                     <div class="col-md-6">
@@ -359,7 +365,7 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                             <select id="WarehouseRowID" class="form-control" name="WarehouseRowID" required>
                                                                                 <option value="/" >Select One...</option>
                                                                                 <?php
-                                                                                $query_rows = "SELECT * FROM warehouse_rows WHERE WarehouseID = '" .$row['WarehouseID'] ."'";
+                                                                                $query_rows = "SELECT * FROM warehouse_rows WHERE WarehouseID = '" .$WarehouseID ."'";
 
                                                                                 $result_rows = mysqli_query($conn, $query_rows);            
                                                                                 while ($row_rows = mysqli_fetch_array($result_rows)) {
@@ -403,6 +409,26 @@ if(!empty($_REQUEST['warehouse_id'])){
 
                                     <div class="modal fade" id="updateShelfModal" tabindex="-1" aria-labelledby="updateShelfModalLabel" aria-hidden="true"></div>
 
+                                    <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                            <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+                                                <h4 id="responseHeader" class="m-0"></h4>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                
+                                                <p id="responseMsg"></p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+                                                Close
+                                                </button>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
 
                                 </div>
                             </div>
@@ -427,6 +453,129 @@ if(!empty($_REQUEST['warehouse_id'])){
         $('#row_wh_bins').DataTable();
         $('#row_wh_rows').DataTable();
         $('#row_wh_shelves').DataTable();
+
+        $(document).on('submit', '#add_bin', function(event) {
+            event.preventDefault(); 
+
+            var formData = new FormData(this);
+            formData.append('action', 'add_update_bin');
+
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#addBinModal').modal('hide');
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("New bin added successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+
+                    
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('submit', '#add_row', function(event) {
+            event.preventDefault(); 
+
+            var formData = new FormData(this);
+            formData.append('action', 'add_update_row');
+
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#addRowModal').modal('hide');
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("New row added successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+
+                    
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('submit', '#add_shelf', function(event) {
+            event.preventDefault(); 
+
+            var formData = new FormData(this);
+            formData.append('action', 'add_update_shelf');
+
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#addShelfModal').modal('hide');
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("New shelf added successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+
+                    
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
     });
 </script>
 
