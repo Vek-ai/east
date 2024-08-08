@@ -9,39 +9,40 @@ if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-        $product_line_id = mysqli_real_escape_string($conn, $_POST['product_line_id']);
-        $product_line = mysqli_real_escape_string($conn, $_POST['product_line']);
-        $line_abreviations = mysqli_real_escape_string($conn, $_POST['line_abreviations']);
-        $notes = mysqli_real_escape_string($conn, $_POST['notes']);
+        $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
+        $color_name = mysqli_real_escape_string($conn, $_POST['color_name']);
+        $color_code = mysqli_real_escape_string($conn, $_POST['color_code']);
+        $color_group = mysqli_real_escape_string($conn, $_POST['color_group']);
+        $provider_id = mysqli_real_escape_string($conn, $_POST['provider']);
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
         // SQL query to check if the record exists
-        $checkQuery = "SELECT * FROM product_line WHERE product_line_id = '$product_line_id'";
+        $checkQuery = "SELECT * FROM paint_colors WHERE color_id = '$color_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
             // Record exists, fetch current values
             $row = mysqli_fetch_assoc($result);
-            $current_product_line = $row['product_line'];
-            $current_line_abreviations = $row['line_abreviations'];
+            $current_color_name = $row['color_name'];
+            $current_color_code = $row['color_code'];
 
             $duplicates = array();
 
             // Check for duplicates only if the new values are different from the current values
-            if ($product_line != $current_product_line) {
-                $checkProductLine = "SELECT * FROM product_line WHERE product_line = '$product_line'";
-                $resultProductLine = mysqli_query($conn, $checkProductLine);
-                if (mysqli_num_rows($resultProductLine) > 0) {
-                    $duplicates[] = "Product line";
+            if ($color_name != $current_color_name) {
+                $checkColorName = "SELECT * FROM paint_colors WHERE color_name = '$color_name'";
+                $resultColorName = mysqli_query($conn, $checkColorName);
+                if (mysqli_num_rows($resultColorName) > 0) {
+                    $duplicates[] = "Color Name";
                 }
             }
 
-            if ($line_abreviations != $current_line_abreviations) {
-                $checkAbreviations = "SELECT * FROM product_line WHERE line_abreviations = '$line_abreviations'";
-                $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-                if (mysqli_num_rows($resultAbreviations) > 0) {
-                    $duplicates[] = "Line Abbreviations";
+            if ($color_code != $current_color_code) {
+                $checkColorCode = "SELECT * FROM paint_colors WHERE color_code = '$color_code'";
+                $resultColorCode = mysqli_query($conn, $checkColorCode);
+                if (mysqli_num_rows($resultColorCode) > 0) {
+                    $duplicates[] = "Color Code";
                 }
             }
 
@@ -50,57 +51,57 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_line SET product_line = '$product_line', line_abreviations = '$line_abreviations', notes = '$notes', last_edit = NOW(), edited_by = '$userid'  WHERE product_line_id = '$product_line_id'";
+                $updateQuery = "UPDATE paint_colors SET color_name = '$color_name', color_code = '$color_code', color_group = '$color_group', provider_id = '$provider_id', last_edit = NOW(), edited_by = '$userid'  WHERE color_id = '$color_id'";
                 if (mysqli_query($conn, $updateQuery)) {
-                    echo "Product line updated successfully.";
+                    echo "Paint color updated successfully.";
                 } else {
-                    echo "Error updating product line: " . mysqli_error($conn);
+                    echo "Error updating paint color: " . mysqli_error($conn);
                 }
             }
         } else {
             // Record does not exist, perform duplicate checks before inserting
             $duplicates = array();
-            $checkProductLine = "SELECT * FROM product_line WHERE product_line = '$product_line'";
-            $resultProductLine = mysqli_query($conn, $checkProductLine);
-            if (mysqli_num_rows($resultProductLine) > 0) {
-                $duplicates[] = "Product Line";
+            $checkColorName = "SELECT * FROM paint_colors WHERE color_name = '$color_name'";
+            $resultColorName = mysqli_query($conn, $checkColorName);
+            if (mysqli_num_rows($resultColorName) > 0) {
+                $duplicates[] = "Color Name";
             }
 
-            $checkAbreviations = "SELECT * FROM product_line WHERE line_abreviations = '$line_abreviations'";
-            $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-            if (mysqli_num_rows($resultAbreviations) > 0) {
-                $duplicates[] = "Line Abbreviations";
+            $checkColorCode = "SELECT * FROM paint_colors WHERE color_code = '$color_code'";
+            $resultColorCode = mysqli_query($conn, $checkColorCode);
+            if (mysqli_num_rows($resultColorCode) > 0) {
+                $duplicates[] = "Color Code";
             }
 
             if(!empty($duplicates)){
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO product_line (product_line, line_abreviations, notes, added_date, added_by) VALUES ('$product_line', '$line_abreviations', '$notes', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO paint_colors (color_name, color_code, color_group, provider_id, added_date, added_by) VALUES ('$color_name', '$color_code', '$color_group', '$provider_id', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
-                    echo "New product line added successfully.";
+                    echo "New paint color added successfully.";
                 } else {
-                    echo "Error adding product line: " . mysqli_error($conn);
+                    echo "Error adding paint color: " . mysqli_error($conn);
                 }
             }
         }
     } 
     
     if ($action == "change_status") {
-        $product_line_id = mysqli_real_escape_string($conn, $_POST['product_line_id']);
+        $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
         $status = mysqli_real_escape_string($conn, $_POST['status']);
         $new_status = ($status == '0') ? '1' : '0';
 
-        $statusQuery = "UPDATE product_line SET status = '$new_status' WHERE product_line_id = '$product_line_id'";
+        $statusQuery = "UPDATE paint_colors SET color_status = '$new_status' WHERE color_id = '$color_id'";
         if (mysqli_query($conn, $statusQuery)) {
             echo "success";
         } else {
             echo "Error updating status: " . mysqli_error($conn);
         }
     }
-    if ($action == 'hide_product_line') {
-        $product_line_id = mysqli_real_escape_string($conn, $_POST['product_line_id']);
-        $query = "UPDATE product_line SET hidden='1' WHERE product_line_id='$product_line_id'";
+    if ($action == 'hide_paint_color') {
+        $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
+        $query = "UPDATE paint_colors SET hidden='1' WHERE color_id='$color_id'";
         if (mysqli_query($conn, $query)) {
             echo 'success';
         } else {

@@ -2,22 +2,23 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$product_line = "";
-$line_abreviations = "";
-$notes = "";
+$color_name = "";
+$color_code = "";
+$color_group = "";
+$color_group = "";
 
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
 
-if(!empty($_REQUEST['product_line_id'])){
-  $product_line_id = $_REQUEST['product_line_id'];
-  $query = "SELECT * FROM product_line WHERE product_line_id = '$product_line_id'";
+if(!empty($_REQUEST['color_id'])){
+  $color_id = $_REQUEST['color_id'];
+  $query = "SELECT * FROM paint_colors WHERE color_id = '$color_id'";
   $result = mysqli_query($conn, $query);            
   while ($row = mysqli_fetch_array($result)) {
-      $product_line_id = $row['product_line_id'];
-      $product_line = $row['product_line'];
-      $line_abreviations = $row['line_abreviations'];
-      $notes = $row['notes'];
+      $color_id = $row['color_id'];
+      $color_name = $row['color_name'];
+      $color_code = $row['color_code'];
+      $color_group = $row['color_group'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -26,10 +27,10 @@ if(!empty($_REQUEST['product_line_id'])){
 $message = "";
 if(!empty($_REQUEST['result'])){
   if($_REQUEST['result'] == '1'){
-    $message = "New product line added successfully.";
+    $message = "New paint color added successfully.";
     $textColor = "text-success";
   }else if($_REQUEST['result'] == '2'){
-    $message = "Product line updated successfully.";
+    $message = "Paint color updated successfully.";
     $textColor = "text-success";
   }else if($_REQUEST['result'] == '0'){
     $message = "Failed to Perform Operation";
@@ -40,11 +41,6 @@ if(!empty($_REQUEST['result'])){
 
 ?>
 <style>
-        /* Ensure that the text within the notes column wraps properly */
-        td.notes,  td.last-edit{
-            white-space: normal;
-            word-wrap: break-word;
-        }
         .emphasize-strike {
             text-decoration: line-through;
             font-weight: bold;
@@ -70,14 +66,14 @@ if(!empty($_REQUEST['result'])){
             <div class="card-body px-0">
               <div class="d-flex justify-content-between align-items-center">
                 <div><br>
-                  <h4 class="font-weight-medium fs-14 mb-0">Product Line</h4>
+                  <h4 class="font-weight-medium fs-14 mb-0">Paint Colors</h4>
                   <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                       <li class="breadcrumb-item">
                         <a class="text-muted text-decoration-none" href="">Product Properties
                         </a>
                       </li>
-                      <li class="breadcrumb-item text-muted" aria-current="page">Product Line</li>
+                      <li class="breadcrumb-item text-muted" aria-current="page">Paint Colors</li>
                     </ol>
                   </nav>
                 </div>
@@ -111,7 +107,7 @@ if(!empty($_REQUEST['result'])){
   <div class="card card-body">
     <div class="row">
       <div class="col-3">
-        <h4 class="card-title"><?= $addHeaderTxt ?> Product line</h4>
+        <h4 class="card-title"><?= $addHeaderTxt ?> Paint color</h4>
       </div>
       <div class="col-9">
         <h4 class="card-title <?= $textColor ?>"><?= $message ?></h4>
@@ -119,34 +115,52 @@ if(!empty($_REQUEST['result'])){
     </div>
     
 
-    <form id="lineForm" class="form-horizontal">
-      <div class="row pt-3">
-        <div class="col-md-6">
+    <form id="paintColorForm" class="form-horizontal">
+      <div class="row pt-0">
+        <div class="col-md-12">
           <div class="mb-3">
-            <label class="form-label">Product line</label>
-            <input type="text" id="product_line" name="product_line" class="form-control"  value="<?= $product_line ?>"/>
+            <label class="form-label">Color Name</label>
+            <input type="text" id="color_name" name="color_name" class="form-control"  value="<?= $color_name ?>"/>
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           <div class="mb-3">
-            <label class="form-label">Line Abreviations</label>
-            <input type="text" id="line_abreviations" name="line_abreviations" class="form-control" value="<?= $line_abreviations ?>" />
+            <label class="form-label">Color Code</label>
+            <input type="text" id="color_code" name="color_code" class="form-control" value="<?= $color_code ?>" />
           </div>
         </div>
-      </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label class="form-label">Color Group</label>
+            <input type="text" class="form-control" id="color_group" name="color_group"><?= $color_group ?></textarea>
+          </div>
+        </div>
 
-      <div class="mb-3">
-        <label class="form-label">Notes</label>
-        <textarea class="form-control" id="notes" name="notes" rows="5"><?= $notes ?></textarea>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label class="form-label">Provider</label>
+            <select id="provider" class="form-control" name="provider" required>
+                <option value="/" >Select One...</option>
+                <?php
+                $query_rows = "SELECT * FROM paint_providers";
+
+                $result_rows = mysqli_query($conn, $query_rows);            
+                while ($row_rows = mysqli_fetch_array($result_rows)) {
+                ?>
+                    <option value="<?= $row_rows['provider_id'] ?>" ><?= $row_rows['provider_name'] ?></option>
+                <?php   
+                }
+                ?>
+            </select>
+          </div>
+        </div>
       </div>
 
       <div class="form-actions">
         <div class="card-body border-top ">
-          <input type="hidden" id="product_line_id" name="product_line_id" class="form-control"  value="<?= $product_line_id ?>"/>
+          <input type="hidden" id="color_id" name="color_id" class="form-control"  value="<?= $color_id ?>"/>
           <div class="row">
-            
             <div class="col-6 text-start">
-            
             </div>
             <div class="col-6 text-end">
               <button type="submit" class="btn btn-primary" style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
@@ -164,20 +178,21 @@ if(!empty($_REQUEST['result'])){
   <div class="datatables">
     <div class="card">
       <div class="card-body">
-          <h4 class="card-title d-flex justify-content-between align-items-center">Product line List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['product_line_id'])){ ?>
-            <a href="/?page=product_line" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
+          <h4 class="card-title d-flex justify-content-between align-items-center">Paint color List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['color_id'])){ ?>
+            <a href="/?page=paint_colors" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
             <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
           </h4>
         
         <div class="table-responsive">
        
-          <table id="display_product_line" class="table table-striped table-bordered text-nowrap align-middle">
+          <table id="display_paint_colors" class="table table-striped table-bordered text-nowrap align-middle">
             <thead>
               <!-- start row -->
               <tr>
-                <th>Product line</th>
-                <th>Line Abreviations</th>
-                <th>Notes</th>
+                <th>Color Name</th>
+                <th>Color Code</th>
+                <th>Color Group</th>
+                <th>Provider</th>
                 <th>Details</th>
                 <th>Status</th>
               
@@ -188,20 +203,21 @@ if(!empty($_REQUEST['result'])){
             <tbody>
 <?php
 $no = 1;
-$query_product_line = "SELECT * FROM product_line WHERE hidden=0";
-$result_product_line = mysqli_query($conn, $query_product_line);            
-while ($row_product_line = mysqli_fetch_array($result_product_line)) {
-    $product_line_id = $row_product_line['product_line_id'];
-    $product_line = $row_product_line['product_line'];
-    $line_abreviations = $row_product_line['line_abreviations'];
-    $db_status = $row_product_line['status'];
-    $notes = $row_product_line['notes'];
-   // $last_edit = $row_product_line['last_edit'];
-    $date = new DateTime($row_product_line['last_edit']);
+$query_paint_color = "SELECT * FROM paint_colors WHERE hidden=0";
+$result_paint_color = mysqli_query($conn, $query_paint_color);            
+while ($row_paint_color = mysqli_fetch_array($result_paint_color)) {
+    $color_id = $row_paint_color['color_id'];
+    $color_name = $row_paint_color['color_name'];
+    $color_code = $row_paint_color['color_code'];
+    $color_group = $row_paint_color['color_group'];
+    $provider_id = $row_paint_color['provider_id'];
+    $db_status = $row_paint_color['color_status'];
+   // $last_edit = $row_paint_color['last_edit'];
+    $date = new DateTime($row_paint_color['last_edit']);
     $last_edit = $date->format('m-d-Y');
 
-    $added_by = $row_product_line['added_by'];
-    $edited_by = $row_product_line['edited_by'];
+    $added_by = $row_paint_color['added_by'];
+    $edited_by = $row_paint_color['edited_by'];
 
     
     if($edited_by != "0"){
@@ -212,23 +228,24 @@ while ($row_product_line = mysqli_fetch_array($result_product_line)) {
       $last_user_name = "";
     }
 
-    if ($row_product_line['status'] == '0') {
-        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_line_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+    if ($row_paint_color['color_status'] == '0') {
+        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$color_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
     } else {
-        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_line_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$color_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
     }
 ?>
 <tr id="product-row-<?= $no ?>">
-    <td><span class="product<?= $no ?> <?php if ($row_product_line['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_line ?></span></td>
-    <td><?= $line_abreviations ?></td>
-    <td class="notes" style="width:30%;"><?= $notes ?></td>
+    <td><span class="product<?= $no ?> <?php if ($row_paint_color['color_status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $color_name ?></span></td>
+    <td><?= $color_code ?></td>
+    <td><?= $color_group ?></td>
+    <td><?= getPaintProviderName($provider_id) ?></td>
     <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
     <td><?= $status ?></td>
     <td class="text-center" id="action-button-<?= $no ?>">
-        <?php if ($row_product_line['status'] == '0') { ?>
-            <a href="#" class="btn btn-light py-1 text-dark hideProductLine" data-id="<?= $product_line_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
+        <?php if ($row_paint_color['color_status'] == '0') { ?>
+            <a href="#" class="btn btn-light py-1 text-dark hideProductLine" data-id="<?= $color_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
         <?php } else { ?>
-            <a href="/?page=product_line&product_line_id=<?= $product_line_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+            <a href="/?page=paint_colors&color_id=<?= $color_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
         <?php } ?>
     </td>
 </tr>
@@ -242,14 +259,14 @@ $(document).ready(function() {
     // Use event delegation for dynamically generated elements
     $(document).on('click', '.changeStatus', function(event) {
         event.preventDefault(); 
-        var product_line_id = $(this).data('id');
+        var color_id = $(this).data('id');
         var status = $(this).data('status');
         var no = $(this).data('no');
         $.ajax({
-            url: 'pages/product_line_ajax.php',
+            url: 'pages/paint_colors_ajax.php',
             type: 'POST',
             data: {
-                product_line_id: product_line_id,
+                color_id: color_id,
                 status: status,
                 action: 'change_status'
             },
@@ -259,13 +276,13 @@ $(document).ready(function() {
                         $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
                         $(".changeStatus[data-no='" + no + "']").data('status', "0");
                         $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                        $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideProductLine" data-id="' + product_line_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
+                        $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideProductLine" data-id="' + color_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
                         $('#toggleActive').trigger('change');
                       } else {
                         $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                         $(".changeStatus[data-no='" + no + "']").data('status', "1");
                         $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                        $('#action-button-' + no).html('<a href="/?page=product_line&product_line_id=' + product_line_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                        $('#action-button-' + no).html('<a href="/?page=paint_colors&color_id=' + color_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                         $('#toggleActive').trigger('change');
                       }
                 } else {
@@ -280,20 +297,20 @@ $(document).ready(function() {
 
     $(document).on('click', '.hideProductLine', function(event) {
         event.preventDefault();
-        var product_line_id = $(this).data('id');
+        var color_id = $(this).data('id');
         var rowId = $(this).data('row');
         $.ajax({
-            url: 'pages/product_line_ajax.php',
+            url: 'pages/paint_colors_ajax.php',
             type: 'POST',
             data: {
-                product_line_id: product_line_id,
-                action: 'hide_product_line'
+                color_id: color_id,
+                action: 'hide_paint_color'
             },
             success: function(response) {
                 if (response == 'success') {
                     $('#product-row-' + rowId).remove(); // Remove the row from the DOM
                 } else {
-                    alert('Failed to hide product line.');
+                    alert('Failed to hide paint color.');
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -337,7 +354,7 @@ $(document).ready(function() {
 
 <script>
   $(document).ready(function() {
-    var table = $('#display_product_line').DataTable();
+    var table = $('#display_paint_colors').DataTable();
     
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -366,7 +383,7 @@ $(document).ready(function() {
         return null;
     }
 
-    $('#lineForm').on('submit', function(event) {
+    $('#paintColorForm').on('submit', function(event) {
         event.preventDefault(); 
 
         var userid = getCookie('userid');
@@ -378,24 +395,24 @@ $(document).ready(function() {
         var appendResult = "";
 
         $.ajax({
-            url: 'pages/product_line_ajax.php',
+            url: 'pages/paint_colors_ajax.php',
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
             success: function(response) {
               
-              if (response === "Product line updated successfully.") {
+              if (response.trim() === "success") {
                   $('#responseHeader').text("Success");
-                  $('#responseMsg').text(response);
+                  $('#responseMsg').text("Paint color updated successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
 
                   $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=product_line";
+                    window.location.href = "?page=paint_colors";
                   });
-              } else if (response === "New product line added successfully.") {
+              } else if (response.trim() === "New paint color added successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-danger");
