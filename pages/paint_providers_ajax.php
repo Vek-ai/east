@@ -52,7 +52,7 @@ if(isset($_REQUEST['action'])) {
                                 WHERE provider_id = '$provider_id'
                                 ";
                 if (mysqli_query($conn, $updateQuery)) {
-                    echo "Paint provider updated successfully.";
+                    echo "update-success";
                 } else {
                     echo "Error updating paint provider: " . mysqli_error($conn);
                 }
@@ -68,7 +68,8 @@ if(isset($_REQUEST['action'])) {
 
             if(!empty($duplicates)){
                 $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+
+                echo "$checkQuery";
             } else {
                 $insertQuery = "INSERT INTO paint_providers (
                                         provider_name, 
@@ -79,7 +80,6 @@ if(isset($_REQUEST['action'])) {
                                         website) 
                                 VALUES (
                                         '$provider_name',
-                                        '$provider_name',
                                         '$contact_person',
                                         '$contact_email',
                                         '$contact_phone',
@@ -87,7 +87,7 @@ if(isset($_REQUEST['action'])) {
                                         '$website'
                                 )";
                 if (mysqli_query($conn, $insertQuery)) {
-                    echo "New Paint provider added successfully.";
+                    echo "add-success";
                 } else {
                     echo "Error adding paint provider: " . mysqli_error($conn);
                 }

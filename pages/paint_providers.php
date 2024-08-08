@@ -13,13 +13,13 @@ $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
 
 if(!empty($_REQUEST['provider_id'])){
-  $paint_provider_id = $_REQUEST['provider_id'];
-  $query = "SELECT * FROM paint_provider WHERE provider_id = '$paint_provider_id'";
+  $provider_id = $_REQUEST['provider_id'];
+  $query = "SELECT * FROM paint_providers WHERE provider_id = '$provider_id'";
   $result = mysqli_query($conn, $query);            
   while ($row = mysqli_fetch_array($result)) {
-      $paint_provider_id = $row['provider_id'];
+      $provider_id = $row['provider_id'];
       $provider_name = $row['provider_name'];
-      $conteact_person = $row['contact_person'];
+      $contact_person = $row['contact_person'];
       $contact_email = $row['contact_email'];
       $contact_phone = $row['contact_phone'];
       $address = $row['address'];
@@ -220,7 +220,7 @@ $no = 1;
 $query_paint_provider = "SELECT * FROM paint_providers WHERE hidden = '0'";
 $result_paint_provider = mysqli_query($conn, $query_paint_provider);            
 while ($row_paint_provider = mysqli_fetch_array($result_paint_provider)) {
-    $paint_provider_id = $row_paint_provider['provider_id'];
+    $provider_id = $row_paint_provider['provider_id'];
     $paint_provider = $row_paint_provider['provider_name'];
     $contact_person = $row_paint_provider['contact_person'];
     $contact_email = $row_paint_provider['contact_email'];
@@ -235,9 +235,9 @@ while ($row_paint_provider = mysqli_fetch_array($result_paint_provider)) {
     // }
 
     if ($row_paint_provider['provider_status'] == '0') {
-        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$paint_provider_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$provider_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
     } else {
-        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$paint_provider_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$provider_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
     }
 ?>
 <tr id="product-row-<?= $no ?>">
@@ -249,9 +249,9 @@ while ($row_paint_provider = mysqli_fetch_array($result_paint_provider)) {
     <td><?= $status ?></td>
     <td class="text-center" id="action-button-<?= $no ?>">
         <?php if ($row_paint_provider['provider_status'] == '0') { ?>
-            <a href="#" class="btn btn-light py-1 text-dark hidePaintProvider" data-id="<?= $paint_provider_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
+            <a href="#" class="btn btn-light py-1 text-dark hidePaintProvider" data-id="<?= $provider_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
         <?php } else { ?>
-            <a href="/?page=paint_providers&provider_id=<?= $paint_provider_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+            <a href="/?page=paint_providers&provider_id=<?= $provider_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
         <?php } ?>
     </td>
 </tr>
@@ -410,9 +410,9 @@ $(document).ready(function() {
             contentType: false,
             success: function(response) {
               
-              if (response === "Paint provider updated successfully.") {
+              if (response.trim() === "update-success") {
                   $('#responseHeader').text("Success");
-                  $('#responseMsg').text(response);
+                  $('#responseMsg').text("Paint provider updated successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
@@ -420,9 +420,9 @@ $(document).ready(function() {
                   $('#response-modal').on('hide.bs.modal', function () {
                     window.location.href = "?page=paint_providers";
                   });
-              } else if (response === "New paint provider added successfully.") {
+              } else if (response.trim() === "add-success") {
                   $('#responseHeader').text("Success");
-                  $('#responseMsg').text(response);
+                  $('#responseMsg').text("New paint provider added successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
