@@ -19,6 +19,7 @@ if(!empty($_REQUEST['color_id'])){
       $color_name = $row['color_name'];
       $color_code = $row['color_code'];
       $color_group = $row['color_group'];
+      $provider_id = $row['provider_id'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -132,7 +133,7 @@ if(!empty($_REQUEST['result'])){
         <div class="col-md-4">
           <div class="mb-3">
             <label class="form-label">Color Group</label>
-            <input type="text" class="form-control" id="color_group" name="color_group"><?= $color_group ?></textarea>
+            <input type="text" id="color_group" name="color_group" class="form-control" value="<?= $color_group ?>" />
           </div>
         </div>
 
@@ -146,8 +147,9 @@ if(!empty($_REQUEST['result'])){
 
                 $result_rows = mysqli_query($conn, $query_rows);            
                 while ($row_rows = mysqli_fetch_array($result_rows)) {
+                  $selected = ($row_rows['provider_id'] == $provider_id) ? 'selected' : '';
                 ?>
-                    <option value="<?= $row_rows['provider_id'] ?>" ><?= $row_rows['provider_name'] ?></option>
+                    <option value="<?= $row_rows['provider_id'] ?>" <?= $selected ?> ><?= $row_rows['provider_name'] ?></option>
                 <?php   
                 }
                 ?>
