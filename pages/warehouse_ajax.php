@@ -68,7 +68,7 @@ if(isset($_REQUEST['action'])) {
         $status = mysqli_real_escape_string($conn, $_POST['status']);
         $new_status = ($status == '0') ? '1' : '0';
 
-        $statusQuery = "UPDATE warehouse SET status = '$new_status' WHERE warehouse_id = '$warehouse_id'";
+        $statusQuery = "UPDATE warehouses SET status = '$new_status' WHERE WarehouseID = '$warehouse_id'";
         if (mysqli_query($conn, $statusQuery)) {
             echo "success";
         } else {

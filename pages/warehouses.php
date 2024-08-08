@@ -300,7 +300,7 @@ require 'includes/functions.php';
                         $('#response-modal').modal("show");
 
                         $('#response-modal').on('hide.bs.modal', function () {
-                            window.location.href = "?page=product_warehouse";
+                            window.location.href = "?page=warehouses";
                         });
                     } else {
                         $('#responseHeader').text("Failed");
