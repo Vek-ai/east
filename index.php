@@ -1303,6 +1303,8 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "staff") {include 'pages/staff.php';}
             if ($_REQUEST['page'] == "product") {include 'pages/product.php';}
             if ($_REQUEST['page'] == "warehouses_test") {include 'pages/warehouses_test.php';}
+            if ($_REQUEST['page'] == "paint_providers") {include 'pages/paint_providers.php';}
+            if ($_REQUEST['page'] == "paint_colors") {include 'pages/paint_colors.php';}
           ?>
         </div>
       </div>
