@@ -3,6 +3,11 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 ?>
+<style>
+    .select2-container {
+        z-index: 9999 !important; 
+    }
+</style>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
     <div class="card-body px-0">
@@ -156,6 +161,26 @@ require 'includes/functions.php';
                             <label class="form-label">Description</label>
                             <textarea class="form-control" id="description" name="description" rows="5"></textarea>
                             </div>
+
+                            <div class="row pt-3">
+                                <div class="col-md-12">
+                                <label class="form-label">Correlated products</label>
+                                <select id="correlatedProducts" name="correlatedProducts" class="select2 form-control" multiple="multiple">
+                                    <optgroup label="Select Correlated Products">
+                                        <?php
+                                        $query_products = "SELECT * FROM product";
+                                        $result_products = mysqli_query($conn, $query_products);            
+                                        while ($row_products = mysqli_fetch_array($result_products)) {
+                                        ?>
+                                            <option value="<?= $row_products['product_id'] ?>" ><?= $row_products['product_item'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </optgroup>
+                                </select>
+                                </div>
+                            </div>        
+
 
                             <div class="row pt-3">
                             <div class="col-md-6">
@@ -538,6 +563,25 @@ require 'includes/functions.php';
 
 
     });
+</script>
+
+
+<script>
+$(document).ready(function() {
+    $(".select2").select2({});
+
+    $('#addProductModal').on('shown.bs.modal', function () {
+        $('.select2').select2({
+            width: '100%',
+            placeholder: "Select Correlated Products",
+            allowClear: true
+        });
+    });
+
+    $('#correlatedProducts').on('change', function () {
+        console.log($(this).val());
+    });
+});
 </script>
 
 

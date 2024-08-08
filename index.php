@@ -19,6 +19,7 @@ if (!isset($_SESSION['userid'])) {
   <link rel="shortcut icon" type="image/png" href="assets/images/logos/favicon.png" />
 
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/libs/select2/dist/css/select2.min.css">
   <link rel="stylesheet" href="assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" />
 
   <!-- Core Css -->
@@ -1340,6 +1341,7 @@ if (!isset($_SESSION['userid'])) {
   <script src="assets/js/extra-libs/jvectormap/jquery-jvectormap-us-aea-en.js"></script>
   <script src="assets/libs/datatables.net/js/jquery.dataTables.min.js"></script>
   <script src="assets/libs/inputmask/dist/jquery.inputmask.min.js"></script>
+  <script src="assets/libs/select2/dist/js/select2.min.js"></script>
   <script>
   $(document).ready(function() {
     $(".phone-inputmask").inputmask("(999) 999-9999")
