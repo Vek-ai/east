@@ -2,6 +2,19 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
+if(!empty($_REQUEST['warehouse_id'])){
+    $WarehouseID = $_REQUEST['warehouse_id'];
+    $query = "SELECT * FROM warehouses WHERE WarehouseID = '$WarehouseID'";
+    $result = mysqli_query($conn, $query);            
+    while ($row = mysqli_fetch_array($result)) {
+        $WarehouseID = $row['WarehouseID'];
+        $WarehouseName = $row['WarehouseName'];
+        $Location = $row['Location'];
+        $contact_person = $row['contact_person'];
+        $contact_phone = $row['contact_phone'];
+        $contact_email = $row['contact_email'];
+    }
+  }
 ?>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -17,7 +30,7 @@ require 'includes/functions.php';
                     </a>
                 </li>
                 <li class="breadcrumb-item text-muted" aria-current="page">
-                    <a class="text-muted text-decoration-none" href="#">
+                    <a class="text-muted text-decoration-none" href="/?page=warehouses">
                         Warehouses
                     </a>
                 </li>
@@ -57,28 +70,6 @@ require 'includes/functions.php';
             <div class="card">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-4">
-                            <div class="card-body">
-                                <div class="app-chat">
-                                    <?php 
-                                        $query_warehouse = "SELECT * FROM warehouses";
-                                        $result_warehouse = mysqli_query($conn, $query_warehouse);            
-                                        while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
-                                        ?>
-                                        <li>
-                                            <a href="javascript:void(0)" class="px-4 py-3 bg-hover-light-black d-flex align-items-center chat-user bg-light-subtle" id="view_warehouse_btn" data-id="<?= $row_warehouse['WarehouseID'] ?>">
-                                            
-                                            <div class="ms-6 d-inline-block w-75">
-                                                <h6 class="mb-1 fw-semibold chat-title" data-username="<?= $row_warehouse['WarehouseName'] ?>"><?= $row_warehouse['WarehouseName'] ?>
-                                                </h6>
-                                                <span class="fs-2 text-body-color d-block"><?= $row_warehouse['Location'] ?></span>
-                                            </div>
-                                            </a>
-                                        </li>
-                                    <?php } ?>
-                                </div>
-                            </div>
-                        </div>
                         <div class="col">
                             <div class="card-body">
                                 <!-- Warehouse Details -->
@@ -87,21 +78,21 @@ require 'includes/functions.php';
                                         <div class="card">
                                             <div class="card-body">
                                                 
-                                                <h6 class="fw-semibold fs-4 mb-0">Warehouse Name</h6>
-                                                <span class="mb-0">Warehouse Location</span>
+                                                <h6 class="fw-semibold fs-4 mb-0"><?= $WarehouseName ?></h6>
+                                                <span class="mb-0"><?= $Location ?></span>
 
                                                 <div class="row mt-5">
                                                     <div class="col-4 mb-7">
                                                         <label class="form-label">Contact Person</label>
-                                                        <input type="text" id="contact_person" name="contact_person" class="form-control" />
+                                                        <p id="contact_person"><?= $contact_person ?></p>
                                                     </div>
                                                     <div class="col-4 mb-7">
                                                         <label class="form-label">Contact Phone</label>
-                                                        <input type="text" id="contact_phone" name="contact_phone" class="form-control" />
+                                                        <p id="contact_phone"><?= $contact_phone ?></p>
                                                     </div>
                                                     <div class="col-4 mb-7">
                                                         <label class="form-label">Contact Email</label>
-                                                        <input type="text" id="contact_email" name="contact_email" class="form-control" />
+                                                        <p id="contact_email"><?= $contact_email ?></p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -114,19 +105,34 @@ require 'includes/functions.php';
                                     <div class="datatables col">
                                         <div class="card">
                                             <div class="card-body">
-                                                <h4>List of Bins</h4>
-
+                                                <h4 class="card-title d-flex justify-content-between align-items-center">List of Bins  
+                                                    <a href="#" class="btn btn-primary" style="border-radius: 10%; " data-bs-toggle="modal" data-bs-target="#addBinModal">Add New</a>
+                                                </h4>
+                                                
                                                 <div class="table-responsive">
-                                                    <table>
+                                            
+                                                    <table id="row_wh_bins" class="table table-striped table-bordered text-nowrap align-middle">
                                                         <thead>
-                                                            <tr>
-                                                                <th>This is the Table Head</th>
-                                                            </tr>
+                                                        <!-- start row -->
+                                                        <tr>
+                                                            <th>Bin Code</th>
+                                                            <th>Description</th>
+                                                        </tr>
+                                                        <!-- end row -->
                                                         </thead>
                                                         <tbody>
-                                                            <tr>
-                                                                <td>This is the Body</td>
-                                                            </tr>
+                                                            <?php
+                                                            $query_wh_bins = "SELECT * FROM bins WHERE WarehouseID = '$warehouse_id'";
+                                                            $result_wh_bins = mysqli_query($conn, $query_wh_bins);            
+                                                            while ($row_wh_bins = mysqli_fetch_array($result_wh_bins)) {
+                                                            ?>
+                                                                <tr>
+                                                                    <td><?= $row_wh_bins['BinCode'] ?></td>
+                                                                    <td><?= $row_wh_bins['Description'] ?></td>
+                                                                </tr>
+                                                            <?php
+                                                            }
+                                                            ?>
                                                         </tbody>
                                                     </table>
                                                 </div>
@@ -137,19 +143,34 @@ require 'includes/functions.php';
                                     <div class="datatables col">
                                         <div class="card">
                                             <div class="card-body">
-                                                <h4>List of Rows</h4>
-
+                                                <h4 class="card-title d-flex justify-content-between align-items-center">List of Rows  
+                                                    <a href="#" class="btn btn-primary" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#addRowModal">Add New</a>
+                                                </h4>
+                                                
                                                 <div class="table-responsive">
-                                                    <table>
+                                            
+                                                    <table id="row_wh_rows" class="table table-striped table-bordered text-nowrap align-middle">
                                                         <thead>
-                                                            <tr>
-                                                                <th>This is the Table Head</th>
-                                                            </tr>
+                                                        <!-- start row -->
+                                                        <tr>
+                                                            <th>RowCode</th>
+                                                            <th>Description</th>
+                                                        </tr>
+                                                        <!-- end row -->
                                                         </thead>
                                                         <tbody>
-                                                            <tr>
-                                                                <td>This is the Body</td>
-                                                            </tr>
+                                                            <?php
+                                                            $query_wh_rows = "SELECT * FROM warehouse_rows WHERE WarehouseID = '$warehouse_id'";
+                                                            $result_wh_rows = mysqli_query($conn, $query_wh_rows);            
+                                                            while ($row_wh_rows = mysqli_fetch_array($result_wh_rows)) {
+                                                            ?>
+                                                                <tr>
+                                                                    <td><?= $row_wh_rows['RowCode'] ?></td>
+                                                                    <td><?= $row_wh_rows['Description'] ?></td>
+                                                                </tr>
+                                                            <?php
+                                                            }
+                                                            ?>
                                                         </tbody>
                                                     </table>
                                                 </div>
@@ -160,25 +181,229 @@ require 'includes/functions.php';
                                     <div class="datatables col">
                                         <div class="card">
                                             <div class="card-body">
-                                                <h4>List of Shelves</h4>
-
+                                                <h4 class="card-title d-flex justify-content-between align-items-center">List of Shelves  
+                                                    <a href="#" class="btn btn-primary" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#addShelfModal">Add New</a>
+                                                </h4>
+                                                
                                                 <div class="table-responsive">
-                                                    <table>
+                                            
+                                                    <table id="row_wh_shelves" class="table table-striped table-bordered text-nowrap align-middle">
                                                         <thead>
-                                                            <tr>
-                                                                <th>This is the Table Head</th>
-                                                            </tr>
+                                                        <!-- start row -->
+                                                        <tr>
+                                                            <th>Shelf Code</th>
+                                                            <th>Row Code</th>
+                                                            <th>Description</th>
+                                                        </tr>
+                                                        <!-- end row -->
                                                         </thead>
                                                         <tbody>
-                                                            <tr>
-                                                                <td>This is the Body</td>
-                                                            </tr>
+                                                        <?php
+                                                            $query_wh_shelves = "
+                                                                SELECT s.* 
+                                                                FROM shelves s
+                                                                INNER JOIN warehouse_rows wr ON s.WarehouseRowID = wr.WarehouseRowID
+                                                                WHERE wr.WarehouseID = '$warehouse_id'
+                                                            ";
+                                                            $result_wh_shelves = mysqli_query($conn, $query_wh_shelves);
+
+                                                            if ($result_wh_shelves) {
+                                                                while ($row_wh_shelves = mysqli_fetch_array($result_wh_shelves)) {
+                                                                    ?>
+                                                                    <tr>
+                                                                        <td><?= $row_wh_shelves['ShelfCode'] ?></td>
+                                                                        <td><?= getWarehouseRowName($row_wh_shelves['WarehouseRowID']) ?></td>
+                                                                        <td><?= $row_wh_shelves['Description'] ?></td>
+                                                                    </tr>
+                                                                    <?php
+                                                                }
+                                                            }
+                                                            ?>
                                                         </tbody>
                                                     </table>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="modal fade" id="addBinModal" tabindex="-1" aria-labelledby="addBinModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header d-flex align-items-center">
+                                                    <h4 class="modal-title" id="myLargeModalLabel">Add Bin</h4>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form id="add_bin" class="form-horizontal">
+                                                    <div class="modal-body">
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <input type="hidden" id="BinID" name="BinID" class="form-control"/>
+                                                                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $row['WarehouseID'] ?>" />
+
+                                                                <div class="row pt-3">
+                                                                    <div class="col-md-6">
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Bin Code</label>
+                                                                            <input type="text" id="BinCode" name="BinCode" class="form-control" />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="row pt-3">
+                                                                    <div class="col-md-12">
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Description</label>
+                                                                            <textarea class="form-control" id="Description" name="Description" rows="5"></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="modal-footer">
+                                                        <div class="form-actions">
+                                                            <div class="card-body">
+                                                                <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+                                                                <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Close</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <!-- /.modal-content -->
+                                        </div>
+                                        <!-- /.modal-dialog -->
+                                    </div>
+
+                                    <div class="modal fade" id="updateBinModal" tabindex="-1" aria-labelledby="updateBinModalLabel" aria-hidden="true"></div>
+
+                                    <div class="modal fade" id="addRowModal" tabindex="-1" aria-labelledby="addRowModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header d-flex align-items-center">
+                                                    <h4 class="modal-title" id="myLargeModalLabel">Add Row</h4>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form id="add_row" class="form-horizontal">
+                                                    <div class="modal-body">
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <input type="hidden" id="WarehouseRowID" name="WarehouseRowID" class="form-control" />
+                                                                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $row['WarehouseID'] ?>"/>
+
+                                                                <div class="row pt-3">
+                                                                    <div class="col-md-6">
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Row Code</label>
+                                                                            <input type="text" id="RowCode" name="RowCode" class="form-control" />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="row pt-3">
+                                                                    <div class="col-md-12">
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Description</label>
+                                                                            <textarea class="form-control" id="Description" name="Description" rows="5"></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="modal-footer">
+                                                        <div class="form-actions">
+                                                            <div class="card-body">
+                                                                <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+                                                                <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Close</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <!-- /.modal-content -->
+                                        </div>
+                                        <!-- /.modal-dialog -->
+                                    </div>
+
+                                    <div class="modal fade" id="updateRowModal" tabindex="-1" aria-labelledby="updateRowModalLabel" aria-hidden="true"></div>
+
+                                    <div class="modal fade" id="addShelfModal" tabindex="-1" aria-labelledby="addShelfModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header d-flex align-items-center">
+                                                    <h4 class="modal-title" id="myLargeModalLabel">Add Shelf</h4>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form id="add_shelf" class="form-horizontal">
+                                                    <div class="modal-body">
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <input type="hidden" id="ShelfID" name="ShelfID" class="form-control"/>
+                                                                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $row['WarehouseID'] ?>"/>
+
+                                                                <div class="row pt-3">
+                                                                    <div class="col-md-6">
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Shelf Code</label>
+                                                                            <input type="text" id="ShelfCode" name="ShelfCode" class="form-control" required/>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Row Code</label>
+                                                                            <select id="WarehouseRowID" class="form-control" name="WarehouseRowID" required>
+                                                                                <option value="/" >Select One...</option>
+                                                                                <?php
+                                                                                $query_rows = "SELECT * FROM warehouse_rows WHERE WarehouseID = '" .$row['WarehouseID'] ."'";
+
+                                                                                $result_rows = mysqli_query($conn, $query_rows);            
+                                                                                while ($row_rows = mysqli_fetch_array($result_rows)) {
+                                                                                ?>
+                                                                                    <option value="<?= $row_rows['WarehouseRowID'] ?>" ><?= $row_rows['RowCode'] ?></option>
+                                                                                <?php   
+                                                                                }
+                                                                                ?>
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="row pt-3">
+                                                                    <div class="col-md-12">
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Description</label>
+                                                                            <textarea class="form-control" id="Description" name="Description" rows="5"></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="modal-footer">
+                                                        <div class="form-actions">
+                                                            <div class="card-body">
+                                                                <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+                                                                <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Close</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <!-- /.modal-content -->
+                                        </div>
+                                        <!-- /.modal-dialog -->
+                                    </div>
+
+                                    <div class="modal fade" id="updateShelfModal" tabindex="-1" aria-labelledby="updateShelfModalLabel" aria-hidden="true"></div>
+
+
                                 </div>
                             </div>
                         </div>
@@ -199,20 +424,9 @@ require 'includes/functions.php';
     }
 
     $(document).ready(function() {
-        var warehouse_id = "";
-
-        $(document).on('click', '#view_warehouse_btn', function(event){
-            event.preventDefault();
-            warehouse_id = $(this).data('id'):
-            $.ajax({
-                url: 'pages/warehouse_ajax_details.php',
-                type: 'POST',
-                data: {
-                    warehouse_id:warehouse_id,
-                    action: "fetch_info"
-                }
-            })
-        })
+        $('#row_wh_bins').DataTable();
+        $('#row_wh_rows').DataTable();
+        $('#row_wh_shelves').DataTable();
     });
 </script>
 
