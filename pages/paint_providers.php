@@ -125,33 +125,34 @@ if(!empty($_REQUEST['result'])){
     </div>
     
 
-    <form id="lineForm" class="form-horizontal">
+    <form id="paintProviderForm" class="form-horizontal">
       <div class="row pt-3">
         <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Paint provider</label>
-            <input type="text" id="product_line" name="product_line" class="form-control"  value="<?= $provider_name ?>"/>
+            <input type="text" id="provider_name" name="provider_name" class="form-control"  value="<?= $provider_name ?>"/>
           </div>
         </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="form-label">Contact Person</label>
-            <input type="text" id="line_abreviations" name="line_abreviations" class="form-control" value="<?= $contact_person ?>" />
-          </div>
-        </div>
+        
       </div>
 
       <div class="row pt-3">
-        <div class="col-md-6">
+        <div class="col-md-4">
           <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="text" id="product_line" name="product_line" class="form-control"  value="<?= $contact_email ?>"/>
+            <label class="form-label">Contact Person</label>
+            <input type="text" id="contact_person" name="contact_person" class="form-control" value="<?= $contact_person ?>" />
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" id="contact_email" name="contact_email" class="form-control"  value="<?= $contact_email ?>"/>
+          </div>
+        </div>
+        <div class="col-md-4">
           <div class="mb-3">
             <label class="form-label">Phone</label>
-            <input type="text" id="line_abreviations" name="line_abreviations" class="form-control" value="<?= $contact_phone ?>" />
+            <input type="text" id="contact_phone" name="contact_phone" class="form-control phone-inputmask" value="<?= $contact_phone ?>" />
           </div>
         </div>
       </div>
@@ -160,13 +161,13 @@ if(!empty($_REQUEST['result'])){
         <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Address</label>
-            <input type="text" id="product_line" name="product_line" class="form-control"  value="<?= $address ?>"/>
+            <input type="text" id="address" name="address" class="form-control"  value="<?= $address ?>"/>
           </div>
         </div>
         <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Website</label>
-            <input type="text" id="line_abreviations" name="line_abreviations" class="form-control" value="<?= $website ?>" />
+            <input type="text" id="website" name="website" class="form-control" value="<?= $website ?>" />
           </div>
         </div>
       </div>
@@ -174,17 +175,8 @@ if(!empty($_REQUEST['result'])){
       <div class="form-actions">
         <div class="card-body border-top ">
           <input type="hidden" id="provider_id" name="provider_id" class="form-control"  value="<?= $provider_id ?>"/>
-          <input type="hidden" id="provider_name" name="provider_name" class="form-control"  value="<?= $provider_name ?>"/>
-          <input type="hidden" id="contact_person" name="contact_person" class="form-control"  value="<?= $contact_person ?>"/>
-          <input type="hidden" id="contact_email" name="contact_email" class="form-control"  value="<?= $contact_email ?>"/>
-          <input type="hidden" id="contact_phone" name="contact_phone" class="form-control"  value="<?= $contact_phone ?>"/>
-          <input type="hidden" id="address" name="address" class="form-control"  value="<?= $address ?>"/>
-          <input type="hidden" id="website" name="website" class="form-control"  value="<?= $website ?>"/>
           <div class="row">
-            
-            <div class="col-6 text-start">
-            
-            </div>
+            <div class="col-6 text-end"></div>
             <div class="col-6 text-end">
               <button type="submit" class="btn btn-primary" style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
             </div>
@@ -201,20 +193,21 @@ if(!empty($_REQUEST['result'])){
   <div class="datatables">
     <div class="card">
       <div class="card-body">
-          <h4 class="card-title d-flex justify-content-between align-items-center">Paint provider List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['product_line_id'])){ ?>
-            <a href="/?page=product_line" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
+          <h4 class="card-title d-flex justify-content-between align-items-center">Paint provider List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['provider_id'])){ ?>
+            <a href="/?page=paint_providers" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
             <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
           </h4>
         
         <div class="table-responsive">
        
-          <table id="display_product_line" class="table table-striped table-bordered text-nowrap align-middle">
+          <table id="display_paint_provider" class="table table-striped table-bordered text-nowrap align-middle">
             <thead>
               <!-- start row -->
               <tr>
                 <th>Paint provider</th>
                 <th>Contact Person</th>
-                <th>Contacts</th>
+                <th>Contact Email</th>
+                <th>Contact Phone</th>
                 <th>Status</th>
               
                 <th>Action</th>
@@ -224,15 +217,15 @@ if(!empty($_REQUEST['result'])){
             <tbody>
 <?php
 $no = 1;
-$query_paint_provider = "SELECT * FROM paint_providers";
+$query_paint_provider = "SELECT * FROM paint_providers WHERE hidden = '0'";
 $result_paint_provider = mysqli_query($conn, $query_paint_provider);            
 while ($row_paint_provider = mysqli_fetch_array($result_paint_provider)) {
     $paint_provider_id = $row_paint_provider['provider_id'];
     $paint_provider = $row_paint_provider['provider_name'];
-    $conteact_person = $row_paint_provider['contact_person'];
+    $contact_person = $row_paint_provider['contact_person'];
     $contact_email = $row_paint_provider['contact_email'];
     $contact_phone = $row_paint_provider['contact_phone'];
-    $db_status = $row_paint_provider['status'];
+    $db_status = $row_paint_provider['provider_status'];
     // if($edited_by != "0"){
     //   $last_user_name = get_name($edited_by);
     // }else if($added_by != "0"){
@@ -241,7 +234,7 @@ while ($row_paint_provider = mysqli_fetch_array($result_paint_provider)) {
     //   $last_user_name = "";
     // }
 
-    if ($row_paint_provider['status'] == '0') {
+    if ($row_paint_provider['provider_status'] == '0') {
         $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$paint_provider_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
     } else {
         $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$paint_provider_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
@@ -249,15 +242,16 @@ while ($row_paint_provider = mysqli_fetch_array($result_paint_provider)) {
 ?>
 <tr id="product-row-<?= $no ?>">
     <td><span class="product<?= $no ?> "><?= $paint_provider ?></span></td>
-    <td><?= $contact_email?> <?= $contact_phone?></td>
-    <td><?= $conteact_person ?></td>
+    <td><?= $contact_person ?></td>
+    <td><?= $contact_email ?></td>
+    <td><?= $contact_phone ?></td>
     <!-- <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td> -->
     <td><?= $status ?></td>
     <td class="text-center" id="action-button-<?= $no ?>">
-        <?php if ($row_paint_provider['status'] == '0') { ?>
-            <a href="#" class="btn btn-light py-1 text-dark hideProductLine" data-id="<?= $paint_provider_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
+        <?php if ($row_paint_provider['provider_status'] == '0') { ?>
+            <a href="#" class="btn btn-light py-1 text-dark hidePaintProvider" data-id="<?= $paint_provider_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
         <?php } else { ?>
-            <a href="/?page=product_line&product_line_id=<?= $paint_provider_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+            <a href="/?page=paint_providers&provider_id=<?= $paint_provider_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
         <?php } ?>
     </td>
 </tr>
@@ -271,34 +265,36 @@ $(document).ready(function() {
     // Use event delegation for dynamically generated elements
     $(document).on('click', '.changeStatus', function(event) {
         event.preventDefault(); 
-        var product_line_id = $(this).data('id');
+        var provider_id = $(this).data('id');
         var status = $(this).data('status');
         var no = $(this).data('no');
         $.ajax({
-            url: 'pages/product_line_ajax.php',
+            url: 'pages/paint_providers_ajax.php',
             type: 'POST',
             data: {
-                product_line_id: product_line_id,
+                provider_id: provider_id,
                 status: status,
                 action: 'change_status'
             },
             success: function(response) {
                 if (response == 'success') {
+                  
                     if (status == 1) {
                         $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
                         $(".changeStatus[data-no='" + no + "']").data('status', "0");
                         $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                        $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideProductLine" data-id="' + product_line_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
+                        $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hidePaintProvider" data-id="' + provider_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
                         $('#toggleActive').trigger('change');
                       } else {
                         $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                         $(".changeStatus[data-no='" + no + "']").data('status', "1");
                         $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                        $('#action-button-' + no).html('<a href="/?page=product_line&product_line_id=' + product_line_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                        $('#action-button-' + no).html('<a href="/?page=paint_providers&provider_id=' + provider_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                         $('#toggleActive').trigger('change');
                       }
                 } else {
                     alert('Failed to change status.');
+                    console.log(response)
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -307,22 +303,22 @@ $(document).ready(function() {
         });
     });
 
-    $(document).on('click', '.hideProductLine', function(event) {
+    $(document).on('click', '.hidePaintProvider', function(event) {
         event.preventDefault();
-        var product_line_id = $(this).data('id');
+        var provider_id = $(this).data('id');
         var rowId = $(this).data('row');
         $.ajax({
-            url: 'pages/product_line_ajax.php',
+            url: 'pages/paint_providers_ajax.php',
             type: 'POST',
             data: {
-                product_line_id: product_line_id,
-                action: 'hide_product_line'
+                provider_id: provider_id,
+                action: 'hide_paint_provider'
             },
             success: function(response) {
                 if (response == 'success') {
                     $('#product-row-' + rowId).remove(); // Remove the row from the DOM
                 } else {
-                    alert('Failed to hide product line.');
+                    alert('Failed to hide paint provider.');
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -366,7 +362,7 @@ $(document).ready(function() {
 
 <script>
   $(document).ready(function() {
-    var table = $('#display_product_line').DataTable();
+    var table = $('#display_paint_provider').DataTable();
     
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -395,7 +391,7 @@ $(document).ready(function() {
         return null;
     }
 
-    $('#lineForm').on('submit', function(event) {
+    $('#paintProviderForm').on('submit', function(event) {
         event.preventDefault(); 
 
         var userid = getCookie('userid');
@@ -414,7 +410,7 @@ $(document).ready(function() {
             contentType: false,
             success: function(response) {
               
-              if (response === "Product line updated successfully.") {
+              if (response === "Paint provider updated successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-danger");
@@ -422,9 +418,9 @@ $(document).ready(function() {
                   $('#response-modal').modal("show");
 
                   $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=product_line";
+                    window.location.href = "?page=paint_providers";
                   });
-              } else if (response === "New product line added successfully.") {
+              } else if (response === "New paint provider added successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-danger");
