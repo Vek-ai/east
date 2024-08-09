@@ -4,7 +4,6 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 if (isset($_POST['btn-submit'])) {
-    // Sanitize input to prevent XSS attacks
     $name = htmlspecialchars($_POST['name']);
     $email = htmlspecialchars($_POST['email']);
     $subject = htmlspecialchars($_POST['subject']);
@@ -13,7 +12,6 @@ if (isset($_POST['btn-submit'])) {
     $to = 'kurumitaku555@gmail.com';
     $email_subject = "New Contact Form Submission: $subject";
 
-    // Prepare the HTML message
     $message = "
     <html>
     <head>
@@ -68,9 +66,9 @@ if (isset($_POST['btn-submit'])) {
     $headers .= "Reply-To: $email" . "\r\n";
 
     if (mail($to, $email_subject, $message, $headers)) {
-        echo "add-success";
+        echo "<script>alert('Message has been successfully sent!')</script>";
     } else {
-        echo "Error sending email.";
+      echo "<script>alert('Failed to send message')</script>";
     }
 }
 ?>
@@ -78,13 +76,9 @@ if (isset($_POST['btn-submit'])) {
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-bs-theme="dark" data-color-theme="Blue_Theme" data-layout="vertical">
 <head>
-  <!-- Required meta tags -->
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Favicon icon-->
-  <link rel="shortcut icon" type="image/png" href="assets/images/logos/favicon.png" />
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -170,7 +164,6 @@ if (isset($_POST['btn-submit'])) {
 
             </form>
           </div>
-          <!-- end Default Form Elements -->
         </div>
       </div>
     </div>
