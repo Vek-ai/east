@@ -113,7 +113,7 @@ require 'includes/functions.php';
                                     $result_roles = mysqli_query($conn, $query_roles);            
                                     while ($row_product_category = mysqli_fetch_array($result_roles)) {
                                     ?>
-                                        <option value="<?= $row_product_category['product_category_id'] ?>" ><?= $row_product_category['product_category'] ?></option>
+                                        <option value="<?= $row_product_category['product_id'] ?>" ><?= $row_product_category['product_category'] ?></option>
                                     <?php   
                                     }
                                     ?>
@@ -221,43 +221,72 @@ require 'includes/functions.php';
                             <div class="col-md-6">
                                 <div class="mb-3">
                                 <label class="form-label">Gauge</label>
-                                <input type="text" id="gauge" name="gauge" class="form-control"  />
+                                <select id="gauge" class="form-control" name="gauge">
+                                    <option value="/" >Select Gauge...</option>
+                                    <?php
+                                    $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                                    $result_gauge = mysqli_query($conn, $query_gauge);            
+                                    while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                    ?>
+                                        <option value="<?= $row_gauge['product_gauge_id'] ?>" ><?= $row_gauge['product_gauge'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                 <label class="form-label">Grade</label>
-                                <input type="text" id="grade" name="grade" class="form-control"  />
+                                <select id="grade" class="form-control" name="grade">
+                                    <option value="/" >Select Grade...</option>
+                                    <?php
+                                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                                    $result_grade = mysqli_query($conn, $query_grade);            
+                                    while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                    ?>
+                                        <option value="<?= $row_grade['product_grade_id'] ?>" ><?= $row_grade['product_grade'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </select>
                                 </div>
                             </div>
                             </div>
 
                             <div class="row pt-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                 <label class="form-label">Color</label>
-                                <input type="text" id="color" name="color" class="form-control"  />
+                                <select id="color" class="form-control" name="color">
+                                    <option value="/" >Select Color...</option>
+                                    <?php
+                                    $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                    $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                    while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                    ?>
+                                        <option value="<?= $row_paint_colors['color_id'] ?>" ><?= $row_paint_colors['color_name'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Color Code</label>
-                                <input type="text" id="colorCode" name="colorCode" class="form-control"  />
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="row pt-3">
                             <div class="col-md-4">
                                 <div class="mb-3">
                                 <label class="form-label">Paint Provider</label>
-                                <input type="text" id="paintProvider" name="paintProvider" class="form-control"  />
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                <label class="form-label">Color Group</label>
-                                <input type="text" id="colorGroup" name="colorGroup" class="form-control"  />
+                                <select id="paintProvider" class="form-control" name="paintProvider">
+                                    <option value="/" >Select Color...</option>
+                                    <?php
+                                    $query_paint_providers = "SELECT * FROM paint_providers WHERE hidden = '0'";
+                                    $result_paint_providers = mysqli_query($conn, $query_paint_providers);            
+                                    while ($row_paint_providers = mysqli_fetch_array($result_paint_providers)) {
+                                    ?>
+                                        <option value="<?= $row_paint_providers['provider_id'] ?>" ><?= $row_paint_providers['provider_name'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </select>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -273,13 +302,35 @@ require 'includes/functions.php';
                             <div class="col-md-6">
                                 <div class="mb-3">
                                 <label class="form-label">Warranty Type</label>
-                                <input type="text" id="warrantyType" name="warrantyType" class="form-control"  />
+                                <select id="warrantyType" class="form-control" name="warrantyType">
+                                    <option value="/" >Select Warranty Type...</option>
+                                    <?php
+                                    $query_product_warranty_type = "SELECT * FROM product_warranty_type WHERE hidden = '0'";
+                                    $result_product_warranty_type = mysqli_query($conn, $query_product_warranty_type);            
+                                    while ($row_product_warranty_type = mysqli_fetch_array($result_product_warranty_type)) {
+                                    ?>
+                                        <option value="<?= $row_product_warranty_type['product_warranty_type_id'] ?>" ><?= $row_product_warranty_type['product_warranty_type'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                 <label class="form-label">Profile</label>
-                                <input type="text" id="profile" name="profile" class="form-control"  />
+                                <select id="profile" class="form-control" name="profile">
+                                    <option value="/" >Select Profile...</option>
+                                    <?php
+                                    $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0'";
+                                    $result_profile_type = mysqli_query($conn, $query_profile_type);            
+                                    while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
+                                    ?>
+                                        <option value="<?= $row_profile_type['profile_type_id'] ?>" ><?= $row_profile_type['profile_type'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </select>
                                 </div>
                             </div>
                             </div>
@@ -405,6 +456,12 @@ require 'includes/functions.php';
     
     <div class="card card-body">
         <div class="table-responsive">
+        <h3 class="card-title d-flex justify-content-between align-items-center">
+            Products List 
+            <div class="px-3"> 
+                <input type="checkbox" id="toggleActive" checked> Show Active Only
+            </div>
+        </h3>
         <table id="productList" class="table search-table align-middle text-nowrap">
             <thead class="header-item">
             <th>Product Name</th>
@@ -412,6 +469,7 @@ require 'includes/functions.php';
             <th>Product Category</th>
             <th>Product Line</th>
             <th>Product Type</th>
+            <th>Status</th>
             <th>Action</th>
             </thead>
             <tbody>
@@ -421,6 +479,13 @@ require 'includes/functions.php';
                 $result_product = mysqli_query($conn, $query_product);            
                 while ($row_product = mysqli_fetch_array($result_product)) {
                     $product_id = $row_product['product_id'];
+                    $db_status = $row_product['status'];
+
+                    if ($db_status == '0') {
+                        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+                    } else {
+                        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+                    }
    
                 ?>
                     <!-- start row -->
@@ -430,8 +495,9 @@ require 'includes/functions.php';
                         <td><?= getProductCategoryName($row_product['product_category']) ?></td>
                         <td><?= getProductLineName($row_product['product_line']) ?></td>
                         <td><?= getProductTypeName($row_product['product_type']) ?></td>
+                        <td><?= $status ?></td>
                         <td>
-                            <div class="action-btn">
+                            <div class="action-btn text-center">
                                 <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
                                     <i class="ti ti-eye fs-5"></i>
                                 </a>
@@ -445,6 +511,72 @@ require 'includes/functions.php';
                 $no++;
                 } ?>
             </tbody>
+            <script>
+                $(document).ready(function() {
+                    // Use event delegation for dynamically generated elements
+                    $(document).on('click', '.changeStatus', function(event) {
+                        event.preventDefault(); 
+                        var product_id = $(this).data('id');
+                        var status = $(this).data('status');
+                        var no = $(this).data('no');
+                        $.ajax({
+                            url: 'pages/product_ajax.php',
+                            type: 'POST',
+                            data: {
+                                product_id: product_id,
+                                status: status,
+                                action: 'change_status'
+                            },
+                            success: function(response) {
+                                if (response == 'success') {
+                                    if (status == 1) {
+                                        $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
+                                        $(".changeStatus[data-no='" + no + "']").data('status', "0");
+                                        $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
+                                        $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideProduct" data-id="' + product_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
+                                        $('#toggleActive').trigger('change');
+                                    } else {
+                                        $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
+                                        $(".changeStatus[data-no='" + no + "']").data('status', "1");
+                                        $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
+                                        $('#action-button-' + no).html('<a href="/?page=product&product_id=' + product_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                                        $('#toggleActive').trigger('change');
+                                    }
+                                } else {
+                                    alert('Failed to change status.');
+                                }
+                            },
+                            error: function(jqXHR, textStatus, errorThrown) {
+                                alert('Error: ' + textStatus + ' - ' + errorThrown);
+                            }
+                        });
+                    });
+
+                    $(document).on('click', '.hideProduct', function(event) {
+                        event.preventDefault();
+                        var product_id = $(this).data('id');
+                        var rowId = $(this).data('row');
+                        $.ajax({
+                            url: 'pages/product_ajax.php',
+                            type: 'POST',
+                            data: {
+                                product_id: product_id,
+                                action: 'hide_product'
+                            },
+                            success: function(response) {
+                                if (response == 'success') {
+                                    $('#product-row-' + rowId).remove();
+                                } else {
+                                    alert('Failed to hide product.');
+                                }
+                            },
+                            error: function(jqXHR, textStatus, errorThrown) {
+                                alert('Error: ' + textStatus + ' - ' + errorThrown);
+                            }
+                        });
+                    });
+                });
+                </script>
         </table>
         </div>
     </div>
@@ -453,10 +585,26 @@ require 'includes/functions.php';
 
 <script>
     $(document).ready(function() {
-
-        $('#productList').DataTable({
-            "order": [[1, "asc"]] // Column index is 0-based, so column 2 is index 1
+        var table = $('#productList').DataTable({
+            "order": [[1, "asc"]]
         });
+
+        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
+            var isActive = $('#toggleActive').is(':checked');
+
+            if (!isActive || status === 'Active') {
+                return true;
+            }
+            return false;
+        });
+
+        $('#toggleActive').on('change', function() {
+            table.draw();
+        });
+
+        $('#toggleActive').trigger('change');
+
 
         // Show the View Product modal and log the product ID
         $(document).on('click', '#view_product_btn', function(event) {

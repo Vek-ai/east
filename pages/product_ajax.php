@@ -23,25 +23,14 @@ if(isset($_REQUEST['action'])) {
         $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
         $grade = mysqli_real_escape_string($conn, $_POST['grade']);
         $color = mysqli_real_escape_string($conn, $_POST['color']);
-        $color_code = mysqli_real_escape_string($conn, $_POST['colorCode']);
         $paint_provider = mysqli_real_escape_string($conn, $_POST['paintProvider']);
-        $color_group = mysqli_real_escape_string($conn, $_POST['colorGroup']);
         $warranty_type = mysqli_real_escape_string($conn, $_POST['warrantyType']);
         $coating = mysqli_real_escape_string($conn, $_POST['coating']);
         $profile = mysqli_real_escape_string($conn, $_POST['profile']);
         $width = mysqli_real_escape_string($conn, $_POST['width']);
         $length = mysqli_real_escape_string($conn, $_POST['length']);
         $weight = mysqli_real_escape_string($conn, $_POST['weight']);
-        $quantity_in_stock = mysqli_real_escape_string($conn, $_POST['quantityInStock']);
-        $quantity_quoted = mysqli_real_escape_string($conn, $_POST['quantityQuoted']);
-        $quantity_committed = mysqli_real_escape_string($conn, $_POST['quantityCommitted']);
-        $quantity_available = mysqli_real_escape_string($conn, $_POST['quantityAvailable']);
-        $quantity_in_transit = mysqli_real_escape_string($conn, $_POST['quantityInTransit']);
         $unit_price = mysqli_real_escape_string($conn, $_POST['unitPrice']);
-        $date_added = mysqli_real_escape_string($conn, $_POST['dateAdded']);
-        $date_modified = mysqli_real_escape_string($conn, $_POST['dateModified']);
-        $last_ordered_date = mysqli_real_escape_string($conn, $_POST['lastOrderedDate']);
-        $last_sold_date = mysqli_real_escape_string($conn, $_POST['lastSoldDate']);
         $upc = mysqli_real_escape_string($conn, $_POST['upc']);
         $unit_of_measure = mysqli_real_escape_string($conn, $_POST['unitofMeasure']);
         $unit_cost = mysqli_real_escape_string($conn, $_POST['unitCost']);
@@ -73,25 +62,14 @@ if(isset($_REQUEST['action'])) {
                 gauge = '$gauge', 
                 grade = '$grade', 
                 color = '$color', 
-                color_code = '$color_code', 
                 paint_provider = '$paint_provider', 
-                color_group = '$color_group', 
                 warranty_type = '$warranty_type', 
                 coating = '$coating', 
                 profile = '$profile', 
                 width = '$width', 
                 length = '$length', 
                 weight = '$weight', 
-                quantity_in_stock = '$quantity_in_stock', 
-                quantity_quoted = '$quantity_quoted', 
-                quantity_committed = '$quantity_committed', 
-                quantity_available = '$quantity_available', 
-                quantity_in_transit = '$quantity_in_transit', 
                 unit_price = '$unit_price', 
-                date_added = '$date_added', 
-                date_modified = '$date_modified', 
-                last_ordered_date = '$last_ordered_date', 
-                last_sold_date = '$last_sold_date', 
                 upc = '$upc', 
                 unit_of_measure = '$unit_of_measure', 
                 unit_cost = '$unit_cost', 
@@ -137,9 +115,7 @@ if(isset($_REQUEST['action'])) {
                 gauge, 
                 grade, 
                 color, 
-                color_code, 
                 paint_provider, 
-                color_group, 
                 warranty_type, 
                 coating, 
                 profile, 
@@ -176,9 +152,7 @@ if(isset($_REQUEST['action'])) {
                 '$gauge', 
                 '$grade', 
                 '$color', 
-                '$color_code', 
                 '$paint_provider', 
-                '$color_group', 
                 '$warranty_type', 
                 '$coating', 
                 '$profile', 
@@ -277,9 +251,9 @@ if(isset($_REQUEST['action'])) {
                                                 $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
                                                 $result_roles = mysqli_query($conn, $query_roles);            
                                                 while ($row_product_category = mysqli_fetch_array($result_roles)) {
-                                                    $selected = ($row['product_category'] == $row_product_category['product_category_id']) ? 'selected' : '';
+                                                    $selected = ($row['product_category'] == $row_product_category['product_id']) ? 'selected' : '';
                                                 ?>
-                                                    <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
+                                                    <option value="<?= $row_product_category['product_id'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
                                                 <?php   
                                                 }
                                                 ?>
@@ -399,43 +373,76 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                     <label class="form-label">Gauge</label>
-                                    <input type="text" id="gauge" name="gauge" class="form-control" value="<?= $row['gauge']?>" />
+                                    <select id="gauge" class="form-control" name="gauge">
+                                        <option value="/" >Select Gauge...</option>
+                                        <?php
+                                        $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                                        $result_gauge = mysqli_query($conn, $query_gauge);            
+                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            $selected = ($row['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $row_gauge['product_gauge_id'] ?>" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                     <label class="form-label">Grade</label>
-                                    <input type="text" id="grade" name="grade" class="form-control" value="<?= $row['grade']?>" />
+                                    <select id="grade" class="form-control" name="grade">
+                                        <option value="/" >Select Grade...</option>
+                                        <?php
+                                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                                        $result_grade = mysqli_query($conn, $query_grade);            
+                                        while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                            $selected = ($row['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $row_grade['product_grade_id'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
                                     </div>
                                 </div>
                                 </div>
 
                                 <div class="row pt-3">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="mb-3">
                                     <label class="form-label">Color</label>
-                                    <input type="text" id="color" name="color" class="form-control" value="<?= $row['color']?>"  />
+                                    <select id="color" class="form-control" name="color">
+                                        <option value="/" >Select Color...</option>
+                                        <?php
+                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                        $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                        while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                            $selected = ($row['color'] == $row_paint_colors['color_id']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">Color Code</label>
-                                    <input type="text" id="colorCode" name="colorCode" class="form-control" value="<?= $row['color_code']?>" />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                     <label class="form-label">Paint Provider</label>
-                                    <input type="text" id="paintProvider" name="paintProvider" class="form-control" value="<?= $row['paint_provider']?>" />
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                    <label class="form-label">Color Group</label>
-                                    <input type="text" id="colorGroup" name="colorGroup" class="form-control" value="<?= $row['color_group']?>" />
+                                    <select id="paintProvider" class="form-control" name="paintProvider">
+                                        <option value="/" >Select Color...</option>
+                                        <?php
+                                        $query_paint_providers = "SELECT * FROM paint_providers WHERE hidden = '0'";
+                                        $result_paint_providers = mysqli_query($conn, $query_paint_providers);            
+                                        while ($row_paint_providers = mysqli_fetch_array($result_paint_providers)) {
+                                            $selected = ($row['paint_provider'] == $row_paint_providers['provider_id']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $row_paint_providers['provider_id'] ?>" <?= $selected ?>><?= $row_paint_providers['provider_name'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -450,13 +457,37 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                     <label class="form-label">Warranty Type</label>
-                                    <input type="text" id="warrantyType" name="warrantyType" class="form-control" value="<?= $row['warranty_type']?>" />
+                                    <select id="warrantyType" class="form-control" name="warrantyType">
+                                        <option value="/" >Select Warranty Type...</option>
+                                        <?php
+                                        $query_product_warranty_type = "SELECT * FROM product_warranty_type WHERE hidden = '0'";
+                                        $result_product_warranty_type = mysqli_query($conn, $query_product_warranty_type);            
+                                        while ($row_product_warranty_type = mysqli_fetch_array($result_product_warranty_type)) {
+                                            $selected = ($row['warranty_type'] == $row_product_warranty_type['product_warranty_type_id']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $row_product_warranty_type['product_warranty_type_id'] ?>" <?= $selected ?>><?= $row_product_warranty_type['product_warranty_type'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                     <label class="form-label">Profile</label>
-                                    <input type="text" id="profile" name="profile" class="form-control" value="<?= $row['profile']?>" />
+                                    <select id="profile" class="form-control" name="profile">
+                                        <option value="/" >Select Profile...</option>
+                                        <?php
+                                        $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0'";
+                                        $result_profile_type = mysqli_query($conn, $query_profile_type);            
+                                        while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
+                                            $selected = ($row['profile'] == $row_profile_type['profile_type_id']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $row_profile_type['profile_type_id'] ?>" <?= $selected ?>><?= $row_profile_type['profile_type'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
                                     </div>
                                 </div>
                                 </div>
@@ -485,38 +516,8 @@ if(isset($_REQUEST['action'])) {
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                    <label class="form-label">Quantity In Stock</label>
-                                    <input type="text" id="quantityInStock" name="quantityInStock" class="form-control" value="<?= $row['quantity_in_stock']?>" />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">Quantity Quoted</label>
-                                    <input type="text" id="quantityQuoted" name="quantityQuoted" class="form-control" value="<?= $row['quantity_quoted']?>" />
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">Quantity Committed</label>
-                                    <input type="text" id="quantityCommitted" name="quantityCommitted" class="form-control" value="<?= $row['quantity_committed']?>" />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">Quantity Available</label>
-                                    <input type="text" id="quantityAvailable" name="quantityAvailable" class="form-control" value="<?= $row['quantity_available']?>" />
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">QuantityInTransit</label>
-                                    <input type="text" id="quantityInTransit" name="quantityInTransit" class="form-control" value="<?= $row['quantity_in_transit']?>" />
+                                    <label class="form-label">Unit of Measure</label>
+                                    <input type="text" id="unitofMeasure" name="unitofMeasure" class="form-control" value="<?= $row['unit_of_measure']?>" />
                                     </div>
                                 </div>
                                 </div>
@@ -530,36 +531,6 @@ if(isset($_REQUEST['action'])) {
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                    <label class="form-label">Date Added</label>
-                                    <input type="date" id="dateAdded" name="dateAdded" class="form-control" value="<?= $row['date_added']?>" />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">Date Modified</label>
-                                    <input type="date" id="dateModified" name="dateModified" class="form-control" value="<?= $row['date_modified']?>" />
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">Last Ordered Date</label>
-                                    <input type="date" id="lastOrderedDate" name="lastOrderedDate" class="form-control" value="<?= $row['last_ordered_date']?>" />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">Last Sold Date</label>
-                                    <input type="date" id="lastSoldDate" name="lastSoldDate" class="form-control" value="<?= $row['last_sold_date']?>" />
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
                                     <label class="form-label">UPC</label>
                                     <input type="text" id="upc" name="upc" class="form-control" value="<?= $row['upc']?>" />
                                     </div>
@@ -567,12 +538,6 @@ if(isset($_REQUEST['action'])) {
                                 </div>
 
                                 <div class="row pt-3">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">Unit of Measure</label>
-                                    <input type="text" id="unitofMeasure" name="unitofMeasure" class="form-control" value="<?= $row['unit_of_measure']?>" />
-                                    </div>
-                                </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                     <label class="form-label">Unit Cost</label>
@@ -632,6 +597,28 @@ if(isset($_REQUEST['action'])) {
             <?php
         }
     } 
+
+    if ($action == "change_status") {
+        $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+        $status = mysqli_real_escape_string($conn, $_POST['status']);
+        $new_status = ($status == '0') ? '1' : '0';
+
+        $statusQuery = "UPDATE product SET status = '$new_status' WHERE product_id = '$product_id'";
+        if (mysqli_query($conn, $statusQuery)) {
+            echo "success";
+        } else {
+            echo "Error updating status: " . mysqli_error($conn);
+        }
+    }
+    if ($action == 'hide_category') {
+        $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+        $query = "UPDATE product SET hidden='1' WHERE product_id='$product_id'";
+        if (mysqli_query($conn, $query)) {
+            echo 'success';
+        } else {
+            echo 'error';
+        }
+    }
     
     
     mysqli_close($conn);
