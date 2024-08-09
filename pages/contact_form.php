@@ -22,10 +22,18 @@ require 'includes/functions.php';
       </div>
 <div class="col-12">
   <!-- start Default Form Elements -->
+  <img src="images/safesky.jpg" alt="materialpro-img" class="img-fluid">
   <div class="card card-body">
+  
     <div class="row">
-      <div class="col-3">
-        <h4 class="card-title">Contact Form</h4>
+      <div class="col-12">
+        
+      </div>
+    </div>
+
+    <div class="row pt-3">
+      <div class="col-12">
+        <h3>Contact Form</h3>
       </div>
     </div>
 
