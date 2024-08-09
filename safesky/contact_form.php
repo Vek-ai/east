@@ -9,7 +9,7 @@ if (isset($_POST['btn-submit'])) {
     $subject = htmlspecialchars($_POST['subject']);
     $message_content = htmlspecialchars($_POST['message']);
 
-    $to = 'kurumitaku555@gmail.com';
+    $to = 'vekaeun@gmail.com ';
     $email_subject = "New Contact Form Submission: $subject";
 
     $message = "
