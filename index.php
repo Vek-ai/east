@@ -1306,6 +1306,12 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "warehouses_test") {include 'pages/warehouses_test.php';}
             if ($_REQUEST['page'] == "paint_providers") {include 'pages/paint_providers.php';}
             if ($_REQUEST['page'] == "paint_colors") {include 'pages/paint_colors.php';}
+            if ($_REQUEST['page'] == "product_gauge") {include 'pages/product_gauge.php';}
+            if ($_REQUEST['page'] == "product_grade") {include 'pages/product_grade.php';}
+            if ($_REQUEST['page'] == "product_warranty_type") {include 'pages/product_warranty_type.php';}
+            if ($_REQUEST['page'] == "profile_type") {include 'pages/profile_type.php';}
+
+            if ($_REQUEST['page'] == "contact_form") {include 'pages/contact_form.php';}
           ?>
         </div>
       </div>
