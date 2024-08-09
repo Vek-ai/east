@@ -67,6 +67,9 @@ if (isset($_POST['btn-submit'])) {
 
     if (mail($to, $email_subject, $message, $headers)) {
         echo "<script>alert('Message has been successfully sent!')</script>";
+
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
     } else {
       echo "<script>alert('Failed to send message')</script>";
     }
