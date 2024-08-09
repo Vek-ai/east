@@ -1310,8 +1310,6 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "product_grade") {include 'pages/product_grade.php';}
             if ($_REQUEST['page'] == "product_warranty_type") {include 'pages/product_warranty_type.php';}
             if ($_REQUEST['page'] == "profile_type") {include 'pages/profile_type.php';}
-
-            if ($_REQUEST['page'] == "contact_form") {include 'pages/contact_form.php';}
           ?>
         </div>
       </div>
