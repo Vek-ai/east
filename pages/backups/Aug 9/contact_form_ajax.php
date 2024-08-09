@@ -4,6 +4,10 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require '../includes/dbconn.php';
+require '../includes/phpmailer/vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 if (isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -17,8 +21,10 @@ if (isset($_REQUEST['action'])) {
         $insertQuery = "INSERT INTO contact_form (name, email, subject, message) VALUES ('$name', '$email', '$subject', '$message')";
         if (mysqli_query($conn, $insertQuery)) {
             // Send email
-            $to = 'kurumitaku555@gmail.com';
-            $email_subject = "New Contact Form Submission: $subject";
+
+            $mail = new PHPMailer(true);
+
+            $owner_email = "kurumitaku555@gmail.com";
             $message = "
                 <html>
                 <head>
@@ -63,13 +69,32 @@ if (isset($_REQUEST['action'])) {
                 </body>
                 </html>
                 ";
-            $headers = "From: noreply@ilearnwebtech.com\n";
-            $headers .= "Reply-To: $email";
 
-            if (mail($to, $email_subject, $message, $headers)) {
-                echo "add-success";
-            } else {
-                echo "Error sending email.";
+            try {
+                //Server settings
+                $mail->SMTPDebug = 0; // Enable verbose debug output
+                $mail->isSMTP(); // Set mailer to use SMTP
+                $mail->Host       = 'smtp.sendgrid.net'; // Specify main and backup SMTP servers
+                $mail->SMTPAuth   = true; // Enable SMTP authentication
+                $mail->Username   = 'apikey';       // SMTP username
+                $mail->Password   = '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'; // SMTP password
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // Enable SSL encryption, 'tls' also accepted
+                $mail->Port       = 465; // TCP port to connect to, use 587 if using 'tls'
+            
+                //Recipients
+                $mail->setFrom('claims@mymotorclaim.com.au', 'My Motor Claim');
+                $mail->addAddress($owner_email, "Safesky"); // Add a recipient 
+                // Content
+                $mail->isHTML(true); // Set email format to HTML
+                $mail->Subject = 'New Contact Form Submission - '.$name;
+                $mail->Body    = $message;
+                $mail->AltBody = $message;
+            
+                $mail->send();
+            
+                echo 'add-success';
+            } catch (Exception $e) {
+                echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
             }
         } else {
             echo "Error adding product gauge: " . mysqli_error($conn);
