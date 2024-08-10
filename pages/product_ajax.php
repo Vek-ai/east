@@ -308,7 +308,7 @@ if(isset($_REQUEST['action'])) {
                                 <div class="row pt-3">
                                     <div class="col-md-12">
                                     <label class="form-label">Correlated products</label>
-                                    <select id="correlatedProducts" name="correlatedProducts[]" class="select2 form-control" multiple="multiple">
+                                    <select id="correlatedProducts" name="correlatedProducts[]" class="select2-update form-control" multiple="multiple">
                                         <optgroup label="Select Correlated Products">
                                             <?php
                                             $correlated_product_ids = [];
@@ -338,11 +338,18 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                     <label class="form-label">Stock Type</label>
-                                    <select class="form-select" id="stock_type" name="stock_type">
-                                        <option selected>Choose...</option>
-                                        <option value="1" <?php ($row['stock_type'] == 1) ? 'selected' : ''; ?> >One</option>
-                                        <option value="2" <?php ($row['stock_type'] == 2) ? 'selected' : ''; ?> >Two</option>
-                                        <option value="3" <?php ($row['stock_type'] == 3) ? 'selected' : ''; ?> >Three</option>
+                                    <select id="stock_type" class="form-control" name="stock_type">
+                                        <option value="/" >Select Stock Type...</option>
+                                        <?php
+                                        $query_stock_type = "SELECT * FROM stock_type WHERE hidden = '0'";
+                                        $result_stock_type = mysqli_query($conn, $query_stock_type);            
+                                        while ($row_stock_type = mysqli_fetch_array($result_stock_type)) {
+                                            $selected = ($row['stock_type'] == $row_stock_type['stock_type_id']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $row_stock_type['stock_type_id'] ?>" <?= $selected ?>><?= $row_stock_type['stock_type'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
                                     </select>
                                     </div>
                                 </div>
@@ -580,20 +587,6 @@ if(isset($_REQUEST['action'])) {
                 </div>
                 <!-- /.modal-content -->
             </div>
-
-            <script>
-            $(document).ready(function() {
-                $(".select2").select2({});
-
-                $('#addProductModal').on('shown.bs.modal', function () {
-                    $('.select2').select2({
-                        width: '100%',
-                        placeholder: "Select Correlated Products",
-                        allowClear: true
-                    });
-                });
-            });
-            </script>
             <?php
         }
     } 
