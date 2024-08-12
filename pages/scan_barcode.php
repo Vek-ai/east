@@ -33,8 +33,6 @@
 </div>
 
 <div class="card card-body">
-  
-  
   <div id="barcode" class="text-center">
     <h3 id="barcode-upc"></h3>
   </div>
@@ -49,7 +47,6 @@
     </div>
   </div>
 </div>
-
 
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
