@@ -1311,6 +1311,8 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "product_warranty_type") {include 'pages/product_warranty_type.php';}
             if ($_REQUEST['page'] == "profile_type") {include 'pages/profile_type.php';}
             if ($_REQUEST['page'] == "stock_type") {include 'pages/stock_type.php';}
+
+            if ($_REQUEST['page'] == "generate_barcode") {include 'pages/generate_barcode.php';}
           ?>
         </div>
       </div>
