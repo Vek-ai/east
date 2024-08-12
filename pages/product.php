@@ -13,7 +13,7 @@ require 'includes/functions.php';
     <div class="card-body px-0">
         <div class="d-flex justify-content-between align-items-center">
         <div><br>
-            <h4 class="font-weight-medium fs-14 mb-0"> Product</h4>
+            <h4 class="font-weight-medium fs-14 mb-0"> Product1</h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
