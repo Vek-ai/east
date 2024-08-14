@@ -380,18 +380,6 @@ require 'includes/functions.php';
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                <label class="form-label">UPC</label>
-                                <input type="text" id="upc" name="upc" class="form-control"  />
-                                </div>
-                            </div>
-                            </div>
-
-                          
-
-                            <div class="row pt-3">
-                           
-                            <div class="col-md-6">
-                                <div class="mb-3">
                                 <label class="form-label">Unit Cost</label>
                                 <input type="text" id="unitCost" name="unitCost" class="form-control"  />
                                 </div>
