@@ -5,40 +5,6 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require '../includes/dbconn.php';
 
-function generateRandomUPC() {
-    global $conn;
-
-    do {
-        $upc_code = '';
-        for ($i = 0; $i < 11; $i++) {
-            $upc_code .= mt_rand(0, 9);
-        }
-
-        $odd_sum = 0;
-        $even_sum = 0;
-        for ($i = 0; $i < 11; $i++) {
-            if ($i % 2 === 0) {
-                $odd_sum += $upc_code[$i];
-            } else {
-                $even_sum += $upc_code[$i];
-            }
-        }
-
-        $total_sum = (3 * $odd_sum) + $even_sum;
-        $check_digit = (10 - ($total_sum % 10)) % 10;
-
-        $upc_code .= $check_digit;
-
-        $query = "SELECT COUNT(*) as count FROM product WHERE upc = '$upc_code'";
-        $result = $conn->query($query);
-        $row = $result->fetch_assoc();
-        $count = $row['count'];
-
-    } while ($count > 0);
-
-    return $upc_code;
-}
-
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
@@ -65,7 +31,7 @@ if(isset($_REQUEST['action'])) {
         $length = mysqli_real_escape_string($conn, $_POST['length']);
         $weight = mysqli_real_escape_string($conn, $_POST['weight']);
         $unit_price = mysqli_real_escape_string($conn, $_POST['unitPrice']);
-        $upc = generateRandomUPC();
+        $upc = mysqli_real_escape_string($conn, $_POST['upc']);
         $unit_of_measure = mysqli_real_escape_string($conn, $_POST['unitofMeasure']);
         $unit_cost = mysqli_real_escape_string($conn, $_POST['unitCost']);
         $unit_gross_margin = mysqli_real_escape_string($conn, $_POST['unitGrossMargin']);
@@ -133,6 +99,7 @@ if(isset($_REQUEST['action'])) {
             }
     
         } else {
+            $upc = generateRandomUPC();
             // Record does not exist, proceed with insert
             $isInsert = true;
             $insertQuery = "INSERT INTO product (
@@ -564,40 +531,37 @@ if(isset($_REQUEST['action'])) {
                                 </div>
 
                                 <div class="row pt-3">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="mb-3">
                                     <label class="form-label">UnitPrice</label>
                                     <input type="text" id="unitPrice" name="unitPrice" class="form-control" value="<?= $row['unit_price']?>" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                    <label class="form-label">Unit Cost</label>
+                                    <input type="text" id="unitCost" name="unitCost" class="form-control" value="<?= $row['unit_cost']?>" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                    <label class="form-label">Unit Gross Margin</label>
+                                    <input type="text" id="unitGrossMargin" name="unitGrossMargin" class="form-control" value="<?= $row['unit_gross_margin']?>" />
+                                    </div>
+                                </div>
+                                </div>
+
+                                <div class="row pt-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                    <label class="form-label">Usage</label>
+                                    <input type="text" id="product_usage" name="product_usage" class="form-control" value="<?= $row['product_usage']?>" />
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                     <label class="form-label">UPC</label>
                                     <input type="text" id="upc" name="upc" class="form-control" value="<?= $row['upc']?>" />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">Unit Cost</label>
-                                    <input type="text" id="unitCost" name="unitCost" class="form-control" value="<?= $row['unit_cost']?>" />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">Unit Gross Margin</label>
-                                    <input type="text" id="unitGrossMargin" name="unitGrossMargin" class="form-control" value="<?= $row['unit_gross_margin']?>" />
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">Usage</label>
-                                    <input type="text" id="product_usage" name="product_usage" class="form-control" value="<?= $row['product_usage']?>" />
                                     </div>
                                 </div>
                                 </div>

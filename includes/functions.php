@@ -69,4 +69,38 @@ function getPaintProviderName($provider_id){
     $provider_name = $row['provider_name'] ?? '';
     return  $provider_name;
 }
+
+function generateRandomUPC() {
+    global $conn;
+
+    do {
+        $upc_code = '';
+        for ($i = 0; $i < 11; $i++) {
+            $upc_code .= mt_rand(0, 9);
+        }
+
+        $odd_sum = 0;
+        $even_sum = 0;
+        for ($i = 0; $i < 11; $i++) {
+            if ($i % 2 === 0) {
+                $odd_sum += $upc_code[$i];
+            } else {
+                $even_sum += $upc_code[$i];
+            }
+        }
+
+        $total_sum = (3 * $odd_sum) + $even_sum;
+        $check_digit = (10 - ($total_sum % 10)) % 10;
+
+        $upc_code .= $check_digit;
+
+        $query = "SELECT COUNT(*) as count FROM product WHERE upc = '$upc_code'";
+        $result = $conn->query($query);
+        $row = $result->fetch_assoc();
+        $count = $row['count'];
+
+    } while ($count > 0);
+
+    return $upc_code;
+}
 ?>

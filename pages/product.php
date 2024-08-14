@@ -2,6 +2,7 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
+$generate_rend_upc = generateRandomUPC();
 ?>
 <style>
     .select2-container {
@@ -13,7 +14,7 @@ require 'includes/functions.php';
     <div class="card-body px-0">
         <div class="d-flex justify-content-between align-items-center">
         <div><br>
-            <h4 class="font-weight-medium fs-14 mb-0"> Product1</h4>
+            <h4 class="font-weight-medium fs-14 mb-0"> Product</h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
@@ -372,31 +373,38 @@ require 'includes/functions.php';
                             </div>
 
                             <div class="row pt-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
-                                <label class="form-label">UnitPrice</label>
+                                <label class="form-label">Unit Price</label>
                                 <input type="text" id="unitPrice" name="unitPrice" class="form-control"  />
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                 <label class="form-label">Unit Cost</label>
                                 <input type="text" id="unitCost" name="unitCost" class="form-control"  />
                                 </div>
                             </div>
-                            </div>
-
-                            <div class="row pt-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                 <label class="form-label">Unit Gross Margin</label>
                                 <input type="text" id="unitGrossMargin" name="unitGrossMargin" class="form-control"  />
                                 </div>
                             </div>
+                            </div>
+
+                            <div class="row pt-3">
+                            
                             <div class="col-md-6">
                                 <div class="mb-3">
                                 <label class="form-label">Usage</label>
                                 <input type="text" id="product_usage" name="product_usage" class="form-control"  />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">UPC</label>
+                                <input type="text" id="upc" name="upc" class="form-control" value="<?= $generate_rend_upc ?>" readonly/>
                                 </div>
                             </div>
                             </div>
