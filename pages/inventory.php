@@ -406,9 +406,6 @@ require 'includes/functions.php';
                     },
                     success: function(response) {
                         $('#updateInventoryModal').html(response);
-                        $(".select2-update").select2({
-                            dropdownParent: $('#updateInventoryModal .modal-content')
-                        });
                         $('#updateInventoryModal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {

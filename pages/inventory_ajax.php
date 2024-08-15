@@ -231,7 +231,7 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-12">
                                     <div class="mb-3">
                                     <label class="form-label">Product</label>
-                                    <select id="inventory_category" class="form-control select2-update" name="inventory_category">
+                                    <select id="inventory_product" class="select2-update form-control" name="inventory_category">
                                         <option value="/" >Select Product...</option>
                                         <?php
                                         $query_product = "SELECT * FROM product WHERE hidden = '0'";
@@ -252,7 +252,7 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                     <label class="form-label">Supplier</label>
-                                    <select id="supplier_id" class="form-control select2-update" name="supplier_id">
+                                    <select id="inventory_supplier" class="form-control select2-update" name="supplier_id">
                                     <option value="/" >Select Supplier...</option>
                                     <?php
                                     $query_supplier = "SELECT * FROM supplier";
@@ -270,7 +270,7 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                     <label class="form-label">Warehouse</label>
-                                    <select id="inventory_line" class="form-control select2-update" name="inventory_line">
+                                    <select id="inventory_warehouse" class="select2-update form-control" name="inventory_line">
                                         <option value="/" >Select Warehouse...</option>
                                         <?php
                                         $query_warehouse = "SELECT * FROM warehouses WHERE status = '1'";
@@ -291,7 +291,7 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                     <label class="form-label">Shelf</label>
-                                    <select id="inventory_category" class="form-control select2-update" name="inventory_category">
+                                    <select id="inventory_shelf" class="form-control select2-update" name="inventory_category">
                                         <option value="/" >Select Shelf...</option>
                                         <?php
                                         $query_shelf = "SELECT * FROM shelves";
@@ -309,7 +309,7 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                     <label class="form-label">Bin</label>
-                                    <select id="inventory_line" class="form-control select2-update" name="inventory_line">
+                                    <select id="inventory_bin" class="form-control select2-update" name="inventory_line">
                                         <option value="/" >Select Bin...</option>
                                         <?php
                                         $query_bin = "SELECT * FROM bins";
@@ -327,7 +327,7 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                     <label class="form-label">Row</label>
-                                    <select id="inventory_type" class="form-control select2-update" name="inventory_type">
+                                    <select id="inventory_row" class="form-control select2-update" name="inventory_type">
                                         <option value="/" >Select Row...</option>
                                         <?php
                                         $query_rows = "SELECT * FROM warehouse_rows";
@@ -369,6 +369,14 @@ if(isset($_REQUEST['action'])) {
                 </div>
                 <!-- /.modal-content -->
             </div>
+            <script>
+                $("#inventory_product").select2({dropdownParent: $('#updateInventoryModal .modal-content')});
+                $("#inventory_warehouse").select2({dropdownParent: $('#updateInventoryModal .modal-content')});
+                $("#inventory_row").select2({dropdownParent: $('#updateInventoryModal .modal-content')});
+                $("#inventory_bin").select2({dropdownParent: $('#updateInventoryModal .modal-content')});
+                $("#inventory_shelf").select2({dropdownParent: $('#updateInventoryModal .modal-content')});
+                $("#inventory_supplier").select2({dropdownParent: $('#updateInventoryModal .modal-content')});
+            </script>
             <?php
         }
     } 
