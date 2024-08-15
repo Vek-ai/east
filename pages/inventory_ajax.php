@@ -228,7 +228,7 @@ if(isset($_REQUEST['action'])) {
                                 <input type="hidden" id="Inventory_id" name="Inventory_id" class="form-control"  />
 
                                 <div class="row pt-3">
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <div class="mb-3">
                                     <label class="form-label">Product</label>
                                     <select id="inventory_category" class="form-control" name="inventory_category">
@@ -244,6 +244,27 @@ if(isset($_REQUEST['action'])) {
                                         }
                                         ?>
                                     </select>
+                                    </div>
+                                </div>
+                                </div>
+
+                                <div class="row pt-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                    <label class="form-label">Supplier</label>
+                                    <select id="supplier_id" class="form-control select2-add" name="supplier_id">
+                                    <option value="/" >Select Supplier...</option>
+                                    <?php
+                                    $query_supplier = "SELECT * FROM supplier";
+                                    $result_supplier = mysqli_query($conn, $query_supplier);            
+                                    while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                                        $selected = ($row['supplier_id'] == $row_supplier['supplier_id']) ? 'selected' : '';
+                                    ?>
+                                        <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -364,16 +385,6 @@ if(isset($_REQUEST['action'])) {
             echo "Error updating status: " . mysqli_error($conn);
         }
     }
-    if ($action == 'hide_category') {
-        $Inventory_id = mysqli_real_escape_string($conn, $_POST['Inventory_id']);
-        $query = "UPDATE product SET hidden='1' WHERE Inventory_id='$Inventory_id'";
-        if (mysqli_query($conn, $query)) {
-            echo 'success';
-        } else {
-            echo 'error';
-        }
-    }
-    
     
     mysqli_close($conn);
 }

@@ -6,6 +6,11 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 ?>
+<style>
+    .select2-container {
+        z-index: 9999 !important; 
+    }
+</style>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
     <div class="card-body px-0">
@@ -86,10 +91,10 @@ require 'includes/functions.php';
                             <input type="hidden" id="Inventory_id" name="Inventory_id" class="form-control"  />
 
                             <div class="row pt-3">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="mb-3">
                                 <label class="form-label">Product</label>
-                                <select id="inventory_category" class="form-control" name="inventory_category">
+                                <select id="Product_id" class="form-control select2-add" name="Product_id">
                                     <option value="/" >Select Product...</option>
                                     <?php
                                     $query_product = "SELECT * FROM product WHERE hidden = '0'";
@@ -103,10 +108,30 @@ require 'includes/functions.php';
                                 </select>
                                 </div>
                             </div>
+
+                            </div>
+                            <div class="row pt-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Supplier</label>
+                                <select id="supplier_id" class="form-control select2-add" name="supplier_id">
+                                    <option value="/" >Select Supplier...</option>
+                                    <?php
+                                    $query_supplier = "SELECT * FROM supplier";
+                                    $result_supplier = mysqli_query($conn, $query_supplier);            
+                                    while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                                    ?>
+                                        <option value="<?= $row_supplier['supplier_id'] ?>" ><?= $row_supplier['supplier_name'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </select>
+                                </div>
+                            </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                 <label class="form-label">Warehouse</label>
-                                <select id="inventory_line" class="form-control" name="inventory_line">
+                                <select id="Warehouse_id" class="form-control select2-add" name="Warehouse_id">
                                     <option value="/" >Select Warehouse...</option>
                                     <?php
                                     $query_warehouse = "SELECT * FROM warehouses WHERE status = '1'";
@@ -126,7 +151,7 @@ require 'includes/functions.php';
                             <div class="col-md-4">
                                 <div class="mb-3">
                                 <label class="form-label">Shelf</label>
-                                <select id="inventory_category" class="form-control" name="inventory_category">
+                                <select id="inventory_category" class="form-control select2-add" name="inventory_category">
                                     <option value="/" >Select Shelf...</option>
                                     <?php
                                     $query_shelf = "SELECT * FROM shelves";
@@ -143,7 +168,7 @@ require 'includes/functions.php';
                             <div class="col-md-4">
                                 <div class="mb-3">
                                 <label class="form-label">Bin</label>
-                                <select id="inventory_line" class="form-control" name="inventory_line">
+                                <select id="inventory_line" class="form-control select2-add" name="inventory_line">
                                     <option value="/" >Select Bin...</option>
                                     <?php
                                     $query_bin = "SELECT * FROM bins";
@@ -160,7 +185,7 @@ require 'includes/functions.php';
                             <div class="col-md-4">
                                 <div class="mb-3">
                                 <label class="form-label">Row</label>
-                                <select id="inventory_type" class="form-control" name="inventory_type">
+                                <select id="inventory_type" class="form-control select2-add" name="inventory_type">
                                     <option value="/" >Select Row...</option>
                                     <?php
                                     $query_rows = "SELECT * FROM warehouse_rows";
@@ -345,6 +370,10 @@ require 'includes/functions.php';
         var table = $('#inventoryList').DataTable({
             "order": [[1, "asc"]]
         });
+
+        $(".select2-add").select2({
+            dropdownParent: $('#addInventoryModal .modal-content')
+        });
         
         $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
             var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -363,7 +392,7 @@ require 'includes/functions.php';
         });
 
         $('#toggleActive').trigger('change');
-        
+
         // Show the View Inventory modal and log the inventory ID
         $(document).on('click', '#view_inventory_btn', function(event) {
             event.preventDefault(); 
