@@ -276,7 +276,7 @@ if(isset($_REQUEST['action'])) {
                                         $query_shelf = "SELECT * FROM shelves";
                                         $result_shelf = mysqli_query($conn, $query_shelf);            
                                         while ($row_shelf = mysqli_fetch_array($result_shelf)) {
-                                            $selected = ($row['Shelf_id'] == $row_shelf['ShelfID']) ? 'selected' : '';
+                                            $selected = ($row['Shelves_id'] == $row_shelf['ShelfID']) ? 'selected' : '';
                                         ?>
                                             <option value="<?= $row_shelf['ShelfID'] ?>" <?= $selected ?>><?= $row_shelf['ShelfCode'] ?></option>
                                         <?php   
@@ -294,7 +294,7 @@ if(isset($_REQUEST['action'])) {
                                         $query_bin = "SELECT * FROM bins";
                                         $result_bin = mysqli_query($conn, $query_bin);            
                                         while ($row_bin = mysqli_fetch_array($result_bin)) {
-                                            $selected = ($row['Shelf_id'] == $row_shelf['ShelfID']) ? 'selected' : '';
+                                            $selected = ($row['Bin_id'] == $row_bin['BinID']) ? 'selected' : '';
                                         ?>
                                             <option value="<?= $row_bin['BinID'] ?>" <?= $selected ?>><?= $row_bin['BinCode'] ?></option>
                                         <?php   
@@ -353,7 +353,7 @@ if(isset($_REQUEST['action'])) {
     } 
 
     if ($action == "change_status") {
-        $Inventory_id = mysqli_real_escape_string($conn, $_POST['Inventory_id']);
+        $Inventory_id = mysqli_real_escape_string($conn, $_POST['inventory_id']);
         $status = mysqli_real_escape_string($conn, $_POST['status']);
         $new_status = ($status == '0') ? '1' : '0';
 

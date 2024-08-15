@@ -232,9 +232,9 @@ require 'includes/functions.php';
     <div class="card card-body">
         <div class="table-responsive">
         <h3 class="card-title d-flex justify-content-between align-items-center">
-            Inventorys List 
+            Inventory List 
             <div class="px-3"> 
-                <input type="checkbox" id="toggleActive" checked> Show Active Only
+                <input type="checkbox" id="toggleActive" checked> Show New Only
             </div>
         </h3>
         <table id="inventoryList" class="table search-table align-middle text-nowrap">
@@ -243,7 +243,7 @@ require 'includes/functions.php';
             <th>Warehouse</th>
             <th>Date</th>
             <th>Quantity</th>
-            <th>Details</th>
+            <th>Added by</th>
             <th>Status</th>
             <th>Action</th>
             </thead>
@@ -265,9 +265,9 @@ require 'includes/functions.php';
                     $db_status = $row_inventory['status'];
 
                     if (trim($db_status) == '0') {
-                        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$inventory_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-primary bg-primary text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>New</div></a>";
+                        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$Inventory_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-primary bg-primary text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>New</div></a>";
                     } else if (trim($db_status) == '1'){
-                        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$inventory_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Transferred</div></a>";
+                        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$Inventory_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Transferred</div></a>";
                     }else{
                         $status = "";
                     }
@@ -275,16 +275,16 @@ require 'includes/functions.php';
                 ?>
                     <!-- start row -->
                     <tr class="search-items">
-                        <td><?= $Product_id ?></td>
-                        <td><?= $Warehouse_id ?></td>
+                        <td><?= getProductName($Product_id) ?></td>
+                        <td><?= getWarehouseName($Warehouse_id) ?></td>
                         <td><?= $Date ?></td>
                         <td><?= $quantity ?></td>
-                        <td><?= $addedby ?></td>
+                        <td><?= get_name($addedby) ?></td>
                         <td><?= $status ?></td>
                         <td>
                             <div class="action-btn text-center">
                                 <a href="#" id="view_inventory_btn" class="text-primary edit" data-id="<?= $Inventory_id ?>">
-                                    <i class="ti ti-eye fs-5"> View</i>
+                                    <i class="ti ti-eye fs-5"></i>
                                 </a>
                             </div>
                         </td>
@@ -310,46 +310,21 @@ require 'includes/functions.php';
                                 action: 'change_status'
                             },
                             success: function(response) {
+                                console.log(response)
                                 if (response == 'success') {
                                     if (status == 0) {
                                         $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Transferred');
-                                        $(".changeStatus[data-no='" + no + "']").data('status', "0");
+                                        $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                         $('.inventory' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                        $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideInventory" data-id="' + inventory_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
                                         $('#toggleActive').trigger('change');
                                     } else {
-                                        $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                                        $(".changeStatus[data-no='" + no + "']").data('status', "1");
+                                        $('#status-alert' + no).removeClass().addClass('alert alert-primary bg-primary text-white border-0 text-center py-1 px-2 my-0').text('New');
+                                        $(".changeStatus[data-no='" + no + "']").data('status', "0");
                                         $('.inventory' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                        $('#action-button-' + no).html('<a href="/?page=inventory&inventory_id=' + inventory_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                                         $('#toggleActive').trigger('change');
                                     }
                                 } else {
                                     alert('Failed to change status.');
-                                }
-                            },
-                            error: function(jqXHR, textStatus, errorThrown) {
-                                alert('Error: ' + textStatus + ' - ' + errorThrown);
-                            }
-                        });
-                    });
-
-                    $(document).on('click', '.hideInventory', function(event) {
-                        event.preventDefault();
-                        var inventory_id = $(this).data('id');
-                        var rowId = $(this).data('row');
-                        $.ajax({
-                            url: 'pages/inventory_ajax.php',
-                            type: 'POST',
-                            data: {
-                                inventory_id: inventory_id,
-                                action: 'hide_inventory'
-                            },
-                            success: function(response) {
-                                if (response == 'success') {
-                                    $('#inventory-row-' + rowId).remove();
-                                } else {
-                                    alert('Failed to hide inventory.');
                                 }
                             },
                             error: function(jqXHR, textStatus, errorThrown) {
@@ -371,12 +346,13 @@ require 'includes/functions.php';
             "order": [[1, "asc"]]
         });
         
-
         $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
             var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
             var isActive = $('#toggleActive').is(':checked');
 
-            if (!isActive || status === 'Active') {
+            console.log(status)
+
+            if (!isActive || status === 'New') {
                 return true;
             }
             return false;
@@ -387,14 +363,7 @@ require 'includes/functions.php';
         });
 
         $('#toggleActive').trigger('change');
-
-        $(".select2-add").select2({
-            width: '100%',
-            placeholder: "Select Correlated Inventorys",
-            allowClear: true
-        });
-
-
+        
         // Show the View Inventory modal and log the inventory ID
         $(document).on('click', '#view_inventory_btn', function(event) {
             event.preventDefault(); 
@@ -408,20 +377,7 @@ require 'includes/functions.php';
                     },
                     success: function(response) {
                         $('#updateInventoryModal').html(response);
-                        $(".select2-update").select2({
-                            width: '100%',
-                            placeholder: "Select Correlated Inventorys",
-                            allowClear: true
-                        });
                         $('#updateInventoryModal').modal('show');
-
-                        $('#updateInventoryModal').on('hide.bs.modal', function () {
-                            $(".select2-add").select2({
-                                width: '100%',
-                                placeholder: "Select Correlated Inventorys",
-                                allowClear: true
-                            });
-                        });
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);

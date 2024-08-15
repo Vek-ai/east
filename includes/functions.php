@@ -25,6 +25,42 @@ function get_role_name($emp_role_id){
     return  $emp_role;
 }
 
+function getProductName($product_id){
+    global $conn;
+    $query = "SELECT product_item FROM product WHERE product_id = '$product_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $product_item = $row['product_item'] ?? '';
+    return  $product_item;
+}
+
+function getWarehouseName($WarehouseID){
+    global $conn;
+    $query = "SELECT WarehouseName FROM warehouses WHERE WarehouseID = '$WarehouseID'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $WarehouseName = $row['WarehouseName'] ?? '';
+    return  $WarehouseName;
+}
+
+function getWarehouseBinName($BinID){
+    global $conn;
+    $query = "SELECT BinCode FROM bins WHERE WarehouseID = '$BinID'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $BinCode = $row['BinCode'] ?? '';
+    return  $BinCode;
+}
+
+function getWarehouseShelfName($ShelfID){
+    global $conn;
+    $query = "SELECT ShelfCode FROM shelves WHERE WarehouseID = '$ShelfID'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $ShelfCode = $row['ShelfCode'] ?? '';
+    return  $ShelfCode;
+}
+
 function getWarehouseRowName($WarehouseRowID){
     global $conn;
     $query = "SELECT RowCode FROM warehouse_rows WHERE WarehouseRowID = '$WarehouseRowID'";
