@@ -1,203 +1,111 @@
 <?php
+session_start();
+?>
+
+<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 
+
 require '../includes/dbconn.php';
+require '../includes/functions.php';
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
-    if ($action == "add_update") {
+    if ($action == 'add_update') {
         $Inventory_id = mysqli_real_escape_string($conn, $_POST['Inventory_id']);
-        $product_sku = mysqli_real_escape_string($conn, $_POST['product_sku']);
-        $product_item = mysqli_real_escape_string($conn, $_POST['product_item']);
-        $product_category = mysqli_real_escape_string($conn, $_POST['product_category']);
-        $product_line = mysqli_real_escape_string($conn, $_POST['product_line']);
-        $product_type = mysqli_real_escape_string($conn, $_POST['product_type']);
-        $description = mysqli_real_escape_string($conn, $_POST['description']);
-        $stock_type = mysqli_real_escape_string($conn, $_POST['stock_type']);
-        $material = mysqli_real_escape_string($conn, $_POST['material']);
-        $dimensions = mysqli_real_escape_string($conn, $_POST['dimensions']);
-        $thickness = mysqli_real_escape_string($conn, $_POST['thickness']);
-        $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
-        $grade = mysqli_real_escape_string($conn, $_POST['grade']);
-        $color = mysqli_real_escape_string($conn, $_POST['color']);
-        $paint_provider = mysqli_real_escape_string($conn, $_POST['paintProvider']);
-        $warranty_type = mysqli_real_escape_string($conn, $_POST['warrantyType']);
-        $coating = mysqli_real_escape_string($conn, $_POST['coating']);
-        $profile = mysqli_real_escape_string($conn, $_POST['profile']);
-        $width = mysqli_real_escape_string($conn, $_POST['width']);
-        $length = mysqli_real_escape_string($conn, $_POST['length']);
-        $weight = mysqli_real_escape_string($conn, $_POST['weight']);
-        $unit_price = mysqli_real_escape_string($conn, $_POST['unitPrice']);
-        $upc = mysqli_real_escape_string($conn, $_POST['upc']);
-        $unit_of_measure = mysqli_real_escape_string($conn, $_POST['unitofMeasure']);
-        $unit_cost = mysqli_real_escape_string($conn, $_POST['unitCost']);
-        $unit_gross_margin = mysqli_real_escape_string($conn, $_POST['unitGrossMargin']);
-        $product_usage = mysqli_real_escape_string($conn, $_POST['product_usage']);
-        $comment = mysqli_real_escape_string($conn, $_POST['comment']);
+        $Product_id = mysqli_real_escape_string($conn, $_POST['Product_id']);
+        $Warehouse_id = mysqli_real_escape_string($conn, $_POST['Warehouse_id']);
+        $Shelves_id = mysqli_real_escape_string($conn, $_POST['Shelves_id']);
+        $Bin_id = mysqli_real_escape_string($conn, $_POST['Bin_id']);
+        $Row_id = mysqli_real_escape_string($conn, $_POST['Row_id']);
+        $Date = mysqli_real_escape_string($conn, $_POST['Date']);
+        $quantity = mysqli_real_escape_string($conn, $_POST['quantity']); 
 
-        $correlatedProducts = $_POST['correlatedProducts'];
-    
         // SQL query to check if the record exists
-        $checkQuery = "SELECT * FROM product WHERE Inventory_id = '$Inventory_id'";
+        $checkQuery = "SELECT * FROM inventory WHERE Inventory_id = '$Inventory_id'";
         $result = mysqli_query($conn, $checkQuery);
         $isInsert = false;
     
-        if (mysqli_num_rows($result) > 0) {
-            // Record exists, proceed with update
-            $isInsert = false;
-            $updateQuery = "UPDATE product SET 
-                product_item = '$product_item', 
-                product_sku = '$product_sku', 
-                product_category = '$product_category', 
-                product_line = '$product_line', 
-                product_type = '$product_type', 
-                description = '$description', 
-                stock_type = '$stock_type', 
-                material = '$material', 
-                dimensions = '$dimensions', 
-                thickness = '$thickness', 
-                gauge = '$gauge', 
-                grade = '$grade', 
-                color = '$color', 
-                paint_provider = '$paint_provider', 
-                warranty_type = '$warranty_type', 
-                coating = '$coating', 
-                profile = '$profile', 
-                width = '$width', 
-                length = '$length', 
-                weight = '$weight', 
-                unit_price = '$unit_price', 
-                upc = '$upc', 
-                unit_of_measure = '$unit_of_measure', 
-                unit_cost = '$unit_cost', 
-                unit_gross_margin = '$unit_gross_margin', 
-                product_usage = '$product_usage', 
-                comment = '$comment' 
-            WHERE Inventory_id = '$Inventory_id'";
-    
-            if (mysqli_query($conn, $updateQuery)) {
-                
-                $query_delete = "DELETE FROM correlated_product WHERE main_correlated_Inventory_id = '$Inventory_id'";
-                if (!mysqli_query($conn, $query_delete)) {
-                    echo "Error: " . mysqli_error($conn);
-                }else{
-                    foreach ($correlatedProducts as $correlated_Inventory_id) {
-                        $query_correlated = "INSERT INTO correlated_product (`correlated_id`, `main_correlated_Inventory_id`) VALUES ('$correlated_Inventory_id','$Inventory_id')";
-                        if (mysqli_query($conn, $query_correlated)) {
-                        } else {
-                            echo "Error: " . mysqli_error($conn);
-                        }    
-                    }
-                }
-
-                echo "success";
-            } else {
-                echo "Error updating product: " . mysqli_error($conn);
-            }
-    
-        } else {
-            $upc = generateRandomUPC();
-            // Record does not exist, proceed with insert
-            $isInsert = true;
-            $insertQuery = "INSERT INTO product (
-                product_item, 
-                product_sku, 
-                product_category, 
-                product_line, 
-                product_type, 
-                description, 
-                stock_type, 
-                material, 
-                dimensions, 
-                thickness, 
-                gauge, 
-                grade, 
-                color, 
-                paint_provider, 
-                warranty_type, 
-                coating, 
-                profile, 
-                width, 
-                length, 
-                weight, 
-                quantity_in_stock, 
-                quantity_quoted, 
-                quantity_committed, 
-                quantity_available, 
-                quantity_in_transit, 
-                unit_price, 
-                date_added, 
-                date_modified, 
-                last_ordered_date, 
-                last_sold_date, 
-                upc, 
-                unit_of_measure, 
-                unit_cost, 
-                unit_gross_margin, 
-                product_usage, 
-                comment
-            ) VALUES (
-                '$product_item', 
-                '$product_sku', 
-                '$product_category', 
-                '$product_line', 
-                '$product_type', 
-                '$description', 
-                '$stock_type', 
-                '$material', 
-                '$dimensions', 
-                '$thickness', 
-                '$gauge', 
-                '$grade', 
-                '$color', 
-                '$paint_provider', 
-                '$warranty_type', 
-                '$coating', 
-                '$profile', 
-                '$width', 
-                '$length', 
-                '$weight', 
-                '$quantity_in_stock', 
-                '$quantity_quoted', 
-                '$quantity_committed', 
-                '$quantity_available', 
-                '$quantity_in_transit', 
-                '$unit_price', 
-                '$date_added', 
-                '$date_modified', 
-                '$last_ordered_date', 
-                '$last_sold_date', 
-                '$upc', 
-                '$unit_of_measure', 
-                '$unit_cost', 
-                '$unit_gross_margin', 
-                '$product_usage', 
-                '$comment'
-            )";
-    
-            if (mysqli_query($conn, $insertQuery)) {
-                $Inventory_id = $conn->insert_id;
-                $query_delete = "DELETE FROM correlated_product WHERE main_correlated_Inventory_id = '$Inventory_id'";
-                if (!mysqli_query($conn, $query_delete)) {
-                    echo "Error: " . mysqli_error($conn);
-                }else{
-                    foreach ($correlatedProducts as $correlated_Inventory_id) {
-                        $query_correlated = "INSERT INTO correlated_product (`correlated_id`, `main_correlated_Inventory_id`) VALUES ('$correlated_Inventory_id','$Inventory_id')";
-                        if (mysqli_query($conn, $query_correlated)) {
-                        } else {
-                            echo "Error: " . mysqli_error($conn);
-                        }    
-                    }
-                }
-
-                echo "success";
-            } else {
-                echo "Error adding product: " . mysqli_error($conn);
-            }
-        }
+        if ($action == "add_update") {
+          $Inventory_id = mysqli_real_escape_string($conn, $_POST['Inventory_id']);
+          $Product_id = mysqli_real_escape_string($conn, $_POST['Product_id']);
+          $Warehouse_id = mysqli_real_escape_string($conn, $_POST['Warehouse_id']);
+          $Shelves_id = mysqli_real_escape_string($conn, $_POST['Shelves_id']);
+          $Bin_id = mysqli_real_escape_string($conn, $_POST['Bin_id']);
+          $Row_id = mysqli_real_escape_string($conn, $_POST['Row_id']);
+          $Date = mysqli_real_escape_string($conn, $_POST['Date']);
+          $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
+          $addedby = mysqli_real_escape_string($conn, $_POST['addedby']);
+      
+          // SQL query to check if the record exists
+          $checkQuery = "SELECT * FROM inventory WHERE Inventory_id = '$Inventory_id'";
+          $result = mysqli_query($conn, $checkQuery);
+      
+          if (!$result) {
+              die("Error executing query: " . mysqli_error($conn));
+          }
+      
+          if (mysqli_num_rows($result) > 0) {
+              $status = '1';
+              
+              // Record exists, proceed with update
+              $updateQuery = "UPDATE inventory SET 
+                  Product_id = '$Product_id', 
+                  Warehouse_id = '$Warehouse_id', 
+                  Shelves_id = '$Shelves_id', 
+                  Bin_id = '$Bin_id', 
+                  Row_id = '$Row_id', 
+                  Date = '$Date', 
+                  quantity = '$quantity', 
+                  addedby = '$addedby', 
+                  status = '$status'
+                  WHERE Inventory_id = '$Inventory_id'";
+      
+              if (mysqli_query($conn, $updateQuery)) {
+                  echo "Record updated successfully.";
+              } else {
+                  die("Error updating record: " . mysqli_error($conn));
+              }
+      
+          } else {
+            
+              $addedby = $_SESSION['userid']; 
+              // Record does not exist, proceed with insert
+              $insertQuery = "INSERT INTO inventory (
+                  Inventory_id,
+                  Product_id, 
+                  Warehouse_id, 
+                  Shelves_id, 
+                  Bin_id, 
+                  Row_id, 
+                  Date, 
+                  quantity, 
+                  addedby, 
+                  status
+              ) VALUES (
+                  '$Inventory_id',
+                  '$Product_id', 
+                  '$Warehouse_id', 
+                  '$Shelves_id', 
+                  '$Bin_id', 
+                  '$Row_id', 
+                  '$Date', 
+                  '$quantity', 
+                  '$addedby', 
+                  '$status'
+              )";
+      
+              if (mysqli_query($conn, $insertQuery)) {
+                  echo "Record added successfully.";
+              } else {
+                  die("Error inserting record: " . mysqli_error($conn));
+              }
+          }
+      }
+      
     
     }
 

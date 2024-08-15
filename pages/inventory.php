@@ -75,6 +75,7 @@ require 'includes/functions.php';
         </div>
     </div>
 
+    <!-- Add Inventory -->
     <div class="modal fade" id="addInventoryModal" tabindex="-1" aria-labelledby="addInventoryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -151,7 +152,7 @@ require 'includes/functions.php';
                             <div class="col-md-4">
                                 <div class="mb-3">
                                 <label class="form-label">Shelf</label>
-                                <select id="inventory_category" class="form-control select2-add" name="inventory_category">
+                                <select id="Shelves_id" class="form-control select2-add" name="Shelves_id">
                                     <option value="/" >Select Shelf...</option>
                                     <?php
                                     $query_shelf = "SELECT * FROM shelves";
@@ -168,7 +169,7 @@ require 'includes/functions.php';
                             <div class="col-md-4">
                                 <div class="mb-3">
                                 <label class="form-label">Bin</label>
-                                <select id="inventory_line" class="form-control select2-add" name="inventory_line">
+                                <select id="Bin_id" class="form-control select2-add" name="Bin_id">
                                     <option value="/" >Select Bin...</option>
                                     <?php
                                     $query_bin = "SELECT * FROM bins";
@@ -185,7 +186,7 @@ require 'includes/functions.php';
                             <div class="col-md-4">
                                 <div class="mb-3">
                                 <label class="form-label">Row</label>
-                                <select id="inventory_type" class="form-control select2-add" name="inventory_type">
+                                <select id="Row_id" class="form-control select2-add" name="Row_id">
                                     <option value="/" >Select Row...</option>
                                     <?php
                                     $query_rows = "SELECT * FROM warehouse_rows";
@@ -204,7 +205,7 @@ require 'includes/functions.php';
                             <div class="row pt-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Date</label>
-                                    <input type="date" id="date" name="date" class="form-control"  />
+                                    <input type="date" id="Date" name="Date" class="form-control"  />
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Quantity</label>
@@ -228,7 +229,8 @@ require 'includes/functions.php';
         </div>
     <!-- /.modal-dialog -->
     </div>
-
+    <!-- End of Add Inventory -->
+     
     <div class="modal fade" id="updateInventoryModal" tabindex="-1" role="dialog" aria-labelledby="updateInventoryModal" aria-hidden="true">
         
     </div>
@@ -460,7 +462,10 @@ require 'includes/functions.php';
 
             var formData = new FormData(this);
             formData.append('action', 'add_update');
-
+              // Log the contents of formData
+    for (var pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+    }
             $.ajax({
                 url: 'pages/inventory_ajax.php',
                 type: 'POST',
