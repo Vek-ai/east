@@ -337,8 +337,8 @@ require 'includes/functions.php';
                                 action: 'change_status'
                             },
                             success: function(response) {
-                                console.log(response)
-                                if (response == 'success') {
+                                console.log(response.trim())
+                                if (response.trim() == 'success') {
                                     if (status == 0) {
                                         $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Transferred');
                                         $(".changeStatus[data-no='" + no + "']").data('status', "1");
@@ -429,6 +429,7 @@ require 'includes/functions.php';
                 processData: false,
                 contentType: false,
                 success: function(response) {
+                    console.log(response);
                     $('#updateInventoryModal').modal('hide');
                     if (response.trim() === "success") {
                         $('#responseHeader').text("Success");
@@ -438,7 +439,7 @@ require 'includes/functions.php';
                         $('#response-modal').modal("show");
 
                         $('#response-modal').on('hide.bs.modal', function () {
-                            window.location.href = "?page=inventory_inventory";
+                            location.reload();
                         });
                     } else {
                         $('#responseHeader').text("Failed");
@@ -448,8 +449,6 @@ require 'includes/functions.php';
                         $('#responseHeaderContainer').addClass("bg-danger");
                         $('#response-modal').modal("show");
                     }
-
-                    
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -462,10 +461,7 @@ require 'includes/functions.php';
 
             var formData = new FormData(this);
             formData.append('action', 'add_update');
-              // Log the contents of formData
-    for (var pair of formData.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
-    }
+              
             $.ajax({
                 url: 'pages/inventory_ajax.php',
                 type: 'POST',

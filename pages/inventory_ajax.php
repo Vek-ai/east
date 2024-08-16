@@ -14,99 +14,85 @@ require '../includes/functions.php';
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
-    if ($action == 'add_update') {
+    if ($action == "add_update") {
         $Inventory_id = mysqli_real_escape_string($conn, $_POST['Inventory_id']);
         $Product_id = mysqli_real_escape_string($conn, $_POST['Product_id']);
+        $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
         $Warehouse_id = mysqli_real_escape_string($conn, $_POST['Warehouse_id']);
         $Shelves_id = mysqli_real_escape_string($conn, $_POST['Shelves_id']);
         $Bin_id = mysqli_real_escape_string($conn, $_POST['Bin_id']);
         $Row_id = mysqli_real_escape_string($conn, $_POST['Row_id']);
         $Date = mysqli_real_escape_string($conn, $_POST['Date']);
-        $quantity = mysqli_real_escape_string($conn, $_POST['quantity']); 
-
+        $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
+        $addedby = mysqli_real_escape_string($conn, $_POST['addedby']);
+    
         // SQL query to check if the record exists
         $checkQuery = "SELECT * FROM inventory WHERE Inventory_id = '$Inventory_id'";
         $result = mysqli_query($conn, $checkQuery);
-        $isInsert = false;
     
-        if ($action == "add_update") {
-          $Inventory_id = mysqli_real_escape_string($conn, $_POST['Inventory_id']);
-          $Product_id = mysqli_real_escape_string($conn, $_POST['Product_id']);
-          $Warehouse_id = mysqli_real_escape_string($conn, $_POST['Warehouse_id']);
-          $Shelves_id = mysqli_real_escape_string($conn, $_POST['Shelves_id']);
-          $Bin_id = mysqli_real_escape_string($conn, $_POST['Bin_id']);
-          $Row_id = mysqli_real_escape_string($conn, $_POST['Row_id']);
-          $Date = mysqli_real_escape_string($conn, $_POST['Date']);
-          $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
-          $addedby = mysqli_real_escape_string($conn, $_POST['addedby']);
-      
-          // SQL query to check if the record exists
-          $checkQuery = "SELECT * FROM inventory WHERE Inventory_id = '$Inventory_id'";
-          $result = mysqli_query($conn, $checkQuery);
-      
-          if (!$result) {
-              die("Error executing query: " . mysqli_error($conn));
-          }
-      
-          if (mysqli_num_rows($result) > 0) {
-              $status = '1';
-              
-              // Record exists, proceed with update
-              $updateQuery = "UPDATE inventory SET 
-                  Product_id = '$Product_id', 
-                  Warehouse_id = '$Warehouse_id', 
-                  Shelves_id = '$Shelves_id', 
-                  Bin_id = '$Bin_id', 
-                  Row_id = '$Row_id', 
-                  Date = '$Date', 
-                  quantity = '$quantity', 
-                  addedby = '$addedby', 
-                  status = '$status'
-                  WHERE Inventory_id = '$Inventory_id'";
-      
-              if (mysqli_query($conn, $updateQuery)) {
-                  echo "Record updated successfully.";
-              } else {
-                  die("Error updating record: " . mysqli_error($conn));
-              }
-      
-          } else {
+        if (!$result) {
+            die("Error executing query: " . mysqli_error($conn));
+        }
+    
+        if (mysqli_num_rows($result) > 0) {
+            $status = '1';
             
-              $addedby = $_SESSION['userid']; 
-              // Record does not exist, proceed with insert
-              $insertQuery = "INSERT INTO inventory (
-                  Inventory_id,
-                  Product_id, 
-                  Warehouse_id, 
-                  Shelves_id, 
-                  Bin_id, 
-                  Row_id, 
-                  Date, 
-                  quantity, 
-                  addedby, 
-                  status
-              ) VALUES (
-                  '$Inventory_id',
-                  '$Product_id', 
-                  '$Warehouse_id', 
-                  '$Shelves_id', 
-                  '$Bin_id', 
-                  '$Row_id', 
-                  '$Date', 
-                  '$quantity', 
-                  '$addedby', 
-                  '$status'
-              )";
-      
-              if (mysqli_query($conn, $insertQuery)) {
-                  echo "Record added successfully.";
-              } else {
-                  die("Error inserting record: " . mysqli_error($conn));
-              }
-          }
-      }
-      
+            // Record exists, proceed with update
+            $updateQuery = "UPDATE inventory SET 
+                Product_id = '$Product_id', 
+                Warehouse_id = '$Warehouse_id', 
+                supplier_id = '$supplier_id', 
+                Shelves_id = '$Shelves_id', 
+                Bin_id = '$Bin_id', 
+                Row_id = '$Row_id', 
+                Date = '$Date', 
+                quantity = '$quantity', 
+                addedby = '$addedby', 
+                status = '$status'
+                WHERE Inventory_id = '$Inventory_id'";
     
+            if (mysqli_query($conn, $updateQuery)) {
+                echo $Product_id;
+            } else {
+                die("Error updating record: " . mysqli_error($conn));
+            }
+    
+        } else {
+        
+            $addedby = $_SESSION['userid']; 
+            // Record does not exist, proceed with insert
+            $insertQuery = "INSERT INTO inventory (
+                Inventory_id,
+                Product_id, 
+                supplier_id, 
+                Warehouse_id, 
+                Shelves_id, 
+                Bin_id, 
+                Row_id, 
+                Date, 
+                quantity, 
+                addedby, 
+                status
+            ) VALUES (
+                '$Inventory_id',
+                '$Product_id', 
+                '$supplier_id', 
+                '$Warehouse_id',
+                '$Shelves_id', 
+                '$Bin_id', 
+                '$Row_id', 
+                '$Date', 
+                '$quantity', 
+                '$addedby', 
+                '$status'
+            )";
+    
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "success";
+            } else {
+                die("Error inserting record: " . mysqli_error($conn));
+            }
+        }
     }
 
     if ($action == "fetch_modal") {
@@ -129,17 +115,17 @@ if(isset($_REQUEST['action'])) {
                         </h4>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form id="add_inventory" class="form-horizontal">
+                    <form id="update_inventory" class="form-horizontal">
                         <div class="modal-body">
                             <div class="card">
                                 <div class="card-body">
-                                <input type="hidden" id="Inventory_id" name="Inventory_id" class="form-control"  />
+                                <input type="hidden" id="Inventory_id" name="Inventory_id" class="form-control" value="<?= $row['Inventory_id'] ?>" />
 
                                 <div class="row pt-3">
                                 <div class="col-md-12">
                                     <div class="mb-3">
                                     <label class="form-label">Product</label>
-                                    <select id="inventory_product" class="select2-update form-control" name="inventory_category">
+                                    <select id="inventory_product" class="select2-update form-control" name="Product_id">
                                         <option value="/" >Select Product...</option>
                                         <?php
                                         $query_product = "SELECT * FROM product WHERE hidden = '0'";
@@ -147,7 +133,7 @@ if(isset($_REQUEST['action'])) {
                                         while ($row_product = mysqli_fetch_array($result_product)) {
                                             $selected = ($row['Product_id'] == $row_product['product_id']) ? 'selected' : '';
                                         ?>
-                                            <option value="<?= $row_product['Inventory_id'] ?>" <?= $selected ?>><?= $row_product['product_item'] ?></option>
+                                            <option value="<?= $row_product['product_id'] ?>" <?= $selected ?>><?= $row_product['product_item'] ?></option>
                                         <?php   
                                         }
                                         ?>
@@ -178,7 +164,7 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                     <label class="form-label">Warehouse</label>
-                                    <select id="inventory_warehouse" class="select2-update form-control" name="inventory_line">
+                                    <select id="inventory_warehouse" class="select2-update form-control" name="Warehouse_id">
                                         <option value="/" >Select Warehouse...</option>
                                         <?php
                                         $query_warehouse = "SELECT * FROM warehouses WHERE status = '1'";
@@ -199,7 +185,7 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                     <label class="form-label">Shelf</label>
-                                    <select id="inventory_shelf" class="form-control select2-update" name="inventory_category">
+                                    <select id="inventory_shelf" class="form-control select2-update" name="Shelves_id">
                                         <option value="/" >Select Shelf...</option>
                                         <?php
                                         $query_shelf = "SELECT * FROM shelves";
@@ -217,7 +203,7 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                     <label class="form-label">Bin</label>
-                                    <select id="inventory_bin" class="form-control select2-update" name="inventory_line">
+                                    <select id="inventory_bin" class="form-control select2-update" name="Bin_id">
                                         <option value="/" >Select Bin...</option>
                                         <?php
                                         $query_bin = "SELECT * FROM bins";
@@ -235,7 +221,7 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                     <label class="form-label">Row</label>
-                                    <select id="inventory_row" class="form-control select2-update" name="inventory_type">
+                                    <select id="inventory_row" class="form-control select2-update" name="Row_id">
                                         <option value="/" >Select Row...</option>
                                         <?php
                                         $query_rows = "SELECT * FROM warehouse_rows";
