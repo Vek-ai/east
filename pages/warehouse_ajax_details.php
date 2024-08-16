@@ -445,24 +445,6 @@ if(isset($_REQUEST['action'])) {
                                 <div class="row pt-3">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                    <label class="form-label">Supplier</label>
-                                    <select id="supplier_id" class="form-control select2-add" name="supplier_id">
-                                        <option value="/" >Select Supplier...</option>
-                                        <?php
-                                        $query_supplier = "SELECT * FROM supplier";
-                                        $result_supplier = mysqli_query($conn, $query_supplier);            
-                                        while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                                            $selected = ($row['supplier_id'] == $row_supplier['supplier_id']) ? 'selected' : '';
-                                        ?>
-                                            <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
                                     <label class="form-label">Warehouse</label>
                                     <select id="Warehouse_id" class="form-control select2-add" name="Warehouse_id">
                                         <option value="/" >Select Warehouse...</option>
@@ -572,7 +554,6 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "transfer_product") {
         $Inventory_id = mysqli_real_escape_string($conn, $_POST['Inventory_id']);
-        $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
         $Warehouse_id = mysqli_real_escape_string($conn, $_POST['Warehouse_id']);
         $Shelves_id = mysqli_real_escape_string($conn, $_POST['Shelves_id']);
         $Bin_id = mysqli_real_escape_string($conn, $_POST['Bin_id']);
@@ -594,7 +575,6 @@ if(isset($_REQUEST['action'])) {
             // Record exists, proceed with update
             $updateQuery = "UPDATE inventory SET 
                 Warehouse_id = '$Warehouse_id',
-                supplier_id = '$supplier_id',
                 Shelves_id = '$Shelves_id',
                 Bin_id = '$Bin_id',
                 Row_id = '$Row_id',
