@@ -241,7 +241,7 @@ if(isset($_REQUEST['action'])) {
                                 <div class="row pt-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Date</label>
-                                        <input type="date" id="date" name="date" class="form-control" value="<?= $row['Date'] ?>" />
+                                        <input type="date" id="date" name="Date" class="form-control" value="<?= $row['Date'] ?>" />
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Quantity</label>
