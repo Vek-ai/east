@@ -470,11 +470,11 @@ if(isset($_REQUEST['action'])) {
                                     <select id="Shelves_id" class="form-control select2-add" name="Shelves_id">
                                         <option value="/" >Select Shelf...</option>
                                         <?php
-                                        $query_shelf = "SELECT s.* 
+                                        $query_shelf = "SELECT * 
                                                         FROM shelves s
                                                         INNER JOIN warehouse_rows wr ON s.WarehouseRowID = wr.WarehouseRowID
                                                         WHERE wr.WarehouseID = '$WarehouseID'";
-                                        $result_shelf = mysqli_query($conn, $query_shelf);            
+                                        $result_shelf = mysqli_query($conn, $query_shelf);
                                         while ($row_shelf = mysqli_fetch_array($result_shelf)) {
                                             $selected = ($row['Shelves_id'] == $row_shelf['ShelfID']) ? 'selected' : '';
                                         ?>
@@ -482,6 +482,7 @@ if(isset($_REQUEST['action'])) {
                                         <?php   
                                         }
                                         ?>
+                                        
                                     </select>
                                     </div>
                                 </div>
@@ -492,7 +493,7 @@ if(isset($_REQUEST['action'])) {
                                         <option value="/" >Select Bin...</option>
                                         <?php
                                         $query_bin = "SELECT * FROM bins WHERE WarehouseID = '$WarehouseID'";
-                                        $result_bin = mysqli_query($conn, $query_bin);            
+                                        $result_bin = mysqli_query($conn, $query_bin);
                                         while ($row_bin = mysqli_fetch_array($result_bin)) {
                                             $selected = ($row['Bin_id'] == $row_bin['BinID']) ? 'selected' : '';
                                         ?>
@@ -514,10 +515,11 @@ if(isset($_REQUEST['action'])) {
                                         while ($row_rows = mysqli_fetch_array($result_rows)) {
                                             $selected = ($row['Row_id'] == $row_rows['WarehouseRowID']) ? 'selected' : '';
                                         ?>
-                                            <option value="<?= $row_rows['WarehouseRowID'] ?>" <?= $selected ?>><?= $row_rows['WarehouseRowID'] ?></option>
+                                            <option value="<?= $row_rows['WarehouseRowID'] ?>" <?= $selected ?>><?= $row_rows['RowCode'] ?></option>
                                         <?php   
                                         }
                                         ?>
+                                        
                                     </select>
                                     </div>
                                 </div>
