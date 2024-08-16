@@ -1317,6 +1317,8 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "generate_barcode") {include 'pages/generate_barcode.php';}
             if ($_REQUEST['page'] == "scan_barcode") {include 'pages/scan_barcode.php';}
             if ($_REQUEST['page'] == "inventory") {include 'pages/inventory.php';}
+
+            if ($_REQUEST['page'] == "product_view") {include 'pages/product_view.php';}
           ?>
         </div>
       </div>
