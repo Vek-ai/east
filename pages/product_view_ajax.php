@@ -8,17 +8,49 @@ require '../includes/dbconn.php';
 
 if (isset($_REQUEST['query'])) {
     $searchQuery = $_REQUEST['query'];
-    if (empty($searchQuery)) {
-        $query_product = "SELECT * FROM product WHERE hidden = '0'";
-    } else {
-        $query_product = "SELECT * FROM product WHERE (product_item LIKE '%$searchQuery%' OR description LIKE '%$searchQuery%') AND hidden = '0'";
+    $category = $_REQUEST['category'];
+
+    $query_product = "SELECT * FROM product WHERE hidden = '0'";
+    if (!empty($searchQuery)) {
+        $query_product .= " AND (product_item LIKE '%$searchQuery%' OR description LIKE '%$searchQuery%')";
     }
     $result_product = mysqli_query($conn, $query_product);
     
-    $tableRows = '';
+    $tableHTML = '
+    <table id="productTable" class="table align-middle text-nowrap mb-0">
+        <thead>
+            <tr>
+                <th scope="col">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                    </div>
+                </th>
+                <th scope="col">Products</th>';
+                
+    if ($category == 'category') {
+        $tableHTML .= '<th scope="col">Category</th>';
+    } else if ($category == 'line') {
+        $tableHTML .= '<th scope="col">Line</th>';
+    } else if ($category == 'type') {
+        $tableHTML .= '<th scope="col">Type</th>';
+    } else {
+        $tableHTML .= '<th scope="col">Type</th>
+                       <th scope="col">Line</th>
+                       <th scope="col">Category</th>';
+    }
+
+    $tableHTML .= '
+                <th scope="col">Status</th>
+                <th scope="col">Price</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="productTableBody">
+    ';
+
     if (mysqli_num_rows($result_product) > 0) {
         while ($row_product = mysqli_fetch_array($result_product)) {
-            $tableRows .= '
+            $tableHTML .= '
             <tr>
                 <td>
                     <div class="form-check mb-0">
@@ -32,10 +64,21 @@ if (isset($_REQUEST['query'])) {
                             <h6 class="fw-semibold mb-0 fs-4">'. $row_product['product_item'] .'</h6>
                         </div>
                     </div>
-                </td>
-                <td><p class="mb-0">'. $row_product['product_type'] .'</p></td>
-                <td><p class="mb-0">'. $row_product['product_line'] .'</p></td>
-                <td><p class="mb-0">'. $row_product['product_category'] .'</p></td>
+                </td>';
+    
+            if ($category == 'category') {
+                $tableHTML .= '<td><p class="mb-0">'. $row_product['product_category'] .'</p></td>';
+            } else if ($category == 'line') {
+                $tableHTML .= '<td><p class="mb-0">'. $row_product['product_line'] .'</p></td>';
+            } else if ($category == 'type') {
+                $tableHTML .= '<td><p class="mb-0">'. $row_product['product_type'] .'</p></td>';
+            } else {
+                $tableHTML .= '<td><p class="mb-0">'. $row_product['product_type'] .'</p></td>
+                               <td><p class="mb-0">'. $row_product['product_line'] .'</p></td>
+                               <td><p class="mb-0">'. $row_product['product_category'] .'</p></td>';
+            }
+
+            $tableHTML .= '
                 <td>
                     <div class="d-flex align-items-center">
                         <span class="text-bg-success p-1 rounded-circle"></span>
@@ -51,9 +94,15 @@ if (isset($_REQUEST['query'])) {
             </tr>';
         }
     } else {
-        $tableRows = '<tr><td colspan="8" class="text-center">No products found</td></tr>';
+        $tableHTML .= '<tr><td colspan="8" class="text-center">No products found</td></tr>';
     }
-    echo $tableRows;
+
+    $tableHTML .= '
+        </tbody>
+    </table>';
+    
+    echo $tableHTML;
 }
+
 
 

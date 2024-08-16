@@ -47,49 +47,35 @@ require 'includes/functions.php';
     <div class="card">
         <div class="card-body p-3">
             <div class="d-flex justify-content-between align-items-center gap-6 mb-9">
-                <form class="position-relative w-100">
-                <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
-                <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
-                </form>
+                <div class="position-relative w-100">
+                    <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
+                    <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
+                </div>
                 <div class="btn-group">
-                    <button class="btn btn-dark dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    <input type="hidden" class="form-control search-chat py-2 ps-5 " id="select-category" placeholder="Search Product">
+                    <button class="btn btn-dark dropdown-toggle" type="button" id="dropdownFilter" data-bs-toggle="dropdown" aria-expanded="false">
                         Filter
                     </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <ul class="dropdown-menu" aria-labelledby="dropdownFilter">
                     <li>
-                        <a class="dropdown-item" href="javascript:void(0)" data-category="category">Category</a>
+                        <a class="categorySelect dropdown-item" href="javascript:void(0)" data-category="category">Category</a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="javascript:void(0)" data-category="line">Product Line</a>
+                        <a class="categorySelect dropdown-item" href="javascript:void(0)" data-category="line">Product Line</a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="javascript:void(0)" data-category="type">Product Type</a>
+                        <a class="categorySelect dropdown-item" href="javascript:void(0)" data-category="type">Product Type</a>
+                    </li>
+                    <li>
+                        <a class="categorySelect dropdown-item" href="javascript:void(0)" data-category="">Reset</a>
                     </li>
                     </ul>
                 </div>
             </div>
             <div class="table-responsive border rounded">
-                <table id="productTable" class="table align-middle text-nowrap mb-0">
-                    <thead>
-                        <tr>
-                            <th scope="col">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                                </div>
-                            </th>
-                            <th scope="col">Products</th>
-                            <th scope="col">Type</th>
-                            <th scope="col">Line</th>
-                            <th scope="col">Category</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Price</th>
-                            <th scope="col">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productTableBody">
-                        
-                    </tbody>
-                </table>
+                <div id="table-container">
+
+                </div>
                 <div class="d-flex align-items-center justify-content-end py-1">
                     <p class="mb-0 fs-2">Rows per page:</p>
                     <select id="rowsPerPage" class="form-select w-auto ms-0 ms-sm-2 me-8 me-sm-4 py-1 pe-7 ps-2 border-0" aria-label="Rows per page">
@@ -164,14 +150,16 @@ $(document).ready(function() {
     }
 
     function performSearch(query) {
+        var category = $('#select-category').val();
         $.ajax({
             url: 'pages/product_view_ajax.php',
             type: 'POST',
             data: {
-                query: query
+                query: query,
+                category: category
             },
             success: function(response) {
-                $('#productTableBody').html(response);
+                $('#table-container').html(response);
                 currentPage = 1;
                 updateTable();
             },
@@ -190,6 +178,20 @@ $(document).ready(function() {
     $(document).on('change', '#text-srh', function(event) {
         event.preventDefault();
         var query = $(this).val();
+        performSearch(query);
+    });
+
+    $(document).on('click', '.categorySelect', function(event) {
+        event.preventDefault();
+        var category = $(this).data('category');
+        $('#select-category').val(category);
+        $('#dropdownFilter').text(category);
+
+        if(category.length === 0){
+            $('#dropdownFilter').text('Filter');
+        }
+        
+        var query = $('#text-srh').val();
         performSearch(query);
     });
 
