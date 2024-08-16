@@ -19,8 +19,9 @@ if (!isset($_SESSION['userid'])) {
   <link rel="shortcut icon" type="image/png" href="assets/images/logos/favicon.png" />
 
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="assets/libs/select2/dist/css/select2.min.css">
   <link rel="stylesheet" href="assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" />
+  <link rel="stylesheet" href="assets/libs/select2/dist/css/select2.min.css">
+  
 
   <!-- Core Css -->
   <link rel="stylesheet" href="assets/css/styles.css" />

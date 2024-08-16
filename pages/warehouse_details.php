@@ -133,7 +133,11 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                             while ($row_wh_bins = mysqli_fetch_array($result_wh_bins)) {
                                                             ?>
                                                                 <tr>
-                                                                    <td><?= $row_wh_bins['BinCode'] ?></td>
+                                                                    <td>
+                                                                        <a href="#" id="bin-item" data-id="<?= $row_wh_bins['BinID'] ?>">
+                                                                            <?= $row_wh_bins['BinCode'] ?>
+                                                                        </a>
+                                                                    </td>
                                                                     <td><?= $row_wh_bins['Description'] ?></td>
                                                                 </tr>
                                                             <?php
@@ -171,7 +175,10 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                             while ($row_wh_rows = mysqli_fetch_array($result_wh_rows)) {
                                                             ?>
                                                                 <tr>
-                                                                    <td><?= $row_wh_rows['RowCode'] ?></td>
+                                                                    <td>
+                                                                        <a href="#" id="row-item" data-id="<?= $row_wh_rows['WarehouseRowID'] ?>">
+                                                                            <?= $row_wh_rows['RowCode'] ?></td>
+                                                                        </a>
                                                                     <td><?= $row_wh_rows['Description'] ?></td>
                                                                 </tr>
                                                             <?php
@@ -217,7 +224,10 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                 while ($row_wh_shelves = mysqli_fetch_array($result_wh_shelves)) {
                                                                     ?>
                                                                     <tr>
-                                                                        <td><?= $row_wh_shelves['ShelfCode'] ?></td>
+                                                                        <td>
+                                                                            <a href="#" id="shelf-item" data-id="<?= $row_wh_shelves['ShelfID'] ?>">
+                                                                                <?= $row_wh_shelves['ShelfCode'] ?></td>
+                                                                            </a>    
                                                                         <td><?= getWarehouseRowName($row_wh_shelves['WarehouseRowID']) ?></td>
                                                                         <td><?= $row_wh_shelves['Description'] ?></td>
                                                                     </tr>
@@ -409,6 +419,14 @@ if(!empty($_REQUEST['warehouse_id'])){
 
                                     <div class="modal fade" id="updateShelfModal" tabindex="-1" aria-labelledby="updateShelfModalLabel" aria-hidden="true"></div>
 
+                                    <div class="modal fade" id="viewBinModal" tabindex="-1" aria-labelledby="viewBinModalLabel" aria-hidden="true"></div>
+
+                                    <div class="modal fade" id="viewRowModal" tabindex="-1" aria-labelledby="viewRowModalLabel" aria-hidden="true"></div>
+
+                                    <div class="modal fade" id="viewShelfModal" tabindex="-1" aria-labelledby="viewShelfModalLabel" aria-hidden="true"></div>
+
+                                    <div class="modal fade" id="transferInventoryModal" tabindex="-1" aria-labelledby="transferInventoryModalLabel" aria-hidden="true"></div> 
+                                    
                                     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
                                         <div class="modal-dialog modal-dialog-centered">
                                             <div class="modal-content">
@@ -428,8 +446,6 @@ if(!empty($_REQUEST['warehouse_id'])){
                                             </div>
                                         </div>
                                     </div>
-
-
                                 </div>
                             </div>
                         </div>
@@ -450,9 +466,85 @@ if(!empty($_REQUEST['warehouse_id'])){
     }
 
     $(document).ready(function() {
+        var LastModal;
+        $('.modal').on('hidden.bs.modal', (e) => {
+            LastModal = $(e.target).attr('id'); 
+        });
+
+        $(document).on('click', '#btn-reopen-modal', function(event) {
+            $('.modal.show').modal('hide');
+            $('#'+LastModal).modal('show');
+        });
+
+        $(document).on('click', '.transferInventory', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/warehouse_ajax_details.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: "fetch_modal_transfer"
+                    },
+                    success: function(response) {
+                        $('.modal.show').modal('hide');
+                        $('#transferInventoryModal').html(response);
+                        $(".select2-add").select2({
+                            dropdownParent: $('#transferInventoryModal .modal-content')
+                        });
+                        $('#transferInventoryModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
         $('#row_wh_bins').DataTable();
         $('#row_wh_rows').DataTable();
         $('#row_wh_shelves').DataTable();
+
+        $(document).on('submit', '#transfer_inventory', function(event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+            formData.append('action', 'transfer_product');
+              
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    console.log(response)
+                    $('#transferInventoryModal').modal('hide');
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Successfully transferred product.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+
+                    
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
 
         $(document).on('submit', '#add_bin', function(event) {
             event.preventDefault(); 
@@ -574,6 +666,69 @@ if(!empty($_REQUEST['warehouse_id'])){
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
+            });
+        });
+
+        $(document).on('click', '#bin-item', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/warehouse_ajax_details.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: "fetch_modal_bin"
+                    },
+                    success: function(response) {
+                        $('#viewBinModal').html(response);
+                        $('#tbl-bin-products').DataTable();
+                        $('#viewBinModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '#row-item', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/warehouse_ajax_details.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: "fetch_modal_row"
+                    },
+                    success: function(response) {
+                        $('#viewRowModal').html(response);
+                        $('#tbl-row-products').DataTable();
+                        $('#viewRowModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '#shelf-item', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/warehouse_ajax_details.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: "fetch_modal_shelf"
+                    },
+                    success: function(response) {
+                        $('#viewShelfModal').html(response);
+                        $('#tbl-shelf-products').DataTable();
+                        $('#viewShelfModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
             });
         });
     });
