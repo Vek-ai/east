@@ -52,7 +52,7 @@ if(isset($_REQUEST['action'])) {
                 WHERE Inventory_id = '$Inventory_id'";
     
             if (mysqli_query($conn, $updateQuery)) {
-                echo $Product_id;
+                echo "success";
             } else {
                 die("Error updating record: " . mysqli_error($conn));
             }
