@@ -4,6 +4,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 
 require '../includes/dbconn.php';
+require '../includes/functions.php';
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -198,6 +199,44 @@ if(isset($_REQUEST['action'])) {
                 echo "Error adding product: " . mysqli_error($conn);
             }
         }
+
+        if (isset($_FILES['picture_path']) && $_FILES['picture_path']['error'] == UPLOAD_ERR_OK) {
+            $fileTmpPath = $_FILES['picture_path']['tmp_name'];
+            $fileName = $_FILES['picture_path']['name'];
+            $fileNameCmps = explode(".", $fileName);
+            $fileExtension = strtolower(end($fileNameCmps));
+            $uploadFileDir = '../images/product/';
+            $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
+            $dest_path = $uploadFileDir . $newFileName;
+
+            $allowedfileExtensions = array('jpg', 'gif', 'png', 'jpeg');
+            if (in_array($fileExtension, $allowedfileExtensions)) {
+                if(move_uploaded_file($fileTmpPath, $dest_path)) {
+                    $picture_path = mysqli_real_escape_string($conn, $dest_path);
+                    $sql = "UPDATE product SET main_image='images/product/$newFileName' WHERE product_id='$product_id'";
+                    if (!$conn->query($sql)) {
+                        echo "Error updating record: " . $conn->error;
+                    }
+
+                    $sql = "INSERT INTO product_images (productid, image_url) VALUES ('$product_id','images/product/$newFileName')";
+                    if (!$conn->query($sql)) {
+                        echo "Error updating record: " . $conn->error;
+                    }
+                } else {
+                    $message = 'Error moving the file to the upload directory.';
+                }
+            } else {
+                $message = 'Upload failed. Allowed file types: ' . implode(',', $allowedfileExtensions);
+            }
+        } else {
+            if($isInsert){
+                $sql = "UPDATE staff SET main_image='images/product/product.jpg' WHERE product_id='$product_id'";
+                if (!$conn->query($sql)) {
+                    echo "Error updating record: " . $conn->error;
+                }
+            }
+            
+        }
     
     }
 
@@ -226,6 +265,27 @@ if(isset($_REQUEST['action'])) {
                             <div class="card">
                                 <div class="card-body">
                                 <input type="hidden" id="product_id" name="product_id" class="form-control"  value="<?= $row['product_id']?>"/>
+
+                                <div class="row">
+                                    <div class="card-body p-0">
+                                        <h4 class="card-title text-center">Product Image</h4>
+                                        <div class="text-center">
+                                            <?php 
+                                            if(!empty($row['main_image'])){
+                                                $picture_path = $row['main_image'];
+                                            }else{
+                                                $picture_path = "images/product/product.jpg";
+                                            }
+                                            ?>
+                                            <img src="<?= $picture_path ?>" id="picture_img" alt="picture-picture" class="img-fluid rounded-circle" width="120" height="120">
+                                            <div class="d-flex align-items-center justify-content-center my-4 gap-6">
+                                            <button id="upload_picture" type="button" class="btn btn-primary">Upload</button>
+                                            <button id="reset_picture" type="button" class="btn bg-danger-subtle text-danger">Reset</button>
+                                            </div>
+                                            <input type="file" id="picture_path" name="picture_path" class="form-control" style="display: none;"/>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <div class="row pt-3">
                                     <div class="col-md-6">

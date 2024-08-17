@@ -32,11 +32,18 @@ if (isset($_REQUEST['query'])) {
 
     if (mysqli_num_rows($result_product) > 0) {
         while ($row_product = mysqli_fetch_array($result_product)) {
+
+            if(!empty($row_product['main_image'])){
+                $picture_path = $row_product['main_image'];
+            }else{
+                $picture_path = "images/product/product.jpg";
+            }
+
             $tableHTML .= '
             <tr>
                 <td>
                     <div class="d-flex align-items-center">
-                        <img src="../assets/images/products/s1.jpg" class="rounded-circle" alt="materialpro-img" width="56" height="56">
+                        <img src="'.$picture_path.'" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                         <div class="ms-3">
                             <h6 class="fw-semibold mb-0 fs-4">'. $row_product['product_item'] .'</h6>
                         </div>
