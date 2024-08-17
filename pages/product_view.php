@@ -51,31 +51,65 @@ require 'includes/functions.php';
                     <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
                     <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
-                <div class="btn-group">
-                    <input type="hidden" class="form-control search-chat py-2 ps-5 " id="select-category" placeholder="Search Product">
-                    <button class="btn btn-dark dropdown-toggle" type="button" id="dropdownFilter" data-bs-toggle="dropdown" aria-expanded="false">
-                        Filter
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownFilter">
-                    <li>
-                        <a class="categorySelect dropdown-item" href="javascript:void(0)" data-category="category">Category</a>
-                    </li>
-                    <li>
-                        <a class="categorySelect dropdown-item" href="javascript:void(0)" data-category="line">Product Line</a>
-                    </li>
-                    <li>
-                        <a class="categorySelect dropdown-item" href="javascript:void(0)" data-category="type">Product Type</a>
-                    </li>
-                    <li>
-                        <a class="categorySelect dropdown-item" href="javascript:void(0)" data-category="">Reset</a>
-                    </li>
-                    </ul>
-                </div>
+            <div class="btn-group">
+                <select class="form-control search-chat py-0 ps-5" id="select-category" data-category="">
+                    <option value="" data-category="">Filter</option>
+                    <optgroup label="Category">
+                        <?php
+                        $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+                        $result_category = mysqli_query($conn, $query_category);
+                        while ($row_category = mysqli_fetch_array($result_category)) {
+                        ?>
+                            <option value="<?= $row_category['product_category_id'] ?>" data-category="category"><?= $row_category['product_category'] ?></option>
+                        <?php
+                        }
+                        ?>
+                    </optgroup>
+                    <optgroup label="Product Line">
+                        <?php
+                        $query_line = "SELECT * FROM product_line WHERE hidden = '0'";
+                        $result_line = mysqli_query($conn, $query_line);
+                        while ($row_line = mysqli_fetch_array($result_line)) {
+                        ?>
+                            <option value="<?= $row_line['product_line_id'] ?>" data-category="line"><?= $row_line['product_line'] ?></option>
+                        <?php
+                        }
+                        ?>
+                    </optgroup>
+                    <optgroup label="Product Type">
+                        <?php
+                        $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
+                        $result_type = mysqli_query($conn, $query_type);
+                        while ($row_type = mysqli_fetch_array($result_type)) {
+                        ?>
+                            <option value="<?= $row_type['product_type_id'] ?>" data-category="type"><?= $row_type['product_type'] ?></option>
+                        <?php
+                        }
+                        ?>
+                    </optgroup>
+                    <option value="" data-category="">Reset</option>
+                </select>
+            </div>
+
+
+
             </div>
             <div class="table-responsive border rounded">
-                <div id="table-container">
-
-                </div>
+                <table id="productTable" class="table align-middle text-nowrap mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Products</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Line</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody"></tbody>
+                </table>
+                    
                 <div class="d-flex align-items-center justify-content-end py-1">
                     <p class="mb-0 fs-2">Rows per page:</p>
                     <select id="rowsPerPage" class="form-select w-auto ms-0 ms-sm-2 me-8 me-sm-4 py-1 pe-7 ps-2 border-0" aria-label="Rows per page">
@@ -150,16 +184,19 @@ $(document).ready(function() {
     }
 
     function performSearch(query) {
-        var category = $('#select-category').val();
+        var selectedOption = $('#select-category').find('option:selected'); 
+        var category = selectedOption.data('category');
+        var category_id = selectedOption.val();
         $.ajax({
             url: 'pages/product_view_ajax.php',
             type: 'POST',
             data: {
                 query: query,
-                category: category
+                category: category,
+                category_id: category_id
             },
             success: function(response) {
-                $('#table-container').html(response);
+                $('#productTableBody').html(response);
                 currentPage = 1;
                 updateTable();
             },
@@ -169,28 +206,24 @@ $(document).ready(function() {
         });
     }
 
+    $('#select-category').select2({
+        placeholder: "Filter",
+        allowClear: true
+    });
+
     $('#rowsPerPage').change(function() {
         rowsPerPage = parseInt($(this).val());
         currentPage = 1;
         updateTable();
     });
 
-    $(document).on('change', '#text-srh', function(event) {
+    $(document).on('input', '#text-srh', function(event) {
         event.preventDefault();
         var query = $(this).val();
         performSearch(query);
     });
 
-    $(document).on('click', '.categorySelect', function(event) {
-        event.preventDefault();
-        var category = $(this).data('category');
-        $('#select-category').val(category);
-        $('#dropdownFilter').text(category);
-
-        if(category.length === 0){
-            $('#dropdownFilter').text('Filter');
-        }
-        
+    $(document).on('change', '#select-category', function(event) {
         var query = $('#text-srh').val();
         performSearch(query);
     });
