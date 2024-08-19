@@ -1319,6 +1319,8 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "inventory") {include 'pages/inventory.php';}
 
             if ($_REQUEST['page'] == "product_view") {include 'pages/product_view.php';}
+
+            if ($_REQUEST['page'] == "customer") {include 'pages/customer.php';}
           ?>
         </div>
       </div>
