@@ -88,6 +88,23 @@ $generate_rend_upc = generateRandomUPC();
                             <div class="card-body">
                             <input type="hidden" id="product_id" name="product_id" class="form-control"  />
 
+                            <div class="row">
+                                <div class="card-body p-0">
+                                    <h4 class="card-title text-center">Product Image</h4>
+                                    <div class="text-center">
+                                        <?php 
+                                            $picture_path = "images/product/product.jpg";
+                                        ?>
+                                        <img src="<?= $picture_path ?>" id="picture_img_add" alt="picture-picture" class="img-fluid rounded-circle" width="120" height="120">
+                                        <div class="d-flex align-items-center justify-content-center my-4 gap-6">
+                                        <button id="upload_picture_add" type="button" class="btn btn-primary">Upload</button>
+                                        <button id="reset_picture_add" type="button" class="btn bg-danger-subtle text-danger">Reset</button>
+                                        </div>
+                                        <input type="file" id="picture_path_add" name="picture_path" class="form-control" style="display: none;"/>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row pt-3">
                                 <div class="col-md-6">
                                     <div class="mb-3">
@@ -591,6 +608,53 @@ $generate_rend_upc = generateRandomUPC();
             "order": [[1, "asc"]]
         });
         
+        $(document).on('click', '#upload_picture_add', function(event) {
+            event.preventDefault(); 
+            $('#picture_path_add').click();
+        });
+
+        $(document).on('change', '#picture_path_add', function(event) {
+            var file = this.files[0];
+            if (file) {
+                var reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    $('#picture_img_add').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        $(document).on('click', '#reset_picture_add', function(event) {
+            event.preventDefault();
+            var defaultLogoPath = "images/product/product.jpg";
+            $('#picture_img_add').attr('src', defaultLogoPath);
+            $('#picture_path_add').val('');
+        });
+
+        $(document).on('click', '#upload_picture', function(event) {
+            event.preventDefault(); 
+            $('#picture_path').click();
+        });
+
+        $(document).on('change', '#picture_path', function(event) {
+            var file = this.files[0];
+            if (file) {
+                var reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    $('#picture_img').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        $(document).on('click', '#reset_picture', function(event) {
+            event.preventDefault();
+            var defaultLogoPath = "images/product/product.jpg";
+            $('#picture_img').attr('src', defaultLogoPath);
+            $('#picture_path').val('');
+        });
 
         $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
             var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
