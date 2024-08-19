@@ -21,6 +21,8 @@ if (!isset($_SESSION['userid'])) {
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" />
   <link rel="stylesheet" href="assets/libs/select2/dist/css/select2.min.css">
+  <link rel="stylesheet" href="assets/libs/owl.carousel/dist/assets/owl.carousel.min.css">
+  <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css" />
   
 
   <!-- Core Css -->
@@ -1319,7 +1321,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "inventory") {include 'pages/inventory.php';}
 
             if ($_REQUEST['page'] == "product_view") {include 'pages/product_view.php';}
-
+            if ($_REQUEST['page'] == "product_details") {include 'pages/product_details.php';}
             if ($_REQUEST['page'] == "customer") {include 'pages/customer.php';}
           ?>
         </div>
@@ -1357,6 +1359,8 @@ if (!isset($_SESSION['userid'])) {
   <script src="assets/libs/datatables.net/js/jquery.dataTables.min.js"></script>
   <script src="assets/libs/inputmask/dist/jquery.inputmask.min.js"></script>
   <script src="assets/libs/select2/dist/js/select2.min.js"></script>
+  <script src="assets/libs/owl.carousel/dist/owl.carousel.min.js"></script>
+  <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
   <script>
   $(document).ready(function() {
     $(".phone-inputmask").inputmask("(999) 999-9999")

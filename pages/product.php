@@ -3,10 +3,33 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $generate_rend_upc = generateRandomUPC();
+$picture_path = "images/product/product.jpg";
 ?>
 <style>
     .select2-container {
         z-index: 9999 !important; 
+    }
+    .dz-preview {
+        position: relative;
+    }
+
+    .dz-remove {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: red;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 12px;
+        z-index: 9999; /* Ensure the remove button is on top of the image */
+        cursor: pointer; /* Make sure it looks clickable */
     }
 </style>
 <div class="container-fluid">
@@ -91,16 +114,11 @@ $generate_rend_upc = generateRandomUPC();
                             <div class="row">
                                 <div class="card-body p-0">
                                     <h4 class="card-title text-center">Product Image</h4>
-                                    <div class="text-center">
-                                        <?php 
-                                            $picture_path = "images/product/product.jpg";
-                                        ?>
-                                        <img src="<?= $picture_path ?>" id="picture_img_add" alt="picture-picture" class="img-fluid rounded-circle" width="120" height="120">
-                                        <div class="d-flex align-items-center justify-content-center my-4 gap-6">
-                                        <button id="upload_picture_add" type="button" class="btn btn-primary">Upload</button>
-                                        <button id="reset_picture_add" type="button" class="btn bg-danger-subtle text-danger">Reset</button>
-                                        </div>
-                                        <input type="file" id="picture_path_add" name="picture_path" class="form-control" style="display: none;"/>
+                                        <p action="#" class="dropzone">
+                                            <div class="fallback">
+                                            <input type="file" id="picture_path_add" name="picture_path" class="form-control" style="display: none" multiple/>
+                                            </div>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -604,6 +622,37 @@ $generate_rend_upc = generateRandomUPC();
 
 <script>
     $(document).ready(function() {
+        let uploadedFiles = []; // Array to hold the files
+
+        $('.dropzone').dropzone({
+            addRemoveLinks: true,
+            dictRemoveFile: "X",
+            init: function() {
+                this.on("addedfile", function(file) {
+                    uploadedFiles.push(file);
+                    updateFileInput();
+                    console.log("File added: " + file.name);
+                });
+
+                this.on("removedfile", function(file) {
+                    uploadedFiles = uploadedFiles.filter(f => f.name !== file.name);
+                    updateFileInput();
+                    console.log("File removed: " + file.name);
+                });
+            }
+        });
+
+        function updateFileInput() {
+            const fileInput = document.getElementById('picture_path_add');
+            const dataTransfer = new DataTransfer();
+
+            uploadedFiles.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+
+            fileInput.files = dataTransfer.files;
+        }
+
         var table = $('#productList').DataTable({
             "order": [[1, "asc"]]
         });

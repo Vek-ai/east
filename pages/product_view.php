@@ -46,62 +46,90 @@ require 'includes/functions.php';
 <div class="product-list">
     <div class="card">
         <div class="card-body p-3">
-            <div class="d-flex justify-content-between align-items-center gap-6 mb-9">
-                <div class="position-relative w-100">
+            <div class="d-flex justify-content-between align-items-center  mb-9">
+                <div class="position-relative w-100 col-6">
                     <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
                     <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
-            <div class="btn-group">
-                <select class="form-control search-chat py-0 ps-5" id="select-category" data-category="">
-                    <option value="" data-category="">Filter</option>
-                    <optgroup label="Category">
-                        <?php
-                        $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
-                        $result_category = mysqli_query($conn, $query_category);
-                        while ($row_category = mysqli_fetch_array($result_category)) {
-                        ?>
-                            <option value="<?= $row_category['product_category_id'] ?>" data-category="category"><?= $row_category['product_category'] ?></option>
-                        <?php
-                        }
-                        ?>
-                    </optgroup>
-                    <optgroup label="Product Line">
-                        <?php
-                        $query_line = "SELECT * FROM product_line WHERE hidden = '0'";
-                        $result_line = mysqli_query($conn, $query_line);
-                        while ($row_line = mysqli_fetch_array($result_line)) {
-                        ?>
-                            <option value="<?= $row_line['product_line_id'] ?>" data-category="line"><?= $row_line['product_line'] ?></option>
-                        <?php
-                        }
-                        ?>
-                    </optgroup>
-                    <optgroup label="Product Type">
-                        <?php
-                        $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
-                        $result_type = mysqli_query($conn, $query_type);
-                        while ($row_type = mysqli_fetch_array($result_type)) {
-                        ?>
-                            <option value="<?= $row_type['product_type_id'] ?>" data-category="type"><?= $row_type['product_type'] ?></option>
-                        <?php
-                        }
-                        ?>
-                    </optgroup>
-                    <option value="" data-category="">Reset</option>
-                </select>
-            </div>
-
-
-
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-category" data-category="">
+                        <option value="" data-category="">Filter</option>
+                        <optgroup label="Category">
+                            <?php
+                            $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+                            $result_category = mysqli_query($conn, $query_category);
+                            while ($row_category = mysqli_fetch_array($result_category)) {
+                            ?>
+                                <option value="<?= $row_category['product_category_id'] ?>" data-category="category"><?= $row_category['product_category'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                        <optgroup label="Product Line">
+                            <?php
+                            $query_line = "SELECT * FROM product_line WHERE hidden = '0'";
+                            $result_line = mysqli_query($conn, $query_line);
+                            while ($row_line = mysqli_fetch_array($result_line)) {
+                            ?>
+                                <option value="<?= $row_line['product_line_id'] ?>" data-category="line"><?= $row_line['product_line'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                        <optgroup label="Product Type">
+                            <?php
+                            $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
+                            $result_type = mysqli_query($conn, $query_type);
+                            while ($row_type = mysqli_fetch_array($result_type)) {
+                            ?>
+                                <option value="<?= $row_type['product_type_id'] ?>" data-category="type"><?= $row_type['product_type'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-line" data-category="">
+                        <option value="" data-category="">Filter</option>
+                        <optgroup label="Product Line">
+                            <?php
+                            $query_line = "SELECT * FROM product_line WHERE hidden = '0'";
+                            $result_line = mysqli_query($conn, $query_line);
+                            while ($row_line = mysqli_fetch_array($result_line)) {
+                            ?>
+                                <option value="<?= $row_line['product_line_id'] ?>" data-category="line"><?= $row_line['product_line'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-type" data-category="">
+                        <option value="" data-category="">Filter</option>
+                        <optgroup label="Product Type">
+                            <?php
+                            $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
+                            $result_type = mysqli_query($conn, $query_type);
+                            while ($row_type = mysqli_fetch_array($result_type)) {
+                            ?>
+                                <option value="<?= $row_type['product_type_id'] ?>" data-category="type"><?= $row_type['product_type'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
             </div>
             <div class="table-responsive border rounded">
                 <table id="productTable" class="table align-middle text-nowrap mb-0">
                     <thead>
                         <tr>
                             <th scope="col">Products</th>
-                            <th scope="col">Category</th>
-                            <th scope="col">Line</th>
                             <th scope="col">Type</th>
+                            <th scope="col">Line</th>
+                            <th scope="col">Category</th>
                             <th scope="col">Status</th>
                             <th scope="col">Price</th>
                             <th scope="col">Actions</th>
@@ -184,15 +212,16 @@ $(document).ready(function() {
     }
 
     function performSearch(query) {
-        var selectedOption = $('#select-category').find('option:selected'); 
-        var category = selectedOption.data('category');
-        var category_id = selectedOption.val();
+        var type_id = $('#select-type').find('option:selected').val();
+        var line_id = $('#select-line').find('option:selected').val();
+        var category_id = $('#select-category').find('option:selected').val();
         $.ajax({
             url: 'pages/product_view_ajax.php',
             type: 'POST',
             data: {
                 query: query,
-                category: category,
+                type_id: type_id,
+                line_id: line_id,
                 category_id: category_id
             },
             success: function(response) {
@@ -206,26 +235,27 @@ $(document).ready(function() {
         });
     }
 
-    $('#select-category').select2({
-        placeholder: "Filter",
-        allowClear: true
-    });
-
     $('#rowsPerPage').change(function() {
         rowsPerPage = parseInt($(this).val());
         currentPage = 1;
         updateTable();
     });
 
-    $(document).on('input', '#text-srh', function(event) {
-        event.preventDefault();
-        var query = $(this).val();
-        performSearch(query);
+    $('#select-type').select2({
+        placeholder: "Filter Type",
+        allowClear: true
+    });
+    $('#select-line').select2({
+        placeholder: "Filter Line",
+        allowClear: true
+    });
+    $('#select-category').select2({
+        placeholder: "Filter Category",
+        allowClear: true
     });
 
-    $(document).on('change', '#select-category', function(event) {
-        var query = $('#text-srh').val();
-        performSearch(query);
+    $(document).on('input change', '#text-srh, #select-category, #select-type, #select-line', function() {
+        performSearch($('#text-srh').val());
     });
 
     performSearch('');
