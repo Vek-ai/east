@@ -1323,6 +1323,8 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "product_view") {include 'pages/product_view.php';}
             if ($_REQUEST['page'] == "product_details") {include 'pages/product_details.php';}
             if ($_REQUEST['page'] == "customer") {include 'pages/customer.php';}
+            if ($_REQUEST['page'] == "customer_type") {include 'pages/customer_type.php';}
+
           ?>
         </div>
       </div>
