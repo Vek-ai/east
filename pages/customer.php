@@ -367,8 +367,8 @@ $addHeaderTxt = "Add New";
                         $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
                     }
                 ?>
-                <tr>
-                    <td><?= $name ?></td>
+                <tr  id="product-row-<?= $no ?>">
+                    <td><span class="customer<?= $no ?> <?php if ($row_customer['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $name ?></span></td>
                     <td><?= $business_name ?></td>
                     <td><?= $email ?></td>
                     <td><?= $phone ?></td>

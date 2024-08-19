@@ -158,7 +158,7 @@ if(isset($_REQUEST['action'])) {
     } 
     
     if ($action == "change_status") {
-        $product_line_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
+        $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
         $status = mysqli_real_escape_string($conn, $_POST['status']);
         $new_status = ($status == '0') ? '1' : '0';
 
