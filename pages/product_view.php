@@ -53,7 +53,7 @@ require 'includes/functions.php';
                 </div>
                 <div class="position-relative w-100 px-1 col-2">
                     <select class="form-control search-chat py-0 ps-5" id="select-category" data-category="">
-                        <option value="" data-category="">Filter</option>
+                        <option value="" data-category="">All Categories</option>
                         <optgroup label="Category">
                             <?php
                             $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
@@ -65,33 +65,11 @@ require 'includes/functions.php';
                             }
                             ?>
                         </optgroup>
-                        <optgroup label="Product Line">
-                            <?php
-                            $query_line = "SELECT * FROM product_line WHERE hidden = '0'";
-                            $result_line = mysqli_query($conn, $query_line);
-                            while ($row_line = mysqli_fetch_array($result_line)) {
-                            ?>
-                                <option value="<?= $row_line['product_line_id'] ?>" data-category="line"><?= $row_line['product_line'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                        <optgroup label="Product Type">
-                            <?php
-                            $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
-                            $result_type = mysqli_query($conn, $query_type);
-                            while ($row_type = mysqli_fetch_array($result_type)) {
-                            ?>
-                                <option value="<?= $row_type['product_type_id'] ?>" data-category="type"><?= $row_type['product_type'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
                     </select>
                 </div>
                 <div class="position-relative w-100 px-1 col-2">
                     <select class="form-control search-chat py-0 ps-5" id="select-line" data-category="">
-                        <option value="" data-category="">Filter</option>
+                        <option value="" data-category="">All Product Lines</option>
                         <optgroup label="Product Line">
                             <?php
                             $query_line = "SELECT * FROM product_line WHERE hidden = '0'";
@@ -107,7 +85,7 @@ require 'includes/functions.php';
                 </div>
                 <div class="position-relative w-100 px-1 col-2">
                     <select class="form-control search-chat py-0 ps-5" id="select-type" data-category="">
-                        <option value="" data-category="">Filter</option>
+                        <option value="" data-category="">All Product Types</option>
                         <optgroup label="Product Type">
                             <?php
                             $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
@@ -241,18 +219,9 @@ $(document).ready(function() {
         updateTable();
     });
 
-    $('#select-type').select2({
-        placeholder: "Filter Type",
-        allowClear: true
-    });
-    $('#select-line').select2({
-        placeholder: "Filter Line",
-        allowClear: true
-    });
-    $('#select-category').select2({
-        placeholder: "Filter Category",
-        allowClear: true
-    });
+    $('#select-type').select2();
+    $('#select-line').select2();
+    $('#select-category').select2();
 
     $(document).on('input change', '#text-srh, #select-category, #select-type, #select-line', function() {
         performSearch($('#text-srh').val());

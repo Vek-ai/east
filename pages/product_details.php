@@ -295,62 +295,52 @@ if (!empty($_REQUEST['product_id'])) {
     <div class="related-products pt-7">
         <h4 class="mb-3 fw-semibold">Related Products</h4>
         <div class="row">
-            <?php
-            $query_rel_prod = "SELECT * FROM product WHERE product_id != '$product_id' LIMIT 4";
-            $result_rel_prod = mysqli_query($conn, $query_rel_prod);            
-            while ($row_rel_prod = mysqli_fetch_array($result_rel_prod)) {
-                if($row_rel_prod['main_image']){
-                    $img_src = $row_rel_prod['main_image'];
-                }else{
-                    $img_src = "images/product/product.jpg";
-                }
+        <?php
+            $correlated = array();
+            $query_correlated_prod = "SELECT correlated_id FROM correlated_product WHERE main_correlated_product_id = '$product_id' LIMIT 4";
+            $result_correlated_prod = mysqli_query($conn, $query_correlated_prod);
+
+            while ($row_correlated_prod = mysqli_fetch_array($result_correlated_prod)) {
+                $correlated[] = $row_correlated_prod['correlated_id'];
+            }
+
+            if (!empty($correlated)) {
+                $correlated_ids = implode(',', array_map('intval', $correlated));
+                $query_rel_prod = "SELECT * FROM product WHERE product_id IN ($correlated_ids) AND product_id != '$product_id' LIMIT 4";
+                $result_rel_prod = mysqli_query($conn, $query_rel_prod);
+
+                while ($row_rel_prod = mysqli_fetch_array($result_rel_prod)) {
+                    $img_src = $row_rel_prod['main_image'] ? $row_rel_prod['main_image'] : "images/product/product.jpg";
             ?>
-            <div class="col-sm-6 col-xxl-3">
-                <div class="card overflow-hidden rounded-2">
-                <div class="position-relative">
-                    <a href="/?page=product_details&product_id=<?=$row_rel_prod['product_id']?>" class="hover-img d-block overflow-hidden">
-                    <img src="<?= $img_src ?>" class="card-img-top rounded-0" alt="materialpro-img">
-                    </a>
-                </div>
-                <div class="card-body pt-3 p-4">
-                    <h6 class="fw-semibold fs-4"><?= $row_rel_prod['product_item'] ?></h6>
-                    <div class="d-flex align-items-center justify-content-between">
-                    <h6 class="fw-semibold fs-4 mb-0">$<?= $row_rel_prod['unit_price'] ?>
-                    </h6>
-                    <ul class="list-unstyled d-flex align-items-center mb-0">
-                        <li>
-                        <a class="me-1" href="javascript:void(0)">
-                            <i class="ti ti-star text-warning"></i>
-                        </a>
-                        </li>
-                        <li>
-                        <a class="me-1" href="javascript:void(0)">
-                            <i class="ti ti-star text-warning"></i>
-                        </a>
-                        </li>
-                        <li>
-                        <a class="me-1" href="javascript:void(0)">
-                            <i class="ti ti-star text-warning"></i>
-                        </a>
-                        </li>
-                        <li>
-                        <a class="me-1" href="javascript:void(0)">
-                            <i class="ti ti-star text-warning"></i>
-                        </a>
-                        </li>
-                        <li>
-                        <a href="javascript:void(0)">
-                            <i class="ti ti-star text-warning"></i>
-                        </a>
-                        </li>
-                    </ul>
+                    <div class="col-sm-6 col-xxl-3">
+                        <div class="card overflow-hidden rounded-2">
+                            <div class="position-relative">
+                                <a href="/?page=product_details&product_id=<?= $row_rel_prod['product_id'] ?>" class="hover-img d-block overflow-hidden">
+                                    <img src="<?= $img_src ?>" class="card-img-top rounded-0" alt="materialpro-img">
+                                </a>
+                            </div>
+                            <div class="card-body pt-3 p-4">
+                                <h6 class="fw-semibold fs-4"><?= htmlspecialchars($row_rel_prod['product_item']) ?></h6>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h6 class="fw-semibold fs-4 mb-0">$<?= htmlspecialchars($row_rel_prod['unit_price']) ?></h6>
+                                    <ul class="list-unstyled d-flex align-items-center mb-0">
+                                        <?php for ($i = 0; $i < 5; $i++): ?>
+                                            <li>
+                                                <a class="me-1" href="javascript:void(0)">
+                                                    <i class="ti ti-star text-warning"></i>
+                                                </a>
+                                            </li>
+                                        <?php endfor; ?>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                </div>
-            </div>
-            <?php 
+            <?php
+                }
             }
             ?>
+
             
         </div>
     </div>
