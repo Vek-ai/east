@@ -127,7 +127,7 @@ if(!empty($_REQUEST['result'])){
         <div class="col-md-4">
           <div class="mb-3">
             <label class="form-label">Color Code</label>
-            <input type="text" id="color_code" name="color_code" class="form-control" value="<?= $color_code ?>" />
+            <input type="color" id="color_code" name="color_code" class="form-control" value="<?= $color_code ?>" />
           </div>
         </div>
         <div class="col-md-4">

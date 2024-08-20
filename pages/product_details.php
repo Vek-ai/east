@@ -1,6 +1,12 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 require 'includes/dbconn.php';
 require 'includes/functions.php';
+function isValidHexColor($color) {
+    return preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $color);
+}
 if (!empty($_REQUEST['product_id'])) {
     $product_id_req = mysqli_real_escape_string($conn, $_REQUEST['product_id']);
     $query = "SELECT * FROM product WHERE product_id = '$product_id_req'";
@@ -9,6 +15,7 @@ if (!empty($_REQUEST['product_id'])) {
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
         $product_id = $row['product_id'];
+        $color = $row['color'];
 ?>
 
 <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -123,11 +130,147 @@ if (!empty($_REQUEST['product_id'])) {
                 <h4 class="fw-semibold mb-3">
                     $<?= $row['unit_price'] ?> 
                 </h4>
-                
                 <div class="d-flex align-items-center gap-8 py-7">
-                <h6 class="mb-0 fs-4 fw-semibold">Colors:</h6>
-                <a class="rounded-circle d-block text-bg-primary p-6" href="javascript:void(0)"></a>
+                    <?php
+                    $query_color = "SELECT * FROM paint_colors WHERE color_id = '$color'";
+                    $result_color = mysqli_query($conn, $query_color);  
+                    if ($result_color && mysqli_num_rows($result_color) > 0) {
+                    ?>
+                        <h6 class="mb-0 fs-4 fw-semibold">Colors:</h6>
+                    <?php
+                        while ($row_color = mysqli_fetch_array($result_color)) {
+                            if(isValidHexColor($row_color['color_code'])){
+                        ?>
+                        <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color: <?= $row_color['color_code'] ?>"></a>
+                        <?php 
+                            }
+                        }
+                    }
+                    ?> 
                 </div>
+
+                <div class="container py-4">
+                    <h5 class="mb-3 fs-6 fw-semibold text-center">Inventory</h5>
+                    <?php
+                    $query_inventory = "SELECT * FROM inventory WHERE Product_id = '$product_id'";
+                    $result_inventory = mysqli_query($conn, $query_inventory);  
+                    
+                    if ($result_inventory && mysqli_num_rows($result_inventory) > 0) {
+                        ?>
+                        <div class="row">
+                        <?php
+                        while ($row_inventory = mysqli_fetch_array($result_inventory)) {
+                            $WarehouseID = $row_inventory['Warehouse_id'];
+                            $ShelfID = $row_inventory['Shelves_id'];
+                            $BinID = $row_inventory['Bin_id'];
+                            $WarehouseRowID = $row_inventory['Row_id'];
+
+                            // Query for Warehouse
+                            $query_warehouse = "
+                                SELECT w.*, SUM(i.quantity) as total_quantity  
+                                FROM warehouses as w 
+                                LEFT JOIN inventory as i ON i.Warehouse_id = w.WarehouseID 
+                                WHERE w.WarehouseID = '$WarehouseID'
+                                GROUP BY w.WarehouseID
+                            ";
+                            $result_warehouse = mysqli_query($conn, $query_warehouse);  
+                            if ($result_warehouse && mysqli_num_rows($result_warehouse) > 0) {
+                                $row_warehouse = mysqli_fetch_array($result_warehouse);
+                                ?>
+                                <div class="col-12">
+                                    <div class="row p-3 border rounded bg-light">
+                                        <div class="col">
+                                            <h5 class="mb-0 fs-5 fw-bold"><?= htmlspecialchars($row_warehouse['WarehouseName']) ?></h5>
+                                        </div>
+                                        <div class="col text-end">
+                                            <p class="mb-0 fs-3"><span class="badge bg-primary fs-3"><?= $row_warehouse['total_quantity'] ?? '0' ?> PCS</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php 
+                            }
+                            ?>
+                            <div class="col-12">
+                                <div class="row">
+                                    <?php
+                                    // Query for Bin
+                                    $query_bin = "
+                                        SELECT b.*, SUM(i.quantity) as total_quantity  
+                                        FROM bins as b 
+                                        LEFT JOIN inventory as i ON i.Bin_id = b.BinID 
+                                        WHERE b.BinID = '$BinID'
+                                        GROUP BY b.BinID
+                                    ";
+                                    $result_bin = mysqli_query($conn, $query_bin);  
+                                    if ($result_bin && mysqli_num_rows($result_bin) > 0) {
+                                        $row_bin = mysqli_fetch_array($result_bin);
+                                        ?>
+                                        <div class="col-4">
+                                            <div class="row mb-3 p-3 border rounded bg-light">
+                                                <h5 class="mb-0 fs-3 fw-bold">BIN: <?= htmlspecialchars($row_bin['BinCode']) ?></h5>
+                                                <p class="mb-0 fs-3"><span class="badge bg-primary fs-3"><?= $row_bin['total_quantity'] ?? '0' ?> PCS</span></p>
+                                            </div>
+                                        </div>
+                                        <?php 
+                                    }
+
+                                    // Query for Row
+                                    $query_rows = "
+                                        SELECT wr.*, SUM(i.quantity) as total_quantity  
+                                        FROM warehouse_rows as wr 
+                                        LEFT JOIN inventory as i ON i.Row_id = wr.WarehouseRowID 
+                                        WHERE wr.WarehouseRowID = '$WarehouseRowID'
+                                        GROUP BY wr.WarehouseRowID
+                                    ";
+                                    $result_rows = mysqli_query($conn, $query_rows);  
+                                    if ($result_rows && mysqli_num_rows($result_rows) > 0) {
+                                        $row_rows = mysqli_fetch_array($result_rows);
+                                        ?>
+                                        <div class="col-4">
+                                            <div class="row mb-3 p-3 border rounded bg-light">
+                                                <h5 class="mb-0 fs-3 fw-bold">ROW: <?= htmlspecialchars($row_rows['RowCode']) ?></h5>
+                                                <p class="mb-0 fs-3"><span class="badge bg-primary fs-3"><?= $row_rows['total_quantity'] ?? '0' ?> PCS</span></p>
+                                            </div>
+                                        </div>
+                                        <?php 
+                                    }
+
+                                    // Query for Shelf
+                                    $query_shelf = "
+                                        SELECT s.*, SUM(i.quantity) as total_quantity  
+                                        FROM shelves as s 
+                                        LEFT JOIN inventory as i ON i.Shelves_id = s.ShelfID 
+                                        WHERE s.ShelfID = '$ShelfID'
+                                        GROUP BY s.ShelfID
+                                    ";
+                                    $result_shelf = mysqli_query($conn, $query_shelf);  
+                                    if ($result_shelf && mysqli_num_rows($result_shelf) > 0) {
+                                        $row_shelf = mysqli_fetch_array($result_shelf);
+                                        ?>
+                                        <div class="col-4">
+                                            <div class="row mb-3 p-3 border rounded bg-light">
+                                                <h5 class="mb-0 fs-3 fw-bold">SHELF: <?= htmlspecialchars($row_shelf['ShelfCode']) ?></h5>
+                                                <p class="mb-0 fs-3"><span class="badge bg-primary fs-3"><?= $row_shelf['total_quantity'] ?? '0' ?> PCS</span></p>
+                                            </div>
+                                        </div>
+                                        <?php 
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                                <?php
+                        }
+                        ?>
+                        </div>
+                        <?php
+                    }else{
+                    ?>
+                    <p class="mb-3 fs-4 fw-semibold text-center">Product is not listed on the <a href="/?page=inventory">Inventory</a></p>
+                    <?php
+                    }
+                    ?> 
+                </div>
+
             </div>
             </div>
         </div>
