@@ -16,6 +16,16 @@ function get_name($userid){
     return  "$fname $lname";
 }
 
+function get_staff_name($staff_id){
+    global $conn;
+    $query = "SELECT staff_fname, staff_lname FROM staff WHERE staff_id = '$staff_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $fname = $row['staff_fname'] ?? '';
+    $lname = $row['staff_lname'] ?? '';
+    return  "$fname $lname";
+}
+
 function get_role_name($emp_role_id){
     global $conn;
     $query = "SELECT emp_role FROM staff_roles WHERE emp_role_id = '$emp_role_id'";
