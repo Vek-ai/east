@@ -169,12 +169,6 @@ $addHeaderTxt = "Add New";
             <input type="text" id="customer_price_cat" name="customer_price_cat" class="form-control" value="<?= $customer_price_cat ?>" />
           </div>
         </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="form-label">Customer Price Level Date</label>
-            <input type="text" id="cust_price_lvl_date" name="cust_price_lvl_date" class="form-control" value="<?= $cust_price_lvl_date ?>" />
-          </div>
-        </div>
       </div>
 
       <div class="row pt-3">

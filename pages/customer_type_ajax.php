@@ -16,7 +16,6 @@ if(isset($_REQUEST['action'])) {
         $customer_crew_size = mysqli_real_escape_string($conn, $_POST['customer_crew_size']);
         $customer_notes = mysqli_real_escape_string($conn, $_POST['customer_notes']);
         $customer_price_cat = mysqli_real_escape_string($conn, $_POST['customer_price_cat']);
-        $cust_price_lvl_date = mysqli_real_escape_string($conn, $_POST['cust_price_lvl_date']);
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
@@ -54,8 +53,7 @@ if(isset($_REQUEST['action'])) {
                         customer_crew_size = '$customer_crew_size', 
                         last_update_date = NOW(),
                         customer_notes = '$customer_notes', 
-                        customer_price_cat = '$customer_price_cat', 
-                        cust_price_lvl_date = '$cust_price_lvl_date'
+                        customer_price_cat = '$customer_price_cat'
                         
                         WHERE customer_type_id = '$customer_type_id'";
                 if (mysqli_query($conn, $updateQuery)) {
@@ -85,8 +83,7 @@ if(isset($_REQUEST['action'])) {
                     customer_work_radius,
                     customer_crew_size,
                     customer_notes,
-                    customer_price_cat,
-                    cust_price_lvl_date
+                    customer_price_cat
                 ) 
                 VALUES 
                 (
@@ -96,8 +93,7 @@ if(isset($_REQUEST['action'])) {
                     '$customer_work_radius',
                     '$customer_crew_size',
                     '$customer_notes',
-                    '$customer_price_cat',
-                    '$cust_price_lvl_date'
+                    '$customer_price_cat'
                 )";
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "New product line added successfully.";
