@@ -55,7 +55,7 @@ function getWarehouseName($WarehouseID){
 
 function getWarehouseBinName($BinID){
     global $conn;
-    $query = "SELECT BinCode FROM bins WHERE WarehouseID = '$BinID'";
+    $query = "SELECT BinCode FROM bins WHERE BinID = '$BinID'";
     $result = mysqli_query($conn,$query);
     $row = mysqli_fetch_array($result); 
     $BinCode = $row['BinCode'] ?? '';
@@ -64,7 +64,7 @@ function getWarehouseBinName($BinID){
 
 function getWarehouseShelfName($ShelfID){
     global $conn;
-    $query = "SELECT ShelfCode FROM shelves WHERE WarehouseID = '$ShelfID'";
+    $query = "SELECT ShelfCode FROM shelves WHERE ShelfID = '$ShelfID'";
     $result = mysqli_query($conn,$query);
     $row = mysqli_fetch_array($result); 
     $ShelfCode = $row['ShelfCode'] ?? '';
@@ -123,6 +123,15 @@ function getPackPieces($id){
     $row = mysqli_fetch_array($result); 
     $pieces_count = $row['pieces_count'] ?? '';
     return  $pieces_count;
+}
+
+function getPackName($id){
+    global $conn;
+    $query = "SELECT pack_name FROM product_pack WHERE id = '$id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $pack_name = $row['pack_name'] ?? '';
+    return  $pack_name;
 }
 
 function generateRandomUPC() {
