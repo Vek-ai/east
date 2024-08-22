@@ -65,7 +65,7 @@ while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
     <div class="card card-body">
         <div class="row">
         <div class="col-md-4 col-xl-3 align-middle">
-            <h3 class="m-0"><a href="/page=warehouse_details&warehouse_id=<?= $user_warehouse ?>"><?= $warehouse_name ?></a></h3>
+            <h3 class="m-0"><a href="/?page=warehouse_details&warehouse_id=<?= $user_warehouse ?>"><?= $warehouse_name ?></a></h3>
             <!-- <form class="position-relative">
             <input type="text" class="form-control inventory-search ps-5" id="input-search" placeholder="Search Contacts..." />
             <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
