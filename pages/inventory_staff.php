@@ -206,14 +206,14 @@ while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
                             </div>
                             </div>
                             <div class="row pt-3">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Quantity</label>
-                                    <input type="text" id="quantity" name="quantity" class="form-control"  />
+                                    <input type="text" id="quantity_add" name="quantity" class="form-control"  />
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Pack</label>
                                     <div class="mb-3">
-                                    <select id="pack" class="form-control select2-add" name="pack">
+                                    <select id="pack_add" class="form-control select2-add" name="pack">
                                         <option value="" >Select Pack...</option>
                                         <optgroup label="Pack">
                                             <?php
@@ -221,7 +221,7 @@ while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
                                             $result_pack = mysqli_query($conn, $query_pack);            
                                             while ($row_pack = mysqli_fetch_array($result_pack)) {
                                             ?>
-                                                <option value="<?= $row_pack['id'] ?>" ><?= $row_pack['pack_name'] ?></option>
+                                                <option value="<?= $row_pack['id'] ?>" data-count="<?= $row_pack['pieces_count'] ?>" ><?= $row_pack['pack_name'] ?></option>
                                             <?php   
                                             }
                                             ?>
@@ -229,7 +229,10 @@ while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
                                     </select>
                                     </div>
                                 </div>
-                                
+                                <div class="col-md-4">
+                                    <label class="form-label">Total Quantity</label>
+                                    <input type="text" id="quantity_ttl_add" name="quantity_ttl" class="form-control"  />
+                                </div>
                             </div>  
                             <div class="row pt-3">
                                 <div class="col-md-6">
@@ -292,9 +295,9 @@ while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
         <table id="inventoryList" class="table search-table align-middle text-nowrap">
             <thead class="header-item">
             <th>Product</th>
-            <th>Warehouse</th>
             <th>Date</th>
             <th>Quantity</th>
+            <th>Total Quantity</th>
             <th>Added by</th>
             <th>Status</th>
             <th>Action</th>
@@ -313,8 +316,7 @@ while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
                     $Row_id = $row_inventory['Row_id'];
                     $Date = $row_inventory['Date'];
                     $quantity = $row_inventory['quantity'];
-                    $packPieces = getPackPieces($row_inventory['pack']);
-                    $quantity_ttl = $quantity * ($packPieces ? $packPieces : 1);
+                    $quantity_ttl = $row_inventory['quantity_ttl'];
                     $addedby = $row_inventory['addedby'];
                     $db_status = $row_inventory['status'];
 
@@ -330,8 +332,8 @@ while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
                     <!-- start row -->
                     <tr class="search-items">
                         <td><?= getProductName($Product_id) ?></td>
-                        <td><?= getWarehouseName($Warehouse_id) ?></td>
                         <td><?= $Date ?></td>
+                        <td><?= $quantity ?></td>
                         <td><?= $quantity_ttl ?></td>
                         <td><?= get_name($addedby) ?></td>
                         <td><?= $status ?></td>
@@ -428,11 +430,13 @@ while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
         $(document).on('click', '#view_inventory_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
+            var Warehouse_id = "<?= $user_warehouse ?>";
             $.ajax({
                     url: 'pages/inventory_staff_ajax.php',
                     type: 'POST',
                     data: {
                         id: id,
+                        Warehouse_id, Warehouse_id,
                         action: "fetch_modal"
                     },
                     success: function(response) {
@@ -443,6 +447,34 @@ while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
                     }
             });
+        });
+
+        $(document).on('change', '#quantity_add, #pack_add', function(event) {
+            var qty = parseFloat($('#quantity_add').val());
+            var selectedOption = $('#pack_add').find('option:selected');
+            var pack = selectedOption.length ? parseFloat(selectedOption.data('count')) : 1; // Default to 1 if no pack selected
+
+            pack = isNaN(pack) ? 1 : pack;
+
+            if (!isNaN(qty) && qty > 0) {
+                $('#quantity_ttl_add').val(qty * pack);
+            } else {
+                $('#quantity_ttl_add').val('');
+            }
+        });
+
+        $(document).on('change', '#quantity_update, #pack_update', function(event) {
+            var qty = parseFloat($('#quantity_update').val());
+            var selectedOption = $('#pack_update').find('option:selected');
+            var pack = selectedOption.length ? parseFloat(selectedOption.data('count')) : 1; // Default to 1 if no pack selected
+
+            pack = isNaN(pack) ? 1 : pack;
+
+            if (!isNaN(qty) && qty > 0) {
+                $('#quantity_ttl_update').val(qty * pack);
+            } else {
+                $('#quantity_ttl_update').val('');
+            }
         });
 
         $(document).on('submit', '#update_inventory', function(event) {

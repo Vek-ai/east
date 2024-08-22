@@ -24,6 +24,7 @@ if(isset($_REQUEST['action'])) {
         $Row_id = mysqli_real_escape_string($conn, $_POST['Row_id']);
         $Date = mysqli_real_escape_string($conn, $_POST['Date']);
         $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
+        $quantity_ttl = mysqli_real_escape_string($conn, $_POST['quantity_ttl']);
         $pack = mysqli_real_escape_string($conn, $_POST['pack']);
         $addedby = mysqli_real_escape_string($conn, $_POST['addedby']);
     
@@ -49,6 +50,7 @@ if(isset($_REQUEST['action'])) {
                 Date = '$Date', 
                 quantity = '$quantity',
                 pack = '$pack',
+                quantity_ttl = '$quantity_ttl',
                 addedby = '$addedby', 
                 status = '$status'
                 WHERE Inventory_id = '$Inventory_id'";
@@ -74,6 +76,7 @@ if(isset($_REQUEST['action'])) {
                 Date, 
                 quantity, 
                 pack, 
+                quantity_ttl,
                 addedby, 
                 status
             ) VALUES (
@@ -87,6 +90,7 @@ if(isset($_REQUEST['action'])) {
                 '$Date', 
                 '$quantity',
                 '$pack', 
+                '$quantity_ttl',
                 '$addedby', 
                 '$status'
             )";
@@ -101,6 +105,7 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "fetch_modal") {
         $Inventory_id = mysqli_real_escape_string($conn, $_POST['id']);
+        $Warehouse_id = mysqli_real_escape_string($conn, $_POST['Warehouse_id']);
 
         // SQL query to check if the record exists
         $checkQuery = "SELECT * FROM inventory WHERE Inventory_id = '$Inventory_id'";
@@ -124,7 +129,7 @@ if(isset($_REQUEST['action'])) {
                             <div class="card">
                                 <div class="card-body">
                                 <input type="hidden" id="Inventory_id" name="Inventory_id" class="form-control" value="<?= $row['Inventory_id'] ?>" />
-                                <input type="hidden" id="Warehouse_id" name="Warehouse_id" class="form-control" value="<?= $row['Warehouse_id'] ?>"  />
+                                <input type="hidden" id="Warehouse_id" name="Warehouse_id" class="form-control" value="<?= $Warehouse_id ?>"  />
 
                                 <div class="row pt-3">
                                 <div class="col-md-6">
@@ -223,14 +228,14 @@ if(isset($_REQUEST['action'])) {
                                 </div>
                                 </div>
                                 <div class="row pt-3">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Quantity</label>
-                                    <input type="text" id="quantity" name="quantity" class="form-control" value="<?= $row['quantity'] ?>" />
+                                    <input type="text" id="quantity_update" name="quantity" class="form-control" value="<?= $row['quantity'] ?>" />
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Pack</label>
                                     <div class="mb-3">
-                                    <select id="pack" class="form-control select2-update" name="pack">
+                                    <select id="pack_update" class="form-control select2-update" name="pack">
                                         <option value="" >Select Pack...</option>
                                         <optgroup label="Pack">
                                             <?php
@@ -239,13 +244,17 @@ if(isset($_REQUEST['action'])) {
                                             while ($row_pack = mysqli_fetch_array($result_pack)) {
                                                 $selected = ($row['pack'] == $row_pack['id']) ? 'selected' : '';
                                             ?>
-                                                <option value="<?= $row_pack['id'] ?>" <?= $selected ?>><?= $row_pack['pack_name'] ?></option>
+                                                <option value="<?= $row_pack['id'] ?>" data-count="<?= $row_pack['pieces_count'] ?>" <?= $selected ?>><?= $row_pack['pack_name'] ?></option>
                                             <?php   
                                             }
                                             ?>
                                         </optgroup>
                                     </select>
                                     </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Total Quantity</label>
+                                    <input type="text" id="quantity_ttl_update" name="quantity_ttl" class="form-control" value="<?= $row['quantity_ttl'] ?>" />
                                 </div>
                                 </div> 
                                 <div class="row pt-3">
