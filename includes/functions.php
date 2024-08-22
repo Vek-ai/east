@@ -116,6 +116,15 @@ function getPaintProviderName($provider_id){
     return  $provider_name;
 }
 
+function getPackPieces($id){
+    global $conn;
+    $query = "SELECT pieces_count FROM product_pack WHERE id = '$id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $pieces_count = $row['pieces_count'] ?? '';
+    return  $pieces_count;
+}
+
 function generateRandomUPC() {
     global $conn;
 

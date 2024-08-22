@@ -1,14 +1,22 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 require 'includes/dbconn.php';
 require 'includes/functions.php';
-
+$user_warehouse = "";
+$staff_id = $_SESSION['userid'];
+$query_warehouse = "SELECT * FROM warehouses WHERE corresponding_user = '$staff_id'";
+$result_warehouse = mysqli_query($conn, $query_warehouse);            
+while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
+    $user_warehouse = $row_warehouse['WarehouseID'];
+    $warehouse_name = $row_warehouse['WarehouseName'];
+}
 ?>
 <style>
     .select2-container {
-        z-index: 9999 !important; 
+        z-index: 9999 !important;
     }
 </style>
 <div class="container-fluid">
@@ -56,7 +64,8 @@ require 'includes/functions.php';
     <div class="widget-content searchable-container list">
     <div class="card card-body">
         <div class="row">
-        <div class="col-md-4 col-xl-3">
+        <div class="col-md-4 col-xl-3 align-middle">
+            <h3 class="m-0"><a href="/page=warehouse_details&warehouse_id=<?= $user_warehouse ?>"><?= $warehouse_name ?></a></h3>
             <!-- <form class="position-relative">
             <input type="text" class="form-control inventory-search ps-5" id="input-search" placeholder="Search Contacts..." />
             <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
@@ -90,9 +99,10 @@ require 'includes/functions.php';
                         <div class="card">
                             <div class="card-body">
                             <input type="hidden" id="Inventory_id" name="Inventory_id" class="form-control"  />
+                            <input type="hidden" id="Warehouse_id" name="Warehouse_id" class="form-control" value="<?= $user_warehouse ?>" />
 
                             <div class="row pt-3">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <label class="form-label">Product</label>
                                 <div class="mb-3">
                                 <select id="Product_id" class="form-control select2-add" name="Product_id">
@@ -104,16 +114,13 @@ require 'includes/functions.php';
                                         while ($row_product = mysqli_fetch_array($result_product)) {
                                         ?>
                                             <option value="<?= $row_product['product_id'] ?>" ><?= $row_product['product_item'] ?></option>
-                                        <?php   
+                                        <?php
                                         }
                                         ?>
                                     </optgroup>
                                 </select>
                                 </div>
                             </div>
-
-                            </div>
-                            <div class="row pt-3">
                             <div class="col-md-6">
                                 <label class="form-label">Supplier</label>
                                 <div class="mb-3">
@@ -134,26 +141,6 @@ require 'includes/functions.php';
                                 </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Warehouse</label>
-                                <div class="mb-3">
-                                <select id="Warehouse_id" class="form-control select2-add" name="Warehouse_id">
-                                    <option value="" >Select Warehouse...</option>
-                                    <optgroup label="Warehouse">
-                                        <?php
-                                        $query_warehouse = "SELECT * FROM warehouses WHERE status = '1'";
-                                        $result_warehouse = mysqli_query($conn, $query_warehouse);            
-                                        while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
-                                        ?>
-                                            <option value="<?= $row_warehouse['WarehouseID'] ?>" ><?= $row_warehouse['WarehouseName'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </optgroup>
-                                    
-                                </select>
-                                </div>
-                            </div>
                             </div>
 
                             <div class="row pt-3">
@@ -164,7 +151,10 @@ require 'includes/functions.php';
                                     <option value="" >Select Shelf...</option>
                                     <optgroup label="Shelf">
                                         <?php
-                                        $query_shelf = "SELECT * FROM shelves";
+                                        $query_shelf = "SELECT * 
+                                                        FROM shelves s
+                                                        INNER JOIN warehouse_rows wr ON s.WarehouseRowID = wr.WarehouseRowID
+                                                        WHERE wr.WarehouseID = '$user_warehouse'";
                                         $result_shelf = mysqli_query($conn, $query_shelf);            
                                         while ($row_shelf = mysqli_fetch_array($result_shelf)) {
                                         ?>
@@ -183,7 +173,7 @@ require 'includes/functions.php';
                                     <option value="" >Select Bin...</option>
                                     <optgroup label="Bin">
                                         <?php
-                                        $query_bin = "SELECT * FROM bins";
+                                        $query_bin = "SELECT * FROM bins WHERE WarehouseID = '$user_warehouse'";
                                         $result_bin = mysqli_query($conn, $query_bin);            
                                         while ($row_bin = mysqli_fetch_array($result_bin)) {
                                         ?>
@@ -202,7 +192,7 @@ require 'includes/functions.php';
                                     <option value="" >Select Row...</option>
                                     <optgroup label="Row">
                                         <?php
-                                        $query_rows = "SELECT * FROM warehouse_rows";
+                                        $query_rows = "SELECT * FROM warehouse_rows WHERE WarehouseID = '$user_warehouse'";
                                         $result_rows = mysqli_query($conn, $query_rows);            
                                         while ($row_rows = mysqli_fetch_array($result_rows)) {
                                         ?>
@@ -366,7 +356,7 @@ require 'includes/functions.php';
                         var status = $(this).data('status');
                         var no = $(this).data('no');
                         $.ajax({
-                            url: 'pages/inventory_ajax.php',
+                            url: 'pages/inventory_staff_ajax.php',
                             type: 'POST',
                             data: {
                                 inventory_id: inventory_id,
@@ -439,7 +429,7 @@ require 'includes/functions.php';
             event.preventDefault(); 
             var id = $(this).data('id');
             $.ajax({
-                    url: 'pages/inventory_ajax.php',
+                    url: 'pages/inventory_staff_ajax.php',
                     type: 'POST',
                     data: {
                         id: id,
@@ -462,7 +452,7 @@ require 'includes/functions.php';
             formData.append('action', 'add_update');
 
             $.ajax({
-                url: 'pages/inventory_ajax.php',
+                url: 'pages/inventory_staff_ajax.php',
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -502,7 +492,7 @@ require 'includes/functions.php';
             formData.append('action', 'add_update');
               
             $.ajax({
-                url: 'pages/inventory_ajax.php',
+                url: 'pages/inventory_staff_ajax.php',
                 type: 'POST',
                 data: formData,
                 processData: false,

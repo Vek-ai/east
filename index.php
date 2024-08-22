@@ -1319,13 +1319,14 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "generate_barcode") {include 'pages/generate_barcode.php';}
             if ($_REQUEST['page'] == "scan_barcode") {include 'pages/scan_barcode.php';}
             if ($_REQUEST['page'] == "inventory") {include 'pages/inventory.php';}
-
+            if ($_REQUEST['page'] == "inventory_staff") {include 'pages/inventory_staff.php';}
             if ($_REQUEST['page'] == "product_view") {include 'pages/product_view.php';}
             if ($_REQUEST['page'] == "product_details") {include 'pages/product_details.php';}
             if ($_REQUEST['page'] == "customer") {include 'pages/customer.php';}
             if ($_REQUEST['page'] == "customer_type") {include 'pages/customer_type.php';}
 
             if ($_REQUEST['page'] == "staff_product_access") {include 'pages/staff_product_access.php';}
+            if ($_REQUEST['page'] == "product_pack") {include 'pages/product_pack.php';}
 
           ?>
         </div>

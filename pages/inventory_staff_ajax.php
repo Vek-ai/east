@@ -124,9 +124,10 @@ if(isset($_REQUEST['action'])) {
                             <div class="card">
                                 <div class="card-body">
                                 <input type="hidden" id="Inventory_id" name="Inventory_id" class="form-control" value="<?= $row['Inventory_id'] ?>" />
+                                <input type="hidden" id="Warehouse_id" name="Warehouse_id" class="form-control" value="<?= $row['Warehouse_id'] ?>"  />
 
                                 <div class="row pt-3">
-                                <div class="col-md-12">
+                                <div class="col-md-6">
                                     <label class="form-label">Product</label>
                                     <div class="mb-3">
                                     <select id="inventory_product" class="select2-update form-control" name="Product_id">
@@ -144,39 +145,18 @@ if(isset($_REQUEST['action'])) {
                                     </select>
                                     </div>
                                 </div>
-                                </div>
-
-                                <div class="row pt-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Supplier</label>
                                     <div class="mb-3">
                                     <select id="inventory_supplier" class="form-control select2-update" name="supplier_id">
-                                    <option value="" >Select Supplier...</option>
-                                    <?php
-                                    $query_supplier = "SELECT * FROM supplier";
-                                    $result_supplier = mysqli_query($conn, $query_supplier);            
-                                    while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                                        $selected = ($row['supplier_id'] == $row_supplier['supplier_id']) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
-                                    <?php   
-                                    }
-                                    ?>
-                                </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Warehouse</label>
-                                    <div class="mb-3">
-                                    <select id="inventory_warehouse" class="select2-update form-control" name="Warehouse_id">
-                                        <option value="" >Select Warehouse...</option>
+                                        <option value="" >Select Supplier...</option>
                                         <?php
-                                        $query_warehouse = "SELECT * FROM warehouses WHERE status = '1'";
-                                        $result_warehouse = mysqli_query($conn, $query_warehouse);            
-                                        while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
-                                            $selected = ($row['Warehouse_id'] == $row_warehouse['WarehouseID']) ? 'selected' : '';
+                                        $query_supplier = "SELECT * FROM supplier";
+                                        $result_supplier = mysqli_query($conn, $query_supplier);            
+                                        while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                                            $selected = ($row['supplier_id'] == $row_supplier['supplier_id']) ? 'selected' : '';
                                         ?>
-                                            <option value="<?= $row_warehouse['WarehouseID'] ?>" <?= $selected ?>><?= $row_warehouse['WarehouseName'] ?></option>
+                                            <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
                                         <?php   
                                         }
                                         ?>
