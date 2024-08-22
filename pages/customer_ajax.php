@@ -103,6 +103,7 @@ if(isset($_REQUEST['action'])) {
                         if($new_customer_type_id != 0 && mysqli_num_rows($resultSql) > 0) {
                             $row = mysqli_fetch_assoc($resultSql);
                             $customer_id = $row['customer_id'];
+                            $customer_type_name = $row['customer_type_name'];
 
                             if($current_customer_type_id != $new_customer_type_id) {
                                 $insertQuery = "INSERT INTO customer_customer_type (
