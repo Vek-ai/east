@@ -6,7 +6,7 @@ $customer_id = "";
 $customer_first_name = "";
 $customer_last_name = "";
 $customer_business_name = "";
-$customer_type_id = "";
+$old_customer_type_id = "";
 $contact_email = "";
 $contact_phone = "";
 $contact_fax = "";
@@ -38,7 +38,7 @@ $addHeaderTxt = "Add New";
         $customer_first_name = $row['customer_first_name'];
         $customer_last_name = $row['customer_last_name'];
         $customer_business_name = $row['customer_business_name'];
-        $customer_type_id = $row['customer_type_id'];
+        $old_customer_type_id = $row['customer_type_id'];
         $contact_email = $row['contact_email'];
         $contact_phone = $row['contact_phone'];
         $contact_fax = $row['contact_fax'];
@@ -287,6 +287,36 @@ $addHeaderTxt = "Add New";
             <input type="text" id="tax_exempt_number" name="tax_exempt_number" class="form-control" value="<?= $tax_exempt_number ?>" />
           </div>
         </div>
+        <div class="col-md-4">
+            <?php
+            // Fetch all customer types
+            $query = "SELECT * FROM customer_types";
+            $result = mysqli_query($conn, $query);
+            
+            // Fetch the name for the old customer type ID
+            $default_customer_type_name = '';
+            if ($old_customer_type_id > 0) {
+                $default_query = "SELECT customer_type_name FROM customer_types WHERE customer_type_id = $old_customer_type_id";
+                $default_result = mysqli_query($conn, $default_query);
+                if ($default_row = mysqli_fetch_assoc($default_result)) {
+                    $default_customer_type_name = htmlspecialchars($default_row['customer_type_name']);
+                }
+            }
+            ?>
+            <div class="mb-3">
+                <label class="form-label">Customer Type</label>
+                <select class="form-select" id="customer_type" name="customer_type">
+                    <option value=""><?php echo $default_customer_type_name ? $default_customer_type_name : 'Choose...'; ?></option>
+                    <?php
+                    // Generate options for the dropdown
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        $selected = ($old_customer_type_id == $row['customer_type_id']) ? 'selected' : '';
+                        echo '<option value="' . htmlspecialchars($row['customer_type_id']) . '" ' . $selected . '>' . htmlspecialchars($row['customer_type_name']) . '</option>';
+                    }
+                    ?>
+                </select>
+            </div>
+        </div>
       </div>
 
       <div class="mb-3">
@@ -532,7 +562,7 @@ $addHeaderTxt = "Add New";
             contentType: false,
             success: function(response) {
               
-              if (response === "Product line updated successfully.") {
+              if (response === "Customer updated successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-danger");
@@ -542,7 +572,7 @@ $addHeaderTxt = "Add New";
                   $('#response-modal').on('hide.bs.modal', function () {
                     window.location.href = "?page=customer";
                   });
-              } else if (response === "New product line added successfully.") {
+              } else if (response === "New customer added successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-danger");

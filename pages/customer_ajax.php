@@ -28,6 +28,7 @@ if(isset($_REQUEST['action'])) {
         $tax_status = mysqli_real_escape_string($conn, $_POST['tax_status']);
         $tax_exempt_number = mysqli_real_escape_string($conn, $_POST['tax_exempt_number']);
         $customer_notes = mysqli_real_escape_string($conn, $_POST['customer_notes']);
+        $new_customer_type_id = mysqli_real_escape_string($conn, $_POST['customer_type']);
         $call_status = isset($_POST['call_status']) ? mysqli_real_escape_string($conn, $_POST['call_status']) : '';
 
         $customer_name = $customer_first_name . "" . $customer_last_name;
@@ -43,7 +44,7 @@ if(isset($_REQUEST['action'])) {
             $row = mysqli_fetch_assoc($result);
                 $current_customer_id = $row['customer_id'];
                 $current_customer_name = $row['customer_first_name'] . "" . $row['customer_last_name'];
-
+                $current_customer_type_id = $row['customer_type_id'];
             $duplicates = array();
 
             // Check for duplicates only if the new values are different from the current values
@@ -83,13 +84,50 @@ if(isset($_REQUEST['action'])) {
                         tax_status = '$tax_status',
                         tax_exempt_number = '$tax_exempt_number',
                         customer_notes = '$customer_notes',
-                        call_status = '$call_status'
+                        call_status = '$call_status',
+                        customer_type_id = '$new_customer_type_id'
+
                         
                         WHERE customer_id = '$customer_id'";
+
                 if (mysqli_query($conn, $updateQuery)) {
-                    echo "Product line updated successfully.";
+                    // Get the currently added customer
+                        $sql = "SELECT c.customer_id, c.customer_type_id, ct.customer_type_name
+                                            FROM customer c
+                                            JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id
+                                            WHERE c.customer_first_name = '$customer_first_name' 
+                                            AND c.customer_last_name = '$customer_last_name'";
+
+                    // Get the current customer type ID
+                        $resultSql = mysqli_query($conn, $sql);
+                        if($new_customer_type_id != 0 && mysqli_num_rows($resultSql) > 0) {
+                            $row = mysqli_fetch_assoc($resultSql);
+                            $customer_id = $row['customer_id'];
+
+                            if($current_customer_type_id != $new_customer_type_id) {
+                                $insertQuery = "INSERT INTO customer_customer_type (
+                                    customer_id,
+                                    customer_type,
+                                    date_added
+                                ) VALUE (
+                                    '$customer_id',
+                                    '$customer_type_name',
+                                    NOW()
+                                )";
+                                
+                                if (mysqli_query($conn, $insertQuery)) {
+                                    echo "Customer updated successfully.";
+                                } else {
+                                    echo "Error updating customer: " . mysqli_error($conn);
+                                }
+                            } else {
+                                echo "Customer updated successfully.";
+                            }
+                        } else {
+                            echo "Customer updated successfully.";
+                        }
                 } else {
-                    echo "Error updating product line: " . mysqli_error($conn);
+                    echo "Error updating customer: " . mysqli_error($conn);
                 }
             }
         } else {
@@ -127,6 +165,7 @@ if(isset($_REQUEST['action'])) {
                     tax_status,
                     tax_exempt_number,
                     customer_notes,
+                    customer_type_id,
                     call_status) 
                     VALUES (
                     '$customer_first_name', 
@@ -147,11 +186,43 @@ if(isset($_REQUEST['action'])) {
                     '$tax_status',
                     '$tax_exempt_number',
                     '$customer_notes',
+                    '$new_customer_type_id',
                     '$call_status')";
+
                 if (mysqli_query($conn, $insertQuery)) {
-                    echo "New product line added successfully.";
+                        // Get the currently added customer
+                        $sql = "SELECT c.customer_id, ct.customer_type_name
+                                            FROM customer c
+                                            JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id
+                                            WHERE c.customer_first_name = '$customer_first_name' 
+                                            AND c.customer_last_name = '$customer_last_name'";
+                                        
+                        $resultSql = mysqli_query($conn, $sql);
+                        if($new_customer_type_id != 0 && mysqli_num_rows($resultSql) > 0) {
+                            $row = mysqli_fetch_assoc($resultSql);
+                            $customer_id = $row['customer_id'];
+                            $customer_type_name = $row['customer_type_name'];
+
+                            $insertQuery = "INSERT INTO customer_customer_type (
+                                customer_id,
+                                customer_type,
+                                date_added
+                            ) VALUE (
+                                '$customer_id',
+                                '$customer_type_name',
+                                NOW()
+                            )";
+
+                            if (mysqli_query($conn, $insertQuery)) {
+                                echo "New customer added successfully.";
+                            } else {
+                                echo "Error adding customer type: " . mysqli_error($conn);
+                            }
+                        } else {
+                            echo "New customer added successfully.";
+                        }
                 } else {
-                    echo "Error adding product line: " . mysqli_error($conn);
+                    echo "Error adding customer: " . mysqli_error($conn);
                 }
             }
         }
