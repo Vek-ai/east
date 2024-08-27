@@ -218,9 +218,9 @@ if(!empty($_REQUEST['staff_id'])){
         <!-- /.modal-dialog -->
     </div>
 
-    <div class="modal fade" id="updateStaffModal" tabindex="-1" role="dialog" aria-labelledby="updateStaffModal" aria-hidden="true">
-        
-    </div>
+    <div class="modal fade" id="viewStaffModal" tabindex="-1" role="dialog" aria-labelledby="viewStaffModal" aria-hidden="true"></div>
+
+    <div class="modal fade" id="updateStaffModal" tabindex="-1" role="dialog" aria-labelledby="updateStaffModal" aria-hidden="true"></div>
 
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -278,7 +278,7 @@ if(!empty($_REQUEST['staff_id'])){
                     <!-- start row -->
                     <tr class="search-items">
                         <td>
-                        <a href="#">
+                        <a href="#" id="view_details_btn" data-id="<?= $row_staff['staff_id'] ?>">
                             <div class="d-flex align-items-center gap-3">
                                 <img src="<?= $profile_path ?>" alt="user4" width="60" height="60" class="rounded-circle">
                                 <div>
@@ -402,6 +402,29 @@ if(!empty($_REQUEST['staff_id'])){
         });
 
         // Show the View Staff modal and log the staff ID
+        $(document).on('click', '#view_details_btn', function(event) {
+            event.preventDefault(); 
+            
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/staff_ajax.php',
+                    type: 'POST',
+                    data: {
+                        staff_id: id,
+                        action: "fetch_modal_view"
+                    },
+                    success: function(response) {
+                        $('#viewStaffModal').html(response);
+                        $('#viewStaffModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+            
+        });
+
+        // Show the Edit Staff modal and log the staff ID
         $(document).on('click', '#view_staff_btn', function(event) {
             event.preventDefault(); 
             

@@ -4,6 +4,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require '../includes/dbconn.php';
+require '../includes/functions.php';
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -306,6 +307,109 @@ if(isset($_REQUEST['action'])) {
                     $(".phone-inputmask").inputmask("(999) 999-9999");
                 </script>
                 <!-- /.modal-content -->
+            </div>
+            <?php
+        }
+    } 
+
+    if ($action == "fetch_modal_view") {
+        $staff_id = mysqli_real_escape_string($conn, $_POST['staff_id']);
+
+        // SQL query to check if the record exists
+        $checkQuery = "SELECT * FROM staff WHERE staff_id = '$staff_id'";
+        $result = mysqli_query($conn, $checkQuery);
+
+        if (mysqli_num_rows($result) > 0) {
+            // Record exists, fetch current values
+            $row = mysqli_fetch_assoc($result);
+            
+            ?>
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header d-flex align-items-center">
+                        <h4 class="modal-title" id="myLargeModalLabel">Staff Details</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <input type="hidden" id="staff_id" name="staff_id" value="<?= $row['staff_id'] ?>" />
+
+                                <div class="text-center">
+                                    <?php 
+                                    if (!empty($row['profile_path'])) {
+                                        $profile_path = $row['profile_path'];
+                                    } else {
+                                        $profile_path = "../assets/images/profile/user-3.jpg";
+                                    }
+                                    ?>
+                                    <img src="<?= $profile_path ?>" id="profile_img" alt="profile-picture" class="img-fluid rounded-circle" width="120" height="120">
+                                    <h4 class="modal-title" id="myLargeModalLabel"><?= $row['staff_fname'] ?> <?= $row['staff_lname'] ?></h4>
+                                    <p id="role"><?= get_role_name($row['role']) ?></p>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-6 mb-7">
+                                        <label class="form-label">Phone Number</label>
+                                        <p id="phone" class="pl-3"><?= $row['phone'] ?></p>
+                                    </div>
+                                    <div class="col-6 mb-7">
+                                        <label class="form-label">Email Address</label>
+                                        <p id="email" class="pl-3"><?= $row['email'] ?></p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12 mb-9">
+                                        <label class="form-label">Address</label>
+                                        <p id="address" class="pl-3"><?= $row['address'] ?></p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-4 mb-7">
+                                        <label class="form-label">City</label>
+                                        <p id="city" class="pl-3"><?= $row['city'] ?></p>
+                                    </div>
+                                    <div class="col-4 mb-7">
+                                        <label class="form-label">State</label>
+                                        <p id="state" class="pl-3"><?= $row['state'] ?></p>
+                                    </div>
+                                    <div class="col-4 mb-7">
+                                        <label class="form-label">Zip</label>
+                                        <p id="zip" class="pl-3"><?= $row['zip'] ?></p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-6 mb-7">
+                                        <label class="form-label">Emergency Contact Name</label>
+                                        <p id="emergency_contact_name" class="pl-3"><?= $row['emergency_contact_name'] ?></p>
+                                    </div>
+                                    <div class="col-6 mb-7">
+                                        <label class="form-label">Emergency Contact Phone</label>
+                                        <p id="emergency_contact_phone" class="pl-3"><?= $row['emergency_contact_phone'] ?></p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-4 mb-7">
+                                        <label class="form-label">Driver Medical Certificate</label>
+                                        <p id="driver_med_cert" class="pl-3"><?= $row['driver_med_cert'] ?></p>
+                                    </div>
+                                    <div class="col-4 mb-7">
+                                        <label class="form-label">Driver Class</label>
+                                        <p id="driver_class" class="pl-3"><?= $row['driver_class'] ?></p>
+                                    </div>
+                                    <div class="col-4 mb-7">
+                                        <label class="form-label">License Renewal Date</label>
+                                        <p id="license_renewal_date" class="pl-3"><?= $row['license_renewal_date'] ?></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <?php
         }
