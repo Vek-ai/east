@@ -11,6 +11,12 @@ if(!empty($_REQUEST['category_id'])){
 }
 
 ?>
+<style>
+    td.last-edit{
+        white-space: normal;
+        word-wrap: break-word;
+    }
+</style>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
     <div class="card-body px-0">
@@ -277,10 +283,12 @@ if(!empty($_REQUEST['category_id'])){
         <table id="supplierList" class="table search-table align-middle text-nowrap">
             <thead class="header-item">
             <th>Supplier Name</th>
+            <th>Supplier Type</th>
             <th>Contact Name</th>
             <th>Contact Email</th>
             <th>Contact Phone</th>
             <th>Details</th>
+            <th>Status</th>
             <th>Action</th>
             </thead>
             <tbody>
@@ -303,11 +311,20 @@ if(!empty($_REQUEST['category_id'])){
                     }else{
                         $logo_path = "images/supplier/logo.jpg";
                     }
+
+                    $date = new DateTime($row_supplier['last_edit']);
+                    $last_edit = $date->format('m-d-Y');
+                    $edited_by = $row_supplier['edited_by'];
+
+                    if($edited_by != "0"){
+                        $last_user_name = get_staff_name($edited_by);
+                    }
                 ?>
                     <!-- start row -->
                     <tr class="search-items">
                         <td>
-                        <a href="?page=supplier_products">
+                        <!-- <a href="?page=supplier_products"> -->
+                        <a href="#"></a>
                             <div class="d-flex align-items-center gap-3">
                                 <img src="<?= $logo_path ?>" alt="user4" width="60" height="60" class="rounded-circle">
                                 <div>
@@ -316,9 +333,11 @@ if(!empty($_REQUEST['category_id'])){
                             </div>
                         </a>
                         </td>
+                        <td><?= !empty($row_supplier['supplier_type']) ? getSupplierType($row_supplier['supplier_type']) : '' ?></td>
                         <td><?= $row_supplier['contact_name'] ?></td>
                         <td><?= $row_supplier['contact_email'] ?></td>
                         <td><?= $row_supplier['contact_phone'] ?></td>
+                        <td class="last-edit">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                         <td><?= $status ?></td>
                         <td>
                             <div class="action-btn">
@@ -452,11 +471,25 @@ if(!empty($_REQUEST['category_id'])){
             
         });
 
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
         $(document).on('submit', '#update_supplier', function(event) {
             event.preventDefault(); 
 
+            var userid = getCookie('userid');
+
             var formData = new FormData(this);
             formData.append('action', 'add_update');
+            formData.append('userid', userid);
 
             $.ajax({
                 url: 'pages/supplier_ajax.php',
@@ -496,8 +529,11 @@ if(!empty($_REQUEST['category_id'])){
         $(document).on('submit', '#add_supplier', function(event) {
             event.preventDefault(); 
 
+            var userid = getCookie('userid');
+
             var formData = new FormData(this);
             formData.append('action', 'add_update');
+            formData.append('userid', userid);
 
             $.ajax({
                 url: 'pages/supplier_ajax.php',

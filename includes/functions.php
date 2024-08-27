@@ -134,6 +134,15 @@ function getPackName($id){
     return  $pack_name;
 }
 
+function getSupplierType($supplier_type_id){
+    global $conn;
+    $query = "SELECT supplier_type FROM supplier_type WHERE supplier_type_id = '$supplier_type_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $supplier_type = $row['supplier_type'] ?? '';
+    return  $supplier_type;
+}
+
 function generateRandomUPC() {
     global $conn;
 
