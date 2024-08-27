@@ -523,11 +523,26 @@ $picture_path = "images/product/product.jpg";
                     } else {
                         $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
                     }
+
+                    if(!empty($row_product['main_image'])){
+                        $picture_path = $row_product['main_image'];
+                    }else{
+                        $picture_path = "images/product/product.jpg";
+                    }
    
                 ?>
                     <!-- start row -->
                     <tr class="search-items">
-                        <td><?= $row_product['product_item'] ?></td>
+                        <td>
+                            <a href="/?page=product_details&product_id='<?= $row_product['product_id'] ?>">
+                                <div class="d-flex align-items-center">
+                                    <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
+                                    <div class="ms-3">
+                                        <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['product_item'] ?></h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </td>
                         <td><?= $row_product['product_sku'] ?></td>
                         <td><?= getProductCategoryName($row_product['product_category']) ?></td>
                         <td><?= getProductLineName($row_product['product_line']) ?></td>
@@ -535,9 +550,17 @@ $picture_path = "images/product/product.jpg";
                         <td><?= $status ?></td>
                         <td>
                             <div class="action-btn text-center">
-                                <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
-                                    <i class="ti ti-eye fs-5"></i>
+                                <a href="#" id="1" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
+                                    <i class="text-primary ti ti-eye fs-7"></i>
                                 </a>
+                                <a href="#" id="view_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>">
+                                    <i class="text-warning ti ti-pencil fs-7"></i>
+                                </a>
+                                <a href="#" id="2" class="text-danger edit" data-id="<?= $row_product['product_id'] ?>">
+                                    <i class="text-danger ti ti-trash fs-7"></i>
+                                </a>
+                                
+                                
                                 <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_product['product_id'] ?>">
                                     <i class="ti ti-trash fs-5"></i>
                                 </a> -->
