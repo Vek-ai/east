@@ -15,7 +15,7 @@ require 'includes/functions.php';
                 <a class="text-muted text-decoration-none" href="">Home
                 </a>
                 </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Contact</li>
+                <li class="breadcrumb-item text-muted" aria-current="page">Warehouses</li>
             </ol>
             </nav>
         </div>

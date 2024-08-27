@@ -404,7 +404,7 @@ $(document).ready(function() {
             contentType: false,
             success: function(response) {
               
-              if (response.trim() === "success") {
+              if (response.trim() === "Paint color updated successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text("Paint color updated successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
