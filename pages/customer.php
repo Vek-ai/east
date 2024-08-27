@@ -363,6 +363,7 @@ $addHeaderTxt = "Add New";
           </div>
         </div>
 
+  <!-- Table -->
   <div class="col-12">
     <div class="datatables">
       <div class="card">
@@ -373,7 +374,6 @@ $addHeaderTxt = "Add New";
             </h4>
           
           <div class="table-responsive">
-        
             <table id="display_customer" class="table table-striped table-bordered text-nowrap align-middle">
               <thead>
                 <!-- start row -->
@@ -384,6 +384,28 @@ $addHeaderTxt = "Add New";
                   <th>Phone</th>
                   <th>Fax</th>
                   <th>Address</th>
+                  <th>
+                    <div class="">
+                      <!-- Add a Dropdown for Filtering -->
+                      <?php
+                        $query = "SELECT * FROM customer_types";
+                        $result = mysqli_query($conn, $query);
+                      ?>
+
+                      <!-- Add a Dropdown for Filtering -->
+                      <select id="customerTypeFilter">
+                          <option value="">Category</option>
+                          <?php
+                          // Loop through the results and create dropdown options
+                          while ($row = mysqli_fetch_assoc($result)) {
+                          ?>
+                              <option value='<?= $row['customer_type_name'] ?>'><?= $row['customer_type_name'] ?></option>
+                          <?php
+                          }
+                          ?>
+                      </select>
+                    </div>
+                  </th>
                   <th>Status</th>
                 
                   <th>Action</th>
@@ -393,7 +415,11 @@ $addHeaderTxt = "Add New";
               <tbody>
                 <?php
                 $no = 1;
-                $query_customer = "SELECT * FROM customer WHERE hidden=0";
+                $query_customer = "
+                  SELECT c.*, ct.customer_type_name 
+                  FROM customer c 
+                  LEFT JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id 
+                  WHERE c.hidden = 0";
                 $result_customer = mysqli_query($conn, $query_customer);            
                 while ($row_customer = mysqli_fetch_array($result_customer)) {
                     $customer_id = $row_customer['customer_id'];
@@ -403,6 +429,7 @@ $addHeaderTxt = "Add New";
                     $phone = $row_customer['contact_phone'];
                     $fax = $row_customer['contact_fax'];
                     $address = $row_customer['address'];
+                    $customer_type_name = $row_customer['customer_type_name'];
                     $db_status = $row_customer['status'];
 
                       if ($row_customer['status'] == '0') {
@@ -418,6 +445,7 @@ $addHeaderTxt = "Add New";
                       <td><?= $phone ?></td>
                       <td><?= $fax ?></td>
                       <td><?= $address ?></td>
+                      <td><?= $customer_type_name ?></td>
                       <td><?= $status ?></td>
                       <td class="text-center" id="action-button-<?= $no ?>">
                           <?php if ($row_customer['status'] == '0') { ?>
@@ -527,8 +555,19 @@ $addHeaderTxt = "Add New";
   </div>
 
 <script>
+  // for 
   $(document).ready(function() {
-    var table = $('#display_customer').DataTable();
+    var table = $('#display_customer').DataTable({
+      columnDefs: [
+        { orderable: false, targets: 6 }  // Disable sorting for the "Customer Type" column (index 6)
+      ]
+    });
+    
+        // Filter based on dropdown selection
+        $('#customerTypeFilter').on('change', function() {
+    var selectedValue = $(this).val();
+    table.search(selectedValue).draw();  // Apply global search based on dropdown value
+  });
     
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
