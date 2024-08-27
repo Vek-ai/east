@@ -550,13 +550,13 @@ $picture_path = "images/product/product.jpg";
                         <td><?= $status ?></td>
                         <td>
                             <div class="action-btn text-center">
-                                <a href="#" id="1" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
+                                <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
                                     <i class="text-primary ti ti-eye fs-7"></i>
                                 </a>
-                                <a href="#" id="view_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>">
+                                <a href="#" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>">
                                     <i class="text-warning ti ti-pencil fs-7"></i>
                                 </a>
-                                <a href="#" id="2" class="text-danger edit" data-id="<?= $row_product['product_id'] ?>">
+                                <a href="#" id="delete_product_btn" class="text-danger edit" data-id="<?= $row_product['product_id'] ?>">
                                     <i class="text-danger ti ti-trash fs-7"></i>
                                 </a>
                                 
@@ -645,20 +645,20 @@ $picture_path = "images/product/product.jpg";
 
 <script>
     function displayFileNames() {
-            let files = document.getElementById('picture_path_add').files;
-            let fileNames = '';
+        let files = document.getElementById('picture_path_add').files;
+        let fileNames = '';
 
-            if (files.length > 0) {
-                for (let i = 0; i < files.length; i++) {
-                    let file = files[i];
-                    fileNames += `<p>${file.name}</p>`;
-                }
-            } else {
-                fileNames = '<p>No files selected</p>';
+        if (files.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+                let file = files[i];
+                fileNames += `<p>${file.name}</p>`;
             }
-
-            console.log(fileNames);
+        } else {
+            fileNames = '<p>No files selected</p>';
         }
+
+        console.log(fileNames);
+    }
     $(document).ready(function() {
         displayFileNames()
         let uploadedFiles = []; // Array to hold the files
@@ -747,9 +747,43 @@ $picture_path = "images/product/product.jpg";
             allowClear: true
         });
 
-
         // Show the View Product modal and log the product ID
         $(document).on('click', '#view_product_btn', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/product_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: "fetch_view_modal"
+                    },
+                    success: function(response) {
+                        $('#updateProductModal').html(response);
+                        $(".select2-update").select2({
+                            width: '100%',
+                            placeholder: "Select Correlated Products",
+                            allowClear: true
+                        });
+                        $('#updateProductModal').modal('show');
+
+                        $('#updateProductModal').on('hide.bs.modal', function () {
+                            $(".select2-add").select2({
+                                width: '100%',
+                                placeholder: "Select Correlated Products",
+                                allowClear: true
+                            });
+                        });
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+
+        // Show the Edit Product modal and log the product ID
+        $(document).on('click', '#edit_product_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
             $.ajax({
@@ -757,7 +791,7 @@ $picture_path = "images/product/product.jpg";
                     type: 'POST',
                     data: {
                         id: id,
-                        action: "fetch_modal"
+                        action: "fetch_edit_modal"
                     },
                     success: function(response) {
                         $('#updateProductModal').html(response);

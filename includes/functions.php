@@ -107,6 +107,60 @@ function getProductTypeName($product_type_id){
     return  $product_type;
 }
 
+function getStockTypeName($stock_type_id){
+    global $conn;
+    $query = "SELECT stock_type FROM stock_type WHERE stock_type_id = '$stock_type_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $stock_type = $row['stock_type'] ?? '';
+    return  $stock_type;
+}
+
+function getColorName($color_id ){
+    global $conn;
+    $query = "SELECT color_name FROM paint_colors WHERE color_id  = '$color_id '";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $color_name = $row['color_name'] ?? '';
+    return  $color_name;
+}
+
+function getGaugeName($product_gauge_id){
+    global $conn;
+    $query = "SELECT product_gauge FROM product_gauge WHERE product_gauge_id = '$product_gauge_id  '";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $product_gauge = $row['product_gauge'] ?? '';
+    return  $product_gauge;
+}
+
+function getGradeName($product_grade_id){
+    global $conn;
+    $query = "SELECT product_grade FROM product_grade WHERE product_grade_id = '$product_grade_id  '";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $product_grade = $row['product_grade'] ?? '';
+    return  $product_grade;
+}
+
+function getWarrantyTypeName($product_warranty_type_id ){
+    global $conn;
+    $query = "SELECT product_warranty_type FROM product_warranty_type WHERE product_warranty_type_id = '$product_warranty_type_id   '";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $product_warranty_type = $row['product_warranty_type'] ?? '';
+    return  $product_warranty_type;
+}
+
+function getProfileTypeName($profile_type_id){
+    global $conn;
+    $query = "SELECT profile_type FROM profile_type WHERE profile_type_id = '$profile_type_id   '";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $profile_type = $row['profile_type'] ?? '';
+    return  $profile_type;
+}
+
 function getPaintProviderName($provider_id){
     global $conn;
     $query = "SELECT provider_name FROM paint_providers WHERE provider_id = '$provider_id'";
