@@ -519,9 +519,11 @@ $picture_path = "images/product/product.jpg";
                     $db_status = $row_product['status'];
 
                     if ($db_status == '0') {
-                        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+                        $status_icon = "text-danger ti ti-trash";
+                        $status = "<a href='#'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
                     } else {
-                        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+                        $status_icon = "text-warning ti ti-reload";
+                        $status = "<a href='#'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
                     }
 
                     if(!empty($row_product['main_image'])){
@@ -556,7 +558,8 @@ $picture_path = "images/product/product.jpg";
                                 <a href="#" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>">
                                     <i class="text-warning ti ti-pencil fs-7"></i>
                                 </a>
-                                <a href="#" id="delete_product_btn" class="text-danger edit" data-id="<?= $row_product['product_id'] ?>">
+                                <a href="#" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $product_id ?>" data-status='<?= $db_status ?>'>
+                                    
                                     <i class="text-danger ti ti-trash fs-7"></i>
                                 </a>
                                 
@@ -573,44 +576,55 @@ $picture_path = "images/product/product.jpg";
             </tbody>
             <script>
                 $(document).ready(function() {
-                    // Use event delegation for dynamically generated elements
                     $(document).on('click', '.changeStatus', function(event) {
-                        event.preventDefault(); 
-                        var product_id = $(this).data('id');
-                        var status = $(this).data('status');
-                        var no = $(this).data('no');
-                        $.ajax({
-                            url: 'pages/product_ajax.php',
-                            type: 'POST',
-                            data: {
-                                product_id: product_id,
-                                status: status,
-                                action: 'change_status'
-                            },
-                            success: function(response) {
-                                if (response == 'success') {
-                                    if (status == 1) {
-                                        $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
-                                        $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                                        $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                        $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideProduct" data-id="' + product_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
+                        var confirmed = confirm("Are you sure you want to change the status of this Product?");
+                        
+                        if (confirmed) {
+                            var product_id = $(this).data('id');
+                            var status = $(this).data('status');
+                            var no = $(this).data('no');
+                            
+                            $.ajax({
+                                url: 'pages/product_ajax.php',
+                                type: 'POST',
+                                data: {
+                                    product_id: product_id,
+                                    status: status,
+                                    action: 'change_status'
+                                },
+                                success: function(response) {
+                                    if (response == 'success') {
+                                        var newStatus = (status == 1) ? 0 : 1;
+                                        var newStatusText = (status == 1) ? 'Inactive' : 'Active';
+                                        var newStatusClass = (status == 1) ? 'alert-danger bg-danger' : 'alert-success bg-success';
+                                        var newIconClass = (status == 1) ? 'text-danger ti ti-reload' : 'text-danger ti ti-trash';
+                                        var newButtonText = (status == 1) ? 'Archive' : 'Edit';
+                                        
+                                        $('#status-alert' + no)
+                                            .removeClass()
+                                            .addClass('alert ' + newStatusClass + ' text-white border-0 text-center py-1 px-2 my-0')
+                                            .text(newStatusText);
+                                        
+                                        $(".changeStatus[data-no='" + no + "']").data('status', newStatus);
+                                        $('.product' + no).toggleClass('emphasize-strike', newStatus == 0);
+                                        
+                                        $('#action-button-' + no).html('<a href="#" class="btn ' + (newStatus == 1 ? 'btn-light' : 'btn-primary') + ' py-1" data-id="' + product_id + '" data-row="' + no + '" style="border-radius: 10%;">' + newButtonText + '</a>');
+                                        
+                                        $('#delete_product_btn').find('i').removeClass().addClass(newIconClass + ' fs-7');
+                                        
                                         $('#toggleActive').trigger('change');
                                     } else {
-                                        $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                                        $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                                        $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                        $('#action-button-' + no).html('<a href="/?page=product&product_id=' + product_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
-                                        $('#toggleActive').trigger('change');
+                                        alert('Failed to change status.');
                                     }
-                                } else {
-                                    alert('Failed to change status.');
+                                },
+                                error: function(jqXHR, textStatus, errorThrown) {
+                                    alert('Error: ' + textStatus + ' - ' + errorThrown);
                                 }
-                            },
-                            error: function(jqXHR, textStatus, errorThrown) {
-                                alert('Error: ' + textStatus + ' - ' + errorThrown);
-                            }
-                        });
+                            });
+                        }
                     });
+
+
 
                     $(document).on('click', '.hideProduct', function(event) {
                         event.preventDefault();
