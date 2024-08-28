@@ -259,7 +259,7 @@ if(!empty($_REQUEST['id'])){
                     <?php if ($row_field_product['status'] == '0') { ?>
                         <a href="#" class="btn btn-light py-1 text-dark hideProductField" data-id="<?= $product_fields_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
                     <?php } else { ?>
-                        <a href="/?page=staff_product_access&id=<?= $product_fields_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                        <a href="/?page=product_fields&id=<?= $product_fields_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
                     <?php } ?>
                 </td>
             </tr>
