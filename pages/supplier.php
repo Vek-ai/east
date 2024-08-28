@@ -253,9 +253,9 @@ if(!empty($_REQUEST['category_id'])){
     <!-- /.modal-dialog -->
     </div>
 
-    <div class="modal fade" id="updateContactModal" tabindex="-1" role="dialog" aria-labelledby="updateContactModal" aria-hidden="true">
-        
-    </div>
+    <div class="modal fade" id="viewProductModal" tabindex="-1" role="dialog" aria-labelledby="viewProductModal" aria-hidden="true"></div>
+
+    <div class="modal fade" id="updateContactModal" tabindex="-1" role="dialog" aria-labelledby="updateContactModal" aria-hidden="true"></div>
 
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -324,7 +324,7 @@ if(!empty($_REQUEST['category_id'])){
                     <tr class="search-items">
                         <td>
                         <!-- <a href="?page=supplier_products"> -->
-                        <a href="#"></a>
+                        <a href="#" id="view_product_btn" data-id="<?= $row_supplier['supplier_id'] ?>">
                             <div class="d-flex align-items-center gap-3">
                                 <img src="<?= $logo_path ?>" alt="user4" width="60" height="60" class="rounded-circle">
                                 <div>
@@ -450,6 +450,27 @@ if(!empty($_REQUEST['category_id'])){
         });
 
         // Show the View Supplier modal and log the supplier ID
+        $(document).on('click', '#view_product_btn', function(event) {
+            event.preventDefault(); 
+            var supplier_id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/supplier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        supplier_id: supplier_id,
+                        action: "fetch_product"
+                    },
+                    success: function(response) {
+                        $('#viewProductModal').html(response);
+                        $('#viewProductModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        // Show the View Supplier modal and log the supplier ID
         $(document).on('click', '#view_supplier_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
@@ -468,7 +489,6 @@ if(!empty($_REQUEST['category_id'])){
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
                     }
             });
-            
         });
 
         function getCookie(name) {

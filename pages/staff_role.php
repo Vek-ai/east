@@ -193,7 +193,11 @@ while ($row_employee_roles = mysqli_fetch_array($result_employee_roles)) {
     }
 ?>
 <tr id="product-row-<?= $no ?>">
-    <td><span class="product<?= $no ?> <?php if ($row_employee_roles['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $emp_role ?></span></td>
+    <td>
+        <a href="#" id="view_emp_list" data-id="<?= $emp_role_id ?>">
+          <span class="product<?= $no ?> <?php if ($row_employee_roles['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $emp_role ?></span>
+        </a>
+    </td>
     <td class="notes" style="width:30%;"><?= $role_desc ?></td>
     <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
     <td><?= $status ?></td>
@@ -288,6 +292,25 @@ $(document).ready(function() {
   </div>
 </div>
 
+<div class="modal fade" id="employee_list_modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header align-items-center modal-colored-header">
+        <h4 id="employeeListHeader" class="m-0">Employee List</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="employeeList" class="row align-items-center"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -296,8 +319,7 @@ $(document).ready(function() {
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        
-        <p id="responseMsg"></p>
+        <div id="responseMsg"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
@@ -338,6 +360,27 @@ $(document).ready(function() {
         }
         return null;
     }
+
+    $(document).on('click', '#view_emp_list', function(event) {
+        event.preventDefault();
+        var emp_role_id = $(this).data('id');
+        console.log(emp_role_id)
+        $.ajax({
+                url: 'pages/staff_role_ajax.php',
+                type: 'POST',
+                data: {
+                    emp_role_id: emp_role_id,
+                    action: "fetch_emp_list"
+                },
+                success: function(response) {
+                    $('#employeeList').html(response);
+                    $('#employee_list_modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+        });
+    });
 
     $('#employeeRoleForm').on('submit', function(event) {
         event.preventDefault(); 
