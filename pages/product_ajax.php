@@ -657,7 +657,7 @@ if(isset($_REQUEST['action'])) {
                                         <div class="col-md-4">
                                             <div class="mb-3">
                                                 <label class="form-label">Product Category</label>
-                                                <select id="product_category" class="form-control" name="product_category">
+                                                <select id="product_category_update" class="form-control" name="product_category">
                                                     <option value="/">Select One...</option>
                                                     <?php
                                                     $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
@@ -747,7 +747,7 @@ if(isset($_REQUEST['action'])) {
                                     </div>  
 
                                     <div class="row pt-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="1">
                                         <div class="mb-3">
                                         <label class="form-label">Stock Type</label>
                                         <select id="stock_type" class="form-control" name="stock_type">
@@ -765,7 +765,7 @@ if(isset($_REQUEST['action'])) {
                                         </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="2">
                                         <div class="mb-3">
                                         <label class="form-label">Material</label>
                                         <input type="text" id="material" name="material" class="form-control" value="<?= $row['material']?>" />
@@ -774,13 +774,13 @@ if(isset($_REQUEST['action'])) {
                                     </div>
 
                                     <div class="row pt-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="3">
                                         <div class="mb-3">
                                         <label class="form-label">Dimensions</label>
                                         <input type="text" id="dimensions" name="dimensions" class="form-control" value="<?= $row['dimensions']?>" />
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="4">
                                         <div class="mb-3">
                                         <label class="form-label">Thickness</label>
                                         <input type="text" id="thickness" name="thickness" class="form-control" value="<?= $row['thickness']?>" />
@@ -789,7 +789,7 @@ if(isset($_REQUEST['action'])) {
                                     </div>
 
                                     <div class="row pt-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="5">
                                         <div class="mb-3">
                                         <label class="form-label">Gauge</label>
                                         <select id="gauge" class="form-control" name="gauge">
@@ -807,7 +807,7 @@ if(isset($_REQUEST['action'])) {
                                         </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="6">
                                         <div class="mb-3">
                                         <label class="form-label">Grade</label>
                                         <select id="grade" class="form-control" name="grade">
@@ -828,7 +828,7 @@ if(isset($_REQUEST['action'])) {
                                     </div>
 
                                     <div class="row pt-3">
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 opt_field_update" data-id="7">
                                         <div class="mb-3">
                                         <label class="form-label">Color</label>
                                         <select id="color" class="form-control" name="color">
@@ -846,7 +846,7 @@ if(isset($_REQUEST['action'])) {
                                         </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 opt_field_update" data-id="8">
                                         <div class="mb-3">
                                         <label class="form-label">Paint Provider</label>
                                         <select id="paintProvider" class="form-control" name="paintProvider">
@@ -864,7 +864,7 @@ if(isset($_REQUEST['action'])) {
                                         </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 opt_field_update" data-id="17">
                                         <div class="mb-3">
                                         <label class="form-label">Coating</label>
                                         <input type="text" id="coating" name="coating" class="form-control" value="<?= $row['coating']?>" />
@@ -873,7 +873,7 @@ if(isset($_REQUEST['action'])) {
                                     </div>
 
                                     <div class="row pt-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="9">
                                         <div class="mb-3">
                                         <label class="form-label">Warranty Type</label>
                                         <select id="warrantyType" class="form-control" name="warrantyType">
@@ -891,7 +891,7 @@ if(isset($_REQUEST['action'])) {
                                         </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="10">
                                         <div class="mb-3">
                                         <label class="form-label">Profile</label>
                                         <select id="profile" class="form-control" name="profile">
@@ -912,13 +912,13 @@ if(isset($_REQUEST['action'])) {
                                     </div>
 
                                     <div class="row pt-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="11">
                                         <div class="mb-3">
                                         <label class="form-label">Width</label>
                                         <input type="text" id="width" name="width" class="form-control" value="<?= $row['width']?>" />
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="12">
                                         <div class="mb-3">
                                         <label class="form-label">Length</label>
                                         <input type="text" id="length" name="length" class="form-control" value="<?= $row['length']?>" />
@@ -927,13 +927,13 @@ if(isset($_REQUEST['action'])) {
                                     </div>
 
                                     <div class="row pt-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="13">
                                         <div class="mb-3">
                                         <label class="form-label">Weight</label>
                                         <input type="text" id="weight" name="weight" class="form-control" value="<?= $row['weight']?>" />
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="14">
                                         <div class="mb-3">
                                         <label class="form-label">Unit of Measure</label>
                                         <input type="text" id="unitofMeasure" name="unitofMeasure" class="form-control" value="<?= $row['unit_of_measure']?>" />
@@ -963,7 +963,7 @@ if(isset($_REQUEST['action'])) {
                                     </div>
 
                                     <div class="row pt-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 opt_field_update" data-id="15">
                                         <div class="mb-3">
                                         <label class="form-label">Usage</label>
                                         <input type="text" id="product_usage" name="product_usage" class="form-control" value="<?= $row['product_usage']?>" />
@@ -977,7 +977,7 @@ if(isset($_REQUEST['action'])) {
                                     </div>
                                     </div>
 
-                                    <div class="mb-3">
+                                    <div class="mb-3 opt_field_update" data-id="16">
                                     <label class="form-label">Comment</label>
                                     <textarea class="form-control" id="comment" name="comment" rows="5"><?= $row['comment']?></textarea>
                                     </div>
@@ -1046,6 +1046,38 @@ if(isset($_REQUEST['action'])) {
 
                         console.log(fileNames);
                     }
+
+                    $('#product_category_update').on('change', function() {
+                        var product_category_id = $(this).val();
+                        $.ajax({
+                            url: 'pages/product_ajax.php',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: {
+                                product_category_id: product_category_id,
+                                action: "fetch_product_fields"
+                            },
+                            success: function(response) {
+                                $('.opt_field_update').hide();
+
+                                if (response.length > 0) {
+
+                                    response.forEach(function(field) {
+                                        var fieldParts = field.fields.split(',');
+                                        fieldParts.forEach(function(part) {
+                                            $('.opt_field_update[data-id="' + part + '"]').show();
+                                        });
+                                    });
+                                } else {
+                                    $('.opt_field_update').show();
+                                }
+                            },
+                            error: function(jqXHR, textStatus, errorThrown) {
+                                alert('Error: ' + textStatus + ' - ' + errorThrown);
+                            }
+                        });
+                    });
+                    
                 });
 
             </script>
@@ -1089,7 +1121,22 @@ if(isset($_REQUEST['action'])) {
             echo 'error';
         }
     }
+
+    if ($action == 'fetch_product_fields') {
+        $product_category_id = mysqli_real_escape_string($conn, $_POST['product_category_id']);
+        $query = "SELECT * FROM product_fields WHERE product_category_id='$product_category_id'";
+        $result = mysqli_query($conn, $query);
     
+        if ($result) {
+            $fields = [];
+            while ($row = mysqli_fetch_assoc($result)) {
+                $fields[] = $row;
+            }
+            echo json_encode($fields);
+        } else {
+            echo 'error';
+        }
+    }
     
     mysqli_close($conn);
 }
