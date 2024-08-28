@@ -45,7 +45,10 @@ require 'includes/functions.php';
 
 <div class="product-list">
     <div class="card">
-        <div class="card-body p-3">
+        <div class="card-body text-right p-3">
+            <div class="p-2">
+                <input type="checkbox" id="toggleActive" checked> Exclude Out of Stock</div>
+            </div>
             <div class="d-flex justify-content-between align-items-center  mb-9">
                 <div class="position-relative w-100 col-6">
                     <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
@@ -193,6 +196,7 @@ $(document).ready(function() {
         var type_id = $('#select-type').find('option:selected').val();
         var line_id = $('#select-line').find('option:selected').val();
         var category_id = $('#select-category').find('option:selected').val();
+        var onlyInStock = $('#toggleActive').prop('checked');
         $.ajax({
             url: 'pages/product_view_ajax.php',
             type: 'POST',
@@ -200,7 +204,8 @@ $(document).ready(function() {
                 query: query,
                 type_id: type_id,
                 line_id: line_id,
-                category_id: category_id
+                category_id: category_id,
+                onlyInStock: onlyInStock
             },
             success: function(response) {
                 $('#productTableBody').html(response);
@@ -219,11 +224,16 @@ $(document).ready(function() {
         updateTable();
     });
 
+
+    $(document).on('input change', '#text-srh, #select-category, #select-type, #select-line', function() {
+        performSearch($('#text-srh').val());
+    });
+
     $('#select-type').select2();
     $('#select-line').select2();
     $('#select-category').select2();
 
-    $(document).on('input change', '#text-srh, #select-category, #select-type, #select-line', function() {
+    $(document).on('input change', '#text-srh, #select-category, #select-type, #select-line, #toggleActive', function() {
         performSearch($('#text-srh').val());
     });
 
