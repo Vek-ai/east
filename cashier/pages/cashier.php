@@ -200,7 +200,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div id="cash_id">
+                <div >
                     <div class="row">
                         <div class="col-md-6">
                             <div class="card box-shadow-0">
