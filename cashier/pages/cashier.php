@@ -65,6 +65,8 @@
                         <div class="col-md-8"></div>
                         <?php if(isset($_SESSION["grandtotal"])){?>
                             <div class="col-md-4 bg-primary" id="thegrandtotal" style="text-align:center;font-size:48px;display: flex;align-items: center;justify-content: center;text-align: center;" >$<?php echo number_format($_SESSION["grandtotal"],2);?> </div>
+                        <?php }else{ ?>
+                            <div class="col-md-4 bg-primary" id="thegrandtotal" style="text-align:center;font-size:48px;display: flex;align-items: center;justify-content: center;text-align: center;" >$ 0.00 </div>
                         <?php } ?>
                     </div>
 
@@ -152,7 +154,7 @@
                                                 </td>
                                             </tr>
                                     <?php
-                                            $totalquantity += $values["quantity_ttl"];
+                                            $totalquantity += $values["quantity_cart"];
                                             $total += $subtotal;
                                             
                                         }
