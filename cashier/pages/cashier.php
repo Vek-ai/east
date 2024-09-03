@@ -1,6 +1,19 @@
-<!-- -------------------------------------------------------------- -->
-<!-- Breadcrumb -->
-<!-- -------------------------------------------------------------- -->
+<style>
+    .ui-autocomplete {
+        background-color: #333;
+        color: #fff;
+        border: 1px solid #666;
+    }
+
+    .ui-autocomplete .ui-menu-item {
+        padding: 8px;
+    }
+
+    .ui-autocomplete .ui-state-highlight {
+        background-color: #555;
+        color: #fff;
+    }
+</style>
 <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
   <div class="card-body px-0">
     <div class="d-flex justify-content-between align-items-center">
@@ -71,7 +84,8 @@
                                 <span class="input-group-text" id="basic-addon3">
                                     <i class="ti ti-layout-column4-alt"></i>
                                 </span>
-                                <input class="form-control form-control-lg" placeholder="Type Barcode/Product(Shift+S)" type="text" id="autocomplete2" Onchange="addnote2()">
+                                <input class="form-control form-control-lg" placeholder="Type Barcode/Product (Shift+S)" type="text" id="product_item" onchange="add_product()">
+                                <input type='hidden' id='product_id' name="product_id"/>
                             </div>
                         </div>
                     </div>
@@ -85,39 +99,64 @@
                                     <tr>
                                         <th width="35%">Item Name</th>
                                         <th width="10%">Stock</th>
-                                        <th width="20%">Quantity</th>
-                                        <th width="10%">Price</th>
-                                        <th width="10%">Subtotal</th>
-                                        <th width="5%"><i class="ti ti-trash"></i></th>
+                                        <th width="20%"class="text-center">Quantity</th>
+                                        <th width="10%" class="text-center pl-3">Price</th>
+                                        <th width="10%" class="text-center">Subtotal</th>
+                                        <th width="5%">Action</i></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    
+                                    <?php 
+                                    if (!empty($_SESSION["cart"])) {
+                                        foreach ($_SESSION["cart"] as $keys => $values) {
+                                            $data_id = $values["product_id"];
+                                    ?>
+                                            <tr>
+                                                <td>
+                                                    <?php echo $values["product_item"]; ?>
+                                                </td>
+                                                <td>
+                                                    <?php echo $values["quantity_ttl"]; ?>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group">
+                                                        <span class="input-group-btn">
+                                                            <button class="btn btn-primary btn-icon" type="button" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)"><i class="fa fa-minus"></i></button>
+                                                        </span>
+                                                        <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_ttl"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-id="<?php echo $data_id; ?>">
+                                                        <span class="input-group-btn">
+                                                            <button class="btn btn-primary btn-icon" type="button" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)"><i class="fa fa-plus"></i></button>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <th scope="row" class="text-end pl-3"><?php echo number_format($values["unit_price"], 2); ?> $</th>
+                                                <td class="text-end pl-3">
+                                                    <?php
+                                                    $subtotal = ($values["quantity_ttl"] * $values["unit_price"]);
+                                                    echo number_format($subtotal, 2);
+                                                    ?> $
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-danger-gradient btn-sm" type="button" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
+                                                    <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["item_id"]; ?>">
+                                                </td>
+                                            </tr>
+                                    <?php
+                                            $totalquantity += $values["quantity_ttl"];
+                                            $total += $subtotal;
+                                        }
+                                    }
+                                    ?>
                                 </tbody>
+
                                 <tfoot>
                                     <tr>
-                                        <td colspan="3"></td>
-                                        <td colspan="4">
-                                            <input type="text" class="form-control numberonly" value="">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="5"></td>
-                                        <td colspan="3">
-                                            <div class="form-group mb-0 justify-content-end">
-                                                <div class="checkbox">
-                                                    <div class="form-checkbox custom-control">
-                                                        <input type="checkbox" class="custom-control-input" value="">
-                                                        <label for="vatexempt" class="custom-control-label mt-1">VAT Exempt</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="5"></td>
-                                        <td colspan="1">Amount Due:</td>
-                                        <td colspan="1"><input type="text" class="form-control" value=""></td>
+                                        <td colspan="1"></td>
+                                        <td colspan="1" class="text-end">Total Quantity:</td>
+                                        <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
+                                        <td colspan="1" class="text-end">Amount Due:</td>
+                                        <td colspan="1" class="text-end"><span id="ammount_due"><?= $total ?> $</span></td>
+                                        <td colspan="1"></td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -242,63 +281,180 @@
 </div>
 
 <script>
-  function showcash(){
-    $("#cashmodal").modal('show');
-    $("#cash_amount").focus();	
-  }
-  function showcredit(){
-    $("#creditmodal").modal('show');
-    $("#credit_amount").focus();	
-  } 
-  function readbarcode() {												
-    var barcode = $("#barcode").val();
-    $.ajax({
-        url: 'pages/cashier_ajax.php',
-        type: 'POST',
-        data: {
-            barcode: barcode
-        },
-        dataType: 'json',
-        success: function(response) {
-            if(response.status === 'success') {
-                var tableBody = $('#productTable tbody');
-                tableBody.empty();
-
-                var item = response.data;
-                var row = '<tr>' +
-                    '<td>' + item.item_name + '</td>' +
-                    '<td>' + item.quantity + '</td>' +
-                    '<td>' +
-                        '<div class="input-group">' +
-                            '<span class="input-group-btn">' +
-                                '<button class="btn btn-primary btn-icon m-1 py-1" type="button"><i class="ti ti-minus"></i></button>' +
-                            '</span>' +
-                            '<input class="form-control" type="text" size="5" value="' + item.quantity + '" style="color:#000000;">' +
-                            '<span class="input-group-btn">' +
-                                '<button class="btn btn-primary btn-icon m-1 py-1" type="button"><i class="ti ti-plus"></i></button>' +
-                            '</span>' +
-                        '</div>' +
-                    '</td>' +
-                    '<td>' + item.price + '</td>' +
-                    '<td>' + 'Discount' + '</td>' +
-                    '<td>' + (item.quantity * item.price).toFixed(2) + '</td>' +
-                    '<td>' +
-                        '<button class="btn btn-danger-gradient btn-sm" type="button"><i class="ti ti-trash"></i></button>' +
-                        '<button class="btn btn-warning-gradient btn-sm" type="button"><i class="ti ti-reload"></i></button>' +
-                    '</td>' +
-                '</tr>';
-
-                tableBody.prepend(row);
-            } else {
-                console.log('Error:', response.message);
+    function add_product() {
+        var product_id = $("#product_id").val();
+        var qty = $("#qty").val();
+        jQuery.ajax({
+        url: "pages/cashier_ajax.php",
+        data:"product_id="+product_id+"&qty="+qty,
+        type: "POST",
+        success:function(data){
+            console.log(data);
+            $("#barcode").focus();
+            $("#qty").val('');
+            $("#demo").load(location.href + " #demo");
+            $("#thegrandtotal").load(location.href + " #thegrandtotal");
+            $("#cash_id").load(location.href + " #cash_id");
+            $("#credit_id").load(location.href + " #credit_id");
+            $("#barcode").focus();
+            $('#product_item').val('');
+            },
+            error:function (){}
+        });
+        
+    }
+    function readbarcode() {
+        var barcode = $("#barcode").val();
+        var qty = $("#qty").val();
+        jQuery.ajax({
+        url: "pages/cashier_ajax.php",
+        data:"barcode="+barcode+"&qty="+qty,
+        type: "POST",
+        success:function(data){
+            if(data=='0'){
+                if(!alert('QUANTITY IS HIGHER THAN STORE STOCK')){location.reload(true);}
+            } else if (data=='wrong') {
+                if(!alert('Incorrect Barcode')){location.reload(true);}
+            }else {
+                console.log(data);
+            $("#barcode").val("");
+            $("#qty").val('');
+            $("#demo").load(location.href + " #demo");
+            $("#thegrandtotal").load(location.href + " #thegrandtotal");
+            $("#cash_id").load(location.href + " #cash_id");
+            $("#credit_id").load(location.href + " #credit_id");
+            $("#barcode").val("");
+            $("#barcode").focus();
             }
-        },
-        error: function(xhr, status, error) {
-            //console.log('AJAX Error:', status, error);
-            console.log(xhr.responseText)
+            },
+            error:function (){}
+        });
+    }
+
+    function delete_item(element) {
+        var id = $(element).data('id');
+        $.ajax({
+            url: "pages/cashier_ajax.php",
+            data: {
+                product_id_del: id,
+                deleteitem: 'deleteitem'
+            },
+            type: "POST",
+            success: function(data) {
+                location.reload(true);
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
+                $("#cash_id").load(location.href + " #cash_id");
+                $("#credit_id").load(location.href + " #credit_id");
+            },
+            error: function() {}
+        });
+    }
+
+    function updatequantity(element) {
+        var id = $(element).data('id');
+        var item = Number($("#item_quantity" + id).val());
+        var store = Number($("#store_stock" + id).val());
+
+        if (item > store) {
+            $("#item_quantity" + id).css({ "border-color": "red" });
+            document.getElementById('xyz').play();
+            alert("QUANTITY IS HIGHER THAN STORE STOCK");
         }
-    }); 
-  }
+
+        $.ajax({
+            url: "contents/updatequantity.php",
+            data: {
+                arraykey: $("#arraykey" + id).val(),
+                item_quantity: item,
+                pointofsale: $("#pointofsale").val()
+            },
+            type: "POST",
+            success: function() {
+                $("#demo").load(location.href + " #demo");
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
+                $("#cash_id").load(location.href + " #cash_id");
+                $("#credit_id").load(location.href + " #credit_id");
+            },
+            error: function() {}
+        });
+    }
+
+    function addquantity(element) {
+        var id = $(element).data('id');
+        $.ajax({
+            url: "contents/updatequantity.php",
+            data: {
+                arraykey: $("#arraykey" + id).val(),
+                addquantity: $("#addquantity" + id).val(),
+                pointofsale: $("#pointofsale").val(),
+                item_quantity: $("#item_quantity" + id).val(),
+                store_stock: $("#store_stock" + id).val()
+            },
+            type: "POST",
+            success: function(data) {
+                if (data == "greater") {
+                    $("#item_quantity" + id).css({ "border-color": "red" });
+                    document.getElementById('xyz').play();
+                    alert("QUANTITY IS HIGHER THAN STORE STOCK");
+                } else {
+                    $("#demo").load(location.href + " #demo");
+                    $("#thegrandtotal").load(location.href + " #thegrandtotal");
+                    $("#cash_id").load(location.href + " #cash_id");
+                    $("#credit_id").load(location.href + " #credit_id");
+                }
+            },
+            error: function() {}
+        });
+    }
+
+    function deductquantity(element) {
+        var id = $(element).data('id');
+        $.ajax({
+            url: "contents/updatequantity.php",
+            data: {
+                arraykey: $("#arraykey" + id).val(),
+                deductquantity: $("#deductquantity" + id).val(),
+                pointofsale: $("#pointofsale").val()
+            },
+            type: "POST",
+            success: function() {
+                $("#demo").load(location.href + " #demo");
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
+                $("#cash_id").load(location.href + " #cash_id");
+                $("#credit_id").load(location.href + " #credit_id");
+            },
+            error: function() {}
+        });
+    }
+
+
+
+    $("#product_item").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "pages/cashier_ajax.php",
+                type: 'post',
+                dataType: "json",
+                data: {
+                    search: request.term
+                },
+                success: function(data) {
+                    response(data);
+                },
+                error: function(xhr, status, error) {
+                    console.log("AJAX Error:", status, error);
+                }
+            });
+        },
+        select: function(event, ui) {
+            $('#product_item').val(ui.item.label);
+            $('#product_id').val(ui.item.value);
+            return false;
+        }
+    });
+
+    
+
 </script>
 
 
