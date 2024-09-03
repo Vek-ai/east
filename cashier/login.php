@@ -43,15 +43,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Favicon icon-->
-  <link rel="shortcut icon" type="image/png" href="../assets/images/logos/favicon.png" />
+  <link rel="shortcut icon" type="image/png" href="../../assets/images/logos/favicon.png" />
   <!-- Core Css -->
-  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="../../assets/css/styles.css" />
   <title>East Kentucky Metal</title>
 </head>
 <body>
   <!-- Preloader -->
   <div class="preloader">
-    <img src="assets/images/logo.png" alt="loader" class="lds-ripple img-fluid" />
+    <img src="../assets/images/logo.png" alt="loader" class="lds-ripple img-fluid" />
   </div>
   <div id="main-wrapper" class="auth-customizer-none">
     <div class="position-relative overflow-hidden radial-gradient min-vh-100 w-100 d-flex align-items-center justify-content-center">
@@ -62,8 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <div class="card-body">
                 <a href="../dark/index.html" class="text-nowrap logo-img d-flex align-items-center justify-content-center gap-2 mb-4 w-100">
                   <b class="logo-icon">
-                    <img src="assets/images/logo.png" alt="homepage" class="dark-logo" />
-                    <img src="assets/images/logo.png" alt="homepage" class="light-logo" />
+                    <img src="../assets/images/logo.png" alt="homepage" class="dark-logo" />
+                    <img src="../assets/images/logo.png" alt="homepage" class="light-logo" />
                   </b>
                 </a>
                 <?php if (isset($error)): ?>
@@ -215,12 +215,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   </div>
   <div class="dark-transparent sidebartoggler"></div>
   <!-- Import Js Files -->
-  <script src="../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../assets/libs/simplebar/dist/simplebar.min.js"></script>
-  <script src="../assets/js/theme/app.dark.init.js"></script>
-  <script src="../assets/js/theme/theme.js"></script>
-  <script src="../assets/js/theme/app.min.js"></script>
-  <script src="../assets/js/theme/feather.min.js"></script>
+  <script src="../../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../../assets/libs/simplebar/dist/simplebar.min.js"></script>
+  <script src="../../assets/js/theme/app.dark.init.js"></script>
+  <script src="../../assets/js/theme/theme.js"></script>
+  <script src="../../assets/js/theme/app.min.js"></script>
+  <script src="../../assets/js/theme/feather.min.js"></script>
   <!-- solar icons -->
   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
 </body>
