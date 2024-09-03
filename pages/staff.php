@@ -199,6 +199,21 @@ if(!empty($_REQUEST['staff_id'])){
                                     </div>
                                 </div>
                             
+                                <div class="col-12 mb-9">
+                                    <label class="form-label">Warehouses</label>
+                                    <select id="warehouse" class="form-control" name="warehouse">
+                                        <option value="/" >Select One...</option>
+                                        <?php
+                                        $query_warehouses = "SELECT * FROM warehouses WHERE status = '1'";
+                                        $result_warehouses = mysqli_query($conn, $query_warehouses);            
+                                        while ($row_warehouses = mysqli_fetch_array($result_warehouses)) {
+                                        ?>
+                                            <option value="<?= $row_warehouses['WarehouseID'] ?>" ><?= $row_warehouses['WarehouseName'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>

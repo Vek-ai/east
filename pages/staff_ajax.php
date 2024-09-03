@@ -25,6 +25,7 @@ if(isset($_REQUEST['action'])) {
         $driver_med_cert = mysqli_real_escape_string($conn, $_POST['driver_med_cert']);
         $driver_class = mysqli_real_escape_string($conn, $_POST['driver_class']);
         $license_renewal_date = mysqli_real_escape_string($conn, $_POST['license_renewal_date']);
+        $warehouse = mysqli_real_escape_string($conn, $_POST['warehouse']);
     
         $checkQuery = "SELECT * FROM staff WHERE staff_id = '$staff_id'";
         $result = mysqli_query($conn, $checkQuery);
@@ -52,7 +53,33 @@ if(isset($_REQUEST['action'])) {
             ";
     
             if (mysqli_query($conn, $updateQuery)) {
-                echo "Staff updated successfully.";
+
+                // Add corresponding_user to warehouse table
+                if(empty($warehouse)) {
+                    echo "Staff updated successfully.";
+                    
+                } else {
+                    $checkQuery = "SELECT * FROM warehouses WHERE WarehouseID = '$warehouse'";
+                    $result = mysqli_query($conn, $checkQuery);
+                    $isInsert = false;
+
+                    if (mysqli_num_rows($result) > 0) {
+                        $isInsert = false;
+                        $updateQuery = "
+                            UPDATE warehouses
+                            SET 
+                                corresponding_user = '$staff_id'
+                            WHERE WarehouseID = '$warehouse'
+                        ";
+
+                        if (mysqli_query($conn, $updateQuery)) {
+                            echo "Staff updated successfully.";
+                        } else {
+                            echo "Error updating staff: " . mysqli_error($conn);
+                        }
+                    }
+                }
+                
             } else {
                 echo "Error updating staff: " . mysqli_error($conn);
             }
@@ -95,7 +122,32 @@ if(isset($_REQUEST['action'])) {
     
             if (mysqli_query($conn, $insertQuery)) {
                 $staff_id = $conn->insert_id;
-                echo "New staff added successfully.";
+
+                // Add corresponding_user to warehouse table
+                if(empty($warehouse)) {
+                    echo "New staff added successfully.";
+                } else {
+                    $checkQuery = "SELECT * FROM warehouses WHERE WarehouseID = '$warehouse'";
+                    $result = mysqli_query($conn, $checkQuery);
+                    $isInsert = false;
+
+                    if (mysqli_num_rows($result) > 0) {
+                        $isInsert = false;
+                        $updateQuery = "
+                            UPDATE warehouses 
+                            SET 
+                                corresponding_user = '$staff_id'
+                            WHERE WarehouseID = '$warehouse'
+                        ";
+
+                        if (mysqli_query($conn, $updateQuery)) {
+                            echo "New staff added successfully.";
+                        } else {
+                            echo "Error updating staff: " . mysqli_error($conn);
+                        }
+                    }
+                }
+                
             } else {
                 echo "Error adding staff: " . mysqli_error($conn);
             }
