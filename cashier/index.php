@@ -29,6 +29,7 @@ if (!isset($_SESSION['userid'])) {
 
   <!-- Core Css -->
   <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="css/cashier.css" />
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
@@ -44,9 +45,6 @@ if (!isset($_SESSION['userid'])) {
     <img src="../assets/images/logos/logo-icon.svg" alt="loader" class="lds-ripple img-fluid" />
   </div>
   <div id="main-wrapper">
-    <!-- Sidebar Start -->
-  <?php include 'aside.php';?>
-    <!--  Sidebar End -->
     <div class="page-wrapper">
       <!--  Header Start -->
       <header class="topbar rounded-0 border-0" style="background-color: rgb(0, 51, 160);">

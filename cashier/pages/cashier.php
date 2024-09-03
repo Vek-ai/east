@@ -14,7 +14,7 @@
         color: #fff;
     }
 </style>
-<div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
+<div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7 mt-3">
   <div class="card-body px-0">
     <div class="d-flex justify-content-between align-items-center">
       <div>
@@ -63,7 +63,9 @@
                 <div class="card-body">
                     <div class="row row-xs">
                         <div class="col-md-8"></div>
-                        <div class="col-md-4 bg-primary" id="thegrandtotal" style="text-align:center;font-size:48px;display: flex;align-items: center;justify-content: center;text-align: center;">Grand Total</div>
+                        <?php if(isset($_SESSION["grandtotal"])){?>
+                            <div class="col-md-4 bg-primary" id="thegrandtotal" style="text-align:center;font-size:48px;display: flex;align-items: center;justify-content: center;text-align: center;" >$<?php echo number_format($_SESSION["grandtotal"],2);?> </div>
+                        <?php } ?>
                     </div>
 
                     <div class="row row-xs">
@@ -98,7 +100,8 @@
                                 <thead>
                                     <tr>
                                         <th width="35%">Item Name</th>
-                                        <th width="10%">Stock</th>
+                                        <th width="10%">Warehouse Stock</th>
+                                        <th width="10%">Store Stock</th>
                                         <th width="20%"class="text-center">Quantity</th>
                                         <th width="10%" class="text-center pl-3">Price</th>
                                         <th width="10%" class="text-center">Subtotal</th>
@@ -113,17 +116,24 @@
                                     ?>
                                             <tr>
                                                 <td>
-                                                    <?php echo $values["product_item"]; ?>
+                                                    <a href="javascript:void(0);" id="view_product_details" data-id="<?= $data_id ?>">
+                                                        <?php echo $values["product_item"]; ?>
+                                                    </a>
                                                 </td>
                                                 <td>
                                                     <?php echo $values["quantity_ttl"]; ?>
+                                                    <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $data_id;?>">
+                                                </td>
+                                                <td>
+                                                    <?php echo $values["quantity_in_stock"]; ?>
+                                                    <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $data_id;?>">
                                                 </td>
                                                 <td>
                                                     <div class="input-group">
                                                         <span class="input-group-btn">
                                                             <button class="btn btn-primary btn-icon" type="button" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)"><i class="fa fa-minus"></i></button>
                                                         </span>
-                                                        <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_ttl"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-id="<?php echo $data_id; ?>">
+                                                        <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
                                                         <span class="input-group-btn">
                                                             <button class="btn btn-primary btn-icon" type="button" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)"><i class="fa fa-plus"></i></button>
                                                         </span>
@@ -132,19 +142,21 @@
                                                 <th scope="row" class="text-end pl-3"><?php echo number_format($values["unit_price"], 2); ?> $</th>
                                                 <td class="text-end pl-3">
                                                     <?php
-                                                    $subtotal = ($values["quantity_ttl"] * $values["unit_price"]);
+                                                    $subtotal = ($values["quantity_cart"] * $values["unit_price"]);
                                                     echo number_format($subtotal, 2);
                                                     ?> $
                                                 </td>
                                                 <td>
                                                     <button class="btn btn-danger-gradient btn-sm" type="button" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
-                                                    <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["item_id"]; ?>">
+                                                    <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["product_id"]; ?>">
                                                 </td>
                                             </tr>
                                     <?php
                                             $totalquantity += $values["quantity_ttl"];
                                             $total += $subtotal;
+                                            
                                         }
+                                        $_SESSION["grandtotal"] = $total;
                                     }
                                     ?>
                                 </tbody>
@@ -171,6 +183,9 @@
         </div>
     </div>
 </div>
+
+<!-- Product Details modal -->
+<div class="modal" id="viewDetailsmodal"></div>
 
 <!-- Cash modal -->
 <div class="modal" id="cashmodal">
@@ -353,48 +368,49 @@
     function updatequantity(element) {
         var id = $(element).data('id');
         var item = Number($("#item_quantity" + id).val());
+        var warehouse = Number($("#warehouse_stock" + id).val());
         var store = Number($("#store_stock" + id).val());
-
-        if (item > store) {
+        var product_id_update = $("#item_id" + id).val();
+        if (item > (store + warehouse)) {
             $("#item_quantity" + id).css({ "border-color": "red" });
-            document.getElementById('xyz').play();
             alert("QUANTITY IS HIGHER THAN STORE STOCK");
+        }else{
+            $.ajax({
+                url: "pages/cashier_ajax.php",
+                data: {
+                    product_id_update: product_id_update,
+                    item_quantity: item,
+                    update_qty: 'update_qty'
+                },
+                type: "POST",
+                success: function(data) {
+                    
+                    $("#demo").load(location.href + " #demo");
+                    $("#thegrandtotal").load(location.href + " #thegrandtotal");
+                    $("#cash_id").load(location.href + " #cash_id");
+                    $("#credit_id").load(location.href + " #credit_id");
+                },
+                error: function() {}
+            });
         }
-
-        $.ajax({
-            url: "contents/updatequantity.php",
-            data: {
-                arraykey: $("#arraykey" + id).val(),
-                item_quantity: item,
-                pointofsale: $("#pointofsale").val()
-            },
-            type: "POST",
-            success: function() {
-                $("#demo").load(location.href + " #demo");
-                $("#thegrandtotal").load(location.href + " #thegrandtotal");
-                $("#cash_id").load(location.href + " #cash_id");
-                $("#credit_id").load(location.href + " #credit_id");
-            },
-            error: function() {}
-        });
     }
 
     function addquantity(element) {
         var id = $(element).data('id');
+        var item = Number($("#item_quantity" + id).val());
+        var product_id_update = $("#item_id" + id).val();
         $.ajax({
-            url: "contents/updatequantity.php",
+            url: "pages/cashier_ajax.php",
             data: {
-                arraykey: $("#arraykey" + id).val(),
-                addquantity: $("#addquantity" + id).val(),
-                pointofsale: $("#pointofsale").val(),
-                item_quantity: $("#item_quantity" + id).val(),
-                store_stock: $("#store_stock" + id).val()
+                product_id_update: product_id_update,
+                addquantity: 'addquantity',
+                update_qty: 'update_qty',
+                item_quantity: item
             },
             type: "POST",
             success: function(data) {
                 if (data == "greater") {
                     $("#item_quantity" + id).css({ "border-color": "red" });
-                    document.getElementById('xyz').play();
                     alert("QUANTITY IS HIGHER THAN STORE STOCK");
                 } else {
                     $("#demo").load(location.href + " #demo");
@@ -407,14 +423,17 @@
         });
     }
 
+
     function deductquantity(element) {
         var id = $(element).data('id');
+        var item = Number($("#item_quantity" + id).val());
+        var product_id_update = $("#item_id" + id).val();
         $.ajax({
-            url: "contents/updatequantity.php",
+            url: "pages/cashier_ajax.php",
             data: {
-                arraykey: $("#arraykey" + id).val(),
-                deductquantity: $("#deductquantity" + id).val(),
-                pointofsale: $("#pointofsale").val()
+                product_id_update: product_id_update,
+                deductquantity: 'deductquantity',
+                update_qty: 'update_qty'
             },
             type: "POST",
             success: function() {
@@ -427,7 +446,26 @@
         });
     }
 
-
+    // Show the View Product modal and log the product ID
+    $(document).on('click', '#view_product_details', function(event) {
+        event.preventDefault();
+        var id = $(this).data('id');
+        $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    fetch_view_modal: "fetch_view_modal"
+                },
+                success: function(response) {
+                    $('#viewDetailsmodal').html(response);
+                    $('#viewDetailsmodal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+        });
+    });
 
     $("#product_item").autocomplete({
         source: function(request, response) {
