@@ -55,6 +55,20 @@
         </li>
 
         <!-- ---------------------------------- -->
+        <!-- Warehouse -->
+        <!-- ---------------------------------- -->
+        <li class="nav-small-cap">
+          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <span class="hide-menu">Warehouse</span>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="pages/warehouse.php">
+            <iconify-icon icon="la:warehouse" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Warehouses</span>
+          </a>
+        </li>
+
+        <!-- ---------------------------------- -->
         <!-- Settings -->
         <!-- ---------------------------------- -->
         <li class="nav-small-cap">
