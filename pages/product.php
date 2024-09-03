@@ -792,37 +792,7 @@ $picture_path = "images/product/product.jpg";
             });
         });
 
-        $('#product_category_update').on('change', function() {
-            var product_category_id = $(this).val();
-            $.ajax({
-                url: 'pages/product_ajax.php',
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    product_category_id: product_category_id,
-                    action: "fetch_product_fields"
-                },
-                success: function(response) {
-                    $('.opt_field_update').hide();
-
-                    if (response.length > 0) {
-
-                        response.forEach(function(field) {
-                            var fieldParts = field.fields.split(',');
-                            fieldParts.forEach(function(part) {
-                                $('.opt_field[data-id="' + part + '"]').show();
-                            });
-                        });
-                    } else {
-                        $('.opt_field').show();
-                        console.log('No fields found for this category.');
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
+        
 
         // Show the View Product modal and log the product ID
         $(document).on('click', '#view_product_btn', function(event) {
