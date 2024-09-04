@@ -1296,7 +1296,7 @@ if (!isset($_SESSION['userid'])) {
         <div class="container-fluid">
           <?php 
             if (empty($_REQUEST['page'])) {include 'pages/home.php';}
-            if ($_REQUEST['page'] == "cashier") {include 'pages/cashier.php';}
+            if ($_REQUEST['page'] == "customer") {include 'pages/customer.php';}
           ?>
         </div>
       </div>

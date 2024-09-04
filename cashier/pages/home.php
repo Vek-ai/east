@@ -13,6 +13,11 @@
         background-color: #555;
         color: #fff;
     }
+
+    .ui-autocomplete {
+        position: absolute;
+        z-index: 1051 !important;
+    }
 </style>
 <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7 mt-3">
   <div class="card-body px-0">
@@ -88,8 +93,7 @@
                                 <span class="input-group-text" id="basic-addon3">
                                     <i class="ti ti-layout-column4-alt"></i>
                                 </span>
-                                <input class="form-control form-control-lg" placeholder="Type Barcode/Product (Shift+S)" type="text" id="product_item" onchange="add_product()">
-                                <input type='hidden' id='product_id' name="product_id"/>
+                                
                             </div>
                         </div>
                     </div>
@@ -212,6 +216,16 @@
                                 <div class="card-body">
                                     <form>
                                         <div class="form-group">
+                                            <label>Customer Name</label>
+                                            <div class="input-group">
+                                                <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
+                                                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer">
+                                                        <span class="input-group-text"> + </span>
+                                                    </a>
+                                                <input type='hidden' id='customer_id_cash' name="customer_id"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
                                             <label>Amount</label>
                                             <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="">
                                         </div>
@@ -265,6 +279,16 @@
                             <div class="card box-shadow-0">
                                 <div class="card-body">
                                     <form>
+                                        <div class="form-group">
+                                            <label>Customer Name</label>
+                                            <div class="input-group">
+                                                <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_credit">
+                                                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer">
+                                                        <span class="input-group-text"> + </span>
+                                                    </a>
+                                                <input type='hidden' id='customer_id_credit' name="customer_id"/>
+                                            </div>
+                                        </div>
                                         <div class="form-group">
                                             <label>Amount</label>
                                             <input type="text" class="form-control" id="credit_amount" onchange="update_credit()" value="">
@@ -490,11 +514,70 @@
                     console.log("AJAX Error:", status, error);
                 }
             });
+        }
+    });
+
+    $("#customer_select_cash").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "pages/cashier_ajax.php",
+                type: 'post',
+                dataType: "json",
+                data: {
+                    search_customer: request.term
+                },
+                success: function(data) {
+                    response(data);
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error: " + xhr.responseText);
+                }
+            });
         },
         select: function(event, ui) {
-            $('#product_item').val(ui.item.label);
-            $('#product_id').val(ui.item.value);
+            $('#customer_select_cash').val(ui.item.label);
+            $('#customer_id_cash').val(ui.item.value);
             return false;
+        },
+        focus: function(event, ui) {
+            $('#customer_select_cash').val(ui.item.label);
+            return false;
+        },
+        appendTo: "#cashmodal", 
+        open: function() {
+            $(".ui-autocomplete").css("z-index", 1050);
+        }
+    });
+
+    $("#customer_select_credit").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "pages/cashier_ajax.php",
+                type: 'post',
+                dataType: "json",
+                data: {
+                    search_customer: request.term
+                },
+                success: function(data) {
+                    response(data);
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseText);
+                }
+            });
+        },
+        select: function(event, ui) {
+            $('#customer_select_credit').val(ui.item.label);
+            $('#customer_id_credit').val(ui.item.value);
+            return false;
+        },
+        focus: function(event, ui) {
+            $('#customer_select_credit').val(ui.item.label);
+            return false;
+        },
+        appendTo: "#creditmodal", 
+        open: function() {
+            $(".ui-autocomplete").css("z-index", 1050);
         }
     });
 
