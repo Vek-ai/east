@@ -369,7 +369,7 @@ $addHeaderTxt = "Add New";
       <div class="card">
         <div class="card-body">
             <h4 class="card-title d-flex justify-content-between align-items-center">Customer List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['product_line_id'])){ ?>
-              <a href="/?page=customer" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
+              <a href="/cashier/?page=customer" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
               <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
             </h4>
           
@@ -451,7 +451,7 @@ $addHeaderTxt = "Add New";
                           <?php if ($row_customer['status'] == '0') { ?>
                               <a href="#" class="btn btn-light py-1 text-dark hideCustomer" data-id="<?= $customer_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
                           <?php } else { ?>
-                              <a href="/?page=customer&customer_id=<?= $customer_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                              <a href="/cashier/?page=customer&customer_id=<?= $customer_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
                           <?php } ?>
                       </td>
                   </tr>
@@ -488,7 +488,7 @@ $addHeaderTxt = "Add New";
                                           $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                                           $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                           $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                          $('#action-button-' + no).html('<a href="/?page=customer&customer_id=' + customer_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                                          $('#action-button-' + no).html('<a href="/cashier/?page=customer&customer_id=' + customer_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                                           $('#toggleActive').trigger('change');
                                         }
                                   } else {
@@ -623,7 +623,7 @@ $addHeaderTxt = "Add New";
                   $('#response-modal').modal("show");
 
                   $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=customer";
+                    window.location.href = "cashier/?page=customer";
                   });
               } else if (response === "New customer added successfully.") {
                   $('#responseHeader').text("Success");
