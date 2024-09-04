@@ -3,7 +3,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require '../includes/dbconn.php';
+require '../../includes/dbconn.php';
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
