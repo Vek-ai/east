@@ -194,33 +194,41 @@ if(isset($_REQUEST['deleteitem'])){
     array_splice($_SESSION["cart"], $key, 1);
 }
 
-if (isset($_POST['update_qty'])){
-    
-    if(isset($_POST['item_quantity'])){
-        $key = array_search($_REQUEST['product_id_update'], array_column($_SESSION["cart"], 'product_id'));
-        
-        if($_POST['item_quantity']>$_SESSION["cart"][$key]['quantity_ttl'] + $_SESSION["cart"][$key]['quantity_in_stock']){
-            
-        } else {
-            $_SESSION["cart"][$key]['quantity_cart']=$_POST['item_quantity'];
-            echo $key;
+if (isset($_POST['update_qty'])) {
+    $productId = $_REQUEST['product_id_update'];
+    $key = array_search($productId, array_column($_SESSION["cart"], 'product_id'));
+
+    if ($key !== false) {
+        $totalStock = $_SESSION["cart"][$key]['quantity_ttl'] + $_SESSION["cart"][$key]['quantity_in_stock'];
+
+        if (isset($_POST['item_quantity'])) {
+            $requestedQuantity = $_POST['item_quantity'];
+
+            if ($requestedQuantity > $totalStock) {
+                $_SESSION["cart"][$key]['quantity_cart'] = $totalStock;
+            } else {
+                $_SESSION["cart"][$key]['quantity_cart'] = $requestedQuantity;
+            }
         }
-    }
-    if(isset($_POST['addquantity'])){
-        $key = array_search($_REQUEST['product_id_update'], array_column($_SESSION["cart"], 'product_id'));
-        if(($_SESSION["cart"][$key]['quantity_cart']+1)>$_SESSION["cart"][$key]['quantity_ttl'] + $_SESSION["cart"][$key]['quantity_in_stock']){
-            echo "greater";
-        } else {
-            $_SESSION["cart"][$key]['quantity_cart']=$_SESSION["cart"][$key]['quantity_cart']+1;
+
+        if (isset($_POST['addquantity'])) {
+            $newQuantity = $_SESSION["cart"][$key]['quantity_cart'] + 1;
+
+            if ($newQuantity > $totalStock) {
+                echo "greater";
+            } else {
+                $_SESSION["cart"][$key]['quantity_cart'] = $newQuantity;
+            }
         }
-    }
-    if(isset($_POST['deductquantity'])){
-        $key = array_search($_REQUEST['product_id_update'], array_column($_SESSION["cart"], 'product_id'));
-        if($_SESSION["cart"][$key]['quantity_cart']<=1){
-            array_splice($_SESSION["cart"], $key, 1);     
-        } else {
-            $key = array_search($_REQUEST['product_id_update'], array_column($_SESSION["cart"], 'product_id'));
-            $_SESSION["cart"][$key]['quantity_cart']=$_SESSION["cart"][$key]['quantity_cart']-1;
+
+        if (isset($_POST['deductquantity'])) {
+            $currentQuantity = $_SESSION["cart"][$key]['quantity_cart'];
+
+            if ($currentQuantity <= 1) {
+                array_splice($_SESSION["cart"], $key, 1);
+            } else {
+                $_SESSION["cart"][$key]['quantity_cart'] = $currentQuantity - 1;
+            }
         }
     }
 }
