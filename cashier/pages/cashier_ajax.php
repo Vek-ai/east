@@ -254,29 +254,27 @@ if(isset($_POST['fetch_view_modal'])){
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="container py-4">
-                        <h5 class="mb-3 fs-6 fw-semibold text-center">Inventory</h5>
+                <div class="container py-4">
+                    <h5 class="mb-3 fs-6 fw-semibold text-center">Inventory</h5>
+                    <?php
+                    $query_inventory = "SELECT DISTINCT Warehouse_id FROM inventory WHERE Product_id = '$product_id' AND Warehouse_id != '0'";
+                    $result_inventory = mysqli_query($conn, $query_inventory);
+
+                    if ($result_inventory && mysqli_num_rows($result_inventory) > 0) {
+                        ?>
+                        <div class="row">
                         <?php
-                        $query_inventory = "SELECT DISTINCT Warehouse_id FROM inventory WHERE Product_id = '$product_id' AND Warehouse_id != '0'";
-                        $result_inventory = mysqli_query($conn, $query_inventory);
+                        while ($row_inventory = mysqli_fetch_array($result_inventory)) {
+                            $WarehouseID = $row_inventory['Warehouse_id'];
 
-                        if ($result_inventory && mysqli_num_rows($result_inventory) > 0) {
-                            ?>
-                            <div class="row">
-                            <?php
-                            while ($row_inventory = mysqli_fetch_array($result_inventory)) {
-                                $WarehouseID = $row_inventory['Warehouse_id'];
-                                
-                                $total_quantity = 0;
-                                $query_warehouse = "SELECT * FROM inventory WHERE Warehouse_id = '$WarehouseID' AND Product_id = '$product_id'";
-                                $result_warehouse = mysqli_query($conn, $query_warehouse);
-                                while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
-                                    $packs = $row_warehouse['pack'];
-                                    $quantity = $row_warehouse['quantity'];
-                                    $total_quantity += getPackPieces($packs) ? getPackPieces($packs) * $quantity : $quantity;
+                            $total_quantity = 0;
+                            $query_inventory_details = "
+                                SELECT Bin_id, Row_id, Shelves_id, pack, quantity 
+                                FROM inventory 
+                                WHERE Warehouse_id = '$WarehouseID' AND Product_id = '$product_id'";
+                            $result_inventory_details = mysqli_query($conn, $query_inventory_details);
 
-                                }
-                                
+                            if ($result_inventory_details && mysqli_num_rows($result_inventory_details) > 0) {
                                 ?>
                                 <div class="col-12 mt-3">
                                     <div class="row p-3 border rounded bg-light">
@@ -285,87 +283,88 @@ if(isset($_POST['fetch_view_modal'])){
                                         </div>
                                         <div class="col text-end">
                                             <p class="mb-0 fs-3">
-                                                <span id class="badge bg-primary fs-3">
-                                                    <?= $total_quantity ?? '0' ?> PCS
+                                                <span class="badge bg-primary fs-3">
+                                                    <?php
+                                                    while ($inventory = mysqli_fetch_array($result_inventory_details)) {
+                                                        $packs = $inventory['pack'];
+                                                        $quantity = $inventory['quantity'];
+                                                        $total_quantity += getPackPieces($packs) ? getPackPieces($packs) * $quantity : $quantity;
+                                                    }
+                                                    echo htmlspecialchars($total_quantity) ?? '0';
+                                                    ?> PCS
                                                 </span>
                                             </p>
                                         </div>
                                     </div>
                                 </div>
-
                                 <?php
-                                // Query to get inventory details for bins, rows, and shelves
-                                $query_inventory_details = "
-                                    SELECT Bin_id, Row_id, Shelves_id, pack, quantity 
-                                    FROM inventory 
-                                    WHERE Warehouse_id = '$WarehouseID' AND Product_id = '$product_id'";
-                                $result_inventory_details = mysqli_query($conn, $query_inventory_details);
+                                // Re-execute the query to display individual bins, rows, and shelves details
+                                mysqli_data_seek($result_inventory_details, 0);
+                                while ($inventory = mysqli_fetch_array($result_inventory_details)) {
+                                    $bin_id = $inventory['Bin_id'];
+                                    $row_id = $inventory['Row_id'];
+                                    $shelves_id = $inventory['Shelves_id'];
+                                    $packs = $inventory['pack'];
+                                    $quantity = $inventory['quantity'];
+                                    $item_quantity = getPackPieces($packs) ? getPackPieces($packs) * $quantity : $quantity;
 
-                                if ($result_inventory_details && mysqli_num_rows($result_inventory_details) > 0) {
-                                    while ($inventory = mysqli_fetch_array($result_inventory_details)) {
-                                        $bin_id = $inventory['Bin_id'];
-                                        $row_id = $inventory['Row_id'];
-                                        $shelves_id = $inventory['Shelves_id'];
-                                        $packs = $inventory['pack'];
-                                        $quantity = $inventory['quantity'];
-                                        $total_quantity = getPackPieces($packs) ? getPackPieces($packs) * $quantity : $quantity;
-                                        
-                                        // Display bin details
-                                        if (!empty($bin_id) && $bin_id != '0') {
-                                            ?>
-                                            <div class="col">
-                                                <div class="row mb-0 p-2 border rounded bg-light">
-                                                    <h5 class="mb-0 fs-3 fw-bold">BIN: <?= getWarehouseBinName(htmlspecialchars($bin_id)) ?></h5>
-                                                    <p class="mb-0 fs-3">
-                                                        <?php echo ($packs != '0') ? $packs ." " .getPackName($packs) ." - " : '' ?><?= htmlspecialchars($total_quantity) ?> PCS
-                                                    </p>
-                                                </div>
+                                    // Display bin details
+                                    if (!empty($bin_id) && $bin_id != '0') {
+                                        ?>
+                                        <div class="col">
+                                            <div class="row mb-0 p-2 border rounded bg-light">
+                                                <h5 class="mb-0 fs-3 fw-bold">BIN: <?= getWarehouseBinName(htmlspecialchars($bin_id)) ?></h5>
+                                                <p class="mb-0 fs-3">
+                                                    <?= ($packs != '0') ? $packs . " " . getPackName($packs) . " - " : '' ?><?= htmlspecialchars($item_quantity) ?> PCS
+                                                </p>
                                             </div>
-                                            <?php
-                                        }
+                                        </div>
+                                        <?php
+                                    }
 
-                                        // Display row details
-                                        if (!empty($row_id) && $row_id != '0') {
-                                            ?>
-                                            <div class="col">
-                                                <div class="row mb-0 p-2 border rounded bg-light">
-                                                    <h5 class="mb-0 fs-3 fw-bold">ROW: <?= getWarehouseRowName(htmlspecialchars($row_id)) ?></h5>
-                                                    <p class="mb-0 fs-3">
-                                                        <?php echo ($packs != '0') ? $packs ." " .getPackName($packs) ." - " : '' ?><?= htmlspecialchars($total_quantity) ?> PCS
-                                                    </p>
-                                                </div>
+                                    // Display row details
+                                    if (!empty($row_id) && $row_id != '0') {
+                                        ?>
+                                        <div class="col">
+                                            <div class="row mb-0 p-2 border rounded bg-light">
+                                                <h5 class="mb-0 fs-3 fw-bold">ROW: <?= getWarehouseRowName(htmlspecialchars($row_id)) ?></h5>
+                                                <p class="mb-0 fs-3">
+                                                    <?= ($packs != '0') ? $packs . " " . getPackName($packs) . " - " : '' ?><?= htmlspecialchars($item_quantity) ?> PCS
+                                                </p>
                                             </div>
-                                            <?php
-                                        }
+                                        </div>
+                                        <?php
+                                    }
 
-                                        // Display shelf details
-                                        if (!empty($shelves_id) && $shelves_id != '0') {
-                                            ?>
-                                            <div class="col">
-                                                <div class="row mb-0 p-2 border rounded bg-light">
-                                                    <h5 class="mb-0 fs-3 fw-bold">SHELF: <?= getWarehouseShelfName(htmlspecialchars($shelves_id)) ?></h5>
-                                                    <p class="mb-0 fs-3">
-                                                        <?php echo ($packs != '0') ? $packs ." " .getPackName($packs) ." - " : '' ?><?= htmlspecialchars($total_quantity) ?> PCS
-                                                    </p>
-                                                </div>
+                                    // Display shelf details
+                                    if (!empty($shelves_id) && $shelves_id != '0') {
+                                        ?>
+                                        <div class="col">
+                                            <div class="row mb-0 p-2 border rounded bg-light">
+                                                <h5 class="mb-0 fs-3 fw-bold">SHELF: <?= getWarehouseShelfName(htmlspecialchars($shelves_id)) ?></h5>
+                                                <p class="mb-0 fs-3">
+                                                    <?= ($packs != '0') ? $packs . " " . getPackName($packs) . " - " : '' ?><?= htmlspecialchars($item_quantity) ?> PCS
+                                                </p>
                                             </div>
-                                            <?php
-                                        }
+                                        </div>
+                                        <?php
                                     }
                                 }
                             }
-                            ?>
-                            </div>
-                            <?php
-                        } else {
-                            ?>
-                            <p class="mb-3 fs-4 fw-semibold text-center">
-                                This Product is not listed in the <a href="/?page=inventory">Inventory</a>
-                            </p>
-                            <?php
                         }
-                        ?> 
-                    </div>
+                        ?>
+                        </div>
+                        <?php
+                    } else {
+                        ?>
+                        <p class="mb-3 fs-4 fw-semibold text-center">
+                            This Product is not listed in the <a href="/?page=inventory">Inventory</a>
+                        </p>
+                        <?php
+                    }
+                    ?>
+                </div>
+
                 </div>
                 <div class="modal-footer">
                     
