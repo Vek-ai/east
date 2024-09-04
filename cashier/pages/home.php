@@ -515,6 +515,11 @@
                     console.log("AJAX Error:", status, error);
                 }
             });
+        },
+        select: function(event, ui) {
+            $('#product_item').val(ui.item.label);
+            $('#product_id').val(ui.item.value);
+            return false;
         }
     });
 
