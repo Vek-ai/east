@@ -220,7 +220,7 @@
                                             <label>Customer Name</label>
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
-                                                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer">
+                                                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
                                                         <span class="input-group-text"> + </span>
                                                     </a>
                                                 <input type='hidden' id='customer_id_cash' name="customer_id"/>
@@ -284,7 +284,7 @@
                                             <label>Customer Name</label>
                                             <div class="input-group">
                                                 <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_credit">
-                                                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer">
+                                                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
                                                         <span class="input-group-text"> + </span>
                                                     </a>
                                                 <input type='hidden' id='customer_id_credit' name="customer_id"/>
