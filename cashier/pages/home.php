@@ -93,7 +93,8 @@
                                 <span class="input-group-text" id="basic-addon3">
                                     <i class="ti ti-layout-column4-alt"></i>
                                 </span>
-                                
+                                <input class="form-control form-control-lg" placeholder="Type Barcode/Product (Shift+S)" type="text" id="product_item" onchange="add_product()">
+                                <input type='hidden' id='product_id' name="product_id"/>
                             </div>
                         </div>
                     </div>
