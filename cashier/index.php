@@ -1290,14 +1290,13 @@ if (!isset($_SESSION['userid'])) {
         </div>
       </header>
       <!--  Header End -->
-     
 
       <div class="body-wrapper">
         <div class="container-fluid">
           <?php 
             if (empty($_REQUEST['page'])) {include 'pages/cashier2.php';}
             if ($_REQUEST['page'] == "customer") {include 'pages/customer.php';}
-            if ($_REQUEST['page'] == "cashier2") {include 'pages/cashier2.php';}
+            if ($_REQUEST['page'] == "cashier2") {include 'pages/home.php';}
           ?>
         </div>
       </div>
