@@ -125,6 +125,15 @@ function getColorName($color_id ){
     return  $color_name;
 }
 
+function getColorFromID($product_id){
+    global $conn;
+    $query = "SELECT color FROM product WHERE product_id  = '$product_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $color = $row['color'] ?? '';
+    return getColorName($color);
+}
+
 function getGaugeName($product_gauge_id){
     global $conn;
     $query = "SELECT product_gauge FROM product_gauge WHERE product_gauge_id = '$product_gauge_id  '";
@@ -143,6 +152,15 @@ function getGradeName($product_grade_id){
     return  $product_grade;
 }
 
+function getGradeFromID($product_id){
+    global $conn;
+    $query = "SELECT grade FROM product WHERE product_id  = '$product_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $grade = $row['grade'] ?? '';
+    return getGradeName($grade);
+}
+
 function getWarrantyTypeName($product_warranty_type_id ){
     global $conn;
     $query = "SELECT product_warranty_type FROM product_warranty_type WHERE product_warranty_type_id = '$product_warranty_type_id   '";
@@ -154,11 +172,20 @@ function getWarrantyTypeName($product_warranty_type_id ){
 
 function getProfileTypeName($profile_type_id){
     global $conn;
-    $query = "SELECT profile_type FROM profile_type WHERE profile_type_id = '$profile_type_id   '";
+    $query = "SELECT profile_type FROM profile_type WHERE profile_type_id = '$profile_type_id'";
     $result = mysqli_query($conn,$query);
     $row = mysqli_fetch_array($result); 
     $profile_type = $row['profile_type'] ?? '';
     return  $profile_type;
+}
+
+function getProfileFromID($product_id){
+    global $conn;
+    $query = "SELECT profile FROM product WHERE product_id  = '$product_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $profile = $row['profile'] ?? '';
+    return getProfileTypeName($profile);
 }
 
 function getPaintProviderName($provider_id){

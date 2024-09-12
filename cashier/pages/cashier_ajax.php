@@ -349,9 +349,25 @@ if (isset($_POST['search'])) {
     $query = "
         SELECT product_id AS value, product_item AS label
         FROM product
-        WHERE product_item LIKE '%$search%' OR upc LIKE '%$search%'
-        LIMIT 15
+        WHERE (product_item LIKE '%$search%' OR upc LIKE '%$search%')
     ";
+
+    if (isset($_POST['color_id']) && !empty($_POST['color_id'])) {
+        $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
+        $query .= " AND color = '$color_id'";
+    }
+
+    if (isset($_POST['grade_id']) && !empty($_POST['grade_id'])) {
+        $grade_id = mysqli_real_escape_string($conn, $_POST['grade_id']);
+        $query .= " AND grade = '$grade_id'";
+    }
+
+    if (isset($_POST['profile_id']) && !empty($_POST['profile_id'])) {
+        $profile_id = mysqli_real_escape_string($conn, $_POST['profile_id']);
+        $query .= " AND profile = '$profile_id'";
+    }
+
+    $query .= " LIMIT 15";
 
     $result = mysqli_query($conn, $query);
 
@@ -365,6 +381,7 @@ if (isset($_POST['search'])) {
         echo json_encode(array('error' => 'Query failed'));
     }
 }
+
 
 if (isset($_POST['search_customer'])) {
     $search = mysqli_real_escape_string($conn, $_POST['search_customer']);
