@@ -104,7 +104,7 @@ require '../includes/functions.php';
                     </div>
                     <div class="row row-xs">
                         <div class="position-relative px-1 col-4">
-                            <select class="form-control search-chat py-0 ps-5" id="select-profile" data-category="">
+                            <select class="form-control search-chat py-0 ps-5" id="select-color" data-category="">
                                 <option value="" data-category="">All Colors</option>
                                 <optgroup label="Product Colors">
                                     <?php
@@ -136,7 +136,7 @@ require '../includes/functions.php';
                             </select>
                         </div>
                         <div class="position-relative px-1 col-4">
-                            <select class="form-control search-chat py-0 ps-5" id="select-color" data-category="">
+                            <select class="form-control search-chat py-0 ps-5" id="select-profile" data-category="">
                                 <option value="" data-category="">All Profiles</option>
                                 <optgroup label="Product Profiles">
                                     <?php
