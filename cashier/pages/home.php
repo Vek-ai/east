@@ -263,8 +263,7 @@ require '../includes/functions.php';
                         </div>
                     </div>
                     <div class="card-footer text-end">
-                        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#cashmodal">Cash Payment</button>
-                        <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#creditmodal">Credit Payment</button>
+                        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#checkoutModal">Checkout</button>
                     </div>
                 </div>
             </div>
@@ -274,6 +273,31 @@ require '../includes/functions.php';
 
 <!-- Product Details modal -->
 <div class="modal" id="viewDetailsmodal"></div>
+
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="checkoutModalLabel">Checkout Options</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-primary d-flex align-items-center w-100 mb-2" data-bs-toggle="modal" data-bs-target="#estimateModal">
+                        <i class="fa fa-save fs-4 me-2"></i>
+                        Estimate
+                    </button>
+                    <span class="align-self-center px-4">OR</span>
+                    <button type="button" class="btn btn-success d-flex align-items-center w-100 mb-2" data-bs-toggle="modal" data-bs-target="#cashmodal">
+                        <i class="fa fa-shopping-cart fs-4 me-2"></i>
+                        Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <!-- Cash modal -->
 <div class="modal" id="cashmodal">
@@ -304,7 +328,7 @@ require '../includes/functions.php';
                                         </div>
                                         <div class="form-group">
                                             <label>Amount</label>
-                                            <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="">
+                                            <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="<?= $_SESSION["grandtotal"] ?>">
                                         </div>
                                     </form>
                                 </div>
@@ -314,13 +338,12 @@ require '../includes/functions.php';
                             <div class="card">
                                 <div class="card-body pricing">
                                     <ul class="list-unstyled leading-loose">
-                                        <li><strong>Total Items: </strong>0</li>
-                                        <li><strong>Total: </strong> 0.00</li>
-                                        <li><strong>Discount(-): </strong> 0.00</li>
-                                        <li><strong>Total Payable: </strong> 0.00</li>
-                                        <li><strong>Balance: </strong> 0.00</li>
+                                        <li><strong>Total Items: </strong><span id="total_items"><?= $totalquantity ?></span></li>
+                                        <li><strong>Total: </strong>$ <span id="total_amt"> <?= $_SESSION["grandtotal"] ?></span></li>
+                                        <li><strong>Discount(-): </strong>$ <span id="total_discount">0.00</span></li>
+                                        <li><strong>Total Payable: </strong>$ <span id="total_payable"> <?= $_SESSION["grandtotal"] ?> </span></li>
                                         <li class="list-group-item border-bottom-0 bg-primary" style="font-size:30px;">
-                                            <strong>Change: </strong> 0.00
+                                            <strong>Change: </strong>$ 0.00
                                         </li>
                                     </ul>
                                 </div>
