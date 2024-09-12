@@ -622,15 +622,12 @@ require '../includes/functions.php';
 
     $(document).ready(function() {
         $('#select-color').select2({
-            placeholder: 'Select a color',
             allowClear: true
         });
         $('#select-grade').select2({
-            placeholder: 'Select a Grade',
             allowClear: true
         });
         $('#select-profile').select2({
-            placeholder: 'Select a Profile',
             allowClear: true
         });
     });
