@@ -434,9 +434,21 @@ require '../includes/functions.php';
         }
 
         $(document).on('click', '#view_cart', function(event) {
-            event.preventDefault();
-            loadCart();
-            $('#view_cart_modal').modal('show');
+            $.ajax({
+                url: 'pages/cashier2_ajax.php',
+                type: 'POST',
+                data: {
+                    fetch_cart: "fetch_cart"
+                },
+                success: function(response) {
+                    $('#view_cart_modal').html(response);
+                    $('#view_cart_modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+            
         });
 
         $('#rowsPerPage').change(function() {
