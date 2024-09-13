@@ -353,6 +353,38 @@ require '../includes/functions.php';
         });
     }
 
+    $("#customer_select_cash").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "pages/cashier2_ajax.php",
+                type: 'post',
+                dataType: "json",
+                data: {
+                    search_customer: request.term
+                },
+                success: function(data) {
+                    response(data);
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error: " + xhr.responseText);
+                }
+            });
+        },
+        select: function(event, ui) {
+            $('#customer_select_cash').val(ui.item.label);
+            $('#customer_id_cash').val(ui.item.value);
+            return false;
+        },
+        focus: function(event, ui) {
+            $('#customer_select_cash').val(ui.item.label);
+            return false;
+        },
+        appendTo: "#cashmodal", 
+        open: function() {
+            $(".ui-autocomplete").css("z-index", 1050);
+        }
+    });
+
     $(document).ready(function() {
         var currentPage = 1,
             rowsPerPage = parseInt($('#rowsPerPage').val()),
@@ -432,6 +464,8 @@ require '../includes/functions.php';
                 }
             });
         }
+
+        
 
         $(document).on('click', '#view_cart', function(event) {
             $.ajax({

@@ -321,5 +321,33 @@ if(isset($_POST['fetch_cart'])){
     <?php
 }
 
+if (isset($_POST['search_customer'])) {
+    $search = mysqli_real_escape_string($conn, $_POST['search_customer']);
+
+    $query = "
+        SELECT 
+            customer_id AS value, 
+            CONCAT(customer_first_name, ' ', customer_last_name) AS label
+        FROM 
+            customer
+        WHERE 
+            customer_first_name LIKE '%$search%' 
+            OR customer_last_name LIKE '%$search%'
+        LIMIT 15
+    ";
+
+    $result = mysqli_query($conn, $query);
+
+    if ($result) {
+        $response = array();
+        while ($row = mysqli_fetch_assoc($result)) {
+            $response[] = $row;
+        }
+        echo json_encode($response);
+    } else {
+        echo json_encode(array('error' => 'Query failed'));
+    }
+}
+
 
 
