@@ -3,43 +3,36 @@ require '../includes/dbconn.php';
 require '../includes/functions.php';
 ?>
 
-<div class="product-list">
+<div class="product-list pt-4">
+    <div class="row row-xs pr-3">
+        <div class="col-md-8"></div>
+            <?php if(isset($_SESSION["grandtotal"])){?>
+                <div class="col-md-4 bg-primary" id="thegrandtotal" style="text-align:center;font-size:48px;display: flex;align-items: center;justify-content: center;text-align: center;" >$<?php echo number_format($_SESSION["grandtotal"],2);?> </div>
+            <?php }else{ ?>
+                <div class="col-md-4 bg-primary" id="thegrandtotal" style="text-align:center;font-size:48px;display: flex;align-items: center;justify-content: center;text-align: center;" >$0.00 </div>
+            <?php } ?>
+    </div>
     <div class="card">
         <div class="card-body text-right p-3">
+            
             <div class="p-2">
                 <input type="checkbox" id="toggleActive" checked> Exclude Out of Stock</div>
             </div>
-            <div class="d-flex justify-content-between align-items-center mb-9 p-2">
+            <div class="d-flex justify-content-between align-items-center  mb-9">
                 <div class="position-relative w-100 col-6">
                     <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
                     <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
                 <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-profile" data-category="">
-                        <option value="" data-category="">All Colors</option>
-                        <optgroup label="Product Colors">
+                    <select class="form-control search-chat py-0 ps-5" id="select-category" data-category="">
+                        <option value="" data-category="">All Categories</option>
+                        <optgroup label="Category">
                             <?php
-                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
-                            $result_color = mysqli_query($conn, $query_color);
-                            while ($row_color = mysqli_fetch_array($result_color)) {
+                            $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+                            $result_category = mysqli_query($conn, $query_category);
+                            while ($row_category = mysqli_fetch_array($result_category)) {
                             ?>
-                                <option value="<?= $row_color['color_id'] ?>" data-category="category"><?= $row_color['color_name'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-                <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-grade" data-category="">
-                        <option value="" data-category="">All Grades</option>
-                        <optgroup label="Product Grades">
-                            <?php
-                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
-                            $result_grade = mysqli_query($conn, $query_grade);
-                            while ($row_grade = mysqli_fetch_array($result_grade)) {
-                            ?>
-                                <option value="<?= $row_grade['product_grade_id'] ?>" data-category="line"><?= $row_grade['product_grade'] ?></option>
+                                <option value="<?= $row_category['product_category_id'] ?>" data-category="category"><?= $row_category['product_category'] ?></option>
                             <?php
                             }
                             ?>
@@ -47,15 +40,31 @@ require '../includes/functions.php';
                     </select>
                 </div>
                 <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-color" data-category="">
-                        <option value="" data-category="">All Profiles</option>
-                        <optgroup label="Product Profiles">
+                    <select class="form-control search-chat py-0 ps-5" id="select-line" data-category="">
+                        <option value="" data-category="">All Product Lines</option>
+                        <optgroup label="Product Line">
                             <?php
-                            $query_profile = "SELECT * FROM profile_type WHERE hidden = '0'";
-                            $result_profile = mysqli_query($conn, $query_profile);
-                            while ($row_profile = mysqli_fetch_array($result_profile)) {
+                            $query_line = "SELECT * FROM product_line WHERE hidden = '0'";
+                            $result_line = mysqli_query($conn, $query_line);
+                            while ($row_line = mysqli_fetch_array($result_line)) {
                             ?>
-                                <option value="<?= $row_profile['profile_type_id'] ?>" data-category="type"><?= $row_profile['profile_type'] ?></option>
+                                <option value="<?= $row_line['product_line_id'] ?>" data-category="line"><?= $row_line['product_line'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-type" data-category="">
+                        <option value="" data-category="">All Product Types</option>
+                        <optgroup label="Product Type">
+                            <?php
+                            $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
+                            $result_type = mysqli_query($conn, $query_type);
+                            while ($row_type = mysqli_fetch_array($result_type)) {
+                            ?>
+                                <option value="<?= $row_type['product_type_id'] ?>" data-category="type"><?= $row_type['product_type'] ?></option>
                             <?php
                             }
                             ?>
@@ -63,17 +72,17 @@ require '../includes/functions.php';
                     </select>
                 </div>
             </div>
-            <div class="table-responsive border rounded ">
-                <table id="productTable" class="table align-middle text-nowrap mb-0 p-2">
+            <div class="table-responsive border rounded">
+                <table id="productTable" class="table align-middle text-nowrap mb-0">
                     <thead>
                         <tr>
-                            <th scope="col">Description</th>
-                            <th scope="col">Color</th>
-                            <th scope="col">Grade</th>
-                            <th scope="col">Profile</th>
-                            <th scope="col">Quantity</th>
-                            <th scope="col">Stock</th>
+                            <th scope="col">Products</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Line</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Status</th>
                             <th scope="col">Price</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="productTableBody"></tbody>
@@ -95,12 +104,144 @@ require '../includes/functions.php';
                 </div>
             </div>
         </div>
+        <div class="d-flex justify-content-end">
+            <button class="btn btn-primary me-2" type="button" id="view_cart">Cart</button>
+            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#checkoutModal">Checkout</button>
+        </div>
     </div>
 </div>
 
-<div class="modal" id="viewDetailsmodal"></div>
+<div class="modal" id="view_cart_modal"></div>
+
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="checkoutModalLabel">Checkout Options</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-primary d-flex align-items-center w-100 mb-2" data-bs-toggle="modal" data-bs-target="#estimateModal">
+                        <i class="fa fa-save fs-4 me-2"></i>
+                        Estimate
+                    </button>
+                    <span class="align-self-center px-4">OR</span>
+                    <button type="button" class="btn btn-success d-flex align-items-center w-100 mb-2" data-bs-toggle="modal" data-bs-target="#cashmodal">
+                        <i class="fa fa-shopping-cart fs-4 me-2"></i>
+                        Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="cashmodal">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Cash Payment</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="checkout">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card box-shadow-0">
+                                <div class="card-body">
+                                    <form>
+                                        <div class="form-group">
+                                            <label>Customer Name</label>
+                                            <div class="input-group">
+                                                <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
+                                                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
+                                                        <span class="input-group-text"> + </span>
+                                                    </a>
+                                                <input type='hidden' id='customer_id_cash' name="customer_id"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Amount</label>
+                                            <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="<?= $_SESSION["grandtotal"] ?>">
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body pricing">
+                                    <ul class="list-unstyled leading-loose">
+                                        <li><strong>Total Items: </strong><span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span></li>
+                                        <li><strong>Total: </strong>$ <span id="total_amt"> <?= $_SESSION["grandtotal"] ?? '0.00' ?></span></li>
+                                        <li><strong>Discount(-): </strong>$ <span id="total_discount">0.00</span></li>
+                                        <li><strong>Total Payable: </strong>$ <span id="total_payable"> <?= $_SESSION["grandtotal"] ?> </span></li>
+                                        <li class="list-group-item border-bottom-0 bg-primary" style="font-size:30px;">
+                                            <strong>Change: </strong>$ 0.00
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-primary" type="button" id="savecash" onclick="savecash()">
+                    <i class="fe fe-hard-drive"></i> Save
+                </button>
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
+    function addtocart(element) {
+        var product_id = $(element).data('id');
+
+        $.ajax({
+            url: "pages/cashier2_ajax.php",
+            type: "POST",
+            data: {
+                product_id: product_id,
+                modifyquantity: 'modifyquantity',
+                addquantity: 'addquantity'
+            },
+            success: function(data) {
+                loadCart();
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
+                $("#checkout").load(location.href + " #checkout");
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
+    function loadCart(){
+        $.ajax({
+            url: 'pages/cashier2_ajax.php',
+            type: 'POST',
+            data: {
+                fetch_cart: "fetch_cart"
+            },
+            success: function(response) {
+                $('#view_cart_modal').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
     function updatequantity(element) {
         var product_id = $(element).data('id');
         var input_quantity = $('input[data-id="' + product_id + '"]');
@@ -118,6 +259,9 @@ require '../includes/functions.php';
             success: function(data) {
                 var updatedQuantity = Number(data);
                 input_quantity.val(updatedQuantity);
+                $("#view_cart").click();
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
+                $("#checkout").load(location.href + " #checkout");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -146,6 +290,9 @@ require '../includes/functions.php';
             success: function(data) {
                 var updatedQuantity = Number(data);
                 input_quantity.val(updatedQuantity);
+                $("#view_cart").click();
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
+                $("#checkout").load(location.href + " #checkout");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -174,6 +321,9 @@ require '../includes/functions.php';
             success: function(data) {
                 var updatedQuantity = Number(data);
                 input_quantity.val(updatedQuantity);
+                $("#view_cart").click();
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
+                $("#checkout").load(location.href + " #checkout");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -185,6 +335,23 @@ require '../includes/functions.php';
         });
     }
 
+    function delete_item(element) {
+        var id = $(element).data('id');
+        $.ajax({
+            url: "pages/cashier_ajax.php",
+            data: {
+                product_id_del: id,
+                deleteitem: 'deleteitem'
+            },
+            type: "POST",
+            success: function(data) {
+                $("#view_cart").click();
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
+                $("#checkout").load(location.href + " #checkout");
+            },
+            error: function() {}
+        });
+    }
 
     $(document).ready(function() {
         var currentPage = 1,
@@ -241,18 +408,18 @@ require '../includes/functions.php';
         }
 
         function performSearch(query) {
-            var color_id = $('#select-color').find('option:selected').val();
-            var grade_id = $('#select-grade').find('option:selected').val();
-            var profile_id = $('#select-profile').find('option:selected').val();
+            var type_id = $('#select-type').find('option:selected').val();
+            var line_id = $('#select-line').find('option:selected').val();
+            var category_id = $('#select-category').find('option:selected').val();
             var onlyInStock = $('#toggleActive').prop('checked');
             $.ajax({
                 url: 'pages/cashier2_ajax.php',
                 type: 'POST',
                 data: {
                     query: query,
-                    color_id: color_id,
-                    grade_id: grade_id,
-                    profile_id: profile_id,
+                    type_id: type_id,
+                    line_id: line_id,
+                    category_id: category_id,
                     onlyInStock: onlyInStock
                 },
                 success: function(response) {
@@ -266,24 +433,10 @@ require '../includes/functions.php';
             });
         }
 
-        $(document).on('click', '#view_product_details', function(event) {
+        $(document).on('click', '#view_cart', function(event) {
             event.preventDefault();
-            var id = $(this).data('id');
-            $.ajax({
-                    url: 'pages/cashier_ajax.php',
-                    type: 'POST',
-                    data: {
-                        id: id,
-                        fetch_view_modal: "fetch_view_modal"
-                    },
-                    success: function(response) {
-                        $('#viewDetailsmodal').html(response);
-                        $('#viewDetailsmodal').modal('show');
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
-            });
+            loadCart();
+            $('#view_cart_modal').modal('show');
         });
 
         $('#rowsPerPage').change(function() {
@@ -293,19 +446,21 @@ require '../includes/functions.php';
         });
 
 
-        $(document).on('input change', '#text-srh, #select-profile, #select-color, #select-grade', function() {
+        $(document).on('input change', '#text-srh, #select-category, #select-type, #select-line', function() {
             performSearch($('#text-srh').val());
         });
 
-        $('#select-color').select2();
-        $('#select-grade').select2();
-        $('#select-profile').select2();
+        $('#select-type').select2();
+        $('#select-line').select2();
+        $('#select-category').select2();
 
-        $(document).on('input change', '#text-srh, #select-profile, #select-color, #select-grade, #toggleActive', function() {
+        $(document).on('input change', '#text-srh, #select-category, #select-type, #select-line, #toggleActive', function() {
             performSearch($('#text-srh').val());
         });
 
         performSearch('');
-        updateTable();
+        updateTable(); // Initial table update
     });
+
+    
 </script>
