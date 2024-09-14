@@ -22,7 +22,7 @@ if (!isset($_SESSION['userid'])) {
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" />
   <link rel="stylesheet" href="../assets/libs/select2/dist/css/select2.min.css">
-  <link rel="stylesheet" href="../assets/libs/owl.carousel/dist/../assets/owl.carousel.min.css">
+  <link rel="stylesheet" href="../assets/libs/owl.carousel/dist/assets/owl.carousel.min.css">
   <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/smoothness/jquery-ui.css">
   

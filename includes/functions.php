@@ -134,6 +134,15 @@ function getColorFromID($product_id){
     return getColorName($color);
 }
 
+function getColorHexFromColorID($color_id){
+    global $conn;
+    $query = "SELECT color_code FROM paint_colors WHERE color_id = '" .$color_id ."'";
+    $result = mysqli_query($conn, $query);
+    $row = mysqli_fetch_array($result);
+    $color_code = $row['color_code'] ?? '';
+    return $color_code;
+}
+
 function getGaugeName($product_gauge_id){
     global $conn;
     $query = "SELECT product_gauge FROM product_gauge WHERE product_gauge_id = '$product_gauge_id  '";
@@ -256,5 +265,27 @@ function generateRandomUPC() {
     } while ($count > 0);
 
     return $upc_code;
+}
+
+function getProductStockInStock($product_id) {
+    global $conn;
+    $product_id = mysqli_real_escape_string($conn, $product_id);
+    $query = "SELECT quantity_in_stock
+              FROM product
+              WHERE product_id = '$product_id'";
+    $result = mysqli_query($conn, $query);
+    $row = mysqli_fetch_assoc($result);
+    return $row['quantity_in_stock'];
+}
+
+function getProductStockTotal($product_id) {
+    global $conn;
+    $product_id = mysqli_real_escape_string($conn, $product_id);
+    $query = "SELECT COALESCE(SUM(quantity_ttl), 0) as total_quantity
+              FROM inventory
+              WHERE product_id = '$product_id'";
+    $result = mysqli_query($conn, $query);
+    $row = mysqli_fetch_assoc($result);
+    return $row['total_quantity'];
 }
 ?>

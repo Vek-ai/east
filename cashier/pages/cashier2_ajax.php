@@ -7,28 +7,6 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
-function getProductStockInStock($product_id) {
-    global $conn;
-    $product_id = mysqli_real_escape_string($conn, $product_id);
-    $query = "SELECT quantity_in_stock
-              FROM product
-              WHERE product_id = '$product_id'";
-    $result = mysqli_query($conn, $query);
-    $row = mysqli_fetch_assoc($result);
-    return $row['quantity_in_stock'];
-}
-
-function getProductStockTotal($product_id) {
-    global $conn;
-    $product_id = mysqli_real_escape_string($conn, $product_id);
-    $query = "SELECT COALESCE(SUM(quantity_ttl), 0) as total_quantity
-              FROM inventory
-              WHERE product_id = '$product_id'";
-    $result = mysqli_query($conn, $query);
-    $row = mysqli_fetch_assoc($result);
-    return $row['total_quantity'];
-}
-
 if (isset($_POST['modifyquantity'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
     $qty = isset($_POST['qty']) ? (int)$_POST['qty'] : 1;
@@ -100,6 +78,7 @@ if(isset($_REQUEST['deleteitem'])){
 
 if (isset($_REQUEST['query'])) {
     $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
+    $color_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['color_id']) : '';
     $type_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['type_id']) : '';
     $line_id = isset($_REQUEST['line_id']) ? mysqli_real_escape_string($conn, $_REQUEST['line_id']) : '';
     $category_id = isset($_REQUEST['category_id']) ? mysqli_real_escape_string($conn, $_REQUEST['category_id']) : '';
@@ -120,6 +99,10 @@ if (isset($_REQUEST['query'])) {
 
     if (!empty($searchQuery)) {
         $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
+    }
+
+    if (!empty($color_id)) {
+        $query_product .= " AND p.color = '$color_id'";
     }
 
     if (!empty($type_id)) {
@@ -147,29 +130,68 @@ if (isset($_REQUEST['query'])) {
     if (mysqli_num_rows($result_product) > 0) {
         while ($row_product = mysqli_fetch_array($result_product)) {
 
-            if($row_product['total_quantity'] > 0){
-                $stock_text = '<span class="text-bg-success p-1 rounded-circle"></span><p class="mb-0 ms-2">InStock</p>';
-            }else{
-                $stock_text = '<span class="text-bg-danger p-1 rounded-circle"></span><p class="mb-0 ms-2">OutOfStock</p>';
+            $product_length = $row_product['length'];
+            $product_width = $row_product['width'];
+
+            $dimensions = "";
+
+            if (!empty($product_length) || !empty($product_width)) {
+                $dimensions = '';
+            
+                if (!empty($product_length)) {
+                    $dimensions .= $product_length;
+                }
+            
+                if (!empty($product_width)) {
+                    if (!empty($dimensions)) {
+                        $dimensions .= " X ";
+                    }
+                    $dimensions .= $product_width;
+                }
+            
+                if (!empty($dimensions)) {
+                    $dimensions = " - " . $dimensions;
+                }
             }
 
-            if(!empty($row_product['main_image'])){
-                $picture_path = $row_product['main_image'];
-            }else{
-                $picture_path = "images/product/product.jpg";
-            }
+            if ($row_product['total_quantity'] > 0) {
+                $stock_text = '
+                    <a href="javascript:void(0);" id="view_in_stock" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
+                        <span class="text-bg-success p-1 rounded-circle"></span>
+                        <span class="ms-2">In Stock</span>
+                    </a>';
+            } else {
+                $stock_text = '
+                    <a href="javascript:void(0);" id="view_out_of_stock" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
+                        <span class="text-bg-danger p-1 rounded-circle"></span>
+                        <span class="ms-2">Out of Stock</span>
+                    </a>';
+            }            
+            
+
+            $default_image = '../images/product/product.jpg';
+
+            $picture_path = !empty($row_product['main_image']) && file_exists($row_product['main_image'])
+            ? "../" .$row_product['main_image']
+            : $default_image;
 
             $tableHTML .= '
             <tr>
                 <td>
-                    <a href="/?page=product_details&product_id='.$row_product['product_id'].'">
+                    <a href="javascript:void(0);" id="view_product_details" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
                         <div class="d-flex align-items-center">
                             <img src="'.$picture_path.'" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                             <div class="ms-3">
-                                <h6 class="fw-semibold mb-0 fs-4">'. $row_product['product_item'] .'</h6>
+                                <h6 class="fw-semibold mb-0 fs-4">'. $row_product['product_item'] .' ' .$dimensions .'</h6>
                             </div>
                         </div>
                     </a>
+                </td>
+                <td>
+                    <div class="d-flex mb-0 gap-8">
+                        <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:' .getColorHexFromColorID($row_product['color']) .'"></a> '
+                        .getColorName($row_product['color']) .'
+                    </div>
                 </td>
                 <td><p class="mb-0">'. getProductTypeName($row_product['product_type']) .'</p></td>
                 <td><p class="mb-0">'. getProductLineName($row_product['product_line']) .'</p></td>
@@ -189,6 +211,350 @@ if (isset($_REQUEST['query'])) {
     
     //echo $tableHTML;
     echo $tableHTML;
+}
+
+if(isset($_POST['fetch_details_modal'])){
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+
+    $checkQuery = "SELECT * FROM product WHERE product_id = '$product_id'";
+    $result = mysqli_query($conn, $checkQuery);
+
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        
+        ?>
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title">Product Details</h6>
+                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                <div class="card">
+                    <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-lg-6">
+                        <div id="sync1" class="owl-carousel owl-theme">
+                        <?php
+                            $query_prod_img1 = "SELECT * FROM product_images WHERE productid = '$product_id'";
+                            $result_prod_img1 = mysqli_query($conn, $query_prod_img1);  
+
+                            if ($result_prod_img1 && mysqli_num_rows($result_prod_img1) > 0) {
+                                while ($row_prod_img1 = mysqli_fetch_array($result_prod_img1)) {
+                                    $image_url = !empty($row_prod_img1['image_url']) && file_exists("../" . $row_prod_img1['image_url'])
+                                        ? "../" . $row_prod_img1['image_url']
+                                        : "../images/product/product.jpg";
+                                    ?>
+                                    <div class="item rounded overflow-hidden">
+                                        <img src="<?=$image_url?>" alt="materialpro-img" class="img-fluid">
+                                    </div>
+                                    <?php 
+                                }
+                            } else {
+                                ?>
+                                <div class="item rounded overflow-hidden">
+                                    <img src="../images/product/product.jpg" alt="materialpro-img" class="img-fluid">
+                                </div>
+                                <?php
+                            } 
+                        ?> 
+                        </div>
+
+                        <div id="sync2" class="owl-carousel owl-theme">
+                            <?php
+                                $query_prod_img2 = "SELECT * FROM product_images WHERE productid = '$product_id'";
+                                $result_prod_img2 = mysqli_query($conn, $query_prod_img2);  
+
+                                if ($result_prod_img2 && mysqli_num_rows($result_prod_img2) > 0) {
+                                    while ($row_prod_img2 = mysqli_fetch_array($result_prod_img2)) {
+                                        $image_url = !empty($row_prod_img2['image_url']) && file_exists($row_prod_img2['image_url'])
+                                            ? '../' .$row_prod_img2['image_url']
+                                            : "../images/product/product.jpg";
+                                        ?>
+                                        <div class="item rounded overflow-hidden">
+                                            <img src="<?=$image_url?>" alt="materialpro-img" class="img-fluid">
+                                        </div>
+                                        <?php 
+                                    }
+                                } else {
+                                    ?>
+                                    <div class="item rounded overflow-hidden">
+                                        <img src="../images/product/product.jpg" alt="materialpro-img" class="img-fluid">
+                                    </div>
+                                    <?php
+                                } 
+                            ?>
+                        </div>
+                        </div>
+                        <div class="col-lg-6">
+                        <div class="shop-content">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                            <?php
+                            $totalQuantity = getProductStockTotal($row['product_id']);
+                            if($totalQuantity > 0){
+                            ?>
+                                <span class="badge text-bg-success fs-2 fw-semibold">In Stock</span>
+                            <?php
+                            }else{
+                            ?>
+                                <span class="badge text-bg-danger fs-2 fw-semibold">Out of Stock</span>
+                            <?php
+                            }
+                            ?>
+                            
+                            <span class="fs-2"><?= getProductCategoryName($row['product_category']) ?></span>
+                            </div>
+                            <h4><?= $row['product_item'] ?></h4>
+                            <p class="mb-3"><?= $row['description'] ?></p>
+                            <h4 class="fw-semibold mb-3">
+                                $<?= $row['unit_price'] ?> 
+                            </h4>
+                            <div class="d-flex align-items-center gap-8 py-7">
+                                <?php
+                                if (!empty($row['color'])) {
+                                ?>
+                                    <h6 class="mb-0 fs-4 fw-semibold">Colors:</h6>
+                                    <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color: <?= getColorHexFromColorID($row['color']) ?>"></a>
+                                <?php 
+                                }
+                                ?> 
+                            </div>
+
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                </div>
+            </div>
+        </div>
+        <script>
+            $(function () {
+                // product detail
+
+                var sync1 = $("#sync1");
+                var sync2 = $("#sync2");
+                var slidesPerPage = 4;
+                var syncedSecondary = true;
+
+                sync1
+                    .owlCarousel({
+                    items: 1,
+                    slideSpeed: 2000,
+                    nav: false,
+                    autoplay: false,
+                    dots: true,
+                    loop: true,
+                    rtl: true,
+                    responsiveRefreshRate: 200,
+                    navText: [
+                        '<svg width="12" height="12" height="100%" viewBox="0 0 11 20"><path style="fill:none;stroke-width: 3px;stroke: #fff;" d="M9.554,1.001l-8.607,8.607l8.607,8.606"/></svg>',
+                        '<svg width="12" height="12" viewBox="0 0 11 20" version="1.1"><path style="fill:none;stroke-width: 3px;stroke: #fff;" d="M1.054,18.214l8.606,-8.606l-8.606,-8.607"/></svg>',
+                    ],
+                    })
+                    .on("changed.owl.carousel", syncPosition);
+
+                sync2
+                    .on("initialized.owl.carousel", function () {
+                    sync2.find(".owl-item").eq(0).addClass("current");
+                    })
+                    .owlCarousel({
+                    items: slidesPerPage,
+                    items: 6,
+                    margin: 16,
+                    dots: true,
+                    nav: false,
+                    rtl: true,
+                    smartSpeed: 200,
+                    slideSpeed: 500,
+                    slideBy: slidesPerPage,
+                    responsiveRefreshRate: 100,
+                    })
+                    .on("changed.owl.carousel", syncPosition2);
+
+                function syncPosition(el) {
+                    var count = el.item.count - 1;
+                    var current = Math.round(el.item.index - el.item.count / 2 - 0.5);
+
+                    if (current < 0) {
+                    current = count;
+                    }
+                    if (current > count) {
+                    current = 0;
+                    }
+
+                    sync2
+                    .find(".owl-item")
+                    .removeClass("current")
+                    .eq(current)
+                    .addClass("current");
+                    var onscreen = sync2.find(".owl-item.active").length - 1;
+                    var start = sync2.find(".owl-item.active").first().index();
+                    var end = sync2.find(".owl-item.active").last().index();
+
+                    if (current > end) {
+                    sync2.data("owl.carousel").to(current, 100, true);
+                    }
+                    if (current < start) {
+                    sync2.data("owl.carousel").to(current - onscreen, 100, true);
+                    }
+                }
+
+                function syncPosition2(el) {
+                    if (syncedSecondary) {
+                    var number = el.item.index;
+                    sync1.data("owl.carousel").to(number, 100, true);
+                    }
+                }
+
+                sync2.on("click", ".owl-item", function (e) {
+                    e.preventDefault();
+                    var number = $(this).index();
+                    sync1.data("owl.carousel").to(number, 300, true);
+                });
+                });
+        </script>
+<?php
+    }
+}
+
+if(isset($_POST['fetch_in_stock_modal'])){
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+
+    $checkQuery = "SELECT * FROM product WHERE product_id = '$product_id'";
+    $result = mysqli_query($conn, $checkQuery);
+
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        
+        ?>
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title">Stock Details</h6>
+                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container py-4">
+                        <h5 class="mb-3 fs-6 fw-semibold text-center">Inventory</h5>
+                        <?php
+                        $query_inventory = "SELECT DISTINCT Warehouse_id FROM inventory WHERE Product_id = '$product_id' AND Warehouse_id != '0'";
+                        $result_inventory = mysqli_query($conn, $query_inventory);
+
+                        if ($result_inventory && mysqli_num_rows($result_inventory) > 0) {
+                            echo '<div class="row">';
+                            while ($row_inventory = mysqli_fetch_assoc($result_inventory)) {
+                                $WarehouseID = $row_inventory['Warehouse_id'];
+
+                                $query_inventory_details = "
+                                    SELECT Bin_id, Row_id, Shelves_id, pack, quantity ,quantity_ttl
+                                    FROM inventory 
+                                    WHERE Warehouse_id = '$WarehouseID' AND Product_id = '$product_id'";
+                                $result_inventory_details = mysqli_query($conn, $query_inventory_details);
+
+                                if ($result_inventory_details && mysqli_num_rows($result_inventory_details) > 0) {
+                                    $total_quantity = 0;
+                                    while ($inventory = mysqli_fetch_assoc($result_inventory_details)) {
+                                        $packs = $inventory['pack'];
+                                        $quantity = $inventory['quantity'];
+                                        $item_quantity = $inventory['quantity_ttl'];
+                                        $total_quantity += $inventory['quantity_ttl'];
+
+                                        $details[] = [
+                                            'type' => 'BIN',
+                                            'id' => $inventory['Bin_id'],
+                                            'name' => getWarehouseBinName($inventory['Bin_id']),
+                                            'quantity' => $item_quantity
+                                        ];
+                                        $details[] = [
+                                            'type' => 'ROW',
+                                            'id' => $inventory['Row_id'],
+                                            'name' => getWarehouseRowName($inventory['Row_id']),
+                                            'quantity' => $item_quantity
+                                        ];
+                                        $details[] = [
+                                            'type' => 'SHELF',
+                                            'id' => $inventory['Shelves_id'],
+                                            'name' => getWarehouseShelfName($inventory['Shelves_id']),
+                                            'quantity' => $item_quantity
+                                        ];
+                                    }
+
+                                    echo "<div class='col-12 mt-3'>
+                                            <div class='row p-3 border rounded bg-light'>
+                                                <div class='col'>
+                                                    <h5 class='mb-0 fs-5 fw-bold'>" . htmlspecialchars(getWarehouseName($WarehouseID)) . "</h5>
+                                                </div>
+                                                <div class='col text-end'>
+                                                    <p class='mb-0 fs-3'><span class='badge bg-primary fs-3'>" . htmlspecialchars($total_quantity) . " PCS</span></p>
+                                                </div>
+                                            </div>
+                                        </div>";
+
+                                    foreach ($details as $detail) {
+                                        if (!empty($detail['id']) && $detail['id'] != '0') {
+                                            echo "<div class='col'>
+                                                    <div class='row mb-0 p-2 border rounded bg-light'>
+                                                        <h5 class='mb-0 fs-3 fw-bold'>{$detail['type']}: " . htmlspecialchars($detail['name']) . "</h5>
+                                                        <p class='mb-0 fs-3'>{$packs} " . getPackName($packs) . " - " . htmlspecialchars($detail['quantity']) . " PCS</p>
+                                                    </div>
+                                                </div>";
+                                        }
+                                    }
+                                    unset($details);
+                                }
+                            }
+                            echo '</div>';
+                        } else {
+                            echo '<p class="mb-3 fs-4 fw-semibold text-center">This Product is not listed in the <a href="/?page=inventory">Inventory</a></p>';
+                        }
+                        ?>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                </div>
+            </div>
+        </div>
+<?php
+    }
+}
+
+if(isset($_POST['fetch_out_of_stock_modal'])){
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+
+    $checkQuery = "SELECT * FROM product WHERE product_id = '$product_id'";
+    $result = mysqli_query($conn, $checkQuery);
+
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        
+        ?>
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title">Stock Details</h6>
+                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h5 class="mb-3 fs-6 fw-semibold text-center">Out of Stock</h5>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                </div>
+            </div>
+        </div>
+<?php
+    }
 }
 
 if(isset($_POST['fetch_cart'])){

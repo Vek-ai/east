@@ -19,9 +19,25 @@ require '../includes/functions.php';
                 <input type="checkbox" id="toggleActive" checked> Exclude Out of Stock</div>
             </div>
             <div class="d-flex justify-content-between align-items-center  mb-9">
-                <div class="position-relative w-100 col-6">
+                <div class="position-relative w-100 col-4">
                     <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
                     <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
+                </div>
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-color" data-category="">
+                        <option value="" data-category="">All Colors</option>
+                        <optgroup label="Product Colors">
+                            <?php
+                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                            $result_color = mysqli_query($conn, $query_color);
+                            while ($row_color = mysqli_fetch_array($result_color)) {
+                            ?>
+                                <option value="<?= $row_color['color_id'] ?>" data-category="category"><?= $row_color['color_name'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
                 </div>
                 <div class="position-relative w-100 px-1 col-2">
                     <select class="form-control search-chat py-0 ps-5" id="select-category" data-category="">
@@ -77,6 +93,7 @@ require '../includes/functions.php';
                     <thead>
                         <tr>
                             <th scope="col">Products</th>
+                            <th scope="col">Color</th>
                             <th scope="col">Type</th>
                             <th scope="col">Line</th>
                             <th scope="col">Category</th>
@@ -105,37 +122,26 @@ require '../includes/functions.php';
             </div>
         </div>
         <div class="d-flex justify-content-end">
-            <button class="btn btn-primary me-2" type="button" id="view_cart">Cart</button>
-            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#checkoutModal">Checkout</button>
+            <button class="btn btn-primary mb-2 me-2" type="button" id="view_cart">Cart</button>
+            <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" data-bs-toggle="modal" data-bs-target="#estimateModal">
+                <i class="fa fa-save fs-4 me-2"></i>
+                Estimate
+            </button>
+            <button type="button" class="btn btn-success d-flex align-items-center mb-2 me-2" data-bs-toggle="modal" data-bs-target="#cashmodal">
+                <i class="fa fa-shopping-cart fs-4 me-2"></i>
+                Order
+            </button>
         </div>
     </div>
 </div>
 
 <div class="modal" id="view_cart_modal"></div>
 
-<div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="checkoutModalLabel">Checkout Options</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="d-flex justify-content-between">
-                    <button type="button" class="btn btn-primary d-flex align-items-center w-100 mb-2" data-bs-toggle="modal" data-bs-target="#estimateModal">
-                        <i class="fa fa-save fs-4 me-2"></i>
-                        Estimate
-                    </button>
-                    <span class="align-self-center px-4">OR</span>
-                    <button type="button" class="btn btn-success d-flex align-items-center w-100 mb-2" data-bs-toggle="modal" data-bs-target="#cashmodal">
-                        <i class="fa fa-shopping-cart fs-4 me-2"></i>
-                        Order
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<div class="modal" id="viewDetailsModal"></div>
+
+<div class="modal" id="viewInStockmodal"></div>
+
+<div class="modal" id="viewOutOfStockmodal"></div>
 
 <div class="modal" id="cashmodal">
     <div class="modal-dialog modal-lg" role="document">
@@ -440,6 +446,7 @@ require '../includes/functions.php';
         }
 
         function performSearch(query) {
+            var color_id = $('#select-color').find('option:selected').val();
             var type_id = $('#select-type').find('option:selected').val();
             var line_id = $('#select-line').find('option:selected').val();
             var category_id = $('#select-category').find('option:selected').val();
@@ -449,6 +456,7 @@ require '../includes/functions.php';
                 type: 'POST',
                 data: {
                     query: query,
+                    color_id: color_id,
                     type_id: type_id,
                     line_id: line_id,
                     category_id: category_id,
@@ -465,7 +473,26 @@ require '../includes/functions.php';
             });
         }
 
-        
+        $(document).on('click', '#view_product_details', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id');
+            console.log(id);
+            $.ajax({
+                    url: 'pages/cashier2_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        fetch_details_modal: "fetch_details_modal"
+                    },
+                    success: function(response) {
+                        $('#viewDetailsModal').html(response);
+                        $('#viewDetailsModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
 
         $(document).on('click', '#view_cart', function(event) {
             $.ajax({
@@ -485,6 +512,48 @@ require '../includes/functions.php';
             
         });
 
+        $(document).on('click', '#view_in_stock', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id');
+            console.log(id);
+            $.ajax({
+                    url: 'pages/cashier2_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        fetch_in_stock_modal: "fetch_in_stock_modal"
+                    },
+                    success: function(response) {
+                        $('#viewInStockmodal').html(response);
+                        $('#viewInStockmodal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '#view_out_of_stock', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id');
+            console.log(id);
+            $.ajax({
+                    url: 'pages/cashier2_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        fetch_out_of_stock_modal: "fetch_out_of_stock_modal"
+                    },
+                    success: function(response) {
+                        $('#viewOutOfStockmodal').html(response);
+                        $('#viewOutOfStockmodal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
         $('#rowsPerPage').change(function() {
             rowsPerPage = parseInt($(this).val());
             currentPage = 1;
@@ -496,11 +565,12 @@ require '../includes/functions.php';
             performSearch($('#text-srh').val());
         });
 
+        $('#select-color').select2();
         $('#select-type').select2();
         $('#select-line').select2();
         $('#select-category').select2();
 
-        $(document).on('input change', '#text-srh, #select-category, #select-type, #select-line, #toggleActive', function() {
+        $(document).on('input change', '#text-srh, #select-color, #select-category, #select-type, #select-line, #toggleActive', function() {
             performSearch($('#text-srh').val());
         });
 
