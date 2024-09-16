@@ -213,6 +213,64 @@ if (isset($_REQUEST['query'])) {
     echo $tableHTML;
 }
 
+if (isset($_POST['save_estimate'])) {
+    $cart = $_SESSION['cart'];
+
+    if (!isset($_SESSION['customer_id'])) {
+        echo "Customer ID is not set.";
+        exit;
+    }
+
+    $customerid = intval($_SESSION['customer_id']);
+    $total_price = 0;
+    $estimateid = null;
+
+    if (!empty($cart)) {
+        $estimated_date = date('Y-m-d H:i:s');
+        $order_date = date('Y-m-d H:i:s');
+
+        foreach ($cart as $item) {
+            $unit_price = floatval($item['unit_price']);
+            $quantity_cart = intval($item['quantity_cart']);
+            $total_price += $unit_price * $quantity_cart;
+        }
+
+        $discounted_price = number_format($total_price * 0.9, 2);
+
+        $query = "INSERT INTO estimates (total_price, discounted_price, estimated_date, order_date, customerid) VALUES ('$total_price', '$discounted_price', '$estimated_date', '$order_date', '$customerid')";
+        if ($conn->query($query) === TRUE) {
+            $estimateid = $conn->insert_id;
+        } else {
+            echo "Error inserting estimate: " . $conn->error;
+            exit;
+        }
+    }
+
+    if ($estimateid) {
+        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, actual_price, discounted_price) VALUES ";
+
+        $values = [];
+        foreach ($cart as $item) {
+            $product_id = intval($item['product_id']);
+            $quantity_cart = intval($item['quantity_cart']);
+            $unit_price = floatval($item['unit_price']);
+            $discounted_price = number_format($unit_price * 0.9, 2);
+
+            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$unit_price', '$discounted_price')";
+        }
+
+        $query .= implode(', ', $values);
+
+        if ($conn->query($query) === TRUE) {
+            echo "success";
+        } else {
+            echo "Error inserting estimate products: " . $conn->error;
+        }
+    }
+
+    $conn->close();
+}
+
 if (isset($_POST['search_customer'])) {
     $search = mysqli_real_escape_string($conn, $_POST['search_customer']);
 

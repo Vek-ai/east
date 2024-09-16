@@ -1,11 +1,9 @@
 <?php
 session_start();
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 ?>
+
 <div class="product-list pt-4">
     <div class="row row-xs pr-3">
         <div class="col-md-8"></div>
@@ -193,6 +191,26 @@ require '../includes/functions.php';
     </div>
 </div>
 
+<div class="modal" id="view_est_details_modal">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Estimate Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="estimates-details">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div class="modal" id="view_estimate_modal">
     <div class="modal-dialog modal-xl" role="document">
@@ -229,6 +247,10 @@ require '../includes/functions.php';
                 
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" id="save_estimate">
+                    <i class="fa fa-save fs-4 me-2"></i>
+                    Save
+                </button>
                 <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
@@ -297,6 +319,23 @@ require '../includes/functions.php';
             },
             success: function(response) {
                 $('#estimates-tbl').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function loadEstimatesDetails(estimate_id){
+        $.ajax({
+            url: 'pages/cashier_est_details_modal.php',
+            type: 'POST',
+            data: {
+                estimateid: estimate_id,
+                fetch_est_details: "fetch_est_details"
+            },
+            success: function(response) {
+                $('#estimates-details').html(response);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -643,6 +682,25 @@ require '../includes/functions.php';
             });
         }
 
+        $(document).on('click', '#save_estimate', function(event) {
+            $.ajax({
+                url: 'pages/cashier2_ajax.php',
+                type: 'POST',
+                data: {
+                    save_estimate: 'save_estimate'
+                },
+                success: function(response) {
+                    alert(response);
+                    if(response.trim() == 'success'){
+                        $('#view_estimate_modal').modal('hide');
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
         $(document).on('click', '#view_product_details', function(event) {
             event.preventDefault();
             var id = $(this).data('id');
@@ -654,9 +712,8 @@ require '../includes/functions.php';
                     fetch_details_modal: "fetch_details_modal"
                 },
                 success: function(response) {
-                    if(response.trim() == 'success'){
-                        $('.customer_id_section').load(location.href + " #customer_id_section");
-                    }
+                    $('#viewDetailsModal').html(response);
+                    $('#viewDetailsModal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -706,7 +763,6 @@ require '../includes/functions.php';
             });
         });
 
-
         $(document).on('click', '#customer_change_cash', function(event) {
             $.ajax({
                 url: 'pages/cashier2_ajax.php',
@@ -748,6 +804,12 @@ require '../includes/functions.php';
         $(document).on('click', '#view_est_list', function(event) {
             loadEstimatesList();
             $('#view_est_list_modal').modal('show');
+        });
+
+        $(document).on('click', '#view_est_details', function(event) {
+            var estimate_id = $(this).data('id');
+            loadEstimatesDetails(estimate_id);
+            $('#view_est_details_modal').modal('show');
         });
 
         $(document).on('click', '#view_estimate', function(event) {
