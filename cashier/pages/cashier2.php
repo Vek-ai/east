@@ -5,12 +5,8 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 require '../includes/dbconn.php';
 require '../includes/functions.php';
-$_SESSION['customer_id'] = 1;
 ?>
-
-
 <div class="product-list pt-4">
-    <p><?= isset($_SESSION['customer_id']) ? get_customer_name($_SESSION['customer_id']) : ' No Customer Selected' ?></p>
     <div class="row row-xs pr-3">
         <div class="col-md-8"></div>
             <?php if(isset($_SESSION["grandtotal"])){?>
@@ -209,13 +205,13 @@ $_SESSION['customer_id'] = 1;
             </div>
             <div class="modal-body">
                 <div class="form-group col-4">
-                    <div class="customer_id_section">
+                    <div id="customer_est_section">
                     <?php 
                         if(!empty($_SESSION["customer_id"])){
                         ?>
                         <div class="form-group">
                             <label>Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
-                            <button class="btn ripple btn-primary" type="button" id="customer_change_btn" ><i class="fe fe-reload"></i> Change</button>                                       
+                            <button class="btn ripple btn-primary" type="button" id="customer_change_estimate" ><i class="fe fe-reload"></i> Change</button>                                       
                         </div>
                         <?php } else {?>
                         <label>Customer Name</label>
@@ -256,13 +252,13 @@ $_SESSION['customer_id'] = 1;
             </div>
             <div class="modal-body">
                 <div class="form-group col-6">
-                    <div class="customer_id_section">
+                    <div id="customer_cash_section">
                         <?php 
                         if(!empty($_SESSION["customer_id"])){
                         ?>
                         <div class="form-group">
                             <label>Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
-                            <button class="btn ripple btn-primary" type="button" id="customer_change_btn" ><i class="fe fe-reload"></i> Change</button>                                       
+                            <button class="btn ripple btn-primary" type="button" id="customer_change_cash" ><i class="fe fe-reload"></i> Change</button>                                       
                         </div>
                         <?php } else {?>
                         <label>Customer Name</label>
@@ -668,8 +664,9 @@ $_SESSION['customer_id'] = 1;
             });
         });
 
-        $(document).on('change', '#customer_select_id', function(event) {
-            var customer_id = $('customer_id_estimate').val();
+        $(document).on('change', '#customer_select_estimate', function(event) {
+            var customer_id = $('#customer_id_estimate').val();
+            console.log(customer_id);
             $.ajax({
                 url: 'pages/cashier2_ajax.php',
                 type: 'POST',
@@ -678,8 +675,8 @@ $_SESSION['customer_id'] = 1;
                     change_customer: "change_customer"
                 },
                 success: function(response) {
-                    if(response.trim() == 'success'){
-                        $('.customer_id_section').load(location.href + " #customer_id_section");
+                    if (response.trim() == 'success') {
+                        $('#customer_est_section').load(location.href + " #customer_est_section");
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -689,7 +686,8 @@ $_SESSION['customer_id'] = 1;
         });
 
         $(document).on('change', '#customer_select_cash', function(event) {
-            var customer_id = $('customer_id_cash').val();
+            var customer_id = $('#customer_id_cash').val();
+            console.log(customer_id);
             $.ajax({
                 url: 'pages/cashier2_ajax.php',
                 type: 'POST',
@@ -698,8 +696,8 @@ $_SESSION['customer_id'] = 1;
                     change_customer: "change_customer"
                 },
                 success: function(response) {
-                    if(response.trim() == 'success'){
-                        $('.customer_id_section').load(location.href + " #customer_id_section");
+                    if (response.trim() == 'success') {
+                        $('#customer_cash_section').load(location.href + " #customer_cash_section");
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -708,7 +706,8 @@ $_SESSION['customer_id'] = 1;
             });
         });
 
-        $(document).on('click', '#customer_change_btn', function(event) {
+
+        $(document).on('click', '#customer_change_cash', function(event) {
             $.ajax({
                 url: 'pages/cashier2_ajax.php',
                 type: 'POST',
@@ -716,7 +715,24 @@ $_SESSION['customer_id'] = 1;
                     unset_customer: "unset_customer"
                 },
                 success: function(response) {
-                    $('.customer_id_section').load(location.href + " .customer_id_section");
+                    console.log(response);
+                    $('#customer_cash_section').load(location.href + " #customer_cash_section");
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#customer_change_estimate', function(event) {
+            $.ajax({
+                url: 'pages/cashier2_ajax.php',
+                type: 'POST',
+                data: {
+                    unset_customer: "unset_customer"
+                },
+                success: function(response) {
+                    $('#customer_est_section').load(location.href + " #customer_est_section");
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -747,7 +763,6 @@ $_SESSION['customer_id'] = 1;
         $(document).on('click', '#view_in_stock', function(event) {
             event.preventDefault();
             var id = $(this).data('id');
-            console.log(id);
             $.ajax({
                     url: 'pages/cashier_in_stock_modal.php',
                     type: 'POST',
@@ -768,7 +783,6 @@ $_SESSION['customer_id'] = 1;
         $(document).on('click', '#view_out_of_stock', function(event) {
             event.preventDefault();
             var id = $(this).data('id');
-            console.log(id);
             $.ajax({
                     url: 'pages/cashier_out_of_stock_modal.php',
                     type: 'POST',
