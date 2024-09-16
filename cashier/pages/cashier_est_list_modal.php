@@ -15,13 +15,14 @@ if(isset($_POST['fetch_est_list'])){
                 <table id="productTable" class="table table-hover mb-0 text-md-nowrap">
                     <thead>
                         <tr>
-                            <th width="20%">Description</th>
+                            <th width="15%">Description</th>
                             <th width="13%" class="text-center">Color</th>
                             <th width="13%" class="text-center">Grade</th>
                             <th width="13%" class="text-center">Profile</th>
                             <th width="20%" class="text-center pl-3">Quantity</th>
                             <th width="5%" class="text-center">Stock</th>
                             <th width="10%" class="text-center">Price</i></th>
+                            <th width="10%" class="text-center">Customer Price</i></th>
                             <th width="6%" class="text-center">Action</i></th>
                         </tr>
                     </thead>

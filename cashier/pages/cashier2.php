@@ -708,7 +708,7 @@ $_SESSION['customer_id'] = 1;
             });
         });
 
-        $(document).on('change', '#customer_change_btn', function(event) {
+        $(document).on('click', '#customer_change_btn', function(event) {
             $.ajax({
                 url: 'pages/cashier2_ajax.php',
                 type: 'POST',
@@ -716,7 +716,7 @@ $_SESSION['customer_id'] = 1;
                     unset_customer: "unset_customer"
                 },
                 success: function(response) {
-                    $('.customer_id_section').load(location.href + " #customer_id_section");
+                    $('.customer_id_section').load(location.href + " .customer_id_section");
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
