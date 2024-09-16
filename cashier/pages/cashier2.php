@@ -140,7 +140,35 @@ require '../includes/functions.php';
 
 <div class="modal" id="view_cart_modal"></div>
 
-<div class="modal" id="view_estimate_modal"></div>
+<div class="modal" id="view_estimate_modal">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Cart Contents</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group col-4">
+                    <label>Customer Name</label>
+                    <div class="input-group">
+                        <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_estimate">
+                            <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
+                                <span class="input-group-text"> + </span>
+                            </a>
+                        <input type='hidden' id='customer_id_estimate' name="customer_id"/>
+                    </div>
+                </div>
+                <div id="estimate-tbl"></div>
+                
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal" id="viewDetailsModal"></div>
 
@@ -557,7 +585,7 @@ require '../includes/functions.php';
                     fetch_estimate: "fetch_estimate"
                 },
                 success: function(response) {
-                    $('#view_estimate_modal').html(response);
+                    $('#estimate-tbl').html(response);
                     $('#view_estimate_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
