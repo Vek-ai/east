@@ -171,7 +171,7 @@ if (isset($_REQUEST['query'])) {
 
             $default_image = '../images/product/product.jpg';
 
-            $picture_path = !empty($row_product['main_image']) && file_exists($row_product['main_image'])
+            $picture_path = !empty($row_product['main_image'])
             ? "../" .$row_product['main_image']
             : $default_image;
 
@@ -236,15 +236,14 @@ if(isset($_POST['fetch_details_modal'])){
                     <div class="card-body p-4">
                     <div class="row">
                         <div class="col-lg-6">
+
                         <div id="sync1" class="owl-carousel owl-theme">
                             <?php
-                                // Run the query once and store the results
                                 $query_prod_img = "SELECT * FROM product_images WHERE productid = '$product_id'";
                                 $result_prod_img = mysqli_query($conn, $query_prod_img);  
 
                                 if ($result_prod_img && mysqli_num_rows($result_prod_img) > 0) {
                                     while ($row_prod_img = mysqli_fetch_array($result_prod_img)) {
-                                        // Set image URL
                                         $image_url = !empty($row_prod_img['image_url'])
                                             ? "../" . $row_prod_img['image_url']
                                             : "../images/product/product.jpg";
@@ -269,7 +268,6 @@ if(isset($_POST['fetch_details_modal'])){
                                 if ($result_prod_img && mysqli_num_rows($result_prod_img) > 0) {
                                     mysqli_data_seek($result_prod_img, 0);
                                     while ($row_prod_img = mysqli_fetch_array($result_prod_img)) {
-                                        // Set image URL
                                         $image_url = !empty($row_prod_img['image_url'])
                                             ? "../" . $row_prod_img['image_url']
                                             : "../images/product/product.jpg";
