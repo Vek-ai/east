@@ -8,6 +8,7 @@ require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
 if(isset($_POST['fetch_estimate'])){
+    $discount = 0.1;
     ?>
         <div class="card-body">
             <div class="product-details table-responsive text-nowrap">
@@ -82,7 +83,7 @@ if(isset($_POST['fetch_estimate'])){
                                     <td><?= $stock_text ?></td>
                                     <td class="text-end pl-3">$
                                         <?php
-                                        $subtotal = ($values["quantity_cart"] * $values["unit_price"]);
+                                        $subtotal = $values["quantity_cart"] * $values["unit_price"] * (1 - $discount);
                                         echo number_format($subtotal, 2);
                                         ?>
                                     </td>
@@ -106,7 +107,9 @@ if(isset($_POST['fetch_estimate'])){
 
                     <tfoot>
                         <tr>
-                            <td colspan="2"></td>
+                            <td colspan="1"></td>
+                            <td colspan="1" class="text-end">Discount:</td>
+                            <td colspan="1" class=""><span id="discount"><?= $discount * 100 .'%' ?></span></td>
                             <td colspan="1" class="text-end">Total Quantity:</td>
                             <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
                             <td colspan="1" class="text-end">Amount Due:</td>

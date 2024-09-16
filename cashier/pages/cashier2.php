@@ -138,7 +138,25 @@ require '../includes/functions.php';
     </div>
 </div>
 
-<div class="modal" id="view_cart_modal"></div>
+<div class="modal" id="view_cart_modal">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Cart Contents</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="cart-tbl">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal" id="view_estimate_modal">
     <div class="modal-dialog modal-xl" role="document">
@@ -199,38 +217,7 @@ require '../includes/functions.php';
                 <div id="order-tbl">
                     
                 </div>
-                <div id="checkout" class="row mt-3">
-                    <div class="col-md-6">
-                        <div class="card box-shadow-0">
-                            <div class="card-body">
-                                <form>
-                                    <div >
-                                        <label>Total Items:</label>
-                                        <span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Amount</label>
-                                        <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="<?= $_SESSION["grandtotal"] ?>">
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body pricing">
-                                <ul class="list-unstyled leading-loose">
-                                    <li><strong>Total: </strong>$ <span id="total_amt"> <?= $_SESSION["grandtotal"] ?? '0.00' ?></span></li>
-                                    <li><strong>Discount(-): </strong>$ <span id="total_discount">0.00</span></li>
-                                    <li><strong>Total Payable: </strong>$ <span id="total_payable"> <?= $_SESSION["grandtotal"] ?> </span></li>
-                                    <li class="list-group-item border-bottom-0 bg-primary" style="font-size:30px;">
-                                        <strong>Change: </strong>$ 0.00
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
             </div>
             <div class="modal-footer">
                 <button class="btn ripple btn-primary" type="button" id="savecash" onclick="savecash()">
@@ -243,6 +230,54 @@ require '../includes/functions.php';
 </div>
 
 <script>
+    function loadCart(){      
+        $.ajax({
+            url: 'pages/cashier_cart_modal.php',
+            type: 'POST',
+            data: {
+                fetch_cart: "fetch_cart"
+            },
+            success: function(response) {
+                $('#cart-tbl').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function loadOrderContents(){
+        $.ajax({
+            url: 'pages/cashier_order_modal.php',
+            type: 'POST',
+            data: {
+                fetch_order: "fetch_order"
+            },
+            success: function(response) {
+                $('#order-tbl').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function loadEstimateContents(){
+        $.ajax({
+            url: 'pages/cashier_estimate_modal.php',
+            type: 'POST',
+            data: {
+                fetch_estimate: "fetch_estimate"
+            },
+            success: function(response) {
+                $('#estimate-tbl').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
     function addtocart(element) {
         var product_id = $(element).data('id');
 
@@ -256,8 +291,9 @@ require '../includes/functions.php';
             },
             success: function(data) {
                 loadCart();
+                loadOrderContents();
+                loadEstimateContents();
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
-                $("#checkout").load(location.href + " #checkout > *");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -265,23 +301,6 @@ require '../includes/functions.php';
                     error: error,
                     responseText: xhr.responseText
                 });
-            }
-        });
-    }
-
-    function loadCart(){
-        console.log(123);        
-        $.ajax({
-            url: 'pages/cashier2_ajax.php',
-            type: 'POST',
-            data: {
-                fetch_cart: "fetch_cart"
-            },
-            success: function(response) {
-                $('#view_cart_modal').html(response);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
             }
         });
     }
@@ -301,11 +320,14 @@ require '../includes/functions.php';
                 setquantity: 'setquantity'
             },
             success: function(data) {
+                loadCart();
+                loadOrderContents();
+                loadEstimateContents();
                 var updatedQuantity = Number(data);
                 input_quantity.val(updatedQuantity);
-                $("#view_cart").click();
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
-                $("#checkout").load(location.href + " #checkout > *");
+                
+                
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -332,10 +354,13 @@ require '../includes/functions.php';
                 addquantity: 'addquantity'
             },
             success: function(data) {
+                loadCart();
+                loadOrderContents();
+                loadEstimateContents();
                 var updatedQuantity = Number(data);
                 input_quantity.val(updatedQuantity);
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
-                $("#checkout").load(location.href + " #checkout > *");
+                
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -362,10 +387,12 @@ require '../includes/functions.php';
                 deductquantity: 'deductquantity'
             },
             success: function(data) {
+                loadCart();
+                loadOrderContents();
+                loadEstimateContents();
                 var updatedQuantity = Number(data);
                 input_quantity.val(updatedQuantity);
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
-                $("#checkout").load(location.href + " #checkout > *");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -387,9 +414,10 @@ require '../includes/functions.php';
             },
             type: "POST",
             success: function(data) {
-                $("#view_cart").click();
+                loadCart();
+                loadOrderContents();
+                loadEstimateContents();
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
-                $("#checkout").load(location.href + " #checkout");
             },
             error: function() {}
         });
@@ -563,60 +591,19 @@ require '../includes/functions.php';
         });
 
         $(document).on('click', '#view_cart', function(event) {
-            $.ajax({
-                url: 'pages/cashier_cart_modal.php',
-                type: 'POST',
-                data: {
-                    fetch_cart: "fetch_cart"
-                },
-                success: function(response) {
-                    $('#view_cart_modal').html(response);
-                    $('#view_cart_modal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-            
+            loadCart();
+            $('#view_cart_modal').modal('show');
         });
 
         $(document).on('click', '#view_estimate', function(event) {
-            $.ajax({
-                url: 'pages/cashier_estimate_modal.php',
-                type: 'POST',
-                data: {
-                    fetch_estimate: "fetch_estimate"
-                },
-                success: function(response) {
-                    $('#estimate-tbl').html(response);
-                    $('#view_estimate_modal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-            
+            loadEstimateContents();
+            $('#view_estimate_modal').modal('show');
         });
 
         $(document).on('click', '#view_order', function(event) {
-            $.ajax({
-                url: 'pages/cashier_order_modal.php',
-                type: 'POST',
-                data: {
-                    fetch_order: "fetch_order"
-                },
-                success: function(response) {
-                    $('#order-tbl').html(response);
-                    $('#cashmodal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-            
+            loadOrderContents();
+            $('#cashmodal').modal('show');
         });
-
-        
 
         $(document).on('click', '#view_in_stock', function(event) {
             event.preventDefault();

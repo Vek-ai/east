@@ -106,7 +106,7 @@ if(isset($_POST['fetch_order'])){
 
                     <tfoot>
                         <tr>
-                            <td colspan="2"></td>
+                            <td colspan="3"></td>
                             <td colspan="1" class="text-end">Total Quantity:</td>
                             <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
                             <td colspan="1" class="text-end">Amount Due:</td>
@@ -116,6 +116,38 @@ if(isset($_POST['fetch_order'])){
                     </tfoot>
                 </table>
             </div>
+            <div id="checkout" class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card box-shadow-0">
+                            <div class="card-body">
+                                <form>
+                                    <div>
+                                        <label>Total Items:</label>
+                                        <span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Amount</label>
+                                        <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="<?= $_SESSION["grandtotal"] ?>">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body pricing">
+                                <ul class="list-unstyled leading-loose">
+                                    <li><strong>Total: </strong>$ <span id="total_amt"> <?= $_SESSION["grandtotal"] ?? '0.00' ?></span></li>
+                                    <li><strong>Discount(-): </strong>$ <span id="total_discount">0.00</span></li>
+                                    <li><strong>Total Payable: </strong>$ <span id="total_payable"> <?= $_SESSION["grandtotal"] ?> </span></li>
+                                    <li class="list-group-item border-bottom-0 bg-primary" style="font-size:30px;">
+                                        <strong>Change: </strong>$ 0.00
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
         </div>
         
     <?php
