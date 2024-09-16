@@ -19,6 +19,9 @@ if (!isset($_SESSION['userid'])) {
   <link rel="shortcut icon" type="image/png" href="../assets/images/logos/favicon.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" />
   <link rel="stylesheet" href="../assets/libs/select2/dist/css/select2.min.css">
@@ -31,8 +34,7 @@ if (!isset($_SESSION['userid'])) {
   <link rel="stylesheet" href="../assets/css/styles.css" />
   <link rel="stylesheet" href="css/cashier.css" />
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+
   
 
   <title>East Kentucky Metal</title>

@@ -122,8 +122,11 @@ require '../includes/functions.php';
             </div>
         </div>
         <div class="d-flex justify-content-end">
-            <button class="btn btn-primary mb-2 me-2" type="button" id="view_cart">Cart</button>
-            <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" data-bs-toggle="modal" data-bs-target="#estimateModal">
+            <button class="btn btn-primary mb-2 me-2" type="button" id="view_cart">
+                <i class="fa fa-shopping-cart fs-4 me-2"></i>
+                Cart
+            </button>
+            <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" id="view_estimate">
                 <i class="fa fa-save fs-4 me-2"></i>
                 Estimate
             </button>
@@ -136,6 +139,8 @@ require '../includes/functions.php';
 </div>
 
 <div class="modal" id="view_cart_modal"></div>
+
+<div class="modal" id="view_estimate_modal"></div>
 
 <div class="modal" id="viewDetailsModal"></div>
 
@@ -359,6 +364,38 @@ require '../includes/functions.php';
         });
     }
 
+    $("#customer_select_estimate").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "pages/cashier2_ajax.php",
+                type: 'post',
+                dataType: "json",
+                data: {
+                    search_customer: request.term
+                },
+                success: function(data) {
+                    response(data);
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error: " + xhr.responseText);
+                }
+            });
+        },
+        select: function(event, ui) {
+            $('#customer_select_estimate').val(ui.item.label);
+            $('#customer_id_estimate').val(ui.item.value);
+            return false;
+        },
+        focus: function(event, ui) {
+            $('#customer_select_estimate').val(ui.item.label);
+            return false;
+        },
+        appendTo: "#view_estimate_modal", 
+        open: function() {
+            $(".ui-autocomplete").css("z-index", 1050);
+        }
+    });
+
     $("#customer_select_cash").autocomplete({
         source: function(request, response) {
             $.ajax({
@@ -478,7 +515,7 @@ require '../includes/functions.php';
             var id = $(this).data('id');
             console.log(id);
             $.ajax({
-                    url: 'pages/cashier2_ajax.php',
+                    url: 'pages/cashier_prod_details_modal.php',
                     type: 'POST',
                     data: {
                         id: id,
@@ -496,7 +533,7 @@ require '../includes/functions.php';
 
         $(document).on('click', '#view_cart', function(event) {
             $.ajax({
-                url: 'pages/cashier2_ajax.php',
+                url: 'pages/cashier_cart_modal.php',
                 type: 'POST',
                 data: {
                     fetch_cart: "fetch_cart"
@@ -512,12 +549,30 @@ require '../includes/functions.php';
             
         });
 
+        $(document).on('click', '#view_estimate', function(event) {
+            $.ajax({
+                url: 'pages/cashier_estimate_modal.php',
+                type: 'POST',
+                data: {
+                    fetch_estimate: "fetch_estimate"
+                },
+                success: function(response) {
+                    $('#view_estimate_modal').html(response);
+                    $('#view_estimate_modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+            
+        });
+
         $(document).on('click', '#view_in_stock', function(event) {
             event.preventDefault();
             var id = $(this).data('id');
             console.log(id);
             $.ajax({
-                    url: 'pages/cashier2_ajax.php',
+                    url: 'pages/cashier_in_stock_modal.php',
                     type: 'POST',
                     data: {
                         id: id,
@@ -538,7 +593,7 @@ require '../includes/functions.php';
             var id = $(this).data('id');
             console.log(id);
             $.ajax({
-                    url: 'pages/cashier2_ajax.php',
+                    url: 'pages/cashier_out_of_stock_modal.php',
                     type: 'POST',
                     data: {
                         id: id,
