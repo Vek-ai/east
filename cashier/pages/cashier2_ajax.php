@@ -237,40 +237,41 @@ if(isset($_POST['fetch_details_modal'])){
                     <div class="row">
                         <div class="col-lg-6">
                         <div id="sync1" class="owl-carousel owl-theme">
-                        <?php
-                            $query_prod_img1 = "SELECT * FROM product_images WHERE productid = '$product_id'";
-                            $result_prod_img1 = mysqli_query($conn, $query_prod_img1);  
+                            <?php
+                                // Run the query once and store the results
+                                $query_prod_img = "SELECT * FROM product_images WHERE productid = '$product_id'";
+                                $result_prod_img = mysqli_query($conn, $query_prod_img);  
 
-                            if ($result_prod_img1 && mysqli_num_rows($result_prod_img1) > 0) {
-                                while ($row_prod_img1 = mysqli_fetch_array($result_prod_img1)) {
-                                    $image_url = !empty($row_prod_img1['image_url']) && file_exists("../" . $row_prod_img1['image_url'])
-                                        ? "../" . $row_prod_img1['image_url']
-                                        : "../images/product/product.jpg";
+                                if ($result_prod_img && mysqli_num_rows($result_prod_img) > 0) {
+                                    while ($row_prod_img = mysqli_fetch_array($result_prod_img)) {
+                                        // Set image URL
+                                        $image_url = !empty($row_prod_img['image_url'])
+                                            ? "../" . $row_prod_img['image_url']
+                                            : "../images/product/product.jpg";
+                                        ?>
+                                        <div class="item rounded overflow-hidden">
+                                            <img src="<?=$image_url?>" alt="materialpro-img" class="img-fluid">
+                                        </div>
+                                        <?php 
+                                    }
+                                } else {
                                     ?>
                                     <div class="item rounded overflow-hidden">
-                                        <img src="<?=$image_url?>" alt="materialpro-img" class="img-fluid">
+                                        <img src="../images/product/product.jpg" alt="materialpro-img" class="img-fluid">
                                     </div>
-                                    <?php 
-                                }
-                            } else {
-                                ?>
-                                <div class="item rounded overflow-hidden">
-                                    <img src="../images/product/product.jpg" alt="materialpro-img" class="img-fluid">
-                                </div>
-                                <?php
-                            } 
-                        ?> 
+                                    <?php
+                                } 
+                            ?> 
                         </div>
 
                         <div id="sync2" class="owl-carousel owl-theme">
                             <?php
-                                $query_prod_img2 = "SELECT * FROM product_images WHERE productid = '$product_id'";
-                                $result_prod_img2 = mysqli_query($conn, $query_prod_img2);  
-
-                                if ($result_prod_img2 && mysqli_num_rows($result_prod_img2) > 0) {
-                                    while ($row_prod_img2 = mysqli_fetch_array($result_prod_img2)) {
-                                        $image_url = !empty($row_prod_img2['image_url']) && file_exists($row_prod_img2['image_url'])
-                                            ? '../' .$row_prod_img2['image_url']
+                                if ($result_prod_img && mysqli_num_rows($result_prod_img) > 0) {
+                                    mysqli_data_seek($result_prod_img, 0);
+                                    while ($row_prod_img = mysqli_fetch_array($result_prod_img)) {
+                                        // Set image URL
+                                        $image_url = !empty($row_prod_img['image_url'])
+                                            ? "../" . $row_prod_img['image_url']
                                             : "../images/product/product.jpg";
                                         ?>
                                         <div class="item rounded overflow-hidden">
@@ -287,6 +288,7 @@ if(isset($_POST['fetch_details_modal'])){
                                 } 
                             ?>
                         </div>
+
                         </div>
                         <div class="col-lg-6">
                         <div class="shop-content">
