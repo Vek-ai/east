@@ -130,7 +130,7 @@ require '../includes/functions.php';
                 <i class="fa fa-save fs-4 me-2"></i>
                 Estimate
             </button>
-            <button type="button" class="btn btn-success d-flex align-items-center mb-2 me-2" data-bs-toggle="modal" data-bs-target="#cashmodal">
+            <button type="button" class="btn btn-success d-flex align-items-center mb-2 me-2" id="view_order">
                 <i class="fa fa-shopping-cart fs-4 me-2"></i>
                 Order
             </button>
@@ -144,7 +144,7 @@ require '../includes/functions.php';
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
-                <h6 class="modal-title">Cart Contents</h6>
+                <h6 class="modal-title">Save Estimate</h6>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -177,52 +177,56 @@ require '../includes/functions.php';
 <div class="modal" id="viewOutOfStockmodal"></div>
 
 <div class="modal" id="cashmodal">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
-                <h6 class="modal-title">Cash Payment</h6>
+                <h6 class="modal-title">Save Order</h6>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <div id="checkout">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card box-shadow-0">
-                                <div class="card-body">
-                                    <form>
-                                        <div class="form-group">
-                                            <label>Customer Name</label>
-                                            <div class="input-group">
-                                                <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
-                                                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
-                                                        <span class="input-group-text"> + </span>
-                                                    </a>
-                                                <input type='hidden' id='customer_id_cash' name="customer_id"/>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Amount</label>
-                                            <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="<?= $_SESSION["grandtotal"] ?>">
-                                        </div>
-                                    </form>
-                                </div>
+                <div class="form-group col-6">
+                    <label>Customer Name</label>
+                    <div class="input-group">
+                        <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
+                            <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
+                                <span class="input-group-text"> + </span>
+                            </a>
+                        <input type='hidden' id='customer_id_cash' name="customer_id"/>
+                    </div>
+                </div>
+                <div id="order-tbl">
+                    
+                </div>
+                <div id="checkout" class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card box-shadow-0">
+                            <div class="card-body">
+                                <form>
+                                    <div >
+                                        <label>Total Items:</label>
+                                        <span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Amount</label>
+                                        <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="<?= $_SESSION["grandtotal"] ?>">
+                                    </div>
+                                </form>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body pricing">
-                                    <ul class="list-unstyled leading-loose">
-                                        <li><strong>Total Items: </strong><span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span></li>
-                                        <li><strong>Total: </strong>$ <span id="total_amt"> <?= $_SESSION["grandtotal"] ?? '0.00' ?></span></li>
-                                        <li><strong>Discount(-): </strong>$ <span id="total_discount">0.00</span></li>
-                                        <li><strong>Total Payable: </strong>$ <span id="total_payable"> <?= $_SESSION["grandtotal"] ?> </span></li>
-                                        <li class="list-group-item border-bottom-0 bg-primary" style="font-size:30px;">
-                                            <strong>Change: </strong>$ 0.00
-                                        </li>
-                                    </ul>
-                                </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body pricing">
+                                <ul class="list-unstyled leading-loose">
+                                    <li><strong>Total: </strong>$ <span id="total_amt"> <?= $_SESSION["grandtotal"] ?? '0.00' ?></span></li>
+                                    <li><strong>Discount(-): </strong>$ <span id="total_discount">0.00</span></li>
+                                    <li><strong>Total Payable: </strong>$ <span id="total_payable"> <?= $_SESSION["grandtotal"] ?> </span></li>
+                                    <li class="list-group-item border-bottom-0 bg-primary" style="font-size:30px;">
+                                        <strong>Change: </strong>$ 0.00
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -253,7 +257,7 @@ require '../includes/functions.php';
             success: function(data) {
                 loadCart();
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
-                $("#checkout").load(location.href + " #checkout");
+                $("#checkout").load(location.href + " #checkout > *");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -266,6 +270,7 @@ require '../includes/functions.php';
     }
 
     function loadCart(){
+        console.log(123);        
         $.ajax({
             url: 'pages/cashier2_ajax.php',
             type: 'POST',
@@ -300,7 +305,7 @@ require '../includes/functions.php';
                 input_quantity.val(updatedQuantity);
                 $("#view_cart").click();
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
-                $("#checkout").load(location.href + " #checkout");
+                $("#checkout").load(location.href + " #checkout > *");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -329,9 +334,8 @@ require '../includes/functions.php';
             success: function(data) {
                 var updatedQuantity = Number(data);
                 input_quantity.val(updatedQuantity);
-                $("#view_cart").click();
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
-                $("#checkout").load(location.href + " #checkout");
+                $("#checkout").load(location.href + " #checkout > *");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -360,9 +364,8 @@ require '../includes/functions.php';
             success: function(data) {
                 var updatedQuantity = Number(data);
                 input_quantity.val(updatedQuantity);
-                $("#view_cart").click();
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
-                $("#checkout").load(location.href + " #checkout");
+                $("#checkout").load(location.href + " #checkout > *");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -594,6 +597,26 @@ require '../includes/functions.php';
             });
             
         });
+
+        $(document).on('click', '#view_order', function(event) {
+            $.ajax({
+                url: 'pages/cashier_order_modal.php',
+                type: 'POST',
+                data: {
+                    fetch_order: "fetch_order"
+                },
+                success: function(response) {
+                    $('#order-tbl').html(response);
+                    $('#cashmodal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+            
+        });
+
+        
 
         $(document).on('click', '#view_in_stock', function(event) {
             event.preventDefault();
