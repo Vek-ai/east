@@ -233,6 +233,15 @@ function getSupplierType($supplier_type_id){
     return  $supplier_type;
 }
 
+function get_customer_name($customer_id){
+    global $conn;
+    $query = "SELECT customer_first_name, customer_last_name FROM customer WHERE customer_id = '$customer_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $customer_name = $row['customer_first_name'] . ' ' .$row['customer_last_name'];
+    return  $customer_name;
+}
+
 function generateRandomUPC() {
     global $conn;
 

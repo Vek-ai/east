@@ -241,5 +241,21 @@ if (isset($_POST['search_customer'])) {
     }
 }
 
+if (isset($_POST['change_customer'])) {
+    if (isset($_POST['customer_id'])) {
+        $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
+        $_SESSION['customer_id'] = $customer_id;
+        echo 'Success';
+    } else {
+        echo 'Error: Customer ID not provided.';
+    }
+}
+
+if (isset($_POST['unset_customer'])) {
+    unset($_SESSION['customer_id']);
+}
+
+
+
 
 

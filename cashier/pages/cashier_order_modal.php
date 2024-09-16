@@ -8,6 +8,7 @@ require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
 if(isset($_POST['fetch_order'])){
+    $discount = 0.1;
     ?>
         <div class="card-body">
             <div class="product-details table-responsive text-nowrap">
@@ -21,6 +22,7 @@ if(isset($_POST['fetch_order'])){
                             <th width="20%" class="text-center pl-3">Quantity</th>
                             <th width="5%" class="text-center">Stock</th>
                             <th width="10%" class="text-center">Price</i></th>
+                            <th width="10%" class="text-center">Customer Price</i></th>
                             <th width="6%" class="text-center">Action</i></th>
                         </tr>
                     </thead>
@@ -82,8 +84,14 @@ if(isset($_POST['fetch_order'])){
                                     <td><?= $stock_text ?></td>
                                     <td class="text-end pl-3">$
                                         <?php
-                                        $subtotal = ($values["quantity_cart"] * $values["unit_price"]);
+                                        $subtotal = $values["quantity_cart"] * $values["unit_price"];
                                         echo number_format($subtotal, 2);
+                                        ?>
+                                    </td>
+                                    <td class="text-end pl-3">$
+                                        <?php
+                                        $customer_price = $values["quantity_cart"] * $values["unit_price"] * (1 - $discount);
+                                        echo number_format($customer_price, 2);
                                         ?>
                                     </td>
                                     <td>
@@ -95,7 +103,7 @@ if(isset($_POST['fetch_order'])){
                                 </tr>
                         <?php
                                 $totalquantity += $values["quantity_cart"];
-                                $total += $subtotal;
+                                $total += $customer_price;
                             }
                             
                         }
@@ -117,37 +125,37 @@ if(isset($_POST['fetch_order'])){
                 </table>
             </div>
             <div id="checkout" class="row mt-3">
-                    <div class="col-md-6">
-                        <div class="card box-shadow-0">
-                            <div class="card-body">
-                                <form>
-                                    <div>
-                                        <label>Total Items:</label>
-                                        <span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Amount</label>
-                                        <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="<?= $_SESSION["grandtotal"] ?>">
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body pricing">
-                                <ul class="list-unstyled leading-loose">
-                                    <li><strong>Total: </strong>$ <span id="total_amt"> <?= $_SESSION["grandtotal"] ?? '0.00' ?></span></li>
-                                    <li><strong>Discount(-): </strong>$ <span id="total_discount">0.00</span></li>
-                                    <li><strong>Total Payable: </strong>$ <span id="total_payable"> <?= $_SESSION["grandtotal"] ?> </span></li>
-                                    <li class="list-group-item border-bottom-0 bg-primary" style="font-size:30px;">
-                                        <strong>Change: </strong>$ 0.00
-                                    </li>
-                                </ul>
-                            </div>
+                <div class="col-md-6">
+                    <div class="card box-shadow-0">
+                        <div class="card-body">
+                            <form>
+                                <div>
+                                    <label>Total Items:</label>
+                                    <span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span>
+                                </div>
+                                <div class="form-group">
+                                    <label>Amount</label>
+                                    <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="<?= $_SESSION["grandtotal"] ?>">
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body pricing">
+                            <ul class="list-unstyled leading-loose">
+                                <li><strong>Total: </strong>$ <span id="total_amt"> <?= $_SESSION["grandtotal"] ?? '0.00' ?></span></li>
+                                <li><strong>Discount(-): </strong>$ <span id="total_discount">0.00</span></li>
+                                <li><strong>Total Payable: </strong>$ <span id="total_payable"> <?= $_SESSION["grandtotal"] ?> </span></li>
+                                <li class="list-group-item border-bottom-0 bg-primary" style="font-size:30px;">
+                                    <strong>Change: </strong>$ 0.00
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         
     <?php
