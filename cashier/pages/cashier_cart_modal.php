@@ -8,20 +8,76 @@ require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
 if(isset($_POST['fetch_cart'])){
+    $category_id = mysqli_real_escape_string($conn, $_POST['category_id']);
     ?>
+    <style>
+        .table-fixed {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .table-fixed th,
+        .table-fixed td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        .table-fixed th:nth-child(1),
+        .table-fixed td:nth-child(1) { width: 15%; }
+        .table-fixed th:nth-child(2),
+        .table-fixed td:nth-child(2) { width: 8%; }
+        .table-fixed th:nth-child(3),
+        .table-fixed td:nth-child(3) { width: 8%; }
+        .table-fixed th:nth-child(4),
+        .table-fixed td:nth-child(4) { width: 8%; }
+        .table-fixed th:nth-child(5),
+        .table-fixed td:nth-child(5) { width: 15%; }
+        .table-fixed th:nth-child(6),
+        .table-fixed td:nth-child(6) { width: 15%; }
+        .table-fixed th:nth-child(7),
+        .table-fixed td:nth-child(7) { width: 10%; }
+        .table-fixed th:nth-child(8),
+        .table-fixed td:nth-child(8) { width: 7%; }
+        .table-fixed th:nth-child(9),
+        .table-fixed td:nth-child(9) { width: 13%; }
+        .table-fixed th:nth-child(10),
+        .table-fixed td:nth-child(10) { width: 1%; }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"] {
+            -ms-appearance: none;
+        }
+    </style>
     <div class="card-body">
         <div class="product-details table-responsive text-nowrap">
-            <table id="productTable" class="table table-hover mb-0 text-md-nowrap">
+            <table id="cartTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
                 <thead>
                     <tr>
-                        <th width="20%">Description</th>
-                        <th width="13%" class="text-center">Color</th>
-                        <th width="13%" class="text-center">Grade</th>
-                        <th width="13%" class="text-center">Profile</th>
-                        <th width="20%" class="text-center pl-3">Quantity</th>
+                        <th width="15%">Description</th>
+                        <th width="5%" class="text-center">Color</th>
+                        <th width="5%" class="text-center">Grade</th>
+                        <th width="5%" class="text-center">Profile</th>
+                        <th width="25%" class="text-center pl-3">Quantity</th>
+                        <?php if($category_id == '46'){ // Panels ID
+                        ?>
+                        <th width="30%" class="text-center">Dimensions<br>(Width X Height)</th>
+                        <?php
+                        }
+                        ?>
                         <th width="5%" class="text-center">Stock</th>
-                        <th width="10%" class="text-center">Price</i></th>
-                        <th width="6%" class="text-center">Action</i></th>
+                        <th width="7%" class="text-center">Price</th>
+                        <th width="1%" class="text-center"> </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -79,6 +135,18 @@ if(isset($_POST['fetch_cart'])){
                                         </span>
                                     </div>
                                 </td>
+                                <?php if($category_id == '46'){ // Panels ID
+                                ?>
+                                <td>
+                                    <div class="input-group d-flex align-items-center">
+                                        <input class="form-control" type="number" value="<?= $values["estimate_width"]; ?>" placeholder="W" size="5" style="color:#ffffff;" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
+                                        <span class="mx-0">X</span>
+                                        <input class="form-control" type="number" value="<?= $values["estimate_height"]; ?>" placeholder="H" size="5" style="color:#ffffff;" data-id="<?php echo $data_id; ?>" onchange="updateEstimateHeight(this)">
+                                    </div>
+                                </td>
+                                <?php
+                                }
+                                ?>
                                 <td><?= $stock_text ?></td>
                                 <td class="text-end pl-3">$
                                     <?php
@@ -106,10 +174,15 @@ if(isset($_POST['fetch_cart'])){
 
                 <tfoot>
                     <tr>
-                        <td colspan="3"></td>
-                        <td colspan="1" class="text-end">Total Quantity:</td>
+                        <?php if($category_id == '46'){ // Panels ID
+                        ?>
+                        <td colspan="1"></td>
+                        <?php
+                        }
+                        ?>
+                        <td colspan="3" class="text-end">Total Quantity:</td>
                         <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
-                        <td colspan="1" class="text-end">Amount Due:</td>
+                        <td colspan="2" class="text-end">Amount Due:</td>
                         <td colspan="1" class="text-end"><span id="ammount_due"><?= $total ?> $</span></td>
                         <td colspan="1"></td>
                     </tr>
@@ -117,5 +190,24 @@ if(isset($_POST['fetch_cart'])){
             </table>
         </div>
     </div>   
+    <script>
+        $(document).ready(function() {
+            var table = $('#cartTable').DataTable({
+                language: {
+                    emptyTable: "No products added to cart"
+                },
+                paging: false,
+                searching: false,
+                info: false,
+                ordering: false,
+                autoWidth: false,
+                responsive: true
+            });
+
+            <?php if($category_id == '46'){ // Panels ID ?>
+            table.columns.adjust().responsive.recalc();
+            <?php } ?>
+        });
+    </script>
     <?php
 }

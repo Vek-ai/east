@@ -149,7 +149,6 @@ if(isset($_POST['fetch_estimate'])){
                                     <?php
                                     }
                                     ?>
-                                    
                                     <td><?= $stock_text ?></td>
                                     <td class="text-end pl-3">$
                                         <?php

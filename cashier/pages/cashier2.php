@@ -382,10 +382,12 @@ require '../includes/functions.php';
     }
 
     function loadCart(){      
+        var category_id = $('#select-category').find('option:selected').val();
         $.ajax({
             url: 'pages/cashier_cart_modal.php',
             type: 'POST',
             data: {
+                category_id: category_id,
                 fetch_cart: "fetch_cart"
             },
             success: function(response) {
