@@ -143,6 +143,15 @@ function getColorHexFromColorID($color_id){
     return $color_code;
 }
 
+function getColorHexFromProdID($product_id){
+    global $conn;
+    $query = "SELECT color FROM product WHERE product_id  = '$product_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $color = $row['color'] ?? '';
+    return getColorHexFromColorID($color);
+}
+
 function getGaugeName($product_gauge_id){
     global $conn;
     $query = "SELECT product_gauge FROM product_gauge WHERE product_gauge_id = '$product_gauge_id  '";

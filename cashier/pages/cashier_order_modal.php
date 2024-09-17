@@ -64,7 +64,6 @@ if(isset($_POST['fetch_order'])){
                                     </td>
                                     <td>
                                         <?php echo getProfileFromID($data_id); ?>
-                                        
                                     </td>
                                     <td>
                                         <div class="input-group">

@@ -9,9 +9,9 @@ require '../../includes/functions.php';
 
 if(isset($_POST['fetch_est_list'])){
     ?>
-        <div class="card-body">
+        <div class="card-body datatables">
             <div class="product-details table-responsive text-nowrap">
-                <table id="productTable" class="table table-hover mb-0 text-md-nowrap">
+                <table id="est_list_tbl" class="table table-hover mb-0 text-md-nowrap">
                     <thead>
                         <tr>
                             <th>Customer</th>
@@ -19,7 +19,7 @@ if(isset($_POST['fetch_est_list'])){
                             <th>Discounted Price</th>
                             <th>Estimate Date</th>
                             <th>Order Date</th>
-                            <th>Action</i></th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -37,16 +37,22 @@ if(isset($_POST['fetch_est_list'])){
                                     <?php echo get_customer_name($row["customerid"]) ?>
                                 </td>
                                 <td >
-                                    <?php echo number_format($row["total_price"],2) ?>
+                                    $ <?php echo number_format($row["total_price"],2) ?>
                                 </td>
                                 <td >
-                                    <?php echo number_format($row["discounted_price"],2) ?>
+                                    $ <?php echo number_format($row["discounted_price"],2) ?>
                                 </td>
                                 <td>
-                                    <?php echo $row["estimated_date"] ?>
+                                    <?php echo date("F d, Y", strtotime($row["estimated_date"])); ?>
                                 </td>
                                 <td>
-                                    <?php echo $row["order_date"] ?>
+                                    <?php 
+                                        if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
+                                            echo date("F d, Y", strtotime($row["order_date"]));
+                                        } else {
+                                            echo '';
+                                        }
+                                    ?>
                                 </td>
                                 <td>
                                     <button class="btn btn-danger-gradient btn-sm" id="view_est_details" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="fa fa-eye"></i></button>
@@ -66,5 +72,20 @@ if(isset($_POST['fetch_est_list'])){
                 </table>
             </div>
         </div>
+        <script>
+        $(document).ready(function() {
+            $('#est_list_tbl').DataTable({
+                language: {
+                    emptyTable: "Estimate List not found"
+                },
+                autoWidth: false,
+                responsive: true
+            });
+
+            $('#view_est_details_modal').on('shown.bs.modal', function () {
+                $('#est_dtls_tbl').DataTable().columns.adjust().responsive.recalc();
+            });
+        });
+    </script>
     <?php
 }

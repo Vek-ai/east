@@ -10,15 +10,18 @@ require '../../includes/functions.php';
 if(isset($_POST['fetch_est_details'])){
     $estimateid = mysqli_real_escape_string($conn, $_POST['estimateid']);
     ?>
-    <div class="card-body">
+    <div class="card-body datatables">
         <div class="product-details table-responsive text-nowrap">
-            <table id="productTable" class="table table-hover mb-0 text-md-nowrap">
+            <table id="est_dtls_tbl" class="table table-hover mb-0 text-md-nowrap">
                 <thead>
                     <tr>
-                        <th width="20%">Description</th>
-                        <th width="13%" class="text-center">Quantity</th>
-                        <th width="13%" class="text-center">Actual Price</th>
-                        <th width="13%" class="text-center">Discounted Price</th>
+                        <th>Description</th>
+                        <th>Color</th>
+                        <th>Grade</th>
+                        <th>Profile</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-center">Price</th>
+                        <th class="text-center">Customer Price</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,9 +38,21 @@ if(isset($_POST['fetch_est_details'])){
                                 <td>
                                     <?php echo getProductName($product_id) ?>
                                 </td>
+                                <td>
+                                <div class="d-flex mb-0 gap-8">
+                                    <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_id)?>"></a>
+                                    <?= getColorFromID($product_id); ?>
+                                </div>
+                                </td>
+                                <td>
+                                    <?php echo getGradeFromID($product_id); ?>
+                                </td>
+                                <td>
+                                    <?php echo getProfileFromID($product_id); ?>
+                                </td>
                                 <td><?= $row['quantity'] ?></td>
-                                <td><?= $row['actual_price'] ?></td>
-                                <td><?= $row['discounted_price'] ?></td>
+                                <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
+                                <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
                             </tr>
                     <?php
                             $totalquantity += $row['quantity'] ;
@@ -50,17 +65,37 @@ if(isset($_POST['fetch_est_details'])){
 
                 <tfoot>
                     <tr>
-                        <td colspan="3"></td>
+                        <td colspan="6"></td>
                         <td class="text-end">
                             <p>Total Quantity: <?= $totalquantity ?></p>
                             <p>Actual Price: <?= $total_actual_price ?></p>
                             <p>Discounted Price: <?= $total_disc_price ?></p>
                         </td>
-                        
                     </tr>
                 </tfoot>
             </table>
         </div>
     </div>   
+    <script>
+        $(document).ready(function() {
+            $('#est_dtls_tbl').DataTable({
+                language: {
+                    emptyTable: "Estimate Details not found"
+                },
+                columnDefs: [
+                    { width: "20%", targets: 0 },
+                    { width: "15%", targets: [1, 2, 3] },
+                    { width: "10%", targets: [4, 5] },
+                    { width: "15%", targets: 6 }
+                ],
+                autoWidth: false,
+                responsive: true
+            });
+
+            $('#view_est_details_modal').on('shown.bs.modal', function () {
+                $('#est_dtls_tbl').DataTable().columns.adjust().responsive.recalc();
+            });
+        });
+    </script>
     <?php
 }

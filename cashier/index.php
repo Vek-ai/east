@@ -28,6 +28,7 @@ if (!isset($_SESSION['userid'])) {
   <link rel="stylesheet" href="../assets/libs/owl.carousel/dist/assets/owl.carousel.min.css">
   <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/smoothness/jquery-ui.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
   
 
   <!-- Core Css -->
@@ -1337,6 +1338,7 @@ if (!isset($_SESSION['userid'])) {
   <script src="../assets/libs/select2/dist/js/select2.min.js"></script>
   <script src="../assets/libs/owl.carousel/dist/owl.carousel.min.js"></script>
   <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
   <script>
   $(document).ready(function() {
     $(".phone-inputmask").inputmask("(999) 999-9999")

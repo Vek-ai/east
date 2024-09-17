@@ -227,7 +227,6 @@ if (isset($_POST['save_estimate'])) {
 
     if (!empty($cart)) {
         $estimated_date = date('Y-m-d H:i:s');
-        $order_date = date('Y-m-d H:i:s');
 
         foreach ($cart as $item) {
             $unit_price = floatval($item['unit_price']);
@@ -237,7 +236,7 @@ if (isset($_POST['save_estimate'])) {
 
         $discounted_price = number_format($total_price * 0.9, 2);
 
-        $query = "INSERT INTO estimates (total_price, discounted_price, estimated_date, order_date, customerid) VALUES ('$total_price', '$discounted_price', '$estimated_date', '$order_date', '$customerid')";
+        $query = "INSERT INTO estimates (total_price, discounted_price, estimated_date, customerid) VALUES ('$total_price', '$discounted_price', '$estimated_date', '$customerid')";
         if ($conn->query($query) === TRUE) {
             $estimateid = $conn->insert_id;
         } else {
@@ -263,6 +262,8 @@ if (isset($_POST['save_estimate'])) {
 
         if ($conn->query($query) === TRUE) {
             echo "success";
+
+            unset($_SESSION['cart']);
         } else {
             echo "Error inserting estimate products: " . $conn->error;
         }
