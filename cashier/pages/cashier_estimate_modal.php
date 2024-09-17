@@ -72,7 +72,7 @@ if(isset($_POST['fetch_estimate'])){
                             <th width="25%" class="text-center pl-3">Quantity</th>
                             <?php if($category_id == '46'){ // Panels ID
                             ?>
-                            <th width="30%" class="text-center">Dimensions</th>
+                            <th width="30%" class="text-center">Dimensions<br>(Width X Height)</th>
                             <?php
                             }
                             ?>
@@ -141,9 +141,9 @@ if(isset($_POST['fetch_estimate'])){
                                     ?>
                                     <td>
                                         <div class="input-group d-flex align-items-center">
-                                            <input class="form-control" type="number" placeholder="W" size="5" style="color:#ffffff;" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
+                                            <input class="form-control" type="number" value="<?= $values["estimate_width"]; ?>" placeholder="W" size="5" style="color:#ffffff;" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
                                             <span class="mx-0">X</span>
-                                            <input class="form-control" type="number" placeholder="H" size="5" style="color:#ffffff;" data-id="<?php echo $data_id; ?>" onchange="updateEstimateHeight(this)">
+                                            <input class="form-control" type="number" value="<?= $values["estimate_height"]; ?>" placeholder="H" size="5" style="color:#ffffff;" data-id="<?php echo $data_id; ?>" onchange="updateEstimateHeight(this)">
                                         </div>
                                     </td>
                                     <?php
