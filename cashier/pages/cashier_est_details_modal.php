@@ -20,6 +20,7 @@ if(isset($_POST['fetch_est_details'])){
                         <th>Grade</th>
                         <th>Profile</th>
                         <th class="text-center">Quantity</th>
+                        <th class="text-center">Dimensions</th>
                         <th class="text-center">Price</th>
                         <th class="text-center">Customer Price</th>
                     </tr>
@@ -51,6 +52,20 @@ if(isset($_POST['fetch_est_details'])){
                                     <?php echo getProfileFromID($product_id); ?>
                                 </td>
                                 <td><?= $row['quantity'] ?></td>
+                                <td>
+                                    <?php 
+                                    $width = $row['custom_width'];
+                                    $height = $row['custom_height'];
+                                    
+                                    if (!empty($width) && !empty($height)) {
+                                        echo htmlspecialchars($width) . " X " . htmlspecialchars($height);
+                                    } elseif (!empty($width)) {
+                                        echo "Width: " . htmlspecialchars($width);
+                                    } elseif (!empty($height)) {
+                                        echo "Height: " . htmlspecialchars($height);
+                                    }
+                                    ?>
+                                </td>
                                 <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
                                 <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
                             </tr>
@@ -65,7 +80,7 @@ if(isset($_POST['fetch_est_details'])){
 
                 <tfoot>
                     <tr>
-                        <td colspan="6"></td>
+                        <td colspan="7"></td>
                         <td class="text-end">
                             <p>Total Quantity: <?= $totalquantity ?></p>
                             <p>Actual Price: <?= $total_actual_price ?></p>

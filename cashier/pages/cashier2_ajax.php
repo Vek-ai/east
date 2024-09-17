@@ -213,6 +213,34 @@ if (isset($_REQUEST['query'])) {
     echo $tableHTML;
 }
 
+
+if (isset($_POST['set_estimate_height'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $height = mysqli_real_escape_string($conn, $_POST['height']);
+
+    $key = array_search($product_id, array_column($_SESSION["cart"], 'product_id'));
+
+    if ($key !== false) {
+        $_SESSION["cart"][$key]['estimate_height'] = !empty($height) ? $height : "";
+    }
+
+    echo "Estimate height: " .$_SESSION["cart"][$key]['estimate_height'];
+}
+
+if (isset($_POST['set_estimate_width'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $width = mysqli_real_escape_string($conn, $_POST['width']);
+
+    $key = array_search($product_id, array_column($_SESSION["cart"], 'product_id'));
+
+    if ($key !== false) {
+        $_SESSION["cart"][$key]['estimate_width'] = !empty($width) ? $width : "";
+    }
+
+    echo "Estimate Width: " .$_SESSION["cart"][$key]['estimate_width'];
+}
+
+
 if (isset($_POST['save_estimate'])) {
     $cart = $_SESSION['cart'];
 
@@ -246,16 +274,20 @@ if (isset($_POST['save_estimate'])) {
     }
 
     if ($estimateid) {
-        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, actual_price, discounted_price) VALUES ";
+        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_height, actual_price, discounted_price) VALUES ";
 
         $values = [];
         foreach ($cart as $item) {
             $product_id = intval($item['product_id']);
             $quantity_cart = intval($item['quantity_cart']);
             $unit_price = floatval($item['unit_price']);
+
+            $estimate_width = floatval($item['estimate_width']);
+            $estimate_height = floatval($item['estimate_height']);
+
             $discounted_price = number_format($unit_price * 0.9, 2);
 
-            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$unit_price', '$discounted_price')";
+            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_height', '$unit_price', '$discounted_price')";
         }
 
         $query .= implode(', ', $values);

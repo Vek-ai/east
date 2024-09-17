@@ -3,7 +3,6 @@ session_start();
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 ?>
-
 <div class="product-list pt-4">
     <div class="row row-xs pr-3">
         <div class="col-md-8"></div>
@@ -310,6 +309,45 @@ require '../includes/functions.php';
 </div>
 
 <script>
+    function updateEstimateHeight(element){
+        var height = $(element).val();
+        var id = $(element).data('id');
+        $.ajax({
+            url: 'pages/cashier2_ajax.php',
+            type: 'POST',
+            data: {
+                height: height,
+                id: id,
+                set_estimate_height: "set_estimate_height"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updateEstimateWidth(element){
+        var width = $(element).val();
+        var id = $(element).data('id');
+        $.ajax({
+            url: 'pages/cashier2_ajax.php',
+            type: 'POST',
+            data: {
+                width: width,
+                id: id,
+                set_estimate_width: "set_estimate_width"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
     function loadEstimatesList(){
         $.ajax({
             url: 'pages/cashier_est_list_modal.php',
@@ -360,10 +398,12 @@ require '../includes/functions.php';
     }
 
     function loadOrderContents(){
+        var category_id = $('#select-category').find('option:selected').val();
         $.ajax({
             url: 'pages/cashier_order_modal.php',
             type: 'POST',
             data: {
+                category_id: category_id,
                 fetch_order: "fetch_order"
             },
             success: function(response) {
@@ -376,10 +416,13 @@ require '../includes/functions.php';
     }
 
     function loadEstimateContents(){
+        var category_id = $('#select-category').find('option:selected').val();
+
         $.ajax({
             url: 'pages/cashier_estimate_modal.php',
             type: 'POST',
             data: {
+                category_id: category_id,
                 fetch_estimate: "fetch_estimate"
             },
             success: function(response) {

@@ -339,10 +339,6 @@ if(isset($_POST['fetch_view_modal'])){
     }
 }
 
-
-
-
-
 if (isset($_POST['search'])) {
     $search = mysqli_real_escape_string($conn, $_POST['search']);
 
