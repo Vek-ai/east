@@ -96,10 +96,30 @@ if(isset($_POST['fetch_order'])){
                                             <span class="ms-2">Out of Stock</span>
                                         </div>';
                                 } 
+
+                                $default_image = '../images/product/product.jpg';
+
+                                $picture_path = !empty($row_product['main_image'])
+                                ? "../" .$row_product['main_image']
+                                : $default_image;
                             ?>
                                 <tr>
                                     <td>
-                                        <?php echo $values["product_item"]; ?>
+                                        <a href="javascript:void(0);" class="d-flex text-center align-items-center w-100">
+                                            <div class="align-items-center text-center w-100">
+                                                <img src="<?= $picture_path ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
+                                                <div class="ms-3">
+                                                    <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        <?php
+                                        if($data_id == '277'){
+                                        ?>
+                                        <a href="javascript:void(0);" id="custom_trim_draw" class="text-center align-items-center w-100" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
+                                            <p class="pt-3">Draw Here</p>
+                                        </a>
+                                        <?php } ?>
                                     </td>
                                     <td>
                                         <?php echo getColorFromID($data_id); ?>
@@ -137,6 +157,20 @@ if(isset($_POST['fetch_order'])){
                                         </div>
                                     </td>
                                     <?php
+                                    }else if($category_id == '43'){
+                                    ?>
+                                    <td>
+                                        <div class="d-flex flex-column align-items-center">
+                                            <input class="form-control text-center mb-1" type="text" value="<?= isset($values["estimate_width"]) ? $values["estimate_width"] : $product["width"]; ?>" placeholder="Width" size="5" style="color:#ffffff; " data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
+                                            <span class="mx-1 text-center mb-1">X</span>
+                                            <input class="form-control text-center mb-1" type="text" value="<?= $values["estimate_bend"]; ?>" placeholder="Bend" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateBend(this)">
+                                            <span class="mx-1 text-center mb-1">X</span>
+                                            <input class="form-control text-center mb-1" type="text" value="<?= $values["estimate_hem"]; ?>" placeholder="Hem" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateHem(this)">
+                                            <span class="mx-1 text-center mb-1">X</span>
+                                            <input class="form-control text-center" type="text" value="<?= isset($values["estimate_length"]) ? $values["estimate_length"] : $product["length"]; ?>" placeholder="Length" size="5" style="color:#ffffff; " data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
+                                        </div>
+                                    </td>
+                                    <?php
                                     }else{
                                     ?>
                                     <td class="text-center">N/A</td>
@@ -159,7 +193,11 @@ if(isset($_POST['fetch_order'])){
                                     <td>
                                         <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
                                         <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
+                                        <?php
+                                        if (in_array($category_id, ['46', '43'])) {
+                                        ?>
                                         <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["product_id"]; ?>">
+                                        <?php } ?>
                                         <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $data_id;?>">
                                         <input class="form-control" type="hidden" size="5" value="<?php echo $values["line"];?>" id="line<?php echo $data_id;?>">
                                         <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $data_id;?>">

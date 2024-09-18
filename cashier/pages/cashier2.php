@@ -309,6 +309,75 @@ require '../includes/functions.php';
 </div>
 
 <script>
+    function updateEstimateBend(element){
+        var bend = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+
+        $.ajax({
+            url: 'pages/cashier2_ajax.php',
+            type: 'POST',
+            data: {
+                bend: bend,
+                id: id,
+                line: line,
+                set_estimate_bend: "set_estimate_bend"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updateEstimateHem(element){
+        var hem = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+
+        $.ajax({
+            url: 'pages/cashier2_ajax.php',
+            type: 'POST',
+            data: {
+                hem: hem,
+                id: id,
+                line: line,
+                set_estimate_hem: "set_estimate_hem"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updateEstimateLength(element){
+        var length = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+
+        $.ajax({
+            url: 'pages/cashier2_ajax.php',
+            type: 'POST',
+            data: {
+                length: length,
+                id: id,
+                line: line,
+                set_estimate_length: "set_estimate_length"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
     function updateEstimateHeight(element){
         var height = $(element).val();
         var id = $(element).data('id');
@@ -353,6 +422,7 @@ require '../includes/functions.php';
             }
         });
     }
+
     function loadEstimatesList(){
         $.ajax({
             url: 'pages/cashier_est_list_modal.php',
@@ -466,9 +536,7 @@ require '../includes/functions.php';
     function updatequantity(element) {
         var product_id = $(element).data('id');
         var line = $(element).data('line');
-        var input_quantity = $('input[data-id="' + product_id + '"][data-line="' + line + '"]');
-        var qty = Number(input_quantity.val());
-        
+        var qty = $(element).val();
         $.ajax({
             url: "pages/cashier2_ajax.php",
             type: "POST",
@@ -480,7 +548,6 @@ require '../includes/functions.php';
                 setquantity: 'setquantity'
             },
             success: function(data) {
-                console.log(data);
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
@@ -512,7 +579,6 @@ require '../includes/functions.php';
                 addquantity: 'addquantity'
             },
             success: function(data) {
-                console.log(data);
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
@@ -545,7 +611,6 @@ require '../includes/functions.php';
                 deductquantity: 'deductquantity'
             },
             success: function(data) {
-                console.log(data);
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();

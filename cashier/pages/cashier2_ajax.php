@@ -61,13 +61,16 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         // Handle existing item
         if (isset($_POST['setquantity'])) {
             $requestedQuantity = max($qty, 1);
+            echo "ID: $product_id, Line: $line, Key: $key, Quantity: $requestedQuantity";
             $_SESSION["cart"][$key]['quantity_cart'] = min($requestedQuantity, $totalStock);
             echo $_SESSION["cart"][$key]['quantity_cart'];
         } elseif (isset($_POST['addquantity'])) {
+            echo "ID: $product_id, Line: $line, Key: $key";
             $newQuantity = $_SESSION["cart"][$key]['quantity_cart'] + 1;
             $_SESSION["cart"][$key]['quantity_cart'] = min($newQuantity, $totalStock);
             echo $_SESSION["cart"][$key]['quantity_cart'];
         } elseif (isset($_POST['deductquantity'])) {
+            echo "ID: $product_id, Line: $line, Key: $key";
             $currentQuantity = $_SESSION["cart"][$key]['quantity_cart'];
             if ($currentQuantity <= 1) {
                 array_splice($_SESSION["cart"], $key, 1);
@@ -256,17 +259,40 @@ if (isset($_REQUEST['query'])) {
     echo $tableHTML;
 }
 
+if (isset($_POST['set_estimate_hem'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $hem = mysqli_real_escape_string($conn, $_POST['hem']);
+
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['estimate_hem'] = !empty($hem) ? $hem : "";
+    }
+    echo "Hem ID: $product_id, Line: $line, Key: $key";
+}
+
+if (isset($_POST['set_estimate_bend'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $bend = mysqli_real_escape_string($conn, $_POST['bend']);
+
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['estimate_bend'] = !empty($bend) ? $bend : "";
+    }
+    echo "Bend ID: $product_id, Line: $line, Key: $key";
+}
+
 if (isset($_POST['set_estimate_height'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
     $height = mysqli_real_escape_string($conn, $_POST['height']);
-    
+
     $key = findCartKey($_SESSION["cart"], $product_id, $line);
-    echo "ID: $product_id, Line: $line, Key: $key";
-    if ($key !== false) {
-        
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
         $_SESSION["cart"][$key]['estimate_height'] = !empty($height) ? $height : "";
     }
+    echo "Height ID: $product_id, Line: $line, Key: $key";
 }
 
 if (isset($_POST['set_estimate_width'])) {
@@ -275,9 +301,22 @@ if (isset($_POST['set_estimate_width'])) {
     $width = mysqli_real_escape_string($conn, $_POST['width']);
 
     $key = findCartKey($_SESSION["cart"], $product_id, $line);
-    if ($key !== false) {
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
         $_SESSION["cart"][$key]['estimate_width'] = !empty($width) ? $width : "";
     }
+    echo "Width ID: $product_id, Line: $line, Key: $key";
+}
+
+if (isset($_POST['set_estimate_length'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $length = mysqli_real_escape_string($conn, $_POST['length']);
+
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['estimate_length'] = !empty($length) ? $length : "";
+    }
+    echo "Length ID: $product_id, Line: $line, Key: $key";
 }
 
 
