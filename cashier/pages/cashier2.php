@@ -11,6 +11,22 @@ require '../includes/functions.php';
     #custom_trim_draw_modal ~ .modal-backdrop.show {
         z-index: 1055;
     }
+
+    #viewOutOfStockmodal {
+        z-index: 11060;
+    }
+
+    #viewOutOfStockmodal ~ .modal-backdrop.show {
+        z-index: 11055;
+    }
+
+    #viewInStockmodal {
+        z-index: 11060;
+    }
+
+    #viewInStockmodal ~ .modal-backdrop.show {
+        z-index: 11055;
+    }
 </style>
 <div class="product-list pt-4">
     <div class="row row-xs pr-3">
@@ -169,7 +185,7 @@ require '../includes/functions.php';
             </div>
             <div class="modal-body">
                 <div id="drawing-body">
-                    
+
                 </div>
             </div>
             <div class="modal-footer">

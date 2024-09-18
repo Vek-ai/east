@@ -86,16 +86,16 @@ if(isset($_POST['fetch_estimate'])){
                                 $category_id = $product["product_category"];
                                 if ($totalstockquantity > 0) {
                                     $stock_text = '
-                                        <a href="javascript:void(0);" id="view_product_details" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
+                                        <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
                                             <span class="text-bg-success p-1 rounded-circle"></span>
                                             <span class="ms-2">In Stock</span>
                                         </a>';
                                 } else {
                                     $stock_text = '
-                                        <div class="d-flex align-items-center">
+                                        <a href="javascript:void(0);" id="view_out_of_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
                                             <span class="text-bg-danger p-1 rounded-circle"></span>
                                             <span class="ms-2">Out of Stock</span>
-                                        </div>';
+                                        </a>';
                                 } 
 
                                 $default_image = '../images/product/product.jpg';
