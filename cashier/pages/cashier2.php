@@ -150,6 +150,26 @@ require '../includes/functions.php';
     </div>
 </div>
 
+<div class="modal" id="custom_trim_draw_modal">
+    <div class="modal-dialog modal-fullscreen" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Draw Custom Trim</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="drawing-body">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal" id="view_cart_modal">
     <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content modal-content-demo">
@@ -416,6 +436,22 @@ require '../includes/functions.php';
             },
             success: function(response) {
                 console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function loadDrawingModal(){
+        $.ajax({
+            url: 'pages/cashier_drawing_modal.php',
+            type: 'POST',
+            data: {
+                fetch_drawing: "fetch_drawing"
+            },
+            success: function(response) {
+                $('#drawing-body').html(response);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -934,6 +970,11 @@ require '../includes/functions.php';
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
+        });
+
+        $(document).on('click', '#custom_trim_draw', function(event) {
+            loadDrawingModal();
+            $('#custom_trim_draw_modal').modal('show');
         });
 
         $(document).on('click', '#view_cart', function(event) {

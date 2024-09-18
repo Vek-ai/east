@@ -25,9 +25,9 @@ if(isset($_POST['fetch_estimate'])){
         }
 
         .table-fixed th:nth-child(1),
-        .table-fixed td:nth-child(1) { width: 15%; }
+        .table-fixed td:nth-child(1) { width: 8%; }
         .table-fixed th:nth-child(2),
-        .table-fixed td:nth-child(2) { width: 8%; }
+        .table-fixed td:nth-child(2) { width: 15%; }
         .table-fixed th:nth-child(3),
         .table-fixed td:nth-child(3) { width: 8%; }
         .table-fixed th:nth-child(4),
@@ -61,7 +61,8 @@ if(isset($_POST['fetch_estimate'])){
                 <table id="estimateTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
                     <thead>
                         <tr>
-                            <th width="15%">Description</th>
+                            <th width="5%">Image</th>
+                            <th width="10%">Description</th>
                             <th width="5%" class="text-center">Color</th>
                             <th width="5%" class="text-center">Grade</th>
                             <th width="5%" class="text-center">Profile</th>
@@ -105,21 +106,22 @@ if(isset($_POST['fetch_estimate'])){
                             ?>
                                 <tr>
                                     <td>
-                                        <a href="javascript:void(0);" class="d-flex text-center align-items-center w-100">
-                                            <div class="align-items-center text-center w-100">
-                                                <img src="<?= $picture_path ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
-                                                <div class="ms-3">
-                                                    <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
-                                                </div>
-                                            </div>
-                                        </a>
                                         <?php
                                         if($data_id == '277'){
                                         ?>
-                                        <a href="javascript:void(0);" id="custom_trim_draw" class="text-center align-items-center w-100" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
-                                            <p class="pt-3">Draw Here</p>
+                                        <a href="javascript:void(0);" id="custom_trim_draw" class="btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
+                                            Draw Here
                                         </a>
-                                        <?php } ?>
+                                        <?php }else{
+                                        ?>
+                                        <div class="align-items-center text-center w-100">
+                                            <img src="<?= $picture_path ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
+                                        </div>
+                                        <?php
+                                        } ?>
+                                    </td>
+                                    <td>
+                                        <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
                                     </td>
                                     <td>
                                         <?php echo getColorFromID($data_id); ?>
@@ -192,12 +194,12 @@ if(isset($_POST['fetch_estimate'])){
                                     </td>
                                     <td>
                                         <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
-                                        <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
                                         <?php
                                         if (in_array($category_id, ['46', '43'])) {
                                         ?>
-                                        <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["product_id"]; ?>">
+                                        <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
                                         <?php } ?>
+                                        <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["product_id"]; ?>">
                                         <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $data_id;?>">
                                         <input class="form-control" type="hidden" size="5" value="<?php echo $values["line"];?>" id="line<?php echo $data_id;?>">
                                         <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $data_id;?>">
@@ -205,9 +207,8 @@ if(isset($_POST['fetch_estimate'])){
                                 </tr>
                         <?php
                                 $totalquantity += $values["quantity_cart"];
-                                $total += $customer_price;
+                                $total += $subtotal;
                             }
-                            
                         }
                         $_SESSION["total_quantity"] = $totalquantity;
                         $_SESSION["grandtotal"] = $total;
@@ -217,7 +218,7 @@ if(isset($_POST['fetch_estimate'])){
                     <tfoot>
                         <tr>
                             <td colspan="1"></td>
-                            <td colspan="3" class="text-end">Total Quantity:</td>
+                            <td colspan="4" class="text-end">Total Quantity:</td>
                             <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
                             <td colspan="3" class="text-end">Amount Due:</td>
                             <td colspan="1" class="text-end"><span id="ammount_due"><?= $total ?> $</span></td>
