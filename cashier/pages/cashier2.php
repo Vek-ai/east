@@ -151,7 +151,7 @@ require '../includes/functions.php';
 </div>
 
 <div class="modal" id="view_cart_modal">
-    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
                 <h6 class="modal-title">Cart Contents</h6>
@@ -171,7 +171,7 @@ require '../includes/functions.php';
 </div>
 
 <div class="modal" id="view_est_list_modal">
-    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
                 <h6 class="modal-title">Estimates List</h6>
@@ -212,7 +212,7 @@ require '../includes/functions.php';
 
 
 <div class="modal" id="view_estimate_modal">
-    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
                 <h6 class="modal-title">Save Estimate</h6>
@@ -263,7 +263,7 @@ require '../includes/functions.php';
 <div class="modal" id="viewOutOfStockmodal"></div>
 
 <div class="modal" id="cashmodal">
-    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
                 <h6 class="modal-title">Save Order</h6>
@@ -565,8 +565,9 @@ require '../includes/functions.php';
     function delete_item(element) {
         var id = $(element).data('id');
         var line = $(element).data('line');
+        console.log("ID: " + id +" Line: " +line)
         $.ajax({
-            url: "pages/cashier_ajax.php",
+            url: "pages/cashier2_ajax.php",
             data: {
                 product_id_del: id,
                 line: line,
@@ -574,6 +575,7 @@ require '../includes/functions.php';
             },
             type: "POST",
             success: function(data) {
+                
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();

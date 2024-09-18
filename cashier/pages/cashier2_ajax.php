@@ -103,7 +103,10 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
 }
 
 if(isset($_REQUEST['deleteitem'])){
-    $key = array_search($_REQUEST['product_id_del'], array_column($_SESSION["cart"], 'product_id'));
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    echo "ID: $product_id, Line: $line, Key: $key";
     array_splice($_SESSION["cart"], $key, 1);
 }
 
@@ -245,7 +248,7 @@ if (isset($_REQUEST['query'])) {
 }
 
 if (isset($_POST['set_estimate_height'])) {
-    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $product_id = mysqli_real_escape_string($conn, $_POST['product_id_del']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
     $height = mysqli_real_escape_string($conn, $_POST['height']);
 
