@@ -44,6 +44,18 @@ function getProductName($product_id){
     return  $product_item;
 }
 
+function getProductDetails($product_id) {
+    global $conn;
+    $product_id = mysqli_real_escape_string($conn, $product_id);
+    $query = "SELECT * FROM product WHERE product_id = '$product_id'";
+    $result = mysqli_query($conn, $query);
+    $product = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $product = $row;
+    }
+    return $product;
+}
+
 function getWarehouseName($WarehouseID){
     global $conn;
     $query = "SELECT WarehouseName FROM warehouses WHERE WarehouseID = '$WarehouseID'";

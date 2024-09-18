@@ -7,8 +7,18 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
-if (isset($_POST['modifyquantity'])) {
+function findCartKey($cart, $product_id, $line) {
+    foreach ($cart as $key => $item) {
+        if ($item['product_id'] == $product_id && $item['line'] == $line) {
+            return $key;
+        }
+    }
+    return false;
+}
+
+if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+    $line = isset($_POST['line']) ? (int)$_POST['line'] : 1;
     $qty = isset($_POST['qty']) ? (int)$_POST['qty'] : 1;
 
     $quantityInStock = getProductStockInStock($product_id);
@@ -19,20 +29,44 @@ if (isset($_POST['modifyquantity'])) {
         $_SESSION["cart"] = array();
     }
 
-    $key = array_search($product_id, array_column($_SESSION["cart"], 'product_id'));
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
 
-    if ($key !== false) {
+    if (isset($_POST['duplicate_product'])) {
+        $newLine = $line + 1;
+        while (findCartKey($_SESSION["cart"], $product_id, $newLine) !== false) {
+            $newLine++;
+        }
+
+        $query = "SELECT product_id, product_item, unit_price FROM product WHERE product_id = '$product_id'";
+        $result = mysqli_query($conn, $query);
+
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $item_quantity = min($qty, $totalStock);
+
+            $item_array = array(
+                'product_id' => $row['product_id'],
+                'product_item' => $row['product_item'],
+                'unit_price' => $row['unit_price'],
+                'line' => $newLine,
+                'quantity_ttl' => $totalStock,
+                'quantity_in_stock' => $quantityInStock,
+                'quantity_cart' => $item_quantity
+            );
+
+            $_SESSION["cart"][] = $item_array;
+            echo $item_quantity;
+        }
+    } elseif ($key !== false) {
+        // Handle existing item
         if (isset($_POST['setquantity'])) {
-            $requestedQuantity = $qty;
-            if ($requestedQuantity < 1) $requestedQuantity = 1;
+            $requestedQuantity = max($qty, 1);
             $_SESSION["cart"][$key]['quantity_cart'] = min($requestedQuantity, $totalStock);
             echo $_SESSION["cart"][$key]['quantity_cart'];
-
         } elseif (isset($_POST['addquantity'])) {
             $newQuantity = $_SESSION["cart"][$key]['quantity_cart'] + 1;
-            $_SESSION["cart"][$key]['quantity_cart'] = ($newQuantity > $totalStock) ? $totalStock : $newQuantity;
+            $_SESSION["cart"][$key]['quantity_cart'] = min($newQuantity, $totalStock);
             echo $_SESSION["cart"][$key]['quantity_cart'];
-
         } elseif (isset($_POST['deductquantity'])) {
             $currentQuantity = $_SESSION["cart"][$key]['quantity_cart'];
             if ($currentQuantity <= 1) {
@@ -44,12 +78,8 @@ if (isset($_POST['modifyquantity'])) {
             }
         }
     } else {
-        $query = "SELECT 
-                    product_id,
-                    product_item,
-                    unit_price
-                  FROM product
-                  WHERE product_id = '$product_id'";
+        // Product does not exist in cart
+        $query = "SELECT product_id, product_item, unit_price FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) > 0) {
@@ -60,6 +90,7 @@ if (isset($_POST['modifyquantity'])) {
                 'product_id' => $row['product_id'],
                 'product_item' => $row['product_item'],
                 'unit_price' => $row['unit_price'],
+                'line' => 1,
                 'quantity_ttl' => $totalStock,
                 'quantity_in_stock' => $quantityInStock,
                 'quantity_cart' => $item_quantity
@@ -213,31 +244,26 @@ if (isset($_REQUEST['query'])) {
     echo $tableHTML;
 }
 
-
 if (isset($_POST['set_estimate_height'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
     $height = mysqli_real_escape_string($conn, $_POST['height']);
 
-    $key = array_search($product_id, array_column($_SESSION["cart"], 'product_id'));
-
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
     if ($key !== false) {
         $_SESSION["cart"][$key]['estimate_height'] = !empty($height) ? $height : "";
     }
-
-    echo "Estimate height: " .$_SESSION["cart"][$key]['estimate_height'];
 }
 
 if (isset($_POST['set_estimate_width'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
     $width = mysqli_real_escape_string($conn, $_POST['width']);
 
-    $key = array_search($product_id, array_column($_SESSION["cart"], 'product_id'));
-
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
     if ($key !== false) {
         $_SESSION["cart"][$key]['estimate_width'] = !empty($width) ? $width : "";
     }
-
-    echo "Estimate Width: " .$_SESSION["cart"][$key]['estimate_width'];
 }
 
 

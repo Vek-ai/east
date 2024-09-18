@@ -8,7 +8,7 @@ require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
 if(isset($_POST['fetch_cart'])){
-    $category_id = mysqli_real_escape_string($conn, $_POST['category_id']);
+    $discount = 0.1;
     ?>
     <style>
         .table-fixed {
@@ -41,22 +41,19 @@ if(isset($_POST['fetch_cart'])){
         .table-fixed th:nth-child(8),
         .table-fixed td:nth-child(8) { width: 7%; }
         .table-fixed th:nth-child(9),
-        .table-fixed td:nth-child(9) { width: 13%; }
+        .table-fixed td:nth-child(9) { width: 10%; }
         .table-fixed th:nth-child(10),
-        .table-fixed td:nth-child(10) { width: 1%; }
+        .table-fixed td:nth-child(10) { width: 4%; }
 
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+        input[readonly] {
+            border: none;               
+            background-color: transparent;
+            pointer-events: none;
+            color: inherit;
         }
 
-        input[type="number"] {
-            -moz-appearance: textfield;
-        }
-
-        input[type="number"] {
-            -ms-appearance: none;
+        .table-fixed tbody tr:hover input[readonly] {
+            background-color: transparent;
         }
     </style>
     <div class="card-body">
@@ -69,14 +66,10 @@ if(isset($_POST['fetch_cart'])){
                         <th width="5%" class="text-center">Grade</th>
                         <th width="5%" class="text-center">Profile</th>
                         <th width="25%" class="text-center pl-3">Quantity</th>
-                        <?php if($category_id == '46'){ // Panels ID
-                        ?>
                         <th width="30%" class="text-center">Dimensions<br>(Width X Height)</th>
-                        <?php
-                        }
-                        ?>
                         <th width="5%" class="text-center">Stock</th>
                         <th width="7%" class="text-center">Price</th>
+                        <th width="7%" class="text-center">Customer<br>Price</th>
                         <th width="1%" class="text-center"> </th>
                     </tr>
                 </thead>
@@ -87,9 +80,9 @@ if(isset($_POST['fetch_cart'])){
                     if (!empty($_SESSION["cart"])) {
                         foreach ($_SESSION["cart"] as $keys => $values) {
                             $data_id = $values["product_id"];
-
+                            $product = getProductDetails($data_id);
                             $totalstockquantity = $values["quantity_ttl"] + $values["quantity_in_stock"];
-
+                            $category_id = $product["product_category"];
                             if ($totalstockquantity > 0) {
                                 $stock_text = '
                                     <a href="javascript:void(0);" id="view_product_details" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
@@ -118,18 +111,17 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
                                 <td>
                                     <?php echo getProfileFromID($data_id); ?>
-                                    
                                 </td>
                                 <td>
                                     <div class="input-group">
                                         <span class="input-group-btn">
-                                            <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)">
+                                            <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)">
                                                 <i class="fa fa-minus"></i>
                                             </button>
                                         </span> 
-                                        <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
+                                        <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
                                         <span class="input-group-btn">
-                                            <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)">
+                                            <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)">
                                                 <i class="fa fa-plus"></i>
                                             </button>
                                         </span>
@@ -139,25 +131,37 @@ if(isset($_POST['fetch_cart'])){
                                 ?>
                                 <td>
                                     <div class="input-group d-flex align-items-center">
-                                        <input class="form-control" type="number" value="<?= $values["estimate_width"]; ?>" placeholder="W" size="5" style="color:#ffffff;" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
-                                        <span class="mx-0">X</span>
-                                        <input class="form-control" type="number" value="<?= $values["estimate_height"]; ?>" placeholder="H" size="5" style="color:#ffffff;" data-id="<?php echo $data_id; ?>" onchange="updateEstimateHeight(this)">
+                                        <input class="form-control" type="text" value="<?= $product["width"]; ?>" placeholder="W" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" readonly>
+                                        <span class="mr-3 ml-1"> X</span>
+                                        <input class="form-control" type="text" value="<?= $values["estimate_height"]; ?>" placeholder="H" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateHeight(this)">
                                     </div>
                                 </td>
+                                <?php
+                                }else{
+                                ?>
+                                <td class="text-center">N/A</td>
                                 <?php
                                 }
                                 ?>
                                 <td><?= $stock_text ?></td>
                                 <td class="text-end pl-3">$
                                     <?php
-                                    $subtotal = ($values["quantity_cart"] * $values["unit_price"]);
+                                    $subtotal = $values["quantity_cart"] * $values["unit_price"];
                                     echo number_format($subtotal, 2);
                                     ?>
                                 </td>
+                                <td class="text-end pl-3">$
+                                    <?php
+                                    $customer_price = $values["quantity_cart"] * $values["unit_price"] * (1 - $discount);
+                                    echo number_format($customer_price, 2);
+                                    ?>
+                                </td>
                                 <td>
-                                    <button class="btn btn-danger-gradient btn-sm" type="button" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
+                                    <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
+                                    <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
                                     <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["product_id"]; ?>">
                                     <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $data_id;?>">
+                                    <input class="form-control" type="hidden" size="5" value="<?php echo $values["line"];?>" id="line<?php echo $data_id;?>">
                                     <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $data_id;?>">
                                 </td>
                             </tr>
@@ -165,7 +169,6 @@ if(isset($_POST['fetch_cart'])){
                             $totalquantity += $values["quantity_cart"];
                             $total += $subtotal;
                         }
-                        
                     }
                     $_SESSION["total_quantity"] = $totalquantity;
                     $_SESSION["grandtotal"] = $total;
@@ -174,15 +177,10 @@ if(isset($_POST['fetch_cart'])){
 
                 <tfoot>
                     <tr>
-                        <?php if($category_id == '46'){ // Panels ID
-                        ?>
                         <td colspan="1"></td>
-                        <?php
-                        }
-                        ?>
                         <td colspan="3" class="text-end">Total Quantity:</td>
                         <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
-                        <td colspan="2" class="text-end">Amount Due:</td>
+                        <td colspan="3" class="text-end">Amount Due:</td>
                         <td colspan="1" class="text-end"><span id="ammount_due"><?= $total ?> $</span></td>
                         <td colspan="1"></td>
                     </tr>
@@ -203,10 +201,6 @@ if(isset($_POST['fetch_cart'])){
                 autoWidth: false,
                 responsive: true
             });
-
-            <?php if($category_id == '46'){ // Panels ID ?>
-            table.columns.adjust().responsive.recalc();
-            <?php } ?>
         });
     </script>
     <?php

@@ -312,12 +312,15 @@ require '../includes/functions.php';
     function updateEstimateHeight(element){
         var height = $(element).val();
         var id = $(element).data('id');
+        var line = $(element).data('line');
+
         $.ajax({
             url: 'pages/cashier2_ajax.php',
             type: 'POST',
             data: {
                 height: height,
                 id: id,
+                line: line,
                 set_estimate_height: "set_estimate_height"
             },
             success: function(response) {
@@ -332,12 +335,14 @@ require '../includes/functions.php';
     function updateEstimateWidth(element){
         var width = $(element).val();
         var id = $(element).data('id');
+        var line = $(element).data('line');
         $.ajax({
             url: 'pages/cashier2_ajax.php',
             type: 'POST',
             data: {
                 width: width,
                 id: id,
+                line: line,
                 set_estimate_width: "set_estimate_width"
             },
             success: function(response) {
@@ -382,12 +387,10 @@ require '../includes/functions.php';
     }
 
     function loadCart(){      
-        var category_id = $('#select-category').find('option:selected').val();
         $.ajax({
             url: 'pages/cashier_cart_modal.php',
             type: 'POST',
             data: {
-                category_id: category_id,
                 fetch_cart: "fetch_cart"
             },
             success: function(response) {
@@ -400,12 +403,10 @@ require '../includes/functions.php';
     }
 
     function loadOrderContents(){
-        var category_id = $('#select-category').find('option:selected').val();
         $.ajax({
             url: 'pages/cashier_order_modal.php',
             type: 'POST',
             data: {
-                category_id: category_id,
                 fetch_order: "fetch_order"
             },
             success: function(response) {
@@ -418,13 +419,10 @@ require '../includes/functions.php';
     }
 
     function loadEstimateContents(){
-        var category_id = $('#select-category').find('option:selected').val();
-
         $.ajax({
             url: 'pages/cashier_estimate_modal.php',
             type: 'POST',
             data: {
-                category_id: category_id,
                 fetch_estimate: "fetch_estimate"
             },
             success: function(response) {
@@ -435,19 +433,21 @@ require '../includes/functions.php';
             }
         });
     }
-
     function addtocart(element) {
         var product_id = $(element).data('id');
+        var line = $(element).data('line');
 
         $.ajax({
             url: "pages/cashier2_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
+                line: line,
                 modifyquantity: 'modifyquantity',
                 addquantity: 'addquantity'
             },
             success: function(data) {
+                console.log(data);
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
@@ -465,14 +465,16 @@ require '../includes/functions.php';
 
     function updatequantity(element) {
         var product_id = $(element).data('id');
-        var input_quantity = $('input[data-id="' + product_id + '"]');
+        var line = $(element).data('line');
+        var input_quantity = $('input[data-id="' + product_id + '"][data-line="' + line + '"]');
         var qty = Number(input_quantity.val());
-
+        console.log(qty);
         $.ajax({
             url: "pages/cashier2_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
+                line: line,
                 qty: qty,
                 modifyquantity: 'modifyquantity',
                 setquantity: 'setquantity'
@@ -481,8 +483,6 @@ require '../includes/functions.php';
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
-                var updatedQuantity = Number(data);
-                input_quantity.val(updatedQuantity);
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
                 
                 
@@ -499,24 +499,24 @@ require '../includes/functions.php';
 
     function addquantity(element) {
         var product_id = $(element).data('id');
+        var line = $(element).data('line');
         var input_quantity = $('input[data-id="' + product_id + '"]');
         var quantity = Number(input_quantity.val());
-
         $.ajax({
             url: "pages/cashier2_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
+                line: line,
                 quantity: quantity,
                 modifyquantity: 'modifyquantity',
                 addquantity: 'addquantity'
             },
             success: function(data) {
+                console.log(data);
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
-                var updatedQuantity = Number(data);
-                input_quantity.val(updatedQuantity);
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
                 
             },
@@ -532,24 +532,24 @@ require '../includes/functions.php';
 
     function deductquantity(element) {
         var product_id = $(element).data('id');
+        var line = $(element).data('line');
         var input_quantity = $('input[data-id="' + product_id + '"]');
         var quantity = Number(input_quantity.val());
-
         $.ajax({
             url: "pages/cashier2_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
+                line: line,
                 quantity: quantity,
                 modifyquantity: 'modifyquantity',
                 deductquantity: 'deductquantity'
             },
             success: function(data) {
+                console.log(data);
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
-                var updatedQuantity = Number(data);
-                input_quantity.val(updatedQuantity);
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
@@ -564,10 +564,12 @@ require '../includes/functions.php';
 
     function delete_item(element) {
         var id = $(element).data('id');
+        var line = $(element).data('line');
         $.ajax({
             url: "pages/cashier_ajax.php",
             data: {
                 product_id_del: id,
+                line: line,
                 deleteitem: 'deleteitem'
             },
             type: "POST",
@@ -578,6 +580,34 @@ require '../includes/functions.php';
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function() {}
+        });
+    }
+
+    function duplicate_item(element) {
+        var product_id = $(element).data('id');
+        var line = $(element).data('line');
+        $.ajax({
+            url: "pages/cashier2_ajax.php",
+            type: "POST",
+            data: {
+                product_id: product_id,
+                line: line,
+                modifyquantity: 'modifyquantity',
+                duplicate_product: 'duplicate_product'
+            },
+            success: function(data) {
+                loadCart();
+                loadOrderContents();
+                loadEstimateContents();
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
         });
     }
 
@@ -770,7 +800,6 @@ require '../includes/functions.php';
 
         $(document).on('change', '#customer_select_estimate', function(event) {
             var customer_id = $('#customer_id_estimate').val();
-            console.log(customer_id);
             $.ajax({
                 url: 'pages/cashier2_ajax.php',
                 type: 'POST',
@@ -791,7 +820,6 @@ require '../includes/functions.php';
 
         $(document).on('change', '#customer_select_cash', function(event) {
             var customer_id = $('#customer_id_cash').val();
-            console.log(customer_id);
             $.ajax({
                 url: 'pages/cashier2_ajax.php',
                 type: 'POST',
