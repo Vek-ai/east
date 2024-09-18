@@ -3,6 +3,15 @@ session_start();
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 ?>
+<style>
+    #custom_trim_draw_modal {
+        z-index: 1060;
+    }
+
+    #custom_trim_draw_modal ~ .modal-backdrop.show {
+        z-index: 1055;
+    }
+</style>
 <div class="product-list pt-4">
     <div class="row row-xs pr-3">
         <div class="col-md-8"></div>
@@ -149,9 +158,8 @@ require '../includes/functions.php';
         </div>
     </div>
 </div>
-
 <div class="modal" id="custom_trim_draw_modal">
-    <div class="modal-dialog modal-fullscreen" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
                 <h6 class="modal-title">Draw Custom Trim</h6>
@@ -161,6 +169,7 @@ require '../includes/functions.php';
             </div>
             <div class="modal-body">
                 <div id="drawing-body">
+                    
                 </div>
             </div>
             <div class="modal-footer">
