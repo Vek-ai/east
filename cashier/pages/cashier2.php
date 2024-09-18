@@ -468,7 +468,7 @@ require '../includes/functions.php';
         var line = $(element).data('line');
         var input_quantity = $('input[data-id="' + product_id + '"][data-line="' + line + '"]');
         var qty = Number(input_quantity.val());
-        console.log(qty);
+        
         $.ajax({
             url: "pages/cashier2_ajax.php",
             type: "POST",
@@ -480,12 +480,11 @@ require '../includes/functions.php';
                 setquantity: 'setquantity'
             },
             success: function(data) {
+                console.log(data);
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
-                
-                
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -565,7 +564,6 @@ require '../includes/functions.php';
     function delete_item(element) {
         var id = $(element).data('id');
         var line = $(element).data('line');
-        console.log("ID: " + id +" Line: " +line)
         $.ajax({
             url: "pages/cashier2_ajax.php",
             data: {
@@ -575,7 +573,7 @@ require '../includes/functions.php';
             },
             type: "POST",
             success: function(data) {
-                
+                console.log(data);
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();

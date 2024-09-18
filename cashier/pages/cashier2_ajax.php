@@ -102,12 +102,21 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
     }
 }
 
-if(isset($_REQUEST['deleteitem'])){
-    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
-    $line = mysqli_real_escape_string($conn, $_POST['line']);
-    $key = findCartKey($_SESSION["cart"], $product_id, $line);
-    echo "ID: $product_id, Line: $line, Key: $key";
-    array_splice($_SESSION["cart"], $key, 1);
+if (isset($_POST['deleteitem'])) {
+    
+        $product_id = mysqli_real_escape_string($conn, $_POST['product_id_del']);
+        $line = mysqli_real_escape_string($conn, $_POST['line']);
+        
+        $key = findCartKey($_SESSION["cart"], $product_id, $line);
+        
+        echo "ID: $product_id, Line: $line, Key: $key";
+        
+        if ($key !== false) {
+            array_splice($_SESSION["cart"], $key, 1);
+        } else {
+            echo "Item not found in cart.";
+        }
+    
 }
 
 if (isset($_REQUEST['query'])) {
@@ -248,12 +257,14 @@ if (isset($_REQUEST['query'])) {
 }
 
 if (isset($_POST['set_estimate_height'])) {
-    $product_id = mysqli_real_escape_string($conn, $_POST['product_id_del']);
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
     $height = mysqli_real_escape_string($conn, $_POST['height']);
-
+    
     $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    echo "ID: $product_id, Line: $line, Key: $key";
     if ($key !== false) {
+        
         $_SESSION["cart"][$key]['estimate_height'] = !empty($height) ? $height : "";
     }
 }
