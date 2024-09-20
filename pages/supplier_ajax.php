@@ -25,6 +25,8 @@ if(isset($_REQUEST['action'])) {
         $freight_rate = mysqli_real_escape_string($conn, $_POST['freight_rate']);
         $payment_terms = mysqli_real_escape_string($conn, $_POST['payment_terms']);
         $comment = mysqli_real_escape_string($conn, $_POST['comment']);
+
+        $userid = mysqli_real_escape_string($conn, $_POST['userid']);
     
         // SQL query to check if the record exists
         $checkQuery = "SELECT * FROM supplier WHERE supplier_id = '$supplier_id'";
@@ -51,7 +53,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE supplier SET supplier_name = '$supplier_name', supplier_website = '$supplier_website', supplier_type = '$supplier_type', contact_name = '$contact_name', contact_email = '$contact_email', contact_phone = '$contact_phone', contact_fax = '$contact_fax', secondary_name = '$secondary_name', secondary_phone = '$secondary_phone', secondary_email = '$secondary_email', address = '$address', last_ordered_date = '$last_ordered_date', freight_rate = '$freight_rate', payment_terms = '$payment_terms', comment = '$comment' WHERE supplier_id = '$supplier_id'";
+                $updateQuery = "UPDATE supplier SET supplier_name = '$supplier_name', supplier_website = '$supplier_website', supplier_type = '$supplier_type', contact_name = '$contact_name', contact_email = '$contact_email', contact_phone = '$contact_phone', contact_fax = '$contact_fax', secondary_name = '$secondary_name', secondary_phone = '$secondary_phone', secondary_email = '$secondary_email', address = '$address', last_ordered_date = '$last_ordered_date', freight_rate = '$freight_rate', payment_terms = '$payment_terms', comment = '$comment', last_edit = NOW(), edited_by = '$userid' WHERE supplier_id = '$supplier_id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "Supplier updated successfully.";
                 } else {
@@ -81,7 +83,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with insert
-                $insertQuery = "INSERT INTO supplier (supplier_name, supplier_website, supplier_type, contact_name, contact_email, contact_phone, contact_fax, secondary_name, secondary_phone, secondary_email, address, last_ordered_date, freight_rate, payment_terms, comment) VALUES ('$supplier_name', '$supplier_website', '$supplier_type', '$contact_name', '$contact_email', '$contact_phone', '$contact_fax', '$secondary_name', '$secondary_phone', '$secondary_email', '$address', '$last_ordered_date', '$freight_rate', '$payment_terms', '$comment')";
+                $insertQuery = "INSERT INTO supplier (supplier_name, supplier_website, supplier_type, contact_name, contact_email, contact_phone, contact_fax, secondary_name, secondary_phone, secondary_email, address, last_ordered_date, freight_rate, payment_terms, comment, added_date, added_by) VALUES ('$supplier_name', '$supplier_website', '$supplier_type', '$contact_name', '$contact_email', '$contact_phone', '$contact_fax', '$secondary_name', '$secondary_phone', '$secondary_email', '$address', '$last_ordered_date', '$freight_rate', '$payment_terms', '$comment', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
                     $supplier_id = $conn->insert_id;
                     echo "New supplier added successfully.";
@@ -326,6 +328,97 @@ if(isset($_REQUEST['action'])) {
             <?php
         }
     } 
+
+    if ($action == "fetch_product") {
+        $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
+    
+        // SQL query to check if the record exists
+        $checkQuery = "SELECT * FROM inventory as i LEFT JOIN product as p ON p.product_id = i.product_id WHERE i.supplier_id = '$supplier_id'";
+        $result = mysqli_query($conn, $checkQuery);
+    
+        ?>
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Products List
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body datatables">
+                    <div class="table-responsive">
+                        <table id="productList" class="table search-table align-middle text-nowrap">
+                            <thead class="header-item">
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            
+                            <?php
+                            if (mysqli_num_rows($result) > 0) {
+                                while ($row_product = mysqli_fetch_array($result)) {
+                                    $product_id = $row_product['product_id'];
+                                    $db_status = $row_product['status'];
+                                    
+                                    $picture_path = !empty($row_product['main_image']) ? $row_product['main_image'] : "images/product/product.jpg";
+                                    ?>
+                                        
+                                    <tr>
+                                        <td>
+                                            <a href="/?page=product_details&product_id=<?= $row_product['product_id'] ?>">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="<?= $picture_path ?>" class="rounded-circle" alt="product-img" width="56" height="56">
+                                                    <div class="ms-3">
+                                                        <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['product_item'] ?></h6>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <?php 
+                                                $quantity = 0;
+                                                $query_inv = "SELECT * FROM inventory WHERE Product_id = '$product_id' AND supplier_id = '$supplier_id'";
+                                                $result_inv = mysqli_query($conn, $query_inv);
+                                                while ($row_inv = mysqli_fetch_array($result_inv)) {
+                                                    $quantity += $row_inv['quantity_ttl'];
+                                                }
+                                                echo $quantity;
+                                            ?>
+                                        </td>
+                                    </tr>
+                                    <?php 
+                                } 
+                            } else {
+                                ?>
+                                <tr class="text-center fs-4">
+                                    <td colspan="2">Supplier has no product listed in the inventory.</td>
+                                </tr>
+                                <?php
+                            }
+                            ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="form-actions">
+                        <div class="card-body">
+                            <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            $(document).ready(function() {
+                $('#productList').DataTable();
+            });
+        </script>
+        <?php
+    } 
+    
     
     
     mysqli_close($conn);

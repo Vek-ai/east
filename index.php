@@ -20,11 +20,16 @@ if (!isset($_SESSION['userid'])) {
 
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" />
+  <link rel="stylesheet" href="assets/libs/select2/dist/css/select2.min.css">
+  <link rel="stylesheet" href="assets/libs/owl.carousel/dist/assets/owl.carousel.min.css">
+  <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css" />
+  
 
   <!-- Core Css -->
   <link rel="stylesheet" href="assets/css/styles.css" />
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
 
   <title>East Kentucky Metal</title>
 
@@ -1305,6 +1310,25 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "warehouses_test") {include 'pages/warehouses_test.php';}
             if ($_REQUEST['page'] == "paint_providers") {include 'pages/paint_providers.php';}
             if ($_REQUEST['page'] == "paint_colors") {include 'pages/paint_colors.php';}
+            if ($_REQUEST['page'] == "product_gauge") {include 'pages/product_gauge.php';}
+            if ($_REQUEST['page'] == "product_grade") {include 'pages/product_grade.php';}
+            if ($_REQUEST['page'] == "product_warranty_type") {include 'pages/product_warranty_type.php';}
+            if ($_REQUEST['page'] == "profile_type") {include 'pages/profile_type.php';}
+            if ($_REQUEST['page'] == "stock_type") {include 'pages/stock_type.php';}
+
+            if ($_REQUEST['page'] == "generate_barcode") {include 'pages/generate_barcode.php';}
+            if ($_REQUEST['page'] == "scan_barcode") {include 'pages/scan_barcode.php';}
+            if ($_REQUEST['page'] == "inventory") {include 'pages/inventory.php';}
+            if ($_REQUEST['page'] == "inventory_staff") {include 'pages/inventory_staff.php';}
+            if ($_REQUEST['page'] == "product_view") {include 'pages/product_view.php';}
+            if ($_REQUEST['page'] == "product_details") {include 'pages/product_details.php';}
+            if ($_REQUEST['page'] == "customer") {include 'pages/customer.php';}
+            if ($_REQUEST['page'] == "customer_type") {include 'pages/customer_type.php';}
+
+            if ($_REQUEST['page'] == "staff_product_access") {include 'pages/staff_product_access.php';}
+            if ($_REQUEST['page'] == "product_pack") {include 'pages/product_pack.php';}
+            if ($_REQUEST['page'] == "product_fields") {include 'pages/product_fields.php';}
+
           ?>
         </div>
       </div>
@@ -1340,6 +1364,9 @@ if (!isset($_SESSION['userid'])) {
   <script src="assets/js/extra-libs/jvectormap/jquery-jvectormap-us-aea-en.js"></script>
   <script src="assets/libs/datatables.net/js/jquery.dataTables.min.js"></script>
   <script src="assets/libs/inputmask/dist/jquery.inputmask.min.js"></script>
+  <script src="assets/libs/select2/dist/js/select2.min.js"></script>
+  <script src="assets/libs/owl.carousel/dist/owl.carousel.min.js"></script>
+  <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
   <script>
   $(document).ready(function() {
     $(".phone-inputmask").inputmask("(999) 999-9999")

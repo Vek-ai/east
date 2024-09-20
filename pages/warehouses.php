@@ -15,7 +15,7 @@ require 'includes/functions.php';
                 <a class="text-muted text-decoration-none" href="">Home
                 </a>
                 </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Contact</li>
+                <li class="breadcrumb-item text-muted" aria-current="page">Warehouses</li>
             </ol>
             </nav>
         </div>
@@ -81,10 +81,27 @@ require 'includes/functions.php';
                                 <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" />
 
                                 <div class="row pt-3">
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label">Warehouse Name</label>
                                             <input type="text" id="WarehouseName" name="WarehouseName" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Staff In-charge</label>
+                                        <div class="mb-3">
+                                            <select id="corresponding_user" class="select2-add form-control" name="corresponding_user">
+                                                <option value="" >Select Staff...</option>
+                                                <?php
+                                                $query_staff = "SELECT * FROM staff WHERE status = '1'";
+                                                $result_staff = mysqli_query($conn, $query_staff);            
+                                                while ($row_staff = mysqli_fetch_array($result_staff)) {
+                                                ?>
+                                                    <option value="<?= $row_staff['staff_id'] ?>" ><?= $row_staff['staff_fname'] ." " .$row_staff['staff_lname'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -99,15 +116,15 @@ require 'includes/functions.php';
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-12 mb-7">
+                                    <div class="col-4 mb-7">
                                         <label class="form-label">Contact Person</label>
                                         <input type="text" id="contact_person" name="contact_person" class="form-control" />
                                     </div>
-                                    <div class="col-6 mb-7">
+                                    <div class="col-4 mb-7">
                                         <label class="form-label">Contact Phone</label>
                                         <input type="text" id="contact_phone" name="contact_phone" class="form-control phone-inputmask" />
                                     </div>
-                                    <div class="col-6 mb-9">
+                                    <div class="col-4 mb-9">
                                         <label class="form-label">Contact Email</label>
                                         <input type="text" id="contact_email" name="contact_email" class="form-control" />
                                     </div>
@@ -221,6 +238,12 @@ require 'includes/functions.php';
             "order": [[0, "asc"]] // Column index is 0-based, so column 2 is index 1
         });
 
+        $(".select2-add").select2({
+            dropdownParent: $('#addWarehouseModal .modal-content'),
+            placeholder: "Select One...",
+            allowClear: true
+        });
+
         $(document).on('click', '.changeStatus', function(event) {
             event.preventDefault(); 
             var warehouse_id = $(this).data('id');
@@ -300,7 +323,7 @@ require 'includes/functions.php';
                         $('#response-modal').modal("show");
 
                         $('#response-modal').on('hide.bs.modal', function () {
-                            window.location.href = "?page=product_warehouse";
+                            window.location.href = "?page=warehouses";
                         });
                     } else {
                         $('#responseHeader').text("Failed");
@@ -310,8 +333,6 @@ require 'includes/functions.php';
                         $('#responseHeaderContainer').addClass("bg-danger");
                         $('#response-modal').modal("show");
                     }
-
-                    
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -333,7 +354,7 @@ require 'includes/functions.php';
                 contentType: false,
                 success: function(response) {
                     $('#addWarehouseModal').modal('hide');
-                    if (response === "succes") {
+                    if (response === "success") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("New warehouse added successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");

@@ -92,6 +92,34 @@ if(isset($_REQUEST['action'])) {
             echo 'error';
         }
     }
+
+    if ($action == 'fetch_emp_list') {
+        $emp_role_id = mysqli_real_escape_string($conn, $_POST['emp_role_id']);
+        $query = "SELECT * FROM staff WHERE role = '$emp_role_id'";
+        $result = mysqli_query($conn, $query);
+    
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_array($result)) {
+                $profile_path = !empty($row['profile_path']) ? $row['profile_path'] : "../assets/images/profile/user-3.jpg";
+                ?>
+                <div class="d-flex align-items-center mb-3 col">
+                    <img src="<?= $profile_path ?>" class="rounded-circle" alt="profile-img" width="56" height="56">
+                    <div class="ms-3">
+                        <h6 class="fw-semibold mb-0 fs-4"><?= $row['staff_fname'] . ' ' . $row['staff_lname'] ?></h6>
+                    </div>
+                </div>
+                <?php
+            }
+        } else {
+            ?>
+            <div class="d-flex align-items-center">
+                <h4>No employee found with this role</h4>
+            </div>
+            <?php
+        }
+    }
+
+    
     mysqli_close($conn);
 }
 ?>

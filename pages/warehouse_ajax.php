@@ -12,6 +12,7 @@ if(isset($_REQUEST['action'])) {
         $WarehouseID = mysqli_real_escape_string($conn, $_POST['WarehouseID']);
         $WarehouseName = mysqli_real_escape_string($conn, $_POST['WarehouseName']);
         $Location = mysqli_real_escape_string($conn, $_POST['Location']);
+        $corresponding_user = mysqli_real_escape_string($conn, $_POST['corresponding_user']);
         $contact_person = mysqli_real_escape_string($conn, $_POST['contact_person']);
         $contact_phone = mysqli_real_escape_string($conn, $_POST['contact_phone']);
         $contact_email = mysqli_real_escape_string($conn, $_POST['contact_email']);
@@ -25,6 +26,7 @@ if(isset($_REQUEST['action'])) {
                 SET 
                     WarehouseName = '$WarehouseName', 
                     Location = '$Location', 
+                    corresponding_user = '$corresponding_user', 
                     contact_person = '$contact_person', 
                     contact_phone = '$contact_phone', 
                     contact_email = '$contact_email'
@@ -42,6 +44,7 @@ if(isset($_REQUEST['action'])) {
                     WarehouseID,
                     WarehouseName, 
                     Location, 
+                    corresponding_user, 
                     contact_person, 
                     contact_phone, 
                     contact_email
@@ -49,6 +52,7 @@ if(isset($_REQUEST['action'])) {
                     '$WarehouseID', 
                     '$WarehouseName', 
                     '$Location', 
+                    '$corresponding_user', 
                     '$contact_person', 
                     '$contact_phone', 
                     '$contact_email'
@@ -68,7 +72,7 @@ if(isset($_REQUEST['action'])) {
         $status = mysqli_real_escape_string($conn, $_POST['status']);
         $new_status = ($status == '0') ? '1' : '0';
 
-        $statusQuery = "UPDATE warehouse SET status = '$new_status' WHERE warehouse_id = '$warehouse_id'";
+        $statusQuery = "UPDATE warehouses SET status = '$new_status' WHERE WarehouseID = '$warehouse_id'";
         if (mysqli_query($conn, $statusQuery)) {
             echo "success";
         } else {
@@ -102,10 +106,28 @@ if(isset($_REQUEST['action'])) {
                                     <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $row['WarehouseID'] ?>"/>
 
                                     <div class="row pt-3">
-                                        <div class="col-md-12">
+                                        <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Warehouse Name</label>
                                                 <input type="text" id="WarehouseName" name="WarehouseName" class="form-control" value="<?= $row['WarehouseName'] ?>" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Staff In-charge</label>
+                                            <div class="mb-3">
+                                                <select id="corresponding_user" class="select2-update form-control" name="corresponding_user">
+                                                    <option value="" >Select Staff...</option>
+                                                    <?php
+                                                    $query_staff = "SELECT * FROM staff WHERE status = '1'";
+                                                    $result_staff = mysqli_query($conn, $query_staff);            
+                                                    while ($row_staff = mysqli_fetch_array($result_staff)) {
+                                                        $selected = ($row['corresponding_user'] == $row_staff['staff_id']) ? 'selected' : '';
+                                                    ?>
+                                                        <option value="<?= $row_staff['staff_id'] ?>" <?= $selected ?>><?= $row_staff['staff_fname'] ." " .$row_staff['staff_lname'] ?></option>
+                                                    <?php   
+                                                    }
+                                                    ?>
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
@@ -124,11 +146,11 @@ if(isset($_REQUEST['action'])) {
                                             <label class="form-label">Contact Person</label>
                                             <input type="text" id="contact_person" name="contact_person" class="form-control" value="<?= $row['contact_person'] ?>" />
                                         </div>
-                                        <div class="col-8 mb-6">
+                                        <div class="col-4 mb-6">
                                             <label class="form-label">Contact Phone</label>
                                             <input type="text" id="contact_phone" name="contact_phone" class="form-control phone-inputmask" value="<?= $row['contact_phone'] ?>" />
                                         </div>
-                                        <div class="col-12 mb-6">
+                                        <div class="col-4 mb-6">
                                             <label class="form-label">Contact Email</label>
                                             <input type="text" id="contact_email" name="contact_email" class="form-control" value="<?= $row['contact_email'] ?>" />
                                         </div>
@@ -151,6 +173,12 @@ if(isset($_REQUEST['action'])) {
             </div>
             <script>
                 $(".phone-inputmask").inputmask("(999) 999-9999");
+
+                $(".select2-update").select2({
+                    dropdownParent: $('#updateWarehouseModal .modal-content'),
+                    placeholder: "Select One...",
+                    allowClear: true
+                });
             </script>
             <?php
         }
