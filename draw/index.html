@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Image Combiner</title>
+    <style>
+        #canvas {
+            border: 1px solid black;
+        }
+        .shape-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .shape {
+            width: 80px;
+            height: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <div class="shape-controls">
+        <img src="shapes/shape1.png" class="shape" id="shape1" />
+        <img src="shapes/shape2.png" class="shape" id="shape2" />
+        <img src="shapes/shape3.png" class="shape" id="shape3" />
+        <img src="shapes/shape4.png" class="shape" id="shape4" />
+        <img src="shapes/shape5.png" class="shape" id="shape5" />
+        <img src="shapes/shape6.png" class="shape" id="shape6" />
+        <img src="shapes/shape7.png" class="shape" id="shape7" />
+    </div>
+    <button id="flip-button">Flip Selected Shape Horizontally</button>
+    <button id="flip-right-button">Flip Right</button>
+    <button id="flip-up-button">Flip Up</button>
+    <label for="rotate-slider">Rotate:</label>
+    <input type="range" id="rotate-slider" min="0" max="360" value="0">
+    <button id="rotate-button">Apply Rotation</button>
+    <button id="save-button">Save Image</button>
+    <label for="opacity-slider">Opacity:</label>
+    <input type="range" id="opacity-slider" min="0" max="100" value="100">
+    <button id="draw-button">Toggle Draw Mode</button>
+    <textarea id="line-length" placeholder="Line lengths" rows="4" cols="30"></textarea>
+    <textarea id="total-length" placeholder="Total length" rows="2" cols="30"></textarea>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            let currentImage = null;
+            let images = [];
+            let isDrawing = false;
+            let isDrawingMode = false;
+            let isDragging = false;
+            let isResizing = false;
+            let dragOffsetX = 0;
+            let dragOffsetY = 0;
+            let currentResizeHandle = null;
+            let drawStartX = 0;
+            let drawStartY = 0;
+            let drawings = [];
+            let totalLength = 0;
+
+            const pixelsPerInch = 96;
+
+            class CanvasImage {
+                constructor(image, x, y, width, height, opacity = 1) {
+                    this.image = image;
+                    this.x = x;
+                    this.y = y;
+                    this.width = width;
+                    this.height = height;
+                    this.flipX = false; // Horizontal flip
+                    this.flipY = false; // Vertical flip
+                    this.selected = false;
+                    this.angle = 0; // Rotation angle
+                    this.opacity = opacity;
+                }
+
+                draw(ctx) {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.angle * Math.PI / 180); // Apply rotation
+                    ctx.scale(this.flipX ? -1 : 1, this.flipY ? -1 : 1); // Adjust for flipX and flipY
+                    ctx.globalAlpha = this.opacity;
+                    ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
+                    ctx.restore();
+
+                    if (this.selected) {
+                        ctx.globalAlpha = 1;
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+
+                        // Draw resize handles
+                        ctx.fillStyle = 'blue';
+                        ctx.fillRect(this.x + this.width / 2 - 10, this.y - this.height / 2 - 10, 20, 20); // Top-right resize handle
+                        ctx.fillStyle = 'green';
+                        ctx.fillRect(this.x + this.width / 2 - 10, this.y + this.height / 2 - 10, 20, 20); // Bottom-right resize handle
+                    }
+                }
+
+                isPointInside(x, y) {
+                    return x > this.x - this.width / 2 && x < this.x + this.width / 2 &&
+                           y > this.y - this.height / 2 && y < this.y + this.height / 2;
+                }
+
+                getResizeHandle(x, y) {
+                    const topRightHandle = {
+                        x: this.x + this.width / 2 - 10,
+                        y: this.y - this.height / 2 - 10,
+                        width: 20,
+                        height: 20
+                    };
+                    const bottomRightHandle = {
+                        x: this.x + this.width / 2 - 10,
+                        y: this.y + this.height / 2 - 10,
+                        width: 20,
+                        height: 20
+                    };
+                    if (x > topRightHandle.x && x < topRightHandle.x + topRightHandle.width &&
+                        y > topRightHandle.y && y < topRightHandle.y + topRightHandle.height) {
+                        return 'topRight';
+                    }
+                    if (x > bottomRightHandle.x && x < bottomRightHandle.x + bottomRightHandle.width &&
+                        y > bottomRightHandle.y && y < bottomRightHandle.y + bottomRightHandle.height) {
+                        return 'bottomRight';
+                    }
+                    return null;
+                }
+            }
+
+            function drawAll() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                images.forEach(img => img.draw(ctx));
+                drawings.forEach((drawPath, index) => {
+                    const start = drawPath[0];
+                    const end = drawPath[1];
+                    ctx.beginPath();
+                    ctx.moveTo(start.x, start.y);
+                    ctx.lineTo(end.x, end.y);
+                    ctx.stroke();
+
+                    // Calculate and display length near the line
+                    const lengthInPixels = calculateLength(start, end);
+                    const lengthInInches = lengthInPixels / pixelsPerInch;
+
+                    // Midpoint of the line
+                    const midX = (start.x + end.x) / 2;
+                    const midY = (start.y + end.y) / 2;
+
+                    // Display the length near the line
+                    ctx.font = '14px Arial';
+                    ctx.fillStyle = 'black';
+                    ctx.fillText(`Line ${index + 1}: ${lengthInInches.toFixed(2)} inches`, midX, midY);
+                });
+            }
+
+            function addImage(imageSrc) {
+                let img = new Image();
+                img.src = imageSrc;
+                img.onload = () => {
+                    const canvasImage = new CanvasImage(img, canvas.width / 2, canvas.height / 2, 80, 15);
+                    images.push(canvasImage);
+                    currentImage = canvasImage;
+                    drawAll();
+                };
+                img.onerror = () => {
+                    console.error(`Failed to load image: ${imageSrc}`);
+                };
+            }
+
+            document.getElementById('shape1').addEventListener('click', () => addImage('shapes/shape1.png'));
+            document.getElementById('shape2').addEventListener('click', () => addImage('shapes/shape2.png'));
+            document.getElementById('shape3').addEventListener('click', () => addImage('shapes/shape3.png'));
+            document.getElementById('shape4').addEventListener('click', () => addImage('shapes/shape4.png'));
+            document.getElementById('shape5').addEventListener('click', () => addImage('shapes/shape5.png'));
+            document.getElementById('shape6').addEventListener('click', () => addImage('shapes/shape6.png'));
+            document.getElementById('shape7').addEventListener('click', () => addImage('shapes/shape7.png'));
+
+            document.getElementById('flip-button').addEventListener('click', () => {
+                if (currentImage) {
+                    currentImage.flipX = !currentImage.flipX; // Flip horizontally
+                    drawAll();
+                }
+            });
+
+            document.getElementById('flip-right-button').addEventListener('click', () => {
+                if (currentImage) {
+                    currentImage.flipX = !currentImage.flipX; // Flip horizontally (right)
+                    drawAll();
+                }
+            });
+
+            document.getElementById('flip-up-button').addEventListener('click', () => {
+                if (currentImage) {
+                    currentImage.flipY = !currentImage.flipY; // Flip vertically (up)
+                    drawAll();
+                }
+            });
+
+            document.getElementById('rotate-button').addEventListener('click', () => {
+                const rotateSlider = document.getElementById('rotate-slider');
+                if (currentImage) {
+                    currentImage.angle = rotateSlider.value; // Set the rotation angle
+                    drawAll();
+                }
+            });
+
+            const opacitySlider = document.getElementById('opacity-slider');
+            opacitySlider.addEventListener('input', () => {
+                if (currentImage) {
+                    currentImage.opacity = opacitySlider.value / 100;
+                    drawAll();
+                }
+            });
+
+            document.getElementById('draw-button').addEventListener('click', () => {
+                isDrawingMode = !isDrawingMode;
+                toggleDrawButton();
+                if (isDrawingMode) {
+                    canvas.style.cursor = 'crosshair';
+                } else {
+                    canvas.style.cursor = 'default';
+                    isDrawing = false;
+                }
+            });
+
+            function toggleDrawButton() {
+                const drawButton = document.getElementById('draw-button');
+                drawButton.textContent = isDrawingMode ? 'Drawing Mode: ON' : 'Drawing Mode: OFF';
+            }
+
+            canvas.addEventListener('mousedown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                if (isDrawingMode) {
+                    isDrawing = true;
+                    drawStartX = x;
+                    drawStartY = y;
+                } else {
+                    images.forEach(img => img.selected = false);
+                    currentImage = null;
+                    let resizeHandle = null;
+
+                    images.forEach(img => {
+                        if (img.isPointInside(x, y)) {
+                            img.selected = true;
+                            currentImage = img;
+                            dragOffsetX = x - img.x;
+                            dragOffsetY = y - img.y;
+                            isDragging = true;
+                        }
+                        resizeHandle = img.getResizeHandle(x, y);
+                        if (resizeHandle) {
+                            img.selected = true;
+                            currentImage = img;
+                            isResizing = true;
+                            currentResizeHandle = resizeHandle;
+                        }
+                    });
+
+                    drawAll();
+                }
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (isDrawing && isDrawingMode) {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawAll();
+                    ctx.beginPath();
+                    ctx.moveTo(drawStartX, drawStartY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
+
+                if (isDragging && currentImage && !isDrawingMode) {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    currentImage.x = x - dragOffsetX;
+                    currentImage.y = y - dragOffsetY;
+                    drawAll();
+                }
+
+                if (isResizing && currentImage && !isDrawingMode) {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    if (currentResizeHandle === 'topRight') {
+                        currentImage.width = Math.abs(x - currentImage.x);
+                        currentImage.height = Math.abs(currentImage.y - y);
+                    } else if (currentResizeHandle === 'bottomRight') {
+                        currentImage.width = Math.abs(x - currentImage.x);
+                        currentImage.height = Math.abs(y - currentImage.y);
+                    }
+                    drawAll();
+                }
+            });
+
+            canvas.addEventListener('mouseup', (e) => {
+                if (isDrawing && isDrawingMode) {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    const lengthInPixels = calculateLength({ x: drawStartX, y: drawStartY }, { x, y });
+                    const lengthInInches = lengthInPixels / pixelsPerInch;
+                    totalLength += lengthInInches;
+
+                    drawings.push([{ x: drawStartX, y: drawStartY }, { x, y }]);
+                    drawAll();
+
+                    updateLengthDisplay(lengthInInches);
+                    updateTotalLengthDisplay();
+
+                    isDrawing = false;
+                }
+
+                isDragging = false;
+                isResizing = false;
+                currentResizeHandle = null;
+            });
+
+            function calculateLength(start, end) {
+                return Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+            }
+
+            function updateLengthDisplay(lengthInInches) {
+                const lineLengthBox = document.getElementById('line-length');
+                lineLengthBox.value += `Line ${drawings.length}: ${lengthInInches.toFixed(2)} inches\n`;
+            }
+
+            function updateTotalLengthDisplay() {
+                const totalLengthBox = document.getElementById('total-length');
+                totalLengthBox.value = `Total Length: ${totalLength.toFixed(2)} inches`;
+            }
+        });
+    </script>
+</body>
+</html>

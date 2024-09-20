@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Image Combiner</title>
+    <style>
+        #canvas {
+            border: 1px solid black;
+        }
+        .shape-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .shape {
+            width: 80x;
+            height: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <div class="shape-controls">
+        <img src="shapes/shape1.png" class="shape" id="shape1" />
+        <img src="shapes/shape2.png" class="shape" id="shape2" />
+        <img src="shapes/shape3.png" class="shape" id="shape3" />
+        <img src="shapes/shape4.png" class="shape" id="shape4" />
+        <img src="shapes/shape5.png" class="shape" id="shape5" />
+        <!-- Add more shapes as needed -->
+    </div>
+    <button id="flip-button">Flip Selected Shape</button>
+    <button id="save-button">Save Image</button>
+    <label for="opacity-slider">Opacity:</label>
+    <input type="range" id="opacity-slider" min="0" max="100" value="100">
+    <button id="draw-button">Toggle Draw Mode</button>
+    <script src="script.js"></script>
+</body>
+</html>
