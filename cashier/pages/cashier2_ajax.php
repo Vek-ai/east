@@ -7,6 +7,9 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
+$trim_id = 43;
+$panel_id = 46;
+
 function findCartKey($cart, $product_id, $line) {
     foreach ($cart as $key => $item) {
         if ($item['product_id'] == $product_id && $item['line'] == $line) {
@@ -178,6 +181,7 @@ if (isset($_REQUEST['query'])) {
 
             $product_length = $row_product['length'];
             $product_width = $row_product['width'];
+            $product_color = $row_product['color'];
 
             $dimensions = "";
 
@@ -212,7 +216,24 @@ if (isset($_REQUEST['query'])) {
                         <span class="text-bg-danger p-1 rounded-circle"></span>
                         <span class="ms-2">Out of Stock</span>
                     </a>';
-            }            
+            
+                if ($row_product['product_category'] == $trim_id || $row_product['product_category'] == $panel_id) {
+                    $sql = "SELECT COUNT(*) AS count FROM coil WHERE width = '$product_width' AND color = '$product_color'";
+                    $result = mysqli_query($conn, $sql);
+
+                    if ($result) {
+                        $row = mysqli_fetch_assoc($result);
+                        if ($row['count'] > 0) {
+                            $stock_text = '
+                            <a href="javascript:void(0);" id="view_available" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
+                                <span class="text-bg-warning p-1 rounded-circle"></span>
+                                <span class="ms-2">Available</span>
+                            </a>';
+                        }
+                    }
+                }
+            }
+                     
             
 
             $default_image = '../images/product/product.jpg';
