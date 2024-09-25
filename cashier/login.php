@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <form action="" method="post">
                   <input type="hidden" name="redirect" value="<?php echo isset($_GET['redirect']) ? htmlspecialchars($_GET['redirect']) : ''; ?>">
                   <div class="mb-3">
-                    <label for="exampleInputEmail1" class="form-label">testUsername</label>
+                    <label for="exampleInputEmail1" class="form-label">Username</label>
                     <input type="text" name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" required>
                   </div>
                   <div class="mb-4">
