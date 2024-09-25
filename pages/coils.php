@@ -43,32 +43,31 @@ if(!empty($_REQUEST['result'])){
 }
 
 ?>
-<style>
-        /* Ensure that the text within the notes column wraps properly */
-        td.notes,  td.last-edit{
-            white-space: normal;
-            word-wrap: break-word;
-        }
-        .emphasize-strike {
-            text-decoration: line-through;
-            font-weight: bold;
-            color: #9a841c; /* You can choose any color you like for emphasis */
-        }
+    <style>
+      td.notes,  td.last-edit{
+          white-space: normal;
+          word-wrap: break-word;
+      }
+      .emphasize-strike {
+          text-decoration: line-through;
+          font-weight: bold;
+          color: #9a841c;
+      }
       .dataTables_filter input {
-    width: 100%; /* Adjust the width as needed */
-    height: 50px; /* Adjust the height as needed */
-    font-size: 16px; /* Adjust the font size as needed */
-    padding: 10px; /* Adjust the padding as needed */
-    border-radius: 5px; /* Adjust the border-radius as needed */
-}
-.dataTables_filter {  width: 100%;}
-#toggleActive {
-    margin-bottom: 10px;
-}
+          width: 100%; /* Adjust the width as needed */
+          height: 50px; /* Adjust the height as needed */
+          font-size: 16px; /* Adjust the font size as needed */
+          padding: 10px; /* Adjust the padding as needed */
+          border-radius: 5px; /* Adjust the border-radius as needed */
+      }
+      .dataTables_filter {  width: 100%;}
+      #toggleActive {
+          margin-bottom: 10px;
+      }
 
-.inactive-row {
-    display: none;
-}
+      .inactive-row {
+          display: none;
+      }
     </style>
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
             <div class="card-body px-0">
@@ -279,6 +278,7 @@ if(!empty($_REQUEST['result'])){
                 <th>Grade</th>
                 <th>Color</th>
                 <th>Gauge</th>
+                <th>Width</th>
                 <th>Details</th>
                 <th>Status</th>
                 <th>Action</th>
@@ -296,6 +296,7 @@ while ($row_coil = mysqli_fetch_array($result_coil)) {
     $grade = $row_coil['grade'];
     $color = $row_coil['color'];
     $gauge = $row_coil['gauge'];
+    $width = $row_coil['width'];
     $db_status = $row_coil['status'];
    // $last_edit = $row_coil['last_edit'];
     $date = new DateTime($row_coil['last_edit']);
@@ -324,6 +325,7 @@ while ($row_coil = mysqli_fetch_array($result_coil)) {
     <td><?= getGradeName($grade) ?></td>
     <td><?= getColorName($color) ?></td>
     <td><?= getGaugeName($gauge) ?></td>
+    <td><?= $width ?></td>
     <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
     <td><?= $status ?></td>
     <td class="text-center" id="action-button-<?= $no ?>">
