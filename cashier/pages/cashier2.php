@@ -307,6 +307,8 @@ require '../includes/functions.php';
 
 <div class="modal" id="viewOutOfStockmodal"></div>
 
+<div class="modal" id="viewAvailablemodal"></div>
+
 <div class="modal" id="cashmodal">
     <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content modal-content-demo">
@@ -1304,6 +1306,29 @@ require '../includes/functions.php';
                     success: function(response) {
                         $('#viewOutOfStockmodal').html(response);
                         $('#viewOutOfStockmodal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '#view_available', function(event) {
+            event.preventDefault();
+            var color = $(this).data('color');
+            var width = $(this).data('width');
+            console.log("Color: " +color +" Width: " +width);
+            $.ajax({
+                    url: 'pages/cashier_available_modal.php',
+                    type: 'POST',
+                    data: {
+                        color: color,
+                        width: width,
+                        fetch_available: "fetch_available"
+                    },
+                    success: function(response) {
+                        $('#viewAvailablemodal').html(response);
+                        $('#viewAvailablemodal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);

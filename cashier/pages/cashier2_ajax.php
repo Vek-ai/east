@@ -225,7 +225,7 @@ if (isset($_REQUEST['query'])) {
                         $row = mysqli_fetch_assoc($result);
                         if ($row['count'] > 0) {
                             $stock_text = '
-                            <a href="javascript:void(0);" id="view_available" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
+                            <a href="javascript:void(0);" id="view_available" data-color="' . htmlspecialchars($product_color, ENT_QUOTES) . '" data-width="' . htmlspecialchars($product_width, ENT_QUOTES) . '" class="d-flex align-items-center">
                                 <span class="text-bg-warning p-1 rounded-circle"></span>
                                 <span class="ms-2">Available</span>
                             </a>';
