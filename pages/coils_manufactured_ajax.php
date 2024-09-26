@@ -24,7 +24,7 @@ if (isset($_REQUEST['query'])) {
         LEFT JOIN 
             coil_process AS cp ON c.coil_id = cp.coilid
         WHERE 
-            c.hidden = '0'
+            c.hidden = '0' AND quantity > 0
     ";
 
     if (!empty($searchQuery)) {
