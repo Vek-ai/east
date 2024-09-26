@@ -22,6 +22,25 @@ if(!empty($_REQUEST['coil_id'])){
       $gauge = $row['gauge'];
       $backer_color = $row['backer_color'];
       $weight = $row['weight'];
+
+      $supplier = $row['supplier'];
+      $entry_number = $row['entry_number'];
+      $coil_number = $row['coil_number'];
+      $tag_number = $row['tag_number'];
+      $entry_date = $row['entry_date'];
+      $invoice = $row['invoice'];
+      $original_feet = $row['original_feet'];
+      $original_weight = $row['original_weight'];
+      $remaining_feet = $row['remaining_feet'];
+      $remaining_weight = $row['remaining_weight'];
+      $price_per_foot = $row['price_per_foot'];
+      $price_per_cwt = $row['price_per_cwt'];
+      $pounds_per_foot = $row['pounds_per_foot'];
+      $color_code = $row['color_code'];
+      $actual_width = $row['actual_width'];
+      $rounded_width = $row['rounded_width'];
+      $original_price = $row['original_price'];
+      $current_price = $row['current_price'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -123,139 +142,261 @@ if(!empty($_REQUEST['result'])){
     
 
     <form id="coilForm" class="form-horizontal">
-      <div class="row pt-3">
+    <div class="row pt-3">
         <div class="col-md-6">
-          <div class="mb-3">
-            <label class="form-label">Coil Name</label>
-            <input type="text" id="coil" name="coil" class="form-control"  value="<?= $coil ?>"/>
-          </div>
+            <div class="mb-3">
+                <label class="form-label">Coil Name</label>
+                <input type="text" id="coil" name="coil" class="form-control" value="<?= $coil ?>"/>
+            </div>
         </div>
         <div class="col-md-6">
-          
-        </div>
-      </div>
-      <div class="row pt-3">
-          <div class="col-md-4 opt_field_update" data-id="7">
-              <div class="mb-3">
-              <label class="form-label">Color</label>
-              <select id="color" class="form-control" name="color">
-                  <option value="/" >Select Color...</option>
-                  <?php
-                  $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
-                  $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                  while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                      $selected = ($color == $row_paint_colors['color_id']) ? 'selected' : '';
-                  ?>
-                      <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
-                  <?php   
-                  }
-                  ?>
-              </select>
-              </div>
-          </div>
-          <div class="col-md-4 opt_field_update" data-id="5">
-              <div class="mb-3">
-              <label class="form-label">Gauge</label>
-              <select id="gauge" class="form-control" name="gauge">
-                  <option value="/" >Select Gauge...</option>
-                  <?php
-                  $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
-                  $result_gauge = mysqli_query($conn, $query_gauge);            
-                  while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                      $selected = ($gauge == $row_gauge['product_gauge_id']) ? 'selected' : '';
-                  ?>
-                      <option value="<?= $row_gauge['product_gauge_id'] ?>" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
-                  <?php   
-                  }
-                  ?>
-              </select>
-              </div>
-          </div>
-          <div class="col-md-4 opt_field_update" data-id="6">
-              <div class="mb-3">
-              <label class="form-label">Grade</label>
-              <select id="grade" class="form-control" name="grade">
-                  <option value="/" >Select Grade...</option>
-                  <?php
-                  $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
-                  $result_grade = mysqli_query($conn, $query_grade);            
-                  while ($row_grade = mysqli_fetch_array($result_grade)) {
-                      $selected = ($grade == $row_grade['product_grade_id']) ? 'selected' : '';
-                  ?>
-                      <option value="<?= $row_grade['product_grade_id'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
-                  <?php   
-                  }
-                  ?>
-              </select>
-              </div>
-          </div>
-      </div>
-
-      <div class="row pt-3">
-        <div class="col-md-3">
-          <div class="mb-3">
-            <label class="form-label">Width</label>
-            <input type="text" id="width" name="width" class="form-control"  value="<?= $width ?>"/>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="mb-3">
-            <label class="form-label">Length</label>
-            <input type="text" id="length" name="length" class="form-control"  value="<?= $length ?>"/>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="mb-3">
-            <label class="form-label">Thickness</label>
-            <input type="text" id="thickness" name="thickness" class="form-control"  value="<?= $thickness ?>"/>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="mb-3">
-            <label class="form-label">Weight</label>
-            <input type="text" id="weight" name="weight" class="form-control"  value="<?= $weight ?>"/>
-          </div>
-        </div>
-      </div>
-
-      <div class="row pt-3">
-        <div class="col-md-4">
-          <div class="mb-3">
-            <label class="form-label">Material Grade</label>
-            <input type="text" id="material_grade" name="material_grade" class="form-control"  value="<?= $material_grade ?>"/>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="mb-3">
-            <label class="form-label">Steel Coating</label>
-            <input type="text" id="steel_coating" name="steel_coating" class="form-control"  value="<?= $steel_coating ?>"/>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="mb-3">
-            <label class="form-label">Backer Color</label>
-            <input type="text" id="backer_color" name="backer_color" class="form-control"  value="<?= $backer_color ?>"/>
-          </div>
-        </div>
-      </div>
-      
-      <div class="form-actions">
-        <div class="card-body border-top ">
-          <input type="hidden" id="coil_id" name="coil_id" class="form-control"  value="<?= $coil_id ?>"/>
-          <div class="row">
-            
-            <div class="col-6 text-start">
-            
+            <label class="form-label">Supplier</label>
+            <div class="mb-3">
+                <select id="supplier_id" class="form-control select2-add" name="supplier_id">
+                    <option value="">Select Supplier...</option>
+                    <optgroup label="Supplier">
+                        <?php
+                        $query_supplier = "SELECT * FROM supplier";
+                        $result_supplier = mysqli_query($conn, $query_supplier);
+                        while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                        ?>
+                            <option value="<?= $row_supplier['supplier_id'] ?>"><?= $row_supplier['supplier_name'] ?></option>
+                        <?php } ?>
+                    </optgroup>
+                </select>
             </div>
-            <div class="col-6 text-end">
-              <button type="submit" class="btn btn-primary" style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
+        </div>
+    </div>
+
+    <div class="row pt-3">
+        <div class="col-md-4 opt_field_update" data-id="7">
+            <div class="mb-3">
+                <label class="form-label">Color</label>
+                <select id="color" class="form-control" name="color">
+                    <option value="/">Select Color...</option>
+                    <?php
+                    $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                    $result_paint_colors = mysqli_query($conn, $query_paint_colors);
+                    while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                        $selected = ($color == $row_paint_colors['color_id']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
+                    <?php } ?>
+                </select>
             </div>
-          </div>
-          
+        </div>
+        <div class="col-md-4 opt_field_update" data-id="5">
+            <div class="mb-3">
+                <label class="form-label">Gauge</label>
+                <select id="gauge" class="form-control" name="gauge">
+                    <option value="/">Select Gauge...</option>
+                    <?php
+                    $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                    $result_gauge = mysqli_query($conn, $query_gauge);
+                    while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                        $selected = ($gauge == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $row_gauge['product_gauge_id'] ?>" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
+                    <?php } ?>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4 opt_field_update" data-id="6">
+            <div class="mb-3">
+                <label class="form-label">Grade</label>
+                <select id="grade" class="form-control" name="grade">
+                    <option value="/">Select Grade...</option>
+                    <?php
+                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                    $result_grade = mysqli_query($conn, $query_grade);
+                    while ($row_grade = mysqli_fetch_array($result_grade)) {
+                        $selected = ($grade == $row_grade['product_grade_id']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $row_grade['product_grade_id'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                    <?php } ?>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row pt-3">
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label class="form-label">Entry #</label>
+                <input type="text" id="entry_number" name="entry_number" class="form-control" value="<?= $entry_number ?>"/>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label class="form-label">Coil #</label>
+                <input type="text" id="coil_number" name="coil_number" class="form-control" value="<?= $coil_number ?>"/>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label class="form-label">Tag #</label>
+                <input type="text" id="tag_number" name="tag_number" class="form-control" value="<?= $tag_number ?>"/>
+            </div>
+        </div>
+    </div>
+
+    <div class="row pt-3">
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Original Feet</label>
+                <input type="text" id="original_feet" name="original_feet" class="form-control" value="<?= $original_feet ?>"/>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Original Weight</label>
+                <input type="text" id="original_weight" name="original_weight" class="form-control" value="<?= $original_weight ?>"/>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Remaining Feet</label>
+                <input type="text" id="remaining_feet" name="remaining_feet" class="form-control" value="<?= $remaining_feet ?>"/>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Remaining Weight</label>
+                <input type="text" id="remaining_weight" name="remaining_weight" class="form-control" value="<?= $remaining_weight ?>"/>
+            </div>
+        </div>
+    </div>
+
+    <div class="row pt-3">
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Price per Foot</label>
+                <input type="text" id="price_per_foot" name="price_per_foot" class="form-control" value="<?= $price_per_foot ?>"/>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Price per CWT</label>
+                <input type="text" id="price_per_cwt" name="price_per_cwt" class="form-control" value="<?= $price_per_cwt ?>"/>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Pounds per Foot</label>
+                <input type="text" id="pounds_per_foot" name="pounds_per_foot" class="form-control" value="<?= $pounds_per_foot ?>"/>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Color Code</label>
+                <input type="text" id="color_code" name="color_code" class="form-control" value="<?= $color_code ?>"/>
+            </div>
+        </div>
+    </div>
+
+    <div class="row pt-3">
+      <div class="col-md-3">
+        <div class="mb-3">
+          <label class="form-label">Width</label>
+          <input type="text" id="width" name="width" class="form-control"  value="<?= $width ?>"/>
         </div>
       </div>
+      <div class="col-md-3">
+        <div class="mb-3">
+          <label class="form-label">Length</label>
+          <input type="text" id="length" name="length" class="form-control"  value="<?= $length ?>"/>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="mb-3">
+          <label class="form-label">Thickness</label>
+          <input type="text" id="thickness" name="thickness" class="form-control"  value="<?= $thickness ?>"/>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="mb-3">
+          <label class="form-label">Weight</label>
+          <input type="text" id="weight" name="weight" class="form-control"  value="<?= $weight ?>"/>
+        </div>
+      </div>
+    </div>
 
-    </form>
+    <div class="row pt-3">
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Actual Width</label>
+                <input type="text" id="actual_width" name="actual_width" class="form-control" value="<?= $actual_width ?>"/>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Rounded Width</label>
+                <input type="text" id="rounded_width" name="rounded_width" class="form-control" value="<?= $rounded_width ?>"/>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Original Price</label>
+                <input type="text" id="original_price" name="original_price" class="form-control" value="<?= $original_price ?>"/>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Current Price</label>
+                <input type="text" id="current_price" name="current_price" class="form-control" value="<?= $current_price ?>"/>
+            </div>
+        </div>
+    </div>
+
+    <div class="row pt-3">
+      <div class="col-md-4">
+        <div class="mb-3">
+          <label class="form-label">Material Grade</label>
+          <input type="text" id="material_grade" name="material_grade" class="form-control"  value="<?= $material_grade ?>"/>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="mb-3">
+          <label class="form-label">Steel Coating</label>
+          <input type="text" id="steel_coating" name="steel_coating" class="form-control"  value="<?= $steel_coating ?>"/>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="mb-3">
+          <label class="form-label">Backer Color</label>
+          <input type="text" id="backer_color" name="backer_color" class="form-control"  value="<?= $backer_color ?>"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="row pt-3">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Entry Date</label>
+                <input type="date" id="entry_date" name="entry_date" class="form-control" value="<?= $entry_date ?>"/>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Invoice</label>
+                <input type="text" id="invoice" name="invoice" class="form-control" value="<?= $invoice ?>"/>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <div class="card-body border-top">
+            <input type="hidden" id="coil_id" name="coil_id" class="form-control" value="<?= $coil_id ?>"/>
+            <div class="row">
+                <div class="col-6 text-start"></div>
+                <div class="col-6 text-end">
+                    <button type="submit" class="btn btn-primary" style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
   </div>
   <!-- end Default Form Elements -->
 </div>

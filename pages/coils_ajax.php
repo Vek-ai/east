@@ -21,7 +21,26 @@ if (isset($_REQUEST['action'])) {
         $steel_coating = mysqli_real_escape_string($conn, $_POST['steel_coating']);
         $backer_color = mysqli_real_escape_string($conn, $_POST['backer_color']);
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
-        $coil_id = mysqli_real_escape_string($conn, $_POST['coil_id']); 
+        $coil_id = mysqli_real_escape_string($conn, $_POST['coil_id']);
+
+        $supplier = mysqli_real_escape_string($conn, $_POST['supplier']);
+        $entry_number = mysqli_real_escape_string($conn, $_POST['entry_number']);
+        $coil_number = mysqli_real_escape_string($conn, $_POST['coil_number']);
+        $tag_number = mysqli_real_escape_string($conn, $_POST['tag_number']);
+        $entry_date = mysqli_real_escape_string($conn, $_POST['entry_date']);
+        $invoice = mysqli_real_escape_string($conn, $_POST['invoice']);
+        $original_feet = mysqli_real_escape_string($conn, $_POST['original_feet']);
+        $original_weight = mysqli_real_escape_string($conn, $_POST['original_weight']);
+        $remaining_feet = mysqli_real_escape_string($conn, $_POST['remaining_feet']);
+        $remaining_weight = mysqli_real_escape_string($conn, $_POST['remaining_weight']);
+        $price_per_foot = mysqli_real_escape_string($conn, $_POST['price_per_foot']);
+        $price_per_cwt = mysqli_real_escape_string($conn, $_POST['price_per_cwt']);
+        $pounds_per_foot = mysqli_real_escape_string($conn, $_POST['pounds_per_foot']);
+        $color_code = mysqli_real_escape_string($conn, $_POST['color_code']);
+        $actual_width = mysqli_real_escape_string($conn, $_POST['actual_width']);
+        $rounded_width = mysqli_real_escape_string($conn, $_POST['rounded_width']);
+        $original_price = mysqli_real_escape_string($conn, $_POST['original_price']);
+        $current_price = mysqli_real_escape_string($conn, $_POST['current_price']);
 
         if (!empty($coil_id)) {
             $checkQuery = "SELECT * FROM coil WHERE coil_id = '$coil_id'";
@@ -54,11 +73,30 @@ if (isset($_REQUEST['action'])) {
                         gauge = '$gauge', 
                         backer_color = '$backer_color', 
                         weight = '$weight', 
+                        supplier = '$supplier', 
+                        entry_number = '$entry_number', 
+                        coil_number = '$coil_number', 
+                        tag_number = '$tag_number', 
+                        entry_date = '$entry_date', 
+                        invoice = '$invoice',
+                        original_feet = '$original_feet', 
+                        original_weight = '$original_weight', 
+                        remaining_feet = '$remaining_feet', 
+                        remaining_weight = '$remaining_weight', 
+                        price_per_foot = '$price_per_foot', 
+                        price_per_cwt = '$price_per_cwt', 
+                        pounds_per_foot = '$pounds_per_foot', 
+                        color_code = '$color_code', 
+                        actual_width = '$actual_width', 
+                        rounded_width = '$rounded_width', 
+                        original_price = '$original_price', 
+                        current_price = '$current_price', 
                         last_edit = NOW(), 
                         edited_by = '$userid' 
                     WHERE 
                         coil_id = '$coil_id'
                 ";
+
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "success_update";
                 } else {
@@ -86,6 +124,24 @@ if (isset($_REQUEST['action'])) {
                     gauge, 
                     backer_color, 
                     weight, 
+                    supplier,
+                    entry_number, 
+                    coil_number, 
+                    tag_number, 
+                    entry_date, 
+                    invoice,
+                    original_feet, 
+                    original_weight, 
+                    remaining_feet, 
+                    remaining_weight, 
+                    price_per_foot, 
+                    price_per_cwt, 
+                    pounds_per_foot, 
+                    color_code, 
+                    actual_width, 
+                    rounded_width, 
+                    original_price, 
+                    current_price, 
                     added_date, 
                     added_by
                 ) VALUES (
@@ -100,10 +156,29 @@ if (isset($_REQUEST['action'])) {
                     '$gauge', 
                     '$backer_color', 
                     '$weight', 
+                    '$supplier', 
+                    '$entry_number', 
+                    '$coil_number', 
+                    '$tag_number', 
+                    '$entry_date', 
+                    '$invoice', 
+                    '$original_feet', 
+                    '$original_weight', 
+                    '$remaining_feet', 
+                    '$remaining_weight', 
+                    '$price_per_foot', 
+                    '$price_per_cwt', 
+                    '$pounds_per_foot', 
+                    '$color_code', 
+                    '$actual_width', 
+                    '$rounded_width', 
+                    '$original_price', 
+                    '$current_price', 
                     NOW(), 
                     '$userid'
                 )
             ";
+
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";
             } else {
