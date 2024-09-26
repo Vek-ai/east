@@ -61,8 +61,8 @@ $panel_id = 46;
     <div class="row pt-3">
       <div class="col-md-6">
           <label class="form-label">Coil</label>
-              <div class="mb-3">
-              <select id="coil" class="form-control select2-add" name="coil">
+          <div class="mb-3">
+              <select id="coilSelect" class="form-control select2-add" name="coil">
                   <option value="">Select Coil...</option>
                   <optgroup label="Coil">
                       <?php
@@ -79,11 +79,11 @@ $panel_id = 46;
       <div class="col-md-6">
           <label class="form-label">Panel / Trim</label>
           <div class="mb-3">
-              <select id="coil" class="form-control select2-add" name="coil">
+              <select id="panelTrimSelect" class="form-control select2-add" name="coil">
                   <option value="">Select Panel...</option>
                   <optgroup label="Panel">
                       <?php
-                      $query_panel = "SELECT * FROM product WHERE product_category = '$panel_id' AND (length > 0 OR length IS NOT NULL)";
+                      $query_panel = "SELECT * FROM product WHERE product_category = '$panel_id' AND length > 0 AND length IS NOT NULL";
                       $result_panel = mysqli_query($conn, $query_panel);
                       while ($row_panel = mysqli_fetch_array($result_panel)) {
                       ?>
@@ -92,7 +92,7 @@ $panel_id = 46;
                   </optgroup>
                   <optgroup label="Trim">
                       <?php
-                      $query_trim = "SELECT * FROM product WHERE product_category = '$trim_id' AND (length > 0 OR length IS NOT NULL)";
+                      $query_trim = "SELECT * FROM product WHERE product_category = '$trim_id' AND length > 0 AND length IS NOT NULL";
                       $result_trim = mysqli_query($conn, $query_trim);
                       while ($row_trim = mysqli_fetch_array($result_trim)) {
                       ?>
@@ -100,16 +100,16 @@ $panel_id = 46;
                       <?php } ?>
                   </optgroup>
               </select>
-
           </div>
       </div>
       <div class="col-md-12">
           <label class="form-label">Computed Length</label>
           <div class="mb-3">
-            <textarea class="form-control w-100" rows="3"></textarea>
+              <textarea class="form-control w-100" id="computedLength" rows="3" readonly></textarea>
           </div>
       </div>
-    </div>
+  </div>
+
     
 
   </div>
