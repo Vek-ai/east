@@ -70,7 +70,7 @@ $panel_id = 46;
                       $result_coil = mysqli_query($conn, $query_coil);
                       while ($row_coil = mysqli_fetch_array($result_coil)) {
                       ?>
-                          <option value="<?= $row_coil['coil_id'] ?>" data-length="<?= $row_coil['length'] ?>"><?= $row_coil['coil'] ?></option>
+                          <option value="<?= $row_coil['coil_id'] ?>" data-length="<?= $row_coil['length'] ?>" data-color="<?= getColorHexFromColorID($row_coil['color']) ?>"><?= $row_coil['coil'] ?></option>
                       <?php } ?>
                   </optgroup>
               </select>
@@ -79,27 +79,31 @@ $panel_id = 46;
       <div class="col-md-6">
           <label class="form-label">Panel / Trim</label>
           <div class="mb-3">
-              <select id="panelTrimSelect" class="form-control select2-add" name="coil">
-                  <option value="">Select Panel...</option>
-                  <optgroup label="Panel">
-                      <?php
-                      $query_panel = "SELECT * FROM product WHERE product_category = '$panel_id' AND length > 0 AND length IS NOT NULL";
-                      $result_panel = mysqli_query($conn, $query_panel);
-                      while ($row_panel = mysqli_fetch_array($result_panel)) {
-                      ?>
-                          <option value="<?= $row_panel['product_id'] ?>" data-length="<?= $row_panel['length'] ?>"><?= $row_panel['product_item'] ?></option>
-                      <?php } ?>
-                  </optgroup>
-                  <optgroup label="Trim">
-                      <?php
-                      $query_trim = "SELECT * FROM product WHERE product_category = '$trim_id' AND length > 0 AND length IS NOT NULL";
-                      $result_trim = mysqli_query($conn, $query_trim);
-                      while ($row_trim = mysqli_fetch_array($result_trim)) {
-                      ?>
-                          <option value="<?= $row_trim['product_id'] ?>" data-length="<?= $row_trim['length'] ?>"><?= $row_trim['product_item'] ?></option>
-                      <?php } ?>
-                  </optgroup>
-              </select>
+            <select id="panelTrimSelect" class="form-control select2-add" name="coil">
+                <option value="">Select Panel...</option>
+                <optgroup label="Panel">
+                    <?php
+                    $query_panel = "SELECT * FROM product WHERE product_category = '$panel_id' AND length > 0 AND length IS NOT NULL";
+                    $result_panel = mysqli_query($conn, $query_panel);
+                    while ($row_panel = mysqli_fetch_array($result_panel)) {
+                    ?>
+                        <option value="<?= $row_panel['product_id'] ?>" data-length="<?= $row_panel['length'] ?>" data-color="<?= getColorHexFromColorID($row_panel['color']) ?>">
+                            <?= $row_panel['product_item'] ?>
+                        </option>
+                    <?php } ?>
+                </optgroup>
+                <optgroup label="Trim">
+                    <?php
+                    $query_trim = "SELECT * FROM product WHERE product_category = '$trim_id' AND length > 0 AND length IS NOT NULL";
+                    $result_trim = mysqli_query($conn, $query_trim);
+                    while ($row_trim = mysqli_fetch_array($result_trim)) {
+                    ?>
+                        <option value="<?= $row_trim['product_id'] ?>" data-length="<?= $row_trim['length'] ?>" data-color="<?= getColorHexFromColorID($row_trim['color']) ?>">
+                            <?= $row_trim['product_item'] ?>
+                        </option>
+                    <?php } ?>
+                </optgroup>
+            </select>
           </div>
       </div>
       <div class="col-md-12">
@@ -130,6 +134,26 @@ $panel_id = 46;
                 $('#computedLength').val('');
             }
         }
+
+        function formatOption(state) {
+            if (!state.id) {
+                return state.text;
+            }
+
+            var color = $(state.element).data('color');
+            var $state = $(
+                '<span class="d-flex align-items-center">' +
+                '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
+                state.text + '</span>'
+            );
+            return $state;
+        }
+
+        $('#coilSelect, #panelTrimSelect').select2({
+            placeholder: "Select One",
+            templateResult: formatOption,
+            templateSelection: formatOption
+        });
 
         $('#coilSelect, #panelTrimSelect').change(function() {
             computeLength();
