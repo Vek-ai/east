@@ -76,7 +76,6 @@ $allowed_category[] = $panel_id;
                             <th scope="col">Coil Name</th>
                             <th scope="col">Date</th>
                             <th scope="col">Remaining Length</th>
-                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="productTableBody"></tbody>

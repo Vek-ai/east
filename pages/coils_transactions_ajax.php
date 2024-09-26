@@ -57,13 +57,6 @@ if (isset($_REQUEST['query'])) {
                 </td>
                 <td class="text-center"><h6 class="mb-0 fs-4">'. date('Y-m-d', $date) .'</h6></td>
                 <td class="text-center"><h6 class="mb-0 fs-4">'. $row_coil['remaining_length'] .'</h6></td>
-                <td>
-                    <a class="fs-6 text-muted" href="#" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
-                        <button class="btn btn-primary">
-                            <i class="fa fa-exchange"></i> Add to Warehouse
-                        </button> 
-                    </a>
-                </td>
             </tr>';
         }
     } else {
