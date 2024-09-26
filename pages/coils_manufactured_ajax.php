@@ -55,7 +55,7 @@ if (isset($_REQUEST['query'])) {
                         </div>
                     </a>
                 </td>
-                <td><p class="mb-0">'. getColorName($product_arr['color']) .'</p></td>
+                <td><p class="mb-0">'. getColorName($row_coil['color']) .'</p></td>
                 <td class="text-center"><h6 class="mb-0 fs-4">'. $row_coil['quantity'] .'</h6></td>
                 <td>
                     <a class="fs-6 text-muted" href="#" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
