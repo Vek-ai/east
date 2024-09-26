@@ -5,6 +5,9 @@ require 'includes/functions.php';
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
 
+$trim_id = 43;
+$panel_id = 46;
+
 if(!empty($_REQUEST['coil_id'])){
   $coil_id = $_REQUEST['coil_id'];
   $query = "SELECT * FROM coil WHERE coil_id = '$coil_id'";
@@ -41,6 +44,7 @@ if(!empty($_REQUEST['coil_id'])){
       $rounded_width = $row['rounded_width'];
       $original_price = $row['original_price'];
       $current_price = $row['current_price'];
+      $category = $row['category'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -169,11 +173,11 @@ if(!empty($_REQUEST['result'])){
     </div>
 
     <div class="row pt-3">
-        <div class="col-md-4 opt_field_update" data-id="7">
+        <div class="col-md-3 opt_field_update" data-id="7">
             <div class="mb-3">
                 <label class="form-label">Color</label>
                 <select id="color" class="form-control" name="color">
-                    <option value="/">Select Color...</option>
+                    <option value="">Select Color...</option>
                     <?php
                     $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
                     $result_paint_colors = mysqli_query($conn, $query_paint_colors);
@@ -185,11 +189,11 @@ if(!empty($_REQUEST['result'])){
                 </select>
             </div>
         </div>
-        <div class="col-md-4 opt_field_update" data-id="5">
+        <div class="col-md-3 opt_field_update" data-id="5">
             <div class="mb-3">
                 <label class="form-label">Gauge</label>
                 <select id="gauge" class="form-control" name="gauge">
-                    <option value="/">Select Gauge...</option>
+                    <option value="">Select Gauge...</option>
                     <?php
                     $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
                     $result_gauge = mysqli_query($conn, $query_gauge);
@@ -201,11 +205,11 @@ if(!empty($_REQUEST['result'])){
                 </select>
             </div>
         </div>
-        <div class="col-md-4 opt_field_update" data-id="6">
+        <div class="col-md-3 opt_field_update" data-id="6">
             <div class="mb-3">
                 <label class="form-label">Grade</label>
                 <select id="grade" class="form-control" name="grade">
-                    <option value="/">Select Grade...</option>
+                    <option value="">Select Grade...</option>
                     <?php
                     $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
                     $result_grade = mysqli_query($conn, $query_grade);
@@ -217,6 +221,17 @@ if(!empty($_REQUEST['result'])){
                 </select>
             </div>
         </div>
+        <div class="col-md-3 opt_field_update" data-id="6">
+            <div class="mb-3">
+                <label class="form-label">Product Category</label>
+                <select id="product_category_update" class="form-control" name="category">
+                    <option value="">Select One...</option>
+                    <option value="46" <?= isset($category) && $category == $trim_id ? 'selected' : '' ?>>Trim</option>
+                    <option value="43" <?= isset($category) && $category == $panel_id ? 'selected' : '' ?>>Panel</option>
+                </select>
+            </div>
+        </div>
+        
     </div>
 
     <div class="row pt-3">

@@ -1332,6 +1332,8 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "test") {include 'pages/compute.php';}
 
+            if ($_REQUEST['page'] == "coils_manufactured") {include 'pages/coils_manufactured.php';}
+
           ?>
         </div>
       </div>

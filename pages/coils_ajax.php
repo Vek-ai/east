@@ -5,6 +5,9 @@ error_reporting(E_ALL);
 
 require '../includes/dbconn.php';
 
+$trim_id = 43;
+$panel_id = 46;
+
 if (isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
@@ -12,6 +15,7 @@ if (isset($_REQUEST['action'])) {
         $coil = mysqli_real_escape_string($conn, $_POST['coil']);
         $color = mysqli_real_escape_string($conn, $_POST['color']);
         $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
+        $category = mysqli_real_escape_string($conn, $_POST['category']);
         $grade = mysqli_real_escape_string($conn, $_POST['grade']);
         $width = mysqli_real_escape_string($conn, $_POST['width']);
         $length = mysqli_real_escape_string($conn, $_POST['length']);
@@ -64,6 +68,7 @@ if (isset($_REQUEST['action'])) {
                     SET 
                         coil = '$coil', 
                         grade = '$grade', 
+                        category = '$category', 
                         color = '$color', 
                         width = '$width', 
                         length = '$length', 
@@ -115,6 +120,7 @@ if (isset($_REQUEST['action'])) {
                 INSERT INTO coil (
                     coil, 
                     grade, 
+                    category, 
                     color, 
                     width, 
                     length, 
@@ -147,6 +153,7 @@ if (isset($_REQUEST['action'])) {
                 ) VALUES (
                     '$coil', 
                     '$grade', 
+                    '$category', 
                     '$color', 
                     '$width', 
                     '$length', 
