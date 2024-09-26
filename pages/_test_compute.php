@@ -109,7 +109,7 @@ $panel_id = 46;
             <textarea class="form-control w-100" rows="3"></textarea>
           </div>
       </div>
-  </div>
+    </div>
     
 
   </div>
@@ -117,8 +117,24 @@ $panel_id = 46;
 
 
 <script>
-  $(document).ready(function() {
-    
-    
-  });
+    $(document).ready(function() {
+
+        function computeLength() {
+            var coilLength = Number($('#coilSelect option:selected').data('length'));
+            var panelTrimLength = Number($('#panelTrimSelect option:selected').data('length'));
+
+            if (!isNaN(coilLength) && !isNaN(panelTrimLength) && panelTrimLength !== 0) {
+                var computedLength = coilLength / panelTrimLength;
+                $('#computedLength').val(computedLength.toFixed(2));
+            } else {
+                $('#computedLength').val('');
+            }
+        }
+
+        $('#coilSelect, #panelTrimSelect').change(function() {
+            computeLength();
+        });
+    });
+
+
 </script>
