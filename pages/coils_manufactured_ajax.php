@@ -43,6 +43,7 @@ if (isset($_REQUEST['query'])) {
 
     if (mysqli_num_rows($result_coil) > 0) {
         while ($row_coil = mysqli_fetch_array($result_coil)) {
+            $product_id = $row_coil['productid'];
 
             if($row_coil['total_quantity'] > 0){
                 $stock_text = '<span class="text-bg-success p-1 rounded-circle"></span><p class="mb-0 ms-2">InStock</p>';
@@ -63,7 +64,7 @@ if (isset($_REQUEST['query'])) {
                         <div class="d-flex align-items-center">
                             <img src="'.$picture_path.'" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                             <div class="ms-3">
-                                <h6 class="fw-semibold mb-0 fs-4">'. $row_coil['coil'] .'</h6>
+                                <h6 class="fw-semibold mb-0 fs-4">'. getProductName($product_id) .'</h6>
                             </div>
                         </div>
                     </a>
