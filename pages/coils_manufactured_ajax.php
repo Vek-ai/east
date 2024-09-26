@@ -16,7 +16,7 @@ if (isset($_REQUEST['query'])) {
     $category_id = isset($_REQUEST['category_id']) ? mysqli_real_escape_string($conn, $_REQUEST['category_id']) : '';
     $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
 
-    $query_coil = "SELECT * FROM coil_process as cp left join product as p on cp.productid = p.product_id";
+    $query_coil = "SELECT * FROM coil_process as cp left join product as p on cp.productid = p.product_id WHERE 1";
 
     if (!empty($searchQuery)) {
         $query_coil .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
