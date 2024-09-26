@@ -16,16 +16,16 @@ if (isset($_REQUEST['query'])) {
     $category_id = isset($_REQUEST['category_id']) ? mysqli_real_escape_string($conn, $_REQUEST['category_id']) : '';
     $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
 
-    $query_coil = "SELECT * FROM coil_process as cp left join product as p on cp.productid = p.product_id";
+    $query_coil = "SELECT * FROM coil_transaction as ct left join coil as c on ct.coilid = c.coil_id";
 
     if (!empty($searchQuery)) {
-        $query_coil .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
+        $query_coil .= " AND (ct.coil LIKE '%$searchQuery%')";
     }
 
     if (!empty($category_id)) {
-        $query_coil .= " AND p.product_category = '$category_id'";
+        $query_coil .= " AND c.category = '$category_id'";
     }else{
-        $query_coil .= " AND (p.product_category = '$trim_id' OR p.product_category = '$panel_id')";
+        $query_coil .= " AND (c.category = '$trim_id' OR c.category = '$panel_id')";
     }
 
     $result_coil = mysqli_query($conn, $query_coil);
@@ -34,13 +34,14 @@ if (isset($_REQUEST['query'])) {
 
     if (mysqli_num_rows($result_coil) > 0) {
         while ($row_coil = mysqli_fetch_array($result_coil)) {
-            $product_id = $row_coil['productid'];
 
             if(!empty($product_arr['main_image'])){
                 $picture_path = $product_arr['main_image'];
             }else{
                 $picture_path = "images/product/product.jpg";
             }
+
+            $date = strtotime($row_coil['date']);
 
             $tableHTML .= '
             <tr>
@@ -49,18 +50,13 @@ if (isset($_REQUEST['query'])) {
                         <div class="d-flex align-items-center">
                             <img src="'.$picture_path.'" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                             <div class="ms-3">
-                                <h6 class="fw-semibold mb-0 fs-4">'. $row_coil['product_item'] .'</h6>
+                                <h6 class="fw-semibold mb-0 fs-4">'. $row_coil['coil'] .'</h6>
                             </div>
                         </div>
                     </a>
                 </td>
-                <td>
-                    <div class="d-flex mb-0 gap-8">
-                        <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:' .getColorHexFromColorID($row_coil['color']) .'"></a> '
-                        .getColorName($row_coil['color']) .'
-                    </div>
-                </td>
-                <td class="text-center"><h6 class="mb-0 fs-4">'. $row_coil['quantity'] .'</h6></td>
+                <td class="text-center"><h6 class="mb-0 fs-4">'. date('Y-m-d', $date) .'</h6></td>
+                <td class="text-center"><h6 class="mb-0 fs-4">'. $row_coil['remaining_length'] .'</h6></td>
                 <td>
                     <a class="fs-6 text-muted" href="#" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
                         <button class="btn btn-primary">
