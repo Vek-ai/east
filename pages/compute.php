@@ -112,6 +112,12 @@ $panel_id = 46;
               <textarea class="form-control w-100" id="computedLength" rows="3" readonly></textarea>
           </div>
       </div>
+      <div class="col-md-12">
+          <button class="btn ripple btn-primary" type="button" id="saveComputation">
+              <i class="fe fe-hard-drive"></i> Save
+          </button>
+      </div>
+      
   </div>
 
     
@@ -122,18 +128,21 @@ $panel_id = 46;
 
 <script>
     $(document).ready(function() {
-
         function computeLength() {
             var coilLength = Number($('#coilSelect option:selected').data('length'));
             var panelTrimLength = Number($('#panelTrimSelect option:selected').data('length'));
 
             if (!isNaN(coilLength) && !isNaN(panelTrimLength) && panelTrimLength !== 0) {
                 var computedLength = coilLength / panelTrimLength;
-                $('#computedLength').val(computedLength.toFixed(2));
+                var wholeNumberLength = Math.floor(computedLength);
+                var decimalPart = (computedLength - wholeNumberLength).toFixed(2);
+
+                $('#computedLength').val('Length: ' + wholeNumberLength + '\nPart: ' + decimalPart);
             } else {
                 $('#computedLength').val('');
             }
         }
+
 
         function formatOption(state) {
             if (!state.id) {
@@ -148,6 +157,35 @@ $panel_id = 46;
             );
             return $state;
         }
+
+        $('#saveComputation').click(function() {
+            var coil_id = $('#coilSelect option:selected').val();
+            var product_id = $('#panelTrimSelect option:selected').val();
+
+            if(coil_id && product_id){
+              $.ajax({
+                  url: "pages/compute_ajax.php",
+                  type: "POST",
+                  data: {
+                      coil_id: coil_id,
+                      product_id: product_id,
+                      save_computation: 'save_computation'
+                  },
+                  success: function(data) {
+                      alert(data);
+                  },
+                  error: function(xhr, status, error) {
+                      console.error("AJAX Error:", {
+                          status: status,
+                          error: error,
+                          responseText: xhr.responseText
+                      });
+                  }
+              });
+            }else{
+              alert("Please Select Coil and Trim/Panel.");
+            }
+        });
 
         $('#coilSelect, #panelTrimSelect').select2({
             placeholder: "Select One",

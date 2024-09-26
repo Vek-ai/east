@@ -1330,7 +1330,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "product_fields") {include 'pages/product_fields.php';}
             if ($_REQUEST['page'] == "coils") {include 'pages/coils.php';}
 
-            if ($_REQUEST['page'] == "test") {include 'pages/_test_compute.php';}
+            if ($_REQUEST['page'] == "test") {include 'pages/compute.php';}
 
           ?>
         </div>
