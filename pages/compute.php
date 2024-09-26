@@ -117,11 +117,7 @@ $panel_id = 46;
               <i class="fe fe-hard-drive"></i> Save
           </button>
       </div>
-      
   </div>
-
-    
-
   </div>
 </div>
 
@@ -143,12 +139,10 @@ $panel_id = 46;
             }
         }
 
-
         function formatOption(state) {
             if (!state.id) {
                 return state.text;
             }
-
             var color = $(state.element).data('color');
             var $state = $(
                 '<span class="d-flex align-items-center">' +

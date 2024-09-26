@@ -30,9 +30,33 @@ if (isset($_POST['save_computation'])) {
         $whole_number_length = floor($computed_length);
         $decimal_part = $computed_length - $whole_number_length;
         $decimal_part = number_format($decimal_part, 2);
-        echo "Length: " . $whole_number_length . "\n";
-        echo "Part: " . $decimal_part;
+        $sql_insert_manufacture = "INSERT INTO coil_process (coilid, productid, quantity) 
+                                   VALUES ('$coil_id', '$product_id', '$whole_number_length')";
+        if (mysqli_query($conn, $sql_insert_manufacture)) {
+            echo "Coil manufacture inserted successfully.\n";
+        } else {
+            echo "Error inserting coil manufacture: " . mysqli_error($conn) . "\n";
+        }
+
+        $remaining_length = $coil_length - $whole_number_length;
+
+        $sql_insert_transaction = "INSERT INTO coil_transaction (coilid, remaining_length) 
+                                   VALUES ('$coil_id', '$remaining_length')";
+        if (mysqli_query($conn, $sql_insert_transaction)) {
+            echo "Coil transaction inserted successfully.\n";
+        } else {
+            echo "Error inserting coil transaction: " . mysqli_error($conn) . "\n";
+        }
+
+        $sql_update_coil_final = "UPDATE coil SET length = '$remaining_length' WHERE coil_id = '$coil_id'";
+        if (mysqli_query($conn, $sql_update_coil_final)) {
+            echo "Coil length updated successfully.\n";
+        } else {
+            echo "Error updating coil length: " . mysqli_error($conn) ;
+        }
+    
     } else {
         echo "Error: Product length is zero or invalid.";
     }
+    
 }
