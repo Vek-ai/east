@@ -14,7 +14,7 @@ $allowed_category[] = $panel_id;
     <div class="card-body px-0">
         <div class="d-flex justify-content-between align-items-center">
         <div>
-            <h4 class="font-weight-medium fs-14 mb-0">Coils Manufactured</h4>
+            <h4 class="font-weight-medium fs-14 mb-0">Trims/Panels Manufactured</h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
