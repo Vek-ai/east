@@ -55,7 +55,12 @@ if (isset($_REQUEST['query'])) {
                         </div>
                     </a>
                 </td>
-                <td><p class="mb-0">'. getColorName($row_coil['color']) .'</p></td>
+                <td>
+                    <div class="d-flex mb-0 gap-8">
+                        <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:' .getColorHexFromColorID($row_coil['color']) .'"></a> '
+                        .getColorName($row_coil['color']) .'
+                    </div>
+                </td>
                 <td class="text-center"><h6 class="mb-0 fs-4">'. $row_coil['quantity'] .'</h6></td>
                 <td>
                     <a class="fs-6 text-muted" href="#" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
