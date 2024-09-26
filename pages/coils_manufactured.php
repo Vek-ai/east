@@ -267,10 +267,7 @@ $allowed_category[] = $panel_id;
                         <tr>
                             <th scope="col">Coil Name</th>
                             <th scope="col">Color</th>
-                            <th scope="col">Grade</th>
-                            <th scope="col">Gauge</th>
-                            <th scope="col">Width</th>
-                            <th scope="col">Length</th>
+                            <th scope="col">Quantity</th>
                             <th scope="col">Actions</th>
                         </tr>
                     </thead>

@@ -16,26 +16,18 @@ if (isset($_REQUEST['query'])) {
     $category_id = isset($_REQUEST['category_id']) ? mysqli_real_escape_string($conn, $_REQUEST['category_id']) : '';
     $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
 
-    $query_coil = "
-        SELECT 
-            *
-        FROM 
-            coil as c
-        LEFT JOIN 
-            coil_process AS cp ON c.coil_id = cp.coilid
-        WHERE 
-            c.hidden = '0' AND quantity > 0
-    ";
+    $query_coil = "SELECT * FROM coil_process as cp left join product as p on cp.productid = p.product_id";
 
     if (!empty($searchQuery)) {
-        $query_coil .= " AND c.coil LIKE '%$searchQuery%'";
+        $query_coil .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
     }
 
     if (!empty($category_id)) {
-        $query_coil .= " AND c.category = '$category_id'";
+        $query_coil .= " AND p.product_category = '$category_id'";
     }else{
-        $query_coil .= " AND (c.category = '$trim_id' OR c.category = '$panel_id')";
+        $query_coil .= " AND (p.product_category = '$trim_id' OR p.product_category = '$panel_id')";
     }
+    echo $query_coil ."\n\n";
 
     $result_coil = mysqli_query($conn, $query_coil);
 
@@ -45,14 +37,8 @@ if (isset($_REQUEST['query'])) {
         while ($row_coil = mysqli_fetch_array($result_coil)) {
             $product_id = $row_coil['productid'];
 
-            if($row_coil['total_quantity'] > 0){
-                $stock_text = '<span class="text-bg-success p-1 rounded-circle"></span><p class="mb-0 ms-2">InStock</p>';
-            }else{
-                $stock_text = '<span class="text-bg-danger p-1 rounded-circle"></span><p class="mb-0 ms-2">OutOfStock</p>';
-            }
-
-            if(!empty($row_coil['main_image'])){
-                $picture_path = $row_coil['main_image'];
+            if(!empty($product_arr['main_image'])){
+                $picture_path = $product_arr['main_image'];
             }else{
                 $picture_path = "images/product/product.jpg";
             }
@@ -64,15 +50,12 @@ if (isset($_REQUEST['query'])) {
                         <div class="d-flex align-items-center">
                             <img src="'.$picture_path.'" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                             <div class="ms-3">
-                                <h6 class="fw-semibold mb-0 fs-4">'. getProductName($product_id) .'</h6>
+                                <h6 class="fw-semibold mb-0 fs-4">'. $row_coil['product_item'] .'</h6>
                             </div>
                         </div>
                     </a>
                 </td>
-                <td><p class="mb-0">'. getColorName($row_coil['color']) .'</p></td>
-                <td><p class="mb-0">'. getGradeName($row_coil['grade']) .'</p></td>
-                <td><p class="mb-0">'. getGaugeName($row_coil['gauge']) .'</p></td>
-                <td class="text-center"><h6 class="mb-0 fs-4">'.$row_coil['width'].'</h6></td>
+                <td><p class="mb-0">'. getColorName($product_arr['color']) .'</p></td>
                 <td class="text-center"><h6 class="mb-0 fs-4">'. $row_coil['quantity'] .'</h6></td>
                 <td>
                     <a class="fs-6 text-muted" href="#" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
