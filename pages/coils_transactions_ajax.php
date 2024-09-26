@@ -19,7 +19,7 @@ if (isset($_REQUEST['query'])) {
     $query_coil = "SELECT * FROM coil_transaction as ct left join coil as c on ct.coilid = c.coil_id";
 
     if (!empty($searchQuery)) {
-        $query_coil .= " AND (ct.coil LIKE '%$searchQuery%')";
+        $query_coil .= " AND (c.coil LIKE '%$searchQuery%')";
     }
 
     if (!empty($category_id)) {
