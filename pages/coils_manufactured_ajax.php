@@ -34,14 +34,28 @@ if (isset($_REQUEST['query'])) {
 
     $tableHTML = "";
 
+    
+
+    
+
     if (mysqli_num_rows($result_coil) > 0) {
         while ($row_coil = mysqli_fetch_array($result_coil)) {
             $product_id = $row_coil['productid'];
+            $product_arr = getProductDetails($product_id);
 
             if(!empty($product_arr['main_image'])){
                 $picture_path = $product_arr['main_image'];
             }else{
                 $picture_path = "images/product/product.jpg";
+            }
+
+            $add_warehouse_btn = "";
+            if ($row_coil['transferred'] == 0) {
+                $add_warehouse_btn='<a class="fs-6 text-muted" href="#" id="viewAddInvModal" data-id="'. $row_coil['id'] .'">
+                                        <button class="btn btn-primary">
+                                            <i class="fa fa-exchange"></i> Add to Warehouse
+                                        </button> 
+                                    </a>';
             }
 
             $tableHTML .= '
@@ -63,13 +77,7 @@ if (isset($_REQUEST['query'])) {
                     </div>
                 </td>
                 <td class="text-center"><h6 class="mb-0 fs-4">'. $row_coil['quantity'] .'</h6></td>
-                <td>
-                    <a class="fs-6 text-muted" href="#" id="viewAddInvModal" data-id="'. $row_coil['id'] .'">
-                        <button class="btn btn-primary">
-                            <i class="fa fa-exchange"></i> Add to Warehouse
-                        </button> 
-                    </a>
-                </td>
+                <td>'. $add_warehouse_btn. '</td>
             </tr>';
         }
     } else {
