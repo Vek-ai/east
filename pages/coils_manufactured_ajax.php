@@ -109,6 +109,7 @@ if(isset($_REQUEST['fetch_add_warehouse'])){
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
+                            <input type="hidden" id="Product_id" name="Product_id" value="<?= $row_coil_process['product_id'] ?>" class="form-control"  />
                             <input type="hidden" id="coil_process_id" name="coil_process_id" value="<?= $row_coil_process['id'] ?>" class="form-control"  />
                             <div class="row pt-3">
                             <div class="col-md-12">
