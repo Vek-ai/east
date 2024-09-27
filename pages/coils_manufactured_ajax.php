@@ -11,12 +11,10 @@ $panel_id = 46;
 
 if (isset($_REQUEST['query'])) {
     $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
-    $type_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['type_id']) : '';
-    $line_id = isset($_REQUEST['line_id']) ? mysqli_real_escape_string($conn, $_REQUEST['line_id']) : '';
     $category_id = isset($_REQUEST['category_id']) ? mysqli_real_escape_string($conn, $_REQUEST['category_id']) : '';
-    $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
+    $show_transferred = isset($_REQUEST['show_transferred']) ? filter_var($_REQUEST['show_transferred'], FILTER_VALIDATE_BOOLEAN) : false;
 
-    $query_coil = "SELECT * FROM coil_process as cp left join product as p on cp.productid = p.product_id WHERE transferred = '0'";
+    $query_coil = "SELECT * FROM coil_process as cp left join product as p on cp.productid = p.product_id WHERE 1";
 
     if (!empty($searchQuery)) {
         $query_coil .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
@@ -26,6 +24,10 @@ if (isset($_REQUEST['query'])) {
         $query_coil .= " AND p.product_category = '$category_id'";
     }else{
         $query_coil .= " AND (p.product_category = '$trim_id' OR p.product_category = '$panel_id')";
+    }
+
+    if ($show_transferred) {
+        $query_coil .= " AND cp.transferred = '0'";
     }
 
     $result_coil = mysqli_query($conn, $query_coil);

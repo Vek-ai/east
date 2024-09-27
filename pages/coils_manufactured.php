@@ -59,6 +59,9 @@ $allowed_category[] = $panel_id;
 <div class="product-list">
     <div class="card">
         <div class="card-body text-center p-3">
+            <div class="p-2 text-end">
+                <input type="checkbox" id="toggleActive" checked> Exclude transferred to Wareouse</div>
+            </div>
             <div class="d-flex justify-content-between align-items-center  mb-9">
                 <div class="position-relative w-100 col-8">
                     <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
@@ -183,12 +186,14 @@ $(document).ready(function() {
 
     function performSearch(query) {
         var category_id = $('#select-category').find('option:selected').val();
+        var show_transferred = $('#toggleActive').prop('checked');
         $.ajax({
             url: 'pages/coils_manufactured_ajax.php',
             type: 'POST',
             data: {
                 query: query,
-                category_id: category_id
+                category_id: category_id,
+                show_transferred: show_transferred
             },
             success: function(response) {
                 $('#productTableBody').html(response);
@@ -312,7 +317,7 @@ $(document).ready(function() {
         });
     });
 
-    $(document).on('input change', '#text-srh, #select-category', function() {
+    $(document).on('input change', '#text-srh, #select-category, #toggleActive', function() {
         performSearch($('#text-srh').val());
     });
 
