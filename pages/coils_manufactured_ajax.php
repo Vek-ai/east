@@ -285,7 +285,6 @@ if(isset($_REQUEST['add_inventory'])){
     $addedby = $_SESSION['userid']; 
     // Record does not exist, proceed with insert
     $insertQuery = "INSERT INTO inventory (
-        Inventory_id,
         Product_id, 
         supplier_id, 
         Warehouse_id, 
@@ -296,10 +295,8 @@ if(isset($_REQUEST['add_inventory'])){
         quantity, 
         pack, 
         quantity_ttl,
-        addedby, 
-        status
+        addedby
     ) VALUES (
-        '$Inventory_id',
         '$Product_id', 
         '$supplier_id', 
         '$Warehouse_id',
@@ -310,8 +307,7 @@ if(isset($_REQUEST['add_inventory'])){
         '$quantity',
         '$pack', 
         '$quantity_ttl', 
-        '$addedby', 
-        '$status'
+        '$addedby'
     )";
 
     if (mysqli_query($conn, $insertQuery)) {
