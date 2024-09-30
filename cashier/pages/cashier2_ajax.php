@@ -340,7 +340,6 @@ if (isset($_POST['set_estimate_length'])) {
     echo "Length ID: $product_id, Line: $line, Key: $key";
 }
 
-
 if (isset($_POST['save_estimate'])) {
     $cart = $_SESSION['cart'];
 
@@ -446,6 +445,42 @@ if (isset($_POST['unset_customer'])) {
     unset($_SESSION['customer_id']);
     echo "Customer session unset";
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $id = mysqli_real_escape_string($conn, $input['id']);
+    $line = mysqli_real_escape_string($conn, $input['line']);
+
+    if (isset($input['save_drawing'])) {
+        if (isset($input['image_data'])) {
+            $key = findCartKey($_SESSION["cart"], $id, $line);
+            if ($key !== false && isset($_SESSION["cart"][$key])) {
+                $image_data = $input['image_data'];
+                $image_data = str_replace('data:image/png;base64,', '', $image_data);
+                $image_data = str_replace(' ', '+', $image_data);
+                $decodedData = base64_decode($image_data);
+                $images_directory = "../../images/drawing/";
+                $filename = uniqid() . '.png';
+                
+                if (file_put_contents($images_directory . $filename, $decodedData)) {
+                    $_SESSION["cart"][$key]['custom_trim_src'] = $filename;
+                    echo json_encode(['filename' => $filename]);
+                } else {
+                    echo json_encode(['error' => 'Failed to save image']);
+                }
+            } else {
+                echo json_encode(['error' => "Product not found in cart: ID: $id, Line: $line"]);
+            }  
+        } else {
+            echo json_encode(['error' => 'No image data provided']);
+        }
+    } else {
+        echo json_encode(['error' => 'Invalid request']);
+    }
+}
+
+
+
 
 
 

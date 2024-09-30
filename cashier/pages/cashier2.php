@@ -189,7 +189,9 @@ require '../includes/functions.php';
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                <button id="saveDrawing" class="btn ripple btn-success" type="button">Save</button>
+                <button id="clearButton" class="btn ripple btn-warning" type="button">Reset</button>
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>
@@ -470,11 +472,15 @@ require '../includes/functions.php';
         });
     }
 
-    function loadDrawingModal(){
+    function loadDrawingModal(element){
+        var id = $(element).data('id');
+        var line = $(element).data('line');
         $.ajax({
             url: 'pages/cashier_drawing_modal.php',
             type: 'POST',
             data: {
+                id: id,
+                line: line,
                 fetch_drawing: "fetch_drawing"
             },
             success: function(response) {
@@ -748,15 +754,14 @@ require '../includes/functions.php';
         const totalCostDiv = document.getElementById('totalCost');
         const lengthAnglePairs = document.getElementById('lengthAnglePairs');
         const clearButton = document.getElementById('clearButton');
-        const createQuoteButton = document.getElementById('createQuoteButton');
-        const sendJobButton = document.getElementById('sendJobButton');
+        const saveDrawing = document.getElementById('saveDrawing');
 
         let points = [];
         let lengths = [];
         let angles = [];
         let colors = [];
         let currentStartPoint = null;
-        const pixelsPerInch = 96; // Conversion factor
+        const pixelsPerInch = 96;
 
         const colorPrices = {
             black: 1.9,
@@ -766,7 +771,6 @@ require '../includes/functions.php';
             yellow: 2.5
         };
 
-        // Function to draw "Draw here" text on the canvas
         function drawPlaceholderText() {
             ctx.font = "30px Arial";
             ctx.fillStyle = "lightgray";
@@ -788,12 +792,11 @@ require '../includes/functions.php';
             ctx.lineTo(point2.x, point2.y);
             ctx.strokeStyle = 'gray';
             ctx.stroke();
-            ctx.strokeStyle = 'black';
         }
 
         function calculateDistance(point1, point2) {
             const distanceInPixels = Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
-            return (distanceInPixels / pixelsPerInch).toFixed(2); // Convert to inches
+            return (distanceInPixels / pixelsPerInch).toFixed(2);
         }
 
         function calculateInteriorAngle(p1, p2, p3) {
@@ -809,7 +812,7 @@ require '../includes/functions.php';
         }
 
         function drawAngleArc(p1, p2, p3, angle) {
-            const radius = 30; // Radius of the angle arc
+            const radius = 30;
             const startAngle = Math.atan2(p1.y - p2.y, p1.x - p2.x);
             const endAngle = Math.atan2(p3.y - p2.y, p3.x - p2.x);
 
@@ -817,7 +820,6 @@ require '../includes/functions.php';
             ctx.arc(p2.x, p2.y, radius, startAngle, endAngle, endAngle < startAngle);
             ctx.strokeStyle = 'red';
             ctx.stroke();
-            ctx.strokeStyle = 'black'; // Reset to default color
         }
 
         function updateLengthAnglePairs() {
@@ -864,7 +866,7 @@ require '../includes/functions.php';
                 colorSelect.value = colors[index];
                 colorSelect.addEventListener('change', (e) => {
                     colors[index] = e.target.value;
-                    updateLengthAnglePairs(); // Recalculate total cost when color changes
+                    updateLengthAnglePairs();
                     redrawCanvas();
                 });
 
@@ -913,7 +915,6 @@ require '../includes/functions.php';
             }
         }
 
-        // Attach event listeners
         canvas.addEventListener('click', (e) => {
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -921,7 +922,6 @@ require '../includes/functions.php';
 
             let selectedPoint = { x, y };
 
-            // Check if clicked on an existing point
             for (let point of points) {
                 if (Math.hypot(point.x - x, point.y - y) < 5) {
                     selectedPoint = point;
@@ -931,7 +931,7 @@ require '../includes/functions.php';
 
             if (currentStartPoint) {
                 points.push(selectedPoint);
-                colors.push('black'); // Default color
+                colors.push('black');
                 drawLine(currentStartPoint, selectedPoint, 'black');
                 const length = calculateDistance(currentStartPoint, selectedPoint);
                 lengths.push(length);
@@ -972,13 +972,44 @@ require '../includes/functions.php';
             drawPlaceholderText();
         });
 
-        createQuoteButton.addEventListener('click', () => {
-            alert('Quote Created:\n' + totalCostDiv.textContent);
+        saveDrawing.addEventListener('click', () => {
+            var isSave = confirm("Are you sure you want to finalize your custom trim?");
+            
+            if (isSave) {
+                const canvasDrawn = $('#drawingCanvas')[0];
+                const image_data = canvasDrawn.toDataURL('image/png');
+
+                const id = $('#custom_trim_id').val();
+                const line = $('#custom_trim_line').val();
+
+                $.ajax({
+                    url: 'pages/cashier2_ajax.php',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    data: JSON.stringify({
+                        image_data: image_data,
+                        save_drawing: 'save_drawing',
+                        id: id,
+                        line: line
+                    }),
+                    success: function(response) {
+                        if (response.filename) {
+                            loadCart();
+                            loadOrderContents();
+                            loadEstimateContents();
+                            $('#custom_trim_draw_modal').modal('hide');
+                        } else {
+                            console.log("Error: " + response.error);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("Error: " + xhr.responseText);
+                    }
+                });
+            }
         });
 
-        sendJobButton.addEventListener('click', () => {
-            alert('Job Sent:\n' + totalCostDiv.textContent);
-        });
         drawPlaceholderText();
     }
 
@@ -1243,7 +1274,7 @@ require '../includes/functions.php';
         });
 
         $(document).on('click', '#custom_trim_draw', function(event) {
-            loadDrawingModal();
+            loadDrawingModal(this);
             $('#custom_trim_draw_modal').modal('show');
         });
 

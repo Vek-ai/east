@@ -103,15 +103,30 @@ if(isset($_POST['fetch_order'])){
                                 $picture_path = !empty($row_product['main_image'])
                                 ? "../" .$row_product['main_image']
                                 : $default_image;
+
+                                $images_directory = "../images/drawing/";
                             ?>
                                 <tr>
                                     <td>
                                         <?php
                                         if($data_id == '277'){
-                                        ?>
-                                        <a href="javascript:void(0);" id="custom_trim_draw" class="btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
-                                            Draw Here
-                                        </a>
+                                            if(!empty($values["custom_trim_src"])){
+                                            ?>
+                                            <a href="javascript:void(0);" id="custom_trim_draw" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
+                                                <div class="align-items-center text-center w-100" style="background: #ffffff">
+                                                    <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
+                                                </div>
+                                            </a>
+                                            <?php
+                                            }else{
+                                            ?>
+                                            <a href="javascript:void(0);" id="custom_trim_draw" class="btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
+                                                Draw Here
+                                            </a>
+                                            <?php
+                                            }
+                                            ?>
+                                            
                                         <?php }else{
                                         ?>
                                         <div class="align-items-center text-center w-100">

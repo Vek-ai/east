@@ -7,7 +7,18 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
+function findCartKey($cart, $product_id, $line) {
+    foreach ($cart as $key => $item) {
+        if ($item['product_id'] == $product_id && $item['line'] == $line) {
+            return $key;
+        }
+    }
+    return false;
+}
+
 if(isset($_POST['fetch_drawing'])){
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
     ?>
         <style>
             body {
@@ -74,21 +85,22 @@ if(isset($_POST['fetch_drawing'])){
         </style>
         <div class="card-body">
             <div class="product-details table-responsive text-nowrap">
-                <div class="container">
-                    <p>Sample code for Line drawing that we can integrate, the colors would be the colors of the selected product.</p>
-                    <p>Its not yet optimized for touchscreen, please use Desktop to test.</p>
-                    <canvas id="drawingCanvas" width="800" height="600"></canvas>
-                    <div class="controls" id="controls">
-                        <div id="totalLength"></div>
-                        <div id="totalCost"></div>
-                        <div id="lengthAnglePairs"></div>
-                        <div class="button-container">
-                            <button id="clearButton">Clear</button>
-                            <button id="createQuoteButton">Create Quote</button>
-                            <button id="sendJobButton">Send Job</button>
+                <form id="drawingForm">
+                    <div class="container">
+                        <p>Sample code for Line drawing that we can integrate, the colors would be the colors of the selected product.</p>
+                        <p>Its not yet optimized for touchscreen, please use Desktop to test.</p>
+                        <canvas id="drawingCanvas" width="800" height="600"></canvas>
+                        
+                        <input type="hidden" id="custom_trim_id" value="<?= $id ?>">
+                        <input type="hidden" id="custom_trim_line" value="<?= $line ?>">
+                        <div class="controls" id="controls">
+                            <div id="totalLength"></div>
+                            <div id="totalCost"></div>
+                            <div id="lengthAnglePairs"></div>
                         </div>
                     </div>
-                </div>
+                </form>
+                
             </div>
         </div>
     <?php
