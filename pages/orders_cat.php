@@ -126,7 +126,8 @@ require 'includes/functions.php';
             <th> Length</th>
             <th>Color </th>
             
-            <th>Action</th>
+            <th>Coils</th>
+            <th>Flat Stock</th>
             </thead>
             <tbody>
             <?php
@@ -156,6 +157,13 @@ require 'includes/functions.php';
                         <td>
     <div class="action-btn">
         <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['productid'] ?>" data-color="<?= $row_product['color_id'] ?>" onclick="openCoilModal(this)">
+            <i class="ti ti-eye fs-5"></i>
+        </a>
+    </div>
+</td>
+<td>
+    <div class="action-btn">
+        <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['productid'] ?>" data-color="<?= $row_product['color_id'] ?>" onclick="openFlatModal(this)">
             <i class="ti ti-eye fs-5"></i>
         </a>
     </div>
