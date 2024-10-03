@@ -74,11 +74,11 @@ if(isset($_REQUEST['action'])) {
                                             }else{
                                                 $stock_text = '<span class="text-bg-danger p-1 rounded-circle"></span><p class="mb-0 ms-2">OutOfStock</p>';
 
-                                                $sql = "SELECT COUNT(*) AS count FROM coil WHERE width = '$custom_width' AND color = '$product_color'";
-                                                $result = mysqli_query($conn, $sql);
-                                                if ($result) {
-                                                    $row = mysqli_fetch_assoc($result);
-                                                    if ($row['count'] > 0) {
+                                                $sql_avalable = "SELECT COUNT(*) AS count FROM coil WHERE width = '$custom_width' AND color = '$product_color'";
+                                                $result_avalable = mysqli_query($conn, $sql_avalable);
+                                                if ($result_avalable) {
+                                                    $row_avalable = mysqli_fetch_assoc($result_avalable);
+                                                    if ($row_avalable['count'] > 0) {
                                                         $stock_text = '<span class="text-bg-warning p-1 rounded-circle"></span><p class="mb-0 ms-2">Available</p>';
                                                     }
                                                 }
