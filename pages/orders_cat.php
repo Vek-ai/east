@@ -64,7 +64,7 @@ require 'includes/functions.php';
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header d-flex align-items-center">
-                <h4 class="modal-title" id="coilModalLabel">Coils with Same Color</h4>
+                <h4 class="modal-title" id="coilModalLabel">Available Coils</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -120,12 +120,12 @@ require 'includes/functions.php';
             <thead class="header-item">
             <th>Product Name</th>
             <th>Quantity</th>
-            <th>Custom Width</th>
-            <th>Custom Bend</th>
-            <th>Custom Hem</th>
-            <th>Custom Length</th>
-            <th>Color Name</th>
-            <th>Color Code</th>
+            <th> Width</th>
+            <th> Bend</th>
+            <th> Hem</th>
+            <th> Length</th>
+            <th>Color </th>
+            
             <th>Action</th>
             </thead>
             <tbody>
@@ -151,8 +151,8 @@ require 'includes/functions.php';
                         <td><?= !empty($row_product['custom_bend']) ? $row_product['custom_bend'] : 'N/A' ?></td>
                         <td><?= !empty($row_product['custom_hem']) ? $row_product['custom_hem'] : 'N/A' ?></td>
                         <td><?= !empty($row_product['custom_length']) ? $row_product['custom_length'] : 'N/A' ?></td>
-                        <td><?= !empty($row_product['color_name']) ? $row_product['color_name'] : 'N/A' ?></td>
-                        <td><div style="width: 30px; height: 30px; background-color: <?= $row_product['color_code'] ?>; border: 1px solid #000;"></div></td>
+                        <td><?= !empty($row_product['color_name']) ? $row_product['color_name'] : 'N/A' ?>
+                        <div style="width: 30px; height: 30px; background-color: <?= $row_product['color_code'] ?>; border: 1px solid #000;"></div></td>
                         <td>
     <div class="action-btn">
         <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['productid'] ?>" data-color="<?= $row_product['color_id'] ?>" onclick="openCoilModal(this)">
