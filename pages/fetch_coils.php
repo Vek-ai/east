@@ -14,7 +14,7 @@ if (isset($_POST['color_code'])) {
         while ($row = mysqli_fetch_assoc($result)) {
             $coil_length = $row['length'];
             // Calculate the number of products this coil can make
-            $products_made = $coil_length / ($quantity * $custom_length);
+            $products_made = $coil_length /  $custom_length;
 
             echo "<tr>
                     <td><input type='checkbox' class='coil-checkbox' data-coil-length='{$coil_length}' data-quantity='{$quantity}' data-custom-length='{$custom_length}'></td>

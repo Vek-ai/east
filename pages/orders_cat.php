@@ -190,15 +190,20 @@ require 'includes/functions.php';
 </div>
 
 <script>
-   function openCoilModal(element) {
+ function openCoilModal(element) {
     var colorCode = $(element).data('color');
     var quantity = $(element).data('quantity');
+    var customLength = $(element).data('custom_length');
 
     // Make an AJAX request to fetch coils with the same color
     $.ajax({
         url: 'pages/fetch_coils.php', // Your PHP script to fetch coils
         method: 'POST',
-        data: { color_code: colorCode },
+        data: { 
+            color_code: colorCode,
+            quantity: quantity,
+            custom_length: customLength 
+        },
         success: function(response) {
             // Update the modal's content
             $('#coilList').html(response);
@@ -209,7 +214,10 @@ require 'includes/functions.php';
             alert('Error fetching coil data.');
         }
     });
-}$(document).on('change', '.coil-checkbox', function() {
+}
+
+
+$(document).on('change', '.coil-checkbox', function() {
     var totalProducts = 0;
 
     // Loop through each checked checkbox
@@ -219,7 +227,7 @@ require 'includes/functions.php';
         var customLength = $(this).data('custom-length');
 
         // Calculate how many products this coil can make
-        var productsMade = coilLength / (quantity * customLength);
+        var productsMade = coilLength / (customLength);
 
         // Accumulate the total number of products
         totalProducts += productsMade;
