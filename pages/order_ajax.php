@@ -69,7 +69,7 @@ if(isset($_REQUEST['action'])) {
 
                                             $stock = getProductStockTotal($product_id);
                                             if($stock > 0){
-                                                $stock_text = '<span class="text-bg-success p-1 rounded-circle"></span><p class="mb-0 ms-2">InStock</p>';
+                                                $stock_text = "<span class='text-bg-success p-1 rounded-circle'></span><p class='mb-0 ms-2'>$stock</p>";
                                             }else{
                                                 $stock_text = '<span class="text-bg-danger p-1 rounded-circle"></span><p class="mb-0 ms-2">OutOfStock</p>';
                                             }
