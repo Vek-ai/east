@@ -68,20 +68,22 @@ require 'includes/functions.php';
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Coil Name</th>
-                            <th>Length</th>
-                            <th>Tag Number</th>
-                            <th>Added Date</th>
-                        </tr>
-                    </thead>
-                    <tbody id="coilList">
-                        <!-- Coils data will be loaded here via JavaScript -->
-                    </tbody>
-                </table>
-            </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Select</th> <!-- Add header for the checkbox -->
+                <th>Coil Name</th>
+                <th>Length</th>
+                <th>Tag Number</th>
+                <th>Added Date</th>
+            </tr>
+        </thead>
+        <tbody id="coilList">
+            <!-- Coils data will be loaded here via JavaScript -->
+        </tbody>
+    </table>
+    <div id="calculationResult"></div> <!-- Add a place to show the result of the calculation -->
+</div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
@@ -156,7 +158,7 @@ require 'includes/functions.php';
                         <div style="width: 30px; height: 30px; background-color: <?= $row_product['color_code'] ?>; border: 1px solid #000;"></div></td>
                         <td>
     <div class="action-btn">
-        <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['productid'] ?>" data-color="<?= $row_product['color_id'] ?>" onclick="openCoilModal(this)">
+        <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['productid'] ?>" data-color="<?= $row_product['color_id'] ?>" data-quantity="<?= $row_product['total_quantity'] ?>" data-custom_length="<?= $row_product['custom_length'] ?>" onclick="openCoilModal(this)">
             <i class="ti ti-eye fs-5"></i>
         </a>
     </div>
@@ -190,6 +192,7 @@ require 'includes/functions.php';
 <script>
    function openCoilModal(element) {
     var colorCode = $(element).data('color');
+    var quantity = $(element).data('quantity');
 
     // Make an AJAX request to fetch coils with the same color
     $.ajax({
@@ -206,7 +209,26 @@ require 'includes/functions.php';
             alert('Error fetching coil data.');
         }
     });
-}
+}$(document).on('change', '.coil-checkbox', function() {
+    var totalProducts = 0;
+
+    // Loop through each checked checkbox
+    $('.coil-checkbox:checked').each(function() {
+        var coilLength = $(this).data('coil-length');
+        var quantity = $(this).data('quantity');
+        var customLength = $(this).data('custom-length');
+
+        // Calculate how many products this coil can make
+        var productsMade = coilLength / (quantity * customLength);
+
+        // Accumulate the total number of products
+        totalProducts += productsMade;
+    });
+
+    // Display the result
+    $('#calculationResult').html('Total Products Made: ' + totalProducts.toFixed(2));
+});
+
 
 </script>
 
