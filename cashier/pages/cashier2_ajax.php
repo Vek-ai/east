@@ -403,6 +403,70 @@ if (isset($_POST['save_estimate'])) {
     $conn->close();
 }
 
+if (isset($_POST['save_order'])) {
+    $cart = $_SESSION['cart'];
+
+    if (!isset($_SESSION['customer_id'])) {
+        echo "Customer ID is not set.";
+        exit;
+    }
+
+    $customerid = intval($_SESSION['customer_id']);
+    $total_price = 0;
+    $orderid = null;
+
+    if (!empty($cart)) {
+        $order_date = date('Y-m-d H:i:s');
+
+        foreach ($cart as $item) {
+            $unit_price = floatval($item['unit_price']);
+            $quantity_cart = intval($item['quantity_cart']);
+            $total_price += $unit_price * $quantity_cart;
+        }
+
+        $discounted_price = number_format($total_price * 0.9, 2);
+
+        $query = "INSERT INTO orders (total_price, discounted_price, order_date, customerid) VALUES ('$total_price', '$discounted_price', '$order_date', '$customerid')";
+        if ($conn->query($query) === TRUE) {
+            $orderid = $conn->insert_id;
+        } else {
+            echo "Error inserting estimate: " . $conn->error;
+            exit;
+        }
+    }
+
+    if ($orderid) {
+        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_height, actual_price, discounted_price, product_category) VALUES ";
+
+        $values = [];
+        foreach ($cart as $item) {
+            $product_id = intval($item['product_id']);
+            $product_details = getProductDetails($product_id);
+            $product_category = intval($product_details['product_category']);
+            $quantity_cart = intval($item['quantity_cart']);
+            $unit_price = floatval($item['unit_price']);
+            $estimate_width = floatval($item['estimate_width']);
+            $estimate_height = floatval($item['estimate_height']);
+
+            $discounted_price = number_format($unit_price * 0.9, 2);
+
+            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_height', '$unit_price', '$discounted_price', '$product_category')";
+        }
+
+        $query .= implode(', ', $values);
+
+        if ($conn->query($query) === TRUE) {
+            echo "success";
+
+            unset($_SESSION['cart']);
+        } else {
+            echo "Error inserting estimate products: " . $conn->error;
+        }
+    }
+
+    $conn->close();
+}
+
 if (isset($_POST['search_customer'])) {
     $search = mysqli_real_escape_string($conn, $_POST['search_customer']);
 
@@ -446,37 +510,34 @@ if (isset($_POST['unset_customer'])) {
     echo "Customer session unset";
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (isset($input['save_drawing'])) {
     $input = json_decode(file_get_contents('php://input'), true);
     $id = mysqli_real_escape_string($conn, $input['id']);
     $line = mysqli_real_escape_string($conn, $input['line']);
 
-    if (isset($input['save_drawing'])) {
-        if (isset($input['image_data'])) {
-            $key = findCartKey($_SESSION["cart"], $id, $line);
-            if ($key !== false && isset($_SESSION["cart"][$key])) {
-                $image_data = $input['image_data'];
-                $image_data = str_replace('data:image/png;base64,', '', $image_data);
-                $image_data = str_replace(' ', '+', $image_data);
-                $decodedData = base64_decode($image_data);
-                $images_directory = "../../images/drawing/";
-                $filename = uniqid() . '.png';
-                
-                if (file_put_contents($images_directory . $filename, $decodedData)) {
-                    $_SESSION["cart"][$key]['custom_trim_src'] = $filename;
-                    echo json_encode(['filename' => $filename]);
-                } else {
-                    echo json_encode(['error' => 'Failed to save image']);
-                }
+    if (isset($input['image_data'])) {
+        $key = findCartKey($_SESSION["cart"], $id, $line);
+        if ($key !== false && isset($_SESSION["cart"][$key])) {
+            $image_data = $input['image_data'];
+            $image_data = str_replace('data:image/png;base64,', '', $image_data);
+            $image_data = str_replace(' ', '+', $image_data);
+            $decodedData = base64_decode($image_data);
+            $images_directory = "../../images/drawing/";
+            $filename = uniqid() . '.png';
+            
+            if (file_put_contents($images_directory . $filename, $decodedData)) {
+                $_SESSION["cart"][$key]['custom_trim_src'] = $filename;
+                echo json_encode(['filename' => $filename]);
             } else {
-                echo json_encode(['error' => "Product not found in cart: ID: $id, Line: $line"]);
-            }  
+                echo json_encode(['error' => 'Failed to save image']);
+            }
         } else {
-            echo json_encode(['error' => 'No image data provided']);
-        }
+            echo json_encode(['error' => "Product not found in cart: ID: $id, Line: $line"]);
+        }  
     } else {
-        echo json_encode(['error' => 'Invalid request']);
+        echo json_encode(['error' => 'No image data provided']);
     }
+    
 }
 
 

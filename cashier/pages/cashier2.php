@@ -348,7 +348,7 @@ require '../includes/functions.php';
                 
             </div>
             <div class="modal-footer">
-                <button class="btn ripple btn-primary" type="button" id="savecash" onclick="savecash()">
+                <button class="btn ripple btn-primary" type="button" id="save_order">
                     <i class="fe fe-hard-drive"></i> Save
                 </button>
                 <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
@@ -1171,6 +1171,27 @@ require '../includes/functions.php';
                     if(response.trim() == 'success'){
                         alert("Estimate successfully saved.");
                         $('#view_estimate_modal').modal('hide');
+                    }
+                    alert(response);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#save_order', function(event) {
+            $.ajax({
+                url: 'pages/cashier2_ajax.php',
+                type: 'POST',
+                data: {
+                    save_order: 'save_order'
+                },
+                success: function(response) {
+                    
+                    if(response.trim() == 'success'){
+                        alert("Order successfully saved.");
+                        $('#cashmodal').modal('hide');
                     }
                     alert(response);
                 },
