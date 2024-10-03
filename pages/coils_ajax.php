@@ -27,7 +27,7 @@ if (isset($_REQUEST['action'])) {
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
         $coil_id = mysqli_real_escape_string($conn, $_POST['coil_id']);
 
-        $supplier = mysqli_real_escape_string($conn, $_POST['supplier']);
+        $supplier = mysqli_real_escape_string($conn, $_POST['supplier_id']);
         $entry_number = mysqli_real_escape_string($conn, $_POST['entry_number']);
         $coil_number = mysqli_real_escape_string($conn, $_POST['coil_number']);
         $tag_number = mysqli_real_escape_string($conn, $_POST['tag_number']);

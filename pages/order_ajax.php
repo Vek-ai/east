@@ -54,6 +54,7 @@ if(isset($_REQUEST['action'])) {
                                             $product_id = $row['productid'];
                                             $product_details = getProductDetails($product_id);
                                             $product_name = $product_details['product_item'];
+                                            $product_color = $product_details['color'];
                                             $quantity = $row['quantity'];
                                             $custom_width = $row['custom_width'];
 
@@ -72,6 +73,15 @@ if(isset($_REQUEST['action'])) {
                                                 $stock_text = "<span class='text-bg-success p-1 rounded-circle'></span><p class='mb-0 ms-2'>$stock</p>";
                                             }else{
                                                 $stock_text = '<span class="text-bg-danger p-1 rounded-circle"></span><p class="mb-0 ms-2">OutOfStock</p>';
+
+                                                $sql_avalable = "SELECT COUNT(*) AS count FROM coil WHERE width = '$custom_width' AND color = '$product_color'";
+                                                $result_avalable = mysqli_query($conn, $sql_avalable);
+                                                if ($result_avalable) {
+                                                    $row_avalable = mysqli_fetch_assoc($result_avalable);
+                                                    if ($row_avalable['count'] > 0) {
+                                                        $stock_text = '<span class="text-bg-warning p-1 rounded-circle"></span><p class="mb-0 ms-2">Available</p>';
+                                                    }
+                                                }
                                             }
 
                                             $status = $row['status'];
