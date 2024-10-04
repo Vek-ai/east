@@ -734,5 +734,7 @@
       </div>
     </div>
   </div>
-
 </div>
+<script src="assets/js/breadcrumb/breadcrumbChart.js"></script>
+<script src="assets/js/theme/sidebarmenu.js"></script>
+<script src="assets/js/dashboards/dashboard2.js"></script>
