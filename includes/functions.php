@@ -254,6 +254,15 @@ function getSupplierType($supplier_type_id){
     return  $supplier_type;
 }
 
+function getSupplierName($supplier_id){
+    global $conn;
+    $query = "SELECT supplier_name FROM supplier WHERE supplier_id = '$supplier_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $supplier_name = $row['supplier_name'] ?? '';
+    return  $supplier_name;
+}
+
 function get_customer_name($customer_id){
     global $conn;
     $query = "SELECT customer_first_name, customer_last_name FROM customer WHERE customer_id = '$customer_id'";
