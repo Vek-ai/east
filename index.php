@@ -1342,6 +1342,8 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "order") {include 'pages/order.php';}
             if ($_REQUEST['page'] == "order_coil") {include 'pages/order_coil.php';}
+
+            if ($_REQUEST['page'] == "flat_sheet_compute") {include 'pages/flat_sheet_compute.php';}
             
 
           ?>

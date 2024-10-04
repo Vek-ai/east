@@ -488,7 +488,6 @@ while ($row_coil = mysqli_fetch_array($result_coil)) {
         <?php if ($row_coil['status'] == '0') { ?>
             <a href="#" class="btn btn-light py-1 text-dark hideCoil" data-id="<?= $coil_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
         <?php } else { ?>
-            <a href="#" id="btnOrderCoil" data-id="<?= $coil_id ?>" class="btn btn-success py-1" style='border-radius: 10%;'>Order</a>
             <a href="/?page=coils&coil_id=<?= $coil_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
         <?php } ?>
     </td>
