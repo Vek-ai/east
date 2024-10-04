@@ -37,7 +37,7 @@ $panel_id = 46;
 <div class="product-list pt-4">
     <div class="card">
         <div class="card-body text-right p-3">
-            <div class="row">
+            <div class="row mb-9">
                 <div class="col-6 text-left">
                     <h3 class="modal-title">Order</h3>
                 </div>
@@ -47,6 +47,39 @@ $panel_id = 46;
                     </div>
                 </div>
             </div>
+            <div class="row d-flex justify-content-between align-items-center text-start mb-9">
+                <div class="col-6">
+                    <div id="select_supplier_section">
+                        <?php 
+                            if (!empty($_SESSION["supplier_id"])) {
+                        ?>
+                            <div class="form-group">
+                                <label>Supplier: <?= getSupplierName($_SESSION["supplier_id"]); ?></label>
+                                <button class="btn ripple btn-primary" type="button" id="supplier_change"><i class="fe fe-reload"></i> Change</button>                                       
+                            </div>
+                        <?php } else { ?>
+                            <div class="input-group">
+                                <input class="form-control" placeholder="Search Supplier" type="text" id="supplier_select">
+                                <a class="input-group-text rounded-right m-0 p-0" href="/?page=product_supplier" target="_blank">
+                                    <span class="input-group-text"> + </span>
+                                </a>
+                            </div>
+                        <?php } ?>
+                    </div>
+                    <input type='hidden' id='supplier_select_id' name="supplier_select_id"/>
+                </div>
+                <div class="col-6">
+                    <h4 class="mb-0">
+                        <?php
+                        if (!empty($_SESSION['order_coil_id'])) {
+                            $coil_details = getCoilDetails($_SESSION['order_coil_id']);
+                            echo "Coil Ordered: " . $coil_details['coil'];
+                        }
+                        ?>
+                    </h4>
+                </div>
+            </div>
+
             
             
             <div class="d-flex justify-content-between align-items-center text-left mb-9">
@@ -203,27 +236,6 @@ $panel_id = 46;
                 </button>
             </div>
             <div class="modal-body">
-                <div class="form-group col-4">
-                    <div id="select_supplier_section">
-                    <?php 
-                        if(!empty($_SESSION["supplier_id"])){
-                        ?>
-                        <div class="form-group">
-                            <label>Supplier: <?= getSupplierName($_SESSION["supplier_id"]);?></label>
-                            <button class="btn ripple btn-primary" type="button" id="supplier_change" ><i class="fe fe-reload"></i> Change</button>                                       
-                        </div>
-                        <?php } else {?>
-                        <label>Supplier</label>
-                        <div class="input-group">
-                            <input class="form-control" placeholder="Search Supplier" type="text" id="supplier_select">
-                            <a class="input-group-text rounded-right m-0 p-0" href="/?page=product_supplier" target="_blank">
-                                <span class="input-group-text"> + </span>
-                            </a>
-                        </div>
-                    <?php } ?>
-                    </div>
-                    <input type='hidden' id='supplier_select_id' name="supplier_id"/>
-                </div>
                 <div id="order-tbl"></div>
                 
             </div>
@@ -417,19 +429,15 @@ $panel_id = 46;
                 }
             });
         },
-        select: function(event, ui) {
-            $('#supplier_select').val(ui.item.label);
-            $('#supplier_select_id').val(ui.item.value);
-            return false;
-        },
-        focus: function(event, ui) {
-            $('#supplier_select').val(ui.item.label);
-            return false;
-        },
-        appendTo: "#view_orders", 
-        open: function() {
-            $(".ui-autocomplete").css("z-index", 1050);
-        }
+            select: function(event, ui) {
+                $('#supplier_select').val(ui.item.label);
+                $('#supplier_select_id').val(ui.item.value);
+                return false;
+            },
+            focus: function(event, ui) {
+                $('#supplier_select').val(ui.item.label);
+                return false;
+            }
     }); 
 
     $(document).ready(function() {
@@ -537,6 +545,7 @@ $panel_id = 46;
 
         $(document).on('change', '#supplier_select', function(event) {
             var supplier_id = $('#supplier_select_id').val();
+            console.log(supplier_id)
             $.ajax({
                 url: 'pages/order_coil_ajax.php',
                 type: 'POST',
@@ -565,21 +574,18 @@ $panel_id = 46;
                                     }
                                 });
                             },
-                            select: function(event, ui) {
-                                $('#supplier_select').val(ui.item.label);
-                                $('#supplier_select_id').val(ui.item.value);
-                                return false;
-                            },
-                            focus: function(event, ui) {
-                                $('#supplier_select').val(ui.item.label);
-                                return false;
-                            },
-                            appendTo: "#view_orders", 
-                            open: function() {
-                                $(".ui-autocomplete").css("z-index", 1050);
-                            }
+                                select: function(event, ui) {
+                                    $('#supplier_select').val(ui.item.label);
+                                    $('#supplier_select_id').val(ui.item.value);
+                                    return false;
+                                },
+                                focus: function(event, ui) {
+                                    $('#supplier_select').val(ui.item.label);
+                                    return false;
+                                }
                         });
                     }
+                    
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -596,6 +602,34 @@ $panel_id = 46;
                 },
                 success: function(response) {
                     $('#select_supplier_section').load(location.href + " #select_supplier_section");
+
+                    $("#supplier_select").autocomplete({
+                        source: function(request, response) {
+                            $.ajax({
+                                url: "pages/order_coil_ajax.php",
+                                type: 'post',
+                                dataType: "json",
+                                data: {
+                                    search_supplier: request.term
+                                },
+                                success: function(data) {
+                                    response(data);
+                                },
+                                error: function(xhr, status, error) {
+                                    console.log("Error: " + xhr.responseText);
+                                }
+                            });
+                        },
+                            select: function(event, ui) {
+                                $('#supplier_select').val(ui.item.label);
+                                $('#supplier_select_id').val(ui.item.value);
+                                return false;
+                            },
+                            focus: function(event, ui) {
+                                $('#supplier_select').val(ui.item.label);
+                                return false;
+                            }
+                    });
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
