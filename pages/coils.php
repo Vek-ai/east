@@ -488,7 +488,7 @@ while ($row_coil = mysqli_fetch_array($result_coil)) {
         <?php if ($row_coil['status'] == '0') { ?>
             <a href="#" class="btn btn-light py-1 text-dark hideCoil" data-id="<?= $coil_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
         <?php } else { ?>
-            <a href="/?page=order_coil&coil_id=<?= $coil_id ?>" class="btn btn-success py-1" style='border-radius: 10%;'>Order</a>
+            <a href="#" id="btnOrderCoil" data-id="<?= $coil_id ?>" class="btn btn-success py-1" style='border-radius: 10%;'>Order</a>
             <a href="/?page=coils&coil_id=<?= $coil_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
         <?php } ?>
     </td>
@@ -682,6 +682,30 @@ $(document).ready(function() {
             }
         });
     });
+
+    $(document).on('click', '#btnOrderCoil', function(event) {
+        event.preventDefault();
+        var coil_id = $(this).data('id');
+        $.ajax({
+            url: 'pages/coils_ajax.php',
+            type: 'POST',
+            data: {
+                coil_id: coil_id,
+                action: 'order_coil'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                  window.location.href = "?page=order_coil";
+                } else {
+                  console.log(response)
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+    
     
 });
 </script>

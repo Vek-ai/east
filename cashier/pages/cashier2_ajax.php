@@ -222,7 +222,7 @@ if (isset($_REQUEST['query'])) {
                     </a>';
             
                 if ($row_product['product_category'] == $trim_id || $row_product['product_category'] == $panel_id) {
-                    $sql = "SELECT COUNT(*) AS count FROM coil WHERE width = '$product_width' AND color = '$product_color'";
+                    $sql = "SELECT COUNT(*) AS count FROM coil WHERE color = '$product_color'";
                     $result = mysqli_query($conn, $sql);
 
                     if ($result) {

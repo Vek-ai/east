@@ -295,6 +295,7 @@ $panel_id = 46;
     function updatequantity(element) {
         var product_id = $(element).data('id');
         var line = $(element).data('line');
+        var type = $(element).data('type');
         var qty = $(element).val();
         $.ajax({
             url: "pages/order_coil_ajax.php",
@@ -302,6 +303,7 @@ $panel_id = 46;
             data: {
                 product_id: product_id,
                 line: line,
+                type: type,
                 qty: qty,
                 modifyquantity: 'modifyquantity',
                 setquantity: 'setquantity'
@@ -322,6 +324,7 @@ $panel_id = 46;
     function addquantity(element) {
         var product_id = $(element).data('id');
         var line = $(element).data('line');
+        var type = $(element).data('type');
         var input_quantity = $('input[data-id="' + product_id + '"]');
         var quantity = Number(input_quantity.val());
         $.ajax({
@@ -330,11 +333,13 @@ $panel_id = 46;
             data: {
                 product_id: product_id,
                 line: line,
+                type: type,
                 quantity: quantity,
                 modifyquantity: 'modifyquantity',
                 addquantity: 'addquantity'
             },
             success: function(data) {
+                console.log(data);
                 loadOrderContents();
             },
             error: function(xhr, status, error) {
@@ -350,6 +355,7 @@ $panel_id = 46;
     function deductquantity(element) {
         var product_id = $(element).data('id');
         var line = $(element).data('line');
+        var type = $(element).data('type');
         var input_quantity = $('input[data-id="' + product_id + '"]');
         var quantity = Number(input_quantity.val());
         $.ajax({
@@ -358,6 +364,7 @@ $panel_id = 46;
             data: {
                 product_id: product_id,
                 line: line,
+                type: type,
                 quantity: quantity,
                 modifyquantity: 'modifyquantity',
                 deductquantity: 'deductquantity'

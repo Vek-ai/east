@@ -74,7 +74,7 @@ if(isset($_REQUEST['action'])) {
                                             }else{
                                                 $stock_text = '<span class="text-bg-danger p-1 rounded-circle"></span><p class="mb-0 ms-2">OutOfStock</p>';
 
-                                                $sql_avalable = "SELECT COUNT(*) AS count FROM coil WHERE width = '$custom_width' AND color = '$product_color'";
+                                                $sql_avalable = "SELECT COUNT(*) AS count FROM coil WHERE color = '$product_color'";
                                                 $result_avalable = mysqli_query($conn, $sql_avalable);
                                                 if ($result_avalable) {
                                                     $row_avalable = mysqli_fetch_assoc($result_avalable);

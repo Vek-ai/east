@@ -10,10 +10,18 @@ require '../includes/functions.php';
 $trim_id = 43;
 $panel_id = 46;
 
-function findCartKey($cart, $product_id, $line) {
+function findCartKey($cart, $identifier, $line, $isCoil = false) {
     foreach ($cart as $key => $item) {
-        if ($item['product_id'] == $product_id && $item['line'] == $line) {
-            return $key;
+        if ($isCoil) {
+            // Search by coil_id if $isCoil is true
+            if (isset($item['coil_id']) && $item['coil_id'] == $identifier && $item['line'] == $line) {
+                return $key;
+            }
+        } else {
+            // Default search by product_id
+            if (isset($item['product_id']) && $item['product_id'] == $identifier && $item['line'] == $line) {
+                return $key;
+            }
         }
     }
     return false;
@@ -21,6 +29,7 @@ function findCartKey($cart, $product_id, $line) {
 
 if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+    $type = mysqli_real_escape_string($conn, $_POST['type']);
     $line = isset($_POST['line']) ? (int)$_POST['line'] : 1;
     $qty = isset($_POST['qty']) ? (int)$_POST['qty'] : 1;
 
@@ -32,7 +41,13 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         $_SESSION["orders"] = array();
     }
 
-    $key = findCartKey($_SESSION["orders"], $product_id, $line);
+    if(isset($type) && $type == 'coil'){
+        $key = findCartKey($_SESSION["orders"], $product_id, $line, true);
+        
+    }else{
+        $key = findCartKey($_SESSION["orders"], $product_id, $line);
+    }
+    echo "$type";
 
     if (isset($_POST['duplicate_product'])) {
         $newLine = $line + 1;
@@ -57,7 +72,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             );
 
             $_SESSION["orders"][] = $item_array;
-            echo $item_quantity;
+            echo "duplicated" .$item_quantity;
         }
     } elseif ($key !== false) {
         if (isset($_POST['setquantity'])) {
@@ -317,7 +332,7 @@ if(isset($_POST['fetch_orders'])){
             background-color: transparent;
         }
     </style>
-        <div class="card-body datatables">
+        <div class="card-body datatables"> 
             <div class="product-details table-responsive text-nowrap">
                 <table id="orderTable" class="table table-hover table-fixed mb-0 text-md-nowrap text-center">
                     <thead>
@@ -341,8 +356,9 @@ if(isset($_POST['fetch_orders'])){
                             foreach ($_SESSION["orders"] as $keys => $values) {
                                 $data_id = $values["product_id"];
                                 $product = getProductDetails($data_id);
-                                $totalstockquantity = $values["quantity_ttl"] + $values["quantity_in_stock"];
-                                $category_id = $product["product_category"];
+                                $totalstockquantity = $values["quantity_ttl"] ?? 0 + $values["quantity_in_stock"] ?? 0;
+                                $product_name = $values["product_item"];
+
                                 if ($totalstockquantity > 0) {
                                     $stock_text = '
                                         <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
@@ -355,7 +371,19 @@ if(isset($_POST['fetch_orders'])){
                                             <span class="text-bg-danger p-1 rounded-circle"></span>
                                             <span class="ms-2">Out of Stock</span>
                                         </a>';
-                                } 
+                                }
+                                $type = 'product';
+
+                                if(!isset($data_id)){
+                                    $data_id = $values["coil_id"];
+                                    $product = getCoilDetails($data_id);
+                                    $product_name = $values["coil_item"];
+                                    $type = 'coil';
+
+                                    $stock_text = 'N/A';
+                                }
+
+                                 
 
                                 $default_image = 'images/product/product.jpg';
 
@@ -364,7 +392,7 @@ if(isset($_POST['fetch_orders'])){
                                 : $default_image;
 
                                 $images_directory = "images/drawing/";
-                            ?>
+                                ?>
                                 <tr>
                                     <td>
                                         <div class="align-items-center text-center w-100">
@@ -372,7 +400,7 @@ if(isset($_POST['fetch_orders'])){
                                         </div>
                                     </td>
                                     <td>
-                                        <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
+                                        <h6 class="fw-semibold mb-0 fs-4"><?= $product_name ?></h6>
                                     </td>
                                     <td>
                                         <div class="d-flex mb-0 gap-8">
@@ -388,13 +416,13 @@ if(isset($_POST['fetch_orders'])){
                                     <td>
                                         <div class="input-group">
                                             <span class="input-group-btn">
-                                                <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)">
+                                                <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-line="<?php echo $values["line"]; ?>" data-type="<?= $type ?>" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)">
                                                     -
                                                 </button>
                                             </span> 
-                                            <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
+                                            <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" data-type="<?= $type ?>" onchange="updatequantity(this)" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
                                             <span class="input-group-btn">
-                                                <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)">
+                                                <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-line="<?php echo $values["line"]; ?>" data-type="<?= $type ?>" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)">
                                                     +
                                                 </button>
                                             </span>
@@ -416,7 +444,7 @@ if(isset($_POST['fetch_orders'])){
                                         <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $data_id;?>">
                                     </td>
                                 </tr>
-                        <?php
+                            <?php
                                 $totalquantity += $values["quantity_cart"];
                                 $total += $subtotal;
                             }
