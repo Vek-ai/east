@@ -47,7 +47,6 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
     }else{
         $key = findCartKey($_SESSION["orders"], $product_id, $line);
     }
-    echo "$type";
 
     if (isset($_POST['duplicate_product'])) {
         $newLine = $line + 1;
@@ -116,8 +115,14 @@ if (isset($_POST['deleteitem'])) {
     
         $product_id = mysqli_real_escape_string($conn, $_POST['product_id_del']);
         $line = mysqli_real_escape_string($conn, $_POST['line']);
-        
-        $key = findCartKey($_SESSION["orders"], $product_id, $line);
+        $type = mysqli_real_escape_string($conn, $_POST['type']);
+
+        if(isset($type) && $type == 'coil'){
+            $key = findCartKey($_SESSION["orders"], $product_id, $line, true);
+            
+        }else{
+            $key = findCartKey($_SESSION["orders"], $product_id, $line);
+        }
         
         echo "ID: $product_id, Line: $line, Key: $key";
         
@@ -437,7 +442,7 @@ if(isset($_POST['fetch_orders'])){
                                         ?>
                                     </td>
                                     <td>
-                                        <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="ti ti-trash"></i></button>
+                                        <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-type="<?= $type ?>" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="ti ti-trash"></i></button>
                                         <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["product_id"]; ?>">
                                         <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $data_id;?>">
                                         <input class="form-control" type="hidden" size="5" value="<?php echo $values["line"];?>" id="line<?php echo $data_id;?>">

@@ -397,11 +397,13 @@ $panel_id = 46;
     function delete_item(element) {
         var id = $(element).data('id');
         var line = $(element).data('line');
+        var type = $(element).data('type');
         $.ajax({
             url: "pages/order_coil_ajax.php",
             data: {
                 product_id_del: id,
                 line: line,
+                type: type,
                 deleteitem: 'deleteitem'
             },
             type: "POST",
@@ -429,15 +431,15 @@ $panel_id = 46;
                 }
             });
         },
-            select: function(event, ui) {
-                $('#supplier_select').val(ui.item.label);
-                $('#supplier_select_id').val(ui.item.value);
-                return false;
-            },
-            focus: function(event, ui) {
-                $('#supplier_select').val(ui.item.label);
-                return false;
-            }
+        select: function(event, ui) {
+            $('#supplier_select').val(ui.item.label);
+            $('#supplier_select_id').val(ui.item.value);
+            return false;
+        },
+        focus: function(event, ui) {
+            $('#supplier_select').val(ui.item.label);
+            return false;
+        }
     }); 
 
     $(document).ready(function() {
@@ -555,35 +557,7 @@ $panel_id = 46;
                 },
                 success: function(response) {
                     if (response.trim() == 'success') {
-                        $('#select_supplier_section').load(location.href + " #select_supplier_section");
-
-                        $("#supplier_select").autocomplete({
-                            source: function(request, response) {
-                                $.ajax({
-                                    url: "pages/order_coil_ajax.php",
-                                    type: 'post',
-                                    dataType: "json",
-                                    data: {
-                                        search_supplier: request.term
-                                    },
-                                    success: function(data) {
-                                        response(data);
-                                    },
-                                    error: function(xhr, status, error) {
-                                        console.log("Error: " + xhr.responseText);
-                                    }
-                                });
-                            },
-                                select: function(event, ui) {
-                                    $('#supplier_select').val(ui.item.label);
-                                    $('#supplier_select_id').val(ui.item.value);
-                                    return false;
-                                },
-                                focus: function(event, ui) {
-                                    $('#supplier_select').val(ui.item.label);
-                                    return false;
-                                }
-                        });
+                        location.reload();
                     }
                     
                 },
@@ -601,35 +575,7 @@ $panel_id = 46;
                     unset_supplier: "unset_supplier"
                 },
                 success: function(response) {
-                    $('#select_supplier_section').load(location.href + " #select_supplier_section");
-
-                    $("#supplier_select").autocomplete({
-                        source: function(request, response) {
-                            $.ajax({
-                                url: "pages/order_coil_ajax.php",
-                                type: 'post',
-                                dataType: "json",
-                                data: {
-                                    search_supplier: request.term
-                                },
-                                success: function(data) {
-                                    response(data);
-                                },
-                                error: function(xhr, status, error) {
-                                    console.log("Error: " + xhr.responseText);
-                                }
-                            });
-                        },
-                            select: function(event, ui) {
-                                $('#supplier_select').val(ui.item.label);
-                                $('#supplier_select_id').val(ui.item.value);
-                                return false;
-                            },
-                            focus: function(event, ui) {
-                                $('#supplier_select').val(ui.item.label);
-                                return false;
-                            }
-                    });
+                    location.reload();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);

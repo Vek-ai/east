@@ -220,9 +220,45 @@ if (isset($_REQUEST['action'])) {
 
     if ($action == "order_coil") {
         $coil_id = mysqli_real_escape_string($conn, $_POST['coil_id']);
-        $_SESSION["order_coil_id"] = $coil_id;
-
-        echo "success";
+    
+        if (!isset($_SESSION["orders"])) {
+            $_SESSION["orders"] = array();
+        }
+    
+        $query = "SELECT * FROM coil WHERE coil_id = '$coil_id'";
+        $result = mysqli_query($conn, $query);
+    
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+    
+            $exists_in_cart = false;
+            foreach ($_SESSION["orders"] as $key => $order) {
+                if (isset($order['coil_id']) && $order['coil_id'] == $coil_id) {
+                    $_SESSION["orders"][$key]['quantity_cart'] += 1;
+                    $exists_in_cart = true;
+                    break;
+                }
+            }
+            if (!$exists_in_cart) {
+                $item_array = array(
+                    'coil_id' => $row['coil_id'],
+                    'coil_item' => $row['coil'],
+                    'color' => $row['color'],
+                    'width' => $row['width'],
+                    'length' => $row['length'],
+                    'gauge' => $row['gauge'],
+                    'line' => 1,
+                    'quantity_cart' => 1
+                );
+    
+                $_SESSION["orders"][] = $item_array;
+            }
+            
+            $_SESSION["order_coil_id"] = $coil_id;
+            echo "success";
+        } else {
+            echo "Coil not found.";
+        }
     }
     
     mysqli_close($conn);
