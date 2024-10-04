@@ -223,7 +223,7 @@ require 'includes/functions.php';
         }
     });
 }
-function openFlatModal(element) {   $('#stockModal').modal('show');}
+function openFlatModal(element) {   $('#StockModal').modal('show');}
 
 $(document).on('change', '.coil-checkbox', function() {
     var totalProducts = 0;
