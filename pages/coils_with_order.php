@@ -152,7 +152,7 @@ if(!empty($_REQUEST['result'])){
                 <th>Color</th>
                 <th>Gauge</th>
                 <th>Width</th>
-                <th>Details</th>
+                <th>Quantity</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
@@ -199,7 +199,7 @@ while ($row_coil = mysqli_fetch_array($result_coil)) {
     <td><?= getColorName($color) ?></td>
     <td><?= getGaugeName($gauge) ?></td>
     <td><?= $width ?></td>
-    <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
+    <td class="last-edit" style="width:30%;">1</td>
     <td><?= $status ?></td>
     <td class="text-center" id="action-button-<?= $no ?>">
         <?php if ($row_coil['status'] == '0') { ?>
