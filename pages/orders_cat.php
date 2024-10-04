@@ -91,29 +91,37 @@ require 'includes/functions.php';
     </div>
 </div>
 
-    <div class="modal fade" id="updateWarehouseModal" tabindex="-1" role="dialog" aria-labelledby="updateWarehouseModal" aria-hidden="true">
-        
-    </div>
-
-    <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-            <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
-                <h4 id="responseHeader" class="m-0"></h4>
+<div class="modal fade" id="StockModal" tabindex="-1" aria-labelledby="stockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="StockModalLabel">Available Flat Stocks</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                
-                <p id="responseMsg"></p>
-            </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Select</th> <!-- Add header for the checkbox -->
+                <th>Name</th>
+                <th>Length X Width</th>
+                <th>Tag Number</th>
+                <th>Manufactured Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Coils data will be loaded here via JavaScript -->
+        </tbody>
+    </table>
+    <!-- Add a place to show the result of the calculation -->
+</div>
             <div class="modal-footer">
-                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
-                Close
-                </button>
-            </div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
+
 
     
     <div class="card card-body">
@@ -215,7 +223,7 @@ require 'includes/functions.php';
         }
     });
 }
-
+function openFlatModal(element) {   $('#stockModal').modal('show');}
 
 $(document).on('change', '.coil-checkbox', function() {
     var totalProducts = 0;
