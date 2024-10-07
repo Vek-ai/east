@@ -38,17 +38,10 @@ $panel_id = 46;
     <div class="card">
         <div class="card-body text-right p-3">
             <div class="row mb-9">
+                <div class="col-12 text-left">
+                    <h3 class="modal-title">Order Cart</h3>
+                </div>
                 <div class="col-6 text-left">
-                    <h3 class="modal-title">Order</h3>
-                </div>
-                <div class="col-6">
-                    <div class="p-2">
-                        <input type="checkbox" id="toggleActive" checked> Show only In Stock 
-                    </div>
-                </div>
-            </div>
-            <div class="row d-flex justify-content-between align-items-center text-start mb-9">
-                <div class="col-6">
                     <div id="select_supplier_section">
                         <?php 
                             if (!empty($_SESSION["supplier_id"])) {
@@ -68,20 +61,37 @@ $panel_id = 46;
                     </div>
                     <input type='hidden' id='supplier_select_id' name="supplier_select_id"/>
                 </div>
+                <div class="pt-0" id="order-tbl"></div>
+            </div>
+            <div class="row">
                 <div class="col-6">
-                    <h4 class="mb-0">
-                        <?php
-                        if (!empty($_SESSION['order_coil_id'])) {
-                            $coil_details = getCoilDetails($_SESSION['order_coil_id']);
-                            echo "Coil Ordered: " . $coil_details['coil'];
-                        }
-                        ?>
-                    </h4>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex justify-content-end position-sticky" style="bottom: 0;">
+                        <button type="button" id="btn_save" class="btn btn-primary d-flex align-items-center my-2 ms-1">
+                            <i class="fa fa-shopping-cart fs-4 me-2"></i>
+                            Save
+                        </button>
+                        <a href="?page=order_coil_summary">
+                            <button type="button" id="btn_order" class="btn btn-success d-flex align-items-center my-2 ms-1">
+                                <i class="fa fa-shopping-cart fs-4 me-2"></i>
+                                Order
+                            </button>
+                        </a>
+                        
+                    </div>
                 </div>
             </div>
-
-            
-            
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body text-right p-3">
+            <div class="row mb-9">
+                <div class="col-12 text-left">
+                    <h3 class="modal-title">Order Products</h3>
+                </div>
+                
+            </div>
             <div class="d-flex justify-content-between align-items-center text-left mb-9">
                 <div class="position-relative w-100 col-4 pl-0">
                     <input type="text" class="form-control search-chat py-2 ps-5" id="text-srh" placeholder="Search Product">
@@ -212,42 +222,7 @@ $panel_id = 46;
         </div>
         
     </div>
-    <div class="row">
-        <div class="col-6">
-        </div>
-        <div class="col-6">
-            <div class="d-flex justify-content-end position-sticky" style="bottom: 0;">
-                <button type="button" class="btn btn-success d-flex align-items-center my-2" id="view_order">
-                    <i class="fa fa-shopping-cart fs-4 me-2"></i>
-                    Order
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="view_orders">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content modal-content-demo">
-            <div class="modal-header">
-                <h6 class="modal-title">Save Order</h6>
-                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="order-tbl"></div>
-                
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" id="save_order">
-                    <i class="fa fa-save fs-4 me-2"></i>
-                    Save
-                </button>
-                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-            </div>
-        </div>
-    </div>
+    
 </div>
 
 <script>
@@ -290,6 +265,29 @@ $panel_id = 46;
                 line: line,
                 modifyquantity: 'modifyquantity',
                 addquantity: 'addquantity'
+            },
+            success: function(data) {
+                loadOrderContents();
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
+    function addToOrdersCoil(element) {
+        var coil_id = $(element).data('id');
+
+        $.ajax({
+            url: "pages/order_coil_ajax.php",
+            type: "POST",
+            data: {
+                coil_id: coil_id,
+                add_order_coil: 'add_order_coil'
             },
             success: function(data) {
                 loadOrderContents();
@@ -443,6 +441,7 @@ $panel_id = 46;
     }); 
 
     $(document).ready(function() {
+        loadOrderContents();
         var currentPage = 1,
             rowsPerPage = parseInt($('#rowsPerPage').val()),
             totalRows = 0,
@@ -501,7 +500,6 @@ $panel_id = 46;
             var type_id = $('#select-type').find('option:selected').val();
             var line_id = $('#select-line').find('option:selected').val();
             var category_id = $('#select-category').find('option:selected').val();
-            var onlyInStock = $('#toggleActive').prop('checked');
             $.ajax({
                 url: 'pages/order_coil_ajax.php',
                 type: 'POST',
@@ -510,8 +508,7 @@ $panel_id = 46;
                     color_id: color_id,
                     type_id: type_id,
                     line_id: line_id,
-                    category_id: category_id,
-                    onlyInStock: onlyInStock
+                    category_id: category_id
                 },
                 success: function(response) {
                     $('#productTableBody').html(response);
@@ -524,7 +521,7 @@ $panel_id = 46;
             });
         }
 
-        $(document).on('click', '#save_order', function(event) {
+        $(document).on('click', '#btn_save', function(event) {
             $.ajax({
                 url: 'pages/order_coil_ajax.php',
                 type: 'POST',
@@ -604,7 +601,7 @@ $panel_id = 46;
         $('#select-line').select2();
         $('#select-category').select2();
 
-        $(document).on('input change', '#text-srh, #select-color, #select-category, #select-type, #select-line, #toggleActive', function() {
+        $(document).on('input change', '#text-srh, #select-color, #select-category, #select-type, #select-line', function() {
             performSearch($('#text-srh').val());
         });
 

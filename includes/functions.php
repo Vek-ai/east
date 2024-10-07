@@ -275,6 +275,18 @@ function getSupplierName($supplier_id){
     return  $supplier_name;
 }
 
+function getSupplierDetails($supplier_id) {
+    global $conn;
+    $supplier_id = mysqli_real_escape_string($conn, $supplier_id);
+    $query = "SELECT * FROM supplier WHERE supplier_id = '$supplier_id'";
+    $result = mysqli_query($conn, $query);
+    $supplier = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $supplier = $row;
+    }
+    return $supplier;
+}
+
 function get_customer_name($customer_id){
     global $conn;
     $query = "SELECT customer_first_name, customer_last_name FROM customer WHERE customer_id = '$customer_id'";
