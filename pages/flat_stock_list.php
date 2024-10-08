@@ -57,14 +57,13 @@ require 'includes/functions.php';
         <thead>
             <tr>
                 <th>Select</th> <!-- Add header for the checkbox -->
-                <th>Width</th>
-                <th>Length</th>
-                <th>Quantity</th>
-                <th>Notes</th>
-                <th>Added Date</th>
+                <th>Name</th>
+                <th>Length X Width</th>
+                <th>Tag Number</th>
+                <th>Manufactured Date</th>
             </tr>
         </thead>
-        <tbody id="flatStockList">
+        <tbody id="flatStockList" class='text-center'>
             <!-- Coils data will be loaded here via JavaScript -->
         </tbody>
     </table>
@@ -114,6 +113,7 @@ require 'includes/functions.php';
         <table id="flatStockTbl" class="table search-table align-middle text-nowrap">
             <thead class="header-item">
                 <th></th>
+                <th>Color</th>
                 <th>Width</th>
                 <th>Length</th>
                 <th>Quantity</th>
@@ -130,6 +130,11 @@ require 'includes/functions.php';
                     ?>
                     <tr class="search-items">
                         <td><?= $no ?></td>
+                        <td>
+                            <?= !empty($row_flat_stock['color']) ? getColorName($row_flat_stock['color']) : 'N/A' ?>
+                            <div style="width: 30px; height: 30px; background-color: <?= getColorHexFromColorID($row_flat_stock['color']) ?>; border: 1px solid #000;">
+                            </div>
+                        </td>
                         <td><?= $row_flat_stock['width'] ?></td>
                         <td><?= $row_flat_stock['length'] ?></td>
                         <td><?= $row_flat_stock['quantity'] ?></td>
@@ -137,8 +142,13 @@ require 'includes/functions.php';
                         <td><?= date("F d, Y", strtotime($row_flat_stock['date_added'])) ?></td>
                         <td>
                             <div class="action-btn">
-                                <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['productid'] ?>" data-color="<?= $row_product['color_id'] ?>" onclick="openFlatModal(this)">
-                                    <i class="ti ti-eye fs-5"></i>
+                                <a href="#" id="view_product_btn" class="text-primary edit" 
+                                    data-id="<?= $row_flat_stock['id'] ?>" 
+                                    data-color="<?= $row_flat_stock['color'] ?>" 
+                                    data-quantity="<?= $row_flat_stock['quantity'] ?>" 
+                                    data-custom_length="<?= $row_flat_stock['length'] ?>"  
+                                    onclick="openCoilModal(this)">
+                                        <i class="ti ti-eye fs-5"></i>
                                 </a>
                             </div>
                         </td>
@@ -168,6 +178,7 @@ require 'includes/functions.php';
     var quantity = $(element).data('quantity');
     var customLength = $(element).data('custom_length');
 
+
     // Make an AJAX request to fetch coils with the same color
     $.ajax({
         url: 'pages/fetch_coils.php', // Your PHP script to fetch coils
@@ -178,6 +189,10 @@ require 'includes/functions.php';
             custom_length: customLength 
         },
         success: function(response) {
+            
+    console.log(colorCode);
+    console.log(quantity);
+    console.log(customLength);
             // Update the modal's content
             $('#flatStockList').html(response);
             // Show the modal

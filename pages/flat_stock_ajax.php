@@ -8,6 +8,7 @@ require '../includes/dbconn.php';
 require '../includes/functions.php';
 
 if (isset($_POST['save_flat_stock'])) {
+    $color = floatval($_POST['color']);
     $width = floatval($_POST['width']);
     $length = floatval($_POST['length']);
     $quantity = floatval($_POST['quantity']);
@@ -15,11 +16,13 @@ if (isset($_POST['save_flat_stock'])) {
 
     $insert_query = "
     INSERT INTO flat_stock (
+        color,
         width,
         length,
         quantity,
         notes
     ) VALUES (
+        '$color',
         '$width',
         '$length',
         '$quantity',

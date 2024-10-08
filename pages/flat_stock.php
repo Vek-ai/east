@@ -59,7 +59,24 @@ $panel_id = 46;
     </div>
 
     <div class="row pt-3">
-      <div class="col-md-6">
+      <div class="col-md-3">
+          <label class="form-label">Color</label>
+          <div class="mb-3">
+            <select id="color" class="form-control select2-add" name="color">
+                <option value="/" >Select Color...</option>
+                <?php
+                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                ?>
+                    <option value="<?= $row_paint_colors['color_id'] ?>" ><?= $row_paint_colors['color_name'] ?></option>
+                <?php   
+                }
+                ?>
+            </select>
+          </div>
+      </div>
+      <div class="col-md-3">
           <label class="form-label">Width</label>
           <div class="mb-3">
             <input type="text" id="width" name="width" class="form-control" />
@@ -95,7 +112,14 @@ $panel_id = 46;
 
 <script>
     $(document).ready(function() {
+        $(".select2-add").select2({
+            width: '100%',
+            placeholder: "Select Correlated Products",
+            allowClear: true
+        });
+
         $('#saveFlatStock').click(function() {
+            var color = Number($('#color').val());
             var width = Number($('#width').val());
             var length = Number($('#length').val());
             var quantity = Number($('#quantity').val());
@@ -105,6 +129,7 @@ $panel_id = 46;
                 url: "pages/flat_stock_ajax.php",
                 type: "POST",
                 data: {
+                    color: color,
                     width: width,
                     length: length,
                     quantity: quantity,

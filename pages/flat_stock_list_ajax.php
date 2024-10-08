@@ -25,7 +25,7 @@ if (isset($_POST['color_code'])) {
                   </tr>";
         }
     } else {
-        echo "<tr><td colspan='5'>No coils found with this color.</td></tr>";
+        echo "<tr><td colspan='6' class='text-center'>No coils found with this color.</td></tr>";
     }
 }
 ?>
