@@ -40,11 +40,13 @@ if(!empty($_SESSION['orders'])){
 
 
 
-    $itemWidth = 60;
-    $colorWidth = 40; 
-    $categoryWidth = 30; 
-    $widthWidth = 33;
-    $lengthWidth = 33;
+    $itemWidth = 45;
+    $colorWidth = 35; 
+    $categoryWidth = 23; 
+    $widthWidth = 22;
+    $lengthWidth = 25;
+    $qtyWidth = 15;
+    $priceWidth = 26;
 
     // Set up column headers
     $pdf->SetFont('Arial', 'B', 10);
@@ -53,28 +55,42 @@ if(!empty($_SESSION['orders'])){
     $pdf->Cell($categoryWidth, 10, 'Category', 0);
     $pdf->Cell($widthWidth, 10, 'Width', 0);
     $pdf->Cell($lengthWidth, 10, 'Length', 0);
+    $pdf->Cell($qtyWidth, 10, 'Qty', 0);
+    $pdf->Cell($priceWidth, 10, 'Price', 0);
     $pdf->Ln();
 
     // Orders content
     $pdf->SetFont('Arial', '', 10);
+    $ttl_price = 0;
+    $ttl_quantity = 0;
     foreach ($session as $item) {
         if (isset($item['product_id'])) {
             $product_details = getProductDetails($item['product_id']);
+            $ttl_price += $product_details['unit_price'] * $item['quantity_cart'];
+            $ttl_quantity += $item['quantity_cart'];
             $pdf->Cell($itemWidth, 10, $product_details['product_item'], 0);
             $pdf->Cell($colorWidth, 10, getColorName($product_details['color']), 0);
             $pdf->Cell($categoryWidth, 10, getProductCategoryName($product_details['product_category']), 0);
             $pdf->Cell($widthWidth, 10, $product_details['width'], 0);
             $pdf->Cell($lengthWidth, 10, $product_details['length'], 0);
+            $pdf->Cell($qtyWidth, 10, $item['quantity_cart'], 0);
+            $pdf->Cell($priceWidth, 10, number_format($product_details['unit_price'] * $item['quantity_cart'],2), 0);
         } elseif (isset($item['coil_id'])) {
             $coil_details = getCoilDetails($item['coil_id']);
+            $ttl_quantity += $item['quantity_cart'];
             $pdf->Cell($itemWidth, 10, $coil_details['coil'], 0);
             $pdf->Cell($colorWidth, 10, getColorName($coil_details['color']), 0);
             $pdf->Cell($categoryWidth, 10, getProductCategoryName($coil_details['category']), 0);
             $pdf->Cell($widthWidth, 10, $coil_details['width'], 0);
             $pdf->Cell($lengthWidth, 10, $coil_details['length'], 0);
+            $pdf->Cell($qtyWidth, 10, $item['quantity_cart'], 0);
+            $pdf->Cell($priceWidth, 10, number_format(0,2), 0);
         }
         $pdf->Ln();
     }
+    $pdf->Cell($itemWidth+$colorWidth+$categoryWidth+$widthWidth+$lengthWidth, 10, 'Total', 0, 0, 'C');
+    $pdf->Cell($qtyWidth, 10, $ttl_quantity, 0);
+    $pdf->Cell($priceWidth, 10, $ttl_price, 0);
 }else{
     $pdf->Cell(0, 10, 'No Products Added to cart', 0, 1, 'C');
 }
