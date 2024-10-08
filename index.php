@@ -1349,6 +1349,7 @@ if (!isset($_SESSION['userid'])) {
             
             if ($_REQUEST['page'] == "flat_stock") {include 'pages/flat_stock.php';}
             if ($_REQUEST['page'] == "flat_stock_list") {include 'pages/flat_stock_list.php';}
+            if ($_REQUEST['page'] == "flat_stock_manufactured") {include 'pages/flat_stock_manufactured.php';}
           ?>
         </div>
       </div>
