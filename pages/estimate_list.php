@@ -37,14 +37,14 @@ $picture_path = "images/product/product.jpg";
     <div class="card-body px-0">
         <div class="d-flex justify-content-between align-items-center">
         <div><br>
-            <h4 class="font-weight-medium fs-14 mb-0"> Product</h4>
+            <h4 class="font-weight-medium fs-14 mb-0"> Estimate List</h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                <a class="text-muted text-decoration-none" href="">Home
+                <a class="text-muted text-decoration-none" href="">Estimate
                 </a>
                 </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Contact</li>
+                <li class="breadcrumb-item text-muted" aria-current="page">Estimate List</li>
             </ol>
             </nav>
         </div>

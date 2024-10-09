@@ -154,116 +154,7 @@ if(isset($_REQUEST['action'])) {
                     word-wrap: break-word;
                 }
             </style>
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header d-flex align-items-center">
-                        <h4 class="modal-title" id="myLargeModalLabel">
-                            Add Estimate
-                        </h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form id="add_est_form" method="POST" class="form-horizontal" enctype="multipart/form-data">
-                        <div class="modal-body">
-                            <div class="card datatables">
-                                <div class="card-body table-responsive">
-                                    <table id="est_add_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
-                                        <thead>
-                                            <tr>
-                                                <th>Description</th>
-                                                <th>Color</th>
-                                                <th>Grade</th>
-                                                <th>Profile</th>
-                                                <th class="text-center">Quantity</th>
-                                                <th class="text-center">Dimensions</th>
-                                                <th class="text-center">Price</th>
-                                                <th class="text-center">Customer Price</th>
-                                                <th class="text-center">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="table-body">
-                                            <tr>
-                                                <td><input type="text" name="description[]" class="form-control"></td>
-                                                <td><input type="text" name="color[]" class="form-control"></td>
-                                                <td><input type="text" name="grade[]" class="form-control"></td>
-                                                <td><input type="text" name="profile[]" class="form-control"></td>
-                                                <td><input type="number" name="quantity[]" class="form-control"></td>
-                                                <td><input type="text" name="dimensions[]" class="form-control"></td>
-                                                <td><input type="text" name="actual_price[]" class="form-control"></td>
-                                                <td><input type="text" name="discounted_price[]" class="form-control"></td>
-                                                <td class="text-center">
-                                                    <div class="d-flex justify-content-center align-items-center">
-                                                        <button type="button" class="btn add-row p-1 fs-7 me-2">
-                                                            <i class="text-success ti ti-plus fs-7"></i>
-                                                        </button>
-                                                        <button type="button" class="btn minus-row p-1 fs-7">
-                                                            <i class="text-danger ti ti-minus fs-7"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <div class="form-actions">
-                                <div class="card-body">
-                                    <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
-                                    <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <script>
-                $('#est_add_tbl').DataTable({
-                    language: {
-                        emptyTable: "Estimate List not found"
-                    },
-                    autoWidth: false,
-                    responsive: true,
-                    lengthChange: false,
-                    paging: false,
-                    searching: false,
-                    ordering: false,
-                    info: false
-                });
-
-                $(document).on('click', '.add-row', function() {
-                    var row = $('#table-body tr:last').clone();
-                    row.find('input').val('');
-                    row.appendTo('#table-body');
-                });
-
-                $(document).on('click', '.minus-row', function() {
-                    var row = $(this).closest('tr');
-                    if (confirm("Are you sure you want to remove this row?")) {
-                        if ($('#table-body tr').length > 1) {
-                            row.remove();
-                        } else {
-                            row.find('input').val('');
-                        }
-                    }
-                });
-            </script>
-    <?php
-    } 
-
-    if ($action == "fetch_edit_modal") {
-        ?>
-            <style>
-                #add_est_form {
-                    width: 100% !important;
-                }
-
-                #add_est_form td, #add_est_form th {
-                    white-space: normal !important;
-                    word-wrap: break-word;
-                }
-            </style>
-            <div class="modal-dialog modal-xl">
+            <div class="modal-dialog modal-fullscreen">
                 <div class="modal-content">
                     <div class="modal-header d-flex align-items-center">
                         <h4 class="modal-title" id="myLargeModalLabel">
@@ -292,7 +183,7 @@ if(isset($_REQUEST['action'])) {
                                         <tbody id="table-body">
                                             <tr>
                                                 <td>
-                                                    <select id="product[]" class="productSelect form-control" name="product">
+                                                    <select id="product" class="productAdd form-control" name="product[]">
                                                         <option value="" >Select Product...</option>
                                                         <?php
                                                         $query_product = "SELECT * FROM product WHERE hidden = '0'";
@@ -306,7 +197,7 @@ if(isset($_REQUEST['action'])) {
                                                     </select>
                                                 </td>
                                                 <td>
-                                                    <select id="color" class="colorSelect form-control" name="color">
+                                                    <select id="color" class="colorAdd form-control" name="color[]">
                                                         <option value="" >Select Color...</option>
                                                         <?php
                                                         $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
@@ -314,14 +205,14 @@ if(isset($_REQUEST['action'])) {
                                                         while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                                             $selected = ($row['color'] == $row_paint_colors['color_id']) ? 'selected' : '';
                                                         ?>
-                                                            <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
+                                                            <option value="<?= $row_paint_colors['color_id'] ?>" data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
                                                         <?php   
                                                         }
                                                         ?>
                                                     </select>
                                                 </td>
                                                 <td>
-                                                    <select id="grade[]" class="gradeSelect form-control" name="grade">
+                                                    <select id="grade" class="gradeAdd form-control" name="grade[]">
                                                         <option value="" >Select Grade...</option>
                                                         <?php
                                                         $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
@@ -335,17 +226,41 @@ if(isset($_REQUEST['action'])) {
                                                         ?>
                                                     </select>
                                                 </td>
-                                                <td><input type="text" name="profile[]" class="form-control"></td>
+                                                <td>
+                                                    <select id="profile" class="profileAdd form-control" name="profile[]">
+                                                        <option value="" >Select Profile...</option>
+                                                        <?php
+                                                        $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0'";
+                                                        $result_profile_type = mysqli_query($conn, $query_profile_type);            
+                                                        while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
+                                                            $selected = ($row['profile'] == $row_profile_type['profile_type_id']) ? 'selected' : '';
+                                                        ?>
+                                                            <option value="<?= $row_profile_type['profile_type_id'] ?>" <?= $selected ?>><?= $row_profile_type['profile_type'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </td>
                                                 <td><input type="number" name="quantity[]" class="form-control"></td>
-                                                <td><input type="text" name="dimensions[]" class="form-control"></td>
+                                                <td>
+                                                    <div class="d-flex flex-column align-items-center">
+                                                        <input class="form-control text-center mb-1" type="text" value="" placeholder="Width" size="5" style="color:#ffffff; ">
+                                                        <span class="mx-1 text-center mb-1">X</span>
+                                                        <input class="form-control text-center mb-1" type="text" value="" placeholder="Bend" size="5" style="color:#ffffff;">
+                                                        <span class="mx-1 text-center mb-1">X</span>
+                                                        <input class="form-control text-center mb-1" type="text" value="" placeholder="Hem" size="5" style="color:#ffffff;">
+                                                        <span class="mx-1 text-center mb-1">X</span>
+                                                        <input class="form-control text-center" type="text" value="" placeholder="Length" size="5" style="color:#ffffff;">
+                                                    </div>
+                                                </td>
                                                 <td><input type="text" name="actual_price[]" class="form-control"></td>
                                                 <td><input type="text" name="discounted_price[]" class="form-control"></td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center align-items-center">
-                                                        <button type="button" class="btn add-row p-1 fs-7 me-2">
+                                                        <button type="button" class="btn add-row btn-sm p-1 fs-5 me-1">
                                                             <i class="text-success ti ti-plus fs-7"></i>
                                                         </button>
-                                                        <button type="button" class="btn minus-row p-1 fs-7">
+                                                        <button type="button" class="btn minus-row btn-sm p-1 fs-5">
                                                             <i class="text-danger ti ti-minus fs-7"></i>
                                                         </button>
                                                     </div>
@@ -400,14 +315,215 @@ if(isset($_REQUEST['action'])) {
                     row.appendTo('#table-body');
                 });
 
+                $('.colorAdd').select2({
+                    placeholder: "Select Color",
+                    templateResult: formatOption,
+                    templateSelection: formatOption,
+                    width: '300px'
+                });
+
+                $('.productAdd, .gradeAdd, .profileAdd').select2({
+                    placeholder: "Select One",
+                    width: '300px'
+                });
+
+                $(document).on('click', '.minus-row', function() {
+                    var row = $(this).closest('tr');
+                    if (confirm("Are you sure you want to remove this row?")) {
+                        if ($('#table-body tr').length > 1) {
+                            row.remove();
+                        } else {
+                            row.find('input').val('');
+                        }
+                    }
+                });
+            </script>
+    <?php
+    } 
+
+    if ($action == "fetch_edit_modal") {
+        ?>
+            <style>
+                #add_est_form {
+                    width: 100% !important;
+                }
+
+                #add_est_form td, #add_est_form th {
+                    white-space: normal !important;
+                    word-wrap: break-word;
+                }
+            </style>
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content">
+                    <div class="modal-header d-flex align-items-center">
+                        <h4 class="modal-title" id="myLargeModalLabel">
+                            Add Estimate
+                        </h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="add_est_form" method="POST" class="form-horizontal" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <div class="card datatables">
+                                <div class="card-body table-responsive">
+                                    <table id="est_edit_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>Description</th>
+                                                <th>Color</th>
+                                                <th>Grade</th>
+                                                <th>Profile</th>
+                                                <th class="text-center">Quantity</th>
+                                                <th class="text-center">Dimensions</th>
+                                                <th class="text-center">Price</th>
+                                                <th class="text-center">Customer Price</th>
+                                                <th class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-body">
+                                            <tr>
+                                                <td>
+                                                    <select id="product" class="productSelect form-control" name="product[]">
+                                                        <option value="" >Select Product...</option>
+                                                        <?php
+                                                        $query_product = "SELECT * FROM product WHERE hidden = '0'";
+                                                        $result_product = mysqli_query($conn, $query_product);            
+                                                        while ($row_product = mysqli_fetch_array($result_product)) {
+                                                        ?>
+                                                            <option value="<?= $row_product['product_id'] ?>" <?= $selected ?>><?= $row_product['product_item'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select id="color" class="colorSelect form-control" name="color[]">
+                                                        <option value="" >Select Color...</option>
+                                                        <?php
+                                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                        $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                                        while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                                            $selected = ($row['color'] == $row_paint_colors['color_id']) ? 'selected' : '';
+                                                        ?>
+                                                            <option value="<?= $row_paint_colors['color_id'] ?>" data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select id="grade" class="gradeSelect form-control" name="grade[]">
+                                                        <option value="" >Select Grade...</option>
+                                                        <?php
+                                                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                                                        $result_grade = mysqli_query($conn, $query_grade);            
+                                                        while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                                            $selected = ($row['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
+                                                        ?>
+                                                            <option value="<?= $row_grade['product_grade_id'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select id="profile" class="profileSelect form-control" name="profile[]">
+                                                        <option value="/" >Select Profile...</option>
+                                                        <?php
+                                                        $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0'";
+                                                        $result_profile_type = mysqli_query($conn, $query_profile_type);            
+                                                        while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
+                                                            $selected = ($row['profile'] == $row_profile_type['profile_type_id']) ? 'selected' : '';
+                                                        ?>
+                                                            <option value="<?= $row_profile_type['profile_type_id'] ?>" <?= $selected ?>><?= $row_profile_type['profile_type'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </td>
+                                                <td><input type="number" name="quantity[]" class="form-control"></td>
+                                                <td>
+                                                    <div class="d-flex flex-column align-items-center">
+                                                        <input class="form-control text-center mb-1" type="text" value="" placeholder="Width" size="5" style="color:#ffffff; ">
+                                                        <span class="mx-1 text-center mb-1">X</span>
+                                                        <input class="form-control text-center mb-1" type="text" value="" placeholder="Bend" size="5" style="color:#ffffff;">
+                                                        <span class="mx-1 text-center mb-1">X</span>
+                                                        <input class="form-control text-center mb-1" type="text" value="" placeholder="Hem" size="5" style="color:#ffffff;">
+                                                        <span class="mx-1 text-center mb-1">X</span>
+                                                        <input class="form-control text-center" type="text" value="" placeholder="Length" size="5" style="color:#ffffff;">
+                                                    </div>
+                                                </td>
+                                                <td><input type="text" name="actual_price[]" class="form-control"></td>
+                                                <td><input type="text" name="discounted_price[]" class="form-control"></td>
+                                                <td class="text-center">
+                                                    <div class="d-flex justify-content-center align-items-center">
+                                                        <button type="button" class="btn add-row btn-sm p-1 fs-5 me-1">
+                                                            <i class="text-success ti ti-plus fs-7"></i>
+                                                        </button>
+                                                        <button type="button" class="btn minus-row btn-sm p-1 fs-5">
+                                                            <i class="text-danger ti ti-minus fs-7"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="form-actions">
+                                <div class="card-body">
+                                    <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+                                    <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <script>
+                function formatOption(state) {
+                    if (!state.id) {
+                        return state.text;
+                    }
+                    var color = $(state.element).data('color');
+                    var $state = $(
+                        '<span class="d-flex align-items-center">' +
+                        '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
+                        state.text + '</span>'
+                    );
+                    return $state;
+                }
+
+                $('#est_edit_tbl').DataTable({
+                    language: {
+                        emptyTable: "Estimate List not found"
+                    },
+                    autoWidth: false,
+                    responsive: true,
+                    lengthChange: false,
+                    paging: false,
+                    searching: false,
+                    ordering: false,
+                    info: false
+                });
+
+                $(document).on('click', '.add-row', function() {
+                    var row = $('#table-body tr:last').clone();
+                    row.find('input').val('');
+                    row.appendTo('#table-body');
+                });
+
                 $('.colorSelect').select2({
                     placeholder: "Select Color",
                     templateResult: formatOption,
-                    templateSelection: formatOption
+                    templateSelection: formatOption,
+                    width: '300px'
                 });
 
                 $('.productSelect, .gradeSelect, .profileSelect').select2({
-                    placeholder: "Select One"
+                    placeholder: "Select One",
+                    width: '300px'
                 });
 
                 $(document).on('click', '.minus-row', function() {
