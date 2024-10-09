@@ -1188,12 +1188,20 @@ require '../includes/functions.php';
                     save_order: 'save_order'
                 },
                 success: function(response) {
-                    
-                    if(response.trim() == 'success'){
-                        alert("Order successfully saved.");
-                        $('#cashmodal').modal('hide');
+                    try {
+                        var jsonResponse = JSON.parse(response);
+                        
+                        if (jsonResponse.success) {
+                            alert("Order successfully saved.");
+                            $('#cashmodal').modal('hide');
+                            location.href('/print_order_product.php?id=' +jsonResponse.order_id)
+                        } else if (jsonResponse.error) {
+                            alert("Error: " + jsonResponse.error);
+                        }
+                    } catch (e) {
+                        alert("Invalid response from server.");
+                        console.log(response);
                     }
-                    alert(response);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);

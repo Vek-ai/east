@@ -414,10 +414,14 @@ if (isset($_POST['save_estimate'])) {
 }
 
 if (isset($_POST['save_order'])) {
+    header('Content-Type: application/json');
+
+    $response = [];
     $cart = $_SESSION['cart'];
 
     if (!isset($_SESSION['customer_id'])) {
-        echo "Customer ID is not set.";
+        $response['error'] = "Customer ID is not set.";
+        echo json_encode($response);
         exit;
     }
 
@@ -440,7 +444,8 @@ if (isset($_POST['save_order'])) {
         if ($conn->query($query) === TRUE) {
             $orderid = $conn->insert_id;
         } else {
-            echo "Error inserting estimate: " . $conn->error;
+            $response['error'] = "Error inserting estimate: " . $conn->error;
+            echo json_encode($response);
             exit;
         }
     }
@@ -473,15 +478,18 @@ if (isset($_POST['save_order'])) {
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
-            echo "success";
+            $response['success'] = true;
+            $response['order_id'] = $orderid; // Include order_id in success response
 
-            unset($_SESSION['cart']);
+            unset($_SESSION['cart']); // Clear cart
         } else {
-            echo "Error inserting estimate products: " . $conn->error;
+            $response['error'] = "Error inserting estimate products: " . $conn->error;
         }
     }
 
     $conn->close();
+
+    echo json_encode($response); // Send JSON response
 }
 
 if (isset($_POST['search_customer'])) {

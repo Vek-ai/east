@@ -203,6 +203,18 @@ function getGradeFromID($product_id){
     return getGradeName($grade);
 }
 
+function getGradeDetails($product_grade_id) {
+    global $conn;
+    $product_grade_id = mysqli_real_escape_string($conn, $product_grade_id);
+    $query = "SELECT * FROM product_grade WHERE product_grade_id = '$product_grade_id'";
+    $result = mysqli_query($conn, $query);
+    $product_grade = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $product_grade = $row;
+    }
+    return $product_grade;
+}
+
 function getWarrantyTypeName($product_warranty_type_id ){
     global $conn;
     $query = "SELECT product_warranty_type FROM product_warranty_type WHERE product_warranty_type_id = '$product_warranty_type_id   '";
@@ -294,6 +306,18 @@ function get_customer_name($customer_id){
     $row = mysqli_fetch_array($result); 
     $customer_name = $row['customer_first_name'] . ' ' .$row['customer_last_name'];
     return  $customer_name;
+}
+
+function getCustomerDetails($customer_id) {
+    global $conn;
+    $customer_id = mysqli_real_escape_string($conn, $customer_id);
+    $query = "SELECT * FROM customer WHERE customer_id = '$customer_id'";
+    $result = mysqli_query($conn, $query);
+    $customer = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $customer = $row;
+    }
+    return $customer;
 }
 
 function generateRandomUPC() {
