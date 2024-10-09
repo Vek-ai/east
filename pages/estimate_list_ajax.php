@@ -191,7 +191,14 @@ if(isset($_REQUEST['action'])) {
                                                 <td><input type="text" name="actual_price[]" class="form-control"></td>
                                                 <td><input type="text" name="discounted_price[]" class="form-control"></td>
                                                 <td class="text-center">
-                                                    <button type="button" class="btn add-row p-1 fs-7"><i class="text-success ti ti-plus fs-7"></i></button>
+                                                    <div class="d-flex justify-content-center align-items-center">
+                                                        <button type="button" class="btn add-row p-1 fs-7 me-2">
+                                                            <i class="text-success ti ti-plus fs-7"></i>
+                                                        </button>
+                                                        <button type="button" class="btn minus-row p-1 fs-7">
+                                                            <i class="text-danger ti ti-minus fs-7"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -228,6 +235,17 @@ if(isset($_REQUEST['action'])) {
                     var row = $('#table-body tr:last').clone();
                     row.find('input').val('');
                     row.appendTo('#table-body');
+                });
+
+                $(document).on('click', '.minus-row', function() {
+                    var row = $(this).closest('tr');
+                    if (confirm("Are you sure you want to remove this row?")) {
+                        if ($('#table-body tr').length > 1) {
+                            row.remove();
+                        } else {
+                            row.find('input').val('');
+                        }
+                    }
                 });
             </script>
     <?php
