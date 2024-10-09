@@ -89,7 +89,7 @@ $picture_path = "images/product/product.jpg";
                 <i class="ti ti-trash me-1 fs-5"></i> Delete All Row
             </a>
             </div>
-            <button type="button" id="add_estimate_btn" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addEstimateModal">
+            <button type="button" id="add_estimate_btn" class="btn btn-primary d-flex align-items-center">
                 <i class="ti ti-users text-white me-1 fs-5"></i> Add Estimate
             </button>
         </div>
@@ -224,40 +224,38 @@ $picture_path = "images/product/product.jpg";
             event.preventDefault(); 
             var id = $(this).data('id');
             $.ajax({
-                    url: 'pages/estimate_list_ajax.php',
-                    type: 'POST',
-                    data: {
-                        id: id,
-                        action: "fetch_edit_modal"
-                    },
-                    success: function(response) {
-                        $('#updateEstimateModal').html(response);
-                        $('#updateEstimateModal').modal('show');
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
+                url: 'pages/estimate_list_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    action: "fetch_edit_modal"
+                },
+                success: function(response) {
+                    $('#updateEstimateModal').html(response);
+                    $('#updateEstimateModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
             });
         });
 
         // Show the Edit Product modal and log the product ID
         $(document).on('click', '#add_estimate_btn', function(event) {
             event.preventDefault(); 
-            var id = $(this).data('id');
             $.ajax({
-                    url: 'pages/estimate_list_ajax.php',
-                    type: 'POST',
-                    data: {
-                        id: id,
-                        action: "fetch_add_modal"
-                    },
-                    success: function(response) {
-                        $('#addEstimateModal').html(response);
-                        $('#addEstimateModal').modal('show');
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
+                url: 'pages/estimate_list_ajax.php',
+                type: 'POST',
+                data: {
+                    action: "fetch_add_modal"
+                },
+                success: function(response) {
+                    $('#addEstimateModal').html(response);
+                    $('#addEstimateModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
             });
         });
 
