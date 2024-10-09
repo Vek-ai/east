@@ -1188,19 +1188,12 @@ require '../includes/functions.php';
                     save_order: 'save_order'
                 },
                 success: function(response) {
-                    try {
-                        var jsonResponse = JSON.parse(response);
-                        
-                        if (jsonResponse.success) {
-                            alert("Order successfully saved.");
-                            $('#cashmodal').modal('hide');
-                            location.href('/print_order_product.php?id=' +jsonResponse.order_id)
-                        } else if (jsonResponse.error) {
-                            alert("Error: " + jsonResponse.error);
-                        }
-                    } catch (e) {
-                        alert("Invalid response from server.");
-                        console.log(response);
+                    if (response.success) {
+                        alert("Order successfully saved.");
+                        $('#cashmodal').modal('hide');
+                        window.location.href = '/print_order_product.php?id=' + response.order_id;
+                    } else if (response.error) {
+                        alert("Error: " + response.error);
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {

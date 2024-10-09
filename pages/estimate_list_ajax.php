@@ -251,6 +251,179 @@ if(isset($_REQUEST['action'])) {
     <?php
     } 
 
+    if ($action == "fetch_edit_modal") {
+        ?>
+            <style>
+                #add_est_form {
+                    width: 100% !important;
+                }
+
+                #add_est_form td, #add_est_form th {
+                    white-space: normal !important;
+                    word-wrap: break-word;
+                }
+            </style>
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header d-flex align-items-center">
+                        <h4 class="modal-title" id="myLargeModalLabel">
+                            Add Estimate
+                        </h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="add_est_form" method="POST" class="form-horizontal" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <div class="card datatables">
+                                <div class="card-body table-responsive">
+                                    <table id="est_add_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>Description</th>
+                                                <th>Color</th>
+                                                <th>Grade</th>
+                                                <th>Profile</th>
+                                                <th class="text-center">Quantity</th>
+                                                <th class="text-center">Dimensions</th>
+                                                <th class="text-center">Price</th>
+                                                <th class="text-center">Customer Price</th>
+                                                <th class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-body">
+                                            <tr>
+                                                <td>
+                                                    <select id="product[]" class="productSelect form-control" name="product">
+                                                        <option value="" >Select Product...</option>
+                                                        <?php
+                                                        $query_product = "SELECT * FROM product WHERE hidden = '0'";
+                                                        $result_product = mysqli_query($conn, $query_product);            
+                                                        while ($row_product = mysqli_fetch_array($result_product)) {
+                                                        ?>
+                                                            <option value="<?= $row_product['product_id'] ?>" <?= $selected ?>><?= $row_product['product_item'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select id="color" class="colorSelect form-control" name="color">
+                                                        <option value="" >Select Color...</option>
+                                                        <?php
+                                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                        $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                                        while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                                            $selected = ($row['color'] == $row_paint_colors['color_id']) ? 'selected' : '';
+                                                        ?>
+                                                            <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select id="grade[]" class="gradeSelect form-control" name="grade">
+                                                        <option value="" >Select Grade...</option>
+                                                        <?php
+                                                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                                                        $result_grade = mysqli_query($conn, $query_grade);            
+                                                        while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                                            $selected = ($row['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
+                                                        ?>
+                                                            <option value="<?= $row_grade['product_grade_id'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </td>
+                                                <td><input type="text" name="profile[]" class="form-control"></td>
+                                                <td><input type="number" name="quantity[]" class="form-control"></td>
+                                                <td><input type="text" name="dimensions[]" class="form-control"></td>
+                                                <td><input type="text" name="actual_price[]" class="form-control"></td>
+                                                <td><input type="text" name="discounted_price[]" class="form-control"></td>
+                                                <td class="text-center">
+                                                    <div class="d-flex justify-content-center align-items-center">
+                                                        <button type="button" class="btn add-row p-1 fs-7 me-2">
+                                                            <i class="text-success ti ti-plus fs-7"></i>
+                                                        </button>
+                                                        <button type="button" class="btn minus-row p-1 fs-7">
+                                                            <i class="text-danger ti ti-minus fs-7"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="form-actions">
+                                <div class="card-body">
+                                    <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+                                    <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <script>
+                function formatOption(state) {
+                    if (!state.id) {
+                        return state.text;
+                    }
+                    var color = $(state.element).data('color');
+                    var $state = $(
+                        '<span class="d-flex align-items-center">' +
+                        '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
+                        state.text + '</span>'
+                    );
+                    return $state;
+                }
+
+                $('#est_add_tbl').DataTable({
+                    language: {
+                        emptyTable: "Estimate List not found"
+                    },
+                    autoWidth: false,
+                    responsive: true,
+                    lengthChange: false,
+                    paging: false,
+                    searching: false,
+                    ordering: false,
+                    info: false
+                });
+
+                $(document).on('click', '.add-row', function() {
+                    var row = $('#table-body tr:last').clone();
+                    row.find('input').val('');
+                    row.appendTo('#table-body');
+                });
+
+                $('.colorSelect').select2({
+                    placeholder: "Select Color",
+                    templateResult: formatOption,
+                    templateSelection: formatOption
+                });
+
+                $('.productSelect, .gradeSelect, .profileSelect').select2({
+                    placeholder: "Select One"
+                });
+
+                $(document).on('click', '.minus-row', function() {
+                    var row = $(this).closest('tr');
+                    if (confirm("Are you sure you want to remove this row?")) {
+                        if ($('#table-body tr').length > 1) {
+                            row.remove();
+                        } else {
+                            row.find('input').val('');
+                        }
+                    }
+                });
+            </script>
+    <?php
+    } 
+
     if ($action == 'fetch_product_fields') {
         $product_category_id = mysqli_real_escape_string($conn, $_POST['product_category_id']);
         $query = "SELECT * FROM product_fields WHERE product_category_id='$product_category_id'";

@@ -403,8 +403,6 @@ if (isset($_POST['save_estimate'])) {
 
         if ($conn->query($query) === TRUE) {
             echo "success";
-
-            unset($_SESSION['cart']);
         } else {
             echo "Error inserting estimate products: " . $conn->error;
         }
@@ -479,9 +477,9 @@ if (isset($_POST['save_order'])) {
 
         if ($conn->query($query) === TRUE) {
             $response['success'] = true;
-            $response['order_id'] = $orderid; // Include order_id in success response
+            $response['order_id'] = $orderid;
 
-            unset($_SESSION['cart']); // Clear cart
+            unset($_SESSION['cart']);
         } else {
             $response['error'] = "Error inserting estimate products: " . $conn->error;
         }
@@ -489,7 +487,7 @@ if (isset($_POST['save_order'])) {
 
     $conn->close();
 
-    echo json_encode($response); // Send JSON response
+    echo json_encode($response);
 }
 
 if (isset($_POST['search_customer'])) {
