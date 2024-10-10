@@ -191,9 +191,10 @@ $picture_path = "images/product/product.jpg";
                                         }
                                     ?>
                                 </td>
-                                <td><button class="btn btn-danger-gradient btn-sm" id="view_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-primary ti ti-eye fs-7"></i></button>
-                                    <button class="btn btn-danger-gradient btn-sm" id="edit_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-warning ti ti-pencil fs-7"></i></button>
-                                    <button class="btn btn-danger-gradient btn-sm" id="delete_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-danger ti ti-trash fs-7"></i></button>
+                                <td>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 mx-1" id="view_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-primary ti ti-eye fs-7"></i></button>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 mx-1" id="edit_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-warning ti ti-pencil fs-7"></i></button>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 mx-1" id="delete_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-danger ti ti-trash fs-7"></i></button>
                                 </td>
                             </tr>
                             <?php

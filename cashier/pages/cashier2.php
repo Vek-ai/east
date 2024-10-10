@@ -580,6 +580,7 @@ require '../includes/functions.php';
             }
         });
     }
+    
     function addtocart(element) {
         var product_id = $(element).data('id');
         var line = $(element).data('line');

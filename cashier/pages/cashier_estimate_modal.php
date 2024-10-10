@@ -11,6 +11,10 @@ if(isset($_POST['fetch_estimate'])){
     $discount = 0.1;
     ?>
     <style>
+        .high-zindex-select2 + .select2-container--open {
+            z-index: 1055 !important;
+        }
+
         .table-fixed {
             table-layout: fixed;
             width: 100%;
@@ -33,17 +37,19 @@ if(isset($_POST['fetch_estimate'])){
         .table-fixed th:nth-child(4),
         .table-fixed td:nth-child(4) { width: 8%; }
         .table-fixed th:nth-child(5),
-        .table-fixed td:nth-child(5) { width: 15%; }
+        .table-fixed td:nth-child(5) { width: 10%; }
         .table-fixed th:nth-child(6),
-        .table-fixed td:nth-child(6) { width: 15%; }
+        .table-fixed td:nth-child(6) { width: 10%; }
         .table-fixed th:nth-child(7),
         .table-fixed td:nth-child(7) { width: 10%; }
         .table-fixed th:nth-child(8),
-        .table-fixed td:nth-child(8) { width: 7%; }
+        .table-fixed td:nth-child(8) { width: 10%; }
         .table-fixed th:nth-child(9),
-        .table-fixed td:nth-child(9) { width: 10%; }
+        .table-fixed td:nth-child(9) { width: 7%; }
         .table-fixed th:nth-child(10),
-        .table-fixed td:nth-child(10) { width: 4%; }
+        .table-fixed td:nth-child(10) { width: 10%; }
+        .table-fixed th:nth-child(11),
+        .table-fixed td:nth-child(11) { width: 4%; }
 
         input[readonly] {
             border: none;               
@@ -66,7 +72,8 @@ if(isset($_POST['fetch_estimate'])){
                             <th width="5%" class="text-center">Color</th>
                             <th width="5%" class="text-center">Grade</th>
                             <th width="5%" class="text-center">Profile</th>
-                            <th width="25%" class="text-center pl-3">Quantity</th>
+                            <th width="10%" class="text-center pl-3">Quantity</th>
+                            <th width="15%" class="text-center pl-3">Usage</th>
                             <th width="30%" class="text-center">Dimensions<br>(Width X Height)</th>
                             <th width="5%" class="text-center">Stock</th>
                             <th width="7%" class="text-center">Price</th>
@@ -164,6 +171,23 @@ if(isset($_POST['fetch_estimate'])){
                                             </span>
                                         </div>
                                     </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <select id="usage" class="form-control" name="usage">
+                                                <option value="/" >Select Usage...</option>
+                                                <?php
+                                                $query_usage = "SELECT * FROM component_usage";
+                                                $result_usage = mysqli_query($conn, $query_usage);            
+                                                while ($row_usage = mysqli_fetch_array($result_usage)) {
+                                                    $selected = ($values['usageid'] == $row_usage['usageid']) ? 'selected' : '';
+                                                ?>
+                                                    <option value="<?= $row_usage['usageid'] ?>" <?= $selected ?>><?= $row_usage['usage_name'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
+                                        </div>
+                                    </td>
                                     <?php if($category_id == '46'){ // Panels ID
                                     ?>
                                     <td>
@@ -233,7 +257,7 @@ if(isset($_POST['fetch_estimate'])){
                     <tfoot>
                         <tr>
                             <td colspan="1"></td>
-                            <td colspan="4" class="text-end">Total Quantity:</td>
+                            <td colspan="5" class="text-end">Total Quantity:</td>
                             <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
                             <td colspan="3" class="text-end">Amount Due:</td>
                             <td colspan="1" class="text-end"><span id="ammount_due"><?= $total ?> $</span></td>
