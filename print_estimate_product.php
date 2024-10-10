@@ -16,7 +16,7 @@ $col2_x = 140;
 
 $estimateid = $_REQUEST['id'];
 $current_user_id = $_SESSION['userid'];
-$discount = .1;
+
 $tax = .15;
 $delivery_price = 100;
 
@@ -25,6 +25,7 @@ $result = mysqli_query($conn, $query);
 
 if (mysqli_num_rows($result) > 0) {
     while($row = mysqli_fetch_assoc($result)){
+        $discount = floatval($row['discount_percent']) / 100;
         $estimateid = $row['estimateid'];
         $customer_id = $row['customerid'];
         $customerDetails = getCustomerDetails($customer_id);
@@ -172,7 +173,7 @@ if (mysqli_num_rows($result) > 0) {
             $pdf->SetFont('Arial', '', 9);
             $pdf->SetXY($col2_x, $col_y);
             $pdf->Cell(40, $lineheight, 'MISC:', 0, 0);
-            $pdf->Cell(20, $lineheight, '-' .$discount * 100 .'%', 0, 1, 'R');
+            $pdf->Cell(20, $lineheight, $discount < 0 ? '-' : '' .$discount * 100 .'%', 0, 1, 'R');
 
             $pdf->SetXY($col2_x, $pdf->GetY());
             $pdf->Cell(40, $lineheight, 'SUBTOTAL:', 0, 0);

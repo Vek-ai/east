@@ -252,6 +252,10 @@ if(isset($_POST['fetch_order'])){
                                     <span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span>
                                 </div>
                                 <div class="form-group">
+                                    <label>Discount (%)</label>
+                                    <input type="text" class="form-control" id="order_discount" placeholder="%">
+                                </div>
+                                <div class="form-group">
                                     <label>Amount</label>
                                     <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="<?= $_SESSION["grandtotal"] ?>">
                                 </div>

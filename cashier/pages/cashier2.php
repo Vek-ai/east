@@ -1166,10 +1166,13 @@ require '../includes/functions.php';
         }
 
         $(document).on('click', '#save_estimate', function(event) {
+            var discount = $('#est_discount').val();
+            console.log(discount);
             $.ajax({
                 url: 'pages/cashier2_ajax.php',
                 type: 'POST',
                 data: {
+                    discount: discount,
                     save_estimate: 'save_estimate'
                 },
                 success: function(response) {
@@ -1187,10 +1190,13 @@ require '../includes/functions.php';
         });
 
         $(document).on('click', '#save_order', function(event) {
+            var discount = $('#order_discount').val();
+            console.log(discount);
             $.ajax({
                 url: 'pages/cashier2_ajax.php',
                 type: 'POST',
                 data: {
+                    discount: discount,
                     save_order: 'save_order'
                 },
                 success: function(response) {

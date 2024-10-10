@@ -92,6 +92,7 @@ if (mysqli_num_rows($result) > 0) {
             $total_price = 0;
             $total_qty = 0;
             while($row_product = mysqli_fetch_assoc($result_product)){
+                $discount = floatval($row['discount_percent']) / 100;
                 $product_id = $row_product['productid'];
                 $product_details = getProductDetails($product_id);
                 $grade_details = getGradeDetails($product_details['grade']);
@@ -171,7 +172,7 @@ if (mysqli_num_rows($result) > 0) {
             $pdf->SetFont('Arial', '', 9);
             $pdf->SetXY($col2_x, $col_y);
             $pdf->Cell(40, $lineheight, 'MISC:', 0, 0);
-            $pdf->Cell(20, $lineheight, '-' .$discount * 100 .'%', 0, 1, 'R');
+            $pdf->Cell(20, $lineheight, $discount < 0 ? '-' : '' .$discount * 100 .'%', 0, 1, 'R');
 
             $pdf->SetXY($col2_x, $pdf->GetY());
             $pdf->Cell(40, $lineheight, 'SUBTOTAL:', 0, 0);

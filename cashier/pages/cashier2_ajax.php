@@ -345,6 +345,7 @@ if (isset($_POST['set_estimate_length'])) {
 }
 
 if (isset($_POST['save_estimate'])) {
+    $discount = floatval( $_POST['discount']);
     $response = [
         'success' => false,
         'message' => '',
@@ -375,7 +376,7 @@ if (isset($_POST['save_estimate'])) {
 
         $discounted_price = number_format($total_price * 0.9, 2);
 
-        $query = "INSERT INTO estimates (total_price, discounted_price, estimated_date, customerid) VALUES ('$total_price', '$discounted_price', '$estimated_date', '$customerid')";
+        $query = "INSERT INTO estimates (total_price, discounted_price, discount_percent, estimated_date, customerid) VALUES ('$total_price', '$discounted_price', '$discount', '$estimated_date', '$customerid')";
         if ($conn->query($query) === TRUE) {
             $estimateid = $conn->insert_id;
         } else {
@@ -428,6 +429,7 @@ if (isset($_POST['save_estimate'])) {
 
 
 if (isset($_POST['save_order'])) {
+    $discount = floatval( $_POST['discount']);
     header('Content-Type: application/json');
 
     $response = [];
@@ -454,7 +456,7 @@ if (isset($_POST['save_order'])) {
 
         $discounted_price = number_format($total_price * 0.9, 2);
 
-        $query = "INSERT INTO orders (total_price, discounted_price, order_date, customerid) VALUES ('$total_price', '$discounted_price', '$order_date', '$customerid')";
+        $query = "INSERT INTO orders (total_price, discounted_price, discount_percent, order_date, customerid) VALUES ('$total_price', '$discounted_price', '$discount',  '$order_date', '$customerid')";
         if ($conn->query($query) === TRUE) {
             $orderid = $conn->insert_id;
         } else {
