@@ -100,7 +100,29 @@ $picture_path = "images/product/product.jpg";
 
     <div class="modal fade" id="addEstimateModal" tabindex="-1" aria-labelledby="addEstimateModalLabel" aria-hidden="true"></div>
 
-    <div class="modal fade" id="updateEstimateModal" tabindex="-1" role="dialog" aria-labelledby="updateEstimateModal" aria-hidden="true"></div>
+    <div class="modal fade" id="updateEstimateModal" tabindex="-1" role="dialog" aria-labelledby="updateEstimateModal" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title">Save Estimate</h6>
+                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="estimate-tbl"></div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" id="save_estimate">
+                        <i class="fa fa-save fs-4 me-2"></i>
+                        Save
+                    </button>
+                    <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -193,6 +215,226 @@ $picture_path = "images/product/product.jpg";
 </div>
 
 <script>
+    function updateEstimateBend(element){
+        var bend = $(element).val();
+        var id = $(element).data('id');
+        $.ajax({
+            url: 'pages/estimate_list_ajax.php',
+            type: 'POST',
+            data: {
+                bend: bend,
+                id: id,
+                action: "set_estimate_bend"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updateEstimateHem(element){
+        var hem = $(element).val();
+        var id = $(element).data('id');
+
+        $.ajax({
+            url: 'pages/estimate_list_ajax.php',
+            type: 'POST',
+            data: {
+                hem: hem,
+                id: id,
+                action: "set_estimate_hem"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updateEstimateLength(element){
+        var length = $(element).val();
+        var id = $(element).data('id');
+
+        $.ajax({
+            url: 'pages/estimate_list_ajax.php',
+            type: 'POST',
+            data: {
+                length: length,
+                id: id,
+                action: "set_estimate_length"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updateEstimateHeight(element){
+        var height = $(element).val();
+        var id = $(element).data('id');
+
+        $.ajax({
+            url: 'pages/estimate_list_ajax.php',
+            type: 'POST',
+            data: {
+                height: height,
+                id: id,
+                action: "set_estimate_height"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updateEstimateWidth(element){
+        var width = $(element).val();
+        var id = $(element).data('id');
+        $.ajax({
+            url: 'pages/estimate_list_ajax.php',
+            type: 'POST',
+            data: {
+                width: width,
+                id: id,
+                action: "set_estimate_width"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updatequantity(element) {
+        var estimate_id = $(element).data('id');
+        var qty = $(element).val();
+
+        var estimateid = sessionStorage.getItem('estimateid');
+        $.ajax({
+            url: "pages/estimate_list_ajax.php",
+            type: "POST",
+            data: {
+                estimate_id: estimate_id,
+                qty: qty,
+                action: 'setquantity'
+            },
+            success: function(data) {
+                loadEditModal(estimate);
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
+    function addquantity(element) {
+        var estimate_id = $(element).data('id');
+        var input_quantity = $('input[data-id="' + estimate_id + '"][id="item_quantity' + estimate_id + '"]');
+        var quantity = Number(input_quantity.val());
+
+        var estimate = sessionStorage.getItem('estimateid');
+        $.ajax({
+            url: "pages/estimate_list_ajax.php",
+            type: "POST",
+            data: {
+                estimate_id: estimate_id,
+                quantity: quantity,
+                action: 'addquantity'
+            },
+            success: function(data) {
+                loadEditModal(estimate);
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
+    function loadEditModal(id){
+            $.ajax({
+                url: 'pages/estimate_list_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    action: "fetch_edit_modal"
+                },
+                success: function(response) {
+                    $('#estimate-tbl').html(response);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
+
+    function deductquantity(element) {
+        var estimate_id = $(element).data('id');
+        var input_quantity = $('input[data-id="' + estimate_id + '"][id="item_quantity' + estimate_id + '"]');
+        var quantity = Number(input_quantity.val());
+
+        var estimate = sessionStorage.getItem('estimateid');
+        $.ajax({
+            url: "pages/estimate_list_ajax.php",
+            type: "POST",
+            data: {
+                estimate_id: estimate_id,
+                quantity: quantity,
+                action: 'deductquantity'
+            },
+            success: function(data) {
+                loadEditModal(estimate);
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
+    function delete_item(element) {
+        var estimate_id = $(element).data('id');
+        var line = $(element).data('line');
+
+        var estimate = sessionStorage.getItem('estimateid');
+        $.ajax({
+            url: "pages/estimate_list_ajax.php",
+            data: {
+                estimate_id: estimate_id,
+
+                action: 'deleteitem'
+            },
+            type: "POST",
+            success: function(data) {
+                loadEditModal(estimate);
+            },
+            error: function() {}
+        });
+    }
+    
     $(document).ready(function() {
         var table = $('#est_list_tbl').DataTable({
             "order": [[1, "asc"]]
@@ -218,29 +460,15 @@ $picture_path = "images/product/product.jpg";
             });
         });
 
-
-        // Show the Edit Product modal and log the product ID
         $(document).on('click', '#edit_estimate_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
-            $.ajax({
-                url: 'pages/estimate_list_ajax.php',
-                type: 'POST',
-                data: {
-                    id: id,
-                    action: "fetch_edit_modal"
-                },
-                success: function(response) {
-                    $('#updateEstimateModal').html(response);
-                    $('#updateEstimateModal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
+            loadEditModal(id);
+            $('#updateEstimateModal').modal('show');
+
+            sessionStorage.setItem('estimateid', id);
         });
 
-        // Show the Edit Product modal and log the product ID
         $(document).on('click', '#add_estimate_btn', function(event) {
             event.preventDefault(); 
             $.ajax({
