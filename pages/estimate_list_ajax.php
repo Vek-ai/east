@@ -544,13 +544,13 @@ if(isset($_REQUEST['action'])) {
                                         ?>
                                         <td>
                                             <div class="d-flex flex-column align-items-center">
-                                                <input class="form-control text-center mb-1" type="text" value="<?= isset($row_est_prod["estimate_width"]) ? $row_est_prod["estimate_width"] : $product["width"]; ?>" placeholder="Width" size="5" style="color:#ffffff; " data-id="<?= $row_est_prod['id']; ?>" onchange="updateEstimateWidth(this)">
+                                                <input class="form-control text-center mb-1" type="text" value="<?= isset($row_est_prod["custom_width"]) ? $row_est_prod["custom_width"] : $product["width"]; ?>" placeholder="Width" size="5" style="color:#ffffff; " data-id="<?= $row_est_prod['id']; ?>" onchange="updateEstimateWidth(this)">
                                                 <span class="mx-1 text-center mb-1">X</span>
-                                                <input class="form-control text-center mb-1" type="text" value="<?= $row_est_prod["estimate_bend"]; ?>" placeholder="Bend" size="5" style="color:#ffffff;" data-id="<?= $row_est_prod['id']; ?>" onchange="updateEstimateBend(this)">
+                                                <input class="form-control text-center mb-1" type="text" value="<?= $row_est_prod["custom_bend"]; ?>" placeholder="Bend" size="5" style="color:#ffffff;" data-id="<?= $row_est_prod['id']; ?>" onchange="updateEstimateBend(this)">
                                                 <span class="mx-1 text-center mb-1">X</span>
-                                                <input class="form-control text-center mb-1" type="text" value="<?= $row_est_prod["estimate_hem"]; ?>" placeholder="Hem" size="5" style="color:#ffffff;" data-id="<?= $row_est_prod['id']; ?>" onchange="updateEstimateHem(this)">
+                                                <input class="form-control text-center mb-1" type="text" value="<?= $row_est_prod["custom_bend"]; ?>" placeholder="Hem" size="5" style="color:#ffffff;" data-id="<?= $row_est_prod['id']; ?>" onchange="updateEstimateHem(this)">
                                                 <span class="mx-1 text-center mb-1">X</span>
-                                                <input class="form-control text-center" type="text" value="<?= isset($row_est_prod["estimate_length"]) ? $row_est_prod["estimate_length"] : $product["length"]; ?>" placeholder="Length" size="5" style="color:#ffffff; " data-id="<?= $row_est_prod['id']; ?>" onchange="updateEstimateLength(this)">
+                                                <input class="form-control text-center" type="text" value="<?= isset($row_est_prod["custom_length"]) ? $row_est_prod["custom_length"] : $product["length"]; ?>" placeholder="Length" size="5" style="color:#ffffff; " data-id="<?= $row_est_prod['id']; ?>" onchange="updateEstimateLength(this)">
                                             </div>
                                         </td>
                                         <?php
@@ -681,7 +681,7 @@ if(isset($_REQUEST['action'])) {
         $query = "UPDATE estimate_prod SET custom_width = '$width' WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
-            echo 'success';
+            echo $query;
         } else {
             echo 'error';
         }
@@ -705,7 +705,7 @@ if(isset($_REQUEST['action'])) {
         $query = "UPDATE estimate_prod SET custom_hem = '$hem' WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
-            echo 'success';
+            echo $query;
         } else {
             echo 'error';
         }
@@ -717,7 +717,7 @@ if(isset($_REQUEST['action'])) {
         $query = "UPDATE estimate_prod SET custom_bend = '$bend' WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
-            echo 'success';
+            echo $query;
         } else {
             echo 'error';
         }
