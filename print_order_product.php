@@ -76,9 +76,9 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->Ln(5);
 
-        $pdf->SetFont('Arial', 'B', 9);
-        $widths = [15, 25, 60, 20, 10, 10, 10, 20, 20];
-        $headers = ['QTY', 'PART/COIL #', 'DESCRIPTION', 'COLOR', 'GRD', 'FT.', 'IN.', 'PRICE', 'TOTAL'];
+        $pdf->SetFont('Arial', 'B', 7);
+        $widths = [15, 20, 55, 20, 10, 10, 10, 18, 18, 15];
+        $headers = ['QTY', "PART/COIL #", 'DESCRIPTION', 'COLOR', 'Grade', 'FT.', 'IN.', 'PRICE' , 'DISC PRICE', 'TOTAL'];
 
         for ($i = 0; $i < count($headers); $i++) {
             $pdf->Cell($widths[$i], 10, $headers[$i], 1, 0, 'C');
@@ -104,10 +104,11 @@ if (mysqli_num_rows($result) > 0) {
                     '',
                     '',
                     '$ ' .number_format($product_details['unit_price'],2),
-                    '$ ' .number_format($product_details['unit_price'] * $row_product['quantity'],2) ,
+                    '$ ' .number_format($product_details['unit_price'] * (1 - $discount),2),
+                    '$ ' .number_format(($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'],2) ,
                 ];
 
-                $total_price += $product_details['unit_price'] * $row_product['quantity'];
+                $total_price += $product_details['unit_price'] * (1 - $discount) * $row_product['quantity'];
                 $total_qty += $row_product['quantity'];
             }
 
@@ -146,7 +147,7 @@ if (mysqli_num_rows($result) > 0) {
                 $pdf->Cell($widths[6], $height, $row[6], 'LR', 0, 'C');  
                 $pdf->Cell($widths[7], $height, $row[7], 'LR', 0, 'R');  
                 $pdf->Cell($widths[8], $height, $row[8], 'LR', 0, 'R');  
-                
+                $pdf->Cell($widths[9], $height, $row[9], 'LR', 0, 'R');  
 
                 $pdf->Ln();
 
