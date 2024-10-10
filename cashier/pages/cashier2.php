@@ -478,6 +478,29 @@ require '../includes/functions.php';
         });
     }
 
+    function updateUsage(element){
+        var usage = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+        console.log(usage)
+        $.ajax({
+            url: 'pages/cashier2_ajax.php',
+            type: 'POST',
+            data: {
+                usage: usage,
+                id: id,
+                line: line,
+                set_usage: "set_usage"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
     function loadDrawingModal(element){
         var id = $(element).data('id');
         var line = $(element).data('line');

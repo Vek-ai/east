@@ -56,7 +56,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'quantity_in_stock' => $quantityInStock,
                 'quantity_cart' => $item_quantity,
                 'estimate_width' => $row['width'],
-                'estimate_length' => $row['length']
+                'estimate_length' => $row['length'],
+                'usage' => 0
             );
 
             $_SESSION["cart"][] = $item_array;
@@ -103,7 +104,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'quantity_in_stock' => $quantityInStock,
                 'quantity_cart' => $item_quantity,
                 'estimate_width' => $row['width'],
-                'estimate_length' => $row['length']
+                'estimate_length' => $row['length'],
+                'usage' => 0
             );
 
             $_SESSION["cart"][] = $item_array;
@@ -282,6 +284,18 @@ if (isset($_REQUEST['query'])) {
     
     //echo $tableHTML;
     echo $tableHTML;
+}
+
+if (isset($_POST['set_usage'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $usage = mysqli_real_escape_string($conn, $_POST['usage']);
+
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['usage'] = !empty($usage) ? $usage : "";
+    }
+    echo "usage ID: $usage, Line: $line, Key: $key";
 }
 
 if (isset($_POST['set_estimate_hem'])) {

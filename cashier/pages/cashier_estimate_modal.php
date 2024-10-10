@@ -173,13 +173,13 @@ if(isset($_POST['fetch_estimate'])){
                                     </td>
                                     <td>
                                         <div class="input-group">
-                                            <select id="usage" class="form-control" name="usage">
+                                            <select id="usage" class="form-control" name="usage" onchange="updateUsage(this)" data-line="<?php echo $values["line"]; ?>">
                                                 <option value="/" >Select Usage...</option>
                                                 <?php
                                                 $query_usage = "SELECT * FROM component_usage";
                                                 $result_usage = mysqli_query($conn, $query_usage);            
                                                 while ($row_usage = mysqli_fetch_array($result_usage)) {
-                                                    $selected = ($values['usageid'] == $row_usage['usageid']) ? 'selected' : '';
+                                                    $selected = ($values['usage'] == $row_usage['usageid']) ? 'selected' : '';
                                                 ?>
                                                     <option value="<?= $row_usage['usageid'] ?>" <?= $selected ?>><?= $row_usage['usage_name'] ?></option>
                                                 <?php   

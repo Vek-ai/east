@@ -192,9 +192,10 @@ $picture_path = "images/product/product.jpg";
                                     ?>
                                 </td>
                                 <td>
-                                    <button class="btn btn-danger-gradient btn-sm p-0 mx-1" id="view_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-primary ti ti-eye fs-7"></i></button>
-                                    <button class="btn btn-danger-gradient btn-sm p-0 mx-1" id="edit_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-warning ti ti-pencil fs-7"></i></button>
-                                    <button class="btn btn-danger-gradient btn-sm p-0 mx-1" id="delete_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-danger ti ti-trash fs-7"></i></button>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="edit_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-warning fa fa-pencil fs-5"></i></button>
+                                    <a href="print_estimate_product.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="delete_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-danger fa fa-trash fs-5"></i></button>
                                 </td>
                             </tr>
                             <?php
@@ -247,6 +248,27 @@ $picture_path = "images/product/product.jpg";
                 hem: hem,
                 id: id,
                 action: "set_estimate_hem"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updateUsage(element){
+        var usage = $(element).val();
+        var id = $(element).data('id');
+
+        $.ajax({
+            url: 'pages/estimate_list_ajax.php',
+            type: 'POST',
+            data: {
+                usage: usage,
+                id: id,
+                action: "set_usage"
             },
             success: function(response) {
                 console.log(response);
