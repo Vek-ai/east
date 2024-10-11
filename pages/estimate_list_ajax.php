@@ -1148,10 +1148,13 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == 'deleteitem') {
         $est_prod_id = mysqli_real_escape_string($conn, $_POST['estimate_id']);
+        $est_prod_details = getEstimateProdDetails($est_prod_id);
 
         $query = "DELETE FROM estimate_prod WHERE id = '$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
+            $action = "Removed product to product estimates List";
+            $log_result = log_estimate_changes($est_prod_details['estimateid'], $est_prod_details['product_id'], $action);
             echo 'success';
         } else {
             echo 'error';
