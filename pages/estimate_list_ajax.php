@@ -345,43 +345,43 @@ if(isset($_REQUEST['action'])) {
         $discount = 0.1;
         ?>
         <style>
-            .table-fixed {
+            .table-fixed-est {
                 table-layout: fixed;
                 width: 100%;
             }
     
-            .table-fixed th,
-            .table-fixed td {
+            .table-fixed-est th,
+            .table-fixed-est td {
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: normal;
                 word-wrap: break-word;
             }
     
-            .table-fixed th:nth-child(1),
-            .table-fixed td:nth-child(1) { width: 5%; }
-            .table-fixed th:nth-child(2),
-            .table-fixed td:nth-child(2) { width: 15%; }
-            .table-fixed th:nth-child(3),
-            .table-fixed td:nth-child(3) { width: 10%; }
-            .table-fixed th:nth-child(4),
-            .table-fixed td:nth-child(4) { width: 10%; }
-            .table-fixed th:nth-child(5),
-            .table-fixed td:nth-child(5) { width: 10%; }
-            .table-fixed th:nth-child(6),
-            .table-fixed td:nth-child(6) { width: 10%; }
-            .table-fixed th:nth-child(7),
-            .table-fixed td:nth-child(7) { width: 10%; }
-            .table-fixed th:nth-child(8),
-            .table-fixed td:nth-child(8) { width: 10%; }
-            .table-fixed th:nth-child(9),
-            .table-fixed td:nth-child(9) { width: 7%; }
-            .table-fixed th:nth-child(10),
-            .table-fixed td:nth-child(10) { width: 7%; }
-            .table-fixed th:nth-child(11),
-            .table-fixed td:nth-child(11) { width: 7%; }
-            .table-fixed th:nth-child(12),
-            .table-fixed td:nth-child(12) { width: 4%; }
+            .table-fixed-est th:nth-child(1),
+            .table-fixed-est td:nth-child(1) { width: 5%; }
+            .table-fixed-est th:nth-child(2),
+            .table-fixed-est td:nth-child(2) { width: 15%; }
+            .table-fixed-est th:nth-child(3),
+            .table-fixed-est td:nth-child(3) { width: 10%; }
+            .table-fixed-est th:nth-child(4),
+            .table-fixed-est td:nth-child(4) { width: 10%; }
+            .table-fixed-est th:nth-child(5),
+            .table-fixed-est td:nth-child(5) { width: 10%; }
+            .table-fixed-est th:nth-child(6),
+            .table-fixed-est td:nth-child(6) { width: 10%; }
+            .table-fixed-est th:nth-child(7),
+            .table-fixed-est td:nth-child(7) { width: 10%; }
+            .table-fixed-est th:nth-child(8),
+            .table-fixed-est td:nth-child(8) { width: 10%; }
+            .table-fixed-est th:nth-child(9),
+            .table-fixed-est td:nth-child(9) { width: 7%; }
+            .table-fixed-est th:nth-child(10),
+            .table-fixed-est td:nth-child(10) { width: 7%; }
+            .table-fixed-est th:nth-child(11),
+            .table-fixed-est td:nth-child(11) { width: 7%; }
+            .table-fixed-est th:nth-child(12),
+            .table-fixed-est td:nth-child(12) { width: 4%; }
     
             input[readonly] {
                 border: none;               
@@ -390,7 +390,7 @@ if(isset($_REQUEST['action'])) {
                 color: inherit;
             }
     
-            .table-fixed tbody tr:hover input[readonly] {
+            .table-fixed-est tbody tr:hover input[readonly] {
                 background-color: transparent;
             }
         </style>
@@ -399,6 +399,7 @@ if(isset($_REQUEST['action'])) {
         $total = 0;
         $totalquantity = 0;
         $discount_amt = 0;
+        $no = 1;
         $estimateid = mysqli_real_escape_string($conn, $_POST['id']);
         $query = "SELECT * FROM estimates WHERE estimateid = '$estimateid'";
         $result = mysqli_query($conn, $query);
@@ -427,7 +428,7 @@ if(isset($_REQUEST['action'])) {
             </div>
             <div class="card-body datatables">
                 <div class="product-details table-responsive text-nowrap">
-                    <table id="estimateTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
+                    <table id="estimateTable" class="table table-hover table-fixed-est mb-0 text-md-nowrap">
                         <thead>
                             <tr>
                                 <th width="5%">Image</th>
@@ -453,6 +454,9 @@ if(isset($_REQUEST['action'])) {
                                     $product = getProductDetails($data_id);
                                     $totalstockquantity = getProductStockInStock($data_id) + getProductStockTotal($data_id);
                                     $category_id = $product["product_category"];
+
+                                    $color_id = $row_est_prod['custom_color'] ?? $product["color"];
+
                                     if ($totalstockquantity > 0) {
                                         $stock_text = '
                                             <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
@@ -508,12 +512,22 @@ if(isset($_REQUEST['action'])) {
                                             <h6 class="fw-semibold mb-0 fs-4"><?= $product["product_item"] ?></h6>
                                         </td>
                                         <td>
-                                            <?php echo getColorFromID($data_id); ?>
-                                            
+                                            <select id="color<?= $no ?>" class="form-control select2-color text-start" name="color" onchange="updateColor(this)" data-id="<?= $row_est_prod['id']; ?>">
+                                                <option value="" >Select Color...</option>
+                                                <?php
+                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                                    $selected = ($color_id == $row_paint_colors['color_id']) ? 'selected' : '';
+                                                ?>
+                                                    <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>"><?= $row_paint_colors['color_name'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
                                         </td>
                                         <td>
                                             <?php echo getGradeFromID($data_id); ?>
-                                            
                                         </td>
                                         <td>
                                             <?php echo getProfileFromID($data_id); ?>
@@ -534,20 +548,34 @@ if(isset($_REQUEST['action'])) {
                                             </div>
                                         </td>
                                         <td>
-                                            <div class="input-group">
-                                                <select id="usage" class="form-control" name="usage" onchange="updateUsage(this)" data-line="<?php echo $values["line"]; ?>" data-id="<?= $row_est_prod['id']; ?>">
-                                                    <option value="/" >Select Usage...</option>
+                                            <div class="input-group text-start">
+                                                <select id="usage<?= $no ?>" class="form-control select2-est" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $row_est_prod['id']; ?>">
+                                                    <option value="">Select Usage...</option>
                                                     <?php
-                                                    $query_usage = "SELECT * FROM component_usage";
-                                                    $result_usage = mysqli_query($conn, $query_usage);            
-                                                    while ($row_usage = mysqli_fetch_array($result_usage)) {
-                                                        $selected = ($row_est_prod['usageid'] == $row_usage['usageid']) ? 'selected' : '';
-                                                    ?>
-                                                        <option value="<?= $row_usage['usageid'] ?>" <?= $selected ?>><?= $row_usage['usage_name'] ?></option>
-                                                    <?php   
+                                                    $query_key = "SELECT * FROM key_components";
+                                                    $result_key = mysqli_query($conn, $query_key);
+
+                                                    while ($row_key = mysqli_fetch_array($result_key)) {
+                                                        $componentid = $row_key['componentid'];
+                                                        ?>
+                                                        <optgroup label="<?= strtoupper($row_key['component_name']); ?>">
+                                                            <?php 
+                                                            $query_usage = "SELECT * FROM component_usage WHERE componentid = '$componentid'";
+                                                            $result_usage = mysqli_query($conn, $query_usage);
+
+                                                            while ($row_usage = mysqli_fetch_array($result_usage)) {
+                                                                $selected = ($row_est_prod['usageid'] == $row_usage['usageid']) ? 'selected' : '';
+                                                                ?>
+                                                                <option value="<?= $row_usage['usageid']; ?>" <?= $selected; ?>><?= $row_usage['usage_name']; ?></option>
+                                                                <?php
+                                                            }
+                                                            ?>
+                                                        </optgroup>
+                                                        <?php
                                                     }
                                                     ?>
                                                 </select>
+
                                             </div>
                                         </td>
                                         <?php if($category_id == '46'){ // Panels ID
@@ -607,6 +635,7 @@ if(isset($_REQUEST['action'])) {
                                     $discount_amt += $subtotal - $customer_price;
                                     $totalquantity += $row_est_prod["quantity_cart"];
                                     $total += $subtotal;
+                                    $no++;
                                 }
                         ?>
                         </tbody>
@@ -622,9 +651,27 @@ if(isset($_REQUEST['action'])) {
                             </tr>
                         </tfoot>
                     </table>
+                    <div class="d-flex justify-content-end">
+                        <button type="button" id="productsModalBtn" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#productsModal">
+                            <i class="fa fa-plus text-white me-1 fs-5"></i> Add Product
+                        </button>
+                    </div>
+                    
                 </div>
             </div>
             <script>
+                function formatOption(state) {
+                    if (!state.id) {
+                        return state.text;
+                    }
+                    var color = $(state.element).data('color');
+                    var $state = $(
+                        '<span class="d-flex align-items-center">' +
+                        '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
+                        state.text + '</span>'
+                    );
+                    return $state;
+                }
                 $(document).ready(function() {
                     var table = $('#estimateTable').DataTable({
                         language: {
@@ -636,6 +683,28 @@ if(isset($_REQUEST['action'])) {
                         ordering: false,
                         autoWidth: false,
                         responsive: true
+                    });
+
+                    $(".select2-est").each(function() {
+                        $(this).select2({
+                            width: '300px',
+                            placeholder: "Select...",
+                            dropdownAutoWidth: true,
+                            dropdownParent: $('#estimateTable'),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
+                    });
+
+                    $(".select2-color").each(function() {
+                        $(this).select2({
+                            width: '300px',
+                            placeholder: "Select...",
+                            dropdownAutoWidth: true,
+                            dropdownParent: $('#estimateTable'),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
                     });
                 });
             </script>
@@ -659,6 +728,157 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
+    if ($action == 'search_product') {
+        $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
+        $color_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['color_id']) : '';
+        $type_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['type_id']) : '';
+        $line_id = isset($_REQUEST['line_id']) ? mysqli_real_escape_string($conn, $_REQUEST['line_id']) : '';
+        $category_id = isset($_REQUEST['category_id']) ? mysqli_real_escape_string($conn, $_REQUEST['category_id']) : '';
+        $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
+        
+        $query_product = "
+            SELECT 
+                p.*,
+                COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
+            FROM 
+                product AS p
+            LEFT JOIN 
+                inventory AS i ON p.product_id = i.product_id
+            WHERE 
+                p.hidden = '0'
+        ";
+    
+        if (!empty($searchQuery)) {
+            $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
+        }
+    
+        if (!empty($color_id)) {
+            $query_product .= " AND p.color = '$color_id'";
+        }
+    
+        if (!empty($type_id)) {
+            $query_product .= " AND p.product_type = '$type_id'";
+        }
+    
+        if (!empty($line_id)) {
+            $query_product .= " AND p.product_line = '$line_id'";
+        }
+    
+        if (!empty($category_id)) {
+            $query_product .= " AND p.product_category = '$category_id'";
+        }
+    
+        $query_product .= " GROUP BY p.product_id";
+    
+        if ($onlyInStock) {
+            $query_product .= " HAVING total_quantity > 1";
+        }
+    
+        $result_product = mysqli_query($conn, $query_product);
+    
+        $tableHTML = "";
+    
+        if (mysqli_num_rows($result_product) > 0) {
+            while ($row_product = mysqli_fetch_array($result_product)) {
+    
+                $product_length = $row_product['length'];
+                $product_width = $row_product['width'];
+                $product_color = $row_product['color'];
+    
+                $dimensions = "";
+    
+                if (!empty($product_length) || !empty($product_width)) {
+                    $dimensions = '';
+                
+                    if (!empty($product_length)) {
+                        $dimensions .= $product_length;
+                    }
+                
+                    if (!empty($product_width)) {
+                        if (!empty($dimensions)) {
+                            $dimensions .= " X ";
+                        }
+                        $dimensions .= $product_width;
+                    }
+                
+                    if (!empty($dimensions)) {
+                        $dimensions = " - " . $dimensions;
+                    }
+                }
+    
+                if ($row_product['total_quantity'] > 0) {
+                    $stock_text = '
+                        <a href="javascript:void(0);" id="view_in_stock" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
+                            <span class="text-bg-success p-1 rounded-circle"></span>
+                            <span class="ms-2">In Stock</span>
+                        </a>';
+                } else {
+                    $stock_text = '
+                        <a href="javascript:void(0);" id="view_out_of_stock" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
+                            <span class="text-bg-danger p-1 rounded-circle"></span>
+                            <span class="ms-2">Out of Stock</span>
+                        </a>';
+                
+                    if ($row_product['product_category'] == $trim_id || $row_product['product_category'] == $panel_id) {
+                        $sql = "SELECT COUNT(*) AS count FROM coil WHERE color = '$product_color'";
+                        $result = mysqli_query($conn, $sql);
+    
+                        if ($result) {
+                            $row = mysqli_fetch_assoc($result);
+                            if ($row['count'] > 0) {
+                                $stock_text = '
+                                <a href="javascript:void(0);" id="view_available" data-color="' . htmlspecialchars($product_color, ENT_QUOTES) . '" data-width="' . htmlspecialchars($product_width, ENT_QUOTES) . '" class="d-flex align-items-center">
+                                    <span class="text-bg-warning p-1 rounded-circle"></span>
+                                    <span class="ms-2">Available</span>
+                                </a>';
+                            }
+                        }
+                    }
+                }
+                         
+                $default_image = 'images/product/product.jpg';
+    
+                $picture_path = !empty($row_product['main_image'])
+                ?  $row_product['main_image']
+                : $default_image;
+    
+                $tableHTML .= '
+                <tr>
+                    <td>
+                        <a href="javascript:void(0);" id="view_product_details" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center text-start">
+                            <div class="d-flex align-items-center">
+                                <img src="'.$picture_path.'" class="rounded-circle" alt="materialpro-img" width="56" height="56">
+                                <div class="ms-3">
+                                    <h6 class="fw-semibold mb-0 fs-4">'. $row_product['product_item'] .' ' .$dimensions .'</h6>
+                                </div>
+                            </div>
+                        </a>
+                    </td>
+                    <td>
+                        <div class="d-flex mb-0 gap-8 text-center">
+                            <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:' .getColorHexFromColorID($row_product['color']) .'" data-toggle="tooltip" data-placement="top" title="'
+                            .getColorName($row_product['color']) .'"></a> 
+                        </div>
+                    </td>
+                    <td><p class="mb-0">'. getProductTypeName($row_product['product_type']) .'</p></td>
+                    <td><p class="mb-0">'. getProductLineName($row_product['product_line']) .'</p></td>
+                    <td><p class="mb-0">'. getProductCategoryName($row_product['product_category']) .'</p></td>
+                    <td>
+                        <div class="d-flex align-items-center">'.$stock_text.'</div>
+                    </td>
+                    <td><h6 class="mb-0 fs-4">$'. $row_product['unit_cost'] .'</h6></td>
+                    <td>
+                        <button class="btn btn-primary btn-add-to-cart px-2 py-0" type="button" data-id="'.$row_product['product_id'].'" onClick="addtoestimate(this)"> + </button>
+                    </td>
+                </tr>';
+            }
+        } else {
+            $tableHTML .= '<tr><td colspan="8" class="text-center">No products found</td></tr>';
+        }
+        
+        echo $tableHTML;
+    }
+
     if ($action == 'setquantity') {
         $est_prod_id = mysqli_real_escape_string($conn, $_POST['estimate_id']);
         $quantity = mysqli_real_escape_string($conn, $_POST['qty']);
@@ -666,6 +886,24 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $query);
         if ($result) {
             echo $quantity;
+        } else {
+            echo 'error';
+        }
+    }
+
+    if ($action == 'add_to_estimate') {
+        $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+        $estimate_id = mysqli_real_escape_string($conn, $_POST['estimate_id']);
+        $product_details = getProductDetails($product_id);
+
+        $query="INSERT INTO estimate_prod
+                        (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, actual_price, discounted_price) 
+                VALUES 
+                        ('$estimate_id', '$product_id', '1', '".$product_details['width']."', '', '', '".$product_details['length']."', '".$product_details['unit_cost']."', '".$product_details['unit_cost']."')";
+
+        $result = mysqli_query($conn, $query);
+        if ($result) {
+            echo 'success';
         } else {
             echo 'error';
         }
@@ -747,6 +985,18 @@ if(isset($_REQUEST['action'])) {
         $est_prod_id = mysqli_real_escape_string($conn, $_POST['id']);
         $usage = mysqli_real_escape_string($conn, $_POST['usage']);
         $query = "UPDATE estimate_prod SET usageid = '$usage' WHERE id ='$est_prod_id'";
+        $result = mysqli_query($conn, $query);
+        if ($result) {
+            echo $query;
+        } else {
+            echo 'error';
+        }
+    }
+
+    if ($action == 'set_color') {
+        $est_prod_id = mysqli_real_escape_string($conn, $_POST['id']);
+        $color = mysqli_real_escape_string($conn, $_POST['color']);
+        $query = "UPDATE estimate_prod SET custom_color = '$color' WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
             echo $query;

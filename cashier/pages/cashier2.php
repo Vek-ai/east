@@ -41,7 +41,7 @@ require '../includes/functions.php';
         <div class="card-body text-right p-3">
             
             <div class="p-2">
-                <input type="checkbox" id="toggleActive" checked> Show only In Stock</div>
+                <input type="checkbox" id="toggleActive" checked> Show only In Stock
             </div>
             <div class="d-flex justify-content-between align-items-center  mb-9">
                 <div class="position-relative w-100 col-4">
