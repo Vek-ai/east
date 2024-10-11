@@ -174,8 +174,8 @@ if(isset($_REQUEST['action'])) {
                                                     <th>Product</th>
                                                     <th>Action</th>
                                                     <th>User</th>
-                                                    <th>Time</th>
                                                     <th>Date</th>
+                                                    <th>Time</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
