@@ -308,6 +308,34 @@ function get_customer_name($customer_id){
     return  $customer_name;
 }
 
+function log_estimate_changes($estimate_id, $product_id, $action){
+    global $conn;
+    session_start();
+    $estimate_id = mysqli_real_escape_string($conn, $estimate_id);
+    $product_id = mysqli_real_escape_string($conn, $product_id);
+    $action = mysqli_real_escape_string($conn, $action);
+    $user_id = $_SESSION['userid'];
+    $query = "INSERT INTO estimate_changes (estimate_id, user, product_id, action) VALUES ('$estimate_id', '$user_id', '$product_id', '$action')";
+    $result = mysqli_query($conn, $query);
+    if ($result) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function getEstimateProdDetails($id) {
+    global $conn;
+    $id = mysqli_real_escape_string($conn, $id);
+    $query = "SELECT * FROM estimate_prod WHERE id = '$id'";
+    $result = mysqli_query($conn, $query);
+    $estimate_prod = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $estimate_prod = $row;
+    }
+    return $estimate_prod;
+}
+
 function getCustomerDetails($customer_id) {
     global $conn;
     $customer_id = mysqli_real_escape_string($conn, $customer_id);
@@ -319,6 +347,16 @@ function getCustomerDetails($customer_id) {
     }
     return $customer;
 }
+
+function getUsageName($usageid){
+    global $conn;
+    $query = "SELECT usage_name FROM component_usage WHERE usageid = '$usageid'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $usage_name = $row['usage_name'];
+    return  $usage_name;
+}
+
 
 function generateRandomUPC() {
     global $conn;

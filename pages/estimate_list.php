@@ -126,6 +126,8 @@ $picture_path = "images/product/product.jpg";
 
     <div class="modal fade" id="viewEstimateModal" tabindex="-1" aria-labelledby="viewEstimateModalLabel" aria-hidden="true"></div>
 
+    <div class="modal fade" id="viewChangesModal" tabindex="-1" aria-labelledby="viewChangesModalLabel" aria-hidden="true"></div>
+    
     <div class="modal fade" id="addEstimateModal" tabindex="-1" aria-labelledby="addEstimateModalLabel" aria-hidden="true"></div>
 
     <div class="modal fade" id="updateEstimateModal" tabindex="-1" role="dialog" aria-labelledby="updateEstimateModal" aria-hidden="true">
@@ -362,6 +364,7 @@ $picture_path = "images/product/product.jpg";
                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="edit_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-warning fa fa-pencil fs-5"></i></button>
                                     <a href="print_estimate_product.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
                                     <a href="print_estimate_total.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-info fa fa-clock-rotate-left fs-5"></i></button>
                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="delete_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-danger fa fa-trash fs-5"></i></button>
                                 </td>
                             </tr>
@@ -688,6 +691,26 @@ $picture_path = "images/product/product.jpg";
                     success: function(response) {
                         $('#viewEstimateModal').html(response);
                         $('#viewEstimateModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '#view_changes_btn', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/estimate_list_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: "fetch_changes_modal"
+                    },
+                    success: function(response) {
+                        $('#viewChangesModal').html(response);
+                        $('#viewChangesModal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);

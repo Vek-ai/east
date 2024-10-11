@@ -142,6 +142,118 @@ if(isset($_REQUEST['action'])) {
         }
     } 
 
+    if ($action == "fetch_changes_modal") {
+        
+            ?>
+            <style>
+                #est_dtls_tbl {
+                    width: 100% !important;
+                }
+
+                #est_dtls_tbl td, #est_dtls_tbl th {
+                    white-space: normal !important;
+                    word-wrap: break-word;
+                }
+            </style>
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header d-flex align-items-center">
+                        <h4 class="modal-title" id="myLargeModalLabel">
+                            View Estimate Changes
+                        </h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div id="update_product" class="form-horizontal">
+                        <div class="modal-body">
+                            <div class="card">
+                                <div class="card-body datatables">
+                                    <div class="estimate-details table-responsive text-nowrap">
+                                        <table id="est_changes_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
+                                            <thead>
+                                                <tr>
+                                                    <th>Product</th>
+                                                    <th>Action</th>
+                                                    <th>User</th>
+                                                    <th>Time</th>
+                                                    <th>Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php 
+                                                $estimateid = mysqli_real_escape_string($conn, $_POST['id']);
+                                                $query = "SELECT * FROM estimate_changes WHERE estimate_id = '$estimateid'";
+                                                $result = mysqli_query($conn, $query);
+                                                
+                                                if ($result && mysqli_num_rows($result) > 0) {
+                                                    $response = array();
+                                                    while ($row = mysqli_fetch_assoc($result)) {
+                                                        $estimateid = $row['estimateid'];
+                                                        $product_details = getProductDetails($row['product_id']);
+                                                    ?> 
+                                                        <tr> 
+                                                            <td>
+                                                                <?php echo getProductName($row['product_id']) ?>
+                                                            </td>
+                                                            <td>
+                                                                <?php echo $row['action'] ?>
+                                                            </td>
+                                                            <td>
+                                                                <?php echo get_staff_name($row['user']) ?>
+                                                            </td>
+                                                            <td>
+                                                                <?php 
+                                                                    if (isset($row["date_changed"]) && !empty($row["date_changed"]) && $row["date_changed"] !== '0000-00-00 00:00:00') {
+                                                                        echo date("m/d/Y", strtotime($row["date_changed"]));
+                                                                    } else {
+                                                                        echo '';
+                                                                    }
+                                                                ?>
+                                                            </td>
+                                                            <td>
+                                                                <?php 
+                                                                    if (isset($row["date_changed"]) && !empty($row["date_changed"]) && $row["date_changed"] !== '0000-00-00 00:00:00') {
+                                                                        echo date("h:i A", strtotime($row["date_changed"]));
+                                                                    } else {
+                                                                        echo '';
+                                                                    }
+                                                                ?>
+                                                            </td>
+                                                            
+                                                        </tr>
+                                                <?php
+                                                    }
+                                                }
+                                                ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                $(document).ready(function() {
+                    $('#est_changes_tbl').DataTable({
+                        language: {
+                            emptyTable: "Estimate details unchanged"
+                        },
+                        autoWidth: false,
+                        responsive: true,
+                        lengthChange: false
+                    });
+
+                    $('#viewChangesModal').on('shown.bs.modal', function () {
+                        $('#est_changes_tbl').DataTable().columns.adjust().responsive.recalc();
+                    });
+                });
+            </script>
+
+            <?php
+        
+    } 
+
     if ($action == "fetch_add_modal") {
         ?>
             <style>
@@ -885,7 +997,10 @@ if(isset($_REQUEST['action'])) {
         $query = "UPDATE estimate_prod SET quantity = '$quantity' WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
-            echo $quantity;
+            $est_prod_details = getEstimateProdDetails($est_prod_id);
+            $action = "Set the quantity to $quantity";
+            $log_result = log_estimate_changes($est_prod_details['estimateid'], $est_prod_details['product_id'], $action);
+            echo 'success';
         } else {
             echo 'error';
         }
@@ -903,6 +1018,8 @@ if(isset($_REQUEST['action'])) {
 
         $result = mysqli_query($conn, $query);
         if ($result) {
+            $action = "Added product to product estimates List";
+            $log_result = log_estimate_changes($estimate_id, $product_id, $action);
             echo 'success';
         } else {
             echo 'error';
@@ -915,6 +1032,9 @@ if(isset($_REQUEST['action'])) {
         $query = "UPDATE estimate_prod SET quantity = (quantity + 1) WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
+            $est_prod_details = getEstimateProdDetails($est_prod_id);
+            $action = "Added 1 Quantity";
+            $log_result = log_estimate_changes($est_prod_details['estimateid'], $est_prod_details['product_id'], $action);
             echo 'success';
         } else {
             echo 'error';
@@ -927,6 +1047,9 @@ if(isset($_REQUEST['action'])) {
         $query = "UPDATE estimate_prod SET quantity = (quantity - 1) WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
+            $est_prod_details = getEstimateProdDetails($est_prod_id);
+            $action = "Deducted 1 Quantity";
+            $log_result = log_estimate_changes($est_prod_details['estimateid'], $est_prod_details['product_id'], $action);
             echo 'success';
         } else {
             echo 'error';
@@ -939,7 +1062,10 @@ if(isset($_REQUEST['action'])) {
         $query = "UPDATE estimate_prod SET custom_width = '$width' WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
-            echo $query;
+            $est_prod_details = getEstimateProdDetails($est_prod_id);
+            $action = "Adjusted custom width to $width";
+            $log_result = log_estimate_changes($est_prod_details['estimateid'], $est_prod_details['product_id'], $action);
+            echo 'success';
         } else {
             echo 'error';
         }
@@ -951,7 +1077,10 @@ if(isset($_REQUEST['action'])) {
         $query = "UPDATE estimate_prod SET custom_length = '$length' WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
-            echo $query;
+            $est_prod_details = getEstimateProdDetails($est_prod_id);
+            $action = "Adjusted custom length to $length";
+            $log_result = log_estimate_changes($est_prod_details['estimateid'], $est_prod_details['product_id'], $action);
+            echo 'success';
         } else {
             echo 'error';
         }
@@ -963,7 +1092,10 @@ if(isset($_REQUEST['action'])) {
         $query = "UPDATE estimate_prod SET custom_hem = '$hem' WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
-            echo $query;
+            $est_prod_details = getEstimateProdDetails($est_prod_id);
+            $action = "Adjusted custom hem to $hem";
+            $log_result = log_estimate_changes($est_prod_details['estimateid'], $est_prod_details['product_id'], $action);
+            echo 'success';
         } else {
             echo 'error';
         }
@@ -975,7 +1107,10 @@ if(isset($_REQUEST['action'])) {
         $query = "UPDATE estimate_prod SET custom_bend = '$bend' WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
-            echo $query;
+            $est_prod_details = getEstimateProdDetails($est_prod_id);
+            $action = "Adjusted custom bend to $bend";
+            $log_result = log_estimate_changes($est_prod_details['estimateid'], $est_prod_details['product_id'], $action);
+            echo 'success';
         } else {
             echo 'error';
         }
@@ -987,7 +1122,10 @@ if(isset($_REQUEST['action'])) {
         $query = "UPDATE estimate_prod SET usageid = '$usage' WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
-            echo $query;
+            $est_prod_details = getEstimateProdDetails($est_prod_id);
+            $action = "Changed product usage to " .getUsageName($est_prod_details['usageid']);
+            $log_result = log_estimate_changes($est_prod_details['estimateid'], $est_prod_details['product_id'], $action);
+            echo 'success';
         } else {
             echo 'error';
         }
@@ -999,7 +1137,10 @@ if(isset($_REQUEST['action'])) {
         $query = "UPDATE estimate_prod SET custom_color = '$color' WHERE id ='$est_prod_id'";
         $result = mysqli_query($conn, $query);
         if ($result) {
-            echo $query;
+            $est_prod_details = getEstimateProdDetails($est_prod_id);
+            $action = "Changed product color to " .getColorName($est_prod_details['custom_color']);
+            $log_result = log_estimate_changes($est_prod_details['estimateid'], $est_prod_details['product_id'], $action);
+            echo 'success';
         } else {
             echo 'error';
         }
