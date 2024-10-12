@@ -11,6 +11,7 @@
   <style>
     body {
       background-color: #f0f8ff;
+      font-family: 'Montserrat', sans-serif;
     }
 
     .header {
@@ -200,6 +201,74 @@
     .text-cyan {
       color: #00ffff;
     }
+
+    .banner {
+            background: linear-gradient(to right, #0056B3, #00D4FF);
+            color: white;
+            padding-top: 50px;
+            padding-bottom: 80px;
+            width: 100vw;
+            margin-left: calc(-50vw + 50%);
+            position: relative;
+        }
+
+        .dr-name {
+            font-size: 25px;
+            font-weight: 700;
+        }
+
+        .dr-info {
+            font-size: 21px;
+            font-weight: 400;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .section-text {
+            font-size: 18px;
+            font-weight: 400;
+        }
+
+        .doctor-img{
+            width: 100%;
+        }
+
+        .btn-custom {
+            background-color: black;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            width: 100%;
+            margin-bottom: 10px;
+            border: none;
+        }
+
+        .telehealth-badge {
+            background-color: #00E0E6;
+            color: black;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .small-text {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .first-column {
+            margin-top: -50px;
+            z-index: 99999999;
+        }
+
+        .second-column {
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
   </style>
 </head>
 
@@ -210,17 +279,53 @@
     <img src="image/image2.png" alt="MEDirect Logo">
   </div>
 
-  <!-- Header 2 -->
-  <div class="d-flex justify-content-between align-items-center pt-3 ps-5 pe-5">
-    <div class="mb-3 bg-blue">
-
-    </div>
-  </div>
-
   <!-- Main Section -->
-  <div class="container mt-5">
+  <div class="container">
+    <div class="banner">
+        <div class="container">
+            <h2 class="dr-name">Dr. Name</h2>
+            <p class="dr-info mb-0">Letters</p>
+            <p class="dr-info mb-0">Position</p>
+        </div>
+    </div>
 
-  </div>
+    <div class="row">
+        <div class="col-md-3 first-column">
+            <img src="https://via.placeholder.com/150" alt="Doctor Image" class="img-fluid doctor-img"><br>
+            <button class="telehealth-badge btn-custom d-inline-block mb-3 mt-0">Telehealth Only</button>
+            <button class="btn-custom">Download Bio</button>
+            <button class="btn-custom">Request Reducted Report</button>
+            <button class="btn-custom">Request CV</button>
+        </div>
+
+        <div class="col-md-9 second-column ps-5">
+            <div class="mb-4">
+                <h4 class="section-title">Special Interest</h4>
+                <p class="section-text">Insert text here</p>
+            </div>
+            <div class="mb-4">
+                <h4 class="section-title">Accreditations</h4>
+                <p class="section-text">Insert text here</p>
+            </div>
+            <div class="mb-4">
+                <h4 class="section-title">Qualifications</h4>
+                <p class="section-text">Insert text here</p>
+            </div>
+            <div class="mb-4">
+                <h4 class="section-title">Experience</h4>
+                <p class="section-text">Insert text here</p>
+            </div>
+            <div class="mb-4">
+                <h4 class="section-title">Professional Associations</h4>
+                <p class="section-text">Insert text here</p>
+            </div>
+            <div class="mb-4">
+                <h4 class="section-title">Special Mention</h4>
+                <p class="section-text">Insert text here</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 
   <!-- Call to Action Section -->
