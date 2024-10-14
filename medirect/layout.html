@@ -202,6 +202,23 @@
         .text-cyan {
             color: #00ffff;
         }
+
+        .find-container {
+            background-color: #FFFFFF;
+            border-radius: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .find-container {
+                width: 80%;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .find-container {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 
@@ -231,7 +248,7 @@
 
     <!-- Main Section -->
     <div class="container-fluid mt-5 pt-5 mb-5">
-        <div class="ps-5 pe-5 pt-3 pb-3 " style="background-color: #FFFFFF; border-radius: 20px; width: 80%;">
+        <div class="find-container p-4">
             <h2>Find Your Expert</h2>
             <div class="row">
                 <!-- Filters Section -->
@@ -260,17 +277,17 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label>Conducts Plaintiff Assessments</label>
+                            <label>Select Plaintiff</label>
                             <select class="form-select">
-                                <option value="plaintiff1">Yes</option>
-                                <option value="plaintiff2">No</option>
+                                <option value="plaintiff1">Plaintiff 1</option>
+                                <option value="plaintiff2">Plaintiff 2</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label>Conducts Defendant Assessments</label>
+                            <label>Select Defendant</label>
                             <select class="form-select">
-                                <option value="defendant1">Yes</option>
-                                <option value="defendant2">No</option>
+                                <option value="defendant1">Defendant 1</option>
+                                <option value="defendant2">Defendant 2</option>
                             </select>
                         </div>
                         <div class="d-flex justify-content-end">
@@ -278,14 +295,13 @@
                                 <i class="fas fa-filter"></i> Filter
                             </button>
                         </div>
-
                     </div>
                 </div>
-
+        
                 <!-- Experts Section -->
                 <div class="col-md-9">
-                    <div class="row">
-                        <div class="col-6 justify-content-center mt-5">
+                    <div class="row expert-container">
+                        <div class="col-md-6 mb-4">
                             <div class="expert-card">
                                 <div class="profile-section mb-3">
                                     <img src="doctor.png" alt="Profile Image">
@@ -295,9 +311,9 @@
                                         <p class="fs-6">Position</p>
                                     </div>
                                 </div>
-
+        
                                 <hr>
-
+        
                                 <div class="text-container grid-layout text-wrap">
                                     <div class="row">
                                         <div class="col-5">
@@ -308,7 +324,7 @@
                                             <p>Location here</p>
                                         </div>
                                     </div>
-
+        
                                     <div class="row">
                                         <div class="col-5">
                                             <strong>Special Interest</strong>
@@ -319,17 +335,22 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="footer-buttons d-flex justify-content-center align-items-center">
-                                <div class="d-flex gap-3 align-items-center">
-                                    <button class="btn text-center">View Profile</button>
-                                    <a href="#" class="d-flex align-items-center justify-content-center">
-                                        <i class="fas fa-calendar-alt"></i>
-                                        <span class="ms-2">Book an appointment</span>
-                                    </a>
+                            <div class="footer-buttons fs-9 text-nowrap">
+                                <div class="row w-100">
+                                    <div class="col-6">
+                                        <button class="btn w-100">View Profile</button>
+                                    </div>
+                                    <div class="col-6 d-flex justify-content-center align-items-center">
+                                        <a href="#" class="d-flex align-items-center text-dark">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span class="ms-2">Book an appointment</span>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-6 justify-content-center mt-5">
+              
+                        <div class="col-md-6 mb-4">
                             <div class="expert-card">
                                 <div class="profile-section mb-3">
                                     <img src="doctor.png" alt="Profile Image">
@@ -339,9 +360,9 @@
                                         <p class="fs-6">Position</p>
                                     </div>
                                 </div>
-
+        
                                 <hr>
-
+        
                                 <div class="text-container grid-layout text-wrap">
                                     <div class="row">
                                         <div class="col-5">
@@ -352,7 +373,7 @@
                                             <p>Location here</p>
                                         </div>
                                     </div>
-
+        
                                     <div class="row">
                                         <div class="col-5">
                                             <strong>Special Interest</strong>
@@ -362,16 +383,19 @@
                                         </div>
                                     </div>
                                 </div>
-
-
+                                
                             </div>
-                            <div class="footer-buttons d-flex justify-content-center align-items-center">
-                                <div class="d-flex gap-3 align-items-center">
-                                    <button class="btn text-center">View Profile</button>
-                                    <a href="#" class="d-flex align-items-center justify-content-center">
-                                        <i class="fas fa-calendar-alt"></i>
-                                        <span class="ms-2">Book an appointment</span>
-                                    </a>
+                            <div class="footer-buttons fs-9 text-nowrap">
+                                <div class="row w-100">
+                                    <div class="col-6">
+                                        <button class="btn w-100">View Profile</button>
+                                    </div>
+                                    <div class="col-6 d-flex justify-content-center align-items-center">
+                                        <a href="#" class="d-flex align-items-center text-dark">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span class="ms-2">Book an appointment</span>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
