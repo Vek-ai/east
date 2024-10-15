@@ -1213,6 +1213,30 @@ require '../includes/functions.php';
             });
         });
 
+        $(document).on('click', '#load_estimate', function(event) {
+            var id = $(this).data('id');
+            console.log(id);
+            $.ajax({
+                url: 'pages/cashier2_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    load_estimate: 'load_estimate'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        loadOrderContents();
+                        $('#cashmodal').modal('show');
+                    } else if (response.error) {
+                        alert("Error: " + response.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
         $(document).on('click', '#save_order', function(event) {
             var discount = $('#order_discount').val();
             console.log(discount);

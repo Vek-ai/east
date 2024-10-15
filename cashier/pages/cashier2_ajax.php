@@ -441,6 +441,73 @@ if (isset($_POST['save_estimate'])) {
     echo json_encode($response);
 }
 
+if (isset($_POST['load_estimate'])) {
+    $estimateid = intval($_POST['id']);
+
+    $_SESSION['cart'] = [];
+    
+    $response = [
+        'success' => false,
+        'message' => '',
+        'estimate' => null
+    ];
+
+    $query = "SELECT * FROM estimates WHERE estimateid = '$estimateid'";
+    $result = $conn->query($query);
+
+    if ($result && $result->num_rows > 0) {
+        $estimate = $result->fetch_assoc();
+        $_SESSION['customer_id'] = $estimate['customerid'];
+        $_SESSION['estimateid'] = $estimateid;
+
+        $query = "SELECT * FROM estimate_prod WHERE estimateid = '$estimateid'";
+        $result_products = $conn->query($query);
+
+        if ($result_products && $result_products->num_rows > 0) {
+            $cart = [];
+            $line = 1;
+
+            while ($row = $result_products->fetch_assoc()) {
+                $product_details = getProductDetails($row['product_id']);
+
+                $quantityInStock = getProductStockInStock($row['product_id']);
+                $totalQuantity = getProductStockTotal($row['product_id']);
+                $totalStock = $quantityInStock + $totalQuantity;
+
+                $cart[] = [
+                    'line' => $line,
+                    'product_id' => $row['product_id'],
+                    'product_item' => $product_details['product_item'],
+                    'quantity_cart' => $row['quantity'],
+                    'quantity_ttl' => $totalStock,
+                    'quantity_in_stock' => $quantityInStock,
+                    'unit_price' => $row['actual_price'],
+                    'estimate_width' => $row['custom_width'],
+                    'estimate_bend' => $row['custom_bend'],
+                    'estimate_hem' => $row['custom_hem'],
+                    'estimate_length' => $row['custom_length'],
+                    'custom_color' => $row['custom_color'],
+                    'usageid' => $row['usageid']
+                ];
+
+                $line++;
+            }
+            $_SESSION['cart'] = $cart;
+
+            $response['success'] = true;
+            $response['message'] = "Estimate successfully loaded into session.";
+        } else {
+            $response['message'] = "No products found for the estimate.";
+        }
+    } else {
+        $response['message'] = "Estimate not found.";
+    }
+
+    $conn->close();
+
+    header('Content-Type: application/json');
+    echo json_encode($response);
+}
 
 if (isset($_POST['save_order'])) {
     $discount = floatval( $_POST['discount']);
@@ -455,6 +522,8 @@ if (isset($_POST['save_order'])) {
         exit;
     }
 
+    
+    $estimateid = intval($_SESSION['estimateid']);
     $customerid = intval($_SESSION['customer_id']);
     $total_price = 0;
     $orderid = null;
@@ -470,7 +539,7 @@ if (isset($_POST['save_order'])) {
 
         $discounted_price = number_format($total_price * 0.9, 2);
 
-        $query = "INSERT INTO orders (total_price, discounted_price, discount_percent, order_date, customerid) VALUES ('$total_price', '$discounted_price', '$discount',  '$order_date', '$customerid')";
+        $query = "INSERT INTO orders (estimateid, total_price, discounted_price, discount_percent, order_date, customerid) VALUES ('$estimateid', '$total_price', '$discounted_price', '$discount',  '$order_date', '$customerid')";
         if ($conn->query($query) === TRUE) {
             $orderid = $conn->insert_id;
         } else {

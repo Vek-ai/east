@@ -9,6 +9,13 @@ require '../../includes/functions.php';
 
 if(isset($_POST['fetch_est_list'])){
     ?>
+        <style>
+            .tooltip-inner {
+                background-color: white !important;
+                color: black !important;
+                font-size: calc(0.875rem + 2px) !important;
+            }
+        </style>
         <div class="card-body datatables">
             <div class="product-details table-responsive text-nowrap">
                 <table id="est_list_tbl" class="table table-hover mb-0 text-md-nowrap">
@@ -55,7 +62,8 @@ if(isset($_POST['fetch_est_list'])){
                                     ?>
                                 </td>
                                 <td>
-                                    <button class="btn btn-danger-gradient btn-sm" id="view_est_details" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="fa fa-eye"></i></button>
+                                    <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="view_est_details" data-id="<?php echo $row["estimateid"]; ?>" data-toggle="tooltip" data-placement="top" title="View"><i class="fa fa-eye"></i></a>
+                                    <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="load_estimate" data-id="<?php echo $row["estimateid"]; ?>" data-toggle="tooltip" data-placement="top" title="Order"><i class="fa fa-cart-arrow-down text-success"></i></i></a>
                                 </td>
                             </tr>
                             <?php
@@ -74,6 +82,8 @@ if(isset($_POST['fetch_est_list'])){
         </div>
         <script>
         $(document).ready(function() {
+            $('[data-toggle="tooltip"]').tooltip(); 
+
             $('#est_list_tbl').DataTable({
                 language: {
                     emptyTable: "Estimate List not found"
