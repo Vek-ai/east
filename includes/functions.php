@@ -324,6 +324,22 @@ function log_estimate_changes($estimate_id, $product_id, $action){
     }
 }
 
+function log_order_changes($orderid, $product_id, $action){
+    global $conn;
+    session_start();
+    $orderid = mysqli_real_escape_string($conn, $orderid);
+    $product_id = mysqli_real_escape_string($conn, $product_id);
+    $action = mysqli_real_escape_string($conn, $action);
+    $user_id = $_SESSION['userid'];
+    $query = "INSERT INTO order_changes (orderid, user, product_id, action) VALUES ('$orderid', '$user_id', '$product_id', '$action')";
+    $result = mysqli_query($conn, $query);
+    if ($result) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function getEstimateProdDetails($id) {
     global $conn;
     $id = mysqli_real_escape_string($conn, $id);
@@ -334,6 +350,18 @@ function getEstimateProdDetails($id) {
         $estimate_prod = $row;
     }
     return $estimate_prod;
+}
+
+function getOrderProdDetails($id) {
+    global $conn;
+    $id = mysqli_real_escape_string($conn, $id);
+    $query = "SELECT * FROM order_product WHERE id = '$id'";
+    $result = mysqli_query($conn, $query);
+    $order_product = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $order_product = $row;
+    }
+    return $order_product;
 }
 
 function getCustomerDetails($customer_id) {

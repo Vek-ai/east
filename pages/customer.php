@@ -83,31 +83,37 @@ $addHeaderTxt = "Add New";
 ?>
 
 <style>
-        /* Ensure that the text within the notes column wraps properly */
-        td.notes,  td.last-edit{
-            white-space: normal;
-            word-wrap: break-word;
-        }
-        .emphasize-strike {
-            text-decoration: line-through;
-            font-weight: bold;
-            color: #9a841c; /* You can choose any color you like for emphasis */
-        }
+      td.notes,  td.last-edit{
+          white-space: normal;
+          word-wrap: break-word;
+      }
+      .emphasize-strike {
+          text-decoration: line-through;
+          font-weight: bold;
+          color: #9a841c;
+      }
       .dataTables_filter input {
-    width: 100%; /* Adjust the width as needed */
-    height: 50px; /* Adjust the height as needed */
-    font-size: 16px; /* Adjust the font size as needed */
-    padding: 10px; /* Adjust the padding as needed */
-    border-radius: 5px; /* Adjust the border-radius as needed */
-}
-.dataTables_filter {  width: 100%;}
-#toggleActive {
-    margin-bottom: 10px;
-}
+          width: 100%;
+          height: 50px;
+          font-size: 16px;
+          padding: 10px;
+          border-radius: 5px;
+      }
+      .dataTables_filter {  width: 100%;}
+      #toggleActive {
+          margin-bottom: 10px;
+      }
 
-.inactive-row {
-    display: none;
-}
+      .inactive-row {
+          display: none;
+      }
+
+      .tooltip-inner {
+        background-color: white !important;
+        color: black !important;
+        font-size: calc(0.875rem + 2px) !important;
+      }
+
     </style>
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
             <div class="card-body px-0">
@@ -169,195 +175,200 @@ $addHeaderTxt = "Add New";
               </div>
               <div class="modal-body">
                 <!-- The form -->
-                <form id="lineForm" class="form-horizontal">
-              <div class="row pt-3">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">First Name</label>
-                    <input type="text" id="customer_first_name" name="customer_first_name" class="form-control"  value="<?= $customer_first_name ?>"/>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Last Name</label>
-                    <input type="text" id="customer_last_name" name="customer_last_name" class="form-control" value="<?= $customer_last_name ?>" />
-                  </div>
-                </div>
-              </div>
+                 <div class="card">
+                  <div class="card-body">
+                    <form id="lineForm" class="form-horizontal">
+                      <div class="row pt-3">
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="form-label">First Name</label>
+                            <input type="text" id="customer_first_name" name="customer_first_name" class="form-control"  value="<?= $customer_first_name ?>"/>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" id="customer_last_name" name="customer_last_name" class="form-control" value="<?= $customer_last_name ?>" />
+                          </div>
+                        </div>
+                      </div>
 
-              <div class="row pt-3">
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">Customer Email</label>
-                    <input type="text" id="contact_email" name="contact_email" class="form-control"  value="<?= $contact_email ?>"/>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">Customer Phone</label>
-                    <input type="text" id="contact_phone" name="contact_phone" class="form-control" value="<?= $contact_phone ?>" />
-                  </div>
-                </div>        
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">Customer Fax</label>
-                    <input type="text" id="contact_fax" name="contact_fax" class="form-control" value="<?= $contact_fax ?>" />
-                  </div>
-                </div>
-              </div>
+                      <div class="row pt-3">
+                        <div class="col-md-4">
+                          <div class="mb-3">
+                            <label class="form-label">Customer Email</label>
+                            <input type="text" id="contact_email" name="contact_email" class="form-control"  value="<?= $contact_email ?>"/>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="mb-3">
+                            <label class="form-label">Customer Phone</label>
+                            <input type="text" id="contact_phone" name="contact_phone" class="form-control" value="<?= $contact_phone ?>" />
+                          </div>
+                        </div>        
+                        <div class="col-md-4">
+                          <div class="mb-3">
+                            <label class="form-label">Customer Fax</label>
+                            <input type="text" id="contact_fax" name="contact_fax" class="form-control" value="<?= $contact_fax ?>" />
+                          </div>
+                        </div>
+                      </div>
 
-              <div class="row pt-3">
-                <div class="col-md-12">
-                  <div class="mb-3">
-                    <label class="form-label">Customer Business Name</label>
-                    <input type="text" id="customer_business_name" name="customer_business_name" class="form-control" value="<?= $customer_business_name ?>" />
-                  </div>
-                </div>
-              </div>
+                      <div class="row pt-3">
+                        <div class="col-md-12">
+                          <div class="mb-3">
+                            <label class="form-label">Customer Business Name</label>
+                            <input type="text" id="customer_business_name" name="customer_business_name" class="form-control" value="<?= $customer_business_name ?>" />
+                          </div>
+                        </div>
+                      </div>
 
-              <!-- CustomerTypeID -->
+                      <!-- CustomerTypeID -->
 
-              <div class="row pt-3">
-                <div class="col-md-12">
-                  <div class="mb-3">
-                    <label class="form-label">Address</label>
-                    <input type="text" id="address" name="address" class="form-control" value="<?= $address ?>" />
-                  </div>
-                </div>
-              </div>
+                      <div class="row pt-3">
+                        <div class="col-md-12">
+                          <div class="mb-3">
+                            <label class="form-label">Address</label>
+                            <input type="text" id="address" name="address" class="form-control" value="<?= $address ?>" />
+                          </div>
+                        </div>
+                      </div>
 
-              <div class="row pt-3">
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">City</label>
-                    <input type="text" id="city" name="city" class="form-control"  value="<?= $city ?>"/>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">State</label>
-                    <input type="text" id="state" name="state" class="form-control" value="<?= $state ?>" />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">Zip</label>
-                    <input type="text" id="zip" name="zip" class="form-control" value="<?= $zip ?>" />
-                  </div>
-                </div>
-              </div>
+                      <div class="row pt-3">
+                        <div class="col-md-4">
+                          <div class="mb-3">
+                            <label class="form-label">City</label>
+                            <input type="text" id="city" name="city" class="form-control"  value="<?= $city ?>"/>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="mb-3">
+                            <label class="form-label">State</label>
+                            <input type="text" id="state" name="state" class="form-control" value="<?= $state ?>" />
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="mb-3">
+                            <label class="form-label">Zip</label>
+                            <input type="text" id="zip" name="zip" class="form-control" value="<?= $zip ?>" />
+                          </div>
+                        </div>
+                      </div>
 
-              <div class="row pt-3">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Secondary Contact Name</label>
-                    <input type="text" id="secondary_contact_name" name="secondary_contact_name" class="form-control"  value="<?= $secondary_contact_name ?>"/>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Secondary Contact Phone</label>
-                    <input type="text" id="secondary_contact_phone" name="secondary_contact_phone" class="form-control" value="<?= $secondary_contact_phone ?>" />
-                  </div>
-                </div>
-              </div>
+                      <div class="row pt-3">
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="form-label">Secondary Contact Name</label>
+                            <input type="text" id="secondary_contact_name" name="secondary_contact_name" class="form-control"  value="<?= $secondary_contact_name ?>"/>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="form-label">Secondary Contact Phone</label>
+                            <input type="text" id="secondary_contact_phone" name="secondary_contact_phone" class="form-control" value="<?= $secondary_contact_phone ?>" />
+                          </div>
+                        </div>
+                      </div>
 
-              <div class="row pt-3">
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">AP Contact Name</label>
-                    <input type="text" id="ap_contact_name" name="ap_contact_name" class="form-control"  value="<?= $ap_contact_name ?>"/>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">AP Contact Email</label>
-                    <input type="text" id="ap_contact_email" name="ap_contact_email" class="form-control" value="<?= $ap_contact_email ?>" />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">AP Contact Phone</label>
-                    <input type="text" id="ap_contact_phone" name="ap_contact_phone" class="form-control" value="<?= $ap_contact_phone ?>" />
-                  </div>
-                </div>
-              </div>
-              
-              <!-- LastOrderDate -->
-              <!-- LastQuoteDate -->
+                      <div class="row pt-3">
+                        <div class="col-md-4">
+                          <div class="mb-3">
+                            <label class="form-label">AP Contact Name</label>
+                            <input type="text" id="ap_contact_name" name="ap_contact_name" class="form-control"  value="<?= $ap_contact_name ?>"/>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="mb-3">
+                            <label class="form-label">AP Contact Email</label>
+                            <input type="text" id="ap_contact_email" name="ap_contact_email" class="form-control" value="<?= $ap_contact_email ?>" />
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="mb-3">
+                            <label class="form-label">AP Contact Phone</label>
+                            <input type="text" id="ap_contact_phone" name="ap_contact_phone" class="form-control" value="<?= $ap_contact_phone ?>" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- LastOrderDate -->
+                      <!-- LastQuoteDate -->
 
-              <div class="row pt-3">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Tax Status</label>
-                    <input type="text" id="tax_status" name="tax_status" class="form-control"  value="<?= $tax_status ?>"/>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Tax Exempt Number</label>
-                    <input type="text" id="tax_exempt_number" name="tax_exempt_number" class="form-control" value="<?= $tax_exempt_number ?>" />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                    <?php
-                    // Fetch all customer types
-                    $query = "SELECT * FROM customer_types";
-                    $result = mysqli_query($conn, $query);
-                    
-                    // Fetch the name for the old customer type ID
-                    $default_customer_type_name = '';
-                    if ($old_customer_type_id > 0) {
-                        $default_query = "SELECT customer_type_name FROM customer_types WHERE customer_type_id = $old_customer_type_id";
-                        $default_result = mysqli_query($conn, $default_query);
-                        if ($default_row = mysqli_fetch_assoc($default_result)) {
-                            $default_customer_type_name = htmlspecialchars($default_row['customer_type_name']);
-                        }
-                    }
-                    ?>
-                    <div class="mb-3">
-                        <label class="form-label">Customer Type</label>
-                        <select class="form-select" id="customer_type" name="customer_type">
-                            <option value=""><?php echo $default_customer_type_name ? $default_customer_type_name : 'Choose...'; ?></option>
-                            <?php
-                            // Generate options for the dropdown
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                $selected = ($old_customer_type_id == $row['customer_type_id']) ? 'selected' : '';
-                                echo '<option value="' . htmlspecialchars($row['customer_type_id']) . '" ' . $selected . '>' . htmlspecialchars($row['customer_type_name']) . '</option>';
+                      <div class="row pt-3">
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="form-label">Tax Status</label>
+                            <input type="text" id="tax_status" name="tax_status" class="form-control"  value="<?= $tax_status ?>"/>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="form-label">Tax Exempt Number</label>
+                            <input type="text" id="tax_exempt_number" name="tax_exempt_number" class="form-control" value="<?= $tax_exempt_number ?>" />
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <?php
+                            // Fetch all customer types
+                            $query = "SELECT * FROM customer_types";
+                            $result = mysqli_query($conn, $query);
+                            
+                            // Fetch the name for the old customer type ID
+                            $default_customer_type_name = '';
+                            if ($old_customer_type_id > 0) {
+                                $default_query = "SELECT customer_type_name FROM customer_types WHERE customer_type_id = $old_customer_type_id";
+                                $default_result = mysqli_query($conn, $default_query);
+                                if ($default_row = mysqli_fetch_assoc($default_result)) {
+                                    $default_customer_type_name = htmlspecialchars($default_row['customer_type_name']);
+                                }
                             }
                             ?>
-                        </select>
-                    </div>
-                </div>
-              </div>
+                            <div class="mb-3">
+                                <label class="form-label">Customer Type</label>
+                                <select class="form-select" id="customer_type" name="customer_type">
+                                    <option value=""><?php echo $default_customer_type_name ? $default_customer_type_name : 'Choose...'; ?></option>
+                                    <?php
+                                    // Generate options for the dropdown
+                                    while ($row = mysqli_fetch_assoc($result)) {
+                                        $selected = ($old_customer_type_id == $row['customer_type_id']) ? 'selected' : '';
+                                        echo '<option value="' . htmlspecialchars($row['customer_type_id']) . '" ' . $selected . '>' . htmlspecialchars($row['customer_type_name']) . '</option>';
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                      </div>
 
-              <div class="mb-3">
-                <label class="form-label">Customer Notes</label>
-                <textarea class="form-control" id="customer_notes" name="customer_notes" rows="5"><?= $customer_notes ?></textarea>
-              </div>
+                      <div class="mb-3">
+                        <label class="form-label">Customer Notes</label>
+                        <textarea class="form-control" id="customer_notes" name="customer_notes" rows="5"><?= $customer_notes ?></textarea>
+                      </div>
 
-              <div class="mb-3">
-                <label class="form-label">Customer Call Status</label>
-                <input type="checkbox" id="call_status" name="call_status" <?= $call_status ? 'checked' : '' ?>>
-              </div>
+                      <div class="mb-3">
+                        <label class="form-label">Customer Call Status</label>
+                        <input type="checkbox" id="call_status" name="call_status" <?= $call_status ? 'checked' : '' ?>>
+                      </div>
 
-              <div class="form-actions">
-                <div class="card-body border-top ">
-                  <input type="hidden" id="customer_id" name="customer_id" class="form-control"  value="<?= $customer_id ?>"/>
-                  <div class="row">
-                    
-                    <div class="col-6 text-start">
-                    
-                    </div>
-                    <div class="col-6 text-end">
-                      <button type="submit" class="btn btn-primary" style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
-                    </div>
+                      <div class="form-actions">
+                        <div class="card-body border-top ">
+                          <input type="hidden" id="customer_id" name="customer_id" class="form-control"  value="<?= $customer_id ?>"/>
+                          <div class="row">
+                            
+                            <div class="col-6 text-start">
+                            
+                            </div>
+                            <div class="col-6 text-end">
+                              <button type="submit" class="btn btn-primary" style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
+                            </div>
+                          </div>
+                          
+                        </div>
+                      </div>
+
+                    </form>
                   </div>
-                  
-                </div>
-              </div>
-
-            </form>
+                 </div>
+              
               </div>
             </div>
           </div>
@@ -374,7 +385,7 @@ $addHeaderTxt = "Add New";
             </h4>
           
           <div class="table-responsive">
-            <table id="display_customer" class="table table-striped table-bordered text-nowrap align-middle">
+            <table id="display_customer" class="table align-middle table-hover mb-0 text-md-nowrap">
               <thead>
                 <!-- start row -->
                 <tr>
@@ -393,7 +404,7 @@ $addHeaderTxt = "Add New";
                       ?>
 
                       <!-- Add a Dropdown for Filtering -->
-                      <select id="customerTypeFilter">
+                      <select id="customerTypeFilter" class="form-control select2">
                           <option value="">Category</option>
                           <?php
                           // Loop through the results and create dropdown options
@@ -447,12 +458,15 @@ $addHeaderTxt = "Add New";
                       <td><?= $address ?></td>
                       <td><?= $customer_type_name ?></td>
                       <td><?= $status ?></td>
-                      <td class="text-center" id="action-button-<?= $no ?>">
+                      <td class="text-center fs-5" id="action-button-<?= $no ?>">
                           <?php if ($row_customer['status'] == '0') { ?>
-                              <a href="#" class="btn btn-light py-1 text-dark hideCustomer" data-id="<?= $customer_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
+                              <a href="#" class="py-1 text-dark hideCustomer" data-id="<?= $customer_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Archive"><i class="fa fa-box-archive text-danger"></i></a>
                           <?php } else { ?>
-                              <a href="/?page=customer&customer_id=<?= $customer_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                              <a href="?page=customer&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Edit"><i class="fa fa-pencil text-warning"></i></a>
+                              <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i class="fa fa-calculator text-primary"></i></a>
+                              <a href="?page=order_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Orders"><i class="fa fa-cart-shopping text-success"></i></a>
                           <?php } ?>
+                          
                       </td>
                   </tr>
                   <?php
@@ -462,6 +476,7 @@ $addHeaderTxt = "Add New";
               </tbody>
                 <script>
                   $(document).ready(function() {
+                      $('[data-toggle="tooltip"]').tooltip(); 
                       // Use event delegation for dynamically generated elements
                       $(document).on('click', '.changeStatus', function(event) {
                           event.preventDefault(); 
@@ -564,10 +579,10 @@ $addHeaderTxt = "Add New";
     });
     
         // Filter based on dropdown selection
-        $('#customerTypeFilter').on('change', function() {
-    var selectedValue = $(this).val();
-    table.search(selectedValue).draw();  // Apply global search based on dropdown value
-  });
+    $('#customerTypeFilter').on('change', function() {
+      var selectedValue = $(this).val();
+      table.search(selectedValue).draw();  // Apply global search based on dropdown value
+    });
     
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -584,6 +599,8 @@ $addHeaderTxt = "Add New";
     });
 
     $('#toggleActive').trigger('change');
+
+    $('.select2').select2();
 
     function getCookie(name) {
         var nameEQ = name + "=";
@@ -649,7 +666,5 @@ $addHeaderTxt = "Add New";
             }
         });
     });
-
-    
 });
 </script>

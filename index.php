@@ -1353,6 +1353,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "flat_stock_manufactured") {include 'pages/flat_stock_manufactured.php';}
 
             if ($_REQUEST['page'] == "estimate_list") {include 'pages/estimate_list.php';}
+            if ($_REQUEST['page'] == "order_list") {include 'pages/order_list.php';}
           ?>
         </div>
       </div>

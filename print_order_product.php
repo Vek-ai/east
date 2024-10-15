@@ -16,7 +16,6 @@ $col2_x = 140;
 
 $orderid = $_REQUEST['id'];
 $current_user_id = $_SESSION['userid'];
-$discount = .1;
 $tax = .15;
 $delivery_price = 100;
 
@@ -25,6 +24,7 @@ $result = mysqli_query($conn, $query);
 
 if (mysqli_num_rows($result) > 0) {
     while($row = mysqli_fetch_assoc($result)){
+        $discount = floatval($row['discount_percent']) / 100;
         $estimateid = $row['estimateid'];
         $customer_id = $row['customerid'];
         $customerDetails = getCustomerDetails($customer_id);

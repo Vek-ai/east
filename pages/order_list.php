@@ -75,14 +75,14 @@ if($_REQUEST['customer_id']){
             if(isset($customer_details)){
                 echo "Customer " .$customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'];
             }
-            ?> Estimate List</h4>
+            ?> Order List</h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                <a class="text-muted text-decoration-none" href="">Estimate
+                <a class="text-muted text-decoration-none" href="">Order
                 </a>
                 </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Estimate List</li>
+                <li class="breadcrumb-item text-muted" aria-current="page">Order List</li>
             </ol>
             </nav>
         </div>
@@ -130,35 +130,35 @@ if($_REQUEST['customer_id']){
                 <i class="ti ti-trash me-1 fs-5"></i> Delete All Row
             </a>
             </div>
-            <button type="button" id="add_estimate_btn" class="btn btn-primary d-flex align-items-center">
-                <i class="ti ti-users text-white me-1 fs-5"></i> Add Estimate
+            <button type="button" id="add_order_btn" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-users text-white me-1 fs-5"></i> Add Order
             </button>
         </div>
         </div>
     </div>
     <?php } ?>
 
-    <div class="modal fade" id="viewEstimateModal" tabindex="-1" aria-labelledby="viewEstimateModalLabel" aria-hidden="true"></div>
+    <div class="modal fade" id="viewOrderModal" tabindex="-1" aria-labelledby="viewOrderModalLabel" aria-hidden="true"></div>
 
     <div class="modal fade" id="viewChangesModal" tabindex="-1" aria-labelledby="viewChangesModalLabel" aria-hidden="true"></div>
     
-    <div class="modal fade" id="addEstimateModal" tabindex="-1" aria-labelledby="addEstimateModalLabel" aria-hidden="true"></div>
+    <div class="modal fade" id="addOrderModal" tabindex="-1" aria-labelledby="addOrderModalLabel" aria-hidden="true"></div>
 
-    <div class="modal fade" id="updateEstimateModal" tabindex="-1" role="dialog" aria-labelledby="updateEstimateModal" aria-hidden="true">
+    <div class="modal fade" id="updateOrderModal" tabindex="-1" role="dialog" aria-labelledby="updateOrderModal" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen" role="document">
             <div class="modal-content modal-content-demo">
                 <div class="modal-header">
-                    <h6 class="modal-title">Save Estimate</h6>
+                    <h6 class="modal-title">Save Order</h6>
                     <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div id="estimate-tbl"></div>
+                    <div id="order-tbl"></div>
                     
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" id="save_estimate">
+                    <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" id="save_order">
                         <i class="fa fa-save fs-4 me-2"></i>
                         Save
                     </button>
@@ -183,7 +183,7 @@ if($_REQUEST['customer_id']){
                         <div class="card-body text-start p-3">
                             <div class="row pb-3">
                                 <div class="col-2">
-                                    <button type="button" id="updateEstimateBtn" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#updateEstimateModal">
+                                    <button type="button" id="updateOrderBtn" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#updateOrderModal">
                                         <i class="ti ti-users text-white me-1 fs-5"></i> Back
                                     </button>
                                 </div>
@@ -336,7 +336,7 @@ if($_REQUEST['customer_id']){
                             <th>Customer</th>
                             <th>Total Price</th>
                             <th>Discounted Price</th>
-                            <th>Estimate Date</th>
+                            <th>Order Date</th>
                             <th>Order Date</th>
                             <th>Action</th>
                         </tr>
@@ -344,7 +344,7 @@ if($_REQUEST['customer_id']){
                     <tbody>
                         <?php 
 
-                        $query = "SELECT * FROM estimates WHERE status = '1'";
+                        $query = "SELECT * FROM orders WHERE status = '1'";
 
                         if (isset($customer_id) && !empty($customer_id)) {
                             $query .= " AND customerid = '$customer_id'";
@@ -367,7 +367,7 @@ if($_REQUEST['customer_id']){
                                     $ <?php echo number_format($row["discounted_price"],2) ?>
                                 </td>
                                 <td>
-                                    <?php echo date("F d, Y", strtotime($row["estimated_date"])); ?>
+                                    <?php echo date("F d, Y", strtotime($row["order_date"])); ?>
                                 </td>
                                 <td>
                                     <?php 
@@ -379,12 +379,11 @@ if($_REQUEST['customer_id']){
                                     ?>
                                 </td>
                                 <td>
-                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
-                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="edit_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-warning fa fa-pencil fs-5"></i></button>
-                                    <a href="print_estimate_product.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
-                                    <a href="print_estimate_total.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
-                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-info fa fa-clock-rotate-left fs-5"></i></button>
-                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="delete_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-danger fa fa-trash fs-5"></i></button>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="edit_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-warning fa fa-pencil fs-5"></i></button>
+                                    <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-info fa fa-clock-rotate-left fs-5"></i></button>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="delete_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-danger fa fa-trash fs-5"></i></button>
                                 </td>
                             </tr>
                             <?php
@@ -404,16 +403,16 @@ if($_REQUEST['customer_id']){
 </div>
 
 <script>
-    function updateEstimateBend(element){
+    function updateOrderBend(element){
         var bend = $(element).val();
         var id = $(element).data('id');
         $.ajax({
-            url: 'pages/estimate_list_ajax.php',
+            url: 'pages/order_list_ajax.php',
             type: 'POST',
             data: {
                 bend: bend,
                 id: id,
-                action: "set_estimate_bend"
+                action: "set_order_bend"
             },
             success: function(response) {
                 console.log(response);
@@ -424,17 +423,17 @@ if($_REQUEST['customer_id']){
         });
     }
 
-    function updateEstimateHem(element){
+    function updateOrderHem(element){
         var hem = $(element).val();
         var id = $(element).data('id');
 
         $.ajax({
-            url: 'pages/estimate_list_ajax.php',
+            url: 'pages/order_list_ajax.php',
             type: 'POST',
             data: {
                 hem: hem,
                 id: id,
-                action: "set_estimate_hem"
+                action: "set_order_hem"
             },
             success: function(response) {
                 console.log(response);
@@ -450,7 +449,7 @@ if($_REQUEST['customer_id']){
         var id = $(element).data('id');
 
         $.ajax({
-            url: 'pages/estimate_list_ajax.php',
+            url: 'pages/order_list_ajax.php',
             type: 'POST',
             data: {
                 usage: usage,
@@ -471,7 +470,7 @@ if($_REQUEST['customer_id']){
         var id = $(element).data('id');
 
         $.ajax({
-            url: 'pages/estimate_list_ajax.php',
+            url: 'pages/order_list_ajax.php',
             type: 'POST',
             data: {
                 color: color,
@@ -487,16 +486,16 @@ if($_REQUEST['customer_id']){
         });
     }
 
-    function addtoestimate(element) {
-        var product_id = $(element).data('id');
-        var estimate_id = sessionStorage.getItem('estimateid');
+    function addtoorder(element) {
+        var productid = $(element).data('id');
+        var orderid = sessionStorage.getItem('orderid');
         $.ajax({
-            url: "pages/estimate_list_ajax.php",
+            url: "pages/order_list_ajax.php",
             type: "POST",
             data: {
-                product_id: product_id,
-                estimate_id: estimate_id,
-                action: 'add_to_estimate'
+                productid: productid,
+                orderid: orderid,
+                action: 'add_to_order'
             },
             success: function(data) {
                 console.log(data);
@@ -512,17 +511,17 @@ if($_REQUEST['customer_id']){
         });
     }
 
-    function updateEstimateLength(element){
+    function updateOrderLength(element){
         var length = $(element).val();
         var id = $(element).data('id');
 
         $.ajax({
-            url: 'pages/estimate_list_ajax.php',
+            url: 'pages/order_list_ajax.php',
             type: 'POST',
             data: {
                 length: length,
                 id: id,
-                action: "set_estimate_length"
+                action: "set_order_length"
             },
             success: function(response) {
                 console.log(response);
@@ -533,17 +532,17 @@ if($_REQUEST['customer_id']){
         });
     }
 
-    function updateEstimateHeight(element){
+    function updateOrderHeight(element){
         var height = $(element).val();
         var id = $(element).data('id');
 
         $.ajax({
-            url: 'pages/estimate_list_ajax.php',
+            url: 'pages/order_list_ajax.php',
             type: 'POST',
             data: {
                 height: height,
                 id: id,
-                action: "set_estimate_height"
+                action: "set_order_height"
             },
             success: function(response) {
                 console.log(response);
@@ -554,16 +553,16 @@ if($_REQUEST['customer_id']){
         });
     }
 
-    function updateEstimateWidth(element){
+    function updateOrderWidth(element){
         var width = $(element).val();
         var id = $(element).data('id');
         $.ajax({
-            url: 'pages/estimate_list_ajax.php',
+            url: 'pages/order_list_ajax.php',
             type: 'POST',
             data: {
                 width: width,
                 id: id,
-                action: "set_estimate_width"
+                action: "set_order_width"
             },
             success: function(response) {
                 console.log(response);
@@ -575,13 +574,13 @@ if($_REQUEST['customer_id']){
     }
 
     function updatequantity(element) {
-        var estimate_id = $(element).data('id');
+        var orderid = $(element).data('id');
         var qty = $(element).val();
         $.ajax({
-            url: "pages/estimate_list_ajax.php",
+            url: "pages/order_list_ajax.php",
             type: "POST",
             data: {
-                estimate_id: estimate_id,
+                orderid: orderid,
                 qty: qty,
                 action: 'setquantity'
             },
@@ -599,14 +598,14 @@ if($_REQUEST['customer_id']){
     }
 
     function addquantity(element) {
-        var estimate_id = $(element).data('id');
-        var input_quantity = $('input[data-id="' + estimate_id + '"][id="item_quantity' + estimate_id + '"]');
+        var orderid = $(element).data('id');
+        var input_quantity = $('input[data-id="' + orderid + '"][id="item_quantity' + orderid + '"]');
         var quantity = Number(input_quantity.val());
         $.ajax({
-            url: "pages/estimate_list_ajax.php",
+            url: "pages/order_list_ajax.php",
             type: "POST",
             data: {
-                estimate_id: estimate_id,
+                orderid: orderid,
                 quantity: quantity,
                 action: 'addquantity'
             },
@@ -623,23 +622,23 @@ if($_REQUEST['customer_id']){
         });
     }
 
-    function loadEditModal(estimate_id = null) {
-        var estimate = estimate_id || sessionStorage.getItem('estimateid');
+    function loadEditModal(orderid = null) {
+        var order = orderid || sessionStorage.getItem('orderid');
         
-        if (!estimate) {
-            alert('No estimate ID provided.');
+        if (!order) {
+            alert('No order ID provided.');
             return;
         }
 
         $.ajax({
-            url: 'pages/estimate_list_ajax.php',
+            url: 'pages/order_list_ajax.php',
             type: 'POST',
             data: {
-                id: estimate,
+                id: order,
                 action: "fetch_edit_modal"
             },
             success: function(response) {
-                $('#estimate-tbl').html(response);
+                $('#order-tbl').html(response);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -648,14 +647,14 @@ if($_REQUEST['customer_id']){
     }
 
     function deductquantity(element) {
-        var estimate_id = $(element).data('id');
-        var input_quantity = $('input[data-id="' + estimate_id + '"][id="item_quantity' + estimate_id + '"]');
+        var orderid = $(element).data('id');
+        var input_quantity = $('input[data-id="' + orderid + '"][id="item_quantity' + orderid + '"]');
         var quantity = Number(input_quantity.val());
         $.ajax({
-            url: "pages/estimate_list_ajax.php",
+            url: "pages/order_list_ajax.php",
             type: "POST",
             data: {
-                estimate_id: estimate_id,
+                orderid: orderid,
                 quantity: quantity,
                 action: 'deductquantity'
             },
@@ -673,12 +672,12 @@ if($_REQUEST['customer_id']){
     }
 
     function delete_item(element) {
-        var estimate_id = $(element).data('id');
+        var orderid = $(element).data('id');
         var line = $(element).data('line');
         $.ajax({
-            url: "pages/estimate_list_ajax.php",
+            url: "pages/order_list_ajax.php",
             data: {
-                estimate_id: estimate_id,
+                orderid: orderid,
 
                 action: 'deleteitem'
             },
@@ -695,19 +694,19 @@ if($_REQUEST['customer_id']){
             "order": [[1, "asc"]]
         });
 
-        $(document).on('click', '#view_estimate_btn', function(event) {
+        $(document).on('click', '#view_order_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
             $.ajax({
-                    url: 'pages/estimate_list_ajax.php',
+                    url: 'pages/order_list_ajax.php',
                     type: 'POST',
                     data: {
                         id: id,
                         action: "fetch_view_modal"
                     },
                     success: function(response) {
-                        $('#viewEstimateModal').html(response);
-                        $('#viewEstimateModal').modal('show');
+                        $('#viewOrderModal').html(response);
+                        $('#viewOrderModal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -719,7 +718,7 @@ if($_REQUEST['customer_id']){
             event.preventDefault(); 
             var id = $(this).data('id');
             $.ajax({
-                    url: 'pages/estimate_list_ajax.php',
+                    url: 'pages/order_list_ajax.php',
                     type: 'POST',
                     data: {
                         id: id,
@@ -735,26 +734,26 @@ if($_REQUEST['customer_id']){
             });
         });
 
-        $(document).on('click', '#edit_estimate_btn', function(event) {
+        $(document).on('click', '#edit_order_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
             loadEditModal(id);
-            $('#updateEstimateModal').modal('show');
+            $('#updateOrderModal').modal('show');
 
-            sessionStorage.setItem('estimateid', id);
+            sessionStorage.setItem('orderid', id);
         });
 
-        $(document).on('click', '#add_estimate_btn', function(event) {
+        $(document).on('click', '#add_order_btn', function(event) {
             event.preventDefault(); 
             $.ajax({
-                url: 'pages/estimate_list_ajax.php',
+                url: 'pages/order_list_ajax.php',
                 type: 'POST',
                 data: {
                     action: "fetch_add_modal"
                 },
                 success: function(response) {
-                    $('#addEstimateModal').html(response);
-                    $('#addEstimateModal').modal('show');
+                    $('#addOrderModal').html(response);
+                    $('#addOrderModal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -769,13 +768,13 @@ if($_REQUEST['customer_id']){
             formData.append('action', 'add_update');
 
             $.ajax({
-                url: 'pages/estimate_list_ajax.php',
+                url: 'pages/order_list_ajax.php',
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    $('#updateEstimateModal').modal('hide');
+                    $('#updateOrderModal').modal('hide');
                     if (response.trim() === "success") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("Product updated successfully.");
@@ -810,13 +809,13 @@ if($_REQUEST['customer_id']){
             formData.append('action', 'add_update');
 
             $.ajax({
-                url: 'pages/estimate_list_ajax.php',
+                url: 'pages/order_list_ajax.php',
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    $('#addEstimateModal').modal('hide');
+                    $('#addOrderModal').modal('hide');
                     if (response.trim() === "success") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("New product added successfully.");
@@ -904,7 +903,7 @@ if($_REQUEST['customer_id']){
             var category_id = $('#select-category').find('option:selected').val();
             var onlyInStock = $('#toggleActive').prop('checked');
             $.ajax({
-                url: 'pages/estimate_list_ajax.php',
+                url: 'pages/order_list_ajax.php',
                 type: 'POST',
                 data: {
                     query: query,
