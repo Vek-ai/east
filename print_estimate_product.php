@@ -103,8 +103,6 @@ if (mysqli_num_rows($result) > 0) {
                         $usageArray[] = $row_usage['usageid'];
                     }
 
-                    
-
                     $usageArray = array_unique($usageArray);
 
                     $usage_ids = implode(',' , $usageArray);
@@ -188,6 +186,86 @@ if (mysqli_num_rows($result) > 0) {
                         
                     }
                 }
+                
+            }
+
+            $data = array();
+            $query_product = "SELECT * FROM estimate_prod WHERE estimateid = '$estimateid' AND usageid = 0";
+            $result_product = mysqli_query($conn, $query_product);
+            if (mysqli_num_rows($result_product) > 0) {
+                $pdf->Ln();
+                $pdf->SetFont('Arial', 'B', 9);
+                $pdf->SetXY($col1_x, $pdf->GetY());
+                $pdf->Cell(10, 5, 'OTHERS', 0, 1, 'L');
+
+                $pdf->SetFont('Arial', 'B', 7);
+                $widths = [15, 20, 55, 20, 10, 10, 10, 18, 18, 15];
+                $headers = ['QTY', "PART/COIL #", 'DESCRIPTION', 'COLOR', 'Grade', 'FT.', 'IN.', 'PRICE' , 'DISC PRICE', 'TOTAL'];
+
+                for ($i = 0; $i < count($headers); $i++) {
+                    $pdf->Cell($widths[$i], 10, $headers[$i], 1, 0, 'C');
+                }
+                $pdf->Ln();
+
+                while($row_product = mysqli_fetch_assoc($result_product)){
+                    $product_id = $row_product['product_id'];
+                    $product_details = getProductDetails($product_id);
+                    $grade_details = getGradeDetails($product_details['grade']);
+                    $data[] = [
+                        $row_product['quantity'],
+                        '',
+                        $product_details['product_item'],
+                        getColorName($product_details['color']),
+                        $grade_details['grade_abbreviations'] ?? '',
+                        '',
+                        '',
+                        '$ ' .number_format($product_details['unit_price'],2),
+                        '$ ' .number_format($product_details['unit_price'] * (1 - $discount),2),
+                        '$ ' .number_format(($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'],2) ,
+                    ];
+
+                    $total_price += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                    $total_qty += $row_product['quantity'];
+                }
+
+                $pdf->SetFont('Arial', '', 8);
+
+                foreach ($data as $row) {
+
+                    $height = NbLines($pdf, $widths[2], $row[2]) * 5; 
+                    
+                    $y_initial = $pdf->GetY();
+
+                    $pdf->Cell($widths[0], $height, $row[0], 'LR', 0, 'C');
+                    $pdf->Cell($widths[1], $height, $row[1], 'LR', 0, 'C');
+                    
+                    $x = $pdf->GetX();
+                    $y = $pdf->GetY();
+                    $pdf->MultiCell($widths[2], 5, $row[2], 'LR', 'C');
+                    $pdf->SetXY($x + $widths[2], $y_initial);
+
+                    $x = $pdf->GetX();
+                    $y = $pdf->GetY();
+                    $pdf->MultiCell($widths[3], 5, $row[3], 'LR', 'C');
+                    $pdf->SetXY($x + $widths[3], $y_initial);
+
+                    $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'C');  
+                    $pdf->Cell($widths[5], $height, $row[5], 'LR', 0, 'C');  
+                    $pdf->Cell($widths[6], $height, $row[6], 'LR', 0, 'C');  
+                    $pdf->Cell($widths[7], $height, $row[7], 'LR', 0, 'R');  
+                    $pdf->Cell($widths[8], $height, $row[8], 'LR', 0, 'R');  
+                    $pdf->Cell($widths[9], $height, $row[9], 'LR', 0, 'R');  
+                    
+
+                    $pdf->Ln();
+
+                    $y_bottom = $pdf->GetY();
+
+                    $pdf->Line(10, $y_initial + $height, 210 - 10, $y_initial + $height);
+
+                    
+                }
+
                 
             }
             

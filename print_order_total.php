@@ -88,17 +88,31 @@ if (mysqli_num_rows($result) > 0) {
 
         $total_price = 0;
         $total_qty = 0;
+        $total_price_undisc = 0;
 
         $query_key = "SELECT * FROM key_components";
         $result_key = mysqli_query($conn, $query_key);
         if (mysqli_num_rows($result_key) > 0) {
+            $pdf->SetFont('Arial', 'B', 7);
+            $widths = [35, 75, 28, 28, 25];
+            $headers = ['QTY', 'DESCRIPTION', 'PRICE' , 'DISC PRICE', 'TOTAL'];
+            
+            for ($i = 0; $i < count($headers); $i++) {
+                $pdf->Cell($widths[$i], 10, $headers[$i], 1, 0, 'C');
+            }
+            $pdf->Ln();
             while ($row_key = mysqli_fetch_assoc($result_key)) {
+                $component_name = $row_key['component_name'];
                 $componentid = $row_key['componentid'];
                 $query_usage = "SELECT * FROM component_usage WHERE componentid = '$componentid'";
                 $result_usage = mysqli_query($conn, $query_usage);
                 $usageArray = array();
 
                 if (mysqli_num_rows($result_usage) > 0) {
+                    $qty_per_component = 0;
+                    $total_per_component = 0;
+                    $undisc_total_per_component = 0;
+                    
                     while ($row_usage = mysqli_fetch_assoc($result_usage)) {
                         $usageArray[] = $row_usage['usageid'];
                     }
@@ -106,169 +120,132 @@ if (mysqli_num_rows($result) > 0) {
                     $usageArray = array_unique($usageArray);
 
                     $usage_ids = implode(',' , $usageArray);
+
+                    $qty_per_component = 0;
+                    $total_per_component = 0;
+                    $undisc_total_per_component = 0;
                     $data = array();
                     $query_product = "SELECT * FROM order_product WHERE orderid = '$orderid' AND usageid IN ($usage_ids)";
                     $result_product = mysqli_query($conn, $query_product);
                     if (mysqli_num_rows($result_product) > 0) {
-                        $pdf->Ln();
-                        $pdf->SetFont('Arial', 'B', 9);
-                        $pdf->SetXY($col1_x, $pdf->GetY());
-                        $pdf->Cell(10, 5, $row_key['component_name'], 0, 1, 'L');
-
-                        $pdf->SetFont('Arial', 'B', 7);
-                        $widths = [15, 20, 55, 20, 10, 10, 10, 18, 18, 15];
-                        $headers = ['QTY', "PART/COIL #", 'DESCRIPTION', 'COLOR', 'Grade', 'FT.', 'IN.', 'PRICE' , 'DISC PRICE', 'TOTAL'];
-
-                        for ($i = 0; $i < count($headers); $i++) {
-                            $pdf->Cell($widths[$i], 10, $headers[$i], 1, 0, 'C');
-                        }
-                        $pdf->Ln();
-
                         while($row_product = mysqli_fetch_assoc($result_product)){
                             $productid = $row_product['productid'];
                             $product_details = getProductDetails($productid);
                             $grade_details = getGradeDetails($product_details['grade']);
-                            $data[] = [
-                                $row_product['quantity'],
-                                '',
-                                $product_details['product_item'],
-                                getColorName($product_details['color']),
-                                $grade_details['grade_abbreviations'] ?? '',
-                                '',
-                                '',
-                                '$ ' .number_format($product_details['unit_price'],2),
-                                '$ ' .number_format($product_details['unit_price'] * (1 - $discount),2),
-                                '$ ' .number_format(($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'],2) ,
-                            ];
-
+                            
+                            
                             $total_price += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                            $total_price_undisc += $product_details['unit_price'] * $row_product['quantity'];
                             $total_qty += $row_product['quantity'];
-                        }
 
-                        $pdf->SetFont('Arial', '', 8);
-
-                        foreach ($data as $row) {
-
-                            $height = NbLines($pdf, $widths[2], $row[2]) * 5; 
-                            
-                            $y_initial = $pdf->GetY();
-
-                            $pdf->Cell($widths[0], $height, $row[0], 'LR', 0, 'C');
-                            $pdf->Cell($widths[1], $height, $row[1], 'LR', 0, 'C');
-                            
-                            $x = $pdf->GetX();
-                            $y = $pdf->GetY();
-                            $pdf->MultiCell($widths[2], 5, $row[2], 'LR', 'C');
-                            $pdf->SetXY($x + $widths[2], $y_initial);
-
-                            $x = $pdf->GetX();
-                            $y = $pdf->GetY();
-                            $pdf->MultiCell($widths[3], 5, $row[3], 'LR', 'C');
-                            $pdf->SetXY($x + $widths[3], $y_initial);
-
-                            $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'C');  
-                            $pdf->Cell($widths[5], $height, $row[5], 'LR', 0, 'C');  
-                            $pdf->Cell($widths[6], $height, $row[6], 'LR', 0, 'C');  
-                            $pdf->Cell($widths[7], $height, $row[7], 'LR', 0, 'R');  
-                            $pdf->Cell($widths[8], $height, $row[8], 'LR', 0, 'R');  
-                            $pdf->Cell($widths[9], $height, $row[9], 'LR', 0, 'R');  
-                            
-
-                            $pdf->Ln();
-
-                            $y_bottom = $pdf->GetY();
-
-                            $pdf->Line(10, $y_initial + $height, 210 - 10, $y_initial + $height);
-
+                            $total_per_component += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                            $undisc_total_per_component += $product_details['unit_price'] * $row_product['quantity'];
+                            $qty_per_component += $row_product['quantity'];
                             
                         }
 
                         
+                        $data[] = [
+                            $qty_per_component,
+                            $component_name,
+                            '$ ' .number_format($undisc_total_per_component,2),
+                            '$ ' .number_format($total_per_component,2),
+                            '$ ' .number_format($total_per_component,2) ,
+                        ];
+            
+                        $pdf->SetFont('Arial', '', 8);
+            
+                        foreach ($data as $row) {
+            
+                            $height = NbLines($pdf, $widths[2], $row[2]) * 5; 
+                            
+                            $y_initial = $pdf->GetY();
+            
+                            $pdf->Cell($widths[0], $height, $row[0], 'LR', 0, 'C');
+                            
+                            $x = $pdf->GetX();
+                            $y = $pdf->GetY();
+                            $pdf->MultiCell($widths[1], 5, $row[1], 'LR', 'C');
+                            $pdf->SetXY($x + $widths[1], $y_initial);
+
+                            $pdf->Cell($widths[2], $height, $row[2], 'LR', 0, 'R');  
+                            $pdf->Cell($widths[3], $height, $row[3], 'LR', 0, 'R');  
+                            $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'R');  
+                            
+                            $pdf->Ln();
+                            $y_bottom = $pdf->GetY();
+                            $pdf->Line(10, $y_initial + $height, 210 - 10, $y_initial + $height);
+                            
+                        }
+                        
                     }
 
+                    
                 }
                 
             }
 
+            $qty_per_component = 0;
+            $total_per_component = 0;
+            $undisc_total_per_component = 0;
             $data = array();
             $query_product = "SELECT * FROM order_product WHERE orderid = '$orderid' AND usageid = 0";
             $result_product = mysqli_query($conn, $query_product);
             if (mysqli_num_rows($result_product) > 0) {
-                $pdf->Ln();
-                $pdf->SetFont('Arial', 'B', 9);
-                $pdf->SetXY($col1_x, $pdf->GetY());
-                $pdf->Cell(10, 5, 'OTHERS', 0, 1, 'L');
-
-                $pdf->SetFont('Arial', 'B', 7);
-                $widths = [15, 20, 55, 20, 10, 10, 10, 18, 18, 15];
-                $headers = ['QTY', "PART/COIL #", 'DESCRIPTION', 'COLOR', 'Grade', 'FT.', 'IN.', 'PRICE' , 'DISC PRICE', 'TOTAL'];
-
-                for ($i = 0; $i < count($headers); $i++) {
-                    $pdf->Cell($widths[$i], 10, $headers[$i], 1, 0, 'C');
-                }
-                $pdf->Ln();
-
                 while($row_product = mysqli_fetch_assoc($result_product)){
                     $productid = $row_product['productid'];
                     $product_details = getProductDetails($productid);
                     $grade_details = getGradeDetails($product_details['grade']);
-                    $data[] = [
-                        $row_product['quantity'],
-                        '',
-                        $product_details['product_item'],
-                        getColorName($product_details['color']),
-                        $grade_details['grade_abbreviations'] ?? '',
-                        '',
-                        '',
-                        '$ ' .number_format($product_details['unit_price'],2),
-                        '$ ' .number_format($product_details['unit_price'] * (1 - $discount),2),
-                        '$ ' .number_format(($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'],2) ,
-                    ];
-
+                    
                     $total_price += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                    $total_price_undisc += $product_details['unit_price'] * $row_product['quantity'];
                     $total_qty += $row_product['quantity'];
-                }
 
-                $pdf->SetFont('Arial', '', 8);
-
-                foreach ($data as $row) {
-
-                    $height = NbLines($pdf, $widths[2], $row[2]) * 5; 
-                    
-                    $y_initial = $pdf->GetY();
-
-                    $pdf->Cell($widths[0], $height, $row[0], 'LR', 0, 'C');
-                    $pdf->Cell($widths[1], $height, $row[1], 'LR', 0, 'C');
-                    
-                    $x = $pdf->GetX();
-                    $y = $pdf->GetY();
-                    $pdf->MultiCell($widths[2], 5, $row[2], 'LR', 'C');
-                    $pdf->SetXY($x + $widths[2], $y_initial);
-
-                    $x = $pdf->GetX();
-                    $y = $pdf->GetY();
-                    $pdf->MultiCell($widths[3], 5, $row[3], 'LR', 'C');
-                    $pdf->SetXY($x + $widths[3], $y_initial);
-
-                    $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'C');  
-                    $pdf->Cell($widths[5], $height, $row[5], 'LR', 0, 'C');  
-                    $pdf->Cell($widths[6], $height, $row[6], 'LR', 0, 'C');  
-                    $pdf->Cell($widths[7], $height, $row[7], 'LR', 0, 'R');  
-                    $pdf->Cell($widths[8], $height, $row[8], 'LR', 0, 'R');  
-                    $pdf->Cell($widths[9], $height, $row[9], 'LR', 0, 'R');  
-                    
-
-                    $pdf->Ln();
-
-                    $y_bottom = $pdf->GetY();
-
-                    $pdf->Line(10, $y_initial + $height, 210 - 10, $y_initial + $height);
-
+                    $total_per_component += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                    $undisc_total_per_component += $product_details['unit_price'] * $row_product['quantity'];
+                    $qty_per_component += $row_product['quantity'];
                     
                 }
 
                 
+                $data[] = [
+                    $qty_per_component,
+                    'Others',
+                    '$ ' .number_format($undisc_total_per_component,2),
+                    '$ ' .number_format($total_per_component,2),
+                    '$ ' .number_format($total_per_component,2) ,
+                ];
+    
+                $pdf->SetFont('Arial', '', 8);
+    
+                foreach ($data as $row) {
+    
+                    $height = NbLines($pdf, $widths[2], $row[2]) * 5; 
+                    
+                    $y_initial = $pdf->GetY();
+    
+                    $pdf->Cell($widths[0], $height, $row[0], 'LR', 0, 'C');
+                    
+                    $x = $pdf->GetX();
+                    $y = $pdf->GetY();
+                    $pdf->MultiCell($widths[1], 5, $row[1], 'LR', 'C');
+                    $pdf->SetXY($x + $widths[1], $y_initial);
+
+                    $pdf->Cell($widths[2], $height, $row[2], 'LR', 0, 'R');  
+                    $pdf->Cell($widths[3], $height, $row[3], 'LR', 0, 'R');  
+                    $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'R');  
+                    
+                    $pdf->Ln();
+                    $y_bottom = $pdf->GetY();
+                    $pdf->Line(10, $y_initial + $height, 210 - 10, $y_initial + $height);
+                    
+                }
+                
             }
+
+            
+
+            
 
             
         }else{

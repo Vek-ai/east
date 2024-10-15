@@ -485,13 +485,15 @@ if(isset($_REQUEST['action'])) {
             .table-fixed-est th:nth-child(7),
             .table-fixed-est td:nth-child(7) { width: 10%; }
             .table-fixed-est th:nth-child(8),
-            .table-fixed-est td:nth-child(8) { width: 7%; }
+            .table-fixed-est td:nth-child(8) { width: 10%; }
             .table-fixed-est th:nth-child(9),
             .table-fixed-est td:nth-child(9) { width: 7%; }
             .table-fixed-est th:nth-child(10),
             .table-fixed-est td:nth-child(10) { width: 7%; }
             .table-fixed-est th:nth-child(11),
-            .table-fixed-est td:nth-child(11) { width: 4%; }
+            .table-fixed-est td:nth-child(11) { width: 7%; }
+            .table-fixed-est th:nth-child(12),
+            .table-fixed-est td:nth-child(12) { width: 4%; }
     
             input[readonly] {
                 border: none;               
@@ -547,6 +549,7 @@ if(isset($_REQUEST['action'])) {
                                 <th width="5%" class="text-center">Grade</th>
                                 <th width="5%" class="text-center">Profile</th>
                                 <th width="25%" class="text-center pl-3">Quantity</th>
+                                <th width="25%" class="text-center pl-3">Usage</th>
                                 <th width="30%" class="text-center">Dimensions</th>
                                 <th width="5%" class="text-center">Stock</th>
                                 <th width="7%" class="text-center">Price</th>
@@ -656,6 +659,37 @@ if(isset($_REQUEST['action'])) {
                                                 </span>
                                             </div>
                                         </td>
+                                        <td>
+                                            <div class="input-group text-start">
+                                                <select id="usage<?= $no ?>" class="form-control select2-usage" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $row_order_prod['id']; ?>">
+                                                    <option value="">Select Usage...</option>
+                                                    <?php
+                                                    $query_key = "SELECT * FROM key_components";
+                                                    $result_key = mysqli_query($conn, $query_key);
+
+                                                    while ($row_key = mysqli_fetch_array($result_key)) {
+                                                        $componentid = $row_key['componentid'];
+                                                        ?>
+                                                        <optgroup label="<?= strtoupper($row_key['component_name']); ?>">
+                                                            <?php 
+                                                            $query_usage = "SELECT * FROM component_usage WHERE componentid = '$componentid'";
+                                                            $result_usage = mysqli_query($conn, $query_usage);
+
+                                                            while ($row_usage = mysqli_fetch_array($result_usage)) {
+                                                                $selected = ($row_order_prod['usageid'] == $row_usage['usageid']) ? 'selected' : '';
+                                                                ?>
+                                                                <option value="<?= $row_usage['usageid']; ?>" <?= $selected; ?>><?= $row_usage['usage_name']; ?></option>
+                                                                <?php
+                                                            }
+                                                            ?>
+                                                        </optgroup>
+                                                        <?php
+                                                    }
+                                                    ?>
+                                                </select>
+
+                                            </div>
+                                        </td>
                                         <?php if($category_id == '46'){ // Panels ID
                                         ?>
                                         <td>
@@ -761,6 +795,17 @@ if(isset($_REQUEST['action'])) {
                         ordering: false,
                         autoWidth: false,
                         responsive: true
+                    });
+
+                    $(".select2-usage").each(function() {
+                        $(this).select2({
+                            width: '300px',
+                            placeholder: "Select...",
+                            dropdownAutoWidth: true,
+                            dropdownParent: $('#orderTable'),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
                     });
 
                     $(".select2-color").each(function() {

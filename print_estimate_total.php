@@ -180,6 +180,63 @@ if (mysqli_num_rows($result) > 0) {
                 
             }
 
+            $qty_per_component = 0;
+            $total_per_component = 0;
+            $undisc_total_per_component = 0;
+            $data = array();
+            $query_product = "SELECT * FROM estimate_prod WHERE estimateid = '$estimateid' AND usageid = 0";
+            $result_product = mysqli_query($conn, $query_product);
+            if (mysqli_num_rows($result_product) > 0) {
+                while($row_product = mysqli_fetch_assoc($result_product)){
+                    $product_id = $row_product['product_id'];
+                    $product_details = getProductDetails($product_id);
+                    $grade_details = getGradeDetails($product_details['grade']);
+                    
+                    $total_price += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                    $total_price_undisc += $product_details['unit_price'] * $row_product['quantity'];
+                    $total_qty += $row_product['quantity'];
+
+                    $total_per_component += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                    $undisc_total_per_component += $product_details['unit_price'] * $row_product['quantity'];
+                    $qty_per_component += $row_product['quantity'];
+                    
+                }
+                
+                $data[] = [
+                    $qty_per_component,
+                    'Others',
+                    '$ ' .number_format($undisc_total_per_component,2),
+                    '$ ' .number_format($total_per_component,2),
+                    '$ ' .number_format($total_per_component,2) ,
+                ];
+    
+                $pdf->SetFont('Arial', '', 8);
+    
+                foreach ($data as $row) {
+    
+                    $height = NbLines($pdf, $widths[2], $row[2]) * 5; 
+                    
+                    $y_initial = $pdf->GetY();
+    
+                    $pdf->Cell($widths[0], $height, $row[0], 'LR', 0, 'C');
+                    
+                    $x = $pdf->GetX();
+                    $y = $pdf->GetY();
+                    $pdf->MultiCell($widths[1], 5, $row[1], 'LR', 'C');
+                    $pdf->SetXY($x + $widths[1], $y_initial);
+
+                    $pdf->Cell($widths[2], $height, $row[2], 'LR', 0, 'R');  
+                    $pdf->Cell($widths[3], $height, $row[3], 'LR', 0, 'R');  
+                    $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'R');  
+                    
+                    $pdf->Ln();
+                    $y_bottom = $pdf->GetY();
+                    $pdf->Line(10, $y_initial + $height, 210 - 10, $y_initial + $height);
+                    
+                }
+                
+            }
+
             
 
             
