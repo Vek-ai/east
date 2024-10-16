@@ -107,7 +107,7 @@ require '../includes/functions.php';
         var qty = Number(input_quantity.val());
 
         $.ajax({
-            url: "pages/cashier2_ajax.php",
+            url: "pages/cashier_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -135,7 +135,7 @@ require '../includes/functions.php';
         var quantity = Number(input_quantity.val());
 
         $.ajax({
-            url: "pages/cashier2_ajax.php",
+            url: "pages/cashier_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -163,7 +163,7 @@ require '../includes/functions.php';
         var quantity = Number(input_quantity.val());
 
         $.ajax({
-            url: "pages/cashier2_ajax.php",
+            url: "pages/cashier_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -246,7 +246,7 @@ require '../includes/functions.php';
             var profile_id = $('#select-profile').find('option:selected').val();
             var onlyInStock = $('#toggleActive').prop('checked');
             $.ajax({
-                url: 'pages/cashier2_ajax.php',
+                url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     query: query,

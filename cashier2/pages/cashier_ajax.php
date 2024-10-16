@@ -47,6 +47,12 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $row = mysqli_fetch_assoc($result);
             $item_quantity = min($qty, $totalStock);
 
+            $length = $row['length'];
+            $length_clean = preg_replace('/[^0-9.]/', '', $length);
+            $length_float = floatval($length_clean);
+            $estimate_length = floor($length_float);
+            $estimate_length_inch = $length_float - $estimate_length;
+
             $item_array = array(
                 'product_id' => $row['product_id'],
                 'product_item' => $row['product_item'],
@@ -56,7 +62,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'quantity_in_stock' => $quantityInStock,
                 'quantity_cart' => $item_quantity,
                 'estimate_width' => $row['width'],
-                'estimate_length' => $row['length'],
+                'estimate_length' => '',
+                'estimate_length_inch' => '',
                 'usage' => 0
             );
 
@@ -104,7 +111,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'quantity_in_stock' => $quantityInStock,
                 'quantity_cart' => $item_quantity,
                 'estimate_width' => $row['width'],
-                'estimate_length' => $row['length'],
+                'estimate_length' => '',
+                'estimate_length_inch' => '',
                 'usage' => 0
             );
 
@@ -358,6 +366,18 @@ if (isset($_POST['set_estimate_length'])) {
     echo "Length ID: $product_id, Line: $line, Key: $key";
 }
 
+if (isset($_POST['set_estimate_length_inch'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $length_inch = mysqli_real_escape_string($conn, $_POST['length_inch']);
+
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['estimate_length_inch'] = !empty($length_inch) ? $length_inch : "";
+    }
+    echo "Length-inch ID: $product_id, Line: $line, Key: $key";
+}
+
 if (isset($_POST['save_estimate'])) {
     $discount = floatval( $_POST['discount']);
     $response = [
@@ -402,7 +422,7 @@ if (isset($_POST['save_estimate'])) {
     }
 
     if ($estimateid) {
-        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, actual_price, discounted_price) VALUES ";
+        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price) VALUES ";
 
         $values = [];
         foreach ($cart as $item) {
@@ -418,10 +438,11 @@ if (isset($_POST['save_estimate'])) {
             $estimate_bend = floatval($item['estimate_bend']);
             $estimate_hem = floatval($item['estimate_hem']);
             $estimate_length = floatval($item['estimate_length']);
+            $estimate_length_inch = floatval($item['estimate_length_inch']);
 
             $discounted_price = number_format($unit_price * 0.9, 2);
 
-            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$unit_price', '$discounted_price')";
+            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$unit_price', '$discounted_price')";
         }
 
         $query .= implode(', ', $values);
@@ -486,6 +507,7 @@ if (isset($_POST['load_estimate'])) {
                     'estimate_bend' => $row['custom_bend'],
                     'estimate_hem' => $row['custom_hem'],
                     'estimate_length' => $row['custom_length'],
+                    'estimate_length_inch' => $row['custom_length2'],
                     'custom_color' => $row['custom_color'],
                     'usageid' => $row['usageid']
                 ];
@@ -550,7 +572,7 @@ if (isset($_POST['save_order'])) {
     }
 
     if ($orderid) {
-        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, actual_price, discounted_price, product_category) VALUES ";
+        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category) VALUES ";
 
         $values = [];
         foreach ($cart as $item) {
@@ -568,10 +590,11 @@ if (isset($_POST['save_order'])) {
             $estimate_bend = floatval($item['estimate_bend']);
             $estimate_hem = floatval($item['estimate_hem']);
             $estimate_length = floatval($item['estimate_length']);
+            $estimate_length_inch = floatval($item['estimate_length_inch']);
 
             $discounted_price = number_format($unit_price * 0.9, 2);
 
-            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$unit_price', '$discounted_price', '$product_category')";
+            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$unit_price', '$discounted_price', '$product_category')";
         }
 
         $query .= implode(', ', $values);

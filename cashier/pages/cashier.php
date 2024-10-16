@@ -370,7 +370,7 @@ require '../includes/functions.php';
         var line = $(element).data('line');
 
         $.ajax({
-            url: 'pages/cashier2_ajax.php',
+            url: 'pages/cashier_ajax.php',
             type: 'POST',
             data: {
                 bend: bend,
@@ -393,7 +393,7 @@ require '../includes/functions.php';
         var line = $(element).data('line');
 
         $.ajax({
-            url: 'pages/cashier2_ajax.php',
+            url: 'pages/cashier_ajax.php',
             type: 'POST',
             data: {
                 hem: hem,
@@ -416,7 +416,7 @@ require '../includes/functions.php';
         var line = $(element).data('line');
 
         $.ajax({
-            url: 'pages/cashier2_ajax.php',
+            url: 'pages/cashier_ajax.php',
             type: 'POST',
             data: {
                 length: length,
@@ -439,7 +439,7 @@ require '../includes/functions.php';
         var line = $(element).data('line');
 
         $.ajax({
-            url: 'pages/cashier2_ajax.php',
+            url: 'pages/cashier_ajax.php',
             type: 'POST',
             data: {
                 height: height,
@@ -461,7 +461,7 @@ require '../includes/functions.php';
         var id = $(element).data('id');
         var line = $(element).data('line');
         $.ajax({
-            url: 'pages/cashier2_ajax.php',
+            url: 'pages/cashier_ajax.php',
             type: 'POST',
             data: {
                 width: width,
@@ -483,7 +483,7 @@ require '../includes/functions.php';
         var id = $(element).data('id');
         var line = $(element).data('line');
         $.ajax({
-            url: 'pages/cashier2_ajax.php',
+            url: 'pages/cashier_ajax.php',
             type: 'POST',
             data: {
                 usage: usage,
@@ -608,7 +608,7 @@ require '../includes/functions.php';
         var line = $(element).data('line');
 
         $.ajax({
-            url: "pages/cashier2_ajax.php",
+            url: "pages/cashier_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -638,7 +638,7 @@ require '../includes/functions.php';
         var line = $(element).data('line');
         var qty = $(element).val();
         $.ajax({
-            url: "pages/cashier2_ajax.php",
+            url: "pages/cashier_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -666,7 +666,7 @@ require '../includes/functions.php';
         var input_quantity = $('input[data-id="' + product_id + '"]');
         var quantity = Number(input_quantity.val());
         $.ajax({
-            url: "pages/cashier2_ajax.php",
+            url: "pages/cashier_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -696,7 +696,7 @@ require '../includes/functions.php';
         var input_quantity = $('input[data-id="' + product_id + '"]');
         var quantity = Number(input_quantity.val());
         $.ajax({
-            url: "pages/cashier2_ajax.php",
+            url: "pages/cashier_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -723,7 +723,7 @@ require '../includes/functions.php';
         var id = $(element).data('id');
         var line = $(element).data('line');
         $.ajax({
-            url: "pages/cashier2_ajax.php",
+            url: "pages/cashier_ajax.php",
             data: {
                 product_id_del: id,
                 line: line,
@@ -745,7 +745,7 @@ require '../includes/functions.php';
         var product_id = $(element).data('id');
         var line = $(element).data('line');
         $.ajax({
-            url: "pages/cashier2_ajax.php",
+            url: "pages/cashier_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -1005,7 +1005,7 @@ require '../includes/functions.php';
                 const line = $('#custom_trim_line').val();
 
                 $.ajax({
-                    url: 'pages/cashier2_ajax.php',
+                    url: 'pages/cashier_ajax.php',
                     type: 'POST',
                     contentType: 'application/json',
                     dataType: 'json',
@@ -1038,7 +1038,7 @@ require '../includes/functions.php';
     $("#customer_select_estimate").autocomplete({
         source: function(request, response) {
             $.ajax({
-                url: "pages/cashier2_ajax.php",
+                url: "pages/cashier_ajax.php",
                 type: 'post',
                 dataType: "json",
                 data: {
@@ -1070,7 +1070,7 @@ require '../includes/functions.php';
     $("#customer_select_cash").autocomplete({
         source: function(request, response) {
             $.ajax({
-                url: "pages/cashier2_ajax.php",
+                url: "pages/cashier_ajax.php",
                 type: 'post',
                 dataType: "json",
                 data: {
@@ -1160,7 +1160,7 @@ require '../includes/functions.php';
             var category_id = $('#select-category').find('option:selected').val();
             var onlyInStock = $('#toggleActive').prop('checked');
             $.ajax({
-                url: 'pages/cashier2_ajax.php',
+                url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     query: query,
@@ -1185,7 +1185,7 @@ require '../includes/functions.php';
             var discount = $('#est_discount').val();
             console.log(discount);
             $.ajax({
-                url: 'pages/cashier2_ajax.php',
+                url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     discount: discount,
@@ -1210,7 +1210,7 @@ require '../includes/functions.php';
             var id = $(this).data('id');
             console.log(id);
             $.ajax({
-                url: 'pages/cashier2_ajax.php',
+                url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     id: id,
@@ -1234,7 +1234,7 @@ require '../includes/functions.php';
             var discount = $('#order_discount').val();
             console.log(discount);
             $.ajax({
-                url: 'pages/cashier2_ajax.php',
+                url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     discount: discount,
@@ -1279,7 +1279,7 @@ require '../includes/functions.php';
         $(document).on('change', '#customer_select_estimate', function(event) {
             var customer_id = $('#customer_id_estimate').val();
             $.ajax({
-                url: 'pages/cashier2_ajax.php',
+                url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     customer_id: customer_id,
@@ -1301,7 +1301,7 @@ require '../includes/functions.php';
         $(document).on('change', '#customer_select_cash', function(event) {
             var customer_id = $('#customer_id_cash').val();
             $.ajax({
-                url: 'pages/cashier2_ajax.php',
+                url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     customer_id: customer_id,
@@ -1322,7 +1322,7 @@ require '../includes/functions.php';
 
         $(document).on('click', '#customer_change_cash', function(event) {
             $.ajax({
-                url: 'pages/cashier2_ajax.php',
+                url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     unset_customer: "unset_customer"
@@ -1333,7 +1333,7 @@ require '../includes/functions.php';
                             $("#customer_select_cash").autocomplete({
                                 source: function(request, response) {
                                     $.ajax({
-                                        url: "pages/cashier2_ajax.php",
+                                        url: "pages/cashier_ajax.php",
                                         type: 'post',
                                         dataType: "json",
                                         data: {
@@ -1374,7 +1374,7 @@ require '../includes/functions.php';
 
         $(document).on('click', '#customer_change_estimate', function(event) {
             $.ajax({
-                url: 'pages/cashier2_ajax.php',
+                url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     unset_customer: "unset_customer"
@@ -1385,7 +1385,7 @@ require '../includes/functions.php';
                             $("#customer_select_estimate").autocomplete({
                                 source: function(request, response) {
                                     $.ajax({
-                                        url: "pages/cashier2_ajax.php",
+                                        url: "pages/cashier_ajax.php",
                                         type: 'post',
                                         dataType: "json",
                                         data: {
