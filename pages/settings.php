@@ -2,21 +2,20 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$tax_status_desc = "";
-$percentage = "";
-$notes = "";
+$setting_name = "";
+$value = "";
 
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
 
-if(!empty($_REQUEST['taxid'])){
-  $taxid = $_REQUEST['taxid'];
-  $query = "SELECT * FROM customer_tax WHERE taxid = '$taxid'";
+if(!empty($_REQUEST['settingid'])){
+  $settingid = $_REQUEST['settingid'];
+  $query = "SELECT * FROM settings WHERE settingid = '$settingid'";
   $result = mysqli_query($conn, $query);            
   while ($row = mysqli_fetch_array($result)) {
-      $taxid = $row['taxid'];
-      $tax_status_desc = $row['tax_status_desc'];
-      $percentage = $row['percentage'];
+      $settingid = $row['settingid'];
+      $setting_name = $row['setting_name'];
+      $value = $row['value'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -25,10 +24,10 @@ if(!empty($_REQUEST['taxid'])){
 $message = "";
 if(!empty($_REQUEST['result'])){
   if($_REQUEST['result'] == '1'){
-    $message = "New customer tax added successfully.";
+    $message = "New setting added successfully.";
     $textColor = "text-success";
   }else if($_REQUEST['result'] == '2'){
-    $message = "Customer tax updated successfully.";
+    $message = "Setting updated successfully.";
     $textColor = "text-success";
   }else if($_REQUEST['result'] == '0'){
     $message = "Failed to Perform Operation";
@@ -69,14 +68,14 @@ if(!empty($_REQUEST['result'])){
             <div class="card-body px-0">
               <div class="d-flex justify-content-between align-items-center">
                 <div><br>
-                  <h4 class="font-weight-medium fs-14 mb-0">Customer Tax</h4>
+                  <h4 class="font-weight-medium fs-14 mb-0">Settings</h4>
                   <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                       <li class="breadcrumb-item">
-                        <a class="text-muted text-decoration-none" href="">Customer
+                        <a class="text-muted text-decoration-none" href="">Settings
                         </a>
                       </li>
-                      <li class="breadcrumb-item text-muted" aria-current="page">Customer Tax</li>
+                      <li class="breadcrumb-item text-muted" aria-current="page">Settings</li>
                     </ol>
                   </nav>
                 </div>
@@ -110,7 +109,7 @@ if(!empty($_REQUEST['result'])){
   <div class="card card-body">
     <div class="row">
       <div class="col-3">
-        <h4 class="card-title"><?= $addHeaderTxt ?> Customer Tax</h4>
+        <h4 class="card-title"><?= $addHeaderTxt ?> Settings</h4>
       </div>
       <div class="col-9">
         <h4 class="card-title <?= $textColor ?>"><?= $message ?></h4>
@@ -122,21 +121,21 @@ if(!empty($_REQUEST['result'])){
       <div class="row pt-3">
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="form-label">Tax Status</label>
-            <input type="text" id="tax_status_desc" name="tax_status_desc" class="form-control"  value="<?= $tax_status_desc ?>"/>
+            <label class="form-label">Setting Name</label>
+            <input type="text" id="setting_name" name="setting_name" class="form-control"  value="<?= $setting_name ?>"/>
           </div>
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="form-label">Percentage</label>
-            <input type="text" id="percentage" name="percentage" class="form-control" value="<?= $percentage ?>" />
+            <label class="form-label">Value</label>
+            <input type="text" id="value" name="value" class="form-control" value="<?= $value ?>" />
           </div>
         </div>
       </div>
 
       <div class="form-actions">
         <div class="card-body border-top ">
-          <input type="hidden" id="taxid" name="taxid" class="form-control"  value="<?= $taxid ?>"/>
+          <input type="hidden" id="settingid" name="settingid" class="form-control"  value="<?= $settingid ?>"/>
           <div class="row">
             
             <div class="col-6 text-start">
@@ -158,19 +157,19 @@ if(!empty($_REQUEST['result'])){
   <div class="datatables">
     <div class="card">
       <div class="card-body">
-          <h4 class="card-title d-flex justify-content-between align-items-center">Customer Tax List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['product_line_id'])){ ?>
-            <a href="/?page=customer_tax" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
+          <h4 class="card-title d-flex justify-content-between align-items-center">Customer Tax List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['settingid'])){ ?>
+            <a href="/?page=settings" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
              <?php } ?> <!-- <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div> -->
           </h4>
         
         <div class="table-responsive">
        
-          <table id="display_product_line" class="table table-striped table-bordered text-nowrap align-middle">
+          <table id="display_settings" class="table table-striped table-bordered text-nowrap align-middle">
             <thead>
               <!-- start row -->
               <tr>
-                <th>Customer Tax Description</th>
-                <th>Percentage</th>
+                <th>Setting Name</th>
+                <th>Value</th>
               
                 <th>Action</th>
               </tr>
@@ -179,19 +178,19 @@ if(!empty($_REQUEST['result'])){
             <tbody>
 <?php
 $no = 1;
-$query_tax_status_desc = "SELECT * FROM customer_tax";
-$result_tax_status_desc = mysqli_query($conn, $query_tax_status_desc);            
-while ($row_tax_status_desc = mysqli_fetch_array($result_tax_status_desc)) {
-    $taxid = $row_tax_status_desc['taxid'];
-    $tax_status_desc = $row_tax_status_desc['tax_status_desc'];
-    $percentage = $row_tax_status_desc['percentage'];
+$query_setting_name = "SELECT * FROM settings";
+$result_setting_name = mysqli_query($conn, $query_setting_name);            
+while ($row_setting = mysqli_fetch_array($result_setting_name)) {
+    $settingid = $row_setting['settingid'];
+    $setting_name = $row_setting['setting_name'];
+    $value = $row_setting['value'];
 ?>
-<tr id="customer-tax-row-<?= $no ?>">
-    <td><?= $tax_status_desc ?></td>
-    <td><?= $percentage ?></td>
+<tr id="settings-row-<?= $no ?>">
+    <td><?= $setting_name ?></td>
+    <td><?= $value ?></td>
     <td class="text-center" id="action-button-<?= $no ?>">
-            <a href="/?page=customer_tax&taxid=<?= $taxid ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
-            <a class="btn btn-danger py-1 text-light deleteCustomerTax" data-taxid="<?= $taxid ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Delete</a>
+            <a href="/?page=settings&settingid=<?= $settingid ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+            <a class="btn btn-danger py-1 text-light deleteSettings" data-settingid="<?= $settingid ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Delete</a>
 
     </td>
 </tr>
@@ -233,7 +232,7 @@ $no++;
 
 <script>
   $(document).ready(function() {
-    var table = $('#display_product_line').DataTable();
+    var table = $('#display_settings').DataTable();
     
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -274,14 +273,14 @@ $no++;
         var appendResult = "";
 
         $.ajax({
-            url: 'pages/customer_tax_ajax.php',
+            url: 'pages/settings_ajax.php',
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
             success: function(response) {
               
-              if (response === "Customer tax updated successfully.") {
+              if (response === "Setting updated successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-danger");
@@ -289,9 +288,9 @@ $no++;
                   $('#response-modal').modal("show");
 
                   $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=customer_tax";
+                    window.location.href = "?page=settings";
                   });
-              } else if (response === "New customer tax added successfully.") {
+              } else if (response === "New setting added successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-danger");
@@ -316,19 +315,19 @@ $no++;
         });
     });
 
-    $(document).on('click', '.deleteCustomerTax', function(event) {
+    $(document).on('click', '.deleteSettings', function(event) {
         event.preventDefault();
-        var taxid = $(this).data('taxid');
+        var settingid = $(this).data('settingid');
         var row = $(this).data('row');
         $.ajax({
-            url: 'pages/customer_tax_ajax.php',
+            url: 'pages/settings_ajax.php',
             type: 'POST',
             data: {
-                taxid: taxid,
+              settingid: settingid,
                 action: 'delete'
             },
             success: function(response) {
-                if (response == "Customer tax deleted successfully.") {
+                if (response == "Setting deleted successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-danger");
@@ -336,7 +335,7 @@ $no++;
                   $('#response-modal').modal("show");
 
                   $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=customer_tax";
+                    window.location.href = "?page=settings";
                   });
                 } else {
                     alert('Failed to hide product line.');
