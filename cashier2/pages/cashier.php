@@ -427,7 +427,9 @@ require '../includes/functions.php';
                 set_estimate_length: "set_estimate_length"
             },
             success: function(response) {
-                console.log(response);
+                loadCart();
+                loadOrderContents();
+                loadEstimateContents();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
