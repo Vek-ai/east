@@ -27,7 +27,7 @@ $orderid = $_REQUEST['id'];
 $current_user_id = $_SESSION['userid'];
 
 $tax = .15;
-$delivery_price = 100;
+$delivery_price = getDeliveryCost();
 
 $query = "SELECT * FROM orders WHERE orderid = '$orderid'";
 $result = mysqli_query($conn, $query);
@@ -38,6 +38,7 @@ if (mysqli_num_rows($result) > 0) {
         $orderid = $row_estimate['orderid'];
         $customer_id = $row_estimate['customerid'];
         $customerDetails = getCustomerDetails($customer_id);
+        $tax = floatval(getCustomerTax($customer_id)) / 100;
         $delivery_method = 'Deliver';
         $pdf->SetFont('Arial', '', 10);
         $pdf->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
@@ -279,7 +280,7 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' .number_format($total_price * $tax,2), 0, 1 , 'R');
+        $pdf->Cell(20, $lineheight, '$ ' .number_format(($total_price + $delivery_price) * $tax,2), 0, 1 , 'R');
 
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetXY($col2_x, $pdf->GetY());

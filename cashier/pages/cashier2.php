@@ -297,7 +297,7 @@ require '../includes/functions.php';
                     <i class="fa fa-save fs-4 me-2"></i>
                     Save
                 </button>
-                <a href="#" class="btn ripple btn-warning" type="button" id="print_estimate">
+                <a href="#" class="btn ripple btn-warning d-none" type="button" id="print_estimate" target="_blank">
                     <i class="fe fe-print"></i> Print
                 </a>
                 <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
@@ -354,7 +354,7 @@ require '../includes/functions.php';
                 <button class="btn ripple btn-primary" type="button" id="save_order">
                     <i class="fe fe-hard-drive"></i> Save
                 </button>
-                <a href="#" class="btn ripple btn-warning" type="button" id="print_order">
+                <a href="#" class="btn ripple btn-warning d-none" type="button" id="print_order" target="_blank">
                     <i class="fe fe-print"></i> Print
                 </a>
                 <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
@@ -482,7 +482,6 @@ require '../includes/functions.php';
         var usage = $(element).val();
         var id = $(element).data('id');
         var line = $(element).data('line');
-        console.log(usage)
         $.ajax({
             url: 'pages/cashier2_ajax.php',
             type: 'POST',
@@ -649,9 +648,6 @@ require '../includes/functions.php';
                 setquantity: 'setquantity'
             },
             success: function(data) {
-                loadCart();
-                loadOrderContents();
-                loadEstimateContents();
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
@@ -680,9 +676,7 @@ require '../includes/functions.php';
                 addquantity: 'addquantity'
             },
             success: function(data) {
-                loadCart();
-                loadOrderContents();
-                loadEstimateContents();
+                input_quantity.val(quantity + 1);
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
                 
             },
@@ -712,9 +706,7 @@ require '../includes/functions.php';
                 deductquantity: 'deductquantity'
             },
             success: function(data) {
-                loadCart();
-                loadOrderContents();
-                loadEstimateContents();
+                input_quantity.val(quantity + 1);
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
@@ -1203,6 +1195,7 @@ require '../includes/functions.php';
                     if (response.success) {
                         alert("Estimate successfully saved.");
                         $('#print_estimate').attr('href', '/print_estimate_product.php?id=' + response.estimate_id);
+                        $('#print_estimate').removeClass('d-none');
                     } else if (response.error) {
                         alert("Error: " + response.error);
                     }
@@ -1251,6 +1244,7 @@ require '../includes/functions.php';
                     if (response.success) {
                         alert("Order successfully saved.");
                         $('#print_order').attr('href', '/print_order_product.php?id=' + response.order_id);
+                        $('#print_order').removeClass('d-none');
                     } else if (response.error) {
                         alert("Error: " + response.error);
                     }
@@ -1294,6 +1288,8 @@ require '../includes/functions.php';
                 success: function(response) {
                     if (response.trim() == 'success') {
                         $('#customer_est_section').load(location.href + " #customer_est_section");
+                        loadOrderContents();
+                        loadEstimateContents();
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -1314,6 +1310,8 @@ require '../includes/functions.php';
                 success: function(response) {
                     if (response.trim() == 'success') {
                         $('#customer_cash_section').load(location.href + " #customer_cash_section");
+                        loadOrderContents();
+                        loadEstimateContents();
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -1330,8 +1328,43 @@ require '../includes/functions.php';
                     unset_customer: "unset_customer"
                 },
                 success: function(response) {
-                    console.log(response);
-                    $('#customer_cash_section').load(location.href + " #customer_cash_section");
+                    $('#customer_cash_section').load(location.href + " #customer_cash_section", function() {
+                        $.getScript("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", function() {
+                            $("#customer_select_cash").autocomplete({
+                                source: function(request, response) {
+                                    $.ajax({
+                                        url: "pages/cashier2_ajax.php",
+                                        type: 'post',
+                                        dataType: "json",
+                                        data: {
+                                            search_customer: request.term
+                                        },
+                                        success: function(data) {
+                                            response(data);
+                                        },
+                                        error: function(xhr, status, error) {
+                                            console.log("Error: " + xhr.responseText);
+                                        }
+                                    });
+                                },
+                                select: function(event, ui) {
+                                    $('#customer_select_cash').val(ui.item.label);
+                                    $('#customer_id_cash').val(ui.item.value);
+                                    return false;
+                                },
+                                focus: function(event, ui) {
+                                    $('#customer_select_cash').val(ui.item.label);
+                                    return false;
+                                },
+                                appendTo: "#cashmodal",
+                                open: function() {
+                                    $(".ui-autocomplete").css("z-index", 1050);
+                                }
+                            });
+                        });
+                    });
+                    loadOrderContents();
+                    loadEstimateContents();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1346,14 +1379,51 @@ require '../includes/functions.php';
                 data: {
                     unset_customer: "unset_customer"
                 },
-                success: function(response) {
-                    $('#customer_est_section').load(location.href + " #customer_est_section");
+                success: function(response) { 
+                    $('#customer_est_section').load(location.href + " #customer_est_section", function() {
+                        $.getScript("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", function() {
+                            $("#customer_select_estimate").autocomplete({
+                                source: function(request, response) {
+                                    $.ajax({
+                                        url: "pages/cashier2_ajax.php",
+                                        type: 'post',
+                                        dataType: "json",
+                                        data: {
+                                            search_customer: request.term
+                                        },
+                                        success: function(data) {
+                                            response(data);
+                                        },
+                                        error: function(xhr, status, error) {
+                                            console.log("Error: " + xhr.responseText);
+                                        }
+                                    });
+                                },
+                                select: function(event, ui) {
+                                    $('#customer_select_estimate').val(ui.item.label);
+                                    $('#customer_id_estimate').val(ui.item.value);
+                                    return false;
+                                },
+                                focus: function(event, ui) {
+                                    $('#customer_select_estimate').val(ui.item.label);
+                                    return false;
+                                },
+                                appendTo: "#view_estimate_modal", 
+                                open: function() {
+                                    $(".ui-autocomplete").css("z-index", 1050);
+                                }
+                            });
+                        });
+                        loadOrderContents();
+                        loadEstimateContents();
+                    });
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
         });
+
 
         $(document).on('click', '#custom_trim_draw', function(event) {
             loadDrawingModal(this);

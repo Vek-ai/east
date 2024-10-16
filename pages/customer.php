@@ -295,11 +295,23 @@ $addHeaderTxt = "Add New";
                       <!-- LastQuoteDate -->
 
                       <div class="row pt-3">
-                        <div class="col-md-6">
-                          <div class="mb-3">
+                          <div class="col-md-6 opt_field_update">
+                            <div class="mb-3">
                             <label class="form-label">Tax Status</label>
-                            <input type="text" id="tax_status" name="tax_status" class="form-control"  value="<?= $tax_status ?>"/>
-                          </div>
+                            <select id="tax_status" class="form-select form-control" name="tax_status">
+                                <option value="" >Select Tax Status...</option>
+                                <?php
+                                $query_tax_status = "SELECT * FROM customer_tax";
+                                $result_tax_status = mysqli_query($conn, $query_tax_status);            
+                                while ($row_tax_status = mysqli_fetch_array($result_tax_status)) {
+                                    $selected = ($tax_status == $row_tax_status['taxid']) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_tax_status['taxid'] ?>" <?= $selected ?>>(<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                            </div>
                         </div>
                         <div class="col-md-6">
                           <div class="mb-3">
@@ -307,7 +319,11 @@ $addHeaderTxt = "Add New";
                             <input type="text" id="tax_exempt_number" name="tax_exempt_number" class="form-control" value="<?= $tax_exempt_number ?>" />
                           </div>
                         </div>
-                        <div class="col-md-4">
+                        
+                      </div>
+
+                      <div class="row pt-3">
+                        <div class="col-md-6">
                           <?php
                             // Fetch all customer types
                             $query = "SELECT * FROM customer_types";
@@ -325,7 +341,7 @@ $addHeaderTxt = "Add New";
                             ?>
                             <div class="mb-3">
                                 <label class="form-label">Customer Type</label>
-                                <select class="form-select" id="customer_type" name="customer_type">
+                                <select class="form-select form-control" id="customer_type" name="customer_type">
                                     <option value=""><?php echo $default_customer_type_name ? $default_customer_type_name : 'Choose...'; ?></option>
                                     <?php
                                     // Generate options for the dropdown
@@ -338,6 +354,7 @@ $addHeaderTxt = "Add New";
                             </div>
                         </div>
                       </div>
+                      
 
                       <div class="mb-3">
                         <label class="form-label">Customer Notes</label>

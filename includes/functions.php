@@ -376,6 +376,44 @@ function getCustomerDetails($customer_id) {
     return $customer;
 }
 
+function getCustomerTax($customer_id) {
+    global $conn;
+    $customer_id = mysqli_real_escape_string($conn, $customer_id);
+
+    $query = "SELECT percentage
+              FROM customer AS c
+              LEFT JOIN customer_tax AS ct
+              ON c.tax_status = ct.taxid
+              WHERE c.customer_id = '$customer_id'";
+
+    $result = mysqli_query($conn, $query);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['percentage'] ?? 0;
+    } else {
+        return 0;
+    }
+}
+
+function getCustomerDiscount($customer_id) {
+    global $conn;
+    $customer_id = mysqli_real_escape_string($conn, $customer_id);
+
+    $query = "SELECT ct.customer_price_cat
+              FROM customer AS c
+              LEFT JOIN customer_types AS ct
+              ON c.customer_type_id = ct.customer_type_id
+              WHERE c.customer_id = '$customer_id'";
+
+    $result = mysqli_query($conn, $query);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['customer_price_cat'] ?? 0;
+    } else {
+        return 0;
+    }
+}
+
 function getUsageName($usageid){
     global $conn;
     $query = "SELECT usage_name FROM component_usage WHERE usageid = '$usageid'";
@@ -383,6 +421,15 @@ function getUsageName($usageid){
     $row = mysqli_fetch_array($result); 
     $usage_name = $row['usage_name'];
     return  $usage_name;
+}
+
+function getDeliveryCost(){
+    global $conn;
+    $query = "SELECT value FROM settings WHERE setting_name = 'delivery'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $delivery = $row['value'];
+    return  $delivery;
 }
 
 

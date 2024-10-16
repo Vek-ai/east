@@ -8,9 +8,17 @@ require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
 if(isset($_POST['fetch_order'])){
-    $discount = 0.1;
+    $discount = 0;
+    if(isset($_SESSION['customer_id'])){
+        $customer_id = $_SESSION['customer_id'];
+        $discount = floatval(getCustomerDiscount($customer_id)) / 100;
+    }
     ?>
     <style>
+        .high-zindex-select2 + .select2-container--open {
+            z-index: 1055 !important;
+        }
+
         .table-fixed {
             table-layout: fixed;
             width: 100%;
@@ -33,17 +41,19 @@ if(isset($_POST['fetch_order'])){
         .table-fixed th:nth-child(4),
         .table-fixed td:nth-child(4) { width: 8%; }
         .table-fixed th:nth-child(5),
-        .table-fixed td:nth-child(5) { width: 15%; }
+        .table-fixed td:nth-child(5) { width: 10%; }
         .table-fixed th:nth-child(6),
-        .table-fixed td:nth-child(6) { width: 15%; }
+        .table-fixed td:nth-child(6) { width: 10%; }
         .table-fixed th:nth-child(7),
         .table-fixed td:nth-child(7) { width: 10%; }
         .table-fixed th:nth-child(8),
-        .table-fixed td:nth-child(8) { width: 7%; }
+        .table-fixed td:nth-child(8) { width: 10%; }
         .table-fixed th:nth-child(9),
-        .table-fixed td:nth-child(9) { width: 10%; }
+        .table-fixed td:nth-child(9) { width: 7%; }
         .table-fixed th:nth-child(10),
-        .table-fixed td:nth-child(10) { width: 4%; }
+        .table-fixed td:nth-child(10) { width: 7%; }
+        .table-fixed th:nth-child(11),
+        .table-fixed td:nth-child(11) { width: 7%; }
 
         input[readonly] {
             border: none;               
@@ -67,6 +77,7 @@ if(isset($_POST['fetch_order'])){
                             <th width="5%" class="text-center">Grade</th>
                             <th width="5%" class="text-center">Profile</th>
                             <th width="25%" class="text-center pl-3">Quantity</th>
+                            <th width="15%" class="text-center pl-3">Usage</th>
                             <th width="30%" class="text-center">Dimensions<br>(Width X Height)</th>
                             <th width="5%" class="text-center">Stock</th>
                             <th width="7%" class="text-center">Price</th>
@@ -78,6 +89,7 @@ if(isset($_POST['fetch_order'])){
                         <?php 
                         $total = 0;
                         $totalquantity = 0;
+                        $no = 1;
                         if (!empty($_SESSION["cart"])) {
                             foreach ($_SESSION["cart"] as $keys => $values) {
                                 $data_id = $values["product_id"];
@@ -164,6 +176,37 @@ if(isset($_POST['fetch_order'])){
                                             </span>
                                         </div>
                                     </td>
+                                    <td>
+                                        <div class="input-group text-start">
+                                            <select id="usage<?= $no ?>" class="form-control select2-order" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
+                                                <option value="">Select Usage...</option>
+                                                <?php
+                                                $query_key = "SELECT * FROM key_components";
+                                                $result_key = mysqli_query($conn, $query_key);
+
+                                                while ($row_key = mysqli_fetch_array($result_key)) {
+                                                    $componentid = $row_key['componentid'];
+                                                    ?>
+                                                    <optgroup label="<?= strtoupper($row_key['component_name']); ?>">
+                                                        <?php 
+                                                        $query_usage = "SELECT * FROM component_usage WHERE componentid = '$componentid'";
+                                                        $result_usage = mysqli_query($conn, $query_usage);
+
+                                                        while ($row_usage = mysqli_fetch_array($result_usage)) {
+                                                            $selected = ($values['usage'] == $row_usage['usageid']) ? 'selected' : '';
+                                                            ?>
+                                                            <option value="<?= $row_usage['usageid']; ?>" <?= $selected; ?>><?= $row_usage['usage_name']; ?></option>
+                                                            <?php
+                                                        }
+                                                        ?>
+                                                    </optgroup>
+                                                    <?php
+                                                }
+                                                ?>
+                                            </select>
+
+                                        </div>
+                                    </td>
                                     <?php if($category_id == '46'){ // Panels ID
                                     ?>
                                     <td>
@@ -223,6 +266,7 @@ if(isset($_POST['fetch_order'])){
                         <?php
                                 $totalquantity += $values["quantity_cart"];
                                 $total += $subtotal;
+                                $no++;
                             }
                         }
                         $_SESSION["total_quantity"] = $totalquantity;
@@ -233,7 +277,7 @@ if(isset($_POST['fetch_order'])){
                     <tfoot>
                         <tr>
                             <td colspan="1"></td>
-                            <td colspan="4" class="text-end">Total Quantity:</td>
+                            <td colspan="5" class="text-end">Total Quantity:</td>
                             <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
                             <td colspan="3" class="text-end">Amount Due:</td>
                             <td colspan="1" class="text-end"><span id="ammount_due"><?= $total ?> $</span></td>
@@ -253,7 +297,7 @@ if(isset($_POST['fetch_order'])){
                                 </div>
                                 <div class="form-group">
                                     <label>Discount (%)</label>
-                                    <input type="text" class="form-control" id="order_discount" placeholder="%">
+                                    <input type="text" class="form-control" id="order_discount" placeholder="%" value="<?= $discount * 100 ?>">
                                 </div>
                                 <div class="form-group">
                                     <label>Amount</label>
@@ -293,11 +337,15 @@ if(isset($_POST['fetch_order'])){
                     responsive: true
                 });
 
-                <?php if($category_id == '46'){ // Panels ID ?>
-                table.columns.adjust().responsive.recalc();
-                <?php } ?>
+                $(".select2-order").each(function() {
+                    $(this).select2({
+                        width: '300px',
+                        placeholder: "Select...",
+                        dropdownAutoWidth: true,
+                        dropdownParent: $('#orderTable')
+                    });
+                });
             });
         </script>
-        
     <?php
 }

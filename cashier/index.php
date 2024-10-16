@@ -20,7 +20,7 @@ if (!isset($_SESSION['userid'])) {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+  <script src="https://code.jquery.com/ui/1.14.0/jquery-ui.min.js"></script>
 
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" />
@@ -1318,19 +1318,15 @@ if (!isset($_SESSION['userid'])) {
   <div class="dark-transparent sidebartoggler"></div>
   <script src="../assets/js/vendor.min.js"></script>
   <!-- Import Js Files -->
-  <script src="../assets/js/breadcrumb/breadcrumbChart.js"></script>
-  <script src="../assets/libs/apexcharts/dist/apexcharts.min.js"></script>
   <script src="../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/libs/simplebar/dist/simplebar.min.js"></script>
   <script src="../assets/js/theme/app.dark.init.js"></script>
   <script src="../assets/js/theme/theme.js"></script>
   <script src="../assets/js/theme/app.min.js"></script>
-  <script src="../assets/js/theme/sidebarmenu.js"></script>
   <script src="../assets/js/theme/feather.min.js"></script>
 
   <!-- solar icons -->
   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
-  <script src="../assets/js/dashboards/dashboard2.js"></script>
   <script src="../assets/libs/jvectormap/jquery-jvectormap.min.js"></script>
   <script src="../assets/js/extra-libs/jvectormap/jquery-jvectormap-us-aea-en.js"></script>
   <script src="../assets/libs/datatables.net/js/jquery.dataTables.min.js"></script>
