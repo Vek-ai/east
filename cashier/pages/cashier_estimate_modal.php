@@ -9,10 +9,13 @@ require '../../includes/functions.php';
 
 if(isset($_POST['fetch_estimate'])){
     $discount = 0;
+    $tax = 0;
     if(isset($_SESSION['customer_id'])){
         $customer_id = $_SESSION['customer_id'];
         $discount = floatval(getCustomerDiscount($customer_id)) / 100;
+        $tax = floatval(getCustomerTax($customer_id)) / 100;
     }
+    $delivery_price = getDeliveryCost();
     ?>
     <style>
         .high-zindex-select2 + .select2-container--open {
@@ -89,6 +92,7 @@ if(isset($_POST['fetch_estimate'])){
                         <?php 
                         $total = 0;
                         $totalquantity = 0;
+                        $total_customer_price = 0;
                         $no = 1;
                         if (!empty($_SESSION["cart"])) {
                             foreach ($_SESSION["cart"] as $keys => $values) {
@@ -266,6 +270,7 @@ if(isset($_POST['fetch_estimate'])){
                         <?php
                                 $totalquantity += $values["quantity_cart"];
                                 $total += $subtotal;
+                                $total_customer_price += $customer_price;
                                 $no++;
                             }
                         }
@@ -280,7 +285,7 @@ if(isset($_POST['fetch_estimate'])){
                             <td colspan="5" class="text-end">Total Quantity:</td>
                             <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
                             <td colspan="3" class="text-end">Amount Due:</td>
-                            <td colspan="1" class="text-end"><span id="ammount_due"><?= $total ?> $</span></td>
+                            <td colspan="1" class="text-end"><span id="ammount_due"><?= $total_customer_price ?> $</span></td>
                             <td colspan="1"></td>
                         </tr>
                     </tfoot>
@@ -301,7 +306,7 @@ if(isset($_POST['fetch_estimate'])){
                                 </div>
                                 <div class="form-group">
                                     <label>Amount</label>
-                                    <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="<?= $_SESSION["grandtotal"] ?>">
+                                    <input type="text" class="form-control" id="cash_amount" onchange="update_cash()" value="<?= $total_customer_price ?>">
                                 </div>
                             </form>
                         </div>
@@ -310,14 +315,36 @@ if(isset($_POST['fetch_estimate'])){
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-body pricing">
-                            <ul class="list-unstyled leading-loose">
-                                <li><strong>Total: </strong>$ <span id="total_amt"> <?= $_SESSION["grandtotal"] ?? '0.00' ?></span></li>
-                                <li><strong>Discount(-): </strong>$ <span id="total_discount">0.00</span></li>
-                                <li><strong>Total Payable: </strong>$ <span id="total_payable"> <?= $_SESSION["grandtotal"] ?> </span></li>
-                                <li class="list-group-item border-bottom-0 bg-primary" style="font-size:30px;">
-                                    <strong>Change: </strong>$ 0.00
-                                </li>
-                            </ul>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tbody>
+                                        <tr>
+                                            <th class="text-right border-bottom">Total</th>
+                                            <td class="text-right border-bottom">$ <span id="total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-right border-bottom">Discount(-)</th>
+                                            <td class="text-right border-bottom">$ <span id="total_discount"><?= number_format(floatval($total_customer_price) * floatval($discount), 2) ?></span></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-right border-bottom">Delivery</th>
+                                            <td class="text-right border-bottom">$ <span id="delivery_amt"><?= number_format($delivery_price, 2) ?></span></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-right border-bottom">Sales Tax</th>
+                                            <td class="text-right border-bottom">$ <span id="sales_tax"><?= number_format((floatval($total_customer_price) + $delivery_price) * $tax, 2) ?></span></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-right border-bottom">Total Payable</th>
+                                            <td class="text-right border-bottom">$ <span id="total_payable"><?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?></span></td>
+                                        </tr>
+                                        <tr class="bg-primary text-white" style="font-size: 1.25rem;">
+                                            <th class="text-right">Change</th>
+                                            <td class="text-right">$ 0.00</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
