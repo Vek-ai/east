@@ -122,7 +122,7 @@ if(!empty($_REQUEST['result'])){
       <div class="row pt-3">
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="form-label">Tax Status</label>
+            <label class="form-label">Tax Status Description</label>
             <input type="text" id="tax_status_desc" name="tax_status_desc" class="form-control"  value="<?= $tax_status_desc ?>"/>
           </div>
         </div>
@@ -169,7 +169,7 @@ if(!empty($_REQUEST['result'])){
             <thead>
               <!-- start row -->
               <tr>
-                <th>Customer Tax Description</th>
+                <th>Tax Status Description</th>
                 <th>Percentage</th>
               
                 <th>Action</th>
