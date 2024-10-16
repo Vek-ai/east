@@ -648,6 +648,9 @@ require '../includes/functions.php';
                 setquantity: 'setquantity'
             },
             success: function(data) {
+                loadCart();
+                loadOrderContents();
+                loadEstimateContents();
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
@@ -676,7 +679,9 @@ require '../includes/functions.php';
                 addquantity: 'addquantity'
             },
             success: function(data) {
-                input_quantity.val(quantity + 1);
+                loadCart();
+                loadOrderContents();
+                loadEstimateContents();
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
                 
             },
@@ -706,7 +711,9 @@ require '../includes/functions.php';
                 deductquantity: 'deductquantity'
             },
             success: function(data) {
-                input_quantity.val(quantity + 1);
+                loadCart();
+                loadOrderContents();
+                loadEstimateContents();
                 $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
