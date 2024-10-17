@@ -1356,6 +1356,10 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "estimate_list") {include 'pages/estimate_list.php';}
             if ($_REQUEST['page'] == "order_list") {include 'pages/order_list.php';}
+
+            if ($_REQUEST['page'] == "loyalty_program") {include 'pages/loyalty_program.php';}
+            if ($_REQUEST['page'] == "customer_loyalty") {include 'pages/customer_loyalty.php';}
+            
           ?>
         </div>
       </div>
