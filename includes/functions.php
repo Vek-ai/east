@@ -403,7 +403,7 @@ function getCustomerDiscount($customer_id) {
     
     $discount_loyalty = 0;
     if ($isLoyalty == 1) {
-        $customer_ttl_orders = getCustomerOrderCount($customer_id);
+        $customer_ttl_orders = getCustomerOrderTotal($customer_id);
         $query = "
             SELECT discount 
             FROM loyalty_program 
@@ -434,13 +434,13 @@ function getCustomerDiscount($customer_id) {
     return max($discount_loyalty, $discount_customer);
 }
 
-function getCustomerOrderCount($customerid){
+function getCustomerOrderTotal($customerid){
     global $conn;
-    $query = "SELECT COUNT(*) AS order_count FROM orders where customerid = '$customerid'";
+    $query = "SELECT SUM(discounted_price) AS total_orders FROM orders WHERE customerid = '$customerid'";
     $result = mysqli_query($conn,$query);
     $row = mysqli_fetch_array($result); 
-    $order_count = $row['order_count'];
-    return  $order_count;
+    $total_orders = $row['total_orders'];
+    return  $total_orders;
 }
 
 function getUsageName($usageid){

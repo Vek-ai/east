@@ -577,13 +577,13 @@ if (isset($_POST['save_order'])) {
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
-            $customer_orders = getCustomerOrderCount($customerid);
+            $customer_orders = getCustomerOrderTotal($customerid);
 
             $query_loyalty = "SELECT * FROM loyalty_program";
             $result_loyalty = mysqli_query($conn, $query_loyalty);
             while ($row_loyalty = mysqli_fetch_assoc($result_loyalty)) {
                 $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
-                if($customer_orders == $accumulated_loyalty_required){
+                if($customer_orders >= $accumulated_loyalty_required){
                     $query_update = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
                     $result_update = mysqli_query($conn, $query_update);
                     if (!$result_update) {

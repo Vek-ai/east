@@ -144,7 +144,7 @@ if($_REQUEST['customer_id']){
                     <thead>
                         <tr>
                             <th>Loyalty Program</th>
-                            <th>Orders Required</th>
+                            <th>Order Amount Required</th>
                             <th>Discount (%)</th>
                             <th>No. of Customers</th>
                             <th>Action</th>
@@ -163,7 +163,7 @@ if($_REQUEST['customer_id']){
                                         SELECT customerid
                                         FROM orders
                                         GROUP BY customerid
-                                        HAVING COUNT(*) >= " . intval($row['accumulated_total_orders']) . "
+                                        HAVING SUM(discounted_price) >= " . intval($row['accumulated_total_orders']) . "
                                     ) AS customer_filter;
                                 ";
 

@@ -52,10 +52,10 @@ if(isset($_REQUEST['action'])) {
                                             <tbody>
                                                 <?php 
                                                 $query_orders = "
-                                                    SELECT customerid, COUNT(*) AS order_count, MAX(order_date) AS last_order_date
+                                                    SELECT customerid, SUM(discounted_price) AS total_orders, MAX(order_date) AS last_order_date
                                                     FROM orders
                                                     GROUP BY customerid
-                                                    HAVING COUNT(*) >= '" .$row['accumulated_total_orders'] ."';
+                                                    HAVING SUM(discounted_price) >= '" .$row['accumulated_total_orders'] ."'
                                                 ";
                                                 $result_orders = mysqli_query($conn, $query_orders);
                                                 while ($row_orders = mysqli_fetch_assoc($result_orders)) {
@@ -72,8 +72,8 @@ if(isset($_REQUEST['action'])) {
                                                         <td>
                                                             <?= $customer_details['contact_email']?>
                                                         </td>
-                                                        <td>
-                                                            <?= $row_orders['order_count'] ?>
+                                                        <td class="text-end">
+                                                            $ <?= number_format($row_orders['total_orders'],2) ?>
                                                         </td>
                                                         <td>
                                                             <?= date("F d, Y", strtotime($row_orders['last_order_date'])) ?>
