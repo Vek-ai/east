@@ -57,9 +57,9 @@ if(isset($_REQUEST['action'])) {
                         
                         WHERE customer_type_id = '$customer_type_id'";
                 if (mysqli_query($conn, $updateQuery)) {
-                    echo "Product line updated successfully.";
+                    echo "Customer Type updated successfully.";
                 } else {
-                    echo "Error updating product line: " . mysqli_error($conn);
+                    echo "Error updating cutsomer type: " . mysqli_error($conn);
                 }
             }
         } else {
@@ -96,9 +96,9 @@ if(isset($_REQUEST['action'])) {
                     '$customer_price_cat'
                 )";
                 if (mysqli_query($conn, $insertQuery)) {
-                    echo "New product line added successfully.";
+                    echo "New customer type added successfully.";
                 } else {
-                    echo "Error adding product line: " . mysqli_error($conn);
+                    echo "Error adding customer type: " . mysqli_error($conn);
                 }
             }
         }

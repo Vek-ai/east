@@ -418,7 +418,7 @@ $addHeaderTxt = "Add New";
                   $('#response-modal').on('hide.bs.modal', function () {
                     window.location.href = "?page=customer_type";
                   });
-              } else if (response === "New product line added successfully.") {
+              } else if (response === "New customer type added successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-danger");
