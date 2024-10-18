@@ -172,7 +172,7 @@
         </li>
        
         <li class="sidebar-item">
-          <a class="sidebar-link" href="update_customer.php">
+          <a class="sidebar-link" href="?page=merge_customer.php">
             <iconify-icon icon="solar:checklist-minimalistic-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Merge Customer</span>
           </a>
