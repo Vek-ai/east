@@ -165,21 +165,16 @@
           <span class="hide-menu">Customers</span>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="add_customer.php">
+          <a class="sidebar-link" href="?page=customer">
             <iconify-icon icon="solar:add-square-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Add New Customer</span>
+            <span class="hide-menu">Customer</span>
           </a>
         </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="customer_list.php">
-            <iconify-icon icon="solar:smile-circle-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Customer List</span>
-          </a>
-        </li>
+       
         <li class="sidebar-item">
           <a class="sidebar-link" href="update_customer.php">
             <iconify-icon icon="solar:checklist-minimalistic-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Update Information</span>
+            <span class="hide-menu">Merge Customer</span>
           </a>
         </li>
         <li class="sidebar-item">
