@@ -382,15 +382,30 @@ if (isset($_POST['save_estimate'])) {
     if (!empty($cart)) {
         $estimated_date = date('Y-m-d H:i:s');
 
+        $discount = 0;
+        if (isset($_SESSION['customer_id'])) {
+            $customerid = $_SESSION['customer_id'];
+            $discount = floatval(getCustomerDiscount($customerid)) / 100;
+            $discount_percent = $discount * 100;
+        }
+        
+        $delivery_price = getDeliveryCost();
+
+        $total_price = 0;
+        $total_discounted_price = 0;
         foreach ($cart as $item) {
             $unit_price = floatval($item['unit_price']);
             $quantity_cart = intval($item['quantity_cart']);
-            $total_price += $unit_price * $quantity_cart;
+            $price = $unit_price * $quantity_cart;
+            $total_price += $price;
+            $discounted_price = $price * (1 - $discount);
+            $total_discounted_price += $discounted_price;
         }
-
-        $discounted_price = number_format($total_price * 0.9, 2);
-
-        $query = "INSERT INTO estimates (total_price, discounted_price, discount_percent, estimated_date, customerid) VALUES ('$total_price', '$discounted_price', '$discount', '$estimated_date', '$customerid')";
+    
+        $total_price = number_format($total_price, 2);
+        $total_discounted_price = number_format($total_discounted_price, 2);
+    
+        $query = "INSERT INTO estimates (total_price, discounted_price, discount_percent, estimated_date, customerid) VALUES ('$total_price', '$total_discounted_price', '$discount_percent', '$estimated_date', '$customerid')";
         if ($conn->query($query) === TRUE) {
             $estimateid = $conn->insert_id;
         } else {
@@ -531,15 +546,30 @@ if (isset($_POST['save_order'])) {
     if (!empty($cart)) {
         $order_date = date('Y-m-d H:i:s');
 
+        $discount = 0;
+        if (isset($_SESSION['customer_id'])) {
+            $customerid = $_SESSION['customer_id'];
+            $discount = floatval(getCustomerDiscount($customerid)) / 100;
+            $discount_percent = $discount * 100;
+        }
+        
+        $delivery_price = getDeliveryCost();
+        $total_price = 0;
+        $total_discounted_price = 0;
+    
         foreach ($cart as $item) {
             $unit_price = floatval($item['unit_price']);
             $quantity_cart = intval($item['quantity_cart']);
-            $total_price += $unit_price * $quantity_cart;
+            $price = $unit_price * $quantity_cart;
+            $total_price += $price;
+            $discounted_price = $price * (1 - $discount);
+            $total_discounted_price += $discounted_price;
         }
-
-        $discounted_price = number_format($total_price * 0.9, 2);
-
-        $query = "INSERT INTO orders (estimateid, total_price, discounted_price, discount_percent, order_date, customerid) VALUES ('$estimateid', '$total_price', '$discounted_price', '$discount',  '$order_date', '$customerid')";
+    
+        $total_price = number_format($total_price, 2);
+        $total_discounted_price = number_format($total_discounted_price, 2);
+    
+        $query = "INSERT INTO orders (estimateid, total_price, discounted_price, discount_percent, order_date, customerid) VALUES ('$estimateid', '$total_price', '$discounted_price', '$discount_percent',  '$order_date', '$customerid')";
         if ($conn->query($query) === TRUE) {
             $orderid = $conn->insert_id;
         } else {
@@ -578,21 +608,27 @@ if (isset($_POST['save_order'])) {
 
         if ($conn->query($query) === TRUE) {
             $customer_orders = getCustomerOrderTotal($customerid);
+            $customer_details = getCustomerDetails($customerid);
+            $isLoyalty = $customer_details['loyalty'];
 
-            $query_loyalty = "SELECT * FROM loyalty_program";
-            $result_loyalty = mysqli_query($conn, $query_loyalty);
-            while ($row_loyalty = mysqli_fetch_assoc($result_loyalty)) {
-                $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
-                if($customer_orders >= $accumulated_loyalty_required){
-                    $query_update = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
-                    $result_update = mysqli_query($conn, $query_update);
-                    if (!$result_update) {
-                        $response['error'] = "Error updating loyalty status: " . mysqli_error($conn);
-                        exit;
+            if(!$isLoyalty){
+                $query_loyalty = "SELECT * FROM loyalty_program";
+                $result_loyalty = mysqli_query($conn, $query_loyalty);
+                while ($row_loyalty = mysqli_fetch_assoc($result_loyalty)) {
+                    $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
+                    if($customer_orders >= $accumulated_loyalty_required){
+                        $query_update = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
+                        $result_update = mysqli_query($conn, $query_update);
+                        if (!$result_update) {
+                            $response['error'] = "Error updating loyalty status: " . mysqli_error($conn);
+                            exit;
+                        }else{
+                            $response['message'] = 'Added Customer to Loyalty Program';
+                        }
                     }
                 }
             }
-
+            
             $response['success'] = true;
             $response['order_id'] = $orderid;
 

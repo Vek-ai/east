@@ -1225,7 +1225,6 @@ require '../includes/functions.php';
 
         $(document).on('click', '#save_estimate', function(event) {
             var discount = $('#est_discount').val();
-            console.log(discount);
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -1234,6 +1233,7 @@ require '../includes/functions.php';
                     save_estimate: 'save_estimate'
                 },
                 success: function(response) {
+                    console.log(response);
                     if (response.success) {
                         alert("Estimate successfully saved.");
                         $('#print_estimate_category').attr('href', '/print_estimate_product.php?id=' + response.estimate_id);
@@ -1284,6 +1284,7 @@ require '../includes/functions.php';
                     save_order: 'save_order'
                 },
                 success: function(response) {
+                    console.log(response);
                     if (response.success) {
                         alert("Order successfully saved.");
                         $('#print_order_category').attr('href', '/print_order_product.php?id=' + response.order_id);

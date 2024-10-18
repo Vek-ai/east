@@ -172,13 +172,13 @@
         </li>
        
         <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=merge_customer.php">
+          <a class="sidebar-link" href="?page=merge_customer">
             <iconify-icon icon="solar:checklist-minimalistic-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Merge Customer</span>
           </a>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="customer_loyalty.php">
+          <a class="sidebar-link" href="?page=customer_loyalty">
             <iconify-icon icon="solar:graph-new-up-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Loyalty Program</span>
           </a>
