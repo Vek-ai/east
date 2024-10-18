@@ -23,7 +23,6 @@ $tax_status = "";
 $tax_exempt_number = "";
 $customer_notes = "";
 $call_status = "";
-$loyalty = "";
 
 $customer_name = $customer_first_name . " " . $customer_last_name;
 
@@ -361,7 +360,6 @@ $addHeaderTxt = "Add New";
                         <div class="col-md-6"> 
                           <label for="loyalty">Loyalty</label>
                           <select name="loyalty" id="loyalty" class="form-select form-control">
-                              <option value="">Loyalty</option>
                               <option value="0" <?php if($loyalty == '0') echo 'selected'; ?>>Off</option>
                               <option value="1" <?php if($loyalty == '1') echo 'selected'; ?>>On</option>
                           </select>
@@ -455,58 +453,80 @@ $addHeaderTxt = "Add New";
                 <!-- end row -->
               </thead>
               <tbody>
-                <?php
-                $no = 1;
-                $query_customer = "
-                  SELECT c.*, ct.customer_type_name 
-                  FROM customer c 
-                  LEFT JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id 
-                  WHERE c.hidden = 0";
-                $result_customer = mysqli_query($conn, $query_customer);            
-                while ($row_customer = mysqli_fetch_array($result_customer)) {
-                    $customer_id = $row_customer['customer_id'];
-                    $name = $row_customer['customer_first_name'] . "" . $row_customer['customer_last_name'];
-                    $business_name = $row_customer['customer_business_name'];
-                    $email = $row_customer['contact_email'];
-                    $phone = $row_customer['contact_phone'];
-                    $fax = $row_customer['contact_fax'];
-                    $address = $row_customer['address'];
-                    $customer_type_name = $row_customer['customer_type_name'];
-                    $db_status = $row_customer['status'];
+    <?php
+    $no = 1;
+    // Fetch customer details along with the count of orders and loyalty information
+    $query_customer = "
+    SELECT c.*, ct.customer_type_name, 
+    (SELECT COUNT(o.customerid) FROM orders o WHERE o.customerid = c.customer_id) AS order_count,
+    lp.accumulated_total_orders, lp.loyalty_program_name
+    FROM customer c
+    LEFT JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id 
+    LEFT JOIN loyalty_program lp ON c.loyalty = 1 AND 
+    (SELECT COUNT(o.customerid) FROM orders o WHERE o.customerid = c.customer_id) >= lp.accumulated_total_orders
+    WHERE c.hidden = 0";
 
-                      if ($row_customer['status'] == '0') {
-                          $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                      } else {
-                          $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                      }
-                  ?>
-                  <tr  id="product-row-<?= $no ?>">
-                      <td><span class="customer<?= $no ?> <?php if ($row_customer['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $name ?></span></td>
-                      <td><?= $business_name ?></td>
-                      <td><?= $email ?></td>
-                      <td><?= $phone ?></td>
-                      <td><?= $fax ?></td>
-                      <td><?= $address ?></td>
-                      <!-- Here -->
-                      <td><?= $loyalty ?></td>
-                      <td><?= $customer_type_name ?></td>
-                      <td><?= $status ?></td>
-                      <td class="text-center fs-5" id="action-button-<?= $no ?>">
-                          <?php if ($row_customer['status'] == '0') { ?>
-                              <a href="#" class="py-1 text-dark hideCustomer" data-id="<?= $customer_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Archive"><i class="fa fa-box-archive text-danger"></i></a>
-                          <?php } else { ?>
-                              <a href="?page=customer&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Edit"><i class="fa fa-pencil text-warning"></i></a>
-                              <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i class="fa fa-calculator text-primary"></i></a>
-                              <a href="?page=order_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Orders"><i class="fa fa-cart-shopping text-success"></i></a>
-                          <?php } ?>
-                          
-                      </td>
-                  </tr>
-                  <?php
-                $no++;
-                }
-                ?>
-              </tbody>
+    $result_customer = mysqli_query($conn, $query_customer);            
+    while ($row_customer = mysqli_fetch_array($result_customer)) {
+        $customer_id = $row_customer['customer_id'];
+        $name = $row_customer['customer_first_name'] . " " . $row_customer['customer_last_name'];
+        $business_name = $row_customer['customer_business_name'];
+        $email = $row_customer['contact_email'];
+        $phone = $row_customer['contact_phone'];
+        $fax = $row_customer['contact_fax'];
+        $address = $row_customer['address'];
+        $customer_type_name = $row_customer['customer_type_name'];
+        $db_status = $row_customer['status'];
+        $order_count = $row_customer['order_count']; // Customer's order count
+
+        // Check loyalty field and display accordingly
+        if ($row_customer['loyalty'] == '1') {
+            // Show loyalty program name if loyalty is 1
+            if ($order_count >= $row_customer['accumulated_total_orders']) {
+                $loyalty = $row_customer['loyalty_program_name'];
+            } else {
+                $loyalty = "No Loyalty Level";
+            }
+        } else {
+            // Show "Off" if loyalty is not 1
+            $loyalty = "Off";
+        }
+
+        // Display status
+        if ($row_customer['status'] == '0') {
+            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+        } else {
+            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+        }
+        ?>
+        <tr id="product-row-<?= $no ?>">
+            <td><span class="customer<?= $no ?> <?php if ($row_customer['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $name ?></span></td>
+            <td><?= $business_name ?></td>
+            <td><?= $email ?></td>
+            <td><?= $phone ?></td>
+            <td><?= $fax ?></td>
+            <td><?= $address ?></td>
+            <!-- Display loyalty (based on order count comparison or "Off" when loyalty is not 1) -->
+            <td><?= $loyalty ?></td>
+            <td><?= $customer_type_name ?></td>
+            <td><?= $status ?></td>
+            <td class="text-center fs-5" id="action-button-<?= $no ?>">
+                <?php if ($row_customer['status'] == '0') { ?>
+                    <a href="#" class="py-1 text-dark hideCustomer" data-id="<?= $customer_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Archive"><i class="fa fa-box-archive text-danger"></i></a>
+                <?php } else { ?>
+                    <a href="?page=customer&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Edit"><i class="fa fa-pencil text-warning"></i></a>
+                    <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i class="fa fa-calculator text-primary"></i></a>
+                    <a href="?page=order_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Orders"><i class="fa fa-cart-shopping text-success"></i></a>
+                <?php } ?>
+            </td>
+        </tr>
+        <?php
+        $no++;
+    }
+    ?>
+</tbody>
+
+
                 <script>
                   $(document).ready(function() {
                       $('[data-toggle="tooltip"]').tooltip(); 
