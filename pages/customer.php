@@ -378,17 +378,19 @@ if (!empty($_REQUEST['result'])) {
                   </div>
                 </div>
 
-                <div class="col-md-6">
-                  <label for="loyalty">Loyalty</label>
-                  <select name="loyalty" id="loyalty" class="form-select form-control">
-                    <option value="0" <?php if ($loyalty == '0')
-                      echo 'selected'; ?>>Off</option>
-                    <option value="1" <?php if ($loyalty == '1')
-                      echo 'selected'; ?>>On</option>
-                  </select>
-                </div>
+                <?php if (!empty($customer_id)) { ?>
+                  <div class="col-md-6">
+                    <label for="loyalty">Loyalty</label>
+                    <select name="loyalty" id="loyalty" class="form-select form-control">
+                      <option value="0" <?php if ($loyalty == '0')
+                        echo 'selected'; ?>>Off</option>
+                      <option value="1" <?php if ($loyalty == '1')
+                        echo 'selected'; ?>>On</option>
+                    </select>
+                  </div>
+                <?php } ?>
+              
               </div>
-
 
               <div class="mb-3">
                 <label class="form-label">Customer Notes</label>
