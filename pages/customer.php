@@ -23,6 +23,7 @@ $tax_status = "";
 $tax_exempt_number = "";
 $customer_notes = "";
 $call_status = "";
+$loyalty = "";
 
 $customer_name = $customer_first_name . " " . $customer_last_name;
 
@@ -55,6 +56,9 @@ $addHeaderTxt = "Add New";
         $tax_exempt_number = $row['tax_exempt_number'];
         $customer_notes = $row['customer_notes'];
         $call_status = $row['call_status'];
+
+        $loyalty = $row['loyalty'];
+
     }
     $saveBtnTxt = "Update";
     $addHeaderTxt = "Update";
@@ -353,6 +357,15 @@ $addHeaderTxt = "Add New";
                                 </select>
                             </div>
                         </div>
+
+                        <div class="col-md-6"> 
+                          <label for="loyalty">Loyalty</label>
+                          <select name="loyalty" id="loyalty" class="form-select form-control">
+                              <option value="">Loyalty</option>
+                              <option value="0" <?php if($loyalty == '0') echo 'selected'; ?>>Off</option>
+                              <option value="1" <?php if($loyalty == '1') echo 'selected'; ?>>On</option>
+                          </select>
+                        </div>
                       </div>
                       
 
@@ -412,6 +425,7 @@ $addHeaderTxt = "Add New";
                   <th>Phone</th>
                   <th>Fax</th>
                   <th>Address</th>
+                  <th>Loyalty</th>
                   <th>
                     <div class="">
                       <!-- Add a Dropdown for Filtering -->
@@ -473,6 +487,8 @@ $addHeaderTxt = "Add New";
                       <td><?= $phone ?></td>
                       <td><?= $fax ?></td>
                       <td><?= $address ?></td>
+                      <!-- Here -->
+                      <td><?= $loyalty ?></td>
                       <td><?= $customer_type_name ?></td>
                       <td><?= $status ?></td>
                       <td class="text-center fs-5" id="action-button-<?= $no ?>">

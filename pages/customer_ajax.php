@@ -30,6 +30,7 @@ if(isset($_REQUEST['action'])) {
         $customer_notes = mysqli_real_escape_string($conn, $_POST['customer_notes']);
         $new_customer_type_id = mysqli_real_escape_string($conn, $_POST['customer_type']);
         $call_status = isset($_POST['call_status']) ? mysqli_real_escape_string($conn, $_POST['call_status']) : '';
+        $loyalty = isset($_POST['loyalty']) ? mysqli_real_escape_string($conn, $_POST['loyalty']) : '';
 
         $customer_name = $customer_first_name . "" . $customer_last_name;
 
@@ -85,7 +86,8 @@ if(isset($_REQUEST['action'])) {
                         tax_exempt_number = '$tax_exempt_number',
                         customer_notes = '$customer_notes',
                         call_status = '$call_status',
-                        customer_type_id = '$new_customer_type_id'
+                        customer_type_id = '$new_customer_type_id',
+                        loyalty = '$loyalty'
 
                         
                         WHERE customer_id = '$customer_id'";
@@ -167,7 +169,8 @@ if(isset($_REQUEST['action'])) {
                     tax_exempt_number,
                     customer_notes,
                     customer_type_id,
-                    call_status) 
+                    call_status,
+                    loyalty) 
                     VALUES (
                     '$customer_first_name', 
                     '$customer_last_name', 
@@ -188,7 +191,8 @@ if(isset($_REQUEST['action'])) {
                     '$tax_exempt_number',
                     '$customer_notes',
                     '$new_customer_type_id',
-                    '$call_status')";
+                    '$call_status',
+                    '$loyalty')";
 
                 if (mysqli_query($conn, $insertQuery)) {
                         // Get the currently added customer
