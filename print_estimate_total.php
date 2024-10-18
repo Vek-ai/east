@@ -282,7 +282,9 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->Cell(20, $lineheight, '$ ' .number_format(($total_price - ($total_price * $discount) + $delivery_price),2), 0, 1, 'R');
 
         $pdf->Ln(5);
-        $pdf->Output();
+
+        $pdf->SetTitle('Estimate');
+        $pdf->Output('Estimate.pdf', 'I');
             
 
         

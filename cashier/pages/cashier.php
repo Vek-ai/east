@@ -297,8 +297,11 @@ require '../includes/functions.php';
                     <i class="fa fa-save fs-4 me-2"></i>
                     Save
                 </button>
+                <a href="#" class="btn ripple btn-success d-none" type="button" id="print_estimate_category" target="_blank">
+                    <i class="fe fe-print"></i> Print Details
+                </a>
                 <a href="#" class="btn ripple btn-warning d-none" type="button" id="print_estimate" target="_blank">
-                    <i class="fe fe-print"></i> Print
+                    <i class="fe fe-print"></i> Print Total
                 </a>
                 <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
@@ -354,8 +357,11 @@ require '../includes/functions.php';
                 <button class="btn ripple btn-primary" type="button" id="save_order">
                     <i class="fe fe-hard-drive"></i> Save
                 </button>
+                <a href="#" class="btn ripple btn-success d-none" type="button" id="print_order_category" target="_blank">
+                    <i class="fe fe-print"></i> Print Details
+                </a>
                 <a href="#" class="btn ripple btn-warning d-none" type="button" id="print_order" target="_blank">
-                    <i class="fe fe-print"></i> Print
+                    <i class="fe fe-print"></i> Print Total
                 </a>
                 <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
@@ -1201,7 +1207,9 @@ require '../includes/functions.php';
                 success: function(response) {
                     if (response.success) {
                         alert("Estimate successfully saved.");
-                        $('#print_estimate').attr('href', '/print_estimate_product.php?id=' + response.estimate_id);
+                        $('#print_estimate_category').attr('href', '/print_estimate_product.php?id=' + response.estimate_id);
+                        $('#print_estimate_category').removeClass('d-none');
+                        $('#print_estimate').attr('href', '/print_estimate_total.php?id=' + response.estimate_id);
                         $('#print_estimate').removeClass('d-none');
                     } else if (response.error) {
                         alert("Error: " + response.error);
@@ -1250,7 +1258,9 @@ require '../includes/functions.php';
                 success: function(response) {
                     if (response.success) {
                         alert("Order successfully saved.");
-                        $('#print_order').attr('href', '/print_order_product.php?id=' + response.order_id);
+                        $('#print_order_category').attr('href', '/print_order_product.php?id=' + response.order_id);
+                        $('#print_order').attr('href', '/print_order_total.php?id=' + response.order_id);
+                        $('#print_order_category').removeClass('d-none');
                         $('#print_order').removeClass('d-none');
                     } else if (response.error) {
                         alert("Error: " + response.error);

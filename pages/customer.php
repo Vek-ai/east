@@ -535,7 +535,7 @@ if (!empty($_REQUEST['result'])) {
                         $merge_details = getCustomerDetails($customer_id);
                         $merge_id = $merge_details['merge_from'];
                         $current_details = getCustomerDetails($merge_id);
-                        echo "Merge to " .$current_details['customer_first_name'] . " " . $current_details['customer_last_name'];
+                        echo "$name - Merge to " .$current_details['customer_first_name'] . " " . $current_details['customer_last_name'];
                       }else{
                         echo $name;
                       }
