@@ -1359,7 +1359,7 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "loyalty_program") {include 'pages/loyalty_program.php';}
             if ($_REQUEST['page'] == "customer_loyalty") {include 'pages/customer_loyalty.php';}
-            
+            if ($_REQUEST['page'] == "merge_customer") {include 'pages/merge_customer.php';}
           ?>
         </div>
       </div>

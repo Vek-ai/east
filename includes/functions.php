@@ -398,20 +398,49 @@ function getCustomerTax($customer_id) {
 function getCustomerDiscount($customer_id) {
     global $conn;
     $customer_id = mysqli_real_escape_string($conn, $customer_id);
+    $customer_details = getCustomerDetails($customer_id);
+    $isLoyalty = $customer_details['loyalty'];
+    
+    $discount_loyalty = 0;
+    if ($isLoyalty == 1) {
+        $customer_ttl_orders = getCustomerOrderCount($customer_id);
+        $query = "
+            SELECT discount 
+            FROM loyalty_program 
+            WHERE accumulated_total_orders <= '$customer_ttl_orders' 
+            ORDER BY accumulated_total_orders DESC 
+            LIMIT 1";
+        $result = mysqli_query($conn, $query);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $discount_loyalty = floatval($row['discount']) ?? 0;
+        }
+    }
 
-    $query = "SELECT ct.customer_price_cat
-              FROM customer AS c
-              LEFT JOIN customer_types AS ct
-              ON c.customer_type_id = ct.customer_type_id
-              WHERE c.customer_id = '$customer_id'";
-
+    $query = "
+        SELECT ct.customer_price_cat
+        FROM customer AS c
+        LEFT JOIN customer_types AS ct
+        ON c.customer_type_id = ct.customer_type_id
+        WHERE c.customer_id = '$customer_id'";
+    
     $result = mysqli_query($conn, $query);
+    $discount_customer = 0;
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
-        return $row['customer_price_cat'] ?? 0;
-    } else {
-        return 0;
+        $discount_customer = floatval($row['customer_price_cat']) ?? 0;
     }
+
+    return max($discount_loyalty, $discount_customer);
+}
+
+function getCustomerOrderCount($customerid){
+    global $conn;
+    $query = "SELECT COUNT(*) AS order_count FROM orders where customerid = '$customerid'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $order_count = $row['order_count'];
+    return  $order_count;
 }
 
 function getUsageName($usageid){

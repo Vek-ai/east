@@ -1268,7 +1268,6 @@ require '../includes/functions.php';
 
         $(document).on('click', '#save_order', function(event) {
             var discount = $('#order_discount').val();
-            console.log(discount);
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -1286,6 +1285,7 @@ require '../includes/functions.php';
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });

@@ -577,6 +577,22 @@ if (isset($_POST['save_order'])) {
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
+            $customer_orders = getCustomerOrderCount($customerid);
+
+            $query_loyalty = "SELECT * FROM loyalty_program";
+            $result_loyalty = mysqli_query($conn, $query_loyalty);
+            while ($row_loyalty = mysqli_fetch_assoc($result_loyalty)) {
+                $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
+                if($customer_orders == $accumulated_loyalty_required){
+                    $query_update = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
+                    $result_update = mysqli_query($conn, $query_update);
+                    if (!$result_update) {
+                        $response['error'] = "Error updating loyalty status: " . mysqli_error($conn);
+                        exit;
+                    }
+                }
+            }
+
             $response['success'] = true;
             $response['order_id'] = $orderid;
 
@@ -601,8 +617,10 @@ if (isset($_POST['search_customer'])) {
         FROM 
             customer
         WHERE 
-            customer_first_name LIKE '%$search%' 
-            OR customer_last_name LIKE '%$search%'
+            (customer_first_name LIKE '%$search%' 
+            OR 
+            customer_last_name LIKE '%$search%')
+            AND status != '3'
         LIMIT 15
     ";
 

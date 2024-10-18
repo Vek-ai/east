@@ -1255,6 +1255,7 @@ require '../includes/functions.php';
                     } else if (response.error) {
                         alert("Error: " + response.error);
                     }
+                    console.log(response)
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
