@@ -454,7 +454,6 @@ if(isset($_REQUEST['action'])) {
     } 
 
     if ($action == "fetch_edit_modal") {
-        $discount = 0.1;
         ?>
         <style>
             .table-fixed-est {
@@ -517,6 +516,10 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $query);
         if ($result && mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
+            $discount = 0;
+            if (isset($row["customerid"])) {
+                $discount = floatval(getCustomerDiscount($row["customerid"])) / 100;
+            }
             ?>
             <div class="form-group col-4">
                 <div id="customer_est_section">
