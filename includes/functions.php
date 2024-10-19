@@ -399,22 +399,20 @@ function getCustomerDiscount($customer_id) {
     global $conn;
     $customer_id = mysqli_real_escape_string($conn, $customer_id);
     $customer_details = getCustomerDetails($customer_id);
-    $isLoyalty = $customer_details['loyalty'];
+    $isLoyalty = intval($customer_details['loyalty']);
     
     $discount_loyalty = 0;
-    if ($isLoyalty == 1) {
-        $customer_ttl_orders = getCustomerOrderTotal($customer_id);
-        $query = "
-            SELECT discount 
-            FROM loyalty_program 
-            WHERE accumulated_total_orders <= '$customer_ttl_orders' 
-            ORDER BY discount DESC 
-            LIMIT 1";
-        $result = mysqli_query($conn, $query);
-        if ($result && mysqli_num_rows($result) > 0) {
-            $row = mysqli_fetch_assoc($result);
-            $discount_loyalty = floatval($row['discount']) ?? 0;
-        }
+    $customer_ttl_orders = getCustomerOrderTotal($customer_id);
+    $query = "
+        SELECT discount 
+        FROM loyalty_program 
+        WHERE accumulated_total_orders <= '$customer_ttl_orders' 
+        ORDER BY discount DESC 
+        LIMIT 1";
+    $result = mysqli_query($conn, $query);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $discount_loyalty = floatval($row['discount']) ?? 0;
     }
 
     $query = "
