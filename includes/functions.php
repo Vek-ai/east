@@ -408,7 +408,7 @@ function getCustomerDiscount($customer_id) {
             SELECT discount 
             FROM loyalty_program 
             WHERE accumulated_total_orders <= '$customer_ttl_orders' 
-            ORDER BY accumulated_total_orders DESC 
+            ORDER BY discount DESC 
             LIMIT 1";
         $result = mysqli_query($conn, $query);
         if ($result && mysqli_num_rows($result) > 0) {
