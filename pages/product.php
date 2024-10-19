@@ -429,19 +429,26 @@ $picture_path = "images/product/product.jpg";
                                 </div>
 
                                 <div class="row pt-3">
-                                
-                                <div class="col-md-6 opt_field" data-id="15">
-                                    <div class="mb-3">
-                                    <label class="form-label">Usage</label>
-                                    <input type="text" id="product_usage" name="product_usage" class="form-control"  />
+                                    <div class="col-md-4 opt_field" data-id="15">
+                                        <div class="mb-3">
+                                        <label class="form-label">Usage</label>
+                                        <input type="text" id="product_usage" name="product_usage" class="form-control"  />
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                    <label class="form-label">UPC</label>
-                                    <input type="text" id="upc" name="upc" class="form-control" value="<?= $generate_rend_upc ?>" readonly/>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                        <label class="form-label">UPC</label>
+                                        <input type="text" id="upc" name="upc" class="form-control" value="<?= $generate_rend_upc ?>" readonly/>
+                                        </div>
                                     </div>
-                                </div>
+                                    <div class="col-md-4 d-flex align-items-center">
+                                        <div class="mb-3">
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="checkbox" id="sold_by_feet" name="sold_by_feet" value="1">
+                                                <label class="form-check-label" for="sold_by_feet">Sold by feet</label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="mb-3 opt_field" data-id="16">
