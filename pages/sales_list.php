@@ -55,7 +55,7 @@ require 'includes/functions.php';
                         <label for="customer_search" class="form-label">Customer Name</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            <input class="form-control" placeholder="Search Customer" type="text" id="customer_search">
+                            <input class="form-control" placeholder="All Customers" type="text" id="customer_search">
                         </div>
                     </div>
                 </div>
@@ -138,40 +138,40 @@ require 'includes/functions.php';
         focus: function(event, ui) {
             $('#customer_search').val(ui.item.label);
             return false;
-        }
+        },
+        minLength: 0
     });
 
-    function performSearch(query) {
-        var customer_name = $('#customer_search').val();
-        var date_from = $('#date_from').val();
-        var date_to = $('#date_to').val();
-
-        if(!date_from && !date_to){
-            alert('Please select a start and end date!')
-        }else{
-            $.ajax({
-                url: 'pages/sales_list_ajax.php',
-                type: 'POST',
-                data: {
-                    customer_name: customer_name,
-                    date_from: date_from,
-                    date_to: date_to,
-                    search_orders: 'search_orders'
-                },
-                success: function(response) {
-                    $('#tbl-orders').html(response);
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        }
-    }
-
     $(document).ready(function() {
+        function performSearch(query) {
+            var customer_name = $('#customer_search').val();
+            var date_from = $('#date_from').val();
+            var date_to = $('#date_to').val();
+
+            if(!date_from && !date_to){
+                alert('Please select a start and end date!');
+            } else {
+                $.ajax({
+                    url: 'pages/sales_list_ajax.php',
+                    type: 'POST',
+                    data: {
+                        customer_name: customer_name,
+                        date_from: date_from,
+                        date_to: date_to,
+                        search_orders: 'search_orders'
+                    },
+                    success: function(response) {
+                        $('#tbl-orders').html(response);
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }
+        }
+
         $('#btn-view-sales').on('click', function() {
             performSearch();
         });
     });
-
 </script>

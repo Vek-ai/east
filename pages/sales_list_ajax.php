@@ -56,7 +56,7 @@ if (isset($_POST['search_orders'])) {
         WHERE 1 = 1
     ";
 
-    if (!empty($customer_name) && $customer_name != 'all_customers') {
+    if (!empty($customer_name) && $customer_name != 'All Customers') {
         $query .= " AND (c.customer_first_name LIKE '%$customer_name%' OR c.customer_last_name LIKE '%$customer_name%') ";
     }
 

@@ -34,7 +34,6 @@ if (!isset($_SESSION['userid'])) {
 
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/smoothness/jquery-ui.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
-  
 
   <title>East Kentucky Metal</title>
 
