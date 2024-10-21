@@ -81,7 +81,13 @@ require 'includes/functions.php';
                 </div>
             </div>
 
-
+            <div class="row mb-3">
+                <div class="col-md-12 text-end">
+                    <button type="button" class="btn btn-primary" id="btn-view-sales">
+                        View Sales
+                    </button>
+                </div>
+            </div>
 
             <div class="row">
                 <div class="datatables">
@@ -139,38 +145,33 @@ require 'includes/functions.php';
         var customer_name = $('#customer_search').val();
         var date_from = $('#date_from').val();
         var date_to = $('#date_to').val();
-        console.log(customer_name);
-        console.log(date_from);
-        console.log(date_to);
-        $.ajax({
-            url: 'pages/sales_list_ajax.php',
-            type: 'POST',
-            data: {
-                customer_name: customer_name,
-                date_from: date_from,
-                date_to: date_to,
-                search_orders: 'search_orders'
-            },
-            success: function(response) {
-                $('#tbl-orders').html(response);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
+
+        if(!date_from && !date_to){
+            alert('Please select a start and end date!')
+        }else{
+            $.ajax({
+                url: 'pages/sales_list_ajax.php',
+                type: 'POST',
+                data: {
+                    customer_name: customer_name,
+                    date_from: date_from,
+                    date_to: date_to,
+                    search_orders: 'search_orders'
+                },
+                success: function(response) {
+                    $('#tbl-orders').html(response);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
     }
 
     $(document).ready(function() {
-        performSearch();
-        $('#customer_search').on('input', function() {
-            console.log(1);
+        $('#btn-view-sales').on('click', function() {
             performSearch();
         });
-
-        $('#date_from, #date_to').on('change', function() {
-            performSearch();
-        });
-
     });
 
 </script>
