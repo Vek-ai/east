@@ -49,28 +49,39 @@ require 'includes/functions.php';
 
     <div class="card card-body">
         <div class="card-body">
-            <div class="input-group mb-3">
-                <label for="customer_search" class="form-label mr-2">Customer Name</label>
-                <span class="input-group-text"><i class="fas fa-user"></i></span>
-                <input class="form-control" placeholder="Search Customer" type="text" id="customer_search">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="customer_search" class="form-label">Customer Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input class="form-control" placeholder="Search Customer" type="text" id="customer_search">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="date_from" class="form-label">Date From</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" class="form-control" id="date_from">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="date_to" class="form-label">Date To</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" class="form-control" id="date_to">
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="input-group mb-3">
-                        <label for="date_from" class="form-label mr-2">Date From</label>
-                        <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                        <input type="date" class="form-control" id="date_from">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="input-group mb-3">
-                        <label for="date_to" class="form-label mr-2">Date To</label>
-                        <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                        <input type="date" class="form-control" id="date_to">
-                    </div>
-                </div>
-            </div>
+
 
             <div class="row">
                 <div class="datatables">
@@ -142,3 +153,32 @@ require 'includes/functions.php';
     </div>
     </div>
 </div>
+
+<script>
+    $("#customer_search").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "pages/sales_list_ajax.php",
+                type: 'post',
+                dataType: "json",
+                data: {
+                    search_customer: request.term
+                },
+                success: function(data) {
+                    response(data);
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error: " + xhr.responseText);
+                }
+            });
+        },
+        select: function(event, ui) {
+            $('#customer_search').val(ui.item.label);
+            return false;
+        },
+        focus: function(event, ui) {
+            $('#customer_search').val(ui.item.label);
+            return false;
+        }
+    });
+</script>
