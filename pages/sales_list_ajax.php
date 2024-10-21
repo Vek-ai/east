@@ -67,7 +67,11 @@ if (isset($_POST['search_orders'])) {
     $result = mysqli_query($conn, $query);
 
     if ($result && mysqli_num_rows($result) > 0) {
+        $total_amount = 0;
+        $total_count = 0;
         while ($row = mysqli_fetch_assoc($result)) {
+            $total_amount += $row['discounted_price'];
+            $total_count += 1;
             ?>
             <tr>
                 <td>
@@ -91,6 +95,14 @@ if (isset($_POST['search_orders'])) {
             </tr>
             <?php
         }
+        ?>
+            <tr>
+                <td colspan="2" class="text-end">Total Orders: </td>
+                <td><?= $total_count ?></td>
+                <td colspan="2" class="text-end">Total Amount: </td>
+                <td class="text-end">$ <?= $total_amount ?></td>
+            </tr>
+        <?php
     } else {
         echo "<tr><td colspan='6'>No orders found</td></tr>";
     }
