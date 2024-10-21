@@ -57,7 +57,7 @@ if (isset($_POST['search_orders'])) {
     ";
 
     if (!empty($customer_name) && $customer_name != 'All Customers') {
-        $query .= " AND (c.customer_first_name LIKE '%$customer_name%' OR c.customer_last_name LIKE '%$customer_name%') ";
+        $query .= " AND CONCAT(c.customer_first_name, ' ', c.customer_last_name) LIKE '%$customer_name%' ";
     }
 
     if (!empty($date_from) && !empty($date_to)) {
