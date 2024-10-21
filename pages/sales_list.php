@@ -92,59 +92,12 @@ require 'includes/functions.php';
                                     <th>Invoice Number</th>
                                     <th>Purchase Date</th>
                                     <th>Time</th>
-                                    <th>Terminal</th>
                                     <th>Cashier</th>
                                     <th>Customer</th>
                                     <th>Amount</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>INV1001</td>
-                                    <td>2024-10-21</td>
-                                    <td>14:35</td>
-                                    <td>Terminal 1</td>
-                                    <td>John</td>
-                                    <td>Maria Garcia</td>
-                                    <td>$150.00</td>
-                                </tr>
-                                <tr>
-                                    <td>INV1002</td>
-                                    <td>2024-10-21</td>
-                                    <td>15:20</td>
-                                    <td>Terminal 2</td>
-                                    <td>Anna</td>
-                                    <td>Carlos Ramirez</td>
-                                    <td>$45.00</td>
-                                </tr>
-                                <tr>
-                                    <td>INV1003</td>
-                                    <td>2024-10-20</td>
-                                    <td>16:00</td>
-                                    <td>Terminal 3</td>
-                                    <td>Mark</td>
-                                    <td>John Smith</td>
-                                    <td>$200.50</td>
-                                </tr>
-                                <tr>
-                                    <td>INV1004</td>
-                                    <td>2024-10-20</td>
-                                    <td>17:15</td>
-                                    <td>Terminal 4</td>
-                                    <td>Sarah</td>
-                                    <td>Linda Lee</td>
-                                    <td>$75.75</td>
-                                </tr>
-                                <tr>
-                                    <td>INV1005</td>
-                                    <td>2024-10-19</td>
-                                    <td>10:05</td>
-                                    <td>Terminal 1</td>
-                                    <td>John</td>
-                                    <td>Alex White</td>
-                                    <td>$120.00</td>
-                                </tr>
-                            </tbody>
+                            <tbody id="tbl-orders"></tbody>
                         </table>
                     </div>
                 </div>
@@ -181,4 +134,43 @@ require 'includes/functions.php';
             return false;
         }
     });
+
+    function performSearch(query) {
+        var customer_name = $('#customer_search').val();
+        var date_from = $('#date_from').val();
+        var date_to = $('#date_to').val();
+        console.log(customer_name);
+        console.log(date_from);
+        console.log(date_to);
+        $.ajax({
+            url: 'pages/sales_list_ajax.php',
+            type: 'POST',
+            data: {
+                customer_name: customer_name,
+                date_from: date_from,
+                date_to: date_to,
+                search_orders: 'search_orders'
+            },
+            success: function(response) {
+                $('#tbl-orders').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        performSearch();
+        $('#customer_search').on('input', function() {
+            console.log(1);
+            performSearch();
+        });
+
+        $('#date_from, #date_to').on('change', function() {
+            performSearch();
+        });
+
+    });
+
 </script>

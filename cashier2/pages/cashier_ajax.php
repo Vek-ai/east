@@ -563,6 +563,7 @@ if (isset($_POST['save_order'])) {
 
     $estimateid = intval($_SESSION['estimateid']);
     $customerid = intval($_SESSION['customer_id']);
+    $cashierid = intval($_SESSION['userid']);
     $orderid = null;
 
     if (!empty($cart)) {
@@ -593,8 +594,8 @@ if (isset($_POST['save_order'])) {
         $total_price = number_format($total_price, 2);
         $total_discounted_price = number_format($total_discounted_price, 2);
     
-        $query = "INSERT INTO orders (estimateid, total_price, discounted_price, discount_percent, order_date, customerid) 
-                  VALUES ('$estimateid', '$total_price', '$total_discounted_price', '$discount_percent', '$order_date', '$customerid')";
+        $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid) 
+                  VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '$discount_percent', '$order_date', '$customerid')";
                   
         if ($conn->query($query) === TRUE) {
             $orderid = $conn->insert_id;
