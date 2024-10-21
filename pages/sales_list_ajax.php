@@ -69,42 +69,60 @@ if (isset($_POST['search_orders'])) {
     if ($result && mysqli_num_rows($result) > 0) {
         $total_amount = 0;
         $total_count = 0;
-        while ($row = mysqli_fetch_assoc($result)) {
-            $total_amount += $row['discounted_price'];
-            $total_count += 1;
-            ?>
-            <tr>
-                <td>
-                    <?= htmlspecialchars($row['orderid']) ?>
-                </td>
-                <td>
-                    <?= htmlspecialchars(date("F d, Y", strtotime($row['order_date']))) ?>
-                </td>
-                <td>
-                    <?= htmlspecialchars(date("h:i A", strtotime($row['order_date']))) ?>
-                </td>
-                <td>
-                    <?= get_staff_name($row['cashier']) ?>
-                </td>
-                <td>
-                    <?= htmlspecialchars($row['customer_name']) ?>
-                </td>
-                <td class="text-end">
-                    $ <?= number_format($row['discounted_price'], 2) ?>
-                </td>
-            </tr>
-            <?php
-        }
+
         ?>
-            <tr>
+        <table id="sales_table" class="table table-hover mb-0 text-md-nowrap">
+            <thead>
+                <tr>
+                    <th>Invoice Number</th>
+                    <th>Purchase Date</th>
+                    <th>Time</th>
+                    <th>Cashier</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>     
+            <?php
+
+            while ($row = mysqli_fetch_assoc($result)) {
+                $total_amount += $row['discounted_price'];
+                $total_count += 1;
+                ?>
+                <tr>
+                    <td>
+                        <?= htmlspecialchars($row['orderid']) ?>
+                    </td>
+                    <td>
+                        <?= htmlspecialchars(date("F d, Y", strtotime($row['order_date']))) ?>
+                    </td>
+                    <td>
+                        <?= htmlspecialchars(date("h:i A", strtotime($row['order_date']))) ?>
+                    </td>
+                    <td>
+                        <?= get_staff_name($row['cashier']) ?>
+                    </td>
+                    <td>
+                        <?= htmlspecialchars($row['customer_name']) ?>
+                    </td>
+                    <td class="text-end">
+                        $ <?= number_format($row['discounted_price'], 2) ?>
+                    </td>
+                </tr>
+                <?php
+            }
+            ?>
+            </tbody>
+            <tfoot>
                 <td colspan="2" class="text-end">Total Orders: </td>
                 <td><?= $total_count ?></td>
                 <td colspan="2" class="text-end">Total Amount: </td>
                 <td class="text-end">$ <?= $total_amount ?></td>
-            </tr>
+            </tfoot>
+        </table>
         <?php
     } else {
-        echo "<tr><td colspan='6'>No orders found</td></tr>";
+        echo "<h4 class='text-center'>No orders found</h4>";
     }
 }
 

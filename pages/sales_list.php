@@ -91,20 +91,8 @@ require 'includes/functions.php';
 
             <div class="row">
                 <div class="datatables">
-                    <div class="product-details table-responsive text-nowrap">
-                        <table id="sales_table" class="table table-hover mb-0 text-md-nowrap">
-                            <thead>
-                                <tr>
-                                    <th>Invoice Number</th>
-                                    <th>Purchase Date</th>
-                                    <th>Time</th>
-                                    <th>Cashier</th>
-                                    <th>Customer</th>
-                                    <th>Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbl-orders"></tbody>
-                        </table>
+                    <div id="tbl-orders" class="product-details table-responsive text-nowrap">
+                        
                     </div>
                 </div>
             </div>
