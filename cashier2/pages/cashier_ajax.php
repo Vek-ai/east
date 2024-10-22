@@ -636,30 +636,36 @@ if (isset($_POST['save_order'])) {
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
-            $customer_orders = getCustomerOrderTotal($customerid);
+            $customer_total_orders = getCustomerOrderTotal($customerid);
             $customer_details = getCustomerDetails($customerid);
             $isLoyalty = $customer_details['loyalty'];
 
-            if(!$isLoyalty){
+            if (!$isLoyalty) {
                 $query_loyalty = "SELECT * FROM loyalty_program";
                 $result_loyalty = mysqli_query($conn, $query_loyalty);
-                while ($row_loyalty = mysqli_fetch_assoc($result_loyalty)) {
-                    $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
-                    if($customer_orders >= $accumulated_loyalty_required){
-                        $query_update = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
-                        $result_update = mysqli_query($conn, $query_update);
-                        if (!$result_update) {
-                            $response['error'] = "Error updating loyalty status: " . mysqli_error($conn);
-                            exit;
-                        }else{
-                            $response['message'] = 'Added Customer to Loyalty Program';
+            
+                if ($result_loyalty && mysqli_num_rows($result_loyalty) > 0) {
+                    while ($row_loyalty = mysqli_fetch_assoc($result_loyalty)) {
+                        $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
+                        $date_from = $row_loyalty['date_from'];
+                        $date_to = $row_loyalty['date_to'];
+                        $current_date = date('Y-m-d');
+            
+                        if ($customer_total_orders >= $accumulated_loyalty_required && ($current_date >= $date_from && $current_date <= $date_to)) {
+                            $query_update = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
+                            $result_update = mysqli_query($conn, $query_update);
+            
+                            if (!$result_update) {
+                                $response['error'] = "Error updating loyalty status: " . mysqli_error($conn);
+                                exit;
+                            } else {
+                                $response['message'] = 'Added Customer to Loyalty Program';
+                            }
                         }
-                    }else{
-                        $response['message'] = $customer_orders .' < ' .$accumulated_loyalty_required;
                     }
+                } else {
+                    $response['error'] = "Error retrieving loyalty program data: " . mysqli_error($conn);
                 }
-            }else{
-                $response['message'] = $customer_orders;
             }
 
             $response['success'] = true;

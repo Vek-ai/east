@@ -124,7 +124,7 @@ if(isset($_POST['fetch_order'])){
 
                                 $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? $values["estimate_length"] : 0;
                                 $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? $values["estimate_length_inch"] : 0;
-                                $total_length = ($estimate_length * 12) + $estimate_length_inch;
+                                $total_length = $estimate_length + ($estimate_length_inch / 12);
 
                                 $sold_by_feet = $product["sold_by_feet"];
                                 if($sold_by_feet == 1){

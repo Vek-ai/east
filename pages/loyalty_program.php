@@ -17,6 +17,8 @@ if(!empty($_REQUEST['id'])){
       $loyalty_program_name = $row['loyalty_program_name'];
       $accumulated_total_orders = $row['accumulated_total_orders'];
       $discount = $row['discount'];
+      $date_from = $row['date_from'];
+      $date_to = $row['date_to'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -119,6 +121,20 @@ if(!empty($_REQUEST['id'])){
                     </div>
                 </div> 
             </div>
+            <div class="row pt-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Validity Date Start</label>
+                        <input type="date" id="date_from" name="date_from" class="form-control" value="<?= $date_from ?>"/>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Validity Date End</label>
+                        <input type="date" id="date_to" name="date_to" class="form-control" value="<?= $date_to ?>"/>
+                    </div>
+                </div> 
+            </div>
             <div class="form-actions">
                 <div class="card-body border-top pb-0">
                     <input type="hidden" id="loyalty_id" name="loyalty_id" class="form-control" value="<?= $loyalty_id ?>"/>
@@ -144,12 +160,14 @@ if(!empty($_REQUEST['id'])){
             </h4>
             <div class="table-responsive">
           
-              <table id="display_loyalty_program" class="table table-striped table-bordered text-nowrap align-middle">
+              <table id="display_loyalty_program" class="table table-striped table-bordered text-nowrap align-middle text-wrap">
                 <thead>
                   <tr>
                     <th>Loyalty Programs</th>
-                    <th>Accumulated Total Orders</th>
+                    <th class="text-wrap">Accumulated Total Orders</th>
                     <th>Discount (%)</th>
+                    <th>From</th>
+                    <th>To</th>
                     <th>Details</th>
                     <th>Status</th>
                     <th>Action</th>
@@ -165,6 +183,8 @@ if(!empty($_REQUEST['id'])){
                       $loyalty_program_name = $row_loyalty_program['loyalty_program_name'];
                       $accumulated_total_orders = $row_loyalty_program['accumulated_total_orders'];
                       $discount = $row_loyalty_program['discount'];
+                      $date_from = $row_loyalty_program['date_from'];
+                      $date_to = $row_loyalty_program['date_to'];
 
                       $db_status = $row_loyalty_program['status'];
                       $date = new DateTime($row_loyalty_program['last_edit']);
@@ -190,6 +210,8 @@ if(!empty($_REQUEST['id'])){
                       <td><span class="product<?= $no ?> <?php if ($row_loyalty_program['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $loyalty_program_name ?></span></td>
                       <td><?= $accumulated_total_orders ?></td>
                       <td><?= $discount ?></td>
+                      <td><?= date("F d, Y", strtotime($date_from)) ?></td>
+                      <td><?= date("F d, Y", strtotime($date_to)) ?></td>
                       <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                       <td><?= $status ?></td>
                       <td class="text-center" id="action-button-<?= $no ?>">

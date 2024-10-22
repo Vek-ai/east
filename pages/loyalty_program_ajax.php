@@ -17,6 +17,8 @@ if (isset($_REQUEST['action'])) {
         $loyalty_program_name = mysqli_real_escape_string($conn, $_POST['loyalty_program_name']);
         $accumulated_total_orders = mysqli_real_escape_string($conn, $_POST['accumulated_total_orders']);
         $discount = mysqli_real_escape_string($conn, $_POST['discount']);
+        $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
+        $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
         if (!empty($loyalty_id)) {
@@ -42,6 +44,8 @@ if (isset($_REQUEST['action'])) {
                         loyalty_program_name = '$loyalty_program_name', 
                         accumulated_total_orders = '$accumulated_total_orders', 
                         discount = '$discount', 
+                        date_from = '$date_from', 
+                        date_to = '$date_to', 
                         last_edit = NOW(), 
                         edited_by = '$userid' 
                     WHERE 
@@ -67,12 +71,16 @@ if (isset($_REQUEST['action'])) {
                     loyalty_program_name, 
                     accumulated_total_orders, 
                     discount, 
+                    date_from, 
+                    date_to, 
                     added_date, 
                     added_by
                 ) VALUES (
                     '$loyalty_program_name', 
                     '$accumulated_total_orders', 
                     '$discount', 
+                    '$date_from', 
+                    '$date_to', 
                     NOW(), 
                     '$userid'
                 )
