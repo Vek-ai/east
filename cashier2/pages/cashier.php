@@ -145,33 +145,38 @@ require '../includes/functions.php';
                     </nav>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-6">
-                <div class="d-flex justify-content-start">
-                    <button class="btn btn-primary mb-2 me-2" type="button" id="view_est_list">
-                        <i class="fa fa-save fs-4 me-2"></i>
-                        View Estimates
-                    </button>
+            <div class="row mt-4">
+                <div class="col-6">
+                    <div class="d-flex justify-content-start">
+                        <button class="btn btn-primary mb-2 me-2" type="button" id="view_est_list">
+                            <i class="fa fa-save fs-4 me-2"></i>
+                            View Estimates
+                        </button>
+                        <button class="btn btn-primary mb-2 me-2" type="button" id="view_order_list">
+                            <i class="fa fa-rotate-left fs-4 me-2"></i>
+                            Return
+                        </button>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex justify-content-end">
+                        <button class="btn btn-primary mb-2 me-2" type="button" id="view_cart">
+                            <i class="fa fa-shopping-cart fs-4 me-2"></i>
+                            Cart
+                        </button>
+                        <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" id="view_estimate">
+                            <i class="fa fa-save fs-4 me-2"></i>
+                            Estimate
+                        </button>
+                        <button type="button" class="btn btn-success d-flex align-items-center mb-2 me-2" id="view_order">
+                            <i class="fa fa-shopping-cart fs-4 me-2"></i>
+                            Order
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div class="col-6">
-                <div class="d-flex justify-content-end">
-                    <button class="btn btn-primary mb-2 me-2" type="button" id="view_cart">
-                        <i class="fa fa-shopping-cart fs-4 me-2"></i>
-                        Cart
-                    </button>
-                    <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" id="view_estimate">
-                        <i class="fa fa-save fs-4 me-2"></i>
-                        Estimate
-                    </button>
-                    <button type="button" class="btn btn-success d-flex align-items-center mb-2 me-2" id="view_order">
-                        <i class="fa fa-shopping-cart fs-4 me-2"></i>
-                        Order
-                    </button>
-                </div>
-            </div>
         </div>
+        
     </div>
 </div>
 <div class="modal" id="custom_trim_draw_modal">
@@ -257,6 +262,45 @@ require '../includes/functions.php';
     </div>
 </div>
 
+<div class="modal" id="view_order_list_modal">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Orders List</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="orders-tbl">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="view_order_details_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Order Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="order-details">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal" id="view_estimate_modal">
     <div class="modal-dialog modal-fullscreen" role="document">
@@ -366,6 +410,25 @@ require '../includes/functions.php';
                 <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
+    </div>
+</div>
+
+<div class="modal fade" id="response-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+            <h4 id="responseHeader" class="m-0"></h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-center" id="responseMsg"></p>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+                Close
+            </button>
+        </div>
+    </div>
     </div>
 </div>
 
@@ -583,6 +646,39 @@ require '../includes/functions.php';
             },
             success: function(response) {
                 $('#estimates-details').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function loadOrderList(){
+        $.ajax({
+            url: 'pages/cashier_order_list_modal.php',
+            type: 'POST',
+            data: {
+                fetch_order_list: "fetch_order_list"
+            },
+            success: function(response) {
+                $('#orders-tbl').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function loadOrderDetails(orderid){
+        $.ajax({
+            url: 'pages/cashier_order_details_modal.php',
+            type: 'POST',
+            data: {
+                orderid: orderid,
+                fetch_order_details: "fetch_order_details"
+            },
+            success: function(response) {
+                $('#order-details').html(response);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1493,6 +1589,51 @@ require '../includes/functions.php';
             $('#view_est_details_modal').modal('show');
         });
 
+        $(document).on('click', '#view_order_list', function(event) {
+            loadOrderList();
+            $('#view_order_list_modal').modal('show');
+        });
+
+        $(document).on('click', '#view_order_details', function(event) {
+            var orderid = $(this).data('id');
+            loadOrderDetails(orderid);
+            $('#view_order_details_modal').modal('toggle');
+        });
+
+        $(document).on('click', '#return_product', function(event) {
+            event.preventDefault();
+
+            var id = $(this).data('id');
+            var quantity = $('#return_quantity' + id).val();
+
+            if (confirm("Are you sure you want to return this product?")) {
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        quantity: quantity,
+                        return_product: "return_product"
+                    },
+                    success: function(response) {
+                        if (response.trim() === "success") {
+                            $('#responseHeader').text("Success");
+                            $('#responseMsg').text("Product Returned successfully.");
+                            $('#responseHeaderContainer').removeClass("bg-danger");
+                            $('#responseHeaderContainer').addClass("bg-success");
+                            $('#response-modal').modal("show");
+                            $('#response-modal').on('hide.bs.modal', function () {
+                                location.reload();
+                            });
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }
+        });
+
         $(document).on('click', '#view_estimate', function(event) {
             loadEstimateContents();
             $('#view_estimate_modal').modal('show');
@@ -1527,19 +1668,19 @@ require '../includes/functions.php';
             event.preventDefault();
             var id = $(this).data('id');
             $.ajax({
-                    url: 'pages/cashier_out_of_stock_modal.php',
-                    type: 'POST',
-                    data: {
-                        id: id,
-                        fetch_out_of_stock_modal: "fetch_out_of_stock_modal"
-                    },
-                    success: function(response) {
-                        $('#viewOutOfStockmodal').html(response);
-                        $('#viewOutOfStockmodal').modal('show');
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
+                url: 'pages/cashier_out_of_stock_modal.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    fetch_out_of_stock_modal: "fetch_out_of_stock_modal"
+                },
+                success: function(response) {
+                    $('#viewOutOfStockmodal').html(response);
+                    $('#viewOutOfStockmodal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
             });
         });
 
