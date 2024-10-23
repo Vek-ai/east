@@ -1360,6 +1360,8 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "customer_loyalty") {include 'pages/customer_loyalty.php';}
             if ($_REQUEST['page'] == "merge_customer") {include 'pages/merge_customer.php';}
             if ($_REQUEST['page'] == "sales_list") {include 'pages/sales_list.php';}
+            if ($_REQUEST['page'] == "returns_list") {include 'pages/returns_list.php';}
+            if ($_REQUEST['page'] == "merge_list") {include 'pages/merge_list.php';}
           ?>
         </div>
       </div>

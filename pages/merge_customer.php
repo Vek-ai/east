@@ -60,7 +60,7 @@ $panel_id = 46;
 
     <div class="row pt-3 text-center">
         <div class="col-md-5">
-            <label class="form-label">Customer Account to be Merged</label>
+            <label class="form-label">Customer account to be removed</label>
             <div class="mb-3">
                 <select id="customer_merge" class="form-control select2-merge" name="customer_merge">
                     <option value=""></option>
@@ -77,7 +77,7 @@ $panel_id = 46;
             </div>
         </div>
         <div class="col-md-5">
-            <label class="form-label">Customer Account Original</label>
+            <label class="form-label">Customer account to keep</label>
             <div class="mb-3">
                 <select id="customer_original" class="form-control select2-original" name="customer_original">
                     <option value=""></option>
@@ -108,13 +108,13 @@ $panel_id = 46;
     $(document).ready(function() {
         $(".select2-original").select2({
             width: '100%',
-            placeholder: "Select Original Account...",
+            placeholder: "Select account to keep...",
             allowClear: true
         });
 
         $(".select2-merge").select2({
             width: '100%',
-            placeholder: "Select Secondary Account...",
+            placeholder: "Select account to be removed...",
             allowClear: true
         });
 

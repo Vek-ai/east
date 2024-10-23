@@ -8,14 +8,14 @@ require 'includes/functions.php';
     <div class="card-body px-0">
         <div class="d-flex justify-content-between align-items-center">
         <div><br>
-            <h4 class="font-weight-medium fs-14 mb-0">Sales List</h4>
+            <h4 class="font-weight-medium fs-14 mb-0">Return/Refund List</h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
                 <a class="text-muted text-decoration-none" href="">Sales
                 </a>
                 </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Sales List</li>
+                <li class="breadcrumb-item text-muted" aria-current="page">Return/Refund List</li>
             </ol>
             </nav>
         </div>
@@ -105,7 +105,7 @@ require 'includes/functions.php';
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content p-2">
             <div class="modal-header">
-                <h6 class="modal-title">Order Details</h6>
+                <h6 class="modal-title">Return/Refund Details</h6>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -125,7 +125,7 @@ require 'includes/functions.php';
     $("#customer_search").autocomplete({
         source: function(request, response) {
             $.ajax({
-                url: "pages/sales_list_ajax.php",
+                url: "pages/returns_list_ajax.php",
                 type: 'post',
                 dataType: "json",
                 data: {
@@ -152,7 +152,7 @@ require 'includes/functions.php';
 
     function loadOrderDetails(orderid){
         $.ajax({
-            url: 'pages/sales_list_ajax.php',
+            url: 'pages/returns_list_ajax.php',
             type: 'POST',
             data: {
                 orderid: orderid,
@@ -179,13 +179,13 @@ require 'includes/functions.php';
                 alert('Please select a start and end date!');
             } else {
                 $.ajax({
-                    url: 'pages/sales_list_ajax.php',
+                    url: 'pages/returns_list_ajax.php',
                     type: 'POST',
                     data: {
                         customer_name: customer_name,
                         date_from: date_from,
                         date_to: date_to,
-                        search_orders: 'search_orders'
+                        search_returns: 'search_returns'
                     },
                     success: function(response) {
                         $('#tbl-orders').html(response);

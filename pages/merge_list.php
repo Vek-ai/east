@@ -8,14 +8,14 @@ require 'includes/functions.php';
     <div class="card-body px-0">
         <div class="d-flex justify-content-between align-items-center">
         <div><br>
-            <h4 class="font-weight-medium fs-14 mb-0">Sales List</h4>
+            <h4 class="font-weight-medium fs-14 mb-0">Customer Merge List</h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                <a class="text-muted text-decoration-none" href="">Sales
+                <a class="text-muted text-decoration-none" href="">Customer
                 </a>
                 </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Sales List</li>
+                <li class="breadcrumb-item text-muted" aria-current="page">Customer Merge List</li>
             </ol>
             </nav>
         </div>
@@ -83,8 +83,8 @@ require 'includes/functions.php';
 
             <div class="row mb-3">
                 <div class="col-md-12 text-end">
-                    <button type="button" class="btn btn-primary" id="btn-view-sales">
-                        View Sales
+                    <button type="button" class="btn btn-primary" id="btn-view-merges">
+                        View Merge Report
                     </button>
                 </div>
             </div>
@@ -101,31 +101,11 @@ require 'includes/functions.php';
     </div>
 </div>
 
-<div class="modal" id="view_order_details_modal" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content p-2">
-            <div class="modal-header">
-                <h6 class="modal-title">Order Details</h6>
-                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="order-details">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
     $("#customer_search").autocomplete({
         source: function(request, response) {
             $.ajax({
-                url: "pages/sales_list_ajax.php",
+                url: "pages/merge_list_ajax.php",
                 type: 'post',
                 dataType: "json",
                 data: {
@@ -150,23 +130,6 @@ require 'includes/functions.php';
         minLength: 0
     });
 
-    function loadOrderDetails(orderid){
-        $.ajax({
-            url: 'pages/sales_list_ajax.php',
-            type: 'POST',
-            data: {
-                orderid: orderid,
-                fetch_order_details: "fetch_order_details"
-            },
-            success: function(response) {
-                $('#order-details').html(response);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    }
-
     $(document).ready(function() {
         $('[data-toggle="tooltip"]').tooltip();
         
@@ -179,13 +142,13 @@ require 'includes/functions.php';
                 alert('Please select a start and end date!');
             } else {
                 $.ajax({
-                    url: 'pages/sales_list_ajax.php',
+                    url: 'pages/merge_list_ajax.php',
                     type: 'POST',
                     data: {
                         customer_name: customer_name,
                         date_from: date_from,
                         date_to: date_to,
-                        search_orders: 'search_orders'
+                        search_merge: 'search_merge'
                     },
                     success: function(response) {
                         $('#tbl-orders').html(response);
@@ -197,14 +160,8 @@ require 'includes/functions.php';
             }
         }
 
-        $('#btn-view-sales').on('click', function() {
+        $('#btn-view-merges').on('click', function() {
             performSearch();
-        });
-
-        $(document).on('click', '#view_order_details', function(event) {
-            var orderid = $(this).data('id');
-            loadOrderDetails(orderid);
-            $('#view_order_details_modal').modal('toggle');
         });
     });
 </script>
