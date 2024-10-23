@@ -54,7 +54,7 @@
           </a>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="page=sales_list">
+          <a class="sidebar-link" href="?page=sales_list">
             <iconify-icon icon="solar:history-linear" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Sales History</span>
           </a>
