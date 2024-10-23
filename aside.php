@@ -96,19 +96,19 @@
           <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
           <span class="hide-menu">Products</span>
         </li>
-        <li class="sidebar-item">
+       <!-- <li class="sidebar-item">
           <a class="sidebar-link" href="add_product.php">
             <iconify-icon icon="solar:add-circle-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Add New Product</span>
           </a>
-        </li>
+        </li>-->
         <li class="sidebar-item">
-          <a class="sidebar-link" href="product_list.php">
+          <a class="sidebar-link" href="?page=product">
             <iconify-icon icon="solar:clipboard-list-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Product List/Inventory</span>
           </a>
         </li>
-        <li class="sidebar-item">
+      <!--  <li class="sidebar-item">
           <a class="sidebar-link" href="update_product.php">
             <iconify-icon icon="solar:smartphone-update-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Update Product</span>
@@ -119,12 +119,18 @@
             <iconify-icon icon="solar:trash-bin-minimalistic-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Remove Product</span>
           </a>
-        </li>
+        </li>-->
         
         <li class="sidebar-item">
           <a class="sidebar-link" href="add_barcode.php">
             <iconify-icon icon="solar:camera-add-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Add Barcode</span>
+            <span class="hide-menu">Print Barcode</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="add_barcode.php">
+            <iconify-icon icon="solar:camera-add-outline" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Print QR</span>
           </a>
         </li>
         <li class="sidebar-item">
