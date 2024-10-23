@@ -48,13 +48,13 @@
           <span class="hide-menu">Sales</span>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="new_sale.php">
+          <a class="sidebar-link" href="/cashier2/">
             <iconify-icon icon="solar:pen-new-round-linear" class="aside-icon"></iconify-icon>
             <span class="hide-menu">New Sale</span>
           </a>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="sales_history.php">
+          <a class="sidebar-link" href="page=sales_list">
             <iconify-icon icon="solar:history-linear" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Sales History</span>
           </a>

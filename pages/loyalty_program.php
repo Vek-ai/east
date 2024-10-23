@@ -128,13 +128,13 @@ if(!empty($_REQUEST['id'])){
                         <input type="date" id="date_from" name="date_from" class="form-control" value="<?= $date_from ?>"/>
                     </div>
                 </div>
-                <div class="col-md-6">
+              <!--  <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Validity Date End</label>
                         <input type="date" id="date_to" name="date_to" class="form-control" value="<?= $date_to ?>"/>
                     </div>
                 </div> 
-            </div>
+            </div>-->
             <div class="form-actions">
                 <div class="card-body border-top pb-0">
                     <input type="hidden" id="loyalty_id" name="loyalty_id" class="form-control" value="<?= $loyalty_id ?>"/>
