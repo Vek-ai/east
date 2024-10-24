@@ -8,6 +8,7 @@ require '../includes/dbconn.php';
 require '../includes/functions.php';
 
 if (isset($_POST['search_orders'])) {
+    $customerid = mysqli_real_escape_string($conn, string: $_POST['customerid']);
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
 ?>
@@ -126,6 +127,7 @@ if (isset($_POST['search_orders'])) {
 }
 
 if (isset($_POST['search_estimates'])) {
+    $customerid = mysqli_real_escape_string($conn, string: $_POST['customerid']);
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
 ?>
@@ -148,13 +150,13 @@ if (isset($_POST['search_estimates'])) {
                 </thead>
                 <tbody>
                     <?php
-                    $query = "SELECT * FROM estimates WHERE 1 = 1";
+                    $query = "SELECT * FROM estimates WHERE customerid = '$customerid'";
 
                     if (!empty($date_from) && !empty($date_to)) {
                         $date_to .= ' 23:59:59';
-                        $query .= " AND (order_date >= '$date_from' AND order_date <= '$date_to')";
+                        $query .= " AND (estimated_date >= '$date_from' AND estimated_date <= '$date_to')";
                     }
-                    $query .= " ORDER BY order_date DESC";
+                    $query .= " ORDER BY estimated_date DESC";
                     if (empty($date_from) || empty($date_to)) {
                         $query .= " LIMIT 10";
                     }
@@ -180,14 +182,7 @@ if (isset($_POST['search_estimates'])) {
                         ?>
                         <tr>
                             <td class="ps-0">
-                            <div class="hstack gap-3">
-                                <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                                <img src="assets/images/profile/user-2.jpg" alt class="img-fluid">
-                                </span>
-                                <div>
-                                <h5 class="mb-1"><?= $row['estimateid'] ?></h5>
-                                </div>
-                            </div>
+                                <h5 class="mb-1 text-center"><?= $row['estimateid'] ?></h5>
                             </td>
                             <td>
                                 <?= $status_html ?>

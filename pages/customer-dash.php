@@ -296,6 +296,7 @@ if(isset($_REQUEST['id'])){
               url: 'pages/customer-dash_ajax.php',
               type: 'POST',
               data: {
+                  customerid: <?= $_REQUEST['id'] ?>,
                   date_from: date_from,
                   date_to: date_to,
                   search_orders: 'search_orders'
@@ -317,6 +318,7 @@ if(isset($_REQUEST['id'])){
               url: 'pages/customer-dash_ajax.php',
               type: 'POST',
               data: {
+                  customerid: <?= $_REQUEST['id'] ?>,
                   date_from: date_from,
                   date_to: date_to,
                   search_estimates: 'search_estimates'
