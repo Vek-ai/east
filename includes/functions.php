@@ -364,6 +364,15 @@ function getOrderProdDetails($id) {
     return $order_product;
 }
 
+function getCustomerType($customer_type_id){
+    global $conn;
+    $query = "SELECT customer_type_name FROM customer_types WHERE customer_type_id = '$customer_type_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $customer_type_name = $row['customer_type_name'];
+    return  $customer_type_name;
+}
+
 function getCustomerDetails($customer_id) {
     global $conn;
     $customer_id = mysqli_real_escape_string($conn, $customer_id);

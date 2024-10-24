@@ -1,6 +1,11 @@
 <?php
 require 'includes/dbconn.php';
 require 'includes/functions.php';
+
+if(isset($_REQUEST['id'])){
+  $customer_id = $_REQUEST['id'];
+  $customer_details = getCustomerDetails($customer_id);
+}
 ?>
 
 <div class="container-fluid">
@@ -56,22 +61,49 @@ require 'includes/functions.php';
           <div class="pro-img mb-3">
             <img src="assets/images/profile/user-2.jpg" alt="user" class="rounded-circle shadow-sm" width="112" />
           </div>
-          <h3 class="mb-1 fs-14">Angelo Dominic</h3>
-          <p class="fs-3 mb-4">Customer Type</p>
+          <h3 class="mb-1 fs-14"><?= $customer_details['customer_first_name'] ?> <?= $customer_details['customer_last_name'] ?></h3>
+          <p class="fs-3 mb-4"><?= getCustomerType($customer_details['customer_type_id']) ?></p>
           <a href="javascript:void(0)" class="
               btn btn-primary btn-md btn-rounded mb-7
             ">Top 10</a>
           <div class="row gx-lg-4 text-center pt-4 justify-content-center border-top">
             <div class="col-4">
-              <h3 class="mb-0 fs-14">1099</h3>
+              <?php
+              $query_order_count = "SELECT count(*) as order_count FROM orders WHERE customerid = '$customer_id'";
+              $result_order_count = mysqli_query($conn, $query_order_count);
+              
+              if ($result_order_count) {
+                  $row_order_count = mysqli_fetch_array($result_order_count, MYSQLI_ASSOC);
+                  if ($row_order_count) {
+                      $order_count = $row_order_count['order_count'];
+                  } else {
+                      $order_count = 0;
+                  }
+              }
+              ?>
+              <h3 class="mb-0 fs-14"><?= $order_count ?></h3>
               <small class="text-muted fs-3">Orders</small>
             </div>
             <div class="col-4">
-              <h3 class="mb-0 fs-14">23,469</h3>
+              <?php
+                $query_estimate_count = "SELECT count(*) as estimate_count FROM estimates WHERE customerid = '$customer_id'";
+                $result_estimate_count = mysqli_query($conn, $query_estimate_count);
+                
+                if ($result_estimate_count) {
+                    $row_estimate_count = mysqli_fetch_array($result_estimate_count, MYSQLI_ASSOC);
+                    if ($row_estimate_count) {
+                        $estimate_count = $row_estimate_count['estimate_count'];
+                    } else {
+                        $estimate_count = 0;
+                    }
+                }
+              ?>
+              <h3 class="mb-0 fs-14"><?= $estimate_count ?></h3>
+              
               <small class="text-muted fs-3">Estimates</small>
             </div>
             <div class="col-4">
-              <h3 class="mb-0 fs-14">6035</h3>
+              <h3 class="mb-0 fs-14">23,469</h3>
               <small class="text-muted fs-3">Estimates - Orders</small>
             </div>
           </div>
