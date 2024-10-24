@@ -245,117 +245,8 @@ if(isset($_REQUEST['id'])){
             </div>
           </div>
         </div>
-        <div class="month-table">
-          <div class="table-responsive mt-3">
-            <table class="table align-middle  mb-0 no-wrap">
-              <thead>
-                <tr>
-                  <th class="border-0 ps-0">
-                  Sales Person
-                  </th>
-                  <th class="border-0">Date</th>
-                  <th class="border-0">
-                    Total Amount
-                  </th>
-                  <th class="border-0 text-end">
-                    Discount
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="ps-0">
-                    <div class="hstack gap-3">
-                      <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                        <img src="assets/images/profile/user-2.jpg" alt class="img-fluid">
-                      </span>
-                      <div>
-                        <h5 class="mb-1">Sunil Joshi</h5>
-                        <p class="mb-0 fs-3">Web Designer</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <p class="mb-0">Digital Agency</p>
-                  </td>
-                  <td>
-                    <span class="badge bg-primary-subtle text-primary">Low</span>
-                  </td>
-                  <td class="text-end">
-                    <p class="mb-0 fs-3">$3.9K</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="ps-0">
-                    <div class="hstack gap-3">
-                      <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                        <img src="assets/images/profile/user-4.jpg" alt class="img-fluid">
-                      </span>
-                      <div>
-                        <h5 class="mb-1">Andrew Liock</h5>
-                        <p class="mb-0 fs-3">Project Manager</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <p class="mb-0">Real Homes</p>
-                  </td>
-                  <td>
-                    <span class="badge bg-info-subtle text-info">Medium</span>
-                  </td>
-                  <td class="text-end">
-                    <p class="mb-0 fs-3">$23.9K</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="ps-0">
-                    <div class="hstack gap-3">
-                      <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                        <img src="assets/images/profile/user-5.jpg" alt class="img-fluid">
-                      </span>
-                      <div>
-                        <h5 class="mb-1">Biaca George</h5>
-                        <p class="mb-0 fs-3">Developer</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <p class="mb-0">MedicalPro Theme</p>
-                  </td>
-                  <td>
-                    <span class="badge bg-secondary-subtle text-secondary">High</span>
-                  </td>
-                  <td class="text-end">
-                    <p class="mb-0 fs-3">$12.9K</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="border-bottom-0 ps-0">
-                    <div class="hstack gap-3">
-                      <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                        <img src="assets/images/profile/user-6.jpg" alt class="img-fluid">
-                      </span>
-                      <div>
-                        <h5 class="mb-1">Nirav Joshi</h5>
-                        <p class="mb-0 fs-3">Frontend Eng</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="border-bottom-0">
-                    <p class="mb-0">Elite Admin</p>
-                  </td>
-                  <td class="border-bottom-0">
-                    <span class="badge bg-danger-subtle text-danger">Very
-                      High</span>
-                  </td>
-                  <td class="text-end border-bottom-0">
-                    <p class="mb-0 fs-3">$2.6K</p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <div id="tbl-orders"></div>
+        
       </div>
     </div>
   </div>
@@ -390,120 +281,59 @@ if(isset($_REQUEST['id'])){
             </div>
           </div>
         </div>
-        <div class="month-table">
-          <div class="table-responsive mt-3">
-            <table class="table align-middle  mb-0 no-wrap">
-              <thead>
-                <tr>
-                  <th class="border-0 ps-0">
-                    Estimate ID
-                  </th>
-                  <th class="border-0">Status</th>
-                  <th class="border-0">
-                    No. of changes
-                  </th>
-                  <th class="border-0 text-end">
-                    Total Amount
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="ps-0">
-                    <div class="hstack gap-3">
-                      <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                        <img src="assets/images/profile/user-2.jpg" alt class="img-fluid">
-                      </span>
-                      <div>
-                        <h5 class="mb-1">Sunil Joshi</h5>
-                        <p class="mb-0 fs-3">Web Designer</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <p class="mb-0">Digital Agency</p>
-                  </td>
-                  <td>
-                    <span class="badge bg-primary-subtle text-primary">Low</span>
-                  </td>
-                  <td class="text-end">
-                    <p class="mb-0 fs-3">$3.9K</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="ps-0">
-                    <div class="hstack gap-3">
-                      <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                        <img src="assets/images/profile/user-4.jpg" alt class="img-fluid">
-                      </span>
-                      <div>
-                        <h5 class="mb-1">Andrew Liock</h5>
-                        <p class="mb-0 fs-3">Project Manager</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <p class="mb-0">Real Homes</p>
-                  </td>
-                  <td>
-                    <span class="badge bg-info-subtle text-info">Medium</span>
-                  </td>
-                  <td class="text-end">
-                    <p class="mb-0 fs-3">$23.9K</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="ps-0">
-                    <div class="hstack gap-3">
-                      <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                        <img src="assets/images/profile/user-5.jpg" alt class="img-fluid">
-                      </span>
-                      <div>
-                        <h5 class="mb-1">Biaca George</h5>
-                        <p class="mb-0 fs-3">Developer</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <p class="mb-0">MedicalPro Theme</p>
-                  </td>
-                  <td>
-                    <span class="badge bg-secondary-subtle text-secondary">High</span>
-                  </td>
-                  <td class="text-end">
-                    <p class="mb-0 fs-3">$12.9K</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="border-bottom-0 ps-0">
-                    <div class="hstack gap-3">
-                      <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                        <img src="assets/images/profile/user-6.jpg" alt class="img-fluid">
-                      </span>
-                      <div>
-                        <h5 class="mb-1">Nirav Joshi</h5>
-                        <p class="mb-0 fs-3">Frontend Eng</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="border-bottom-0">
-                    <p class="mb-0">Elite Admin</p>
-                  </td>
-                  <td class="border-bottom-0">
-                    <span class="badge bg-danger-subtle text-danger">Very
-                      High</span>
-                  </td>
-                  <td class="text-end border-bottom-0">
-                    <p class="mb-0 fs-3">$2.6K</p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <div id="tbl-estimates"></div>
       </div>
     </div>
   </div>
-
-
 </div>
+<script>
+  $(document).ready(function() {
+      function searchOrders() {
+          var date_from = $('#date_from_order').val();
+          var date_to = $('#date_to_order').val();
+
+          $.ajax({
+              url: 'pages/customer-dash_ajax.php',
+              type: 'POST',
+              data: {
+                  date_from: date_from,
+                  date_to: date_to,
+                  search_orders: 'search_orders'
+              },
+              success: function(response) {
+                  $('#tbl-orders').html(response);
+              },
+              error: function(jqXHR, textStatus, errorThrown) {
+                  alert('Error: ' + textStatus + ' - ' + errorThrown);
+              }
+          });
+      }
+
+      function searchEstimates() {
+          var date_from = $('#date_from_estimate').val();
+          var date_to = $('#date_to_estimate').val();
+
+          $.ajax({
+              url: 'pages/customer-dash_ajax.php',
+              type: 'POST',
+              data: {
+                  date_from: date_from,
+                  date_to: date_to,
+                  search_estimates: 'search_estimates'
+              },
+              success: function(response) {
+                  $('#tbl-estimates').html(response);
+              },
+              error: function(jqXHR, textStatus, errorThrown) {
+                  alert('Error: ' + textStatus + ' - ' + errorThrown);
+              }
+          });
+      }
+
+      $('#date_from_order, #date_to_order').on('change', searchOrders);
+      $('#date_from_estimate, #date_to_estimate').on('change', searchEstimates);
+
+      searchOrders();
+      searchEstimates();
+  });
+</script>
