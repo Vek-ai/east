@@ -513,7 +513,7 @@ if(isset($_REQUEST['id'])){
           event.preventDefault(); 
           var id = $(this).data('id');
           $.ajax({
-                  url: 'pages/estimate_list_ajax.php',
+                  url: 'pages/customer-dash_ajax.php',
                   type: 'POST',
                   data: {
                       id: id,
