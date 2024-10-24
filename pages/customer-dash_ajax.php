@@ -14,14 +14,14 @@ if (isset($_POST['search_orders'])) {
 ?>
     <div class="month-table">
         <div class="table-responsive mt-3">
-            <table class="table align-middle  mb-0 no-wrap">
+            <table class="table align-middle  mb-0 no-wrap text-center">
                 <thead>
                 <tr>
                     <th class="border-0 ps-0">
                     Sales Person
                     </th>
                     <th class="border-0">Date</th>
-                    <th class="border-0">
+                    <th class="border-0 text-end">
                     Total Amount
                     </th>
                     <th class="border-0 text-end">
@@ -30,95 +30,54 @@ if (isset($_POST['search_orders'])) {
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td class="ps-0">
-                    <div class="hstack gap-3">
-                        <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                        <img src="assets/images/profile/user-2.jpg" alt class="img-fluid">
-                        </span>
-                        <div>
-                        <h5 class="mb-1">Sunil Joshi</h5>
-                        <p class="mb-0 fs-3">Web Designer</p>
-                        </div>
-                    </div>
-                    </td>
-                    <td>
-                    <p class="mb-0">Digital Agency</p>
-                    </td>
-                    <td>
-                    <span class="badge bg-primary-subtle text-primary">Low</span>
-                    </td>
-                    <td class="text-end">
-                    <p class="mb-0 fs-3">$3.9K</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="ps-0">
-                    <div class="hstack gap-3">
-                        <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                        <img src="assets/images/profile/user-4.jpg" alt class="img-fluid">
-                        </span>
-                        <div>
-                        <h5 class="mb-1">Andrew Liock</h5>
-                        <p class="mb-0 fs-3">Project Manager</p>
-                        </div>
-                    </div>
-                    </td>
-                    <td>
-                    <p class="mb-0">Real Homes</p>
-                    </td>
-                    <td>
-                    <span class="badge bg-info-subtle text-info">Medium</span>
-                    </td>
-                    <td class="text-end">
-                    <p class="mb-0 fs-3">$23.9K</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="ps-0">
-                    <div class="hstack gap-3">
-                        <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                        <img src="assets/images/profile/user-5.jpg" alt class="img-fluid">
-                        </span>
-                        <div>
-                        <h5 class="mb-1">Biaca George</h5>
-                        <p class="mb-0 fs-3">Developer</p>
-                        </div>
-                    </div>
-                    </td>
-                    <td>
-                    <p class="mb-0">MedicalPro Theme</p>
-                    </td>
-                    <td>
-                    <span class="badge bg-secondary-subtle text-secondary">High</span>
-                    </td>
-                    <td class="text-end">
-                    <p class="mb-0 fs-3">$12.9K</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="border-bottom-0 ps-0">
-                    <div class="hstack gap-3">
-                        <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                        <img src="assets/images/profile/user-6.jpg" alt class="img-fluid">
-                        </span>
-                        <div>
-                        <h5 class="mb-1">Nirav Joshi</h5>
-                        <p class="mb-0 fs-3">Frontend Eng</p>
-                        </div>
-                    </div>
-                    </td>
-                    <td class="border-bottom-0">
-                    <p class="mb-0">Elite Admin</p>
-                    </td>
-                    <td class="border-bottom-0">
-                    <span class="badge bg-danger-subtle text-danger">Very
-                        High</span>
-                    </td>
-                    <td class="text-end border-bottom-0">
-                    <p class="mb-0 fs-3">$2.6K</p>
-                    </td>
-                </tr>
+                <?php
+                    $query = "SELECT * FROM orders WHERE customerid = '$customerid'";
+
+                    if (!empty($date_from) && !empty($date_to)) {
+                        $date_to .= ' 23:59:59';
+                        $query .= " AND (order_date >= '$date_from' AND order_date <= '$date_to')";
+                    }
+                    $query .= " ORDER BY order_date DESC";
+                    if (empty($date_from) || empty($date_to)) {
+                        $query .= " LIMIT 10";
+                    }
+
+                    $result = mysqli_query($conn, $query);
+                    if ($result && mysqli_num_rows($result) > 0) {
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            ?>
+                            <tr>
+                                <td class="ps-0">
+                                    <div class="hstack gap-3">
+                                        <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
+                                            <img src="assets/images/profile/user-2.jpg" alt class="img-fluid">
+                                        </span>
+                                        <div>
+                                            <h5 class="mb-1"><?= get_staff_name($row['cashier']) ?></h5>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="mb-0"><?= date("F d, Y", strtotime($row['order_date'])) ?></p>
+                                </td>
+                                <td class="text-end">
+                                    <p class="mb-0">$<?= number_format($row['total_price'],2) ?></p>
+                                </td>
+                                <td class="text-end">
+                                    <p class="mb-0">$<?= number_format($row['discounted_price'],2) ?></p>
+                                </td>
+                            </tr>
+                            <?php
+                        }
+                    }else{
+                    ?>
+                        <tr>
+                            <td colspan="4">No orders found</td>
+                        </tr>
+                    <?php  
+                    }
+                    
+                    ?>
                 </tbody>
             </table>
         </div>
