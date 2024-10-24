@@ -558,15 +558,22 @@ if (!empty($_REQUEST['result'])) {
                         style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Archive"><i
                           class="fa fa-box-archive text-danger"></i></a>
                     <?php } else { ?>
+                      <a href="?page=customer-dashboard&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
+                        data-toggle="tooltip" data-placement="top" title="Dashboard"><i
+                          class="fa fa-chart-bar text-light"></i>
+                      </a>
                       <a href="?page=customer&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
                         data-toggle="tooltip" data-placement="top" title="Edit"><i
-                          class="fa fa-pencil text-warning"></i></a>
+                          class="fa fa-pencil text-warning"></i>
+                      </a>
                       <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
                         style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i
-                          class="fa fa-calculator text-primary"></i></a>
+                          class="fa fa-calculator text-primary"></i>
+                      </a>
                       <a href="?page=order_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
                         style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Orders"><i
-                          class="fa fa-cart-shopping text-success"></i></a>
+                          class="fa fa-cart-shopping text-success"></i>
+                      </a>
                     <?php } ?>
                   </td>
                 </tr>
