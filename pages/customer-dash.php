@@ -106,23 +106,7 @@ require 'includes/functions.php';
         </div>
       </div>
     </div>
-  </div>
-  <div class="col-lg-3 col-md-6">
-    <div class="card">
-      <div class="card-body p-9">
-        <div class="hstack gap-9">
-          <div class="round-56 rounded-circle text-white d-flex align-items-center justify-content-center text-bg-secondary">
-            <i class="ti ti-users fs-6"></i>
-          </div>
-          <div class="align-self-center">
-            <h3 class="mb-1 fs-6">$2376</h3>
-            <span class="text-muted">Online Revenue</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-3 col-md-6">
+
     <div class="card">
       <div class="card-body p-9">
         <div class="hstack gap-9">
@@ -137,6 +121,10 @@ require 'includes/functions.php';
       </div>
     </div>
   </div>
+  <div class="col-lg-4 col-md-6">
+    
+  </div>
+  
  
 
  <!-- Orders -->
