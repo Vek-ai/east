@@ -129,14 +129,14 @@ require 'includes/functions.php';
               <thead>
                 <tr>
                   <th class="border-0 ps-0">
-                    Client
+                  Sales Person
                   </th>
-                  <th class="border-0">Name</th>
+                  <th class="border-0">Date</th>
                   <th class="border-0">
-                    Priority
+                    Total Amount
                   </th>
                   <th class="border-0 text-end">
-                    Budget
+                    Discount
                   </th>
                 </tr>
               </thead>
@@ -243,7 +243,7 @@ require 'includes/functions.php';
     <div class="card">
       <div class="card-body pb-3">
         <div class="d-md-flex no-block">
-          <h4 class="card-title">Orders</h4>
+          <h4 class="card-title">Estimates</h4>
           <div class="ms-auto">
             <select class="form-select">
               <option selected>January</option>
@@ -259,14 +259,14 @@ require 'includes/functions.php';
               <thead>
                 <tr>
                   <th class="border-0 ps-0">
-                    Client
+                    Estimate ID
                   </th>
-                  <th class="border-0">Name</th>
+                  <th class="border-0">Status</th>
                   <th class="border-0">
-                    Priority
+                    No. of changes
                   </th>
                   <th class="border-0 text-end">
-                    Budget
+                    Total Amount
                   </th>
                 </tr>
               </thead>
