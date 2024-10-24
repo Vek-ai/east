@@ -517,7 +517,7 @@ if(isset($_REQUEST['id'])){
                   type: 'POST',
                   data: {
                       id: id,
-                      action: "fetch_changes_modal"
+                      fetch_changes_modal: "fetch_changes_modal"
                   },
                   success: function(response) {
                       $('#viewChangesModal').html(response);

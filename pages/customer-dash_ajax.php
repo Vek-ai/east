@@ -664,7 +664,7 @@ if (isset($_POST['fetch_estimate_details'])) {
     }
 } 
 
-if ($action == "fetch_changes_modal") {
+if (isset($_POST['fetch_changes_modal'])) {
     ?>
     <style>
         #est_dtls_tbl {
