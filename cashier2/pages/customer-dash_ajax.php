@@ -4,8 +4,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 
-require '../includes/dbconn.php';
-require '../includes/functions.php';
+require '../../includes/dbconn.php';
+require '../../includes/functions.php';
 
 if (isset($_POST['search_orders'])) {
     $customerid = mysqli_real_escape_string($conn, string: $_POST['customerid']);
@@ -45,7 +45,7 @@ if (isset($_POST['search_orders'])) {
                                 <td class="ps-0">
                                     <div class="hstack gap-3">
                                         <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                                            <img src="assets/images/profile/user-2.jpg" alt class="img-fluid">
+                                            <img src="../assets/images/profile/user-2.jpg" alt class="img-fluid">
                                         </span>
                                         <div>
                                             <h5 class="mb-1"><?= get_staff_name($row['cashier']) ?></h5>
@@ -63,8 +63,8 @@ if (isset($_POST['search_orders'])) {
                                 </td>
                                 <td>
                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
-                                    <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
-                                    <a href="print_order_total.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
+                                    <a href="/print_order_product.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
+                                    <a href="/print_order_total.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
                                 </td>
                             </tr>
                             <?php
@@ -150,8 +150,8 @@ if (isset($_POST['search_estimates'])) {
                             <td>
                                 <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
                                 <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="edit_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-warning fa fa-pencil fs-5"></i></button>
-                                <a href="print_estimate_product.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
-                                <a href="print_estimate_total.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
+                                <a href="/print_estimate_product.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
+                                <a href="/print_estimate_total.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
                                 <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-info fa fa-clock-rotate-left fs-5"></i></button>
                             </td>
                         </tr>
@@ -224,10 +224,10 @@ if (isset($_REQUEST['query'])) {
                 }
             }
 
-            $default_image = 'images/product/product.jpg';
+            $default_image = '../images/product/product.jpg';
 
             $picture_path = !empty($row_product['main_image'])
-            ? $row_product['main_image']
+            ? '../' .$row_product['main_image']
             : $default_image;
 
             $tableHTML .= '

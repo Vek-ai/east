@@ -331,6 +331,26 @@ if (!isset($_SESSION['userid'])) {
 
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
                     <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="drop2" aria-expanded="false">
+                      <iconify-icon icon="ic:round-search" class="search-icon"></iconify-icon>
+                    </a>
+                    <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="drop2">
+
+                      <div class="py-3 px-4 bg-primary">
+                        <div class="mb-0 fs-6 fw-medium text-white">Search Customers</div>
+                      </div>
+                      <div class="p-3 d-flex align-items-center border-bottom">
+                        <div class="w-100">
+                          <div class="d-flex align-items-center justify-content-between">
+                            <input type="text" id="customer-search-input" class="form-control" placeholder="Search Customer Name">
+                          </div>
+                        </div>
+                      </div>
+                      <div id="customer-search-list"></div>
+                    </div>
+                  </li>
+
+                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
+                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="drop2" aria-expanded="false">
                       <iconify-icon icon="solar:bell-bing-line-duotone"></iconify-icon>
                       <div class="notify">
                         <span class="heartbit"></span>
@@ -1300,6 +1320,7 @@ if (!isset($_SESSION['userid'])) {
             if (empty($_REQUEST['page'])) {include 'pages/cashier.php';}
             if ($_REQUEST['page'] == "customer") {include 'pages/customer.php';}
             if ($_REQUEST['page'] == "cashier2") {include 'pages/cashier2.php';}
+            if ($_REQUEST['page'] == "customer-dashboard") {include 'pages/customer-dash.php';}
           ?>
         </div>
       </div>
@@ -1337,7 +1358,31 @@ if (!isset($_SESSION['userid'])) {
   <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
   <script>
   $(document).ready(function() {
-    $(".phone-inputmask").inputmask("(999) 999-9999")
+    $(".phone-inputmask").inputmask("(999) 999-9999");
+
+    $('#customer-search-input').on('input', function() {
+        let customerName = $(this).val();
+        console.log(customerName);
+        if (customerName.length > 0) {
+            $.ajax({
+                url: 'pages/index_ajax.php',
+                type: 'POST',
+                data: { 
+                  customer_name: customerName,
+                  search_customer: 'search_customer'
+                },
+                success: function(response) {
+                    $('#customer-search-list').html(response);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    $('#customer-search-list').html('<p class="list-group-item text-danger text-center">Error fetching results</p>');
+                }
+            });
+        } else {
+            $('#customer-search-list').empty();
+        }
+    });
   });
   </script>
 </body>
