@@ -210,7 +210,45 @@ if(isset($_REQUEST['id'])){
     </div>
   </div>
   <div class="col-lg-6 col-md-6">
-    
+  <div class="card">
+        <div class="card-body text-left p-3">
+            <div class="d-flex justify-content-between align-items-center  mb-9">
+                <div class="position-relative w-100 col-12 px-0">
+                    <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
+                    <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
+                </div>
+            </div>
+            <div class="table-responsive border rounded">
+                <table id="productTable" class="table align-middle text-wrap mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Products</th>
+                            <th scope="col">Color</th>
+                            <th scope="col">Size</th>
+                            <th scope="col">Usage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody"></tbody>
+                </table>
+                    
+                <div class="d-flex align-items-center justify-content-end py-1">
+                    <p class="mb-0 fs-2">Rows per page:</p>
+                    <select id="rowsPerPage" class="form-select w-auto ms-0 ms-sm-2 me-8 me-sm-4 py-1 pe-7 ps-2 border-0" aria-label="Rows per page">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                    </select>
+                    <p id="paginationInfo" class="mb-0 fs-2"></p>
+                    <nav aria-label="...">
+                        <ul id="paginationControls" class="pagination justify-content-center mb-0 ms-8 ms-sm-9">
+                            <!-- Pagination buttons will be inserted here by JS -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        
+    </div>
   </div>
   
  
@@ -288,6 +326,78 @@ if(isset($_REQUEST['id'])){
 </div>
 <script>
   $(document).ready(function() {
+      var currentPage = 1,
+          rowsPerPage = parseInt($('#rowsPerPage').val()),
+          totalRows = 0,
+          totalPages = 0,
+          maxPageButtons = 5,
+          stepSize = 5;
+
+      function updateTable() {
+          var $rows = $('#productTableBody tr');
+          totalRows = $rows.length;
+          totalPages = Math.ceil(totalRows / rowsPerPage);
+
+          var start = (currentPage - 1) * rowsPerPage,
+              end = Math.min(currentPage * rowsPerPage, totalRows);
+
+          $rows.hide().slice(start, end).show();
+
+          $('#paginationControls').html(generatePagination());
+          $('#paginationInfo').text(`${start + 1}–${end} of ${totalRows}`);
+
+          $('#paginationControls').find('a').click(function(e) {
+              e.preventDefault();
+              if ($(this).hasClass('page-link-next')) {
+                  currentPage = Math.min(currentPage + stepSize, totalPages);
+              } else if ($(this).hasClass('page-link-prev')) {
+                  currentPage = Math.max(currentPage - stepSize, 1);
+              } else {
+                  currentPage = parseInt($(this).text());
+              }
+              updateTable();
+          });
+      }
+
+      function generatePagination() {
+          var pagination = '';
+          var startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+          var endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+          if (currentPage > 1) {
+              pagination += `<li class="page-item p-1"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center page-link-prev" href="#">‹</a></li>`;
+          }
+
+          for (var i = startPage; i <= endPage; i++) {
+              pagination += `<li class="page-item p-1 ${i === currentPage ? 'active' : ''}"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center" href="#">${i}</a></li>`;
+          }
+
+          if (currentPage < totalPages) {
+              pagination += `<li class="page-item p-1"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center page-link-next" href="#">›</a></li>`;
+          }
+
+          return pagination;
+      }
+
+      function searchProducts(query) {
+          $.ajax({
+              url: 'pages/customer-dash_ajax.php',
+              type: 'POST',
+              data: {
+                  query: query,
+                  customerid: <?= $_REQUEST['id'] ?>
+              },
+              success: function(response) {
+                  $('#productTableBody').html(response);
+                  currentPage = 1;
+                  updateTable();
+              },
+              error: function(jqXHR, textStatus, errorThrown) {
+                  alert('Error: ' + textStatus + ' - ' + errorThrown);
+              }
+          });
+      }
+      
       function searchOrders() {
           var date_from = $('#date_from_order').val();
           var date_to = $('#date_to_order').val();
@@ -334,8 +444,10 @@ if(isset($_REQUEST['id'])){
 
       $('#date_from_order, #date_to_order').on('change', searchOrders);
       $('#date_from_estimate, #date_to_estimate').on('change', searchEstimates);
+      $('#text-srh').on('input', function() { searchProducts(this.value); });
 
       searchOrders();
       searchEstimates();
+      searchProducts('');
   });
 </script>

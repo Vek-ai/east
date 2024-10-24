@@ -1728,6 +1728,5 @@ require '../includes/functions.php';
         });
 
         performSearch('');
-        updateTable(); // Initial table update
     });
 </script>

@@ -169,3 +169,122 @@ if (isset($_POST['search_estimates'])) {
     </div>
 <?php
 }
+
+if (isset($_REQUEST['query'])) {
+    $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
+    $customerid = mysqli_real_escape_string($conn, $_REQUEST['customerid']);
+
+    $query_product = "
+        SELECT o.*, op.*, p.product_item, p.main_image, p.color
+        FROM 
+            orders as o
+        LEFT JOIN order_product as op ON o.orderid = op.orderid
+        LEFT JOIN product as p ON p.product_id = op.productid
+        WHERE 
+            hidden = '0' AND o.customerid = '$customerid'
+    ";
+
+    if (!empty($searchQuery)) {
+        $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
+    }
+
+    $query_product .= " ORDER BY o.order_date DESC";
+
+    $result_product = mysqli_query($conn, $query_product);
+
+    $tableHTML = "";
+
+    if (mysqli_num_rows($result_product) > 0) {
+        while ($row_product = mysqli_fetch_array($result_product)) {
+
+            $product_length = $row_product['length'];
+            $product_width = $row_product['width'];
+            $product_color = $row_product['color'];
+
+            $dimensions = "";
+
+            if (!empty($product_length) || !empty($product_width)) {
+                $dimensions = '';
+            
+                if (!empty($product_length)) {
+                    $dimensions .= $product_length;
+                }
+            
+                if (!empty($product_width)) {
+                    if (!empty($dimensions)) {
+                        $dimensions .= " X ";
+                    }
+                    $dimensions .= $product_width;
+                }
+            
+                if (!empty($dimensions)) {
+                    $dimensions = " - " . $dimensions;
+                }
+            }
+
+            $default_image = 'images/product/product.jpg';
+
+            $picture_path = !empty($row_product['main_image'])
+            ? $row_product['main_image']
+            : $default_image;
+
+            $tableHTML .= '
+                <tr>
+                    <td>
+                        <a href="javascript:void(0);" id="view_product_details" data-id="' . htmlspecialchars($row_product['productid']) . '" class="d-flex align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="'. htmlspecialchars($picture_path) .'" class="rounded-circle" alt="materialpro-img" width="56" height="56">
+                                <div class="ms-3 text-wrap">
+                                    <h6 class="fw-semibold mb-0 fs-4">'. htmlspecialchars($row_product['product_item']) .' ' . htmlspecialchars($dimensions) .'</h6>
+                                </div>
+                            </div>
+                        </a>
+                    </td>
+                    <td>
+                        <div class="d-flex mb-0 gap-8">
+                            <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color: ' . htmlspecialchars(getColorHexFromColorID($row_product['color'])) .'"></a> '
+                            . htmlspecialchars(getColorName($row_product['color'])) .'
+                        </div>
+                    </td>
+                    <td>';
+
+                    $width = htmlspecialchars($row_product['custom_width']);
+                    $bend = htmlspecialchars($row_product['custom_bend']);
+                    $hem = htmlspecialchars($row_product['custom_hem']);
+                    $length = htmlspecialchars($row_product['custom_length']);
+                    $inch = htmlspecialchars($row_product['custom_length2']);
+                    
+                    if (!empty($width)) {
+                        $tableHTML .= "Width: " . number_format($width,2) . "<br>";
+                    }
+
+                    if (!empty($bend)) {
+                        $tableHTML .= "Bend: " . number_format($bend,2) . "<br>";
+                    }
+                    
+                    if (!empty($hem)) {
+                        $tableHTML .= "Hem: " . number_format($hem,2) . "<br>";
+                    }
+                    
+                    if (!empty($length)) {
+                        $tableHTML .= "Length: " . number_format($length,2) . " ft";
+                        if (!empty($inch)) {
+                            $tableHTML .= " " . number_format($inch,2) . " in";
+                        }
+                        $tableHTML .= "<br>";
+                    } elseif (!empty($inch)) {
+                        $tableHTML .= "Length: " . number_format($inch,2) . " in<br>";
+                    }
+
+                    $tableHTML .= '</td>
+                    <td><h6 class="mb-0 fs-4">' . htmlspecialchars(getUsageName($row_product['usageid'])) . '</h6></td>
+                </tr>';
+
+        }
+    } else {
+        $tableHTML .= '<tr><td colspan="8" class="text-center">No products found</td></tr>';
+    }
+    
+    //echo $tableHTML;
+    echo $tableHTML;
+}
