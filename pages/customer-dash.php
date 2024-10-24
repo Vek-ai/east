@@ -47,6 +47,38 @@ require 'includes/functions.php';
 
     <div class="row">
   <!-- text-cards -->
+    <!-- Profile card -->
+    <div class="col-lg-3 col-md-6">
+    <div class="card">
+      <div class="card-body p-2">
+        <img class="card-img-top w-100 profile-bg-height rounded overflow-hidden" src="assets/images/backgrounds/profile-bg.jpg" height="111" alt="Card image cap" />
+        <div class="card-body little-profile text-center p-9">
+          <div class="pro-img mb-3">
+            <img src="assets/images/profile/user-2.jpg" alt="user" class="rounded-circle shadow-sm" width="112" />
+          </div>
+          <h3 class="mb-1 fs-14">Angelo Dominic</h3>
+          <p class="fs-3 mb-4">Customer Type</p>
+          <a href="javascript:void(0)" class="
+              btn btn-primary btn-md btn-rounded mb-7
+            ">Top 10</a>
+          <div class="row gx-lg-4 text-center pt-4 justify-content-center border-top">
+            <div class="col-4">
+              <h3 class="mb-0 fs-14">1099</h3>
+              <small class="text-muted fs-3">Orders</small>
+            </div>
+            <div class="col-4">
+              <h3 class="mb-0 fs-14">23,469</h3>
+              <small class="text-muted fs-3">Estimates</small>
+            </div>
+            <div class="col-4">
+              <h3 class="mb-0 fs-14">6035</h3>
+              <small class="text-muted fs-3">Estimates - Orders</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="col-lg-3 col-md-6">
     <div class="card">
       <div class="card-body p-9">
@@ -92,21 +124,7 @@ require 'includes/functions.php';
       </div>
     </div>
   </div>
-  <div class="col-lg-3 col-md-6">
-    <div class="card">
-      <div class="card-body p-9">
-        <div class="hstack gap-9">
-          <div class="round-56 rounded-circle text-white d-flex align-items-center justify-content-center text-bg-warning">
-            <i class="ti ti-settings fs-6"></i>
-          </div>
-          <div class="align-self-center">
-            <h3 class="mb-1 fs-6">$687</h3>
-            <span class="text-muted">Ad. Expense</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+ 
 
  <!-- Orders -->
  <div class="col-lg-12">
