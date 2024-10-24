@@ -364,6 +364,52 @@ function getOrderProdDetails($id) {
     return $order_product;
 }
 
+function getOrderTotals($orderid) {
+    global $conn;
+
+    $query = "
+        SELECT 
+            SUM(actual_price) AS total_actual_price
+        FROM 
+            order_product
+        WHERE 
+            orderid = '$orderid'";
+
+    $result = mysqli_query($conn, $query);
+    $total_discounted_price = 0;
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $total_actual_price = floatval($row['total_actual_price']);
+    }
+
+    return number_format($total_actual_price, 2);
+}
+
+function getOrderTotalsDiscounted($orderid) {
+    global $conn;
+
+    $query = "
+        SELECT 
+            SUM(discounted_price) AS total_discounted_price
+        FROM 
+            order_product
+        WHERE 
+            orderid = '$orderid'";
+
+    $result = mysqli_query($conn, $query);
+    $total_discounted_price = 0;
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $total_discounted_price = floatval($row['total_discounted_price']);
+    }
+
+    return number_format($total_discounted_price, 2);
+}
+
+
+
 function getCustomerType($customer_type_id){
     global $conn;
     $query = "SELECT customer_type_name FROM customer_types WHERE customer_type_id = '$customer_type_id'";
