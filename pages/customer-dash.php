@@ -99,11 +99,24 @@ if(isset($_REQUEST['id'])){
                 }
               ?>
               <h3 class="mb-0 fs-14"><?= $estimate_count ?></h3>
-              
               <small class="text-muted fs-3">Estimates</small>
             </div>
             <div class="col-4">
-              <h3 class="mb-0 fs-14">23,469</h3>
+              <?php
+                $estimate_ordered = 0;
+                $query_estimate = "SELECT * FROM estimates WHERE customerid = '$customer_id'";
+                $result_estimate = mysqli_query($conn, $query_estimate);
+                
+                if (mysqli_num_rows($result_estimate) > 0) {
+                    while ($row_estimate = mysqli_fetch_array($result_estimate, MYSQLI_ASSOC)) {
+                        $result_order = mysqli_query($conn, "SELECT * FROM orders WHERE estimateid = '{$row_estimate['estimateid']}'");
+                        if (mysqli_num_rows($result_order) > 0) {
+                            $estimate_ordered++;
+                        }
+                    }
+                }
+              ?>
+              <h3 class="mb-0 fs-14"><?= $estimate_ordered ?></h3>
               <small class="text-muted fs-3">Estimates - Orders</small>
             </div>
           </div>
@@ -119,8 +132,21 @@ if(isset($_REQUEST['id'])){
             <i class="ti ti-credit-card fs-6"></i>
           </div>
           <div class="align-self-center">
-            <h3 class="mb-1 fs-6">$3249</h3>
-            <span class="text-muted">Total Revenue</span>
+            <?php
+              $query_order_total = "SELECT SUM(discounted_price) as order_total FROM orders WHERE customerid = '$customer_id'";
+              $result_order_total = mysqli_query($conn, $query_order_total);
+              
+              if ($result_order_total) {
+                  $row_order_total = mysqli_fetch_array($result_order_total, MYSQLI_ASSOC);
+                  if ($row_order_total) {
+                      $order_total = $row_order_total['order_total'];
+                  } else {
+                      $order_total = 0;
+                  }
+              }
+            ?>
+            <h3 class="mb-1 fs-6">$<?= number_format($order_total,2) ?></h3>
+            <span class="text-muted">Total Orders Amount</span>
           </div>
         </div>
       </div>
@@ -132,8 +158,21 @@ if(isset($_REQUEST['id'])){
             <i class="ti ti-users fs-6"></i>
           </div>
           <div class="align-self-center">
-            <h3 class="mb-1 fs-6">$2376</h3>
-            <span class="text-muted">Online Revenue</span>
+            <?php
+              $query_estimate_total = "SELECT SUM(discounted_price) as estimate_total FROM estimates WHERE customerid = '$customer_id'";
+              $result_estimate_total = mysqli_query($conn, $query_estimate_total);
+              
+              if ($result_estimate_total) {
+                  $row_estimate_total = mysqli_fetch_array($result_estimate_total, MYSQLI_ASSOC);
+                  if ($row_estimate_total) {
+                      $estimate_total = $row_estimate_total['estimate_total'];
+                  } else {
+                      $estimate_total = 0;
+                  }
+              }
+            ?>
+            <h3 class="mb-1 fs-6">$<?= number_format($estimate_total,2) ?></h3>
+            <span class="text-muted">Total Estimates Amount</span>
           </div>
         </div>
       </div>
@@ -146,8 +185,25 @@ if(isset($_REQUEST['id'])){
             <i class="ti ti-calendar fs-6"></i>
           </div>
           <div class="align-self-center">
-            <h3 class="mb-1 fs-6">$1795</h3>
-            <span class="text-muted">Offline Products</span>
+            <?php
+              $estimate_ordered_amt = 0;
+              $query_estimate = "SELECT * FROM estimates WHERE customerid = '$customer_id'";
+              $result_estimate = mysqli_query($conn, $query_estimate);
+              
+              if ($result_estimate && mysqli_num_rows($result_estimate) > 0) {
+                  while ($row_estimate = mysqli_fetch_array($result_estimate, MYSQLI_ASSOC)) {
+                      $result_order = mysqli_query($conn, "SELECT * FROM orders WHERE estimateid = '{$row_estimate['estimateid']}'");
+                      
+                      if ($result_order && mysqli_num_rows($result_order) > 0) {
+                          while ($row_order = mysqli_fetch_array($result_order, MYSQLI_ASSOC)) {
+                              $estimate_ordered_amt += $row_order['discounted_price']; 
+                          }
+                      }
+                  }
+              }
+            ?>
+            <h3 class="mb-1 fs-6">$<?= number_format($estimate_ordered_amt,2) ?></h3>
+            <span class="text-muted">Total Estimates to Orders Amount</span>
           </div>
         </div>
       </div>
@@ -166,12 +222,27 @@ if(isset($_REQUEST['id'])){
         <div class="d-md-flex no-block">
           <h4 class="card-title">Orders</h4>
           <div class="ms-auto">
-            <select class="form-select">
-              <option selected>January</option>
-              <option value="1">February</option>
-              <option value="2">March</option>
-              <option value="3">April</option>
-            </select>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="date_from" class="form-label">Date From</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" class="form-control" id="date_from_order">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="date_to" class="form-label">Date To</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" class="form-control" id="date_to_order">
+                        </div>
+                    </div>
+                </div>
+            </div>
           </div>
         </div>
         <div class="month-table">
@@ -296,12 +367,27 @@ if(isset($_REQUEST['id'])){
         <div class="d-md-flex no-block">
           <h4 class="card-title">Estimates</h4>
           <div class="ms-auto">
-            <select class="form-select">
-              <option selected>January</option>
-              <option value="1">February</option>
-              <option value="2">March</option>
-              <option value="3">April</option>
-            </select>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="date_from" class="form-label">Date From</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" class="form-control" id="date_from_estimate">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="date_to" class="form-label">Date To</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" class="form-control" id="date_to_estimate">
+                        </div>
+                    </div>
+                </div>
+            </div>
           </div>
         </div>
         <div class="month-table">
