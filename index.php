@@ -1362,6 +1362,9 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "sales_list") {include 'pages/sales_list.php';}
             if ($_REQUEST['page'] == "returns_list") {include 'pages/returns_list.php';}
             if ($_REQUEST['page'] == "merge_list") {include 'pages/merge_list.php';}
+
+
+            if ($_REQUEST['page'] == "customer-dashboard") {include 'pages/customer-dash.php';}
           ?>
         </div>
       </div>
