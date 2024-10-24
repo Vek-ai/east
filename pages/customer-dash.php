@@ -121,7 +121,7 @@ require 'includes/functions.php';
       </div>
     </div>
   </div>
-  <div class="col-lg-4 col-md-6">
+  <div class="col-lg-6 col-md-6">
     
   </div>
   
