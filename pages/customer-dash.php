@@ -29,7 +29,27 @@ if(isset($_REQUEST['id'])){
             <div class="d-flex gap-2">
                 <div class="">
                 <small>This Month</small>
-                <h4 class="text-primary mb-0 ">$58,256</h4>
+                <?php
+                    $query_curr_month = "SELECT SUM(cash_amt) as order_total 
+                                        FROM orders 
+                                        WHERE customerid = '$customer_id' 
+                                        AND YEAR(order_date) = YEAR(CURDATE()) 
+                                        AND MONTH(order_date) = MONTH(CURDATE())";
+
+                    $result_curr_month = mysqli_query($conn, $query_curr_month);
+                    
+                    if ($result_curr_month) {
+                        $row_curr_month = mysqli_fetch_array($result_curr_month, MYSQLI_ASSOC);
+                        if ($row_curr_month) {
+                            $order_total_curr_month = $row_curr_month['order_total'] ?? 0;
+                        } else {
+                            $order_total_curr_month = 0;
+                        }
+                    } else {
+                        $order_total_curr_month = 0;
+                    }
+                ?>
+                <h4 class="text-primary mb-0 ">$<?= number_format($order_total_curr_month,2) ?></h4>
                 </div>
                 <div class="">
                 <div class="breadbar"></div>
@@ -38,7 +58,27 @@ if(isset($_REQUEST['id'])){
             <div class="d-flex gap-2">
                 <div class="">
                 <small>Last Month</small>
-                <h4 class="text-secondary mb-0 ">$58,256</h4>
+                <?php
+                    $query_prev_month = "SELECT SUM(cash_amt) as order_total 
+                                        FROM orders 
+                                        WHERE customerid = '$customer_id' 
+                                        AND YEAR(order_date) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) 
+                                        AND MONTH(order_date) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH))";
+
+                    $result_prev_month = mysqli_query($conn, $query_prev_month);
+                    
+                    if ($result_prev_month) {
+                        $row_prev_month = mysqli_fetch_array($result_prev_month, MYSQLI_ASSOC);
+                        if ($row_prev_month) {
+                            $order_total_prev_month = $row_prev_month['order_total'] ?? 0;
+                        } else {
+                            $order_total_prev_month = 0;
+                        }
+                    } else {
+                        $order_total_prev_month = 0;
+                    }
+                ?>
+                <h4 class="text-secondary mb-0 ">$<?= number_format($order_total_prev_month,2) ?></h4>
                 </div>
                 <div class="">
                 <div class="breadbar2"></div>
@@ -61,15 +101,13 @@ if(isset($_REQUEST['id'])){
           <div class="pro-img mb-3">
             <img src="assets/images/profile/user-2.jpg" alt="user" class="rounded-circle shadow-sm" width="112" />
           </div>
-          <h3 class="mb-1 fs-14"><?= $customer_details['customer_first_name'] ?> <?= $customer_details['customer_last_name'] ?></h3>
-          <p class="fs-3 mb-4"><?= getCustomerType($customer_details['customer_type_id']) ?></p>
-          <a href="javascript:void(0)" class="
-              btn btn-primary btn-md btn-rounded mb-7
-            ">Top 10</a>
+            <h3 class="mb-1 fs-14"><?= $customer_details['customer_first_name'] ?> <?= $customer_details['customer_last_name'] ?></h3>
+            <p class="fs-3 mb-4"><?= getCustomerType($customer_details['customer_type_id']) ?></p>
+            <h4 class="text-muted"><?= date('Y'); ?> Orders</h4>
           <div class="row gx-lg-4 text-center pt-4 justify-content-center border-top">
             <div class="col-4">
               <?php
-              $query_order_count = "SELECT count(*) as order_count FROM orders WHERE customerid = '$customer_id'";
+              $query_order_count = "SELECT count(*) as order_count FROM orders WHERE customerid = '$customer_id' AND YEAR(order_date) = YEAR(CURDATE())";
               $result_order_count = mysqli_query($conn, $query_order_count);
               
               if ($result_order_count) {
@@ -86,7 +124,7 @@ if(isset($_REQUEST['id'])){
             </div>
             <div class="col-4">
               <?php
-                $query_estimate_count = "SELECT count(*) as estimate_count FROM estimates WHERE customerid = '$customer_id'";
+                $query_estimate_count = "SELECT count(*) as estimate_count FROM estimates WHERE customerid = '$customer_id' AND YEAR(estimated_date) = YEAR(CURDATE())";
                 $result_estimate_count = mysqli_query($conn, $query_estimate_count);
                 
                 if ($result_estimate_count) {
@@ -104,12 +142,12 @@ if(isset($_REQUEST['id'])){
             <div class="col-4">
               <?php
                 $estimate_ordered = 0;
-                $query_estimate = "SELECT * FROM estimates WHERE customerid = '$customer_id'";
+                $query_estimate = "SELECT * FROM estimates WHERE customerid = '$customer_id' AND YEAR(estimated_date) = YEAR(CURDATE())";
                 $result_estimate = mysqli_query($conn, $query_estimate);
                 
                 if (mysqli_num_rows($result_estimate) > 0) {
                     while ($row_estimate = mysqli_fetch_array($result_estimate, MYSQLI_ASSOC)) {
-                        $result_order = mysqli_query($conn, "SELECT * FROM orders WHERE estimateid = '{$row_estimate['estimateid']}'");
+                        $result_order = mysqli_query($conn, "SELECT * FROM orders WHERE estimateid = '{$row_estimate['estimateid']}' AND YEAR(order_date) = YEAR(CURDATE())");
                         if (mysqli_num_rows($result_order) > 0) {
                             $estimate_ordered++;
                         }
@@ -125,89 +163,64 @@ if(isset($_REQUEST['id'])){
     </div>
   </div>
   <div class="col-lg-3 col-md-6">
-    <div class="card">
-      <div class="card-body p-9">
-        <div class="hstack gap-9">
-          <div class="round-56 rounded-circle text-white d-flex align-items-center justify-content-center text-bg-primary">
-            <i class="ti ti-credit-card fs-6"></i>
-          </div>
-          <div class="align-self-center">
-            <?php
-              $query_order_total = "SELECT SUM(discounted_price) as order_total FROM orders WHERE customerid = '$customer_id'";
-              $result_order_total = mysqli_query($conn, $query_order_total);
-              
-              if ($result_order_total) {
-                  $row_order_total = mysqli_fetch_array($result_order_total, MYSQLI_ASSOC);
-                  if ($row_order_total) {
-                      $order_total = $row_order_total['order_total'];
-                  } else {
-                      $order_total = 0;
-                  }
-              }
-            ?>
-            <h3 class="mb-1 fs-6">$<?= number_format($order_total,2) ?></h3>
-            <span class="text-muted">Total Orders Amount</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-body p-9">
-        <div class="hstack gap-9">
-          <div class="round-56 rounded-circle text-white d-flex align-items-center justify-content-center text-bg-secondary">
-            <i class="ti ti-users fs-6"></i>
-          </div>
-          <div class="align-self-center">
-            <?php
-              $query_estimate_total = "SELECT SUM(discounted_price) as estimate_total FROM estimates WHERE customerid = '$customer_id'";
-              $result_estimate_total = mysqli_query($conn, $query_estimate_total);
-              
-              if ($result_estimate_total) {
-                  $row_estimate_total = mysqli_fetch_array($result_estimate_total, MYSQLI_ASSOC);
-                  if ($row_estimate_total) {
-                      $estimate_total = $row_estimate_total['estimate_total'];
-                  } else {
-                      $estimate_total = 0;
-                  }
-              }
-            ?>
-            <h3 class="mb-1 fs-6">$<?= number_format($estimate_total,2) ?></h3>
-            <span class="text-muted">Total Estimates Amount</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="card card-body">
+        <h4 class="text-center pb-3"><?= date('Y'); ?> Orders</h4>
+        <div class="card">
+            <div class="card-body p-9">
+                <div class="hstack gap-9">
+                <div class="round-56 rounded-circle text-white d-flex align-items-center justify-content-center text-bg-secondary">
+                    <i class="ti ti-users fs-6"></i>
+                </div>
+                <div class="align-self-center">
+                    <?php
+                    $query_order_total = "SELECT SUM(cash_amt) as order_total FROM orders WHERE customerid = '$customer_id' AND YEAR(order_date) = YEAR(CURDATE())";
+                    $result_order_total = mysqli_query($conn, $query_order_total);
+                    
+                    if ($result_order_total) {
+                        $row_order_total = mysqli_fetch_array($result_order_total, MYSQLI_ASSOC);
+                        if ($row_order_total) {
+                            $order_total = $row_order_total['order_total'];
+                        } else {
+                            $order_total = 0;
+                        }
+                    }
+                    ?>
+                    <h3 class="mb-1 fs-6">$<?= number_format($order_total,2) ?></h3>
+                    <span class="text-muted">Total Orders</span>
+                </div>
+                </div>
+            </div>
+            </div>
 
-    <div class="card">
-      <div class="card-body p-9">
-        <div class="hstack gap-9">
-          <div class="round-56 rounded-circle text-white d-flex align-items-center justify-content-center text-bg-danger">
-            <i class="ti ti-calendar fs-6"></i>
-          </div>
-          <div class="align-self-center">
-            <?php
-              $estimate_ordered_amt = 0;
-              $query_estimate = "SELECT * FROM estimates WHERE customerid = '$customer_id'";
-              $result_estimate = mysqli_query($conn, $query_estimate);
-              
-              if ($result_estimate && mysqli_num_rows($result_estimate) > 0) {
-                  while ($row_estimate = mysqli_fetch_array($result_estimate, MYSQLI_ASSOC)) {
-                      $result_order = mysqli_query($conn, "SELECT * FROM orders WHERE estimateid = '{$row_estimate['estimateid']}'");
-                      
-                      if ($result_order && mysqli_num_rows($result_order) > 0) {
-                          while ($row_order = mysqli_fetch_array($result_order, MYSQLI_ASSOC)) {
-                              $estimate_ordered_amt += $row_order['discounted_price']; 
-                          }
-                      }
-                  }
-              }
-            ?>
-            <h3 class="mb-1 fs-6">$<?= number_format($estimate_ordered_amt,2) ?></h3>
-            <span class="text-muted">Total Estimates to Orders Amount</span>
-          </div>
-        </div>
-      </div>
+            <div class="card">
+            <div class="card-body p-9">
+                <div class="hstack gap-9">
+                <div class="round-56 rounded-circle text-white d-flex align-items-center justify-content-center text-bg-danger">
+                    <i class="ti ti-calendar fs-6"></i>
+                </div>
+                <div class="align-self-center">
+                    <?php
+                    $query_credit_total = "SELECT SUM(credit_amt) as credit_total FROM orders WHERE customerid = '$customer_id' AND YEAR(order_date) = YEAR(CURDATE())";
+                    $result_credit_total = mysqli_query($conn, $query_credit_total);
+                    
+                    if ($result_credit_total) {
+                        $row_credit_total = mysqli_fetch_array($result_credit_total, MYSQLI_ASSOC);
+                        if ($row_credit_total) {
+                            $credit_total = $row_credit_total['credit_total'];
+                        } else {
+                            $credit_total = 0;
+                        }
+                    }
+                    ?>
+                    <h3 class="mb-1 fs-6">$<?= number_format($credit_total,2) ?></h3>
+                    <span class="text-muted">Total Credit</span>
+                </div>
+                </div>
+            </div>
+            </div>
     </div>
+    
+    
   </div>
   <div class="col-lg-6 col-md-6">
   <div class="card">
