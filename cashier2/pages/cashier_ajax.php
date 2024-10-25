@@ -379,98 +379,84 @@ if (isset($_POST['set_estimate_length_inch'])) {
 }
 
 if (isset($_POST['save_estimate'])) {
-    $discount = floatval( $_POST['discount']);
     $response = [
         'success' => false,
         'message' => '',
         'estimate_id' => null
     ];
 
-    $cart = $_SESSION['cart'];
-
-    if (!isset($_SESSION['customer_id'])) {
-        $response['message'] = "Customer ID is not set.";
+    if (!isset($_SESSION['customer_id']) || empty($_SESSION['cart'])) {
+        $response['message'] = "Customer ID or cart is not set.";
         header('Content-Type: application/json');
         echo json_encode($response);
         exit;
     }
 
     $customerid = intval($_SESSION['customer_id']);
-    $estimateid = null;
+    $cart = $_SESSION['cart'];
+    $estimated_date = date('Y-m-d H:i:s');
+    $discount = floatval(getCustomerDiscount($customerid)) / 100;
 
-    if (!empty($cart)) {
-        $estimated_date = date('Y-m-d H:i:s');
+    $total_actual_price = 0;
+    $total_discounted_price = 0;
 
-        $discount = 0;
-        if (isset($_SESSION['customer_id'])) {
-            $customerid = $_SESSION['customer_id'];
-            $discount = floatval(getCustomerDiscount($customerid)) / 100;
-            $discount_percent = $discount * 100;
-        }
-        
-        $delivery_price = getDeliveryCost();
-        $total_price = 0;
-        $total_discounted_price = 0;
-    
-        foreach ($cart as $item) {
-            $unit_price = floatval($item['unit_price']);
-            $quantity_cart = intval($item['quantity_cart']);
-            $estimate_length = floatval($item['estimate_length']);
-            $estimate_length_inch = floatval($item['estimate_length_inch']);
-            $total_length = ($estimate_length * 12) + $estimate_length_inch;
-            $price = $unit_price * $total_length * $quantity_cart;
-            $total_price += $price;
-            $discounted_price = $price * (1 - $discount);
-            $total_discounted_price += $discounted_price;
-        }
-    
-        $total_price = number_format($total_price, 2);
-        $total_discounted_price = number_format($total_discounted_price, 2);
-    
-        $query = "INSERT INTO estimates (total_price, discounted_price, discount_percent, estimated_date, customerid) VALUES ('$total_price', '$total_discounted_price', '$discount_percent', '$estimated_date', '$customerid')";
-        if ($conn->query($query) === TRUE) {
-            $estimateid = $conn->insert_id;
-        } else {
-            $response['message'] = "Error inserting estimate: " . $conn->error;
-            header('Content-Type: application/json');
-            echo json_encode($response);
-            exit;
-        }
+    foreach ($cart as $item) {
+        $unit_price = floatval($item['unit_price']);
+        $quantity_cart = intval($item['quantity_cart']);
+        $product_details = getProductDetails($item['product_id']);
+        $is_sold_by_feet = intval($product_details['sold_by_feet']);
+        $estimate_length = floatval($item['estimate_length']);
+        $estimate_length_inch = floatval($item['estimate_length_inch']);
+
+        $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
+
+        $actual_price = $unit_price * $total_length * $quantity_cart;
+        $discounted_price = $actual_price * (1 - $discount);
+
+        $total_actual_price += $actual_price;
+        $total_discounted_price += $discounted_price;
     }
 
-    if ($estimateid) {
-        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price) VALUES ";
+    $query = "INSERT INTO estimates (total_price, discounted_price, discount_percent, estimated_date, customerid) 
+              VALUES ('$total_actual_price', '$total_discounted_price', '".($discount * 100)."', '$estimated_date', '$customerid')";
+
+    if ($conn->query($query) === TRUE) {
+        $estimateid = $conn->insert_id;
 
         $values = [];
         foreach ($cart as $item) {
             $product_id = intval($item['product_id']);
             $quantity_cart = intval($item['quantity_cart']);
             $unit_price = floatval($item['unit_price']);
-
-            $estimate_width = floatval($item['estimate_width']);
-            if($estimate_width == 0){
-                $product_details = getProductDetails($product_id);
-                $estimate_width = $product_details['width'] ?? 0;
-            }
-            $estimate_bend = floatval($item['estimate_bend']);
-            $estimate_hem = floatval($item['estimate_hem']);
+            $product_details = getProductDetails($product_id);
+            $is_sold_by_feet = intval($product_details['sold_by_feet']);
             $estimate_length = floatval($item['estimate_length']);
             $estimate_length_inch = floatval($item['estimate_length_inch']);
 
-            $discounted_price = number_format($unit_price * 0.9, 2);
+            $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
 
-            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$unit_price', '$discounted_price')";
+            $actual_price = $unit_price * $total_length;
+            $discounted_price = $actual_price * (1 - $discount);
+
+            $estimate_width = !empty($item['estimate_width']) ? floatval($item['estimate_width']) : $product_details['width'];
+            $estimate_bend = floatval($item['estimate_bend']);
+            $estimate_hem = floatval($item['estimate_hem']);
+
+            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price')";
         }
 
+        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
             $response['success'] = true;
-            $response['message'] = "Estimate successfully saved.";
+            $response['message'] = "Estimate and products successfully saved.";
             $response['estimate_id'] = $estimateid;
         } else {
             $response['message'] = "Error inserting estimate products: " . $conn->error;
         }
+    } else {
+        $response['message'] = "Error inserting estimate: " . $conn->error;
     }
 
     $conn->close();
@@ -549,14 +535,13 @@ if (isset($_POST['load_estimate'])) {
 }
 
 if (isset($_POST['save_order'])) {
-    $discount = floatval( $_POST['discount']);
     header('Content-Type: application/json');
-
     $response = [];
-    $cart = $_SESSION['cart'];
 
-    if (!isset($_SESSION['customer_id'])) {
-        $response['error'] = "Customer ID is not set.";
+    $credit_amt = floatval($_POST['credit_amt']);
+    $cash_amt = floatval($_POST['cash_amt']);
+    if (!isset($_SESSION['customer_id']) || empty($_SESSION['cart'])) {
+        $response['error'] = "Customer ID or cart is not set.";
         echo json_encode($response);
         exit;
     }
@@ -564,123 +549,100 @@ if (isset($_POST['save_order'])) {
     $estimateid = intval($_SESSION['estimateid']);
     $customerid = intval($_SESSION['customer_id']);
     $cashierid = intval($_SESSION['userid']);
-    $orderid = null;
+    $cart = $_SESSION['cart'];
+    $order_date = date('Y-m-d H:i:s');
+    $discount = floatval(getCustomerDiscount($customerid)) / 100;
 
-    if (!empty($cart)) {
-        $order_date = date('Y-m-d H:i:s');
-        $discount = 0;
-        if (isset($_SESSION['customer_id'])) {
-            $customerid = $_SESSION['customer_id'];
-            $discount = floatval(getCustomerDiscount($customerid)) / 100;
-            $discount_percent = $discount * 100;
-        }
-        
-        $delivery_price = getDeliveryCost();
-        $total_price = 0;
-        $total_discounted_price = 0;
-    
-        foreach ($cart as $item) {
-            $unit_price = floatval($item['unit_price']);
-            $quantity_cart = intval($item['quantity_cart']);
-            $estimate_length = floatval($item['estimate_length']);
-            $estimate_length_inch = floatval($item['estimate_length_inch']);
-            $total_length = ($estimate_length * 12) + $estimate_length_inch;
-            $price = $unit_price * $total_length * $quantity_cart;
-            $total_price += $price;
-            $discounted_price = $price * (1 - $discount);
-            $total_discounted_price += $discounted_price;
-        }
-    
-        $total_price = number_format($total_price, 2);
-        $total_discounted_price = number_format($total_discounted_price, 2);
-    
-        $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid) 
-                  VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '$discount_percent', '$order_date', '$customerid')";
-                  
-        if ($conn->query($query) === TRUE) {
-            $orderid = $conn->insert_id;
-        } else {
-            $response['error'] = "Error inserting estimate: " . $conn->error;
-            echo json_encode($response);
-            exit;
-        }
+    $total_price = 0;
+    $total_discounted_price = 0;
+
+    foreach ($cart as $item) {
+        $product_id = intval($item['product_id']);
+        $product_details = getProductDetails($product_id);
+        $quantity_cart = intval($item['quantity_cart']);
+        $unit_price = floatval($item['unit_price']);
+        $estimate_length = floatval($item['estimate_length']);
+        $estimate_length_inch = floatval($item['estimate_length_inch']);
+        $is_sold_by_feet = intval($product_details['sold_by_feet']);
+
+        $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
+        $actual_price = $unit_price * $total_length * $quantity_cart;
+        $discounted_price = $actual_price * (1 - $discount);
+
+        $total_price += $actual_price;
+        $total_discounted_price += $discounted_price;
     }
-    
 
-    if ($orderid) {
-        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category) VALUES ";
+    $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, cash_amt, credit_amt) 
+              VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$customerid', '$cash_amt', '$credit_amt')";
+
+    if ($conn->query($query) === TRUE) {
+        $orderid = $conn->insert_id;
 
         $values = [];
         foreach ($cart as $item) {
             $product_id = intval($item['product_id']);
             $product_details = getProductDetails($product_id);
-            $product_category = intval($product_details['product_category']);
             $quantity_cart = intval($item['quantity_cart']);
             $unit_price = floatval($item['unit_price']);
-            $estimate_width = floatval($item['estimate_width']);
-            if($estimate_width == 0){
-                $product_details = getProductDetails($product_id);
-                $estimate_width = $product_details['width'] ?? 0;
-            }
-
+            $estimate_width = !empty($item['estimate_width']) ? floatval($item['estimate_width']) : floatval($product_details['width']);
             $estimate_bend = floatval($item['estimate_bend']);
             $estimate_hem = floatval($item['estimate_hem']);
             $estimate_length = floatval($item['estimate_length']);
             $estimate_length_inch = floatval($item['estimate_length_inch']);
+            $is_sold_by_feet = intval($product_details['sold_by_feet']);
 
-            $discounted_price = number_format($unit_price * 0.9, 2);
+            $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
 
-            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$unit_price', '$discounted_price', '$product_category')";
+            $actual_price = $unit_price * $total_length;
+            $discounted_price = $actual_price * (1 - $discount);
+            $product_category = intval($product_details['product_category']);
+
+            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category')";
         }
 
+        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
+            $response['success'] = true;
+            $response['order_id'] = $orderid;
+
+            unset($_SESSION['cart']);
+
             $customer_total_orders = getCustomerOrderTotal($customerid);
             $customer_details = getCustomerDetails($customerid);
             $isLoyalty = $customer_details['loyalty'];
 
             if (!$isLoyalty) {
-                $query_loyalty = "SELECT * FROM loyalty_program";
-                $result_loyalty = mysqli_query($conn, $query_loyalty);
-            
-                if ($result_loyalty && mysqli_num_rows($result_loyalty) > 0) {
-                    while ($row_loyalty = mysqli_fetch_assoc($result_loyalty)) {
+                $query_loyalty = "SELECT * FROM loyalty_program WHERE date_from <= CURDATE() AND date_to >= CURDATE()";
+                $result_loyalty = $conn->query($query_loyalty);
+
+                if ($result_loyalty && $result_loyalty->num_rows > 0) {
+                    while ($row_loyalty = $result_loyalty->fetch_assoc()) {
                         $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
-                        $date_from = $row_loyalty['date_from'];
-                        $date_to = $row_loyalty['date_to'];
-                        $current_date = date('Y-m-d');
-            
-                        if ($customer_total_orders >= $accumulated_loyalty_required && ($current_date >= $date_from && $current_date <= $date_to)) {
-                            $query_update = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
-                            $result_update = mysqli_query($conn, $query_update);
-            
-                            if (!$result_update) {
-                                $response['error'] = "Error updating loyalty status: " . mysqli_error($conn);
-                                exit;
-                            } else {
+
+                        if ($customer_total_orders >= $accumulated_loyalty_required) {
+                            $query_update_loyalty = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
+                            if ($conn->query($query_update_loyalty) === TRUE) {
                                 $response['message'] = 'Added Customer to Loyalty Program';
                             }
                         }
                     }
-                } else {
-                    $response['error'] = "Error retrieving loyalty program data: " . mysqli_error($conn);
                 }
             }
 
-            $response['success'] = true;
-            $response['order_id'] = $orderid;
-
-            unset($_SESSION['cart']);
         } else {
-            $response['error'] = "Error inserting estimate products: " . $conn->error;
+            $response['error'] = "Error inserting order products: " . $conn->error;
         }
+    } else {
+        $response['error'] = "Error inserting order: " . $conn->error;
     }
 
     $conn->close();
-
     echo json_encode($response);
 }
+
 
 if (isset($_POST['search_customer'])) {
     $search = mysqli_real_escape_string($conn, $_POST['search_customer']);

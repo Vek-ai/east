@@ -44,6 +44,8 @@ if(isset($_POST['fetch_order_details'])){
                         while ($row = mysqli_fetch_assoc($result)) {
                             $product_id = $row['productid'];
                             if($row['quantity'] > 0){
+                                $actual_price = number_format(floatval($row['actual_price'] * $row['quantity']),2);
+                                $discounted_price = number_format(floatval($row['discounted_price'] * $row['quantity']),2);
                             ?>
                             <tr>
                                 <td class="text-wrap"> 
@@ -96,16 +98,16 @@ if(isset($_POST['fetch_order_details'])){
                                     }
                                     ?>
                                 </td>
-                                <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
-                                <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
+                                <td class="text-end">$ <?= $actual_price ?></td>
+                                <td class="text-end">$ <?= $discounted_price ?></td>
                                 <td>
                                     <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="return_product" data-id="<?php echo $row["id"]; ?>" data-toggle="tooltip" data-placement="top" title="Return"><i class="fa fa-rotate-left text-success"></i></i></a>
                                 </td>
                             </tr>
                     <?php
                             $totalquantity += $row['quantity'] ;
-                            $total_actual_price += $row['actual_price'];
-                            $total_disc_price += $row['discounted_price'];
+                            $total_actual_price += $actual_price;
+                            $total_disc_price += $discounted_price;
                             }
                         }
                     }

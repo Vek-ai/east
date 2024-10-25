@@ -37,10 +37,10 @@ if(isset($_POST['fetch_order_list'])){
                                     <?php echo get_customer_name($row["customerid"]) ?>
                                 </td>
                                 <td >
-                                    $ <?php echo number_format($row["total_price"],2) ?>
+                                    $ <?php echo number_format(getOrderTotals($row["orderid"]),2) ?>
                                 </td>
                                 <td >
-                                    $ <?php echo number_format($row["discounted_price"],2) ?>
+                                    $ <?php echo number_format(getOrderTotalsDiscounted($row["orderid"]),2) ?>
                                 </td>
                                 <td>
                                     <?php echo date("F d, Y", strtotime($row["order_date"])); ?>

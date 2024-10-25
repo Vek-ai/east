@@ -58,13 +58,6 @@ if(isset($_POST['fetch_order'])){
         .table-fixed th:nth-child(11),
         .table-fixed td:nth-child(11) { width: 7%; }
 
-        input[readonly] {
-            border: none;               
-            background-color: transparent;
-            pointer-events: none;
-            color: inherit;
-        }
-
         .table-fixed tbody tr:hover input[readonly] {
             background-color: transparent;
         }
@@ -367,9 +360,19 @@ if(isset($_POST['fetch_order'])){
                                     <label>Discount (%)</label>
                                     <input type="text" class="form-control" id="order_discount" placeholder="%" value="<?= $discount * 100 ?>">
                                 </div>
-                                <div class="form-group">
-                                    <label>Amount</label>
-                                    <input type="text" class="form-control" id="cash_amount" value="<?= $total_customer_price ?>">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <label>Credit Amount</label>
+                                            <input type="number" class="form-control" id="order_credit" value="<?= number_format($total_customer_price,2) ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <label>Cash Amount</label>
+                                            <input type="number" class="form-control" id="order_cash" value="<?= number_format($total_customer_price,2) ?>">
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -383,27 +386,28 @@ if(isset($_POST['fetch_order'])){
                                     <tbody>
                                         <tr>
                                             <th class="text-right border-bottom">Total</th>
-                                            <td class="text-right border-bottom">$ <span id="total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span></td>
+                                            <td class="text-right border-bottom">$<span id="total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span></td>
                                         </tr>
                                         <tr>
                                             <th class="text-right border-bottom">Discount(-)</th>
-                                            <td class="text-right border-bottom">$ <span id="total_discount"><?= number_format(floatval($total_customer_price) * floatval($discount), 2) ?></span></td>
+                                            <td class="text-right border-bottom">$<span id="total_discount"><?= number_format(floatval($total) * floatval($discount), 2) ?></span></td>
                                         </tr>
                                         <tr>
                                             <th class="text-right border-bottom">Delivery</th>
-                                            <td class="text-right border-bottom">$ <span id="delivery_amt"><?= number_format($delivery_price, 2) ?></span></td>
+                                            <td class="text-right border-bottom">$<span id="delivery_amt"><?= number_format($delivery_price, 2) ?></span></td>
                                         </tr>
                                         <tr>
                                             <th class="text-right border-bottom">Sales Tax</th>
-                                            <td class="text-right border-bottom">$ <span id="sales_tax"><?= number_format((floatval($total_customer_price) + $delivery_price) * $tax, 2) ?></span></td>
+                                            <td class="text-right border-bottom">$<span id="sales_tax"><?= number_format((floatval($total_customer_price) + $delivery_price) * $tax, 2) ?></span></td>
                                         </tr>
                                         <tr>
                                             <th class="text-right border-bottom">Total Payable</th>
-                                            <td class="text-right border-bottom">$ <span id="total_payable"><?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?></span></td>
+                                            <td class="text-right border-bottom">$<span id="total_payable"><?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?></span></td>
+                                            <input type="hidden" id="payable_amt" value="<?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?>">
                                         </tr>
                                         <tr class="bg-primary text-white" style="font-size: 1.25rem;">
                                             <th class="text-right">Change</th>
-                                            <td class="text-right">$ 0.00</td>
+                                            <td class="text-right">$<span id="change">0.00</span></td>
                                         </tr>
                                     </tbody>
                                 </table>

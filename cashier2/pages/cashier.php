@@ -1372,10 +1372,14 @@ require '../includes/functions.php';
 
         $(document).on('click', '#save_order', function(event) {
             var discount = $('#order_discount').val();
+            var cash_amt = $('#order_cash').val();
+            var credit_amt = $('#order_credit').val();
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
+                    cash_amt: cash_amt,
+                    credit_amt: credit_amt,
                     discount: discount,
                     save_order: 'save_order'
                 },
@@ -1397,6 +1401,53 @@ require '../includes/functions.php';
                 }
             });
         });
+
+        $(document).on('input', '#order_cash', function(event) {
+            var cash_amt = parseFloat($('#order_cash').val()) || 0;
+            var payable_amt = parseFloat($('#payable_amt').val()) || 0;
+
+            var credit_amt = (payable_amt - cash_amt).toFixed(2);
+            if (credit_amt < 0) {
+                credit_amt = 0;
+            }
+
+            $('#order_credit').val(credit_amt);
+
+            var change = (cash_amt - payable_amt).toFixed(2);
+            if (change < 0) {
+                change = 0;
+            }
+
+            $('#change').text(change);
+        });
+
+        $(document).on('input', '#order_credit', function(event) {
+            var credit_input = $('#order_credit');
+            var credit_amt = parseFloat(credit_input.val()) || 0;
+            var payable_amt = parseFloat($('#payable_amt').val()) || 0;
+
+            if (credit_amt > payable_amt) {
+                credit_amt = payable_amt;
+                credit_input.blur();
+                credit_input.val(credit_amt.toFixed(2));
+                credit_input.focus();
+            }
+
+            var cash_amt = (payable_amt - credit_amt).toFixed(2);
+            if (cash_amt < 0) {
+                cash_amt = 0;
+            }
+
+            $('#order_cash').val(cash_amt);
+
+            var change = (cash_amt - payable_amt).toFixed(2);
+            if (change < 0) {
+                change = 0;
+            }
+
+            $('#change').text(change);
+        });
+
 
 
         $(document).on('click', '#view_product_details', function(event) {

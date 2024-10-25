@@ -63,8 +63,8 @@ if (isset($_POST['search_orders'])) {
                                 </td>
                                 <td>
                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
-                                    <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
-                                    <a href="print_order_total.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
+                                    <a href="/print_order_product.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
+                                    <a href="/print_order_total.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
                                 </td>
                             </tr>
                             <?php
@@ -145,12 +145,12 @@ if (isset($_POST['search_estimates'])) {
                                 <p class="mb-0"><?= $total_changes ?></p>
                             </td>
                             <td class="text-end">
-                                <p class="mb-0 fs-3">$<?= number_format($row['discounted_price'],2) ?></p>
+                                <p class="mb-0 fs-3">$<?= number_format(getEstimateTotalsDiscounted($row['estimateid']),2) ?></p>
                             </td>
                             <td>
                                 <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
-                                <a href="print_estimate_product.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
-                                <a href="print_estimate_total.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
+                                <a href="/print_estimate_product.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
+                                <a href="/print_estimate_total.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
                                 <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-info fa fa-clock-rotate-left fs-5"></i></button>
                             </td>
                         </tr>
@@ -326,7 +326,10 @@ if(isset($_POST['fetch_order_details'])){
                         $response = array();
                         while ($row = mysqli_fetch_assoc($result)) {
                             $product_id = $row['productid'];
+                            $actual_price = $discounted_price = 0;
                             if($row['quantity'] > 0){
+                                $actual_price = number_format(floatval($row['actual_price'] * $row['quantity']),2);
+                                $discounted_price = number_format(floatval($row['discounted_price'] * $row['quantity']),2);
                             ?>
                             <tr>
                                 <td class="text-wrap"> 
@@ -379,13 +382,13 @@ if(isset($_POST['fetch_order_details'])){
                                     }
                                     ?>
                                 </td>
-                                <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
-                                <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
+                                <td class="text-end">$ <?= $actual_price ?></td>
+                                <td class="text-end">$ <?= $discounted_price ?></td>
                             </tr>
                     <?php
                             $totalquantity += $row['quantity'] ;
-                            $total_actual_price += $row['actual_price'];
-                            $total_disc_price += $row['discounted_price'];
+                            $total_actual_price += $actual_price;
+                            $total_disc_price += $discounted_price;
                             }
                         }
                     }
@@ -431,8 +434,11 @@ if(isset($_POST['fetch_order_details'])){
                             $response = array();
                             while ($row = mysqli_fetch_assoc($result)) {
                                 $product_id = $row['productid'];
+                                $actual_price = $discounted_price = 0;
                                 if($row['quantity'] > 0){
-                                ?>
+                                    $actual_price = number_format(floatval($row['actual_price'] * $row['quantity']),2);
+                                    $discounted_price = number_format(floatval($row['discounted_price'] * $row['quantity']),2);
+                                    ?>
                                 <tr>
                                     <td class="text-wrap"> 
                                         <?php echo getProductName($product_id) ?>
@@ -484,13 +490,13 @@ if(isset($_POST['fetch_order_details'])){
                                         }
                                         ?>
                                     </td>
-                                    <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
-                                    <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
+                                    <td class="text-end">$ <?= $actual_price ?></td>
+                                    <td class="text-end">$ <?= $discounted_price ?></td>
                                 </tr>
                         <?php
                                 $totalquantity += $row['quantity'] ;
-                                $total_actual_price += $row['actual_price'];
-                                $total_disc_price += $row['discounted_price'];
+                                $total_actual_price += $actual_price;
+                                $total_disc_price += $discounted_price;
                                 }
                             
                         }
@@ -587,6 +593,8 @@ if (isset($_POST['fetch_estimate_details'])) {
                                                 while ($row = mysqli_fetch_assoc($result)) {
                                                     $estimateid = $row['estimateid'];
                                                     $product_details = getProductDetails($row['product_id']);
+                                                    $actual_price = number_format(floatval($row['actual_price'] * $row['quantity']),2);
+                                                    $discounted_price = number_format(floatval($row['discounted_price'] * $row['quantity']),2);
                                                 ?> 
                                                     <tr> 
                                                         <td>
@@ -608,24 +616,42 @@ if (isset($_POST['fetch_estimate_details'])) {
                                                         <td>
                                                             <?php 
                                                             $width = $row['custom_width'];
-                                                            $height = $row['custom_height'];
+                                                            $bend = $row['custom_bend'];
+                                                            $hem = $row['custom_hem'];
+                                                            $length = $row['custom_length'];
+                                                            $inch = $row['custom_length2'];
                                                             
-                                                            if (!empty($width) && !empty($height)) {
-                                                                echo htmlspecialchars($width) . " X " . htmlspecialchars($height);
-                                                            } elseif (!empty($width)) {
-                                                                echo "Width: " . htmlspecialchars($width);
-                                                            } elseif (!empty($height)) {
-                                                                echo "Height: " . htmlspecialchars($height);
+                                                            if (!empty($width)) {
+                                                                echo "Width: " . htmlspecialchars($width) . "<br>";
+                                                            }
+                                                            
+                                                            if (!empty($bend)) {
+                                                                echo "Bend: " . htmlspecialchars($bend) . "<br>";
+                                                            }
+                                                            
+                                                            if (!empty($hem)) {
+                                                                echo "Hem: " . htmlspecialchars($hem) . "<br>";
+                                                            }
+                                                            
+                                                            if (!empty($length)) {
+                                                                echo "Length: " . htmlspecialchars($length) . " ft";
+                                                                
+                                                                if (!empty($inch)) {
+                                                                    echo " " . htmlspecialchars($inch) . " in";
+                                                                }
+                                                                echo "<br>";
+                                                            } elseif (!empty($inch)) {
+                                                                echo "Length: " . htmlspecialchars($inch) . " in<br>";
                                                             }
                                                             ?>
                                                         </td>
-                                                        <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
-                                                        <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
+                                                        <td class="text-end">$ <?= $actual_price ?></td>
+                                                        <td class="text-end">$ <?= $discounted_price ?></td>
                                                     </tr>
                                             <?php
                                                     $totalquantity += $row['quantity'] ;
-                                                    $total_actual_price += $row['actual_price'];
-                                                    $total_disc_price += $row['discounted_price'];
+                                                    $total_actual_price += $actual_price;
+                                                    $total_disc_price += $discounted_price;
                                                 }
                                             
                                             ?>
@@ -633,10 +659,11 @@ if (isset($_POST['fetch_estimate_details'])) {
 
                                         <tfoot>
                                             <tr>
-                                                <td colspan="5">Total</td>
-                                                <td class="text-end"><?= $totalquantity ?></td>
-                                                <td class="text-end"><?= $total_actual_price ?></td>
-                                                <td class="text-end"><?= $total_disc_price ?></td>
+                                                <td colspan="4">Total</td>
+                                                <td class="text-start"><?= $totalquantity ?></td>
+                                                <td></td>
+                                                <td class="text-end">$ <?= $total_actual_price ?></td>
+                                                <td class="text-end">$ <?= $total_disc_price ?></td>
                                             </tr>
                                         </tfoot>
                                     </table>
