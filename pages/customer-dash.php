@@ -91,8 +91,6 @@ if(isset($_REQUEST['id'])){
     </div>
 
     <div class="row">
-  <!-- text-cards -->
-    <!-- Profile card -->
     <div class="col-lg-3 col-md-6">
     <div class="card">
       <div class="card-body p-2">
