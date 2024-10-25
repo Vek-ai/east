@@ -162,7 +162,7 @@ if(isset($_REQUEST['id'])){
   </div>
   <div class="col-lg-3 col-md-6">
     <div class="card card-body">
-        <h4 class="text-center pb-3"><?= date('Y'); ?> Orders</h4>
+       
         <div class="card">
             <div class="card-body p-9">
                 <div class="hstack gap-9">
