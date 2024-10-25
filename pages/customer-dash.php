@@ -171,7 +171,7 @@ if(isset($_REQUEST['id'])){
                 </div>
                 <div class="align-self-center">
                     <?php
-                    $query_order_total = "SELECT SUM(cash_amt) as order_total FROM orders WHERE customerid = '$customer_id' AND YEAR(order_date) = YEAR(CURDATE())";
+                    $query_order_total = "SELECT SUM(discounted_price) as order_total FROM orders WHERE customerid = '$customer_id' AND YEAR(order_date) = YEAR(CURDATE())";
                     $result_order_total = mysqli_query($conn, $query_order_total);
                     
                     if ($result_order_total) {
