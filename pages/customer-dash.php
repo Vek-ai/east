@@ -101,7 +101,7 @@ if(isset($_REQUEST['id'])){
           </div>
             <h3 class="mb-1 fs-14"><?= $customer_details['customer_first_name'] ?> <?= $customer_details['customer_last_name'] ?></h3>
             <p class="fs-3 mb-4"><?= getCustomerType($customer_details['customer_type_id']) ?></p>
-            <h4 class="text-muted"><?= date('Y'); ?> Orders</h4>
+            <a href="javascript:void(0)" class="btn btn-primary btn-md btn-rounded mb-7">Top 2</a>
           <div class="row gx-lg-4 text-center pt-4 justify-content-center border-top">
             <div class="col-4">
               <?php
