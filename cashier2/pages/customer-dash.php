@@ -30,7 +30,7 @@ if(isset($_REQUEST['id'])){
                 <div class="">
                 <small>This Month</small>
                 <?php
-                    $query_curr_month = "SELECT SUM(cash_amt) as order_total 
+                    $query_curr_month = "SELECT SUM(discounted_price) as order_total 
                                         FROM orders 
                                         WHERE customerid = '$customer_id' 
                                         AND YEAR(order_date) = YEAR(CURDATE()) 
@@ -59,7 +59,7 @@ if(isset($_REQUEST['id'])){
                 <div class="">
                 <small>Last Month</small>
                 <?php
-                    $query_prev_month = "SELECT SUM(cash_amt) as order_total 
+                    $query_prev_month = "SELECT SUM(discounted_price) as order_total 
                                         FROM orders 
                                         WHERE customerid = '$customer_id' 
                                         AND YEAR(order_date) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) 
@@ -162,7 +162,7 @@ if(isset($_REQUEST['id'])){
       </div>
     </div>
   </div>
-  <div class="col-lg-3 col-md-6">
+    <div class="col-lg-3 col-md-6">
     <div class="card card-body">
         <h4 class="text-center pb-3"><?= date('Y'); ?> Orders</h4>
         <div class="card">
@@ -173,7 +173,7 @@ if(isset($_REQUEST['id'])){
                 </div>
                 <div class="align-self-center">
                     <?php
-                    $query_order_total = "SELECT SUM(cash_amt) as order_total FROM orders WHERE customerid = '$customer_id' AND YEAR(order_date) = YEAR(CURDATE())";
+                    $query_order_total = "SELECT SUM(discounted_price) as order_total FROM orders WHERE customerid = '$customer_id' AND YEAR(order_date) = YEAR(CURDATE())";
                     $result_order_total = mysqli_query($conn, $query_order_total);
                     
                     if ($result_order_total) {

@@ -30,7 +30,7 @@ if(isset($_REQUEST['id'])){
                 <div class="">
                 <small>This Month</small>
                 <?php
-                    $query_curr_month = "SELECT SUM(cash_amt) as order_total 
+                    $query_curr_month = "SELECT SUM(discounted_price) as order_total 
                                         FROM orders 
                                         WHERE customerid = '$customer_id' 
                                         AND YEAR(order_date) = YEAR(CURDATE()) 
@@ -59,7 +59,7 @@ if(isset($_REQUEST['id'])){
                 <div class="">
                 <small>Last Month</small>
                 <?php
-                    $query_prev_month = "SELECT SUM(cash_amt) as order_total 
+                    $query_prev_month = "SELECT SUM(discounted_price) as order_total 
                                         FROM orders 
                                         WHERE customerid = '$customer_id' 
                                         AND YEAR(order_date) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) 
