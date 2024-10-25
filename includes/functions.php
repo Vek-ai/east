@@ -408,6 +408,43 @@ function getOrderTotalsDiscounted($orderid) {
     return number_format($total_discounted_price, 2);
 }
 
+function setOrderTotals($orderid) {
+    global $conn;
+
+    $query = "
+        SELECT 
+            SUM(discounted_price * quantity) AS total_discounted_price,
+            SUM(actual_price * quantity) AS total_actual_price
+        FROM 
+            order_product
+        WHERE 
+            orderid = '$orderid'";
+
+    $result = mysqli_query($conn, $query);
+    $total_discounted_price = 0;
+    $total_actual_price = 0;
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $total_discounted_price = floatval($row['total_discounted_price']);
+        $total_actual_price = floatval($row['total_actual_price']);
+    }
+
+    $query_update = "
+        UPDATE orders
+        SET 
+            total_price = '$total_actual_price',
+            discounted_price = '$total_discounted_price'
+        WHERE 
+            orderid = '$orderid'";
+
+    if (mysqli_query($conn, $query_update)) {
+        return "success";
+    } else {
+        return "Error updating order totals: " . mysqli_error($conn);
+    }
+}
+
 function getEstimateTotals($estimateid) {
     global $conn;
 

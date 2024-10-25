@@ -744,6 +744,8 @@ if (isset($_POST['return_product'])) {
                 $new_quantity = $available_quantity - $quantity;
                 $update_query = "UPDATE order_product SET quantity = '$new_quantity' WHERE id = '$id'";
                 if (mysqli_query($conn, $update_query)) {
+
+                    setOrderTotals($order['orderid']);
                     echo "success";
                 } else {
                     echo "Error updating order quantity.";
