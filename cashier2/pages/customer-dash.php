@@ -103,7 +103,49 @@ if(isset($_REQUEST['id'])){
           </div>
           <h3 class="mb-1 fs-14"><?= $customer_details['customer_first_name'] ?> <?= $customer_details['customer_last_name'] ?></h3>
           <p class="fs-3 mb-4"><?= getCustomerType($customer_details['customer_type_id']) ?></p>
-          <a href="javascript:void(0)" class="btn btn-primary btn-md btn-rounded mb-7">Top 2</a>
+          <?php
+            $query_order_total = "
+                SELECT 
+                    subquery.customerid, 
+                    subquery.order_total,
+                    (SELECT COUNT(*) 
+                    FROM (
+                        SELECT SUM(discounted_price) AS order_total
+                        FROM orders
+                        WHERE YEAR(order_date) = YEAR(CURDATE())
+                        GROUP BY customerid
+                    ) AS totals
+                    WHERE totals.order_total > subquery.order_total) + 1 AS customer_rank
+                FROM (
+                    SELECT 
+                        o.customerid, 
+                        SUM(o.discounted_price) AS order_total
+                    FROM orders o
+                    WHERE YEAR(o.order_date) = YEAR(CURDATE())
+                    GROUP BY o.customerid
+                ) AS subquery
+                WHERE subquery.customerid = '$customer_id'
+            ";
+            
+            $result_order_total = mysqli_query($conn, $query_order_total);
+            if ($result_order_total) {
+                $row_order_total = mysqli_fetch_array($result_order_total, MYSQLI_ASSOC);
+                
+                if ($row_order_total) {
+                    $customer_order_total = $row_order_total['order_total'];
+                    $customer_rank = $row_order_total['customer_rank'];
+                    ?>
+                    <a href="javascript:void(0)" class="btn btn-primary btn-md btn-rounded mb-7">Top <?= $customer_rank ?></a>
+                    <?php
+                } else {
+                    ?>
+                    <a href="javascript:void(0)" class="btn btn-primary btn-md btn-rounded mb-7">Unranked</a>
+                    <?php
+                }
+            } else {
+                echo "Error executing query: " . mysqli_error($conn);
+            }
+          ?>
           <div class="row gx-lg-4 text-center pt-4 justify-content-center border-top">
             <div class="col-4">
               <?php
