@@ -6,7 +6,7 @@ include "../includes/dbconn.php";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $conn->real_escape_string($_POST['username']);
     $password = $_POST['password'];
-    $redirect = isset($_REQUEST['redirect']) ? $_REQUEST['redirect'] : 'index.php';
+    $redirect = (!empty($_REQUEST['redirect']) && $_REQUEST['redirect'] !== 'login.php') ? $_REQUEST['redirect'] : 'index.php';
 
     $sql = "SELECT customer_id, password FROM customer WHERE username = '$username'";
     $result = $conn->query($sql);
