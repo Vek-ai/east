@@ -210,7 +210,7 @@ $lastName = isset($currentUser['customer_last_name']) ? htmlspecialchars($curren
 
       <div class="tab-pane fade" id="pills-contacts" role="tabpanel" aria-labelledby="pills-contacts-tab" tabindex="0">
         <div class="row">
-          <div class="col-lg-12 mt-4">
+          <div class="col-lg-12 mt-2">
             <div class="card shadow-none">
               <div class="card-body">
                 <h4>Contacts</h4>
@@ -242,7 +242,7 @@ $lastName = isset($currentUser['customer_last_name']) ? htmlspecialchars($curren
             </div>
           </div>
 
-          <div class="col-lg-12 mt-4">
+          <div class="col-lg-12">
             <div class="card shadow-none">
               <div class="card-body">
                 <h4>Secondary Contacts</h4>
@@ -272,7 +272,7 @@ $lastName = isset($currentUser['customer_last_name']) ? htmlspecialchars($curren
             </div>
           </div>
 
-          <div class="col-lg-12 mt-4">
+          <div class="col-lg-12">
             <div class="card shadow-none">
               <div class="card-body">
                 <h4>AP Contacts</h4>
