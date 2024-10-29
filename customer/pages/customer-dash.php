@@ -97,10 +97,10 @@ if(isset($_SESSION['userid'])){
     <div class="col-lg-3 col-md-6">
     <div class="card">
       <div class="card-body p-2">
-        <img class="card-img-top w-100 profile-bg-height rounded overflow-hidden" src="assets/images/backgrounds/profile-bg.jpg" height="111" alt="Card image cap" />
+        <img class="card-img-top w-100 profile-bg-height rounded overflow-hidden" src="../../assets/images/backgrounds/profile-bg.jpg" height="111" alt="Card image cap" />
         <div class="card-body little-profile text-center p-9">
           <div class="pro-img mb-3">
-            <img src="assets/images/profile/user-2.jpg" alt="user" class="rounded-circle shadow-sm" width="112" />
+            <img src="../../assets/images/profile/user-2.jpg" alt="user" class="rounded-circle shadow-sm" width="112" />
           </div>
             <h3 class="mb-1 fs-14"><?= $customer_details['customer_first_name'] ?> <?= $customer_details['customer_last_name'] ?></h3>
             <p class="fs-3 mb-4"><?= getCustomerType($customer_details['customer_type_id']) ?></p>
@@ -494,7 +494,7 @@ if(isset($_SESSION['userid'])){
               type: 'POST',
               data: {
                   query: query,
-                  customerid: <?= $_REQUEST['id'] ?>
+                  customerid: <?php $_REQUEST['id'] ?>
               },
               success: function(response) {
                   $('#productTableBody').html(response);
