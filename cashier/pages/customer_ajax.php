@@ -30,6 +30,7 @@ if(isset($_REQUEST['action'])) {
         $customer_notes = mysqli_real_escape_string($conn, $_POST['customer_notes']);
         $new_customer_type_id = mysqli_real_escape_string($conn, $_POST['customer_type']);
         $call_status = isset($_POST['call_status']) ? mysqli_real_escape_string($conn, $_POST['call_status']) : '';
+        $credit_limit = isset($_POST['call_status']) ? mysqli_real_escape_string($conn, $_POST['credit_limit']) : 0;
 
         $customer_name = $customer_first_name . "" . $customer_last_name;
 
@@ -85,6 +86,7 @@ if(isset($_REQUEST['action'])) {
                         tax_exempt_number = '$tax_exempt_number',
                         customer_notes = '$customer_notes',
                         call_status = '$call_status',
+                        credit_limit = '$credit_limit',
                         customer_type_id = '$new_customer_type_id'
 
                         
@@ -167,6 +169,7 @@ if(isset($_REQUEST['action'])) {
                     tax_exempt_number,
                     customer_notes,
                     customer_type_id,
+                    credit_limit,
                     call_status) 
                     VALUES (
                     '$customer_first_name', 
@@ -188,6 +191,7 @@ if(isset($_REQUEST['action'])) {
                     '$tax_exempt_number',
                     '$customer_notes',
                     '$new_customer_type_id',
+                    '$credit_limit',
                     '$call_status')";
 
                 if (mysqli_query($conn, $insertQuery)) {

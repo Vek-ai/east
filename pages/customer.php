@@ -23,6 +23,7 @@ $tax_status = "";
 $tax_exempt_number = "";
 $customer_notes = "";
 $call_status = "";
+$credit_limit = 0;
 
 $customer_name = $customer_first_name . " " . $customer_last_name;
 
@@ -55,6 +56,7 @@ if (!empty($_REQUEST['customer_id'])) {
     $tax_exempt_number = $row['tax_exempt_number'];
     $customer_notes = $row['customer_notes'];
     $call_status = $row['call_status'];
+    $credit_limit = $row['call_status'] ?? 0;
 
     $loyalty = $row['loyalty'];
 
@@ -389,6 +391,11 @@ if (!empty($_REQUEST['result'])) {
                     </select>
                   </div>
                 <?php } ?>
+
+                <div class="col-6">
+                  <label class="form-label">Credit Limit</label>
+                  <input class="form-control" type="text" id="credit_limit" name="credit_limit" value="<?= $credit_limit ?>">
+                </div>
               
               </div>
 
@@ -398,9 +405,11 @@ if (!empty($_REQUEST['result'])) {
                   rows="5"><?= $customer_notes ?></textarea>
               </div>
 
-              <div class="mb-3">
-                <label class="form-label">Customer Call Status</label>
-                <input type="checkbox" id="call_status" name="call_status" <?= $call_status ? 'checked' : '' ?>>
+              <div class="row mb-3">
+                  <div class="col">
+                    <label class="form-label">Customer Call Status</label>
+                    <input type="checkbox" id="call_status" name="call_status" <?= $call_status ? 'checked' : '' ?>>
+                  </div>
               </div>
 
               <div class="form-actions">
