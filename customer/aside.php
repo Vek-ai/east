@@ -32,7 +32,7 @@
                 </a>
                 <div class="dropdown-divider"></div>
                 <div class="px-3 py-2">
-                  <a href="../dark/page-user-profile.html" class="btn d-block w-100 btn-info rounded-pill">View Profile</a>
+                  <a href="pages/customer-profile.php" class="btn d-block w-100 btn-info rounded-pill">View Profile</a>
                 </div>
               </div>
             </div>
@@ -48,7 +48,13 @@
           <span class="hide-menu">Dashboard</span>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="index.php">
+          <a class="sidebar-link" href="pages/customer-profile.php">
+            <iconify-icon icon="solar:pen-new-round-linear" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Profile</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="../index.php">
             <iconify-icon icon="solar:pen-new-round-linear" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Dashboard</span>
           </a>

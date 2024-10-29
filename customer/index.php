@@ -564,7 +564,7 @@ if (!isset($_SESSION['userid'])) {
                         <div class="message-body pb-3">
                           <div class="px-3 pt-3">
                             <div class="h6 mb-0 dropdown-item py-8 px-3 rounded-2 link">
-                              <a href="dark/page-user-profile.html" class=" d-flex  align-items-center ">
+                              <a href="pages/customer-profile.php" class=" d-flex  align-items-center ">
                                 My Profile
                               </a>
                             </div>
@@ -702,7 +702,7 @@ if (!isset($_SESSION['userid'])) {
                         </a>
                       </li>
                       <li class="sidebar-item py-2">
-                        <a href="dark/page-user-profile.html" class="d-flex align-items-center position-relative">
+                        <a href="pages/customer-profile.php" class="d-flex align-items-center position-relative">
                           <div class="bg-danger-subtle rounded-circle round-40 me-3 p-6 d-flex align-items-center justify-content-center">
                             <iconify-icon icon="solar:cart-large-2-linear" class="text-danger fs-5"></iconify-icon>
                           </div>
@@ -767,7 +767,7 @@ if (!isset($_SESSION['userid'])) {
                           <a class="fs-3" href="dark/app-notes.html">Notes App</a>
                         </li>
                         <li class="sidebar-item py-2">
-                          <a class="fs-3" href="dark/page-user-profile.html">User
+                          <a class="fs-3" href="pages/customer-profile.php">User
                             Application</a>
                         </li>
                         <li class="sidebar-item py-2">
@@ -896,7 +896,7 @@ if (!isset($_SESSION['userid'])) {
                             </div>
                             <div class="col-6">
                               <div class="position-relative">
-                                <a href="dark/page-user-profile.html" class="d-flex align-items-center pb-9 position-relative">
+                                <a href="pages/customer-profile.php" class="d-flex align-items-center pb-9 position-relative">
                                   <div class="bg-danger-subtle rounded-circle round-40 me-3 p-6 d-flex align-items-center justify-content-center">
                                     <iconify-icon icon="solar:cart-large-2-linear" class="text-danger fs-5"></iconify-icon>
                                   </div>
@@ -970,7 +970,7 @@ if (!isset($_SESSION['userid'])) {
                             <a class="text-dark bg-hover-primary" href="dark/app-notes.html">Notes App</a>
                           </li>
                           <li class="mb-3">
-                            <a class="text-dark bg-hover-primary" href="dark/page-user-profile.html">User Application</a>
+                            <a class="text-dark bg-hover-primary" href="pages/customer-profile.php">User Application</a>
                           </li>
                           <li class="mb-3">
                             <a class="text-dark bg-hover-primary" href="dark/page-account-settings.html">Account Settings</a>
@@ -1236,7 +1236,7 @@ if (!isset($_SESSION['userid'])) {
                         <div class="message-body pb-3">
                           <div class="px-3 pt-3">
                             <div class="h6 mb-0 dropdown-item py-8 px-3 rounded-2 link">
-                              <a href="dark/page-user-profile.html" class=" d-flex  align-items-center ">
+                              <a href="pages/customer-profile.php" class=" d-flex  align-items-center ">
                                 My Profile
                               </a>
                             </div>

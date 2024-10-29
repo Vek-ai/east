@@ -1,8 +1,9 @@
 <?php
-require '../includes/dbconn.php';
-require '../includes/functions.php';
+session_start();
+include 'includes/dbconn.php';
+include 'includes/functions.php';
 
-$customer_id = "";
+$customer_id = $_SESSION['userid'];
 $customer_first_name = "";
 $customer_last_name = "";
 $customer_business_name = "";
