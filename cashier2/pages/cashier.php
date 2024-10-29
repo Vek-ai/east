@@ -312,7 +312,7 @@ require '../includes/functions.php';
                 </button>
             </div>
             <div class="modal-body">
-                <div class="form-group col-4">
+                <div class="form-group col-12">
                     <div id="customer_est_section">
                         <?php 
                             if(!empty($_SESSION["customer_id"])){
@@ -320,22 +320,52 @@ require '../includes/functions.php';
                                 $customer_details = getCustomerDetails($customer_id);
                                 $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
                             ?>
-                            <div class="form-group d-flex align-items-center">
+
+                            <div class="form-group row align-items-center">
+                                <div class="col-3">
                                 <label class="mb-0 me-3">Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
-                                <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_estimate">
-                                    <i class="fe fe-reload"></i> Change
-                                </button>
-                                <span class="text-primary fw-bold">Credit Limit: $<?= $credit_limit ?></span>                                       
+                                    <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_estimate">
+                                        <i class="fe fe-reload"></i> Change
+                                    </button>
+                                </div>
+                                <div class="col-3">
+                                    <span class="fw-bold">Credit Limit:</span><br>
+                                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                                </div>
+                                <div class="col-3">
+                                    <label for="job_name" class="mb-0">Job Name</label>
+                                    <input type="text" id="est_job_name" name="est_job_name" class="form-control" placeholder="Enter Job Name">
+                                </div>
+                                <div class="col-3">
+                                    <label for="job_po" class="mb-0">Job PO #</label>
+                                    <input type="text" id="est_job_po" name="est_job_po" class="form-control" placeholder="Enter Job PO #">
+                                </div>
                             </div>
                         <?php } else { ?>
-                            <label class="form-label">Customer Name</label>
-                            <div class="input-group">
-                                <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_estimate">
-                                <a class="input-group-text rounded-right" href="/cashier/?page=customer" target="_blank">
-                                    <span class="input-group-text"> + </span>
-                                </a>
-                                <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+                            <div class="form-group row align-items-center">
+                                <div class="col-3">
+                                    <label>Customer Name</label>
+                                    <div class="input-group">
+                                        <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_estimate">
+                                        <a class="input-group-text rounded-right" href="/cashier/?page=customer" target="_blank">
+                                            <span class="input-group-text"> + </span>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <span class="fw-bold">Credit Limit:</span><br>
+                                    <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+                                </div>
+                                <div class="col-3">
+                                    <label for="job_name" class="mb-0">Job Name</label>
+                                    <input type="text" id="est_job_name" name="est_job_name" class="form-control" placeholder="Enter Job Name">
+                                </div>
+                                <div class="col-3">
+                                    <label for="job_po" class="mb-0">Job PO #</label>
+                                    <input type="text" id="est_job_po" name="est_job_po" class="form-control" placeholder="Enter Job PO #">
+                                </div>
                             </div>
+                            
                         <?php } ?>
                     </div>
                     <input type='hidden' id='customer_id_estimate' name="customer_id"/>
@@ -378,7 +408,7 @@ require '../includes/functions.php';
                 </button>
             </div>
             <div class="modal-body">
-                <div class="form-group col-6">
+                <div class="form-group">
                     <div id="customer_cash_section">
                         <?php 
                         if(!empty($_SESSION["customer_id"])){
@@ -386,20 +416,53 @@ require '../includes/functions.php';
                             $customer_details = getCustomerDetails($customer_id);
                             $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
                         ?>
-                        <div class="form-group">
-                            <label>Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
-                            <button class="btn ripple btn-primary" type="button" id="customer_change_cash" ><i class="fe fe-reload"></i> Change</button>   
-                            <span class="text-primary fw-bold ms-3">Credit Limit: $<?= $credit_limit ?></span>                                    
+                        <div class="form-group row align-items-center">
+                            <div class="col-3">
+                                <label>Customer Name: <?= get_customer_name($_SESSION["customer_id"]); ?></label>
+                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="customer_change_cash">
+                                    <i class="fe fe-reload"></i> Change
+                                </button>
+                            </div>
+                            <div class="col-3">
+                                <span class="fw-bold">Credit Limit:</span><br>
+                                <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                            </div>
+                            <div class="col-3">
+                                <label for="job_name" class="mb-0">Job Name</label>
+                                <input type="text" id="order_job_name" name="order_job_name" class="form-control" placeholder="Enter Job Name">
+                            </div>
+                            <div class="col-3">
+                                <label for="job_po" class="mb-0">Job PO #</label>
+                                <input type="text" id="order_job_po" name="order_job_po" class="form-control" placeholder="Enter Job PO #">
+                            </div>
                         </div>
+
                         <?php } else {?>
-                        <label>Customer Name</label>
-                        <div class="input-group">
-                            <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
-                            <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
-                                <span class="input-group-text"> + </span>
-                            </a>
-                            <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+                        
+                        <div class="form-group row align-items-center">
+                            <div class="col-3">
+                                <label>Customer Name</label>
+                                <div class="input-group">
+                                    <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
+                                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
+                                        <span class="input-group-text"> + </span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <span class="fw-bold">Credit Limit:</span><br>
+                                <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+                            </div>
+                            <div class="col-3">
+                                <label for="job_name" class="mb-0">Job Name</label>
+                                <input type="text" id="order_job_name" name="order_job_name" class="form-control" placeholder="Enter Job Name">
+                            </div>
+                            <div class="col-3">
+                                <label for="job_po" class="mb-0">Job PO #</label>
+                                <input type="text" id="order_job_po" name="order_job_po" class="form-control" placeholder="Enter Job PO #">
+                            </div>
                         </div>
+                        
                     <?php } ?>
                     </div>
                     <input type='hidden' id='customer_id_cash' name="customer_id"/>
@@ -1333,11 +1396,15 @@ require '../includes/functions.php';
 
         $(document).on('click', '#save_estimate', function(event) {
             var discount = $('#est_discount').val();
+            var job_name = $('#est_job_name').val();
+            var job_po = $('#est_job_po').val();
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     discount: discount,
+                    job_name: job_name,
+                    job_po: job_po,
                     save_estimate: 'save_estimate'
                 },
                 success: function(response) {
@@ -1386,6 +1453,9 @@ require '../includes/functions.php';
             var discount = $('#order_discount').val();
             var cash_amt = $('#order_cash').val();
             var credit_amt = $('#order_credit').val();
+            var job_name = $('#order_job_name').val();
+            var job_po = $('#order_job_po').val();
+            var deliver_address = $('#order_deliver_address').val();
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -1393,6 +1463,9 @@ require '../includes/functions.php';
                     cash_amt: cash_amt,
                     credit_amt: credit_amt,
                     discount: discount,
+                    job_name: job_name,
+                    job_po: job_po,
+                    deliver_address: deliver_address,
                     save_order: 'save_order'
                 },
                 success: function(response) {

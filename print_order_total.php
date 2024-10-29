@@ -33,10 +33,10 @@ $query = "SELECT * FROM orders WHERE orderid = '$orderid'";
 $result = mysqli_query($conn, $query);
 
 if (mysqli_num_rows($result) > 0) {
-    while($row_estimate = mysqli_fetch_assoc($result)){
-        $discount = floatval($row_estimate['discount_percent']) / 100;
-        $orderid = $row_estimate['orderid'];
-        $customer_id = $row_estimate['customerid'];
+    while($row_orders = mysqli_fetch_assoc($result)){
+        $discount = floatval($row_orders['discount_percent']) / 100;
+        $orderid = $row_orders['orderid'];
+        $customer_id = $row_orders['customerid'];
         $customerDetails = getCustomerDetails($customer_id);
         $tax = floatval(getCustomerTax($customer_id)) / 100;
         $delivery_method = 'Deliver';
@@ -50,7 +50,7 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->SetFont('Arial', '', 10);
         $pdf->MultiCell(95, 5, "Estimate #: $orderid", 0, 'L');
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(95, 5, "Date: " .date("F d, Y", strtotime($row_estimate['order_date'])), 0, 1, 'L');
+        $pdf->Cell(95, 5, "Date: " .date("F d, Y", strtotime($row_orders['order_date'])), 0, 1, 'L');
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(95, 5, 'Salesperson: ' . get_staff_name($current_user_id), 0, 0, 'L');
 
@@ -61,13 +61,15 @@ if (mysqli_num_rows($result) > 0) {
         $col3_x = 140;
         $pdf->SetFont('Arial', 'B', 10);
 
-        $pdf->SetXY($col1_x, $pdf->GetY());
-        $pdf->Cell(60, 5, 'Sold To: ' .$customerDetails['customer_first_name'] . " " .$customerDetails['customer_last_name'], 0, 0, 'L');
+        $def_y = $pdf->GetY();
 
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(60, 5, 'Ship To: ' .$customerDetails['customer_first_name'] . " " .$customerDetails['customer_last_name'], 0, 1, 'L');
+        $pdf->SetXY($col1_x, $def_y);
+        $pdf->MultiCell(60, 5, 'Sold To: ' .$customerDetails['customer_first_name'] . " " .$customerDetails['customer_last_name'], 0, 'L');
 
-        $pdf->SetXY($col3_x, $pdf->GetY() - 5);
+        $pdf->SetXY($col2_x, $def_y);
+        $pdf->MultiCell(60, 5, 'Ship To: ' .$row_orders['deliver_address'], 0, 'L');
+
+        $pdf->SetXY($col3_x, $def_y);
         $pdf->Cell(60, 5, 'Delivery Method: ' .$delivery_method, 0, 1, 'L');
 
         $pdf->SetFont('Arial', '', 9);
@@ -80,10 +82,10 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->SetXY($col1_x, $pdf->GetY());
         $pdf->Cell(10, 5, 'Tax Exempt #', 0, 0, 'L');
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(10, 5, 'Customer PO #', 0, 0, 'L');
+        $pdf->Cell(10, 5, 'Customer PO #: ' .$row_orders['job_po'], 0, 0, 'L');
 
         $pdf->SetXY($col3_x, $pdf->GetY());
-        $pdf->Cell(60, 5, 'Job Name:', 0, 1, 'L');
+        $pdf->Cell(60, 5, 'Job Name: ' .$row_orders['job_name'], 0, 1, 'L');
 
         $pdf->Ln(5);
 

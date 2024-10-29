@@ -540,6 +540,9 @@ if (isset($_POST['save_order'])) {
 
     $credit_amt = floatval($_POST['credit_amt']);
     $cash_amt = floatval($_POST['cash_amt']);
+    $job_name = mysqli_real_escape_string($conn, $_POST['job_name'] ?? '');
+    $job_po = mysqli_real_escape_string($conn, $_POST['job_po'] ?? '');
+    $deliver_address = mysqli_real_escape_string($conn, $_POST['deliver_address'] ?? '');
     if (!isset($_SESSION['customer_id']) || empty($_SESSION['cart'])) {
         $response['error'] = "Customer ID or cart is not set.";
         echo json_encode($response);
@@ -573,8 +576,8 @@ if (isset($_POST['save_order'])) {
         $total_discounted_price += $discounted_price;
     }
 
-    $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, cash_amt, credit_amt) 
-              VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$customerid', '$cash_amt', '$credit_amt')";
+    $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address) 
+              VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address')";
 
     if ($conn->query($query) === TRUE) {
         $orderid = $conn->insert_id;
