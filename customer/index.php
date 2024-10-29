@@ -46,6 +46,7 @@ if (!isset($_SESSION['userid'])) {
   <div class="preloader">
     <img src="../assets/images/logos/logo-icon.svg" alt="loader" class="lds-ripple img-fluid" />
   </div>
+  <?php include "aside.php"?>
   <div id="main-wrapper">
     <div class="page-wrapper">
       <!--  Header Start -->

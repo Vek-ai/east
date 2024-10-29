@@ -48,7 +48,7 @@
           <span class="hide-menu">Dashboard</span>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="pages/customer-dash.php">
+          <a class="sidebar-link" href="index.php">
             <iconify-icon icon="solar:pen-new-round-linear" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Dashboard</span>
           </a>
