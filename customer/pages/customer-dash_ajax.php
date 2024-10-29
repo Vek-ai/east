@@ -72,7 +72,7 @@ if (isset($_POST['search_orders'])) {
                     }else{
                     ?>
                         <tr>
-                            <td colspan="4">No orders found</td>
+                            <td colspan="5">No orders found</td>
                         </tr>
                     <?php  
                     }
@@ -159,7 +159,7 @@ if (isset($_POST['search_estimates'])) {
                     }else{
                     ?>
                         <tr>
-                            <td colspan="4">No estimates found</td>
+                            <td colspan="5">No estimates found</td>
                         </tr>
                     <?php  
                     }

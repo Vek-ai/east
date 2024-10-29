@@ -8,7 +8,7 @@ require '../includes/functions.php';
 if(isset($_SESSION['userid'])){
   $customer_id = $_SESSION['userid'];
   $customer_details = getCustomerDetails($customer_id);
-}
+
 ?>
 
 <div class="container-fluid">
@@ -494,7 +494,7 @@ if(isset($_SESSION['userid'])){
               type: 'POST',
               data: {
                   query: query,
-                  customerid: <?php $_REQUEST['id'] ?>
+                  customerid: <?= $customer_id ?>
               },
               success: function(response) {
                   $('#productTableBody').html(response);
@@ -515,7 +515,7 @@ if(isset($_SESSION['userid'])){
               url: 'pages/customer-dash_ajax.php',
               type: 'POST',
               data: {
-                  customerid: <?= $_REQUEST['id'] ?>,
+                  customerid: <?= $customer_id ?>,
                   date_from: date_from,
                   date_to: date_to,
                   search_orders: 'search_orders'
@@ -537,7 +537,7 @@ if(isset($_SESSION['userid'])){
               url: 'pages/customer-dash_ajax.php',
               type: 'POST',
               data: {
-                  customerid: <?= $_REQUEST['id'] ?>,
+                  customerid: <?= $customer_id ?>,
                   date_from: date_from,
                   date_to: date_to,
                   search_estimates: 'search_estimates'
@@ -620,3 +620,6 @@ if(isset($_SESSION['userid'])){
       searchProducts('');
   });
 </script>
+<?php
+}
+?>
