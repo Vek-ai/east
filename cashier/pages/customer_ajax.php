@@ -30,7 +30,7 @@ if(isset($_REQUEST['action'])) {
         $customer_notes = mysqli_real_escape_string($conn, $_POST['customer_notes']);
         $new_customer_type_id = mysqli_real_escape_string($conn, $_POST['customer_type']);
         $call_status = isset($_POST['call_status']) ? mysqli_real_escape_string($conn, $_POST['call_status']) : '';
-        $credit_limit = isset($_POST['call_status']) ? mysqli_real_escape_string($conn, $_POST['credit_limit']) : 0;
+        $credit_limit = isset($_POST['credit_limit']) ? mysqli_real_escape_string($conn, $_POST['credit_limit']) : 0;
 
         $customer_name = $customer_first_name . "" . $customer_last_name;
 

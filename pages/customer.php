@@ -56,7 +56,7 @@ if (!empty($_REQUEST['customer_id'])) {
     $tax_exempt_number = $row['tax_exempt_number'];
     $customer_notes = $row['customer_notes'];
     $call_status = $row['call_status'];
-    $credit_limit = $row['call_status'] ?? 0;
+    $credit_limit = $row['credit_limit'] ?? 0;
 
     $loyalty = $row['loyalty'];
 
