@@ -347,10 +347,11 @@ require '../includes/functions.php';
                                     <label>Customer Name</label>
                                     <div class="input-group">
                                         <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_estimate">
-                                        <a class="input-group-text rounded-right" href="/cashier/?page=customer" target="_blank">
+                                        <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
                                             <span class="input-group-text"> + </span>
                                         </a>
                                     </div>
+                                    
                                 </div>
                                 <div class="col-3">
                                     <span class="fw-bold">Credit Limit:</span><br>
