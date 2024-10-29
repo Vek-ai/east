@@ -10,7 +10,10 @@ global $currentUser;
 
 $customer_id = $_SESSION['userid'];
 
-$sql = "SELECT * FROM customer WHERE customer_id = ?";
+$sql = "SELECT *, customer_types.customer_type_name 
+        FROM customer 
+        LEFT JOIN customer_types ON customer.customer_type_id = customer_types.customer_type_id 
+        WHERE customer_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $customer_id);
 $stmt->execute();
@@ -76,59 +79,26 @@ $lastName = isset($currentUser['customer_last_name']) ? htmlspecialchars($curren
       <div class="row align-items-center">
         <div class="col-lg-4 order-lg-1 order-2">
           <div class="d-flex align-items-center justify-content-around">
+          <div class="text-center">
+            <i class="ti ti-phone fs-6"></i>
+            <h4 class="mb-0 fw-semibold lh-1">
+              <?= htmlspecialchars($currentUser['call_status'] == 1 ? 'Enabled' : 'Disabled') ?>
+            </h4>
+            <p class="mb-0">Call Status</p>
+          </div>
             <div class="text-center">
-              <?php
-              $query_order_total = "SELECT SUM(discounted_price) as order_total FROM orders WHERE customerid = '$customer_id' AND YEAR(order_date) = YEAR(CURDATE())";
-              $result_order_total = mysqli_query($conn, $query_order_total);
-
-              if ($result_order_total) {
-                $row_order_total = mysqli_fetch_array($result_order_total, MYSQLI_ASSOC);
-                if ($row_order_total) {
-                  $order_total = $row_order_total['order_total'];
-                } else {
-                  $order_total = 0;
-                }
-              }
-              ?>
-              <i class="ti ti-wallet fs-6"></i>
-              <h4 class="mb-0 fw-semibold lh-1">$<?= number_format($order_total, 2) ?></h4>
-              <p class="mb-0 ">This Year Orders</p>
-            </div>
-            <div class="text-center">
-              <?php
-              $query_order_total = "SELECT SUM(discounted_price) as order_total FROM orders WHERE customerid = '$customer_id' AND YEAR(order_date) = YEAR(CURDATE())";
-              $result_order_total = mysqli_query($conn, $query_order_total);
-
-              if ($result_order_total) {
-                $row_order_total = mysqli_fetch_array($result_order_total, MYSQLI_ASSOC);
-                if ($row_order_total) {
-                  $order_total = $row_order_total['order_total'];
-                } else {
-                  $order_total = 0;
-                }
-              }
-              ?>
               <i class="ti ti-users fs-6"></i>
-              <h4 class="mb-0 fw-semibold lh-1">$<?= number_format($order_total, 2) ?></h4>
-              <p class="mb-0 ">Total Orders</p>
+              <h4 class="mb-0 fw-semibold lh-1">
+                <?= htmlspecialchars($currentUser['loyalty'] == 1 ? 'Active' : 'Inactive') ?>
+              </h4>
+              <p class="mb-0 ">Loyalty Status</p>
             </div>
             <div class="text-center">
-              <?php
-              $query_credit_total = "SELECT SUM(credit_amt) as credit_total FROM orders WHERE customerid = '$customer_id' AND YEAR(order_date) = YEAR(CURDATE())";
-              $result_credit_total = mysqli_query($conn, $query_credit_total);
-
-              if ($result_credit_total) {
-                $row_credit_total = mysqli_fetch_array($result_credit_total, MYSQLI_ASSOC);
-                if ($row_credit_total) {
-                  $credit_total = $row_credit_total['credit_total'];
-                } else {
-                  $credit_total = 0;
-                }
-              }
-              ?>
               <i class="ti ti-user-check fs-6 d-block mb-2"></i>
-              <h4 class="mb-0 fw-semibold lh-1">$<?= number_format($credit_total, 2) ?></h4>
-              <p class="mb-0 ">Total Credit</p>
+              <h4 class="mb-0 fw-semibold lh-1">
+              <?= htmlspecialchars($currentUser['customer_type_name']) ?>
+              </h4>
+              <p class="mb-0 ">Customer Type</p>
             </div>
           </div>
         </div>
