@@ -314,22 +314,29 @@ require '../includes/functions.php';
             <div class="modal-body">
                 <div class="form-group col-4">
                     <div id="customer_est_section">
-                    <?php 
-                        if(!empty($_SESSION["customer_id"])){
-                        ?>
-                        <div class="form-group">
-                            <label>Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
-                            <button class="btn ripple btn-primary" type="button" id="customer_change_estimate" ><i class="fe fe-reload"></i> Change</button>                                       
-                        </div>
-                        <?php } else {?>
-                        <label>Customer Name</label>
-                        <div class="input-group">
-                            <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_estimate">
-                            <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
-                                <span class="input-group-text"> + </span>
-                            </a>
-                        </div>
-                    <?php } ?>
+                        <?php 
+                            if(!empty($_SESSION["customer_id"])){
+                                $customer_id = $_SESSION["customer_id"];
+                                $customer_details = getCustomerDetails($customer_id);
+                                $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
+                            ?>
+                            <div class="form-group d-flex align-items-center">
+                                <label class="mb-0 me-3">Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
+                                <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_estimate">
+                                    <i class="fe fe-reload"></i> Change
+                                </button>
+                                <span class="text-primary fw-bold">Credit Limit: $<?= $credit_limit ?></span>                                       
+                            </div>
+                        <?php } else { ?>
+                            <label class="form-label">Customer Name</label>
+                            <div class="input-group">
+                                <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_estimate">
+                                <a class="input-group-text rounded-right" href="/cashier/?page=customer" target="_blank">
+                                    <span class="input-group-text"> + </span>
+                                </a>
+                                <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+                            </div>
+                        <?php } ?>
                     </div>
                     <input type='hidden' id='customer_id_estimate' name="customer_id"/>
                 </div>
@@ -375,10 +382,14 @@ require '../includes/functions.php';
                     <div id="customer_cash_section">
                         <?php 
                         if(!empty($_SESSION["customer_id"])){
+                            $customer_id = $_SESSION["customer_id"];
+                            $customer_details = getCustomerDetails($customer_id);
+                            $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
                         ?>
                         <div class="form-group">
                             <label>Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
-                            <button class="btn ripple btn-primary" type="button" id="customer_change_cash" ><i class="fe fe-reload"></i> Change</button>                                       
+                            <button class="btn ripple btn-primary" type="button" id="customer_change_cash" ><i class="fe fe-reload"></i> Change</button>   
+                            <span class="text-primary fw-bold ms-3">Credit Limit: $<?= $credit_limit ?></span>                                    
                         </div>
                         <?php } else {?>
                         <label>Customer Name</label>
@@ -387,6 +398,7 @@ require '../includes/functions.php';
                             <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
                                 <span class="input-group-text"> + </span>
                             </a>
+                            <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
                         </div>
                     <?php } ?>
                     </div>

@@ -126,7 +126,7 @@ if(isset($_POST['fetch_order'])){
                                     $product_price = $values["quantity_cart"] * $values["unit_price"];
                                 }
                             ?>
-                                <tr>
+                                <tr class="border-bottom border-3 border-white">
                                     <td>
                                         <?php
                                         if($data_id == '277'){
@@ -323,6 +323,24 @@ if(isset($_POST['fetch_order'])){
                                         <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $data_id;?>">
                                     </td>
                                 </tr>
+                                <tr class="d-none jobDetailsRow">
+                                    <td colspan="12" class="pb-3">
+                                        <div class="row pb-3">
+                                            <div class="col-md-3">
+                                                <label for="job_name">Job Name</label>
+                                                <input type="text" id="job_name" name="job_name" class="form-control" placeholder="Enter Job Name">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="job_po">Job PO #</label>
+                                                <input type="text" id="job_po" name="job_po" class="form-control" placeholder="Enter Job PO #">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="deliver_address">Deliver Address</label>
+                                                <input type="text" id="deliver_address" name="deliver_address" class="form-control" placeholder="Enter Deliver Address">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
                         <?php
                                 $totalquantity += $values["quantity_cart"];
                                 $total += $subtotal;
@@ -405,10 +423,26 @@ if(isset($_POST['fetch_order'])){
                                             <td class="text-right border-bottom">$<span id="total_payable"><?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?></span></td>
                                             <input type="hidden" id="payable_amt" value="<?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?>">
                                         </tr>
+                                        <tr class="bg-primary text-white">
+                                            <th class="text-right">Ship to same Address?</th>
+                                            <td class="text-right align-items-center">
+                                                <div class="form-check form-check-inline mb-0">
+                                                    <input class="form-check-input" type="radio" name="toggleDiffAddress" id="diffAddressYes" value="yes">
+                                                    <label class="form-check-label" for="diffAddressYes">Yes</label>
+                                                </div>
+                                                <div class="form-check form-check-inline mb-0">
+                                                    <input class="form-check-input" type="radio" name="toggleDiffAddress" id="diffAddressNo" value="no" checked>
+                                                    <label class="form-check-label" for="diffAddressNo">No</label>
+                                                </div>
+                                            </td>
+                                        </tr>
                                         <tr class="bg-primary text-white" style="font-size: 1.25rem;">
                                             <th class="text-right">Change</th>
                                             <td class="text-right">$<span id="change">0.00</span></td>
                                         </tr>
+                                        <div class="form-check mb-3">
+    
+</div>
                                     </tbody>
                                 </table>
                             </div>
@@ -419,16 +453,12 @@ if(isset($_POST['fetch_order'])){
         </div>
         <script>
             $(document).ready(function() {
-                var table = $('#orderTable').DataTable({
-                    language: {
-                        emptyTable: "No products added to cart"
-                    },
-                    paging: false,
-                    searching: false,
-                    info: false,
-                    ordering: false,
-                    autoWidth: false,
-                    responsive: true
+                $('input[name="toggleDiffAddress"]').on('change', function() {
+                    if ($(this).val() === 'yes') {
+                        $('.jobDetailsRow').removeClass('d-none');
+                    } else {
+                        $('.jobDetailsRow').addClass('d-none');
+                    }
                 });
             });
         </script>
