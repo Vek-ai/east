@@ -1,14 +1,8 @@
-<div class="modal-dialog modal-lg">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h5 class="modal-title" id="updateCustomerModalLabel">Update Customer</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-    </div>
-    <div class="modal-body">
-      <!-- The form -->
-      <div class="card">
-        <div class="card-body">
-          <form id="lineForm" class="form-horizontal">
+<div class="row">
+  <div class="col-lg-12 mt-4">
+    <div class="card shadow-none">
+      <div class="card-body">
+        <form id="lineForm" class="form-horizontal">
             <div class="row pt-3">
               <div class="col-md-6">
                 <div class="mb-3">
@@ -223,9 +217,7 @@
             </div>
 
           </form>
-        </div>
       </div>
-
     </div>
   </div>
 </div>
