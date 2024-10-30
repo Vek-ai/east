@@ -31,7 +31,7 @@
             <div class="col-md-4">
               <div class="mb-3">
                 <label class="contact_phone">Customer Phone</label>
-                <input type="number" id="contact_phone" name="contact_phone" class="form-control"
+                <input type="number" id="contact_phone" name="contact_phone" class="form-control" max="999999999999"
                   value="<?= htmlspecialchars($currentUser['contact_phone']) ?>" />
               </div>
             </div>
@@ -126,7 +126,7 @@
             <div class="col-md-4">
               <div class="mb-3">
                 <label class="ap_contact_phone">AP Contact Phone</label>
-                <input type="number" id="ap_contact_phone" name="ap_contact_phone" class="form-control"
+                <input type="number" id="ap_contact_phone" name="ap_contact_phone" class="form-control" max="999999999999" 
                   value="<?= htmlspecialchars($currentUser['ap_contact_phone']) ?>" />
               </div>
             </div>
