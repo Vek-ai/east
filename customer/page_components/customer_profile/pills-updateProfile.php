@@ -6,14 +6,14 @@
             <div class="row pt-3">
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label class="form-label">First Name</label>
+                  <label class="customer_first_name">First Name</label>
                   <input type="text" id="customer_first_name" name="customer_first_name" class="form-control"
                     value="<?= htmlspecialchars($currentUser['customer_first_name']) ?>" />
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label class="form-label">Last Name</label>
+                  <label class="customer_last_name">Last Name</label>
                   <input type="text" id="customer_last_name" name="customer_last_name" class="form-control"
                     value="<?= htmlspecialchars($currentUser['customer_last_name']) ?>" />
                 </div>
@@ -23,22 +23,22 @@
             <div class="row pt-3">
               <div class="col-md-4">
                 <div class="mb-3">
-                  <label class="form-label">Customer Email</label>
-                  <input type="text" id="contact_email" name="contact_email" class="form-control"
+                  <label class="contact_email">Customer Email</label>
+                  <input type="email" id="contact_email" name="contact_email" class="form-control"
                     value="<?= htmlspecialchars($currentUser['contact_email']) ?>" />
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="mb-3">
-                  <label class="form-label">Customer Phone</label>
-                  <input type="text" id="contact_phone" name="contact_phone" class="form-control"
+                  <label class="contact_phone">Customer Phone</label>
+                  <input type="number" id="contact_phone" name="contact_phone" class="form-control"
                     value="<?= htmlspecialchars($currentUser['contact_phone']) ?>" />
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="mb-3">
-                  <label class="form-label">Customer Fax</label>
-                  <input type="text" id="contact_fax" name="contact_fax" class="form-control"
+                  <label class="contact_fax">Customer Fax</label>
+                  <input type="tel" id="contact_fax" name="contact_fax" class="form-control" pattern="[\d\s\-\(\)]*"
                     value="<?= htmlspecialchars($currentUser['contact_fax']) ?>" />
                 </div>
               </div>
@@ -47,7 +47,7 @@
             <div class="row pt-3">
               <div class="col-md-12">
                 <div class="mb-3">
-                  <label class="form-label">Customer Business Name</label>
+                  <label class="customer_business_name">Customer Business Name</label>
                   <input type="text" id="customer_business_name" name="customer_business_name" class="form-control"
                     value="<?= htmlspecialchars($currentUser['customer_business_name']) ?>" />
                 </div>
@@ -59,7 +59,7 @@
             <div class="row pt-3">
               <div class="col-md-12">
                 <div class="mb-3">
-                  <label class="form-label">Address</label>
+                  <label class="address">Address</label>
                   <input type="text" id="address" name="address" class="form-control"
                     value="<?= htmlspecialchars($currentUser['address']) ?>" />
                 </div>
@@ -69,21 +69,21 @@
             <div class="row pt-3">
               <div class="col-md-4">
                 <div class="mb-3">
-                  <label class="form-label">City</label>
+                  <label class="city">City</label>
                   <input type="text" id="city" name="city" class="form-control"
                     value="<?= htmlspecialchars($currentUser['city']) ?>" />
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="mb-3">
-                  <label class="form-label">State</label>
+                  <label class="state">State</label>
                   <input type="text" id="state" name="state" class="form-control"
                     value="<?= htmlspecialchars($currentUser['state']) ?>" />
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="mb-3">
-                  <label class="form-label">Zip</label>
+                  <label class="zip">Zip</label>
                   <input type="text" id="zip" name="zip" class="form-control"
                     value="<?= htmlspecialchars($currentUser['zip']) ?>" />
                 </div>
@@ -93,15 +93,15 @@
             <div class="row pt-3">
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label class="form-label">Secondary Contact Name</label>
+                  <label class="secondary_contact_name">Secondary Contact Name</label>
                   <input type="text" id="secondary_contact_name" name="secondary_contact_name" class="form-control"
                     value="<?= htmlspecialchars($currentUser['secondary_contact_name']) ?>" />
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label class="form-label">Secondary Contact Phone</label>
-                  <input type="text" id="secondary_contact_phone" name="secondary_contact_phone" class="form-control"
+                  <label class="secondary_contact_phone">Secondary Contact Phone</label>
+                  <input type="number" id="secondary_contact_phone" name="secondary_contact_phone" class="form-control"
                     value="<?= htmlspecialchars($currentUser['secondary_contact_phone']) ?>" />
                 </div>
               </div>
@@ -110,22 +110,22 @@
             <div class="row pt-3">
               <div class="col-md-4">
                 <div class="mb-3">
-                  <label class="form-label">AP Contact Name</label>
+                  <label class="ap_contact_name">AP Contact Name</label>
                   <input type="text" id="ap_contact_name" name="ap_contact_name" class="form-control"
                     value="<?= htmlspecialchars($currentUser['ap_contact_name']) ?>" />
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="mb-3">
-                  <label class="form-label">AP Contact Email</label>
-                  <input type="text" id="ap_contact_email" name="ap_contact_email" class="form-control"
+                  <label class="ap_contact_email">AP Contact Email</label>
+                  <input type="email" id="ap_contact_email" name="ap_contact_email" class="form-control" pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
                     value="<?= htmlspecialchars($currentUser['ap_contact_email']) ?>" />
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="mb-3">
-                  <label class="form-label">AP Contact Phone</label>
-                  <input type="text" id="ap_contact_phone" name="ap_contact_phone" class="form-control"
+                  <label class="ap_contact_phone">AP Contact Phone</label>
+                  <input type="number" id="ap_contact_phone" name="ap_contact_phone" class="form-control"
                     value="<?= htmlspecialchars($currentUser['ap_contact_phone']) ?>" />
                 </div>
               </div>
@@ -137,8 +137,8 @@
             <div class="row pt-3">
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label class="form-label">Tax Exempt Number</label>
-                  <input type="text" id="tax_exempt_number" name="tax_exempt_number" class="form-control"
+                  <label class="tax_exempt_number">Tax Exempt Number</label>
+                  <input type="number" id="tax_exempt_number" name="tax_exempt_number" class="form-control"
                     value="<?= htmlspecialchars($currentUser['tax_exempt_number']) ?>" />
                 </div>
               </div>
@@ -204,30 +204,32 @@
 </div>
 
 <script>
-  $(document).ready(function () {
-    $('#lineForm').on('submit', function (e) {
-      e.preventDefault();
-
+$(document).ready(function () {
+  $('#lineForm').on('submit', function (e) {
+    e.preventDefault();
+    
+    // Manually check the form validity
+    if (this.checkValidity()) {
       $.ajax({
-        url: 'crud/update_customer.php',  // PHP file to handle the update request
+        url: 'crud/update_customer.php',
         type: 'POST',
         data: $(this).serialize(),
         success: function (response) {
-          // Handle success response
           if (response.success) {
             alert('Customer updated successfully!');
-            // Close modal, refresh data, or update UI as needed
-            $('#updateCustomerModal').modal('hide');
             location.reload(); // Optional: Refresh page to show updated data
           } else {
             alert('Update failed: ' + response.message);
           }
         },
         error: function (xhr, status, error) {
-          // Handle error response
           alert('An error occurred: ' + error);
         }
       });
-    });
+    } else {
+      // Show built-in validation message
+      this.reportValidity();
+    }
   });
+});
 </script>
