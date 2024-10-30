@@ -135,25 +135,6 @@
             <!-- LastQuoteDate -->
 
             <div class="row pt-3">
-              <div class="col-md-6 opt_field_update">
-                <div class="mb-3">
-                  <label class="form-label">Tax Status</label>
-                  <select id="tax_status" class="form-select form-control" name="tax_status">
-                    <option value="">Select Tax Status...</option>
-                    <?php
-                    $query_tax_status = "SELECT * FROM customer_tax";
-                    $result_tax_status = mysqli_query($conn, $query_tax_status);
-                    while ($row_tax_status = mysqli_fetch_array($result_tax_status)) {
-                      $selected = ($tax_status == $row_tax_status['taxid']) ? 'selected' : '';
-                      ?>
-                      <option value="<?= $row_tax_status['taxid'] ?>" <?= $selected ?>>
-                        (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?></option>
-                      <?php
-                    }
-                    ?>
-                  </select>
-                </div>
-              </div>
               <div class="col-md-6">
                 <div class="mb-3">
                   <label class="form-label">Tax Exempt Number</label>

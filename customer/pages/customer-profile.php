@@ -149,17 +149,9 @@ $old_customer_type_id =isset($currentUser['customer_type_id']) ? htmlspecialchar
         id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
           <button class="nav-link active hstack gap-2 rounded-0 fs-12 py-6" id="pills-address-tab" data-bs-toggle="pill"
-            data-bs-target="#pills-address" type="button" role="tab" aria-controls="pills-address" aria-selected="true">
+            data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-address" aria-selected="true">
             <i class="ti ti-user-circle fs-5"></i>
-            <span class="d-none d-md-block">Address</span>
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link hstack gap-2 rounded-0 fs-12 py-6" id="pills-contacts-tab" data-bs-toggle="pill"
-            data-bs-target="#pills-contacts" type="button" role="tab" aria-controls="pills-contacts"
-            aria-selected="false">
-            <i class="ti ti-heart fs-5"></i>
-            <span class="d-none d-md-block">Contacts</span>
+            <span class="d-none d-md-block">Profile</span>
           </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -174,13 +166,9 @@ $old_customer_type_id =isset($currentUser['customer_type_id']) ? htmlspecialchar
     </div>
 
     <div class="tab-content" id="pills-tabContent">
-      <div class="tab-pane fade show active" id="pills-address" role="tabpanel" aria-labelledby="pills-address-tab"
+      <div class="tab-pane fade show active" id="pills-profile" role="tabpanel" aria-labelledby="pills-address-tab"
         tabindex="0">
-        <?php include 'page_components/customer_profile/pills-address.php'; ?>
-      </div>
-
-      <div class="tab-pane fade" id="pills-contacts" role="tabpanel" aria-labelledby="pills-contacts-tab" tabindex="0">
-        <?php include 'page_components/customer_profile/pills-contacts.php'; ?>
+        <?php include 'page_components/customer_profile/pills-profile.php'; ?>
       </div>
 
       <div class="tab-pane fade" id="pills-updateProfile" role="tabpanel" aria-labelledby="pills-updateProfile-tab" tabindex="0">
