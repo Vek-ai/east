@@ -41,7 +41,7 @@ require '../includes/functions.php';
         <div class="card-body text-right p-3">
             
             <div class="p-2">
-                <input type="checkbox" id="toggleActive" checked> Test Show only In Stock
+                <input type="checkbox" id="toggleActive" checked> Show only In Stock
             </div>
             <div class="d-flex justify-content-between align-items-center  mb-9">
                 <div class="position-relative w-100 col-4">
@@ -436,6 +436,10 @@ require '../includes/functions.php';
                                 <div>
                                     <span class="fw-bold">Credit Limit:</span><br>
                                     <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Unpaid Credit:</span><br>
+                                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
                                 </div>
                                 <div>
                                     <span class="fw-bold">Unpaid Credit:</span><br>
