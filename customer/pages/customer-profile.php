@@ -145,7 +145,7 @@ $old_customer_type_id =isset($currentUser['customer_type_id']) ? htmlspecialchar
           </ul>
         </div>
       </div>
-      < class="nav nav-pills user-profile-tab justify-content-center mt-2 bg-primary-subtle rounded-2 rounded-top-0"
+      <ul class="nav nav-pills user-profile-tab justify-content-center mt-2 bg-primary-subtle rounded-2 rounded-top-0"
         id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
           <button class="nav-link active hstack gap-2 rounded-0 fs-12 py-6" id="pills-address-tab" data-bs-toggle="pill"
@@ -166,7 +166,7 @@ $old_customer_type_id =isset($currentUser['customer_type_id']) ? htmlspecialchar
           <button class="nav-link hstack gap-2 rounded-0 fs-12 py-6" id="pills-updateProfile-tab" data-bs-toggle="pill"
             data-bs-target="#pills-updateProfile" type="button" role="tab" aria-controls="pills-updateProfile"
             aria-selected="false">
-            <i class="ti ti-heart fs-5"></i>
+            <i class="ti ti-edit fs-5"></i>
             <span class="d-none d-md-block">Update Profile</span>
           </button>
         </li>
