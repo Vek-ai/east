@@ -319,6 +319,7 @@ require '../includes/functions.php';
                                 $customer_id = $_SESSION["customer_id"];
                                 $customer_details = getCustomerDetails($customer_id);
                                 $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
+                                $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
                             ?>
 
                             <div class="form-group row align-items-center">
@@ -329,8 +330,14 @@ require '../includes/functions.php';
                                     </button>
                                 </div>
                                 <div class="col-3">
-                                    <span class="fw-bold">Credit Limit:</span><br>
-                                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                                    <div>
+                                        <span class="fw-bold">Credit Limit:</span><br>
+                                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold">Unpaid Credit:</span><br>
+                                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
+                                    </div>
                                 </div>
                                 <div class="col-3">
                                     <label for="job_name" class="mb-0">Job Name</label>
@@ -416,6 +423,7 @@ require '../includes/functions.php';
                             $customer_id = $_SESSION["customer_id"];
                             $customer_details = getCustomerDetails($customer_id);
                             $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
+                            $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
                         ?>
                         <div class="form-group row align-items-center">
                             <div class="col-3">
@@ -425,8 +433,14 @@ require '../includes/functions.php';
                                 </button>
                             </div>
                             <div class="col-3">
-                                <span class="fw-bold">Credit Limit:</span><br>
-                                <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                                <div>
+                                    <span class="fw-bold">Credit Limit:</span><br>
+                                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Unpaid Credit:</span><br>
+                                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
+                                </div>
                             </div>
                             <div class="col-3">
                                 <label for="job_name" class="mb-0">Job Name</label>

@@ -556,6 +556,25 @@ if (isset($_POST['save_order'])) {
     $order_date = date('Y-m-d H:i:s');
     $discount = floatval(getCustomerDiscount($customerid)) / 100;
 
+    $customer_details = getCustomerDetails($customerid);
+    $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
+    $credit_total = number_format(getCustomerCreditTotal($customerid),2);
+
+    if($credit_amt > 0){
+        $credit_available = $credit_limit - $credit_total;
+        if($credit_available <= 0){
+            $response['error'] = "Cannot pay via Credit! The Customer’s credit limit has been reached";
+            echo json_encode($response);
+            exit;
+        }
+        
+        if($credit_amt > $credit_limit){
+            $response['error'] = "Credit amount cannot exceed the customer's credit limit";
+            echo json_encode($response);
+            exit;
+        }
+    }
+
     $total_price = 0;
     $total_discounted_price = 0;
 
