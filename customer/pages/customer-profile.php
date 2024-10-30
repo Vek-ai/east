@@ -179,7 +179,6 @@ $old_customer_type_id =isset($currentUser['customer_type_id']) ? htmlspecialchar
         <?php include 'page_components\customer_profile\pills-address.php'; ?>
       </div>
 
-
       <div class="tab-pane fade" id="pills-contacts" role="tabpanel" aria-labelledby="pills-contacts-tab" tabindex="0">
         <?php include 'page_components\customer_profile\pills-contacts.php'; ?>
       </div>
