@@ -370,7 +370,7 @@ if(isset($_POST['fetch_order'])){
                                 <div class="row">
                                     <div class="col-6">
                                         <div class="form-group">
-                                            <label>Credit Amount</label>
+                                            <label>Credit Amount:</label>
                                             <input type="number" class="form-control" id="order_credit" value="0.00">
                                         </div>
                                     </div>
