@@ -171,6 +171,99 @@ if (isset($_POST['search_estimates'])) {
 <?php
 }
 
+if (isset($_POST['search_jobs'])) {
+    $customerid = mysqli_real_escape_string($conn, string: $_POST['customerid']);
+    $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
+    $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
+?>
+    <div class="month-table">
+        <div class="table-responsive mt-3">
+            <table class="table align-middle  mb-0 no-wrap text-center">
+                <thead>
+                <tr>
+                    <th class="border-0 ps-0">Job PO #</th>
+                    <th class="border-0">Job Name</th>
+                    <th class="border-0">Amount</th>
+                    <th class="border-0"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                    $job_names = array();
+                    $query_jobs = "SELECT DISTINCT LOWER(TRIM(job_name)) AS job_name FROM orders WHERE customerid = '$customerid'";
+                    $result_jobs = mysqli_query($conn, $query_jobs);
+
+                    if ($result_jobs && mysqli_num_rows($result_jobs) > 0) {
+                        while ($row_jobs = mysqli_fetch_assoc($result_jobs)) {
+                            $job = $row_jobs['job_name'];
+
+                            $query_orders = "SELECT SUM(discounted_price) AS job_amt, job_po, job_name
+                                            FROM orders 
+                                            WHERE customerid = '$customerid'";
+
+                            if ($job !== '' && $job !== null) {
+                                $query_orders .= " AND job_name LIKE '%$job%'";
+                            } else {
+                                $query_orders .= " AND (job_name IS NULL OR job_name = '')";
+                            }
+
+                            if (!empty($date_from) && !empty($date_to)) {
+                                $date_to .= ' 23:59:59';
+                                $query_orders .= " AND (order_date >= '$date_from' AND order_date <= '$date_to')";
+                            }
+
+                            $query_orders .= " GROUP BY job_name, job_po ORDER BY order_date DESC";
+
+                            if (empty($date_from) || empty($date_to)) {
+                                $query_orders .= " LIMIT 10";
+                            }
+
+                            $result_orders = mysqli_query($conn, $query_orders);
+
+                            if ($result_orders && mysqli_num_rows($result_orders) > 0) {
+                                while ($row_orders = mysqli_fetch_assoc($result_orders)) {
+                                    ?>
+                                    <tr>
+                                        <td class="ps-0">
+                                            <h5 class="mb-1 text-center"><?= $row_orders['job_po'] ?></h5>
+                                        </td>
+                                        <td>
+                                            <h5 class="mb-1 text-center"><?= $row_orders['job_name'] ?></h5>
+                                        </td>
+                                        <td>
+                                            <h5 class="mb-1 text-center">$ <?= number_format($row_orders['job_amt'], 2) ?></h5>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-danger-gradient btn-sm p-0 me-1" 
+                                                    id="view_job_dtls_btn" 
+                                                    type="button" 
+                                                    data-name="<?= $job; ?>"
+                                                    data-date-from="<?= $date_from ?? ''; ?>"
+                                                    data-date-to="<?= $date_to ?? ''; ?>">
+                                                        <i class="text-primary fa fa-eye fs-5"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php
+                                }
+                            }
+                        }
+                    } else {
+                        ?>
+                        <tr>
+                            <td colspan="4">No jobs found</td>
+                        </tr>
+                        <?php
+                    }
+                    ?>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+<?php
+}
+
 if (isset($_REQUEST['query'])) {
     $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
     $customerid = mysqli_real_escape_string($conn, $_REQUEST['customerid']);
@@ -279,6 +372,7 @@ if (isset($_REQUEST['query'])) {
 
                     $tableHTML .= '</td>
                     <td><h6 class="mb-0 fs-4">' . htmlspecialchars(getUsageName($row_product['usageid'])) . '</h6></td>
+                    <td><h6 class="mb-0 fs-4">' . htmlspecialchars($row_product['job_name']) . '</h6></td>
                 </tr>';
 
         }
@@ -690,6 +784,77 @@ if (isset($_POST['fetch_estimate_details'])) {
         <?php
     }
 } 
+
+if(isset($_POST['fetch_job_details'])){
+    $customerid = mysqli_real_escape_string($conn, $_POST['customerid']);
+    $job_name = mysqli_real_escape_string($conn, $_POST['job_name']);
+    $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
+    $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
+    ?>
+    <div class="card card-body datatables">
+        <div class="product-details table-responsive text-wrap">
+            <h4>Job Name: <?= ucwords($job_name) ?></h4>
+            <table id="order_dtls_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Order Date</th>
+                        <th class="text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php 
+                    $query_orders = "SELECT * FROM orders WHERE customerid = '$customerid'";
+                    if ($job_name !== '') {
+                        $query_orders .= " AND job_name LIKE '%$job_name%'";
+                    } else {
+                        $query_orders .= " AND (job_name IS NULL OR job_name = '')";
+                    }
+
+                    if (!empty($date_from) && !empty($date_to)) {
+                        $query_orders .= " AND (order_date >= '$date_from' AND order_date <= '$date_to')";
+                    }
+
+                    $query_orders .= " ORDER BY order_date DESC";
+
+                    $result_orders = mysqli_query($conn, $query_orders);
+
+                    if ($result_orders && mysqli_num_rows($result_orders) > 0) {
+                        $total_amt = 0;
+                        while ($row_orders = mysqli_fetch_assoc($result_orders)) {
+                            $total_amt += $row_orders['discounted_price'];
+                            ?>
+                            <tr>
+                                <td class="ps-0">
+                                    <h5 class="mb-1 text-center"><?= $row_orders['orderid'] ?></h5>
+                                </td>
+                                <td>
+                                    <h5 class="mb-1 text-center"><?= date("F d, Y", strtotime($row_orders['order_date'])) ?></h5>
+                                </td>
+                                <td>
+                                    <h5 class="mb-1 text-right">$ <?= number_format($row_orders['discounted_price'], 2) ?></h5>
+                                </td>
+                            </tr>
+                            <?php
+                        }
+                    }
+                    ?>
+
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td colspan="2" class="text-right me-3">Total</td>
+                        <td class="text-right">
+                            <h5>$ <?= number_format($total_amt,2) ?></h5>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <?php
+}
 
 if (isset($_POST['fetch_changes_modal'])) {
     ?>

@@ -306,6 +306,7 @@ if(isset($_REQUEST['id'])){
                             <th scope="col">Color</th>
                             <th scope="col">Size</th>
                             <th scope="col">Usage</th>
+                            <th scope="col">Job Name</th>
                         </tr>
                     </thead>
                     <tbody id="productTableBody"></tbody>
@@ -403,6 +404,39 @@ if(isset($_REQUEST['id'])){
       </div>
     </div>
   </div>
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="card-body pb-3">
+        <div class="d-md-flex no-block">
+          <h4 class="card-title">Jobs</h4>
+          <div class="ms-auto">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="date_from" class="form-label">Date From</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" class="form-control" id="date_from_jobs">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="date_to" class="form-label">Date To</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" class="form-control" id="date_to_jobs">
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <div id="tbl-jobs"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal fade" id="view_order_details_modal">
@@ -416,6 +450,26 @@ if(isset($_REQUEST['id'])){
             </div>
             <div class="modal-body">
                 <div id="order-details">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="view_job_dtls_modal">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content p-2">
+            <div class="modal-header">
+                <h6 class="modal-title">Job Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="job-details">
                 </div>
             </div>
             <div class="modal-footer">
@@ -549,6 +603,28 @@ if(isset($_REQUEST['id'])){
           });
       }
 
+      function searchJobs() {
+          var date_from = $('#date_from_jobs').val();
+          var date_to = $('#date_to_jobs').val();
+
+          $.ajax({
+              url: 'pages/customer-dash_ajax.php',
+              type: 'POST',
+              data: {
+                  customerid: <?= $_REQUEST['id'] ?>,
+                  date_from: date_from,
+                  date_to: date_to,
+                  search_jobs: 'search_jobs'
+              },
+              success: function(response) {
+                  $('#tbl-jobs').html(response);
+              },
+              error: function(jqXHR, textStatus, errorThrown) {
+                  alert('Error: ' + textStatus + ' - ' + errorThrown);
+              }
+          });
+      }
+
       $(document).on('click', '#view_order_btn', function(event) {
           event.preventDefault(); 
           var orderid = $(this).data('id');
@@ -609,12 +685,39 @@ if(isset($_REQUEST['id'])){
           });
       });
 
+      $(document).on('click', '#view_job_dtls_btn', function(event) {
+          event.preventDefault(); 
+          var job_name = $(this).data('name');
+          var date_from = $(this).data('date-from');
+          var date_to = $(this).data('date-to');
+          $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    customerid: <?= $_REQUEST['id'] ?>,
+                    job_name: job_name,
+                    date_from: date_from,
+                    date_to: date_to,
+                    fetch_job_details: "fetch_job_details"
+                },
+                success: function(response) {
+                    $('#job-details').html(response);
+                    $('#view_job_dtls_modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+          });
+      });
+
       $('#date_from_order, #date_to_order').on('change', searchOrders);
       $('#date_from_estimate, #date_to_estimate').on('change', searchEstimates);
+      $('#date_from_jobs, #date_to_jobs').on('change', searchJobs);
       $('#text-srh').on('input', function() { searchProducts(this.value); });
 
       searchOrders();
       searchEstimates();
+      searchJobs();
       searchProducts('');
   });
 </script>
