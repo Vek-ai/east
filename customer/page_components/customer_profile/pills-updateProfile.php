@@ -31,14 +31,14 @@
             <div class="col-md-4">
               <div class="mb-3">
                 <label class="contact_phone">Customer Phone</label>
-                <input type="number" id="contact_phone" name="contact_phone" class="form-control" max="999999999999"
+                <input type="text" id="contact_phone" name="contact_phone" class="form-control"   maxlength="11" inputmode="numeric" pattern="\d*"
                   value="<?= htmlspecialchars($currentUser['contact_phone']) ?>" />
               </div>
             </div>
             <div class="col-md-4">
               <div class="mb-3">
                 <label class="contact_fax">Customer Fax</label>
-                <input type="tel" id="contact_fax" name="contact_fax" class="form-control" pattern="^\+?[\d\s\-()]+$"
+                <input type="tel" id="contact_fax" name="contact_fax" class="form-control" pattern="^\+1-\d{3}-\d{3}-\d{4}$" maxlength="15"
                   value="<?= htmlspecialchars($currentUser['contact_fax']) ?>" />
               </div>
             </div>
@@ -126,7 +126,7 @@
             <div class="col-md-4">
               <div class="mb-3">
                 <label class="ap_contact_phone">AP Contact Phone</label>
-                <input type="number" id="ap_contact_phone" name="ap_contact_phone" class="form-control" max="999999999999" 
+                <input type="text" id="ap_contact_phone" name="ap_contact_phone" class="form-control"  maxlength="11" inputmode="numeric" pattern="\d*"
                   value="<?= htmlspecialchars($currentUser['ap_contact_phone']) ?>" />
               </div>
             </div>
