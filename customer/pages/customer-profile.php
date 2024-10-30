@@ -176,15 +176,15 @@ $old_customer_type_id =isset($currentUser['customer_type_id']) ? htmlspecialchar
     <div class="tab-content" id="pills-tabContent">
       <div class="tab-pane fade show active" id="pills-address" role="tabpanel" aria-labelledby="pills-address-tab"
         tabindex="0">
-        <?php include 'page_components\customer_profile\pills-address.php'; ?>
+        <?php include 'page_components/customer_profile/pills-address.php'; ?>
       </div>
 
       <div class="tab-pane fade" id="pills-contacts" role="tabpanel" aria-labelledby="pills-contacts-tab" tabindex="0">
-        <?php include 'page_components\customer_profile\pills-contacts.php'; ?>
+        <?php include 'page_components/customer_profile/pills-contacts.php'; ?>
       </div>
 
       <div class="tab-pane fade" id="pills-updateProfile" role="tabpanel" aria-labelledby="pills-updateProfile-tab" tabindex="0">
-        <?php include 'page_components\customer_profile\pills-updateProfile.php'; ?>
+        <?php include 'page_components/customer_profile/pills-updateProfile.php'; ?>
       </div>
     </div>
   </div>
