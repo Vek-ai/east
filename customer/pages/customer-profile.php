@@ -29,6 +29,7 @@ $stmt->close();
 
 $firstName = isset($currentUser['customer_first_name']) ? htmlspecialchars($currentUser['customer_first_name']) : 'First Name';
 $lastName = isset($currentUser['customer_last_name']) ? htmlspecialchars($currentUser['customer_last_name']) : 'Last Name';
+$old_customer_type_id =isset($currentUser['customer_type_id']) ? htmlspecialchars($currentUser['customer_type_id']) : '';
 ?>
 
 <div class="container-fluid">
@@ -79,13 +80,13 @@ $lastName = isset($currentUser['customer_last_name']) ? htmlspecialchars($curren
       <div class="row align-items-center">
         <div class="col-lg-4 order-lg-1 order-2">
           <div class="d-flex align-items-center justify-content-around">
-          <div class="text-center">
-            <i class="ti ti-phone fs-6"></i>
-            <h4 class="mb-0 fw-semibold lh-1">
-              <?= htmlspecialchars($currentUser['call_status'] == 1 ? 'Enabled' : 'Disabled') ?>
-            </h4>
-            <p class="mb-0">Call Status</p>
-          </div>
+            <div class="text-center">
+              <i class="ti ti-phone fs-6"></i>
+              <h4 class="mb-0 fw-semibold lh-1">
+                <?= htmlspecialchars($currentUser['call_status'] == 1 ? 'Enabled' : 'Disabled') ?>
+              </h4>
+              <p class="mb-0">Call Status</p>
+            </div>
             <div class="text-center">
               <i class="ti ti-users fs-6"></i>
               <h4 class="mb-0 fw-semibold lh-1">
@@ -96,7 +97,7 @@ $lastName = isset($currentUser['customer_last_name']) ? htmlspecialchars($curren
             <div class="text-center">
               <i class="ti ti-user-check fs-6 d-block mb-2"></i>
               <h4 class="mb-0 fw-semibold lh-1">
-              <?= htmlspecialchars($currentUser['customer_type_name']) ?>
+                <?= htmlspecialchars($currentUser['customer_type_name']) ?>
               </h4>
               <p class="mb-0 ">Customer Type</p>
             </div>
@@ -142,7 +143,8 @@ $lastName = isset($currentUser['customer_last_name']) ? htmlspecialchars($curren
               </a>
             </li>
             <li>
-              <button class="btn btn-primary text-nowrap">Add To Story</button>
+              <button class="btn btn-primary text-nowrap" data-bs-toggle="modal"
+                data-bs-target="#updateCustomerModal">Update Profile</button>
             </li>
           </ul>
         </div>
@@ -301,9 +303,21 @@ $lastName = isset($currentUser['customer_last_name']) ? htmlspecialchars($curren
               </div>
             </div>
           </div>
-        
+
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Modal Structure -->
+  <div class="modal fade" id="updateCustomerModal" tabindex="-1" aria-labelledby="customerModalLabel"
+    aria-hidden="true">
+    <?php include 'modal/customer-profile-edit.php'; ?>
+  </div>
 </div>
+
+<script>
+  $('#updateCustomerModalBtn').on('click', function (event) {
+    $("#updateCustomerModal").modal("show");
+  });
+</script>
