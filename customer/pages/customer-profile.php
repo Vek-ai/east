@@ -170,6 +170,14 @@ $old_customer_type_id =isset($currentUser['customer_type_id']) ? htmlspecialchar
             <span class="d-none d-md-block">Update Profile</span>
           </button>
         </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link hstack gap-2 rounded-0 fs-12 py-6" id="pills-updateProfile-tab" data-bs-toggle="pill"
+            data-bs-target="#pills-updateProfile" type="button" role="tab" aria-controls="pills-updateProfile"
+            aria-selected="false">
+            <i class="ti ti-heart fs-5"></i>
+            <span class="d-none d-md-block">Update testProfile</span>
+          </button>
+        </li>
       </ul>
     </div>
 
