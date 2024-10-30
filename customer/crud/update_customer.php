@@ -22,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ap_contact_name = $_POST['ap_contact_name'];
     $ap_contact_email = $_POST['ap_contact_email'];
     $ap_contact_phone = $_POST['ap_contact_phone'];
-    $tax_status = $_POST['tax_status'];
     $tax_exempt_number = $_POST['tax_exempt_number'];
     $customer_notes = $_POST['customer_notes'];
     $call_status = isset($_POST['call_status']) ? 1 : 0;
