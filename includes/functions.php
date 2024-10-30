@@ -529,6 +529,20 @@ function getCustomerTax($customer_id) {
     }
 }
 
+function getCustomerCreditTotal($customer_id) {
+    global $conn;
+    $customer_id = mysqli_real_escape_string($conn, $customer_id);
+
+    $query = "SELECT SUM(credit_amt) AS total_credit FROM orders WHERE customerid = '$customer_id'";
+    $result = mysqli_query($conn, $query);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['total_credit'] ?? 0;
+    } else {
+        return 0;
+    }
+}
+
 function getCustomerDiscount($customer_id) {
     global $conn;
     $customer_id = mysqli_real_escape_string($conn, $customer_id);
