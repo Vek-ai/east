@@ -105,16 +105,16 @@
         <li class="sidebar-item">
           <a class="sidebar-link" href="?page=product">
             <iconify-icon icon="solar:clipboard-list-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Product List/Inventory</span>
+            <span class="hide-menu">Product List</span>
           </a>
         </li>
-      <!--  <li class="sidebar-item">
-          <a class="sidebar-link" href="update_product.php">
+      <li class="sidebar-item">
+          <a class="sidebar-link" href="?page=inventory">
             <iconify-icon icon="solar:smartphone-update-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Update Product</span>
+            <span class="hide-menu">Inventory</span>
           </a>
         </li>
-        <li class="sidebar-item">
+       <!--   <li class="sidebar-item">
           <a class="sidebar-link" href="remove_product.php">
             <iconify-icon icon="solar:trash-bin-minimalistic-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Remove Product</span>
