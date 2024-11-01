@@ -543,7 +543,7 @@ $picture_path = "images/product/product.jpg";
                     <!-- start row -->
                     <tr class="search-items">
                         <td>
-                            <a href="/?page=product_details&product_id='<?php echo $row_product['product_id'] ?>">
+                            <a href="/?page=product_details&product_id=<?= $row_product['product_id'] ?>">
                                 <div class="d-flex align-items-center">
                                     <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                                     <div class="ms-3">
