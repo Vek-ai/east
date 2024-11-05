@@ -468,6 +468,14 @@ require '../includes/functions.php';
                                 <span class="fw-bold">Credit Limit:</span><br>
                                 <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
                             </div>
+                            <div class="col-3">
+                                <label for="job_name" class="mb-0">Job Name</label>
+                                <input type="text" id="order_job_name" name="order_job_name" class="form-control" placeholder="Enter Job Name">
+                            </div>
+                            <div class="col-3">
+                                <label for="job_po" class="mb-0">Job PO #</label>
+                                <input type="text" id="order_job_po" name="order_job_po" class="form-control" placeholder="Enter Job PO #">
+                            </div>
                         </div>
                         
                     <?php } ?>
@@ -480,13 +488,7 @@ require '../includes/functions.php';
                 
             </div>
             <div class="modal-footer">
-                <button class="btn ripple btn-primary next" type="button" id="next_page_order">
-                    <i class="fe fe-hard-drive"></i> Next
-                </button>
-                <button class="btn ripple btn-primary previous d-none" type="button" id="prev_page_order">
-                    <i class="fe fe-hard-drive"></i> Previous
-                </button>
-                <button class="btn ripple btn-success d-none" type="button" id="save_order">
+                <button class="btn ripple btn-primary" type="button" id="save_order">
                     <i class="fe fe-hard-drive"></i> Save
                 </button>
                 <a href="#" class="btn ripple btn-success d-none" type="button" id="print_order_category" target="_blank">
@@ -799,7 +801,6 @@ require '../includes/functions.php';
                 fetch_order: "fetch_order"
             },
             success: function(response) {
-                $('#order-tbl').html('');
                 $('#order-tbl').html(response);
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -1408,75 +1409,6 @@ require '../includes/functions.php';
             });
         }
 
-        $('input[name="toggleDiffAddress"]').on('change', function() {
-            if ($(this).val() === 'yes') {
-                $('.jobDetailsRow').addClass('d-none');
-                $('#order_deliver_address').val('<?= addslashes($fullAddress); ?>');
-            } else {
-                $('.jobDetailsRow').removeClass('d-none');
-                $('#order_deliver_address').val('');
-            }
-        });
-
-        let animating = false;
-
-        $(document).on("click", "#next_page_order", function() {
-            if (animating) return false;
-            animating = true;
-            var current_fs = $('.order-page-1');
-            var next_fs = $('.order-page-2');
-            $('#next_page_order').addClass("d-none");
-            $('#prev_page_order').removeClass("d-none");
-            $('#save_order').removeClass("d-none");
-            next_fs.show();
-            current_fs.animate({ opacity: 0 }, {
-                step: function(now, mx) {
-                    var scale = 1 - (1 - now) * 0.2;
-                    var left = (now * 50) + "%";
-                    var opacity = 1 - now;
-                    current_fs.css({
-                        'transform': 'scale(' + scale + ')',
-                        'position': 'absolute'
-                    });
-                    next_fs.css({ 'left': left, 'opacity': opacity });
-                },
-                duration: 800,
-                complete: function() {
-                    current_fs.hide();
-                    animating = false;
-                },
-                easing: 'easeInOutBack'
-            });
-        });
-
-        $(document).on("click", "#prev_page_order", function() {
-            
-            if (animating) return false;
-            animating = true;
-            var current_fs = $('.order-page-2');
-            var previous_fs = $('.order-page-1');
-            $('#next_page_order').removeClass("d-none");
-            $('#prev_page_order').addClass("d-none");
-            $('#save_order').addClass("d-none");
-            previous_fs.show();
-            current_fs.animate({ opacity: 0 }, {
-                step: function(now, mx) {
-                    var scale = 0.8 + (1 - now) * 0.2;
-                    var left = ((1 - now) * 50) + "%";
-                    var opacity = 1 - now;
-                    current_fs.css({ 'left': left });
-                    previous_fs.css({ 'transform': 'scale(' + scale + ')', 'opacity': opacity });
-                },
-                duration: 800,
-                complete: function() {
-                    current_fs.hide();
-                    animating = false;
-                },
-                easing: 'easeInOutBack'
-            });
-            
-        });
-        
         $(document).on('click', '#save_estimate', function(event) {
             var discount = $('#est_discount').val();
             var job_name = $('#est_job_name').val();

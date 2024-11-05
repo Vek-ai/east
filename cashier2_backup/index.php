@@ -1356,8 +1356,6 @@ if (!isset($_SESSION['userid'])) {
   <script src="../assets/libs/owl.carousel/dist/owl.carousel.min.js"></script>
   <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
   <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
-  
   <script>
   $(document).ready(function() {
     $(".phone-inputmask").inputmask("(999) 999-9999");
