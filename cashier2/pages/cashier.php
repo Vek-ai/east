@@ -388,7 +388,7 @@ require '../includes/functions.php';
                 <a href="#" class="btn ripple btn-warning d-none" type="button" id="print_estimate" target="_blank">
                     <i class="fe fe-print"></i> Print Total
                 </a>
-                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>
@@ -512,7 +512,6 @@ require '../includes/functions.php';
                 <div id="order-tbl">
                     
                 </div>
-                
             </div>
             <div class="modal-footer">
                 <button class="btn ripple btn-primary next" type="button" id="next_page_order">
@@ -524,13 +523,16 @@ require '../includes/functions.php';
                 <button class="btn ripple btn-success d-none" type="button" id="save_order">
                     <i class="fe fe-hard-drive"></i> Save
                 </button>
-                <a href="#" class="btn ripple btn-success d-none" type="button" id="print_order_category" target="_blank">
+                <a href="#" class="btn ripple btn-light text-dark d-none" type="button" id="print_order_category" target="_blank">
                     <i class="fe fe-print"></i> Print Details
                 </a>
-                <a href="#" class="btn ripple btn-warning d-none" type="button" id="print_order" target="_blank">
+                <a href="#" class="btn ripple btn-warning text-dark d-none" type="button" id="print_order" target="_blank">
                     <i class="fe fe-print"></i> Print Total
                 </a>
-                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                <a href="#" class="btn ripple btn-info d-none" type="button" id="print_deliver" target="_blank">
+                    <i class="fe fe-print"></i> Print Delivery
+                </a>
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>
@@ -1603,8 +1605,11 @@ require '../includes/functions.php';
                         alert("Order successfully saved.");
                         $('#print_order_category').attr('href', '/print_order_product.php?id=' + response.order_id);
                         $('#print_order').attr('href', '/print_order_total.php?id=' + response.order_id);
+                        $('#print_deliver').attr('href', '/print_order_delivery.php?id=' + response.order_id);
                         $('#print_order_category').removeClass('d-none');
                         $('#print_order').removeClass('d-none');
+                        $('#print_deliver').removeClass('d-none');
+                        print_deliver
                     } else if (response.error) {
                         alert("Error: " + response.error);
                     }
@@ -1930,6 +1935,9 @@ require '../includes/functions.php';
             $('#next_page_order').removeClass("d-none");
             $('#prev_page_order').addClass("d-none");
             $('#save_order').addClass("d-none");
+            $('#print_order_category').addClass('d-none');
+            $('#print_order').addClass('d-none');
+            $('#print_deliver').addClass('d-none');
             $('#cashmodal').modal('show');
         });
 

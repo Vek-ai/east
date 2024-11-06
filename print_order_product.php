@@ -163,8 +163,10 @@ if (mysqli_num_rows($result) > 0) {
                         $pdf->SetFont('Arial', '', 8);
 
                         foreach ($data as $row) {
+                            $height_product = NbLines($pdf, $widths[2], $row[2]) * 5; 
+                            $height_color = NbLines($pdf, $widths[3], $row[3]) * 5;
 
-                            $height = NbLines($pdf, $widths[2], $row[2]) * 5; 
+                            $height = max($height_product, $height_color);
                             
                             $y_initial = $pdf->GetY();
 
@@ -248,7 +250,10 @@ if (mysqli_num_rows($result) > 0) {
 
                 foreach ($data as $row) {
 
-                    $height = NbLines($pdf, $widths[2], $row[2]) * 5; 
+                    $height_product = NbLines($pdf, $widths[2], $row[2]) * 5; 
+                    $height_color = NbLines($pdf, $widths[3], $row[3]) * 5;
+
+                    $height = max($height_product, $height_color);
                     
                     $y_initial = $pdf->GetY();
 

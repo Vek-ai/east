@@ -1,8 +1,5 @@
 <?php
 session_start();
-?>
-
-<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -27,8 +24,8 @@ if(isset($_REQUEST['action'])) {
         $quantity_ttl = mysqli_real_escape_string($conn, $_POST['quantity_ttl']);
         $pack = mysqli_real_escape_string($conn, $_POST['pack']);
         $addedby = mysqli_real_escape_string($conn, $_POST['addedby']);
+        $status = '1';
     
-        // SQL query to check if the record exists
         $checkQuery = "SELECT * FROM inventory WHERE Inventory_id = '$Inventory_id'";
         $result = mysqli_query($conn, $checkQuery);
     
@@ -37,9 +34,6 @@ if(isset($_REQUEST['action'])) {
         }
     
         if (mysqli_num_rows($result) > 0) {
-            $status = '1';
-            
-            // Record exists, proceed with update
             $updateQuery = "UPDATE inventory SET 
                 Product_id = '$Product_id', 
                 Warehouse_id = '$Warehouse_id', 
@@ -60,45 +54,64 @@ if(isset($_REQUEST['action'])) {
             } else {
                 die("Error updating record: " . mysqli_error($conn));
             }
-    
         } else {
-        
-            $addedby = $_SESSION['userid']; 
-            // Record does not exist, proceed with insert
-            $insertQuery = "INSERT INTO inventory (
-                Inventory_id,
-                Product_id, 
-                supplier_id, 
-                Warehouse_id, 
-                Shelves_id, 
-                Bin_id, 
-                Row_id, 
-                Date, 
-                quantity, 
-                pack, 
-                quantity_ttl,
-                addedby, 
-                status
-            ) VALUES (
-                '$Inventory_id',
-                '$Product_id', 
-                '$supplier_id', 
-                '$Warehouse_id',
-                '$Shelves_id', 
-                '$Bin_id', 
-                '$Row_id', 
-                '$Date', 
-                '$quantity',
-                '$pack', 
-                '$quantity_ttl', 
-                '$addedby', 
-                '$status'
-            )";
+            $productCheckQuery = "SELECT quantity_ttl FROM inventory WHERE Product_id = '$Product_id'";
+            $productResult = mysqli_query($conn, $productCheckQuery);
     
-            if (mysqli_query($conn, $insertQuery)) {
-                echo "success";
+            if (!$productResult) {
+                die("Error executing product query: " . mysqli_error($conn));
+            }
+    
+            if (mysqli_num_rows($productResult) > 0) {
+                $row = mysqli_fetch_assoc($productResult);
+                $newQuantity = $row['quantity_ttl'] + $quantity;
+    
+                $updateQuantityQuery = "UPDATE inventory SET 
+                    quantity_ttl = '$newQuantity', quantity = '$newQuantity'
+                    WHERE Product_id = '$Product_id'";
+    
+                if (mysqli_query($conn, $updateQuantityQuery)) {
+                    echo "success";
+                } else {
+                    die("Error updating quantity: " . mysqli_error($conn));
+                }
             } else {
-                die("Error inserting record: " . mysqli_error($conn));
+                $addedby = $_SESSION['userid']; 
+                $insertQuery = "INSERT INTO inventory (
+                    Inventory_id,
+                    Product_id, 
+                    supplier_id, 
+                    Warehouse_id, 
+                    Shelves_id, 
+                    Bin_id, 
+                    Row_id, 
+                    Date, 
+                    quantity, 
+                    pack, 
+                    quantity_ttl,
+                    addedby, 
+                    status
+                ) VALUES (
+                    '$Inventory_id',
+                    '$Product_id', 
+                    '$supplier_id', 
+                    '$Warehouse_id',
+                    '$Shelves_id', 
+                    '$Bin_id', 
+                    '$Row_id', 
+                    '$Date', 
+                    '$quantity',
+                    '$pack', 
+                    '$quantity_ttl', 
+                    '$addedby', 
+                    '$status'
+                )";
+    
+                if (mysqli_query($conn, $insertQuery)) {
+                    echo "success";
+                } else {
+                    die("Error inserting record: " . mysqli_error($conn));
+                }
             }
         }
     }
