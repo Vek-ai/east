@@ -27,6 +27,16 @@ require '../includes/functions.php';
     #viewInStockmodal ~ .modal-backdrop.show {
         z-index: 11055;
     }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
 </style>
 <div class="product-list pt-4">
     <div class="row row-xs pr-3">
@@ -323,13 +333,16 @@ require '../includes/functions.php';
                             ?>
 
                             <div class="form-group row align-items-center">
-                                <div class="col-3">
-                                <label class="mb-0 me-3">Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
+                                <div class="col-6">
+                                    <label class="mb-0 me-3">Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
                                     <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_estimate">
                                         <i class="fe fe-reload"></i> Change
                                     </button>
+                                    <div class="mt-1"> 
+                                        <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
+                                    </div>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-6">
                                     <div>
                                         <span class="fw-bold">Credit Limit:</span><br>
                                         <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
@@ -339,18 +352,10 @@ require '../includes/functions.php';
                                         <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
                                     </div>
                                 </div>
-                                <div class="col-3">
-                                    <label for="job_name" class="mb-0">Job Name</label>
-                                    <input type="text" id="est_job_name" name="est_job_name" class="form-control" placeholder="Enter Job Name">
-                                </div>
-                                <div class="col-3">
-                                    <label for="job_po" class="mb-0">Job PO #</label>
-                                    <input type="text" id="est_job_po" name="est_job_po" class="form-control" placeholder="Enter Job PO #">
-                                </div>
                             </div>
                         <?php } else { ?>
                             <div class="form-group row align-items-center">
-                                <div class="col-3">
+                                <div class="col-6">
                                     <label>Customer Name</label>
                                     <div class="input-group">
                                         <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_estimate">
@@ -358,19 +363,10 @@ require '../includes/functions.php';
                                             <span class="input-group-text"> + </span>
                                         </a>
                                     </div>
-                                    
                                 </div>
-                                <div class="col-3">
+                                <div class="col-6">
                                     <span class="fw-bold">Credit Limit:</span><br>
                                     <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
-                                </div>
-                                <div class="col-3">
-                                    <label for="job_name" class="mb-0">Job Name</label>
-                                    <input type="text" id="est_job_name" name="est_job_name" class="form-control" placeholder="Enter Job Name">
-                                </div>
-                                <div class="col-3">
-                                    <label for="job_po" class="mb-0">Job PO #</label>
-                                    <input type="text" id="est_job_po" name="est_job_po" class="form-control" placeholder="Enter Job PO #">
                                 </div>
                             </div>
                             
@@ -426,13 +422,16 @@ require '../includes/functions.php';
                             $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
                         ?>
                         <div class="form-group row align-items-center">
-                            <div class="col-3">
+                            <div class="col-6">
                                 <label>Customer Name: <?= get_customer_name($_SESSION["customer_id"]); ?></label>
                                 <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="customer_change_cash">
                                     <i class="fe fe-reload"></i> Change
                                 </button>
+                                <div class="mt-1"> 
+                                    <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
+                                </div>
                             </div>
-                            <div class="col-3">
+                            <div class="col-6">
                                 <div>
                                     <span class="fw-bold">Credit Limit:</span><br>
                                     <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
@@ -441,14 +440,6 @@ require '../includes/functions.php';
                                     <span class="fw-bold">Unpaid Credit:</span><br>
                                     <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
                                 </div>
-                            </div>
-                            <div class="col-3">
-                                <label for="job_name" class="mb-0">Job Name</label>
-                                <input type="text" id="order_job_name" name="order_job_name" class="form-control" placeholder="Enter Job Name">
-                            </div>
-                            <div class="col-3">
-                                <label for="job_po" class="mb-0">Job PO #</label>
-                                <input type="text" id="order_job_po" name="order_job_po" class="form-control" placeholder="Enter Job PO #">
                             </div>
                         </div>
 
@@ -1408,7 +1399,7 @@ require '../includes/functions.php';
             });
         }
 
-        $('input[name="toggleDiffAddress"]').on('change', function() {
+        $(document).on('change', 'input[name="toggleDiffAddress"]', function() {
             if ($(this).val() === 'yes') {
                 $('.jobDetailsRow').addClass('d-none');
                 $('#order_deliver_address').val('<?= addslashes($fullAddress); ?>');
@@ -1416,6 +1407,27 @@ require '../includes/functions.php';
                 $('.jobDetailsRow').removeClass('d-none');
                 $('#order_deliver_address').val('');
             }
+        });
+
+        $(document).on('change', 'input[name="toggleDiffName"]', function() {
+            if ($(this).val() === 'yes') {
+                $('.diffNameInput').addClass('d-none');
+                $('#order_deliver_fname').val('<?= addslashes($fname); ?>');
+                $('#order_deliver_lname').val('<?= addslashes($lname); ?>');
+            } else {
+                $('.diffNameInput').removeClass('d-none');
+                $('#order_deliver_fname').val('');
+                $('#order_deliver_lname').val('');
+            }
+        });
+
+        $(document).on('change', '#delivery_amt', function() {
+            console.log(123);
+            var product_cost = parseFloat($('#total_amt').text()) || 0;
+            var delivery_cost = parseFloat($(this).val()) || 0;
+            var total_payable = product_cost + delivery_cost;
+            $('#total_payable').text(total_payable.toFixed(2));
+            $('#order_cash').val(total_payable.toFixed(2));
         });
 
         let animating = false;
@@ -1534,11 +1546,14 @@ require '../includes/functions.php';
 
         $(document).on('click', '#save_order', function(event) {
             var discount = $('#order_discount').val();
+            var delivery_amt = $('#delivery_amt').val();
             var cash_amt = $('#order_cash').val();
             var credit_amt = $('#order_credit').val();
             var job_name = $('#order_job_name').val();
             var job_po = $('#order_job_po').val();
             var deliver_address = $('#order_deliver_address').val();
+            var deliver_fname = $('#order_deliver_fname').val();
+            var deliver_lname = $('#order_deliver_lname').val();
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -1546,9 +1561,12 @@ require '../includes/functions.php';
                     cash_amt: cash_amt,
                     credit_amt: credit_amt,
                     discount: discount,
+                    delivery_amt: delivery_amt,
                     job_name: job_name,
                     job_po: job_po,
                     deliver_address: deliver_address,
+                    deliver_fname: deliver_fname,
+                    deliver_lname: deliver_lname,
                     save_order: 'save_order'
                 },
                 success: function(response) {
@@ -1673,6 +1691,9 @@ require '../includes/functions.php';
                     if (response.trim() == 'success') {
                         $('#customer_cash_section').load(location.href + " #customer_cash_section");
                         loadOrderContents();
+                        $('#next_page_order').removeClass("d-none");
+                        $('#prev_page_order').addClass("d-none");
+                        $('#save_order').addClass("d-none");
                         loadEstimateContents();
                     }
                 },
@@ -1726,6 +1747,9 @@ require '../includes/functions.php';
                         });
                     });
                     loadOrderContents();
+                    $('#next_page_order').removeClass("d-none");
+                    $('#prev_page_order').addClass("d-none");
+                    $('#save_order').addClass("d-none");
                     loadEstimateContents();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -1860,6 +1884,9 @@ require '../includes/functions.php';
 
         $(document).on('click', '#view_order', function(event) {
             loadOrderContents();
+            $('#next_page_order').removeClass("d-none");
+            $('#prev_page_order').addClass("d-none");
+            $('#save_order').addClass("d-none");
             $('#cashmodal').modal('show');
         });
 

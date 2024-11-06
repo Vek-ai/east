@@ -308,6 +308,35 @@ function get_customer_name($customer_id){
     return  $customer_name;
 }
 
+function getCustomerAddress($customer_id) {
+    global $conn;
+    $query = "SELECT address, city, state, zip FROM customer WHERE customer_id = '$customer_id'";
+    $result = mysqli_query($conn, $query);
+
+    if ($row = mysqli_fetch_array($result)) {
+        $addressParts = [];
+
+        if (!empty($row['address'])) {
+            $addressParts[] = $row['address'];
+        }
+        if (!empty($row['city'])) {
+            $addressParts[] = $row['city'];
+        }
+        if (!empty($row['state'])) {
+            $addressParts[] = $row['state'];
+        }
+        if (!empty($row['zip'])) {
+            $addressParts[] = $row['zip'];
+        }
+
+        $address = implode(', ', $addressParts);
+        return $address;
+    }
+
+    return null;
+}
+
+
 function log_estimate_changes($estimate_id, $product_id, $action){
     global $conn;
     session_start();

@@ -19,6 +19,8 @@ if(isset($_POST['fetch_order'])){
             $customer_details['state'] ?? null,
             $customer_details['zip'] ?? null,
         ])));
+        $fname = $customer_details['customer_first_name'];
+        $lname = $customer_details['customer_last_name'];
         $discount = floatval(getCustomerDiscount($customer_id)) / 100;
         $tax = floatval(getCustomerTax($customer_id)) / 100;
     }
@@ -420,7 +422,7 @@ if(isset($_POST['fetch_order'])){
                     </div>
                     <div class="col-md-6">
                         <div class="card">
-                            <div class="card-body pricing">
+                            <div class="card-body pricing container">
                                 <div class="table-responsive">
                                     <table class="table table-sm">
                                         <tbody>
@@ -433,8 +435,10 @@ if(isset($_POST['fetch_order'])){
                                                 <td class="text-right border-bottom">$<span id="total_discount"><?= number_format(floatval($total) * floatval($discount), 2) ?></span></td>
                                             </tr>
                                             <tr>
-                                                <th class="text-right border-bottom">Delivery</th>
-                                                <td class="text-right border-bottom">$<span id="delivery_amt"><?= number_format($delivery_price, 2) ?></span></td>
+                                                <th class="text-right border-bottom">Delivery($)</th>
+                                                <td class="text-right border-bottom">
+                                                    <input type="number" id="delivery_amt" name="delivery_amt" value="<?= number_format($delivery_price, 2) ?>" class="text-right form-control" placeholder="Delivery Amount">
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-right border-bottom">Sales Tax</th>
@@ -459,6 +463,28 @@ if(isset($_POST['fetch_order'])){
                                                     <div class="text-start w-100">
                                                         <input type="text" id="order_deliver_address" name="order_deliver_address" value="<?= $fullAddress ?>" class="form-control jobDetailsRow d-none" placeholder="Delivery Address">
                                                     </div>
+                                                </td>
+                                            </tr>
+                                            <tr class="bg-primary text-white">
+                                                <th class="text-right">Same Recipient Name?</th>
+                                                <td class="text-right align-items-center">
+                                                    <div class="form-check form-check-inline mb-0">
+                                                        <input class="form-check-input" type="radio" name="toggleDiffName" id="diffNameYes" value="yes" checked>
+                                                        <label class="form-check-label" for="diffNameYes">Yes</label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline mb-0">
+                                                        <input class="form-check-input" type="radio" name="toggleDiffName" id="diffNameNo" value="no">
+                                                        <label class="form-check-label" for="diffNameNo">No</label>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-6 text-start">
+                                                            <input type="text" id="order_deliver_fname" name="order_deliver_fname" value="<?= $fname ?>" class="form-control diffNameInput d-none" placeholder="First Name">
+                                                        </div>
+                                                        <div class="col-6 text-start">
+                                                            <input type="text" id="order_deliver_lname" name="order_deliver_lname" value="<?= $lname ?>" class="form-control diffNameInput d-none" placeholder="Last Name">
+                                                        </div>
+                                                    </div>
+                                                    
                                                 </td>
                                             </tr>
                                             <tr class="bg-primary text-white" style="font-size: 1.25rem;">

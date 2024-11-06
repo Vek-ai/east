@@ -26,14 +26,12 @@ $col2_x = 140;
 $orderid = $_REQUEST['id'];
 $current_user_id = $_SESSION['userid'];
 
-
-$delivery_price = getDeliveryCost();
-
 $query = "SELECT * FROM orders WHERE orderid = '$orderid'";
 $result = mysqli_query($conn, $query);
 
 if (mysqli_num_rows($result) > 0) {
     while($row_orders = mysqli_fetch_assoc($result)){
+        $delivery_price = floatval($row_orders['delivery_amt']);
         $discount = floatval($row_orders['discount_percent']) / 100;
         $orderid = $row_orders['orderid'];
         $customer_id = $row_orders['customerid'];
@@ -64,7 +62,7 @@ if (mysqli_num_rows($result) > 0) {
         $def_y = $pdf->GetY();
 
         $pdf->SetXY($col1_x, $def_y);
-        $pdf->MultiCell(60, 5, 'Sold To: ' .$customerDetails['customer_first_name'] . " " .$customerDetails['customer_last_name'], 0, 'L');
+        $pdf->MultiCell(60, 5, 'Sold To: ' .$row_orders['deliver_fname'] . " " .$row_orders['deliver_lname'], 0, 'L');
 
         $pdf->SetXY($col2_x, $def_y);
         $pdf->MultiCell(60, 5, 'Ship To: ' .$row_orders['deliver_address'], 0, 'L');
@@ -310,7 +308,7 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'GRAND TOTAL:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' .number_format(($total_price - ($total_price * $discount) + $delivery_price),2), 0, 1, 'R');
+        $pdf->Cell(20, $lineheight, '$ ' .number_format(($total_price + $delivery_price),2), 0, 1, 'R');
 
         $pdf->Ln(5);
 
