@@ -465,6 +465,11 @@ require '../includes/functions.php';
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="col-12 text-end">
+                                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="cancel_change_address">
+                                                    <i class="fa fa-rotate-left"></i> Cancel
+                                                </button>
+                                            </div>
                                         </div>
 
                                     </div>
@@ -1724,6 +1729,10 @@ require '../includes/functions.php';
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
+        });
+
+        $(document).on('click', '#cancel_change_address', function(event) {
+            $('#customer_cash_section').load(location.href + " #customer_cash_section");
         });
 
         $(document).on('click', '#customer_change_cash', function(event) {
