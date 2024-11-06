@@ -64,8 +64,22 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->SetXY($col1_x, $def_y);
         $pdf->MultiCell(60, 5, 'Sold To: ' .$row_orders['deliver_fname'] . " " .$row_orders['deliver_lname'], 0, 'L');
 
+        $addressParts = [];
+        if (!empty($row_orders['deliver_address'])) {
+            $addressParts[] = $row_orders['deliver_address'];
+        }
+        if (!empty($row_orders['deliver_city'])) {
+            $addressParts[] = $row_orders['deliver_city'];
+        }
+        if (!empty($row_orders['deliver_state'])) {
+            $addressParts[] = $row_orders['deliver_state'];
+        }
+        if (!empty($row_orders['deliver_zip'])) {
+            $addressParts[] = $row_orders['deliver_zip'];
+        }
+        $address = implode(', ', $addressParts);
         $pdf->SetXY($col2_x, $def_y);
-        $pdf->MultiCell(60, 5, 'Ship To: ' .$row_orders['deliver_address'], 0, 'L');
+        $pdf->MultiCell(60, 5, 'Ship To: ' .$address, 0, 'L');
 
         $pdf->SetXY($col3_x, $def_y);
         $pdf->Cell(60, 5, 'Delivery Method: ' .$delivery_method, 0, 1, 'L');

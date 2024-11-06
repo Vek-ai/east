@@ -428,7 +428,46 @@ require '../includes/functions.php';
                                     <i class="fe fe-reload"></i> Change
                                 </button>
                                 <div class="mt-1"> 
-                                    <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
+                                    <div id="defaultDeliverDetails">
+                                        <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
+                                        <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="address_change_cash">
+                                            <i class="fe fe-reload"></i> Change
+                                        </button>
+                                    </div>
+                                    <div class="mt-1">
+                                        <div id="deliverDetails" class="row d-none">
+                                            <div class="col-12">
+                                                <label>Recipient:</label>
+                                                <div class="row mb-3">
+                                                    <div class="col-sm-6">
+                                                        <input type="text" id="order_deliver_fname" name="order_deliver_fname" value="<?= $customer_details['customer_first_name'] ?>" class="form-control diffNameInput" placeholder="First Name">
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <input type="text" id="order_deliver_lname" name="order_deliver_lname" value="<?= $customer_details['customer_last_name'] ?>" class="form-control diffNameInput" placeholder="Last Name">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label>Address:</label>
+                                                <div class="row mb-3">
+                                                    <div class="col-sm-3">
+                                                        <input type="text" id="order_deliver_address" name="order_deliver_address" value="<?= $customer_details['address'] ?>" class="form-control" placeholder="Address">
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <input type="text" id="order_deliver_city" name="order_deliver_city" value="<?= $customer_details['city'] ?>" class="form-control" placeholder="City">
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <input type="text" id="order_deliver_state" name="order_deliver_state" value="<?= $customer_details['state'] ?>" class="form-control" placeholder="State">
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <input type="text" id="order_deliver_zip" name="order_deliver_zip" value="<?= $customer_details['zip'] ?>" class="form-control" placeholder="Zip">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-6">
@@ -1399,30 +1438,7 @@ require '../includes/functions.php';
             });
         }
 
-        $(document).on('change', 'input[name="toggleDiffAddress"]', function() {
-            if ($(this).val() === 'yes') {
-                $('.jobDetailsRow').addClass('d-none');
-                $('#order_deliver_address').val('<?= addslashes($fullAddress); ?>');
-            } else {
-                $('.jobDetailsRow').removeClass('d-none');
-                $('#order_deliver_address').val('');
-            }
-        });
-
-        $(document).on('change', 'input[name="toggleDiffName"]', function() {
-            if ($(this).val() === 'yes') {
-                $('.diffNameInput').addClass('d-none');
-                $('#order_deliver_fname').val('<?= addslashes($fname); ?>');
-                $('#order_deliver_lname').val('<?= addslashes($lname); ?>');
-            } else {
-                $('.diffNameInput').removeClass('d-none');
-                $('#order_deliver_fname').val('');
-                $('#order_deliver_lname').val('');
-            }
-        });
-
         $(document).on('change', '#delivery_amt', function() {
-            console.log(123);
             var product_cost = parseFloat($('#total_amt').text()) || 0;
             var delivery_cost = parseFloat($(this).val()) || 0;
             var total_payable = product_cost + delivery_cost;
@@ -1552,8 +1568,12 @@ require '../includes/functions.php';
             var job_name = $('#order_job_name').val();
             var job_po = $('#order_job_po').val();
             var deliver_address = $('#order_deliver_address').val();
+            var deliver_city = $('#order_deliver_city').val();
+            var deliver_state = $('#order_deliver_state').val();
+            var deliver_zip = $('#order_deliver_zip').val();
             var deliver_fname = $('#order_deliver_fname').val();
             var deliver_lname = $('#order_deliver_lname').val();
+            console.log("Delivery Amt: "+delivery_amt);
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -1565,6 +1585,9 @@ require '../includes/functions.php';
                     job_name: job_name,
                     job_po: job_po,
                     deliver_address: deliver_address,
+                    deliver_city: deliver_city,
+                    deliver_state: deliver_state,
+                    deliver_zip: deliver_zip,
                     deliver_fname: deliver_fname,
                     deliver_lname: deliver_lname,
                     save_order: 'save_order'
@@ -1756,6 +1779,17 @@ require '../includes/functions.php';
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
+        });
+
+        $(document).on('click', '#address_change_cash', function(event) {
+            $('#deliverDetails').removeClass('d-none');
+            $('#defaultDeliverDetails').addClass('d-none');
+            $('#order_deliver_fname').val('');
+            $('#order_deliver_lname').val('');
+            $('#order_deliver_address').val('');
+            $('#order_deliver_city').val('');
+            $('#order_deliver_state').val('');
+            $('#order_deliver_zip').val('');
         });
 
         $(document).on('click', '#customer_change_estimate', function(event) {

@@ -449,44 +449,6 @@ if(isset($_POST['fetch_order'])){
                                                 <td class="text-right border-bottom">$<span id="total_payable"><?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?></span></td>
                                                 <input type="hidden" id="payable_amt" value="<?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?>">
                                             </tr>
-                                            <tr class="bg-primary text-white">
-                                                <th class="text-right">Ship to same Address?</th>
-                                                <td class="text-right align-items-center">
-                                                    <div class="form-check form-check-inline mb-0">
-                                                        <input class="form-check-input" type="radio" name="toggleDiffAddress" id="diffAddressYes" value="yes" checked>
-                                                        <label class="form-check-label" for="diffAddressYes">Yes</label>
-                                                    </div>
-                                                    <div class="form-check form-check-inline mb-0">
-                                                        <input class="form-check-input" type="radio" name="toggleDiffAddress" id="diffAddressNo" value="no">
-                                                        <label class="form-check-label" for="diffAddressNo">No</label>
-                                                    </div>
-                                                    <div class="text-start w-100">
-                                                        <input type="text" id="order_deliver_address" name="order_deliver_address" value="<?= $fullAddress ?>" class="form-control jobDetailsRow d-none" placeholder="Delivery Address">
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr class="bg-primary text-white">
-                                                <th class="text-right">Same Recipient Name?</th>
-                                                <td class="text-right align-items-center">
-                                                    <div class="form-check form-check-inline mb-0">
-                                                        <input class="form-check-input" type="radio" name="toggleDiffName" id="diffNameYes" value="yes" checked>
-                                                        <label class="form-check-label" for="diffNameYes">Yes</label>
-                                                    </div>
-                                                    <div class="form-check form-check-inline mb-0">
-                                                        <input class="form-check-input" type="radio" name="toggleDiffName" id="diffNameNo" value="no">
-                                                        <label class="form-check-label" for="diffNameNo">No</label>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-6 text-start">
-                                                            <input type="text" id="order_deliver_fname" name="order_deliver_fname" value="<?= $fname ?>" class="form-control diffNameInput d-none" placeholder="First Name">
-                                                        </div>
-                                                        <div class="col-6 text-start">
-                                                            <input type="text" id="order_deliver_lname" name="order_deliver_lname" value="<?= $lname ?>" class="form-control diffNameInput d-none" placeholder="Last Name">
-                                                        </div>
-                                                    </div>
-                                                    
-                                                </td>
-                                            </tr>
                                             <tr class="bg-primary text-white" style="font-size: 1.25rem;">
                                                 <th class="text-right">Change</th>
                                                 <td class="text-right">$<span id="change">0.00</span></td>

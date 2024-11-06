@@ -391,7 +391,7 @@ if(isset($_POST['fetch_estimate'])){
                                         </tr>
                                         <tr>
                                             <th class="text-right border-bottom">Delivery</th>
-                                            <td class="text-right border-bottom">$ <span id="delivery_amt"><?= number_format($delivery_price, 2) ?></span></td>
+                                            <td class="text-right border-bottom">$ <span id="delivery_amt_est"><?= number_format($delivery_price, 2) ?></span></td>
                                         </tr>
                                         <tr>
                                             <th class="text-right border-bottom">Sales Tax</th>
@@ -399,7 +399,7 @@ if(isset($_POST['fetch_estimate'])){
                                         </tr>
                                         <tr>
                                             <th class="text-right border-bottom">Total Payable</th>
-                                            <td class="text-right border-bottom">$ <span id="total_payable"><?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?></span></td>
+                                            <td class="text-right border-bottom">$ <span id="total_payable_est"><?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?></span></td>
                                         </tr>
                                         <tr class="bg-primary text-white" style="font-size: 1.25rem;">
                                             <th class="text-right">Change</th>
