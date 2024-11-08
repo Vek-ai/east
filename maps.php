@@ -114,7 +114,7 @@
 
         function loadGoogleMapsAPI() {
             const script = document.createElement('script');
-            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDRPyR0tSWQUm4sR0BwqDxSjVsdHXQvw7U&callback=initMaps&libraries=geometry';
+            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDFpFbxFFK7-daOKoIk9y_GB4m512Tii8M&callback=initMaps&libraries=geometry';
             script.async = true;
             script.defer = true;
             document.head.appendChild(script);
