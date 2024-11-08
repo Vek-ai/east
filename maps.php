@@ -55,7 +55,7 @@
                 <h5>Distance:</h5>
             </div>
             <div>
-                <span id="distance">10</span> Miles
+                <span id="distance">0.00</span> Miles
             </div>
         </div>
 
@@ -150,7 +150,6 @@
             const searchBox1 = new google.maps.places.Autocomplete(document.getElementById("searchBox1"));
             const searchBox2 = new google.maps.places.Autocomplete(document.getElementById("searchBox2"));
 
-            // Automatically initialize the autocomplete for the inputs
             searchBox1.addListener("place_changed", function() {
                 const place = searchBox1.getPlace();
                 if (!place.geometry || !place.geometry.location) return;
@@ -161,7 +160,6 @@
                     title: place.name,
                 });
                 map1.setCenter(place.geometry.location);
-                // Log the latitude and longitude of the selected place
                 console.log('Start Point Latitude: ' + place.geometry.location.lat());
                 console.log('Start Point Longitude: ' + place.geometry.location.lng());
             });
@@ -176,7 +174,6 @@
                     title: place.name,
                 });
                 map2.setCenter(place.geometry.location);
-                // Log the latitude and longitude of the selected place
                 console.log('End Point Latitude: ' + place.geometry.location.lat());
                 console.log('End Point Longitude: ' + place.geometry.location.lng());
             });
@@ -219,18 +216,17 @@
             document.head.appendChild(script);
         }
 
-        // Load the Google Maps API immediately on page load
         window.onload = loadGoogleMapsAPI;
 
         $('#map1Modal').on('shown.bs.modal', function () {
             if (!map1) {
-                initMaps(); // Ensure map1 is initialized when modal opens
+                initMaps();
             }
         });
 
         $('#map2Modal').on('shown.bs.modal', function () {
             if (!map2) {
-                initMaps(); // Ensure map2 is initialized when modal opens
+                initMaps();
             }
         });
 
