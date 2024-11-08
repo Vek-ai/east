@@ -44,6 +44,12 @@
             </div>
         </div>
 
+        <div class="mb-3 align-items-center">
+            <button type="button" class="btn btn-primary" data-toggle="modal" onclick="calculateDistance()">
+                Get Distance
+            </button>
+        </div>
+
         <div class="d-flex mb-3 align-items-center">
             <div class="mr-2">
                 <h5>Distance:</h5>
@@ -128,7 +134,7 @@
 
         let map1, map2;
         let marker1, marker2;
-        let lat1, lng1, lat2, lng2;
+        let lat1 = lng1 = lat2 = lng2 = 0;
 
         function initMaps() {
             map1 = new google.maps.Map(document.getElementById("map1"), {
@@ -187,9 +193,6 @@
                     title: "Starting Point",
                 });
 
-                if (lat2 && lng2) {
-                    calculateDistance(lat1, lng1, lat2, lng2);
-                }
             });
 
             google.maps.event.addListener(map2, 'click', function(event) {
@@ -205,10 +208,6 @@
                     map: map2,
                     title: "End Point",
                 });
-
-                if (lat1 && lng1) {
-                    calculateDistance(lat1, lng1, lat2, lng2);
-                }
             });
         }
 
@@ -235,7 +234,7 @@
             }
         });
 
-        function calculateDistance(lat1, lng1, lat2, lng2) {
+        function calculateDistance() {
             const point1 = new google.maps.LatLng(lat1, lng1);
             const point2 = new google.maps.LatLng(lat2, lng2);
             const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
