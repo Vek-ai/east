@@ -21,7 +21,8 @@
                 <h5>Address 1:</h5>
             </div>
             <div class="mr-2">
-                <input id="searchBox1" class="form-control" placeholder="Enter a location" style="width: 250px;">
+                <input id="searchBox1" class="form-control" placeholder="Enter a location" style="width: 250px;" list="address1-list">
+                <datalist id="address1-list"></datalist>
             </div>
             <div>
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#map1Modal">
@@ -35,7 +36,8 @@
                 <h5>Address 2:</h5>
             </div>
             <div class="mr-2">
-                <input id="searchBox2" class="form-control" placeholder="Enter a location" style="width: 250px;">
+                <input id="searchBox2" class="form-control" placeholder="Enter a location" style="width: 250px;" list="address2-list">
+                <datalist id="address2-list"></datalist>
             </div>
             <div>
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#map2Modal">
@@ -114,27 +116,109 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        $(document).ready(function() {
-            $('#amountPerMile').on('input', function() {
-                var distance = parseFloat($('#distance').text());
-                var amountPerMile = parseFloat($(this).val());
-
-                if (isNaN(distance)) {
-                    distance = 0;
-                }
-
-                if (!isNaN(amountPerMile)) {
-                    var shippingAmount = distance * amountPerMile;
-                    $('#shippingAmount').text('$' + shippingAmount.toFixed(2));
-                } else {
-                    $('#shippingAmount').text('$0.00');
-                }
-            });
-        });
-
         let map1, map2;
         let marker1, marker2;
         let lat1 = lng1 = lat2 = lng2 = 0;
+
+        $('#amountPerMile').on('input', function() {
+            var distance = parseFloat($('#distance').text());
+            var amountPerMile = parseFloat($(this).val());
+
+            if (isNaN(distance)) {
+                distance = 0;
+            }
+
+            if (!isNaN(amountPerMile)) {
+                var shippingAmount = distance * amountPerMile;
+                $('#shippingAmount').text('$' + shippingAmount.toFixed(2));
+            } else {
+                $('#shippingAmount').text('$0.00');
+            }
+        });
+
+        $('#searchBox1').on('input', function() {
+            updateSuggestions('#searchBox1', '#address1-list');
+        });
+
+        $('#searchBox2').on('input', function() {
+            updateSuggestions('#searchBox2', '#address2-list');
+        });
+
+        function updateSuggestions(inputId, listId) {
+            var query = $(inputId).val();
+            if (query.length >= 2) {
+                $.ajax({
+                    url: `https://nominatim.openstreetmap.org/search`,
+                    data: {
+                        q: query,
+                        format: 'json',
+                        addressdetails: 1,
+                        limit: 5
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        var datalist = $(listId);
+                        datalist.empty();
+                        data.forEach(function(item) {
+                            var option = $('<option>').attr('value', item.display_name).data('lat', item.lat).data('lon', item.lon);
+                            datalist.append(option);
+                        });
+                    }
+                });
+            }
+        }
+
+        function getPlaceName(lat, lng, inputId) {
+            const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+
+            $.ajax({
+                url: url,
+                dataType: 'json',
+                success: function(data) {
+                    if (data && data.display_name) {
+                        $(inputId).val(data.display_name);
+                    } else {
+                        console.error("Address not found for these coordinates.");
+                        $(inputId).val("Address not found");
+                    }
+                },
+                error: function() {
+                    console.error("Error retrieving address from Nominatim.");
+                    $(inputId).val("Error retrieving address");
+                }
+            });
+        }
+
+        $('#searchBox1').on('change', function() {
+            let selectedOption = $('#address1-list option[value="' + $(this).val() + '"]');
+            lat1 = parseFloat(selectedOption.data('lat'));
+            lng1 = parseFloat(selectedOption.data('lon'));
+            updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+        });
+
+        $('#searchBox2').on('change', function() {
+            let selectedOption = $('#address2-list option[value="' + $(this).val() + '"]');
+            lat2 = parseFloat(selectedOption.data('lat'));
+            lng2 = parseFloat(selectedOption.data('lon'));
+            updateMarker(map2, marker2, lat2, lng2, "End Point");
+        });
+
+        function updateMarker(map, marker, lat, lng, title) {
+            if (!map) return;
+            
+            const position = new google.maps.LatLng(lat, lng);
+
+            if (marker) {
+                marker.setPosition(position);
+            } else {
+                marker = new google.maps.Marker({
+                    position: position,
+                    map: map,
+                    title: title
+                });
+            }
+            map.setCenter(position);
+        }
 
         function initMaps() {
             map1 = new google.maps.Map(document.getElementById("map1"), {
@@ -145,37 +229,6 @@
             map2 = new google.maps.Map(document.getElementById("map2"), {
                 center: { lat: 34.0522, lng: -118.2437 },
                 zoom: 10,
-            });
-
-            const searchBox1 = new google.maps.places.Autocomplete(document.getElementById("searchBox1"));
-            const searchBox2 = new google.maps.places.Autocomplete(document.getElementById("searchBox2"));
-
-            searchBox1.addListener("place_changed", function() {
-                const place = searchBox1.getPlace();
-                if (!place.geometry || !place.geometry.location) return;
-                if (marker1) marker1.setMap(null);
-                marker1 = new google.maps.Marker({
-                    position: place.geometry.location,
-                    map: map1,
-                    title: place.name,
-                });
-                map1.setCenter(place.geometry.location);
-                console.log('Start Point Latitude: ' + place.geometry.location.lat());
-                console.log('Start Point Longitude: ' + place.geometry.location.lng());
-            });
-
-            searchBox2.addListener("place_changed", function() {
-                const place = searchBox2.getPlace();
-                if (!place.geometry || !place.geometry.location) return;
-                if (marker2) marker2.setMap(null);
-                marker2 = new google.maps.Marker({
-                    position: place.geometry.location,
-                    map: map2,
-                    title: place.name,
-                });
-                map2.setCenter(place.geometry.location);
-                console.log('End Point Latitude: ' + place.geometry.location.lat());
-                console.log('End Point Longitude: ' + place.geometry.location.lng());
             });
 
             google.maps.event.addListener(map1, 'click', function(event) {
@@ -190,6 +243,7 @@
                     title: "Starting Point",
                 });
 
+                getPlaceName(lat1, lng1, '#searchBox1');
             });
 
             google.maps.event.addListener(map2, 'click', function(event) {
@@ -205,6 +259,8 @@
                     map: map2,
                     title: "End Point",
                 });
+
+                getPlaceName(lat2, lng2, '#searchBox2');
             });
         }
 
@@ -237,6 +293,7 @@
             const distanceInMiles = distanceInMeters / 1609.34;
             $('#distance').text(distanceInMiles.toFixed(2));
         }
+
     </script>
 
 </body>
