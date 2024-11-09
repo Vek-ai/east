@@ -299,6 +299,30 @@ function getSupplierDetails($supplier_id) {
     return $supplier;
 }
 
+function getSettingAddressDetails() {
+    global $conn;
+    $query = "SELECT * FROM settings WHERE setting_name = 'address'";
+    $result = mysqli_query($conn, $query);
+    $address = [];
+
+    if ($row = mysqli_fetch_assoc($result)) {
+        $address = json_decode($row['value'], true);
+    }
+    
+    return $address;
+}
+
+function getSettingAmtPerMile() {
+    global $conn;
+    $query = "SELECT * FROM settings WHERE setting_name = 'amount_per_mile'";
+    $result = mysqli_query($conn, $query);
+    $amount_per_mile = 0;
+    if ($row = mysqli_fetch_assoc($result)) {
+        $amount_per_mile = $row['value'];
+    }
+    return $amount_per_mile;
+}
+
 function get_customer_name($customer_id){
     global $conn;
     $query = "SELECT customer_first_name, customer_last_name FROM customer WHERE customer_id = '$customer_id'";

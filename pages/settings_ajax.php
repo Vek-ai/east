@@ -64,6 +64,41 @@ if(isset($_REQUEST['action'])) {
         }
     } 
 
+    if ($action == "update_address") {
+        $address = mysqli_real_escape_string($conn, isset($_POST['address']) ? $_POST['address'] : '');
+        $city = mysqli_real_escape_string($conn, isset($_POST['city']) ? $_POST['city'] : '');
+        $state = mysqli_real_escape_string($conn, isset($_POST['state']) ? $_POST['state'] : '');
+        $zip = mysqli_real_escape_string($conn, isset($_POST['zip']) ? $_POST['zip'] : '');
+        $lat = mysqli_real_escape_string($conn, isset($_POST['lat']) ? $_POST['lat'] : '');
+        $lng = mysqli_real_escape_string($conn, isset($_POST['lng']) ? $_POST['lng'] : '');
+    
+        $data = [
+            'address' => $address ?: '',
+            'city' => $city ?: '',
+            'state' => $state ?: '',
+            'zip' => $zip ?: '',
+            'lat' => $lat ?: '',
+            'lng' => $lng ?: ''
+        ];
+        $jsonData = json_encode($data);
+        $checkQuery = "SELECT * FROM settings WHERE setting_name = 'address'";
+        $result = mysqli_query($conn, $checkQuery);
+    
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $settingid = mysqli_real_escape_string($conn, $row['settingid']);
+            $updateQuery = "UPDATE settings SET value = '$jsonData' WHERE settingid = '$settingid'";
+    
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "success_update_address";
+            } else {
+                echo "Error updating setting: " . mysqli_error($conn);
+            }
+        } else {
+            echo "No address setting found.";
+        }
+    }
+
     if ($action == "delete") {
       $settingid = mysqli_real_escape_string($conn, $_POST['settingid']);
 

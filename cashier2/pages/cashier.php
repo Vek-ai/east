@@ -2,6 +2,15 @@
 session_start();
 require '../includes/dbconn.php';
 require '../includes/functions.php';
+
+$lat = 0;
+$lng = 0;
+
+$deliveryAmt = getDeliveryCost();
+$addressSettings = getSettingAddressDetails();
+$amtPerMile = getSettingAmtPerMile();
+$latSettings = !empty($addressSettings['lat']) ? $addressSettings['lat'] : 0;
+$lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 ?>
 <style>
     #custom_trim_draw_modal {
@@ -420,6 +429,15 @@ require '../includes/functions.php';
                             $customer_details = getCustomerDetails($customer_id);
                             $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
                             $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
+                            $lat = !empty($customer_details['lat']) ? $customer_details['lat'] : 0;
+                            $lng = !empty($customer_details['lng']) ? $customer_details['lng'] : 0;
+
+                            $addressDetails = implode(', ', [
+                                $customer_details['address'] ?? '',
+                                $customer_details['city'] ?? '',
+                                $customer_details['state'] ?? '',
+                                $customer_details['zip'] ?? ''
+                            ]);
                         ?>
                         <div class="form-group row align-items-center">
                             <div class="col-6">
@@ -465,8 +483,15 @@ require '../includes/functions.php';
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <input type="hidden" id="lat" name="lat" class="form-control" value="<?= $lat ?>" />
+                                            <input type="hidden" id="lng" name="lng" class="form-control" value="<?= $lng ?>" />
+
                                             <div class="col-12 text-end">
-                                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="cancel_change_address">
+                                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="openMap">
+                                                    <i class="fa fa-map"></i> Open Map
+                                                </button>
+                                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="cancel_change_address" >
                                                     <i class="fa fa-rotate-left"></i> Cancel
                                                 </button>
                                             </div>
@@ -538,6 +563,35 @@ require '../includes/functions.php';
     </div>
 </div>
 
+<div class="modal fade" id="map1Modal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mapsModalLabel">Search Address</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="mapForm" class="form-horizontal">
+              <div class="modal-body">
+                  <div class="mb-2">
+                      <input id="searchBox1" class="form-control" placeholder="<?= $addressDetails ?>" list="address1-list" autocomplete="off">
+                      <datalist id="address1-list"></datalist>
+                  </div>
+                  <div id="map1" class="map-container" style="height: 60vh; width: 100%;"></div>
+              </div>
+              <div class="modal-footer">
+                  <div class="form-actions">
+                      <div class="card-body">
+                          <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
+                      </div>
+                  </div>
+              </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="response-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
     <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -558,6 +612,173 @@ require '../includes/functions.php';
 </div>
 
 <script>
+    let map1;
+    let marker1;
+    let lat1 = <?= $lat ?>, lng1 = <?= $lng ?>;
+    let lat2 = <?= $latSettings ?>, lng2 = <?= $lngSettings ?>;
+    var amtPerMile = <?= $amtPerMile ?>;
+    var amtDeliveryDefault = <?= $deliveryAmt ?? 0 ?>;
+
+    $('#searchBox1').on('input', function() {
+        updateSuggestions('#searchBox1', '#address1-list');
+    });
+
+    $('#address').on('input', function() {
+        updateSuggestions('#address', '#address-data-list');
+    });
+
+    function updateSuggestions(inputId, listId) {
+        var query = $(inputId).val();
+        if (query.length >= 2) {
+            $.ajax({
+                url: `https://nominatim.openstreetmap.org/search`,
+                data: {
+                    q: query,
+                    format: 'json',
+                    addressdetails: 1,
+                    limit: 5
+                },
+                dataType: 'json',
+                success: function(data) {
+                    var datalist = $(listId);
+                    datalist.empty();
+                    data.forEach(function(item) {
+                        var option = $('<option>')
+                            .attr('value', item.display_name)
+                            .data('lat', item.lat)
+                            .data('lon', item.lon);
+                        datalist.append(option);
+                    });
+                }
+            });
+        }
+    }
+
+    function getPlaceName(lat, lng, inputId) {
+        const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+
+        $.ajax({
+            url: url,
+            dataType: 'json',
+            success: function(data) {
+                if (data && data.display_name) {
+                    $(inputId).val(data.display_name);
+
+                    let address = data.address;
+                    $('#order_deliver_address').val(
+                        address.road || 
+                        address.neighbourhood || 
+                        address.suburb || 
+                        ''
+                    );
+                    $('#order_deliver_city').val(
+                        address.city || 
+                        address.town || 
+                        address.village || 
+                        ''
+                    );
+                    $('#order_deliver_state').val(
+                        address.state || 
+                        address.province || 
+                        address.region || 
+                        address.county || 
+                        ''
+                    );
+                    $('#order_deliver_zip').val(address.postcode || '');
+
+                    $('#lat').val(lat);
+                    $('#lng').val(lng);
+
+                } else {
+                    console.error("Address not found for these coordinates.");
+                    $(inputId).val("Address not found");
+                }
+
+                calculateDeliveryAmount();
+            },
+            error: function() {
+                console.error("Error retrieving address from Nominatim.");
+                $(inputId).val("Error retrieving address");
+            }
+        });
+    }
+
+    $('#searchBox1').on('change', function() {
+        let selectedOption = $('#address1-list option[value="' + $(this).val() + '"]');
+        lat1 = parseFloat(selectedOption.data('lat'));
+        lng1 = parseFloat(selectedOption.data('lon'));
+        
+        updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+        getPlaceName(lat1, lng1, '#searchBox1');
+    });
+
+    $('#address').on('change', function() {
+        let selectedOption = $('#address-data-list option[value="' + $(this).val() + '"]');
+        lat1 = parseFloat(selectedOption.data('lat'));
+        lng1 = parseFloat(selectedOption.data('lon'));
+        
+        updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+        getPlaceName(lat1, lng1, '#address');
+    });
+
+    function updateMarker(map, marker, lat, lng, title) {
+        if (!map) return;
+        const position = new google.maps.LatLng(lat, lng);
+        if (marker) {
+            marker.setMap(null);
+        }
+        marker = new google.maps.Marker({
+            position: position,
+            map: map,
+            title: title
+        });
+        map.setCenter(position);
+        return marker;
+    }
+
+    function initMaps() {
+        map1 = new google.maps.Map(document.getElementById("map1"), {
+            center: { lat: <?= $lat ?>, lng: <?= $lng ?> },
+            zoom: 13,
+        });
+        marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+        google.maps.event.addListener(map1, 'click', function(event) {
+            lat1 = event.latLng.lat();
+            lng1 = event.latLng.lng();
+            marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+            getPlaceName(lat1, lng1, '#searchBox1');
+        });
+    }
+
+    function loadGoogleMapsAPI() {
+        const script = document.createElement('script');
+        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDFpFbxFFK7-daOKoIk9y_GB4m512Tii8M&callback=initMaps&libraries=geometry,places';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+    }
+
+    window.onload = loadGoogleMapsAPI;
+
+    function calculateDeliveryAmount() {
+        var customerLat = $('#lat').val();
+        var customerLng = $('#lng').val();
+
+        if (customerLat !== '0' && customerLng !== '0' && lat2 !== '0' && lng2 !== '0') {
+
+            const point1 = new google.maps.LatLng(customerLat, customerLng);
+            const point2 = new google.maps.LatLng(lat2, lng2);
+            const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
+            const distanceInMiles = distanceInMeters / 1609.34;
+            var deliveryAmount = amtPerMile * distanceInMiles;
+            deliveryAmount = deliveryAmount.toFixed(2);
+        } else {
+            deliveryAmount = amtDeliveryDefault.toFixed(2);
+        }
+
+        $('#delivery_amt').val(deliveryAmount).trigger('change');
+    }
+
     function updateEstimateBend(element){
         var bend = $(element).val();
         var id = $(element).data('id');
@@ -838,6 +1059,7 @@ require '../includes/functions.php';
             success: function(response) {
                 $('#order-tbl').html('');
                 $('#order-tbl').html(response);
+                calculateDeliveryAmount();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1364,6 +1586,10 @@ require '../includes/functions.php';
     });
 
     $(document).ready(function() {
+        $(document).on('click', '#openMap', function () {
+            $('#map1Modal').modal('show');
+        });
+
         var currentPage = 1,
             rowsPerPage = parseInt($('#rowsPerPage').val()),
             totalRows = 0,

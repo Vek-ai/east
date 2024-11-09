@@ -35,7 +35,22 @@ if(!empty($_REQUEST['result'])){
   }
   
 }
+$no = 1;
 
+$addressSettings = getSettingAddressDetails();
+$address = $addressSettings['address'];
+$city = $addressSettings['city'];
+$state = $addressSettings['state'];
+$zip = $addressSettings['zip'];
+$lat = !empty($addressSettings['lat']) ? $addressSettings['lat'] : 0;
+$lng = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
+
+$addressDetails = implode(', ', [
+  $addressSettings['address'] ?? '',
+  $addressSettings['city'] ?? '',
+  $addressSettings['state'] ?? '',
+  $addressSettings['zip'] ?? ''
+]);
 ?>
 <style>
         /* Ensure that the text within the notes column wraps properly */
@@ -176,38 +191,78 @@ if(!empty($_REQUEST['result'])){
               <!-- end row -->
             </thead>
             <tbody>
-<?php
-$no = 1;
-$query_setting_name = "SELECT * FROM settings";
-$result_setting_name = mysqli_query($conn, $query_setting_name);            
-while ($row_setting = mysqli_fetch_array($result_setting_name)) {
-    $settingid = $row_setting['settingid'];
-    $setting_name = $row_setting['setting_name'];
-    $value = $row_setting['value'];
-?>
-<tr id="settings-row-<?= $no ?>">
-    <td><?= $setting_name ?></td>
-    <td><?= $value ?></td>
-    <td class="text-center" id="action-button-<?= $no ?>">
-            <a href="/?page=settings&settingid=<?= $settingid ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
-            <a class="btn btn-danger py-1 text-light deleteSettings" data-settingid="<?= $settingid ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Delete</a>
+              <tr id="settings-row-<?= $no ?>">
+                  <td>Address</td>
+                  <td>
+                    <?= $addressDetails ?>
+                    </td>
+                  <td class="text-center" id="action-button-<?= $no ?>">
+                      <button class="btn btn-primary py-1" id="showMapsBtn" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#map1Modal">Change</button>
+                  </td>
+              </tr>
+              <?php
+              $query_setting_name = "SELECT * FROM settings WHERE setting_name != 'address'";
+              $result_setting_name = mysqli_query($conn, $query_setting_name);            
+              while ($row_setting = mysqli_fetch_array($result_setting_name)) {
+                  $settingid = $row_setting['settingid'];
+                  $setting_name = $row_setting['setting_name'];
+                  $value = $row_setting['value'];
+              ?>
+              <tr id="settings-row-<?= $no ?>">
+                  <td><?= $setting_name ?></td>
+                  <td><?= $value ?></td>
+                  <td class="text-center" id="action-button-<?= $no ?>">
+                          <a href="/?page=settings&settingid=<?= $settingid ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                          <a class="btn btn-danger py-1 text-light deleteSettings" data-settingid="<?= $settingid ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Delete</a>
 
-    </td>
-</tr>
-<?php
-$no++;
-}
-?>
-</tbody>
-
-
-
-            
+                  </td>
+              </tr>
+              <?php
+              $no++;
+              }
+              ?>
+              </tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
+</div>
+
+<div class="modal fade" id="map1Modal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mapsModalLabel">Search Address</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="mapForm" class="form-horizontal">
+              <div class="modal-body">
+                  <div class="mb-2">
+                      <input id="searchBox1" class="form-control" placeholder="<?= $addressDetails ?>" list="address1-list" autocomplete="off">
+                      <datalist id="address1-list"></datalist>
+                      <input type="hidden" name="address" id="address" value="<?= $address ?>"/> 
+                      <input type="hidden" name="city" id="city" value="<?= $city ?>"/> 
+                      <input type="hidden" name="state" id="state" value="<?= $state ?>"/> 
+                      <input type="hidden" name="zip" id="zip" value="<?= $zip ?>"/> 
+                      <input type="hidden" name="lat" id="lat" value="<?= $lat ?>"/> 
+                      <input type="hidden" name="lng" id="lng" value="<?= $lng ?>"/> 
+                  </div>
+                  <div id="map1" class="map-container" style="height: 60vh; width: 100%;"></div>
+              </div>
+              <div class="modal-footer">
+                  <div class="form-actions">
+                      <div class="card-body">
+                          <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+                          <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Close</button>
+                      </div>
+                  </div>
+              </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
@@ -231,6 +286,142 @@ $no++;
 </div>
 
 <script>
+  let map1;
+  let marker1;
+  let lat1 = <?= $lat ?>, lng1 = <?= $lng ?>;
+
+  $('#searchBox1').on('input', function() {
+      updateSuggestions('#searchBox1', '#address1-list');
+  });
+
+  function updateSuggestions(inputId, listId) {
+      var query = $(inputId).val();
+      if (query.length >= 2) {
+          $.ajax({
+              url: `https://nominatim.openstreetmap.org/search`,
+              data: {
+                  q: query,
+                  format: 'json',
+                  addressdetails: 1,
+                  limit: 5
+              },
+              dataType: 'json',
+              success: function(data) {
+                  var datalist = $(listId);
+                  datalist.empty();
+                  data.forEach(function(item) {
+                      var option = $('<option>')
+                          .attr('value', item.display_name)
+                          .data('lat', item.lat)
+                          .data('lon', item.lon);
+                      datalist.append(option);
+                  });
+              }
+          });
+      }
+  }
+
+  function getPlaceName(lat, lng, inputId) {
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+
+      $.ajax({
+          url: url,
+          dataType: 'json',
+          success: function(data) {
+              if (data && data.display_name) {
+                  $(inputId).val(data.display_name);
+
+                  let address = data.address;
+                  $('#address').val(
+                      address.road || 
+                      address.neighbourhood || 
+                      address.suburb || 
+                      ''
+                  );
+                  $('#city').val(
+                      address.city || 
+                      address.town || 
+                      address.village || 
+                      ''
+                  );
+                  $('#state').val(
+                      address.state || 
+                      address.province || 
+                      address.region || 
+                      address.county || 
+                      ''
+                  );
+                  $('#zip').val(address.postcode || '');
+
+                  $('#lat').val(lat);
+                  $('#lng').val(lng);
+
+              } else {
+                  console.error("Address not found for these coordinates.");
+                  $(inputId).val("Address not found");
+              }
+          },
+          error: function() {
+              console.error("Error retrieving address from Nominatim.");
+              $(inputId).val("Error retrieving address");
+          }
+      });
+  }
+
+  $('#searchBox1').on('change', function() {
+      let selectedOption = $('#address1-list option[value="' + $(this).val() + '"]');
+      lat1 = parseFloat(selectedOption.data('lat'));
+      lng1 = parseFloat(selectedOption.data('lon'));
+      
+      updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+      getPlaceName(lat1, lng1, '#searchBox1');
+  });
+
+  function updateMarker(map, marker, lat, lng, title) {
+      if (!map) return;
+      const position = new google.maps.LatLng(lat, lng);
+      if (marker) {
+          marker.setMap(null);
+      }
+      marker = new google.maps.Marker({
+          position: position,
+          map: map,
+          title: title
+      });
+      map.setCenter(position);
+      return marker;
+  }
+
+  function initMaps() {
+      map1 = new google.maps.Map(document.getElementById("map1"), {
+          center: { lat: <?= $lat ?>, lng: <?= $lng ?> },
+          zoom: 13,
+      });
+      marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+      google.maps.event.addListener(map1, 'click', function(event) {
+          lat1 = event.latLng.lat();
+          lng1 = event.latLng.lng();
+          marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+          getPlaceName(lat1, lng1, '#searchBox1');
+      });
+  }
+
+  function loadGoogleMapsAPI() {
+      const script = document.createElement('script');
+      script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDFpFbxFFK7-daOKoIk9y_GB4m512Tii8M&callback=initMaps&libraries=geometry,places';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+  }
+
+  window.onload = loadGoogleMapsAPI;
+
+  $('#map1Modal').on('shown.bs.modal', function () {
+      if (!map1) {
+          initMaps();
+      }
+  });
+
   $(document).ready(function() {
     var table = $('#display_settings').DataTable();
     
@@ -260,6 +451,48 @@ $no++;
         }
         return null;
     }
+
+    $('#mapForm').on('submit', function(event) {
+        event.preventDefault();
+
+        var userid = getCookie('userid');
+
+        var formData = new FormData(this);
+        formData.append('action', 'update_address');
+        formData.append('userid', userid);
+
+        $.ajax({
+            url: 'pages/settings_ajax.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                // Corrected the condition
+                if (response.trim() === "success_update_address") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("Setting updated successfully.");
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
+
+                    $('#response-modal').on('hide.bs.modal', function () {
+                        location.reload();
+                    });
+                } else {
+                    $('#responseHeader').text("Failed");
+                    $('#responseMsg').text(response);
+
+                    $('#responseHeaderContainer').removeClass("bg-success");
+                    $('#responseHeaderContainer').addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
 
     $('#lineForm').on('submit', function(event) {
         event.preventDefault(); 
