@@ -761,13 +761,14 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     window.onload = loadGoogleMapsAPI;
 
     function calculateDeliveryAmount() {
-        var customerLat = $('#lat').val();
-        var customerLng = $('#lng').val();
+        var customerLat = parseFloat($('#lat').val());
+        var customerLng = parseFloat($('#lng').val());
+        var lat2Float = parseFloat(lat2);
+        var lng2Float = parseFloat(lng2);
 
-        if (customerLat !== '0' && customerLng !== '0' && lat2 !== '0' && lng2 !== '0') {
-
+        if (customerLat !== 0 && customerLng !== 0 && lat2Float !== 0 && lng2Float !== 0) {
             const point1 = new google.maps.LatLng(customerLat, customerLng);
-            const point2 = new google.maps.LatLng(lat2, lng2);
+            const point2 = new google.maps.LatLng(lat2Float, lng2Float);
             const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
             const distanceInMiles = distanceInMeters / 1609.34;
             var deliveryAmount = amtPerMile * distanceInMiles;
