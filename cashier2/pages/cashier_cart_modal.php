@@ -51,27 +51,29 @@ if(isset($_POST['fetch_cart'])){
         }
 
         .table-fixed th:nth-child(1),
-        .table-fixed td:nth-child(1) { width: 8%; }
+        .table-fixed td:nth-child(1) { width: 5%; }
         .table-fixed th:nth-child(2),
         .table-fixed td:nth-child(2) { width: 15%; }
         .table-fixed th:nth-child(3),
-        .table-fixed td:nth-child(3) { width: 8%; }
+        .table-fixed td:nth-child(3) { width: 7%; }
         .table-fixed th:nth-child(4),
         .table-fixed td:nth-child(4) { width: 8%; }
         .table-fixed th:nth-child(5),
-        .table-fixed td:nth-child(5) { width: 10%; }
+        .table-fixed td:nth-child(5) { width: 8%; }
         .table-fixed th:nth-child(6),
-        .table-fixed td:nth-child(6) { width: 10%; }
+        .table-fixed td:nth-child(6) { width: 11%; }
         .table-fixed th:nth-child(7),
-        .table-fixed td:nth-child(7) { width: 10%; }
+        .table-fixed td:nth-child(7) { width: 11%; }
         .table-fixed th:nth-child(8),
         .table-fixed td:nth-child(8) { width: 11%; }
         .table-fixed th:nth-child(9),
-        .table-fixed td:nth-child(9) { width: 6%; }
+        .table-fixed td:nth-child(9) { width: 7%; }
         .table-fixed th:nth-child(10),
         .table-fixed td:nth-child(10) { width: 7%; }
         .table-fixed th:nth-child(11),
         .table-fixed td:nth-child(11) { width: 7%; }
+        .table-fixed th:nth-child(12),
+        .table-fixed td:nth-child(12) { width: 3%; }
 
         input[readonly] {
             border: none;               
@@ -89,7 +91,7 @@ if(isset($_POST['fetch_cart'])){
             <table id="cartTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
                 <thead>
                     <tr>
-                        <th>Image</th>
+                        <th class="small">Image</th>
                         <th>Description</th>
                         <th class="text-center">Color</th>
                         <th class="text-center">Grade</th>
@@ -99,7 +101,7 @@ if(isset($_POST['fetch_cart'])){
                         <th class="text-center">Dimensions<br>(Width X Height)</th>
                         <th class="text-center">Stock</th>
                         <th class="text-center">Price</th>
-                        <th class="text-center">Customer<br>Price</th>
+                        <th class="text-center small">Customer<br>Price</th>
                         <th class="text-center"> </th>
                     </tr>
                 </thead>

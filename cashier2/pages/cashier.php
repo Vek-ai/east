@@ -1,5 +1,8 @@
 <?php
 session_start();
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
@@ -49,12 +52,55 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 </style>
 <div class="product-list pt-4">
     <div class="row row-xs pr-3">
-        <div class="col-md-8"></div>
-            <?php if(isset($_SESSION["grandtotal"])){?>
-                <div class="col-md-4 bg-primary" id="thegrandtotal" style="text-align:center;font-size:48px;display: flex;align-items: center;justify-content: center;text-align: center;" >$<?php echo number_format($_SESSION["grandtotal"],2);?> </div>
-            <?php }else{ ?>
-                <div class="col-md-4 bg-primary" id="thegrandtotal" style="text-align:center;font-size:48px;display: flex;align-items: center;justify-content: center;text-align: center;" >$0.00 </div>
-            <?php } ?>
+        <div class="col-md-9"></div>
+            <?php 
+            $discount = 0;
+            $tax = 0;
+            $totalQuantity = 0;
+            if(isset($_SESSION['customer_id'])){
+                $customer_id = $_SESSION['customer_id'];
+                $customer_details = getCustomerDetails($customer_id);
+                $discount = floatval(getCustomerDiscount($customer_id)) / 100;
+                $tax = floatval(getCustomerTax($customer_id)) / 100;
+            }
+            $delivery_price = getDeliveryCost();
+            
+            if (!empty($_SESSION["cart"])) {
+                foreach ($_SESSION["cart"] as $item) {
+                    $totalQuantity += $item["quantity_cart"];
+                }
+            }
+            ?>
+            <div class="col-md-3 bg-primary rounded" style="padding: 1rem;">
+                <div id="thegrandtotal" style="background: transparent; color: #fff; font-size: 16px;">
+                    <table style="width: 100%; margin: 0; border-spacing: 0;">
+                        <tbody>
+                            <tr style="height: 30px;">
+                                <td style="text-align: left; width: 70%;">Total:</td>
+                                <td style="text-align: right; width: 30%;"><?= "$" . number_format($_SESSION["grandtotal"] ?? 0, 2); ?></td>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <td style="text-align: left; width: 70%;">Total items:</td>
+                                <td style="text-align: right; width: 30%;"><?= $totalQuantity ?></td>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <td style="text-align: left; width: 70%;">Discount:</td>
+                                <td style="text-align: right; width: 30%;"><?= $discount * 100 ?>%</td>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <td style="text-align: left; width: 70%;">Delivery Amount:</td>
+                                <td style="text-align: right; width: 30%;"><?= "$" . number_format($delivery_price, 2); ?></td>
+                            </tr>
+                        </tbody>
+                    </table>
+ 
+                </div>
+            </div>
+            
+
+
+
+
     </div>
     <div class="card">
         <div class="card-body p-3">
@@ -177,6 +223,12 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             Return
                         </button> 
                         -->
+                        <a href="/">
+                            <button class="btn btn-primary mb-2 me-2" type="button">
+                                <i class="fa fa-home fs-4 me-2"></i>
+                                Main Dashboard
+                            </button> 
+                        </a>
                     </div>
                 </div>
                 <div class="col-6">
@@ -1806,7 +1858,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         }
         var color = $(state.element).data('color');
         var $state = $(
-            '<span class="d-flex align-items-center">' +
+            '<span class="d-flex align-items-center small">' +
                 '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
                 state.text + 
             '</span>'

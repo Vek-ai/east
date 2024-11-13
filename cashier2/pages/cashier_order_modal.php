@@ -45,27 +45,29 @@ if(isset($_POST['fetch_order'])){
         }
 
         .table-fixed th:nth-child(1),
-        .table-fixed td:nth-child(1) { width: 8%; }
+        .table-fixed td:nth-child(1) { width: 5%; }
         .table-fixed th:nth-child(2),
         .table-fixed td:nth-child(2) { width: 15%; }
         .table-fixed th:nth-child(3),
-        .table-fixed td:nth-child(3) { width: 8%; }
+        .table-fixed td:nth-child(3) { width: 7%; }
         .table-fixed th:nth-child(4),
         .table-fixed td:nth-child(4) { width: 8%; }
         .table-fixed th:nth-child(5),
-        .table-fixed td:nth-child(5) { width: 10%; }
+        .table-fixed td:nth-child(5) { width: 8%; }
         .table-fixed th:nth-child(6),
-        .table-fixed td:nth-child(6) { width: 10%; }
+        .table-fixed td:nth-child(6) { width: 11%; }
         .table-fixed th:nth-child(7),
-        .table-fixed td:nth-child(7) { width: 10%; }
+        .table-fixed td:nth-child(7) { width: 11%; }
         .table-fixed th:nth-child(8),
         .table-fixed td:nth-child(8) { width: 11%; }
         .table-fixed th:nth-child(9),
-        .table-fixed td:nth-child(9) { width: 6%; }
+        .table-fixed td:nth-child(9) { width: 7%; }
         .table-fixed th:nth-child(10),
         .table-fixed td:nth-child(10) { width: 7%; }
         .table-fixed th:nth-child(11),
         .table-fixed td:nth-child(11) { width: 7%; }
+        .table-fixed th:nth-child(12),
+        .table-fixed td:nth-child(12) { width: 3%; }
 
         .table-fixed tbody tr:hover input[readonly] {
             background-color: transparent;
@@ -98,7 +100,7 @@ if(isset($_POST['fetch_order'])){
                     <table id="orderTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
                         <thead>
                             <tr>
-                                <th width="5%">Image</th>
+                                <th class="text-center small" width="5%">Image</th>
                                 <th width="10%">Description</th>
                                 <th width="5%" class="text-center">Color</th>
                                 <th width="5%" class="text-center">Grade</th>
@@ -108,7 +110,7 @@ if(isset($_POST['fetch_order'])){
                                 <th width="30%" class="text-center">Dimensions<br>(Width X Height)</th>
                                 <th width="5%" class="text-center">Stock</th>
                                 <th width="7%" class="text-center">Price</th>
-                                <th width="7%" class="text-center">Customer<br>Price</th>
+                                <th width="7%" class="text-center small">Customer<br>Price</th>
                                 <th width="1%" class="text-center"> </th>
                             </tr>
                         </thead>
