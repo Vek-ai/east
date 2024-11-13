@@ -57,9 +57,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             <?php } ?>
     </div>
     <div class="card">
-        <div class="card-body text-right p-3">
+        <div class="card-body p-3">
             
-            <div class="p-2">
+            <div class="p-2 text-right">
                 <input type="checkbox" id="toggleActive" checked> Show only In Stock
             </div>
             <div class="d-flex justify-content-between align-items-center  mb-9">
@@ -780,6 +780,29 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         $('#delivery_amt').val(deliveryAmount).trigger('change');
     }
 
+    function updateColor(element){
+        var color = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: {
+                color_id: color,
+                id: id,
+                line: line,
+                set_color: "set_color"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+    
     function updateEstimateBend(element){
         var bend = $(element).val();
         var id = $(element).data('id');

@@ -40,7 +40,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $newLine++;
         }
 
-        $query = "SELECT product_id, product_item, unit_price, width, length FROM product WHERE product_id = '$product_id'";
+        $query = "SELECT product_id, product_item, unit_price, width, color length FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) > 0) {
@@ -64,7 +64,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'estimate_width' => $row['width'],
                 'estimate_length' => '',
                 'estimate_length_inch' => '',
-                'usage' => 0
+                'usage' => 0,
+                'custom_color' => $row['color']
             );
 
             $_SESSION["cart"][] = $item_array;
@@ -95,7 +96,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         }
     } else {
         // Product does not exist in cart
-        $query = "SELECT product_id, product_item, unit_price, width, length FROM product WHERE product_id = '$product_id'";
+        $query = "SELECT product_id, product_item, unit_price, width, length, color FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) > 0) {
@@ -113,7 +114,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'estimate_width' => $row['width'],
                 'estimate_length' => '',
                 'estimate_length_inch' => '',
-                'usage' => 0
+                'usage' => 0,
+                'custom_color' => $row['color']
             );
 
             $_SESSION["cart"][] = $item_array;
@@ -376,6 +378,18 @@ if (isset($_POST['set_estimate_length_inch'])) {
         $_SESSION["cart"][$key]['estimate_length_inch'] = !empty($length_inch) ? $length_inch : "";
     }
     echo "Length-inch ID: $product_id, Line: $line, Key: $key";
+}
+
+if (isset($_POST['set_color'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
+
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['custom_color'] = !empty($color_id) ? $color_id : "";
+    }
+    echo "Color id: $color_id, Prod id: $product_id, Line: $line, Key: $key";
 }
 
 if (isset($_POST['save_estimate'])) {

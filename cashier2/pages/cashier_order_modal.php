@@ -156,6 +156,8 @@ if(isset($_POST['fetch_order'])){
                                     }else{
                                         $product_price = $values["quantity_cart"] * $values["unit_price"];
                                     }
+
+                                    $color_id = $values["custom_color"];
                                 ?>
                                     <tr class="border-bottom border-3 border-white">
                                         <td>
@@ -171,7 +173,7 @@ if(isset($_POST['fetch_order'])){
                                                 <?php
                                                 }else{
                                                 ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
+                                                <a href="javascript:void(0);" id="custom_trim_draw" class="btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-line="<?php echo $values["line"]; ?>" data-id="<?= $data_id ?>">
                                                     Draw Here
                                                 </a>
                                                 <?php
@@ -190,8 +192,19 @@ if(isset($_POST['fetch_order'])){
                                             <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
                                         </td>
                                         <td>
-                                            <?php echo getColorFromID($data_id); ?>
-                                            
+                                            <select id="color<?= $no ?>" class="form-control select2-color text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
+                                                <option value="" >Select Color...</option>
+                                                <?php
+                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                                    $selected = ($color_id == $row_paint_colors['color_id']) ? 'selected' : '';
+                                                ?>
+                                                    <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>"><?= $row_paint_colors['color_name'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
                                         </td>
                                         <td>
                                             <?php echo getGradeFromID($data_id); ?>
@@ -466,7 +479,29 @@ if(isset($_POST['fetch_order'])){
 
     <script>
     $(document).ready(function() {
-        
+        function formatOption(state) {
+            if (!state.id) {
+                return state.text;
+            }
+            var color = $(state.element).data('color');
+            var $state = $(
+                '<span class="d-flex align-items-center">' +
+                '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
+                state.text + '</span>'
+            );
+            return $state;
+        }
+
+        $(".select2-color").each(function() {
+            $(this).select2({
+                width: '300px',
+                placeholder: "Select...",
+                dropdownAutoWidth: true,
+                dropdownParent: $('#orderTable'),
+                templateResult: formatOption,
+                templateSelection: formatOption
+            });
+        });
     });
 
     </script>
