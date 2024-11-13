@@ -195,12 +195,12 @@ if(isset($_POST['fetch_order'])){
                                             <select id="color<?= $no ?>" class="form-control color-order text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
                                                 <option value="" >Select Color...</option>
                                                 <?php
-                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
-                                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                                    $selected = ($color_id == $row_paint_colors['color_id']) ? 'selected' : '';
+                                                $query_colors = "SELECT color_id FROM inventory WHERE Product_id = '$data_id'";
+                                                $result_colors = mysqli_query($conn, $query_colors);            
+                                                while ($row_colors = mysqli_fetch_array($result_colors)) {
+                                                    $selected = ($color_id == $row_colors['color_id']) ? 'selected' : '';
                                                 ?>
-                                                    <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>"><?= $row_paint_colors['color_name'] ?></option>
+                                                    <option value="<?= $row_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_colors['color_id']) ?>"><?= getColorName($row_colors['color_id']) ?></option>
                                                 <?php   
                                                 }
                                                 ?>
