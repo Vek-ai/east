@@ -132,6 +132,7 @@ if(isset($_POST['fetch_estimate'])){
                                 }else{
                                     $product_price = $values["quantity_cart"] * $values["unit_price"];
                                 }
+                                $color_id = $values["custom_color"];
                             ?>
                                 <tr>
                                     <td>
@@ -166,8 +167,19 @@ if(isset($_POST['fetch_estimate'])){
                                         <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
                                     </td>
                                     <td>
-                                        <?php echo getColorFromID($data_id); ?>
-                                        
+                                        <select id="color<?= $no ?>" class="form-control color-est text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
+                                            <option value="" >Select Color...</option>
+                                            <?php
+                                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                            $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                            while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                                $selected = ($color_id == $row_paint_colors['color_id']) ? 'selected' : '';
+                                            ?>
+                                                <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>"><?= $row_paint_colors['color_name'] ?></option>
+                                            <?php   
+                                            }
+                                            ?>
+                                        </select>
                                     </td>
                                     <td>
                                         <?php echo getGradeFromID($data_id); ?>
@@ -193,7 +205,7 @@ if(isset($_POST['fetch_estimate'])){
                                     </td>
                                     <td>
                                         <div class="input-group text-start">
-                                            <select id="usage<?= $no ?>" class="form-control select2-est" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
+                                            <select id="usage<?= $no ?>" class="form-control usage-est" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
                                                 <option value="">Select Usage...</option>
                                                 <?php
                                                 $query_key = "SELECT * FROM key_components";
@@ -305,7 +317,7 @@ if(isset($_POST['fetch_estimate'])){
                                     }
                                     ?>
                                     <td><?= $stock_text ?></td>
-                                    <td class="text-end pl-3">$
+                                    <<td class="text-end pl-3">$
                                         <?php
                                         $subtotal = $product_price;
                                         echo number_format($subtotal, 2);
@@ -415,18 +427,9 @@ if(isset($_POST['fetch_estimate'])){
         </div>
         <script>
             $(document).ready(function() {
-                var table = $('#estimateTable').DataTable({
-                    language: {
-                        emptyTable: "No products added to cart"
-                    },
-                    paging: false,
-                    searching: false,
-                    info: false,
-                    ordering: false,
-                    autoWidth: false,
-                    responsive: true
-                });
+                
 
+                
             });
         </script>
     <?php

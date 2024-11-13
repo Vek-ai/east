@@ -152,9 +152,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 <div class="d-flex align-items-center justify-content-end py-1">
                     <p class="mb-0 fs-2">Rows per page:</p>
                     <select id="rowsPerPage" class="form-select w-auto ms-0 ms-sm-2 me-8 me-sm-4 py-1 pe-7 ps-2 border-0" aria-label="Rows per page">
-                        <option value="5" selected>5</option>
+                        <option value="5">5</option>
                         <option value="10">10</option>
-                        <option value="25">25</option>
+                        <option value="25" selected>25</option>
                     </select>
                     <p id="paginationInfo" class="mb-0 fs-2"></p>
                     <nav aria-label="...">
@@ -167,6 +167,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             <div class="row mt-4">
                 <div class="col-6">
                     <div class="d-flex justify-content-start">
+                        <!-- 
                         <button class="btn btn-primary mb-2 me-2" type="button" id="view_est_list">
                             <i class="fa fa-save fs-4 me-2"></i>
                             View Estimates
@@ -174,7 +175,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         <button class="btn btn-primary mb-2 me-2" type="button" id="view_order_list">
                             <i class="fa fa-rotate-left fs-4 me-2"></i>
                             Return
-                        </button>
+                        </button> 
+                        -->
                     </div>
                 </div>
                 <div class="col-6">
@@ -182,14 +184,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         <button class="btn btn-primary mb-2 me-2" type="button" id="view_cart">
                             <i class="fa fa-shopping-cart fs-4 me-2"></i>
                             Cart
-                        </button>
-                        <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" id="view_estimate">
-                            <i class="fa fa-save fs-4 me-2"></i>
-                            Estimate
-                        </button>
-                        <button type="button" class="btn btn-success d-flex align-items-center mb-2 me-2" id="view_order">
-                            <i class="fa fa-shopping-cart fs-4 me-2"></i>
-                            Order
                         </button>
                     </div>
                 </div>
@@ -226,16 +220,94 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
                 <h6 class="modal-title">Cart Contents</h6>
-                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                <button aria-label="Close" class="close text-light" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
+                <div id="customer_cart_section">
+                    <?php 
+                        if(!empty($_SESSION["customer_id"])){
+                            $customer_id = $_SESSION["customer_id"];
+                            $customer_details = getCustomerDetails($customer_id);
+                            $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
+                            $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
+                        ?>
+
+                        <div class="form-group row align-items-center">
+                            <div class="col-6">
+                                <label class="mb-0 me-3">Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
+                                <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">
+                                    <i class="fe fe-reload"></i> Change
+                                </button>
+                                <div class="mt-1"> 
+                                    <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div>
+                                    <span class="fw-bold">Credit Limit:</span><br>
+                                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Unpaid Credit:</span><br>
+                                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    <?php } else { ?>
+                        <div class="form-group row align-items-center">
+                            <div class="col-6">
+                                <label>Customer Name</label>
+                                <div class="input-group">
+                                    <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cart">
+                                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
+                                        <span class="input-group-text"> + </span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <span class="fw-bold">Credit Limit:</span><br>
+                                <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+                            </div>
+                        </div>
+                    <?php } ?>
+                </div>
+                <input type='hidden' id='customer_id_cart' name="customer_id"/>
                 <div id="cart-tbl">
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            <div class="">
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap justify-content-center">
+                            <button type="button" class="btn mb-2 me-2 flex-fill" id="clear_cart" style="background-color: #dc3545; color: white;">
+                                <i class="fa fa-trash fs-4 me-2"></i>
+                                Clear Cart
+                            </button>
+                            <button type="button" class="btn mb-2 me-2 flex-fill" id="change_price_group" style="background-color: #007bff; color: white;">
+                                <i class="fa fa-tag fs-4 me-2"></i>
+                                Change Price Group
+                            </button>
+                            <button type="button" class="btn mb-2 me-2 flex-fill" id="change_grade" style="background-color: #6c757d; color: white;">
+                                <i class="fa fa-chart-line fs-4 me-2"></i>
+                                Change Grade
+                            </button>
+                            <button type="button" class="btn mb-2 me-2 flex-fill" id="change_color" style="background-color: #17a2b8; color: white;">
+                                <i class="fa fa-palette fs-4 me-2"></i>
+                                Change Color
+                            </button>
+                            <button type="button" class="btn mb-2 me-2 flex-fill" id="view_estimate" style="background-color: #ffc107; color: black;">
+                                <i class="fa fa-calculator fs-4 me-2"></i>
+                                Estimate
+                            </button>
+                            <button type="button" class="btn mb-2 me-2 flex-fill" id="view_order" style="background-color: #28a745; color: white;">
+                                <i class="fa fa-shopping-cart fs-4 me-2"></i>
+                                Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -378,7 +450,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                     <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
                                 </div>
                             </div>
-                            
                         <?php } ?>
                     </div>
                     <input type='hidden' id='customer_id_estimate' name="customer_id"/>
@@ -1064,8 +1135,39 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 fetch_cart: "fetch_cart"
             },
             success: function(response) {
+                
                 $('#cart-tbl').html(''); 
                 $('#cart-tbl').html(response); 
+
+                setTimeout(function() {
+                    $(".color-cart").each(function() {
+                        if ($(this).data('select2')) {
+                            $(this).select2('destroy');
+                        }
+                        $(this).select2({
+                            width: '300px',
+                            placeholder: "Select...",
+                            dropdownAutoWidth: true,
+                            dropdownParent: $('#cartTable'),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
+                    });
+
+                    $(".usage-cart").each(function() {
+                        if ($(this).data('select2')) {
+                            $(this).select2('destroy');
+                        }
+                        $(this).select2({
+                            width: '300px',
+                            placeholder: "Select...",
+                            dropdownAutoWidth: true,
+                            dropdownParent: $('#cartTable'),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
+                    });
+                }, 100);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1084,6 +1186,37 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 $('#order-tbl').html('');
                 $('#order-tbl').html(response);
                 calculateDeliveryAmount();
+
+                setTimeout(function() {    
+                    $(".color-order").each(function() {
+                        if ($(this).data('select2')) {
+                            $(this).select2('destroy');
+                        }
+                        $(this).select2({
+                            width: '300px',
+                            placeholder: "Select...",
+                            dropdownAutoWidth: true,
+                            dropdownParent: $('#orderTable'),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
+                    });
+
+                    $(".usage-order").each(function() {
+                        if ($(this).data('select2')) {
+                            $(this).select2('destroy');
+                        }
+                        $(this).select2({
+                            width: '300px',
+                            placeholder: "Select...",
+                            dropdownAutoWidth: true,
+                            dropdownParent: $('#orderTable'),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
+                    });
+
+                }, 100);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1099,7 +1232,39 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 fetch_estimate: "fetch_estimate"
             },
             success: function(response) {
+                $('#estimate-tbl').html('');
                 $('#estimate-tbl').html(response);
+
+                setTimeout(function() {
+                    $(".color-est").each(function() {
+                        if ($(this).data('select2')) {
+                            $(this).select2('destroy');
+                        }
+                        $(this).select2({
+                            width: '300px',
+                            placeholder: "Select...",
+                            dropdownAutoWidth: true,
+                            dropdownParent: $('#estimateTable'),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
+                    });
+
+                    $(".usage-est").each(function() {
+                        if ($(this).data('select2')) {
+                            $(this).select2('destroy');
+                        }
+                        $(this).select2({
+                            width: '300px',
+                            placeholder: "Select...",
+                            dropdownAutoWidth: true,
+                            dropdownParent: $('#estimateTable'),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
+                    });
+                }, 100);
+                
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1545,6 +1710,38 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         drawPlaceholderText();
     }
 
+    $("#customer_select_cart").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "pages/cashier_ajax.php",
+                type: 'post',
+                dataType: "json",
+                data: {
+                    search_customer: request.term
+                },
+                success: function(data) {
+                    response(data);
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error: " + xhr.responseText);
+                }
+            });
+        },
+        select: function(event, ui) {
+            $('#customer_select_cart').val(ui.item.label);
+            $('#customer_id_cart').val(ui.item.value);
+            return false;
+        },
+        focus: function(event, ui) {
+            $('#customer_select_cart').val(ui.item.label);
+            return false;
+        },
+        appendTo: "#view_cart_modal", 
+        open: function() {
+            $(".ui-autocomplete").css("z-index", 1050);
+        }
+    });
+
     $("#customer_select_estimate").autocomplete({
         source: function(request, response) {
             $.ajax({
@@ -1609,6 +1806,19 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         }
     });
 
+    function formatOption(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        var color = $(state.element).data('color');
+        var $state = $(
+            '<span class="d-flex align-items-center">' +
+            '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
+            state.text + '</span>'
+        );
+        return $state;
+    }
+
     $(document).ready(function() {
         $(document).on('click', '#openMap', function () {
             $('#map1Modal').modal('show');
@@ -1620,6 +1830,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             totalPages = 0,
             maxPageButtons = 5,
             stepSize = 5;
+
+        let animating = false;
 
         function updateTable() {
             var $rows = $('#productTableBody tr');
@@ -1702,8 +1914,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             $('#total_payable').text(total_payable.toFixed(2));
             $('#order_cash').val(total_payable.toFixed(2));
         });
-
-        let animating = false;
 
         $(document).on("click", "#next_page_order", function() {
             if (animating) return false;
@@ -1917,7 +2127,25 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             $('#change').text(change);
         });
 
-
+        $(document).on('click', '#clear_cart', function(event) {
+            event.preventDefault();
+            var isConfirmed = confirm("Are you sure you want to clear your cart contents?");
+            if (isConfirmed) {
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        clear_cart: "clear_cart"
+                    },
+                    success: function(response) {
+                        loadCart();
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }
+        });
 
         $(document).on('click', '#view_product_details', function(event) {
             event.preventDefault();
@@ -1932,6 +2160,80 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 success: function(response) {
                     $('#viewDetailsModal').html(response);
                     $('#viewDetailsModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('change', '#customer_select_cart', function(event) {
+            var customer_id = $('#customer_id_cart').val();
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    customer_id: customer_id,
+                    change_customer: "change_customer"
+                },
+                success: function(response) {
+                    if (response.trim() == 'success') {
+                        $('#customer_cart_section').load(location.href + " #customer_cart_section");
+                        loadOrderContents();
+                        loadEstimateContents();
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#customer_change_cart', function(event) {
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    unset_customer: "unset_customer"
+                },
+                success: function(response) { 
+                    $('#customer_cart_section').load(location.href + " #customer_cart_section", function() {
+                        $.getScript("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", function() {
+                            $("#customer_select_cart").autocomplete({
+                                source: function(request, response) {
+                                    $.ajax({
+                                        url: "pages/cashier_ajax.php",
+                                        type: 'post',
+                                        dataType: "json",
+                                        data: {
+                                            search_customer: request.term
+                                        },
+                                        success: function(data) {
+                                            response(data);
+                                        },
+                                        error: function(xhr, status, error) {
+                                            console.log("Error: " + xhr.responseText);
+                                        }
+                                    });
+                                },
+                                select: function(event, ui) {
+                                    $('#customer_select_cart').val(ui.item.label);
+                                    $('#customer_id_cart').val(ui.item.value);
+                                    return false;
+                                },
+                                focus: function(event, ui) {
+                                    $('#customer_select_cart').val(ui.item.label);
+                                    return false;
+                                },
+                                appendTo: "#view_cart_modal", 
+                                open: function() {
+                                    $(".ui-autocomplete").css("z-index", 1050);
+                                }
+                            });
+                        });
+                        loadOrderContents();
+                        loadEstimateContents();
+                    });
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -2107,7 +2409,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 }
             });
         });
-
 
         $(document).on('click', '#custom_trim_draw', function(event) {
             loadDrawingModal(this);

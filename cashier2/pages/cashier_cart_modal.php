@@ -134,6 +134,8 @@ if(isset($_POST['fetch_cart'])){
                             }else{
                                 $product_price = $values["quantity_cart"] * $values["unit_price"];
                             }
+
+                            $color_id = $values["custom_color"];
                         ?>
                             <tr>
                                 <td>
@@ -168,8 +170,19 @@ if(isset($_POST['fetch_cart'])){
                                     <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
                                 </td>
                                 <td>
-                                    <?php echo getColorFromID($data_id); ?>
-                                    
+                                    <select id="color<?= $no ?>" class="form-control color-cart text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
+                                        <option value="" >Select Color...</option>
+                                        <?php
+                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                        $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                        while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                            $selected = ($color_id == $row_paint_colors['color_id']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>"><?= $row_paint_colors['color_name'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
                                 </td>
                                 <td>
                                     <?php echo getGradeFromID($data_id); ?>
@@ -195,7 +208,7 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
                                 <td>
                                     <div class="input-group text-start">
-                                        <select id="usage<?= $no ?>" class="form-control select2-cart" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
+                                        <select id="usage<?= $no ?>" class="form-control usage-cart" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
                                             <option value="">Select Usage...</option>
                                             <?php
                                             $query_key = "SELECT * FROM key_components";
@@ -335,6 +348,7 @@ if(isset($_POST['fetch_cart'])){
                     <?php
                             $totalquantity += $values["quantity_cart"];
                             $total += $subtotal;
+                            $total_customer_price += $customer_price;
                             $no++;
                         }
                     }
@@ -349,26 +363,75 @@ if(isset($_POST['fetch_cart'])){
                         <td colspan="5" class="text-end">Total Quantity:</td>
                         <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
                         <td colspan="3" class="text-end">Amount Due:</td>
-                        <td colspan="1" class="text-end"><span id="ammount_due"><?= $total ?> $</span></td>
+                        <td colspan="1" class="text-end"><span id="ammount_due"><?= number_format($total_customer_price,2) ?> $</span></td>
                         <td colspan="1"></td>
                     </tr>
                 </tfoot>
             </table>
         </div>
+        <div id="checkout" class="row mt-3">
+            <div class="col-md-6">
+                <div class="card box-shadow-0">
+                    <div class="card-body">
+                        <form>
+                            <div>
+                                <label>Total Items:</label>
+                                <span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span>
+                            </div>
+                            <div class="form-group">
+                                <label>Discount (%)</label>
+                                <input type="text" class="form-control" id="est_discount" placeholder="%" value="<?= $discount * 100 ?>">
+                            </div>
+                            <div class="form-group">
+                                <label>Amount</label>
+                                <input type="text" class="form-control" id="cash_amount" value="<?= $total_customer_price ?>">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body pricing">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th class="text-right border-bottom">Total</th>
+                                        <td class="text-right border-bottom">$ <span id="total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right border-bottom">Discount(-)</th>
+                                        <td class="text-right border-bottom">$ <span id="total_discount"><?= number_format(floatval($total_customer_price) * floatval($discount), 2) ?></span></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right border-bottom">Delivery</th>
+                                        <td class="text-right border-bottom">$ <span id="delivery_amt_est"><?= number_format($delivery_price, 2) ?></span></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right border-bottom">Sales Tax</th>
+                                        <td class="text-right border-bottom">$ <span id="sales_tax"><?= number_format((floatval($total_customer_price) + $delivery_price) * $tax, 2) ?></span></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right border-bottom">Total Payable</th>
+                                        <td class="text-right border-bottom">$ <span id="total_payable_est"><?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?></span></td>
+                                    </tr>
+                                    <tr class="bg-primary text-white" style="font-size: 1.25rem;">
+                                        <th class="text-right">Change</th>
+                                        <td class="text-right">$ 0.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>   
     <script>
         $(document).ready(function() {
-            var table = $('#cartTable').DataTable({
-                language: {
-                    emptyTable: "No products added to cart"
-                },
-                paging: false,
-                searching: false,
-                info: false,
-                ordering: false,
-                autoWidth: false,
-                responsive: true
-            });
+
+            
         });
     </script>
     <?php

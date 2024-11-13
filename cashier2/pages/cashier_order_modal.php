@@ -192,7 +192,7 @@ if(isset($_POST['fetch_order'])){
                                             <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
                                         </td>
                                         <td>
-                                            <select id="color<?= $no ?>" class="form-control select2-color text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
+                                            <select id="color<?= $no ?>" class="form-control color-order text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
                                                 <option value="" >Select Color...</option>
                                                 <?php
                                                 $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
@@ -230,7 +230,7 @@ if(isset($_POST['fetch_order'])){
                                         </td>
                                         <td>
                                             <div class="input-group text-start">
-                                                <select id="usage<?= $no ?>" class="form-control select2-order" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
+                                                <select id="usage<?= $no ?>" class="form-control usage-order" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
                                                     <option value="">Select Usage...</option>
                                                     <?php
                                                     $query_key = "SELECT * FROM key_components";
@@ -479,29 +479,7 @@ if(isset($_POST['fetch_order'])){
 
     <script>
     $(document).ready(function() {
-        function formatOption(state) {
-            if (!state.id) {
-                return state.text;
-            }
-            var color = $(state.element).data('color');
-            var $state = $(
-                '<span class="d-flex align-items-center">' +
-                '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
-                state.text + '</span>'
-            );
-            return $state;
-        }
 
-        $(".select2-color").each(function() {
-            $(this).select2({
-                width: '300px',
-                placeholder: "Select...",
-                dropdownAutoWidth: true,
-                dropdownParent: $('#orderTable'),
-                templateResult: formatOption,
-                templateSelection: formatOption
-            });
-        });
     });
 
     </script>

@@ -632,6 +632,7 @@ if (isset($_POST['save_order'])) {
             $estimate_hem = floatval($item['estimate_hem']);
             $estimate_length = floatval($item['estimate_length']);
             $estimate_length_inch = floatval($item['estimate_length_inch']);
+            $custom_color = $item['custom_color'];
             $is_sold_by_feet = intval($product_details['sold_by_feet']);
 
             $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
@@ -640,10 +641,10 @@ if (isset($_POST['save_order'])) {
             $discounted_price = $actual_price * (1 - $discount);
             $product_category = intval($product_details['product_category']);
 
-            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category')";
+            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color')";
         }
 
-        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category) VALUES ";
+        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
@@ -685,6 +686,9 @@ if (isset($_POST['save_order'])) {
     echo json_encode($response);
 }
 
+if (isset($_POST['clear_cart'])) {
+    unset($_SESSION['cart']);
+}
 
 if (isset($_POST['search_customer'])) {
     $search = mysqli_real_escape_string($conn, $_POST['search_customer']);
