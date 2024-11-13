@@ -9,10 +9,22 @@ require '../../includes/functions.php';
 
 if(isset($_POST['fetch_cart'])){
     $discount = 0;
+    $tax = 0;
     if(isset($_SESSION['customer_id'])){
         $customer_id = $_SESSION['customer_id'];
+        $customer_details = getCustomerDetails($customer_id);
+        $fullAddress = trim(implode(', ', array_filter([
+            $customer_details['address'] ?? null,
+            $customer_details['city'] ?? null,
+            $customer_details['state'] ?? null,
+            $customer_details['zip'] ?? null,
+        ])));
+        $fname = $customer_details['customer_first_name'];
+        $lname = $customer_details['customer_last_name'];
         $discount = floatval(getCustomerDiscount($customer_id)) / 100;
+        $tax = floatval(getCustomerTax($customer_id)) / 100;
     }
+    $delivery_price = getDeliveryCost();
     ?>
     <style>
         input[type="number"]::-webkit-inner-spin-button, 
@@ -173,12 +185,12 @@ if(isset($_POST['fetch_cart'])){
                                     <select id="color<?= $no ?>" class="form-control color-cart text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
                                         <option value="" >Select Color...</option>
                                         <?php
-                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
-                                        $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                        while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                            $selected = ($color_id == $row_paint_colors['color_id']) ? 'selected' : '';
+                                        $query_colors = "SELECT color_id FROM inventory WHERE Product_id = '$data_id'";
+                                        $result_colors = mysqli_query($conn, $query_colors);            
+                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
+                                            $selected = ($color_id == $row_colors['color_id']) ? 'selected' : '';
                                         ?>
-                                            <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>"><?= $row_paint_colors['color_name'] ?></option>
+                                            <option value="<?= $row_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_colors['color_id']) ?>"><?= getColorName($row_colors['color_id']) ?></option>
                                         <?php   
                                         }
                                         ?>

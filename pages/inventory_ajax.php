@@ -12,8 +12,9 @@ if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-        $Inventory_id = mysqli_real_escape_string($conn, $_POST['Inventory_id']);
+        $operation = mysqli_real_escape_string($conn, $_POST['operation']);
         $Product_id = mysqli_real_escape_string($conn, $_POST['Product_id']);
+        $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
         $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
         $Warehouse_id = mysqli_real_escape_string($conn, $_POST['Warehouse_id']);
         $Shelves_id = mysqli_real_escape_string($conn, $_POST['Shelves_id']);
@@ -23,10 +24,9 @@ if(isset($_REQUEST['action'])) {
         $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
         $quantity_ttl = mysqli_real_escape_string($conn, $_POST['quantity_ttl']);
         $pack = mysqli_real_escape_string($conn, $_POST['pack']);
-        $addedby = mysqli_real_escape_string($conn, $_POST['addedby']);
-        $status = '1';
+        $addedby = $_SESSION['userid'];
     
-        $checkQuery = "SELECT * FROM inventory WHERE Inventory_id = '$Inventory_id'";
+        $checkQuery = "SELECT * FROM inventory WHERE Product_id = '$Product_id' AND color_id = '$color_id'";
         $result = mysqli_query($conn, $checkQuery);
     
         if (!$result) {
@@ -35,19 +35,32 @@ if(isset($_REQUEST['action'])) {
     
         if (mysqli_num_rows($result) > 0) {
             $updateQuery = "UPDATE inventory SET 
-                Product_id = '$Product_id', 
-                Warehouse_id = '$Warehouse_id', 
                 supplier_id = '$supplier_id', 
+                Warehouse_id = '$Warehouse_id', 
                 Shelves_id = '$Shelves_id', 
                 Bin_id = '$Bin_id', 
                 Row_id = '$Row_id', 
                 Date = '$Date', 
                 quantity = '$quantity',
+                quantity_ttl = '$quantity_ttl', 
                 pack = '$pack',
-                quantity_ttl = '$quantity_ttl',
-                addedby = '$addedby', 
-                status = '$status'
-                WHERE Inventory_id = '$Inventory_id'";
+                addedby = '$addedby'
+                WHERE Product_id = '$Product_id' AND color_id = '$color_id'";
+    
+            if ($operation == 'add') {
+                $updateQuery = "UPDATE inventory SET 
+                    supplier_id = '$supplier_id', 
+                    Warehouse_id = '$Warehouse_id', 
+                    Shelves_id = '$Shelves_id', 
+                    Bin_id = '$Bin_id', 
+                    Row_id = '$Row_id', 
+                    Date = '$Date', 
+                    quantity = quantity + '$quantity',
+                    quantity_ttl = quantity_ttl + '$quantity_ttl', 
+                    pack = '$pack',
+                    addedby = '$addedby'
+                    WHERE Product_id = '$Product_id' AND color_id = '$color_id'";
+            }
     
             if (mysqli_query($conn, $updateQuery)) {
                 echo "success";
@@ -55,66 +68,42 @@ if(isset($_REQUEST['action'])) {
                 die("Error updating record: " . mysqli_error($conn));
             }
         } else {
-            $productCheckQuery = "SELECT quantity_ttl FROM inventory WHERE Product_id = '$Product_id'";
-            $productResult = mysqli_query($conn, $productCheckQuery);
+            $insertQuery = "INSERT INTO inventory (
+                Product_id, 
+                color_id, 
+                supplier_id, 
+                Warehouse_id, 
+                Shelves_id, 
+                Bin_id, 
+                Row_id, 
+                Date, 
+                quantity, 
+                pack, 
+                quantity_ttl, 
+                addedby
+            ) VALUES (
+                '$Product_id', 
+                '$color_id', 
+                '$supplier_id', 
+                '$Warehouse_id',
+                '$Shelves_id', 
+                '$Bin_id', 
+                '$Row_id', 
+                '$Date', 
+                '$quantity', 
+                '$pack', 
+                '$quantity_ttl', 
+                '$addedby'
+            )";
     
-            if (!$productResult) {
-                die("Error executing product query: " . mysqli_error($conn));
-            }
-    
-            if (mysqli_num_rows($productResult) > 0) {
-                $row = mysqli_fetch_assoc($productResult);
-                $newQuantity = $row['quantity_ttl'] + $quantity;
-    
-                $updateQuantityQuery = "UPDATE inventory SET 
-                    quantity_ttl = '$newQuantity', quantity = '$newQuantity'
-                    WHERE Product_id = '$Product_id'";
-    
-                if (mysqli_query($conn, $updateQuantityQuery)) {
-                    echo "success";
-                } else {
-                    die("Error updating quantity: " . mysqli_error($conn));
-                }
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "success";
             } else {
-                $addedby = $_SESSION['userid']; 
-                $insertQuery = "INSERT INTO inventory (
-                    Inventory_id,
-                    Product_id, 
-                    supplier_id, 
-                    Warehouse_id, 
-                    Shelves_id, 
-                    Bin_id, 
-                    Row_id, 
-                    Date, 
-                    quantity, 
-                    pack, 
-                    quantity_ttl,
-                    addedby, 
-                    status
-                ) VALUES (
-                    '$Inventory_id',
-                    '$Product_id', 
-                    '$supplier_id', 
-                    '$Warehouse_id',
-                    '$Shelves_id', 
-                    '$Bin_id', 
-                    '$Row_id', 
-                    '$Date', 
-                    '$quantity',
-                    '$pack', 
-                    '$quantity_ttl', 
-                    '$addedby', 
-                    '$status'
-                )";
-    
-                if (mysqli_query($conn, $insertQuery)) {
-                    echo "success";
-                } else {
-                    die("Error inserting record: " . mysqli_error($conn));
-                }
+                die("Error inserting record: " . mysqli_error($conn));
             }
         }
     }
+    
 
     if ($action == "fetch_modal") {
         $Inventory_id = mysqli_real_escape_string($conn, $_POST['id']);
@@ -141,9 +130,10 @@ if(isset($_REQUEST['action'])) {
                             <div class="card">
                                 <div class="card-body">
                                 <input type="hidden" id="Inventory_id" name="Inventory_id" class="form-control" value="<?= $row['Inventory_id'] ?>" />
+                                <input type="hidden" id="operation" name="operation" value="update" />
 
                                 <div class="row pt-3">
-                                <div class="col-md-12">
+                                <div class="col-md-8">
                                     <label class="form-label">Product</label>
                                     <div class="mb-3">
                                     <select id="inventory_product" class="select2-update form-control" name="Product_id">
@@ -159,6 +149,31 @@ if(isset($_REQUEST['action'])) {
                                         }
                                         ?>
                                     </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Color</label>
+                                    <div class="mb-3">
+                                        <select id="color<?= $no ?>" class="form-control color-cart select2-update" name="color_id">
+                                            <option value="" >Select Color...</option>
+                                            <?php
+                                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                            $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                            while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                                if(empty($row['color_id'])){
+                                                    $product_details = getProductDetails($row['Product_id']);
+                                                    $color_id = $product_details['color'];
+                                                }else{
+                                                    $color_id = $row['color_id'];
+                                                }
+
+                                                $selected = ($color_id == $row_paint_colors['color_id']) ? 'selected' : '';
+                                            ?>
+                                                <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>"><?= $row_paint_colors['color_name'] ?></option>
+                                            <?php   
+                                            }
+                                            ?>
+                                        </select>
                                     </div>
                                 </div>
                                 </div>
@@ -286,7 +301,7 @@ if(isset($_REQUEST['action'])) {
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Total Quantity</label>
-                                    <input type="text" id="quantity_ttl_update" name="quantity_ttl" class="form-control"  />
+                                    <input type="text" id="quantity_ttl_update" name="quantity_ttl" class="form-control" value="<?= $row['quantity_ttl'] ?>" />
                                 </div>
                                 </div> 
                                 <div class="row pt-3">
@@ -317,11 +332,16 @@ if(isset($_REQUEST['action'])) {
                 $("#inventory_bin").select2({dropdownParent: $('#updateInventoryModal .modal-content')});
                 $("#inventory_shelf").select2({dropdownParent: $('#updateInventoryModal .modal-content')});
                 $("#inventory_supplier").select2({dropdownParent: $('#updateInventoryModal .modal-content')}); */
-                $(".select2-update").select2({
-                    dropdownParent: $('#updateInventoryModal .modal-content'),
-                    placeholder: "Select One...",
-                    allowClear: true
-                });
+                $(document).ready(function() {
+                    $(".select2-update").select2({
+                        dropdownParent: $('#updateInventoryModal .modal-content'),
+                        placeholder: "Select One...",
+                        allowClear: true,
+                        templateResult: formatOption,
+                        templateSelection: formatOption
+                    });
+                }); 
+                
             </script>
             <?php
         }

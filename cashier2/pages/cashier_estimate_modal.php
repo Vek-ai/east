@@ -317,7 +317,7 @@ if(isset($_POST['fetch_estimate'])){
                                     }
                                     ?>
                                     <td><?= $stock_text ?></td>
-                                    <<td class="text-end pl-3">$
+                                    <td class="text-end pl-3">$
                                         <?php
                                         $subtotal = $product_price;
                                         echo number_format($subtotal, 2);

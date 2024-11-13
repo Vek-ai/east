@@ -1150,7 +1150,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             dropdownAutoWidth: true,
                             dropdownParent: $('#cartTable'),
                             templateResult: formatOption,
-                            templateSelection: formatOption
+                            templateSelection: formatSelected
                         });
                     });
 
@@ -1162,9 +1162,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             width: '300px',
                             placeholder: "Select...",
                             dropdownAutoWidth: true,
-                            dropdownParent: $('#cartTable'),
-                            templateResult: formatOption,
-                            templateSelection: formatOption
+                            dropdownParent: $('#cartTable')
                         });
                     });
                 }, 100);
@@ -1198,7 +1196,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             dropdownAutoWidth: true,
                             dropdownParent: $('#orderTable'),
                             templateResult: formatOption,
-                            templateSelection: formatOption
+                            templateSelection: formatSelected
                         });
                     });
 
@@ -1210,9 +1208,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             width: '300px',
                             placeholder: "Select...",
                             dropdownAutoWidth: true,
-                            dropdownParent: $('#orderTable'),
-                            templateResult: formatOption,
-                            templateSelection: formatOption
+                            dropdownParent: $('#orderTable')
                         });
                     });
 
@@ -1246,7 +1242,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             dropdownAutoWidth: true,
                             dropdownParent: $('#estimateTable'),
                             templateResult: formatOption,
-                            templateSelection: formatOption
+                            templateSelection: formatSelected
                         });
                     });
 
@@ -1258,9 +1254,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             width: '300px',
                             placeholder: "Select...",
                             dropdownAutoWidth: true,
-                            dropdownParent: $('#estimateTable'),
-                            templateResult: formatOption,
-                            templateSelection: formatOption
+                            dropdownParent: $('#estimateTable')
                         });
                     });
                 }, 100);
@@ -1813,12 +1807,27 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var color = $(state.element).data('color');
         var $state = $(
             '<span class="d-flex align-items-center">' +
-            '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
-            state.text + '</span>'
+                '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
+                state.text + 
+            '</span>'
         );
         return $state;
     }
 
+    function formatSelected(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        var color = $(state.element).data('color');
+        var $state = $( 
+            '<span class="d-flex align-items-center justify-content-center">' + 
+                '<span class="rounded-circle d-block p-1" style="background-color:' + color + '; width: 25px; height: 25px;"></span>' +
+                '&nbsp;' +
+            '</span>'
+        );
+        return $state;
+    }
+    
     $(document).ready(function() {
         $(document).on('click', '#openMap', function () {
             $('#map1Modal').modal('show');

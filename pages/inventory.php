@@ -90,9 +90,10 @@ require 'includes/functions.php';
                         <div class="card">
                             <div class="card-body">
                             <input type="hidden" id="Inventory_id" name="Inventory_id" class="form-control"  />
+                            <input type="hidden" id="operation" name="operation" value="add" />
 
                             <div class="row pt-3">
-                            <div class="col-md-12">
+                            <div class="col-md-8">
                                 <label class="form-label">Product</label>
                                 <div class="mb-3">
                                 <select id="Product_id" class="form-control select2-add" name="Product_id">
@@ -111,7 +112,23 @@ require 'includes/functions.php';
                                 </select>
                                 </div>
                             </div>
-
+                            <div class="col-md-4">
+                                <label class="form-label">Color</label>
+                                <div class="mb-3">
+                                    <select id="color<?= $no ?>" class="form-control color-cart select2-add" name="color_id">
+                                        <option value="" >Select Color...</option>
+                                        <?php
+                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                        $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                        while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                        ?>
+                                            <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>"><?= $row_paint_colors['color_name'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
                             </div>
                             <div class="row pt-3">
                             <div class="col-md-6">
@@ -409,6 +426,33 @@ require 'includes/functions.php';
 </div>
 
 <script>
+    function formatOption(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        var color = $(state.element).data('color');
+        var $state = $(
+            '<span class="d-flex align-items-center">' +
+                '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
+                state.text + 
+            '</span>'
+        );
+        return $state;
+    }
+
+    function formatSelected(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        var color = $(state.element).data('color');
+        var $state = $( 
+            '<span class="d-flex align-items-center justify-content-center">' + 
+                '<span class="rounded-circle d-block p-1" style="background-color:' + color + '; width: 25px; height: 25px;"></span>' +
+                '&nbsp;' +
+            '</span>'
+        );
+        return $state;
+    }
     $(document).ready(function() {
         var table = $('#inventoryList').DataTable({
             "order": [[1, "asc"]]
@@ -417,7 +461,9 @@ require 'includes/functions.php';
         $(".select2-add").select2({
             dropdownParent: $('#addInventoryModal .modal-content'),
             placeholder: "Select One...",
-            allowClear: true
+            allowClear: true,
+            templateResult: formatOption,
+            templateSelection: formatOption
         });
         
         $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
@@ -456,6 +502,16 @@ require 'includes/functions.php';
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
                     }
+            });
+        });
+
+        $('#updateInventoryModal').on('hidden.bs.modal', function () {
+            $(".select2-add").select2({
+                dropdownParent: $('#addInventoryModal .modal-content'),
+                placeholder: "Select One...",
+                allowClear: true,
+                templateResult: formatOption,
+                templateSelection: formatOption
             });
         });
 
