@@ -152,7 +152,7 @@ if(isset($_POST['fetch_cart'])){
                             $color_id = $values["custom_color"];
                         ?>
                             <tr>
-                                <td>
+                                <td data-color="<?= $color_id ?>">
                                     <?php
                                     if($data_id == '277'){
                                         if(!empty($values["custom_trim_src"])){
@@ -188,12 +188,18 @@ if(isset($_POST['fetch_cart'])){
                                         <option value="" >Select Color...</option>
                                         <?php
                                         $query_colors = "SELECT color_id FROM inventory WHERE Product_id = '$data_id'";
-                                        $result_colors = mysqli_query($conn, $query_colors);            
-                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            $selected = ($color_id == $row_colors['color_id']) ? 'selected' : '';
+                                        $result_colors = mysqli_query($conn, $query_colors);   
+                                        if (mysqli_num_rows($result_colors) > 0) {         
+                                            while ($row_colors = mysqli_fetch_array($result_colors)) {
+                                                $selected = ($color_id == $row_colors['color_id']) ? 'selected' : '';
+                                            ?>
+                                                <option value="<?= $row_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_colors['color_id']) ?>"><?= getColorName($row_colors['color_id']) ?></option>
+                                            <?php   
+                                            }
+                                        }else{
                                         ?>
-                                            <option value="<?= $row_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_colors['color_id']) ?>"><?= getColorName($row_colors['color_id']) ?></option>
-                                        <?php   
+                                        <option value="<?= $row_colors ?>" selected data-color="<?= getColorHexFromColorID($row_colors) ?>"><?= getColorName($row_colors) ?></option>
+                                        <?php
                                         }
                                         ?>
                                     </select>
@@ -262,7 +268,6 @@ if(isset($_POST['fetch_cart'])){
                                             if($sold_by_feet == 1){
                                                 ?>
                                                 <fieldset class="border p-1 position-relative">
-                                                    <legend class="w-auto py-0 mb-1 fs-3" style="color: #ffffff;">Length</legend>
                                                     <div class="input-group d-flex align-items-center">
                                                         <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                                         <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
@@ -293,7 +298,6 @@ if(isset($_POST['fetch_cart'])){
                                             if($sold_by_feet == 1){
                                             ?>
                                                 <fieldset class="border p-1 position-relative">
-                                                    <legend class="w-auto py-0 mb-1 fs-3" style="color: #ffffff;">Length</legend>
                                                     <div class="input-group d-flex align-items-center">
                                                         <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                                         <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
@@ -316,7 +320,6 @@ if(isset($_POST['fetch_cart'])){
                                         if($sold_by_feet == 1){
                                         ?>
                                             <fieldset class="border p-1 position-relative">
-                                                <legend class="w-auto py-0 mb-1 fs-3" style="color: #ffffff;">Length</legend>
                                                 <div class="input-group d-flex align-items-center">
                                                     <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                                     <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">

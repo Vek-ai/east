@@ -339,7 +339,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                 <i class="fa fa-chart-line fs-4 me-2"></i>
                                 Change Grade
                             </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="change_color" style="background-color: #17a2b8; color: white;">
+                            <button type="button" class="btn mb-2 me-2 flex-fill" id="btnColorModal" style="background-color: #17a2b8; color: white;">
                                 <i class="fa fa-palette fs-4 me-2"></i>
                                 Change Color
                             </button>
@@ -727,6 +727,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     </div>
     </div>
 </div>
+
+<div class="modal fade" id="chng-color-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
 
 <script>
     let map1;
@@ -1880,6 +1882,68 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     $(document).ready(function() {
         $(document).on('click', '#openMap', function () {
             $('#map1Modal').modal('show');
+        });
+
+        $(document).on('click', '#btnColorModal', function () {
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    fetch_change_color_modal: 'fetch_change_color_modal'
+                },
+                success: function(response) {
+                    $('#chng-color-modal').html(response);
+                    $('#chng-color-modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#save_color_change', function () {
+            var orig_color = $('#orig-colors').val();
+            var in_stock_color = $('#in-stock-colors').val();
+            var category_id = $('#category_id').val();
+
+            console.log(orig_color);
+            console.log(in_stock_color);
+            console.log(category_id);
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    orig_color: orig_color,
+                    in_stock_color: in_stock_color,
+                    category_id: category_id,
+                    change_color: 'change_color'
+                },
+                success: function(response) {
+                    $('.modal').modal("hide");
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Product Returned successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    }else{
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
         });
 
         var currentPage = 1,

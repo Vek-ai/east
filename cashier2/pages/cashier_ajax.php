@@ -250,8 +250,6 @@ if (isset($_REQUEST['query'])) {
                 }
             }
                      
-            
-
             $default_image = '../images/product/product.jpg';
 
             $picture_path = !empty($row_product['main_image'])
@@ -805,11 +803,151 @@ if (isset($_POST['return_product'])) {
     }
 }
 
+if(isset($_POST['fetch_change_color_modal'])){
+    if (!empty($_SESSION["cart"])) {
+        $cart_colors = array();
+        $in_stock_colors = array();
+        $category_ids = array();
+        foreach ($_SESSION["cart"] as $keys => $values) {
+            $cart_colors[] = $values["custom_color"];
 
+            $product_details = getProductDetails($values["product_id"]);
+            $category_ids[] = $product_details["product_category"];
 
+            $query_colors = "SELECT color_id FROM inventory WHERE Product_id = '".$values["product_id"]."'";
+            $result_colors = mysqli_query($conn, $query_colors);            
+            while ($row_colors = mysqli_fetch_array($result_colors)) {
+                $in_stock_colors[] = $row_colors['color_id'];
+            }
 
+            if ($product_details["product_category"] == $trim_id || $product_details["product_category"] == $panel_id) {
+                $sql = "SELECT COUNT(*) AS count FROM coil WHERE color = '".$values["custom_color"]."'";
+                $result = mysqli_query($conn, $sql);
 
+                if ($result) {
+                    $row = mysqli_fetch_assoc($result);
+                    if ($row['count'] > 0) {
+                        $in_stock_colors[] = $row['color'];
+                    }
+                }
+            }
+        }
+        $cart_colors = array_unique($cart_colors);
+        $in_stock_colors = array_unique($in_stock_colors);
+        $category_ids = array_unique($category_ids);
+    }
+    ?>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Color</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                <div id="change_color_container" class="d-flex align-items-center justify-content-between w-100">
+                    <div class="col-md-5">
+                        <label class="form-label" for="orig-colors" style="display:block; width: 100%;">Change Color From:</label>
+                        <select id="orig-colors" class="form-select">
+                            <option value="">Select Original Color</option>
+                            <?php
+                            foreach ($cart_colors as $color_id) {
+                                echo '<option value="' . $color_id . '" data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <span class="px-2"> TO </span>
+                    <div class="col-md-5">
+                        <label class="form-label" for="in-stock-colors" style="display:block; width: 100%;">New Color:</label>
+                        <select id="in-stock-colors" class="form-select">
+                            <option value="">Select Available Color</option>
+                            <?php
+                            foreach ($in_stock_colors as $color_id) {
+                                echo '<option value="' . $color_id . '" data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
 
+                    <div id="change_category_container" class="mt-4">
+                        <label class="form-label" for="category_id" style="display:block; width: 100%;">Only for this category (Optional)</label>
+                        <select id="category_id" class="form-select">
+                            <option value="">Select Available Category</option>
+                            <?php
+                            foreach ($category_ids as $category_id) {
+                                echo '<option value="' . $category_id . '">' . getProductCategoryName($category_id) . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="form-actions">
+                        <div class="card-body">
+                            <button type="button" id="save_color_change" class="btn bg-success-subtle text-light waves-effect text-start">Save</button>
+                            <button type="button" class="btn bg-danger-subtle text-light waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            $(document).ready(function() {
+                $("#category_id").select2({
+                    width: '300px',
+                    placeholder: "Select Category",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('#change_category_container'),
+                    templateResult: formatOption,
+                    templateSelection: formatOption
+                });
 
+                $("#orig-colors").select2({
+                    width: '300px',
+                    placeholder: "Select Color...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('#change_color_container'),
+                    templateResult: formatOption,
+                    templateSelection: formatOption
+                });
 
+                $("#in-stock-colors").select2({
+                    width: '300px',
+                    placeholder: "Select Color...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('#change_color_container'),
+                    templateResult: formatOption,
+                    templateSelection: formatOption
+                });
+            });
+        </script>
 
+    <?php
+}
+
+if (isset($_POST['change_color'])) {
+    $orig_color = $_POST['orig_color'];
+    $in_stock_color = $_POST['in_stock_color'];
+    $selected_category_id = $_POST['category_id'];
+
+    foreach ($_SESSION['cart'] as $key => &$item) {
+        if ($item['custom_color'] == $orig_color) {
+            if (!empty($selected_category_id)) {
+                $product_details = getProductDetails($item['product_id']);
+                if ($product_details['product_category'] == $selected_category_id) {
+                    $item['custom_color'] = $in_stock_color;
+                }
+            } else {
+                echo $item['custom_color'] .' turned to ' .$in_stock_color ."\n";
+                $item['custom_color'] = $in_stock_color;
+            }
+        }
+    }
+    unset($item);
+
+    echo "success";
+}
+?>
