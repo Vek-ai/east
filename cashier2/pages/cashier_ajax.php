@@ -262,7 +262,7 @@ if (isset($_REQUEST['query'])) {
             <tr>
                 <td>
                     <a href="javascript:void(0);" id="view_product_details" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center" >
                             <img src="'.$picture_path.'" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                             <div class="ms-3">
                                 <h6 class="fw-semibold mb-0 fs-4">'. $row_product['product_item'] .' ' .$dimensions .'</h6>

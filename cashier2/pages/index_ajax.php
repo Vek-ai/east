@@ -51,4 +51,33 @@ if(isset($_REQUEST['search_customer'])){
         <?php
     }
 }
+
+if (isset($_GET['fetch_cart'])) {
+    header('Content-Type: application/json');
+    
+    $cartItems = [];
+
+    if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $item) {
+            $product_details = getProductDetails($item['product_id']);
+            $default_image = '../images/product/product.jpg';
+            $picture_path = isset($product_details['main_image']) && !empty($product_details['main_image'])
+                ? "../" . $product_details['main_image']
+                : $default_image;
+
+            $cartItems[] = [
+                'img_src' => $picture_path,
+                'item_name' => $item['product_item'],
+                'color_hex' => getColorHexFromColorID($item['custom_color']),
+                'quantity' => $item['quantity_cart'],
+                'product_id' => $item['product_id'],
+                'line' => $item['line']
+            ];
+        }
+    }
+
+    echo json_encode(['cart_items' => $cartItems]);
+}
+
+$conn->close();
 ?>

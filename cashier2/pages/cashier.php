@@ -51,65 +51,59 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     }
 </style>
 <div class="product-list pt-4">
-    <div class="row row-xs pr-3">
+    <!-- <div class="row row-xs pr-3">
         <div class="col-md-9"></div>
-            <?php 
-            $discount = 0;
-            $tax = 0;
-            $totalQuantity = 0;
-            if(isset($_SESSION['customer_id'])){
-                $customer_id = $_SESSION['customer_id'];
-                $customer_details = getCustomerDetails($customer_id);
-                $discount = floatval(getCustomerDiscount($customer_id)) / 100;
-                $tax = floatval(getCustomerTax($customer_id)) / 100;
+        <?php 
+        $discount = 0;
+        $tax = 0;
+        $totalQuantity = 0;
+        if(isset($_SESSION['customer_id'])){
+            $customer_id = $_SESSION['customer_id'];
+            $customer_details = getCustomerDetails($customer_id);
+            $discount = floatval(getCustomerDiscount($customer_id)) / 100;
+            $tax = floatval(getCustomerTax($customer_id)) / 100;
+        }
+        $delivery_price = getDeliveryCost();
+        
+        if (!empty($_SESSION["cart"])) {
+            foreach ($_SESSION["cart"] as $item) {
+                $totalQuantity += $item["quantity_cart"];
             }
-            $delivery_price = getDeliveryCost();
-            
-            if (!empty($_SESSION["cart"])) {
-                foreach ($_SESSION["cart"] as $item) {
-                    $totalQuantity += $item["quantity_cart"];
-                }
-            }
-            ?>
-            <div class="col-md-3 bg-primary rounded" style="padding: 1rem;">
-                <div id="thegrandtotal" style="background: transparent; color: #fff; font-size: 16px;">
-                    <table style="width: 100%; margin: 0; border-spacing: 0;">
-                        <tbody>
-                            <tr style="height: 30px;">
-                                <td style="text-align: left; width: 70%;">Total:</td>
-                                <td style="text-align: right; width: 30%;"><?= "$" . number_format($_SESSION["grandtotal"] ?? 0, 2); ?></td>
-                            </tr>
-                            <tr style="height: 30px;">
-                                <td style="text-align: left; width: 70%;">Total items:</td>
-                                <td style="text-align: right; width: 30%;"><?= $totalQuantity ?></td>
-                            </tr>
-                            <tr style="height: 30px;">
-                                <td style="text-align: left; width: 70%;">Discount:</td>
-                                <td style="text-align: right; width: 30%;"><?= $discount * 100 ?>%</td>
-                            </tr>
-                            <tr style="height: 30px;">
-                                <td style="text-align: left; width: 70%;">Delivery Amount:</td>
-                                <td style="text-align: right; width: 30%;"><?= "$" . number_format($delivery_price, 2); ?></td>
-                            </tr>
-                        </tbody>
-                    </table>
- 
-                </div>
+        }
+        ?>
+        <div class="col-md-3 bg-primary rounded" style="padding: 1rem;">
+            <div id="thegrandtotal" style="background: transparent; color: #fff; font-size: 16px;">
+                <table style="width: 100%; margin: 0; border-spacing: 0;">
+                    <tbody>
+                        <tr style="height: 30px;">
+                            <td style="text-align: left; width: 70%;">Total:</td>
+                            <td style="text-align: right; width: 30%;"><?= "$" . number_format($_SESSION["grandtotal"] ?? 0, 2); ?></td>
+                        </tr>
+                        <tr style="height: 30px;">
+                            <td style="text-align: left; width: 70%;">Total items:</td>
+                            <td style="text-align: right; width: 30%;"><?= $totalQuantity ?></td>
+                        </tr>
+                        <tr style="height: 30px;">
+                            <td style="text-align: left; width: 70%;">Discount:</td>
+                            <td style="text-align: right; width: 30%;"><?= $discount * 100 ?>%</td>
+                        </tr>
+                        <tr style="height: 30px;">
+                            <td style="text-align: left; width: 70%;">Delivery Amount:</td>
+                            <td style="text-align: right; width: 30%;"><?= "$" . number_format($delivery_price, 2); ?></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            
-
-
-
-
-    </div>
+        </div>
+    </div> -->
     <div class="card">
         <div class="card-body p-3">
             
             <div class="p-2 text-right">
                 <input type="checkbox" id="toggleActive" checked> Show only In Stock
             </div>
-            <div class="d-flex justify-content-between align-items-center  mb-9">
-                <div class="position-relative w-100 col-4">
+            <div class="d-flex justify-content-between align-items-center mb-9">
+                <div class="position-relative w-100 col-4 ps-0">
                     <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
                     <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
@@ -1189,8 +1183,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             success: function(response) {
                 
                 $('#cart-tbl').html(''); 
-                $('#cart-tbl').html(response); 
-
+                
                 setTimeout(function() {
                     $(".color-cart").each(function() {
                         if ($(this).data('select2')) {
@@ -1218,6 +1211,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         });
                     });
                 }, 100);
+
+                $('#cart-tbl').html(response); 
+
+                loadCartItemsHeader();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1234,9 +1231,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             },
             success: function(response) {
                 $('#order-tbl').html('');
-                $('#order-tbl').html(response);
-                calculateDeliveryAmount();
-
                 setTimeout(function() {    
                     $(".color-order").each(function() {
                         if ($(this).data('select2')) {
@@ -1265,6 +1259,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     });
 
                 }, 100);
+                $('#order-tbl').html(response);
+                calculateDeliveryAmount();
+                loadCartItemsHeader();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1281,8 +1278,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             },
             success: function(response) {
                 $('#estimate-tbl').html('');
-                $('#estimate-tbl').html(response);
-
                 setTimeout(function() {
                     $(".color-est").each(function() {
                         if ($(this).data('select2')) {
@@ -1310,6 +1305,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         });
                     });
                 }, 100);
+                $('#estimate-tbl').html(response);
+                loadCartItemsHeader();
                 
             },
             error: function(jqXHR, textStatus, errorThrown) {
