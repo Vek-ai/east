@@ -169,25 +169,25 @@ if(isset($_POST['fetch_estimate'])){
                                         <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
                                     </td>
                                     <td>
-                                        <select id="color<?= $no ?>" class="form-control color-cart text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
-                                            <option value="" >Select Color...</option>
+                                        <select id="color<?= $no ?>" class="form-control color-est text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
+                                            <option value="">Select Color...</option>
                                             <?php
+                                            if (!empty($color_id)) {
+                                                echo '<option value="' . $color_id . '" selected data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
+                                            }
+
                                             $query_colors = "SELECT color_id FROM inventory WHERE Product_id = '$data_id'";
-                                            $result_colors = mysqli_query($conn, $query_colors);   
-                                            if (mysqli_num_rows($result_colors) > 0) {         
+                                            $result_colors = mysqli_query($conn, $query_colors);
+
+                                            if (mysqli_num_rows($result_colors) > 0) {
                                                 while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                                    $selected = ($color_id == $row_colors['color_id']) ? 'selected' : '';
-                                                ?>
-                                                    <option value="<?= $row_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_colors['color_id']) ?>"><?= getColorName($row_colors['color_id']) ?></option>
-                                                <?php   
+                                                    if ($color_id == $row_colors['color_id']) {
+                                                        continue;
+                                                    }
+                                                    echo '<option value="' . $row_colors['color_id'] . '" data-color="' . getColorHexFromColorID($row_colors['color_id']) . '">' . getColorName($row_colors['color_id']) . '</option>';
                                                 }
-                                            }else{
-                                            ?>
-                                            <option value="<?= $row_colors ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_colors) ?>"><?= getColorName($row_colors) ?></option>
-                                            <?php
                                             }
                                             ?>
-                                            
                                         </select>
                                     </td>
                                     <td>

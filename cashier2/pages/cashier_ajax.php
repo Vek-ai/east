@@ -941,7 +941,6 @@ if (isset($_POST['change_color'])) {
                     $item['custom_color'] = $in_stock_color;
                 }
             } else {
-                echo $item['custom_color'] .' turned to ' .$in_stock_color ."\n";
                 $item['custom_color'] = $in_stock_color;
             }
         }
