@@ -28,7 +28,7 @@ if(isset($_REQUEST['search_customer'])){
         while ($row = mysqli_fetch_assoc($result)) {
             ?>
             <div class="message-body" data-simplebar>
-                <a href="?page=customer-dashboard&id=<?= $row['customer_id'] ?>" class="p-3 d-flex align-items-center dropdown-item gap-3  border-bottom">
+                <a href="?page=customer-dashboard&id=<?= $row['customer_id'] ?>" target="_blank" class="p-3 d-flex align-items-center dropdown-item gap-3  border-bottom">
                     <span class="flex-shrink-0 bg-secondary-subtle rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 text-secondary">
                         <iconify-icon icon="ic:round-account-circle"></iconify-icon>
                     </span>

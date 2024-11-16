@@ -143,9 +143,11 @@ if (isset($_POST['deleteitem'])) {
 
 if (isset($_REQUEST['query'])) {
     $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
-    $color_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['color_id']) : '';
+    //$color_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['color_id']) : '';
+    $grade_id = isset($_REQUEST['grade_id']) ? mysqli_real_escape_string($conn, $_REQUEST['grade_id']) : '';
+    $gauge_id = isset($_REQUEST['gauge_id']) ? mysqli_real_escape_string($conn, $_REQUEST['gauge_id']) : '';
     $type_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['type_id']) : '';
-    $line_id = isset($_REQUEST['line_id']) ? mysqli_real_escape_string($conn, $_REQUEST['line_id']) : '';
+    $profile_id = isset($_REQUEST['profile_id']) ? mysqli_real_escape_string($conn, $_REQUEST['profile_id']) : '';
     $category_id = isset($_REQUEST['category_id']) ? mysqli_real_escape_string($conn, $_REQUEST['category_id']) : '';
     $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
     
@@ -166,16 +168,20 @@ if (isset($_REQUEST['query'])) {
         $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
     }
 
-    if (!empty($color_id)) {
-        $query_product .= " AND p.color = '$color_id'";
+    if (!empty($grade_id)) {
+        $query_product .= " AND p.grade = '$grade_id'";
+    }
+
+    if (!empty($gauge_id)) {
+        $query_product .= " AND p.gauge = '$gauge_id'";
     }
 
     if (!empty($type_id)) {
         $query_product .= " AND p.product_type = '$type_id'";
     }
 
-    if (!empty($line_id)) {
-        $query_product .= " AND p.product_line = '$line_id'";
+    if (!empty($profile_id)) {
+        $query_product .= " AND p.profile = '$profile_id'";
     }
 
     if (!empty($category_id)) {
@@ -270,19 +276,21 @@ if (isset($_REQUEST['query'])) {
                 </td>
                 <td>
                     <div class="d-flex mb-0 gap-8">
-                        <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:' .getColorHexFromColorID($row_product['color']) .'"></a> '
+                        <a href="javascript:void(0)" id="view_available_color" class="rounded-circle d-block p-6" data-id="'.$row_product['product_id'].'" style="background-color:' .getColorHexFromColorID($row_product['color']) .'"></a> '
                         .getColorName($row_product['color']) .'
                     </div>
                 </td>
+                <td><p class="mb-0">'. getGradeName($row_product['grade']) .'</p></td>
+                <td><p class="mb-0">'. getGaugeName($row_product['gauge']) .'</p></td>
                 <td><p class="mb-0">'. getProductTypeName($row_product['product_type']) .'</p></td>
-                <td><p class="mb-0">'. getProductLineName($row_product['product_line']) .'</p></td>
+                <td><p class="mb-0">'. getProfileTypeName($row_product['profile']) .'</p></td>
                 <td><p class="mb-0">'. getProductCategoryName($row_product['product_category']) .'</p></td>
                 <td>
                     <div class="d-flex align-items-center">'.$stock_text.'</div>
                 </td>
-                <td><h6 class="mb-0 fs-4">$'. $row_product['unit_cost'] .'</h6></td>
+                
                 <td>
-                    <button class="btn btn-primary btn-add-to-cart" type="button" data-id="'.$row_product['product_id'].'" onClick="addtocart(this)">Add to Cart</button>
+                    <button class="btn btn-sm btn-primary btn-add-to-cart" type="button" data-id="'.$row_product['product_id'].'" onClick="addtocart(this)">Add to Cart</button>
                 </td>
             </tr>';
         }

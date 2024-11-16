@@ -103,11 +103,11 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 <input type="checkbox" id="toggleActive" checked> Show only In Stock
             </div>
             <div class="d-flex justify-content-between align-items-center mb-9">
-                <div class="position-relative w-100 col-4 ps-0">
+                <div class="position-relative w-100 col-2 ps-0">
                     <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
                     <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
-                <div class="position-relative w-100 px-1 col-2">
+                <!-- <div class="position-relative w-100 px-1 col-2">
                     <select class="form-control search-chat py-0 ps-5" id="select-color" data-category="">
                         <option value="" data-category="">All Colors</option>
                         <optgroup label="Product Colors">
@@ -117,6 +117,38 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             while ($row_color = mysqli_fetch_array($result_color)) {
                             ?>
                                 <option value="<?= $row_color['color_id'] ?>" data-category="category"><?= $row_color['color_name'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div> -->
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-grade" data-category="">
+                        <option value="" data-category="">All Grades</option>
+                        <optgroup label="Product Grades">
+                            <?php
+                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                            $result_grade = mysqli_query($conn, $query_grade);
+                            while ($row_grade = mysqli_fetch_array($result_grade)) {
+                            ?>
+                                <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade"><?= $row_grade['product_grade'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-gauge" data-category="">
+                        <option value="" data-category="">All Gauges</option>
+                        <optgroup label="Product Gauges">
+                            <?php
+                            $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                            $result_gauge = mysqli_query($conn, $query_gauge);
+                            while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                            ?>
+                                <option value="<?= $row_gauge['product_gauge_id'] ?>" data-category="gauge"><?= $row_gauge['product_gauge'] ?></option>
                             <?php
                             }
                             ?>
@@ -140,15 +172,15 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     </select>
                 </div>
                 <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-line" data-category="">
-                        <option value="" data-category="">All Product Lines</option>
+                    <select class="form-control search-chat py-0 ps-5" id="select-profile" data-category="">
+                        <option value="" data-category="">All Profile Types</option>
                         <optgroup label="Product Line">
                             <?php
-                            $query_line = "SELECT * FROM product_line WHERE hidden = '0'";
-                            $result_line = mysqli_query($conn, $query_line);
-                            while ($row_line = mysqli_fetch_array($result_line)) {
+                            $query_profile = "SELECT * FROM profile_type WHERE hidden = '0'";
+                            $result_profile = mysqli_query($conn, $query_profile);
+                            while ($row_profile = mysqli_fetch_array($result_profile)) {
                             ?>
-                                <option value="<?= $row_line['product_line_id'] ?>" data-category="line"><?= $row_line['product_line'] ?></option>
+                                <option value="<?= $row_profile['profile_type_id'] ?>" data-category="profile"><?= $row_profile['profile_type'] ?></option>
                             <?php
                             }
                             ?>
@@ -177,12 +209,14 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     <thead>
                         <tr>
                             <th scope="col">Products</th>
-                            <th scope="col">Color</th>
+                            <th scope="col">Avail. Colors</th>
+                            <th scope="col">Grade</th>
+                            <th scope="col">Gauge</th>
                             <th scope="col">Type</th>
-                            <th scope="col">Line</th>
+                            <th scope="col">Profile</th>
                             <th scope="col">Category</th>
                             <th scope="col">Status</th>
-                            <th scope="col">Price</th>
+                           
                             <th scope="col">Actions</th>
                         </tr>
                     </thead>
@@ -527,6 +561,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 <div class="modal" id="viewOutOfStockmodal"></div>
 
 <div class="modal" id="viewAvailablemodal"></div>
+
+<div class="modal" id="viewAvailableColormodal"></div>
 
 <div class="modal" id="cashmodal">
     <div class="modal-dialog modal-fullscreen" role="document">
@@ -2002,20 +2038,23 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         }
 
         function performSearch(query) {
-            var color_id = $('#select-color').find('option:selected').val();
-            var type_id = $('#select-type').find('option:selected').val();
-            var line_id = $('#select-line').find('option:selected').val();
+            //var color_id = $('#select-color').find('option:selected').val();
+            var grade_id = $('#select-grade').find('option:selected').val();
+            var gauge_id = $('#select-gauge').find('option:selected').val();
             var category_id = $('#select-category').find('option:selected').val();
+            var profile_id = $('#select-profile').find('option:selected').val();
+            var type_id = $('#select-type').find('option:selected').val();
             var onlyInStock = $('#toggleActive').prop('checked');
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     query: query,
-                    color_id: color_id,
-                    type_id: type_id,
-                    line_id: line_id,
+                    grade_id: grade_id,
+                    gauge_id: gauge_id,
                     category_id: category_id,
+                    profile_id: profile_id,
+                    type_id: type_id,
                     onlyInStock: onlyInStock
                 },
                 success: function(response) {
@@ -2677,23 +2716,40 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
 
+        $(document).on('click', '#view_available_color', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/cashier_available_color_modal.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        fetch_available: "fetch_available"
+                    },
+                    success: function(response) {
+                        $('#viewAvailableColormodal').html(response);
+                        $('#viewAvailableColormodal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
         $('#rowsPerPage').change(function() {
             rowsPerPage = parseInt($(this).val());
             currentPage = 1;
             updateTable();
         });
 
-
-        $(document).on('input change', '#text-srh, #select-category, #select-type, #select-line', function() {
-            performSearch($('#text-srh').val());
-        });
-
-        $('#select-color').select2();
-        $('#select-type').select2();
-        $('#select-line').select2();
+        //$('#select-color').select2();
+        $('#select-grade').select2();
+        $('#select-gauge').select2();
         $('#select-category').select2();
+        $('#select-profile').select2();
+        $('#select-type').select2();
 
-        $(document).on('input change', '#text-srh, #select-color, #select-category, #select-type, #select-line, #toggleActive', function() {
+        $(document).on('input change', '#text-srh, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive', function() {
             performSearch($('#text-srh').val());
         });
 
