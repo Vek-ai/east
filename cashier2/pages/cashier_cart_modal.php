@@ -7,6 +7,9 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
+$trim_id = 4;
+$panel_id = 3;
+
 if(isset($_POST['fetch_cart'])){
     $discount = 0;
     $tax = 0;
@@ -26,6 +29,9 @@ if(isset($_POST['fetch_cart'])){
     }
     $delivery_price = getDeliveryCost();
     ?>
+    <!-- <script>
+        //console.log("<pre><?= print_r($_SESSION["cart"]) ?></pre>");
+    </script> -->
     <style>
         input[type="number"]::-webkit-inner-spin-button, 
         input[type="number"]::-webkit-outer-spin-button { 
@@ -143,10 +149,14 @@ if(isset($_POST['fetch_cart'])){
                             $total_length = $estimate_length + ($estimate_length_inch / 12);
 
                             $sold_by_feet = $product["sold_by_feet"];
-                            if($sold_by_feet == 1){
-                                $product_price = $values["quantity_cart"] * $total_length * $values["unit_price"];
-                            }else{
-                                $product_price = $values["quantity_cart"] * $values["unit_price"];
+                            $extra_cost_per_foot = 0;
+                            if (isset($values["panel_type"]) && $values["panel_type"] == 'vented') {
+                                $extra_cost_per_foot = 0.50;
+                            }
+                            if ($sold_by_feet == 1) {
+                                $product_price = $values["quantity_cart"] * $total_length * $values["unit_price"] + ($extra_cost_per_foot * $total_length);
+                            } else {
+                                $product_price = $values["quantity_cart"] * $values["unit_price"] + ($extra_cost_per_foot);
                             }
 
                             $color_id = $values["custom_color"];
@@ -259,7 +269,7 @@ if(isset($_POST['fetch_cart'])){
                                     </div>
                                 </td>
                                 <?php 
-                                    if($category_id == '46'){ // Panels ID
+                                    if($category_id == $panel_id){ // Panels ID
                                     ?>
                                     <td>
                                         <div class="d-flex flex-column align-items-center">
@@ -285,7 +295,7 @@ if(isset($_POST['fetch_cart'])){
                                         </div>
                                     </td>
                                     <?php
-                                    }else if($category_id == '43'){
+                                    }else if($category_id == $trim_id){
                                     ?>
                                     <td>
                                         <div class="d-flex flex-column align-items-center">

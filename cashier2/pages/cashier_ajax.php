@@ -7,8 +7,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
-$trim_id = 43;
-$panel_id = 46;
+$trim_id = 4;
+$panel_id = 3;
 
 function findCartKey($cart, $product_id, $line) {
     foreach ($cart as $key => $item) {
@@ -962,7 +962,8 @@ if (isset($_POST['add_to_cart'])) {
     $qty = isset($_POST['quantity_product']) ? intval($_POST['quantity_product']) : 0;
     $lengthFeet = isset($_POST['length_feet']) ? intval($_POST['length_feet']) : 0;
     $lengthInch = isset($_POST['length_inch']) ? intval($_POST['length_inch']) : 0;
-    $product_id = mysqli_real_escape_string($conn, string: $_POST['product_id']);
+    $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+    $panel_type = mysqli_real_escape_string($conn, $_POST['panel_type']);
     $line = 1;
 
     $quantityInStock = getProductStockInStock($product_id);
@@ -1000,7 +1001,8 @@ if (isset($_POST['add_to_cart'])) {
                 'estimate_length' => $lengthFeet,
                 'estimate_length_inch' => $lengthInch,
                 'usage' => 0,
-                'custom_color' => $row['color']
+                'custom_color' => $row['color'],
+                'panel_type' => $panel_type
             );
 
             $_SESSION["cart"][] = $item_array;

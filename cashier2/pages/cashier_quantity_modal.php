@@ -91,12 +91,25 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         <div class="mb-2 <?= (($category_id == $fastener_id) || $id == 21) ? '' : 'd-none';?>">
                             <label class="fs-5 fw-bold" for="quantity-product">Select Case</label>
                             <div class="input-group d-flex align-items-center">
-                                <select class="form-control mr-1" id="length_feet" name="length_feet" style="color:#ffffff;">
+                                <select class="form-control mr-1" id="case_type" name="case_type" style="color:#ffffff;">
                                     <option>100</option>
                                     <option>250</option>
                                     <option>500</option>
                                     <option>1000</option>
                                 </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel_options">
+                        <div class="mb-2 <?= ($category_id == $panel_id)  ? '' : 'd-none';?>">
+                            <label class="fs-5 fw-bold" for="quantity-product">Select Panel Type</label>
+                            <div class="input-group d-flex align-items-center">
+                                <div class="form-control mr-1">
+                                    <input type="radio" id="solid_panel" name="panel_type" value="solid" checked> Solid
+                                </div>
+                                <div class="form-control mr-1">
+                                    <input type="radio" id="vented_panel" name="panel_type" value="vented"> Vented
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -110,22 +123,26 @@ if(isset($_POST['fetch_prompt_quantity'])){
                                 const lengthFeet = parseInt($('#length_feet').val()) || 0;
                                 const lengthInch = parseInt($('#length_inch').val()) || 0;
                                 const totalLength = lengthFeet + lengthInch / 12;
+
+                                const panelType = $('input[name="panel_type"]:checked').val();
                                 
                                 const soldByFeet = <?= $sold_by_feet; ?>;
                                 const unitPrice = <?= $product_details["unit_price"]; ?>;
 
                                 let productPrice = 0;
+                                const extraCostPerFoot = panelType === "vented" ? 0.50 : 0;
 
                                 if (soldByFeet == 1) {
-                                    productPrice = quantity * totalLength * unitPrice;
+                                    productPrice = quantity * totalLength * (unitPrice + extraCostPerFoot);
                                 } else {
-                                    productPrice = quantity * unitPrice;
+                                    console.log(extraCostPerFoot)
+                                    productPrice = quantity * unitPrice + (extraCostPerFoot);
                                 }
 
                                 $('#product-cost').text(productPrice.toFixed(2));
                             }
-
                             $('#quantity-product, #length_feet, #length_inch').on('input', calculateProductCost);
+                            $('input[name="panel_type"]').on('change', calculateProductCost);
                         });
                     </script>
                     <?php
