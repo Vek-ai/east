@@ -978,9 +978,7 @@ if (isset($_POST['add_to_cart'])) {
 
     if ($key !== false) {
         $requestedQuantity = max($qty, 1);
-        echo "ID: $product_id, Line: $line, Key: $key, Quantity: $requestedQuantity";
         $_SESSION["cart"][$key]['quantity_cart'] = min($requestedQuantity, $totalStock);
-        echo $_SESSION["cart"][$key]['quantity_cart'];
     } else {
         $query = "SELECT product_id, product_item, unit_price, width, length, color FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $query);
@@ -1006,10 +1004,10 @@ if (isset($_POST['add_to_cart'])) {
             );
 
             $_SESSION["cart"][] = $item_array;
-            echo $item_quantity;
         }
     }
 
+    echo 'success';
 }
 
 
