@@ -29,6 +29,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     <?php
                     if (!empty($product_details)) {
                         $category_id = $product_details['product_category'];
+                        $sold_by_feet = $product_details["sold_by_feet"];
                     ?>
                     <input type="hidden" id="product_id" name="product_id" value="<?= $id ?>" />
                     <div class="quantity_input">
@@ -51,7 +52,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         </div>
                     </div>
                     <div class="length_input">
-                        <div class="mb-2">
+                        <div class="mb-2 <?= empty($sold_by_feet) ? 'd-none' : '';?>">
                             <fieldset class="p-0 position-relative">
                                 <legend class="fs-5 fw-bold">Length</legend>
                                 <div class="input-group d-flex align-items-center">
@@ -87,6 +88,17 @@ if(isset($_POST['fetch_prompt_quantity'])){
                                 </div>
                             </fieldset>
                         </div>
+                        <div class="mb-2 <?= (($category_id == $fastener_id) || $id == 21) ? '' : 'd-none';?>">
+                            <label class="fs-5 fw-bold" for="quantity-product">Select Case</label>
+                            <div class="input-group d-flex align-items-center">
+                                <select class="form-control mr-1" id="length_feet" name="length_feet" style="color:#ffffff;">
+                                    <option>100</option>
+                                    <option>250</option>
+                                    <option>500</option>
+                                    <option>1000</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="product_cost_display">
                         <h5 class="text-center pt-3 fs-5 fw-bold">Product Cost: $<span id="product-cost">0.00</span></h5>
@@ -99,7 +111,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                                 const lengthInch = parseInt($('#length_inch').val()) || 0;
                                 const totalLength = lengthFeet + lengthInch / 12;
                                 
-                                const soldByFeet = <?= $product_details["sold_by_feet"]; ?>;
+                                const soldByFeet = <?= $sold_by_feet; ?>;
                                 const unitPrice = <?= $product_details["unit_price"]; ?>;
 
                                 let productPrice = 0;
