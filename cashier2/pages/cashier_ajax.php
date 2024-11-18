@@ -290,7 +290,7 @@ if (isset($_REQUEST['query'])) {
                 </td>
                 
                 <td>
-                    <button class="btn btn-sm btn-primary btn-add-to-cart" type="button" data-id="'.$row_product['product_id'].'" onClick="addtocart(this)">Add to Cart</button>
+                    <button class="btn btn-sm btn-primary btn-add-to-cart" type="button" data-id="'.$row_product['product_id'].'" id="add-to-cart-btn">Add to Cart</button>
                 </td>
             </tr>';
         }
@@ -957,4 +957,58 @@ if (isset($_POST['change_color'])) {
 
     echo "success";
 }
+
+if (isset($_POST['add_to_cart'])) {
+    $qty = isset($_POST['quantity_product']) ? intval($_POST['quantity_product']) : 0;
+    $lengthFeet = isset($_POST['length_feet']) ? intval($_POST['length_feet']) : 0;
+    $lengthInch = isset($_POST['length_inch']) ? intval($_POST['length_inch']) : 0;
+    $product_id = mysqli_real_escape_string($conn, string: $_POST['product_id']);
+    $line = 1;
+
+    $quantityInStock = getProductStockInStock($product_id);
+    $totalQuantity = getProductStockTotal($product_id);
+    $totalStock = $quantityInStock + $totalQuantity;
+
+    if (!isset($_SESSION["cart"])) {
+        $_SESSION["cart"] = array();
+    }
+
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+
+    if ($key !== false) {
+        $requestedQuantity = max($qty, 1);
+        echo "ID: $product_id, Line: $line, Key: $key, Quantity: $requestedQuantity";
+        $_SESSION["cart"][$key]['quantity_cart'] = min($requestedQuantity, $totalStock);
+        echo $_SESSION["cart"][$key]['quantity_cart'];
+    } else {
+        $query = "SELECT product_id, product_item, unit_price, width, length, color FROM product WHERE product_id = '$product_id'";
+        $result = mysqli_query($conn, $query);
+
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $item_quantity = min($qty, $totalStock);
+
+            $item_array = array(
+                'product_id' => $row['product_id'],
+                'product_item' => $row['product_item'],
+                'unit_price' => $row['unit_price'],
+                'line' => 1,
+                'quantity_ttl' => $totalStock,
+                'quantity_in_stock' => $quantityInStock,
+                'quantity_cart' => $item_quantity,
+                'estimate_width' => $row['width'],
+                'estimate_length' => $lengthFeet,
+                'estimate_length_inch' => $lengthInch,
+                'usage' => 0,
+                'custom_color' => $row['color']
+            );
+
+            $_SESSION["cart"][] = $item_array;
+            echo $item_quantity;
+        }
+    }
+
+}
+
+
 ?>

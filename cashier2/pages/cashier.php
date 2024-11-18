@@ -766,6 +766,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
 <div class="modal fade" id="chng-color-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
 
+<div class="modal fade" id="prompt-quantity-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
+
 <script>
     let map1;
     let marker1;
@@ -1371,7 +1373,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
-                $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1401,7 +1402,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
-                $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1432,7 +1432,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
-                $("#thegrandtotal").load(location.href + " #thegrandtotal");
                 
             },
             error: function(xhr, status, error) {
@@ -1464,7 +1463,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
-                $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1491,7 +1489,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
-                $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function() {}
         });
@@ -1513,7 +1510,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
-                $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -2133,6 +2129,26 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             
         });
         
+        $(document).on("click", "#add-to-cart-btn", function() {
+            var id = $(this).data('id');
+            $.ajax({
+                url: 'pages/cashier_quantity_modal.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    fetch_prompt_quantity: 'fetch_prompt_quantity'
+                },
+                success: function(response) {
+                    $('#prompt-quantity-modal').html(response);
+                    $('#prompt-quantity-modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+        
+        
         $(document).on('click', '#save_estimate', function(event) {
             var discount = $('#est_discount').val();
             var job_name = $('#est_job_name').val();
@@ -2720,19 +2736,53 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             event.preventDefault();
             var id = $(this).data('id');
             $.ajax({
-                    url: 'pages/cashier_available_color_modal.php',
-                    type: 'POST',
-                    data: {
-                        id: id,
-                        fetch_available: "fetch_available"
-                    },
-                    success: function(response) {
-                        $('#viewAvailableColormodal').html(response);
-                        $('#viewAvailableColormodal').modal('show');
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                url: 'pages/cashier_available_color_modal.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    fetch_available: "fetch_available"
+                },
+                success: function(response) {
+                    $('#viewAvailableColormodal').html(response);
+                    $('#viewAvailableColormodal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('submit', '#quantity_form', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            formData.append('add_to_cart', 'add_to_cart');
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    console.log(response);
+                    $('.modal').modal("hide");
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Added to Cart.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                    }else{
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
                     }
+                    loadCart();
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', xhr.responseText);
+                }
             });
         });
 
