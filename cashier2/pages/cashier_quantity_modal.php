@@ -12,7 +12,7 @@ $lumber_id = 1;
 $truss_id = 2;
 $acc_id = 6;
 $fastener_id = 5;
-$stiffening_rib_id = 99999;
+$stiffening_rib_id = 7;
 if(isset($_POST['fetch_prompt_quantity'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     
