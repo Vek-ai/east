@@ -40,7 +40,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $newLine++;
         }
 
-        $query = "SELECT product_id, product_item, unit_price, width, length FROM product WHERE product_id = '$product_id'";
+        $query = "SELECT product_id, product_item, unit_price, width, weight, length FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) > 0) {
@@ -53,6 +53,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $estimate_length = floor($length_float);
             $estimate_length_inch = $length_float - $estimate_length;
 
+            $weight = floatval($row['weight']);
+
             $item_array = array(
                 'product_id' => $row['product_id'],
                 'product_item' => $row['product_item'],
@@ -64,7 +66,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'estimate_width' => $row['width'],
                 'estimate_length' => '',
                 'estimate_length_inch' => '',
-                'usage' => 0
+                'usage' => 0,
+                'weight' => $weight
             );
 
             $_SESSION["cart"][] = $item_array;
@@ -95,12 +98,14 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         }
     } else {
         // Product does not exist in cart
-        $query = "SELECT product_id, product_item, unit_price, width, length FROM product WHERE product_id = '$product_id'";
+        $query = "SELECT product_id, product_item, unit_price, width, weight, length FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
             $item_quantity = min($qty, $totalStock);
+
+            $weight = floatval($row['weight']);
 
             $item_array = array(
                 'product_id' => $row['product_id'],
@@ -113,7 +118,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'estimate_width' => $row['width'],
                 'estimate_length' => '',
                 'estimate_length_inch' => '',
-                'usage' => 0
+                'usage' => 0,
+                'weight' => $weight
             );
 
             $_SESSION["cart"][] = $item_array;

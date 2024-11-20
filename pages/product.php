@@ -396,7 +396,7 @@ $picture_path = "images/product/product.jpg";
                                 <div class="col-md-6 opt_field" data-id="13">
                                     <div class="mb-3">
                                     <label class="form-label">Weight</label>
-                                    <input type="text" id="weight" name="weight" class="form-control"  />
+                                    <input type="number" id="weight" name="weight" class="form-control"  />
                                     </div>
                                 </div>
                                 <div class="col-md-6 opt_field" data-id="14">

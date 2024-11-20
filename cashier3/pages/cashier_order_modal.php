@@ -118,6 +118,7 @@ if(isset($_POST['fetch_order'])){
                             $total_customer_price = 0;
                             $totalquantity = 0;
                             $no = 1;
+                            $total_weight = 0;
                             if (!empty($_SESSION["cart"])) {
                                 foreach ($_SESSION["cart"] as $keys => $values) {
                                     $data_id = $values["product_id"];
@@ -359,13 +360,14 @@ if(isset($_POST['fetch_order'])){
                                     $total += $subtotal;
                                     $total_customer_price += $customer_price;
                                     $no++;
+                                    $total_weight += $values["weight"] * $values["quantity_cart"];
                                 }
                             }
                             $_SESSION["total_quantity"] = $totalquantity;
                             $_SESSION["grandtotal"] = $total;
                             ?>
                         </tbody>
-
+                        <script>console.log('<?= print_r($_SESSION["cart"]) ?>')</script>
                         <tfoot>
                             <tr>
                                 <td colspan="1"></td>
@@ -439,6 +441,10 @@ if(isset($_POST['fetch_order'])){
                                                 <td class="text-right border-bottom">
                                                     <input type="number" id="delivery_amt" name="delivery_amt" value="<?= number_format($delivery_price, 2) ?>" class="text-right form-control" placeholder="Delivery Amount">
                                                 </td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-right border-bottom">Shipping Weight</th>
+                                                <td class="text-right border-bottom"><span id="total_weight"><?= number_format(floatval($total_weight), 2) ?></span></td>
                                             </tr>
                                             <tr>
                                                 <th class="text-right border-bottom">Sales Tax</th>

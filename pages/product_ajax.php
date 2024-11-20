@@ -940,7 +940,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="col-md-6 opt_field_update" data-id="13">
                                         <div class="mb-3">
                                         <label class="form-label">Weight</label>
-                                        <input type="text" id="weight" name="weight" class="form-control" value="<?= $row['weight']?>" />
+                                        <input type="number" id="weight" name="weight" class="form-control" value="<?= $row['weight']?>" />
                                         </div>
                                     </div>
                                     <div class="col-md-6 opt_field_update" data-id="14">
