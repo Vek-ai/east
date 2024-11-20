@@ -104,17 +104,18 @@ if(isset($_POST['fetch_prompt_quantity'])){
                             if($category_id == $stiffening_rib_id) {
                                 ?>
                                 <div class="mb-2">
-                                    <div class="input-group d-flex align-items-center">
-                                        <div class="me-2">
-                                            <label class="fs-5 fw-bold" for="stiffening-rib-product">Standing Seam</label>
-                                            <select class="form-control mr-1" id="stiff_stand_seam" name="stiff_stand_seam" style="color:#ffffff;">
+                                    <div class="input-group d-flex align-items-center flex-wrap w-100">
+                                        <div class="me-2 flex-grow-1">
+                                            <label class="fs-5 fw-bold" for="stiff_stand_seam">Standing Seam</label>
+                                            <select class="form-control" id="stiff_stand_seam" name="stiff_stand_seam" style="color:#ffffff; width: 100%;">
                                                 <option value="striated" selected>Striated</option>
+                                                <option value="flat">Flat</option>
                                                 <option value="minor_rib">Minor Rib</option>
                                             </select>
                                         </div>
-                                        <div class="me-2">
-                                            <label class="fs-5 fw-bold" for="stiffening-rib-product">Board and Batten</label>
-                                            <select class="form-control mr-1" id="stiff_board_batten" name="stiff_board_batten" style="color:#ffffff;">
+                                        <div class="me-2 flex-grow-1">
+                                            <label class="fs-5 fw-bold" for="stiff_board_batten">Board and Batten</label>
+                                            <select class="form-control" id="stiff_board_batten" name="stiff_board_batten" style="color:#ffffff; width: 100%;">
                                                 <option value="flat" selected>Flat</option>
                                                 <option value="minor_rib">Minor Rib</option>
                                             </select>
