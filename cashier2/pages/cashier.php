@@ -1432,7 +1432,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
-                
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -2147,8 +2146,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 }
             });
         });
-        
-        
+              
         $(document).on('click', '#save_estimate', function(event) {
             var discount = $('#est_discount').val();
             var job_name = $('#est_job_name').val();

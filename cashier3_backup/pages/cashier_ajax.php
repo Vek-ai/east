@@ -7,8 +7,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
-$trim_id = 4;
-$panel_id = 3;
+$trim_id = 43;
+$panel_id = 46;
 
 function findCartKey($cart, $product_id, $line) {
     foreach ($cart as $key => $item) {
@@ -40,7 +40,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $newLine++;
         }
 
-        $query = "SELECT product_id, product_item, unit_price, width, color length FROM product WHERE product_id = '$product_id'";
+        $query = "SELECT product_id, product_item, unit_price, width, weight, length FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) > 0) {
@@ -52,6 +52,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $length_float = floatval($length_clean);
             $estimate_length = floor($length_float);
             $estimate_length_inch = $length_float - $estimate_length;
+
+            $weight = floatval($row['weight']);
 
             $item_array = array(
                 'product_id' => $row['product_id'],
@@ -65,7 +67,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'estimate_length' => '',
                 'estimate_length_inch' => '',
                 'usage' => 0,
-                'custom_color' => $row['color']
+                'weight' => $weight
             );
 
             $_SESSION["cart"][] = $item_array;
@@ -96,12 +98,14 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         }
     } else {
         // Product does not exist in cart
-        $query = "SELECT product_id, product_item, unit_price, width, length, color FROM product WHERE product_id = '$product_id'";
+        $query = "SELECT product_id, product_item, unit_price, width, weight, length FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
             $item_quantity = min($qty, $totalStock);
+
+            $weight = floatval($row['weight']);
 
             $item_array = array(
                 'product_id' => $row['product_id'],
@@ -115,7 +119,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'estimate_length' => '',
                 'estimate_length_inch' => '',
                 'usage' => 0,
-                'custom_color' => $row['color']
+                'weight' => $weight
             );
 
             $_SESSION["cart"][] = $item_array;
@@ -143,11 +147,9 @@ if (isset($_POST['deleteitem'])) {
 
 if (isset($_REQUEST['query'])) {
     $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
-    //$color_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['color_id']) : '';
-    $grade_id = isset($_REQUEST['grade_id']) ? mysqli_real_escape_string($conn, $_REQUEST['grade_id']) : '';
-    $gauge_id = isset($_REQUEST['gauge_id']) ? mysqli_real_escape_string($conn, $_REQUEST['gauge_id']) : '';
+    $color_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['color_id']) : '';
     $type_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['type_id']) : '';
-    $profile_id = isset($_REQUEST['profile_id']) ? mysqli_real_escape_string($conn, $_REQUEST['profile_id']) : '';
+    $line_id = isset($_REQUEST['line_id']) ? mysqli_real_escape_string($conn, $_REQUEST['line_id']) : '';
     $category_id = isset($_REQUEST['category_id']) ? mysqli_real_escape_string($conn, $_REQUEST['category_id']) : '';
     $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
     
@@ -168,20 +170,16 @@ if (isset($_REQUEST['query'])) {
         $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
     }
 
-    if (!empty($grade_id)) {
-        $query_product .= " AND p.grade = '$grade_id'";
-    }
-
-    if (!empty($gauge_id)) {
-        $query_product .= " AND p.gauge = '$gauge_id'";
+    if (!empty($color_id)) {
+        $query_product .= " AND p.color = '$color_id'";
     }
 
     if (!empty($type_id)) {
         $query_product .= " AND p.product_type = '$type_id'";
     }
 
-    if (!empty($profile_id)) {
-        $query_product .= " AND p.profile = '$profile_id'";
+    if (!empty($line_id)) {
+        $query_product .= " AND p.product_line = '$line_id'";
     }
 
     if (!empty($category_id)) {
@@ -256,6 +254,8 @@ if (isset($_REQUEST['query'])) {
                 }
             }
                      
+            
+
             $default_image = '../images/product/product.jpg';
 
             $picture_path = !empty($row_product['main_image'])
@@ -266,7 +266,7 @@ if (isset($_REQUEST['query'])) {
             <tr>
                 <td>
                     <a href="javascript:void(0);" id="view_product_details" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
-                        <div class="d-flex align-items-center" >
+                        <div class="d-flex align-items-center">
                             <img src="'.$picture_path.'" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                             <div class="ms-3">
                                 <h6 class="fw-semibold mb-0 fs-4">'. $row_product['product_item'] .' ' .$dimensions .'</h6>
@@ -276,21 +276,19 @@ if (isset($_REQUEST['query'])) {
                 </td>
                 <td>
                     <div class="d-flex mb-0 gap-8">
-                        <a href="javascript:void(0)" id="view_available_color" class="rounded-circle d-block p-6" data-id="'.$row_product['product_id'].'" style="background-color:' .getColorHexFromColorID($row_product['color']) .'"></a> '
+                        <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:' .getColorHexFromColorID($row_product['color']) .'"></a> '
                         .getColorName($row_product['color']) .'
                     </div>
                 </td>
-                <td><p class="mb-0">'. getGradeName($row_product['grade']) .'</p></td>
-                <td><p class="mb-0">'. getGaugeName($row_product['gauge']) .'</p></td>
                 <td><p class="mb-0">'. getProductTypeName($row_product['product_type']) .'</p></td>
-                <td><p class="mb-0">'. getProfileTypeName($row_product['profile']) .'</p></td>
+                <td><p class="mb-0">'. getProductLineName($row_product['product_line']) .'</p></td>
                 <td><p class="mb-0">'. getProductCategoryName($row_product['product_category']) .'</p></td>
                 <td>
                     <div class="d-flex align-items-center">'.$stock_text.'</div>
                 </td>
-                
+                <td><h6 class="mb-0 fs-4">$'. $row_product['unit_cost'] .'</h6></td>
                 <td>
-                    <button class="btn btn-sm btn-primary btn-add-to-cart" type="button" data-id="'.$row_product['product_id'].'" id="add-to-cart-btn">Add to Cart</button>
+                    <button class="btn btn-primary btn-add-to-cart" type="button" data-id="'.$row_product['product_id'].'" onClick="addtocart(this)">Add to Cart</button>
                 </td>
             </tr>';
         }
@@ -384,18 +382,6 @@ if (isset($_POST['set_estimate_length_inch'])) {
         $_SESSION["cart"][$key]['estimate_length_inch'] = !empty($length_inch) ? $length_inch : "";
     }
     echo "Length-inch ID: $product_id, Line: $line, Key: $key";
-}
-
-if (isset($_POST['set_color'])) {
-    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
-    $line = mysqli_real_escape_string($conn, $_POST['line']);
-    $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
-
-    $key = findCartKey($_SESSION["cart"], $product_id, $line);
-    if ($key !== false && isset($_SESSION["cart"][$key])) {
-        $_SESSION["cart"][$key]['custom_color'] = !empty($color_id) ? $color_id : "";
-    }
-    echo "Color id: $color_id, Prod id: $product_id, Line: $line, Key: $key";
 }
 
 if (isset($_POST['save_estimate'])) {
@@ -638,7 +624,6 @@ if (isset($_POST['save_order'])) {
             $estimate_hem = floatval($item['estimate_hem']);
             $estimate_length = floatval($item['estimate_length']);
             $estimate_length_inch = floatval($item['estimate_length_inch']);
-            $custom_color = $item['custom_color'];
             $is_sold_by_feet = intval($product_details['sold_by_feet']);
 
             $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
@@ -647,10 +632,10 @@ if (isset($_POST['save_order'])) {
             $discounted_price = $actual_price * (1 - $discount);
             $product_category = intval($product_details['product_category']);
 
-            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color')";
+            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category')";
         }
 
-        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color) VALUES ";
+        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
@@ -692,9 +677,6 @@ if (isset($_POST['save_order'])) {
     echo json_encode($response);
 }
 
-if (isset($_POST['clear_cart'])) {
-    unset($_SESSION['cart']);
-}
 
 if (isset($_POST['search_customer'])) {
     $search = mysqli_real_escape_string($conn, $_POST['search_customer']);
@@ -811,204 +793,11 @@ if (isset($_POST['return_product'])) {
     }
 }
 
-if(isset($_POST['fetch_change_color_modal'])){
-    if (!empty($_SESSION["cart"])) {
-        $cart_colors = array();
-        $in_stock_colors = array();
-        $category_ids = array();
-        foreach ($_SESSION["cart"] as $keys => $values) {
-            $cart_colors[] = $values["custom_color"];
-
-            $product_details = getProductDetails($values["product_id"]);
-            $category_ids[] = $product_details["product_category"];
-
-            $query_colors = "SELECT color_id FROM inventory WHERE Product_id = '".$values["product_id"]."'";
-            $result_colors = mysqli_query($conn, $query_colors);            
-            while ($row_colors = mysqli_fetch_array($result_colors)) {
-                $in_stock_colors[] = $row_colors['color_id'];
-            }
-
-            if ($product_details["product_category"] == $trim_id || $product_details["product_category"] == $panel_id) {
-                $sql = "SELECT COUNT(*) AS count FROM coil WHERE color = '".$values["custom_color"]."'";
-                $result = mysqli_query($conn, $sql);
-
-                if ($result) {
-                    $row = mysqli_fetch_assoc($result);
-                    if ($row['count'] > 0) {
-                        $in_stock_colors[] = $row['color'];
-                    }
-                }
-            }
-        }
-        $cart_colors = array_unique($cart_colors);
-        $in_stock_colors = array_unique($in_stock_colors);
-        $category_ids = array_unique($category_ids);
-    }
-    ?>
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Change Color</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                <div id="change_color_container" class="d-flex align-items-center justify-content-between w-100">
-                    <div class="col-md-5">
-                        <label class="form-label" for="orig-colors" style="display:block; width: 100%;">Change Color From:</label>
-                        <select id="orig-colors" class="form-select">
-                            <option value="">Select Original Color</option>
-                            <?php
-                            foreach ($cart_colors as $color_id) {
-                                echo '<option value="' . $color_id . '" data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>
-                    <span class="px-2"> TO </span>
-                    <div class="col-md-5">
-                        <label class="form-label" for="in-stock-colors" style="display:block; width: 100%;">New Color:</label>
-                        <select id="in-stock-colors" class="form-select">
-                            <option value="">Select Available Color</option>
-                            <?php
-                            foreach ($in_stock_colors as $color_id) {
-                                echo '<option value="' . $color_id . '" data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>
-                </div>
-
-                    <div id="change_category_container" class="mt-4">
-                        <label class="form-label" for="category_id" style="display:block; width: 100%;">Only for this category (Optional)</label>
-                        <select id="category_id" class="form-select">
-                            <option value="">Select Available Category</option>
-                            <?php
-                            foreach ($category_ids as $category_id) {
-                                echo '<option value="' . $category_id . '">' . getProductCategoryName($category_id) . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <div class="form-actions">
-                        <div class="card-body">
-                            <button type="button" id="save_color_change" class="btn bg-success-subtle text-light waves-effect text-start">Save</button>
-                            <button type="button" class="btn bg-danger-subtle text-light waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <script>
-            $(document).ready(function() {
-                $("#category_id").select2({
-                    width: '300px',
-                    placeholder: "Select Category",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('#change_category_container'),
-                    templateResult: formatOption,
-                    templateSelection: formatOption
-                });
-
-                $("#orig-colors").select2({
-                    width: '300px',
-                    placeholder: "Select Color...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('#change_color_container'),
-                    templateResult: formatOption,
-                    templateSelection: formatOption
-                });
-
-                $("#in-stock-colors").select2({
-                    width: '300px',
-                    placeholder: "Select Color...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('#change_color_container'),
-                    templateResult: formatOption,
-                    templateSelection: formatOption
-                });
-            });
-        </script>
-
-    <?php
-}
-
-if (isset($_POST['change_color'])) {
-    $orig_color = $_POST['orig_color'];
-    $in_stock_color = $_POST['in_stock_color'];
-    $selected_category_id = $_POST['category_id'];
-
-    foreach ($_SESSION['cart'] as $key => &$item) {
-        if ($item['custom_color'] == $orig_color) {
-            if (!empty($selected_category_id)) {
-                $product_details = getProductDetails($item['product_id']);
-                if ($product_details['product_category'] == $selected_category_id) {
-                    $item['custom_color'] = $in_stock_color;
-                }
-            } else {
-                $item['custom_color'] = $in_stock_color;
-            }
-        }
-    }
-    unset($item);
-
-    echo "success";
-}
-
-if (isset($_POST['add_to_cart'])) {
-    $qty = isset($_POST['quantity_product']) ? intval($_POST['quantity_product']) : 0;
-    $lengthFeet = isset($_POST['length_feet']) ? intval($_POST['length_feet']) : 0;
-    $lengthInch = isset($_POST['length_inch']) ? intval($_POST['length_inch']) : 0;
-    $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
-    $panel_type = mysqli_real_escape_string($conn, $_POST['panel_type']);
-    $line = 1;
-
-    $quantityInStock = getProductStockInStock($product_id);
-    $totalQuantity = getProductStockTotal($product_id);
-    $totalStock = $quantityInStock + $totalQuantity;
-
-    if (!isset($_SESSION["cart"])) {
-        $_SESSION["cart"] = array();
-    }
-
-    $key = findCartKey($_SESSION["cart"], $product_id, $line);
-
-    if ($key !== false) {
-        $requestedQuantity = max($qty, 1);
-        $_SESSION["cart"][$key]['quantity_cart'] = min($requestedQuantity, $totalStock);
-    } else {
-        $query = "SELECT product_id, product_item, unit_price, width, length, color FROM product WHERE product_id = '$product_id'";
-        $result = mysqli_query($conn, $query);
-
-        if (mysqli_num_rows($result) > 0) {
-            $row = mysqli_fetch_assoc($result);
-            $item_quantity = min($qty, $totalStock);
-
-            $item_array = array(
-                'product_id' => $row['product_id'],
-                'product_item' => $row['product_item'],
-                'unit_price' => $row['unit_price'],
-                'line' => 1,
-                'quantity_ttl' => $totalStock,
-                'quantity_in_stock' => $quantityInStock,
-                'quantity_cart' => $item_quantity,
-                'estimate_width' => $row['width'],
-                'estimate_length' => $lengthFeet,
-                'estimate_length_inch' => $lengthInch,
-                'usage' => 0,
-                'custom_color' => $row['color'],
-                'panel_type' => $panel_type
-            );
-
-            $_SESSION["cart"][] = $item_array;
-        }
-    }
-
-    echo 'success';
-}
 
 
-?>
+
+
+
+
+
+

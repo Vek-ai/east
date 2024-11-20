@@ -40,7 +40,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $newLine++;
         }
 
-        $query = "SELECT product_id, product_item, unit_price, width, color length FROM product WHERE product_id = '$product_id'";
+        $query = "SELECT product_id, product_item, unit_price, width, color, length, weight FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) > 0) {
@@ -52,6 +52,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $length_float = floatval($length_clean);
             $estimate_length = floor($length_float);
             $estimate_length_inch = $length_float - $estimate_length;
+
+            $weight = floatval($row['weight']);
 
             $item_array = array(
                 'product_id' => $row['product_id'],
@@ -65,7 +67,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'estimate_length' => '',
                 'estimate_length_inch' => '',
                 'usage' => 0,
-                'custom_color' => $row['color']
+                'custom_color' => $row['color'],
+                'weight' => $weight
             );
 
             $_SESSION["cart"][] = $item_array;
@@ -96,12 +99,14 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         }
     } else {
         // Product does not exist in cart
-        $query = "SELECT product_id, product_item, unit_price, width, length, color FROM product WHERE product_id = '$product_id'";
+        $query = "SELECT product_id, product_item, unit_price, width, length, color, weight FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
             $item_quantity = min($qty, $totalStock);
+
+            $weight = floatval($row['weight']);
 
             $item_array = array(
                 'product_id' => $row['product_id'],
@@ -115,7 +120,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'estimate_length' => '',
                 'estimate_length_inch' => '',
                 'usage' => 0,
-                'custom_color' => $row['color']
+                'custom_color' => $row['color'],
+                'weight' => $weight
             );
 
             $_SESSION["cart"][] = $item_array;
@@ -980,12 +986,14 @@ if (isset($_POST['add_to_cart'])) {
         $requestedQuantity = max($qty, 1);
         $_SESSION["cart"][$key]['quantity_cart'] = min($requestedQuantity, $totalStock);
     } else {
-        $query = "SELECT product_id, product_item, unit_price, width, length, color FROM product WHERE product_id = '$product_id'";
+        $query = "SELECT product_id, product_item, unit_price, width, length, color, weight FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
             $item_quantity = min($qty, $totalStock);
+
+            $weight = floatval($row['weight']);
 
             $item_array = array(
                 'product_id' => $row['product_id'],
@@ -1000,7 +1008,8 @@ if (isset($_POST['add_to_cart'])) {
                 'estimate_length_inch' => $lengthInch,
                 'usage' => 0,
                 'custom_color' => $row['color'],
-                'panel_type' => $panel_type
+                'panel_type' => $panel_type,
+                'weight' => $weight
             );
 
             $_SESSION["cart"][] = $item_array;

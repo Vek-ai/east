@@ -28,7 +28,7 @@ if(isset($_REQUEST['search_customer'])){
         while ($row = mysqli_fetch_assoc($result)) {
             ?>
             <div class="message-body" data-simplebar>
-                <a href="?page=customer-dashboard&id=<?= $row['customer_id'] ?>" target="_blank" class="p-3 d-flex align-items-center dropdown-item gap-3  border-bottom">
+                <a href="?page=customer-dashboard&id=<?= $row['customer_id'] ?>" class="p-3 d-flex align-items-center dropdown-item gap-3  border-bottom">
                     <span class="flex-shrink-0 bg-secondary-subtle rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 text-secondary">
                         <iconify-icon icon="ic:round-account-circle"></iconify-icon>
                     </span>
@@ -51,33 +51,4 @@ if(isset($_REQUEST['search_customer'])){
         <?php
     }
 }
-
-if (isset($_GET['fetch_cart'])) {
-    header('Content-Type: application/json');
-    
-    $cartItems = [];
-
-    if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
-        foreach ($_SESSION['cart'] as $item) {
-            $product_details = getProductDetails($item['product_id']);
-            $default_image = '../images/product/product.jpg';
-            $picture_path = isset($product_details['main_image']) && !empty($product_details['main_image'])
-                ? "../" . $product_details['main_image']
-                : $default_image;
-
-            $cartItems[] = [
-                'img_src' => $picture_path,
-                'item_name' => $item['product_item'],
-                'color_hex' => getColorHexFromColorID($item['custom_color']),
-                'quantity' => $item['quantity_cart'],
-                'product_id' => $item['product_id'],
-                'line' => $item['line']
-            ];
-        }
-    }
-
-    echo json_encode(['cart_items' => $cartItems]);
-}
-
-$conn->close();
 ?>

@@ -7,9 +7,6 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
-$trim_id = 4;
-$panel_id = 3;
-
 if(isset($_POST['fetch_estimate'])){
     $discount = 0;
     $tax = 0;
@@ -39,29 +36,27 @@ if(isset($_POST['fetch_estimate'])){
         }
 
         .table-fixed th:nth-child(1),
-        .table-fixed td:nth-child(1) { width: 5%; }
+        .table-fixed td:nth-child(1) { width: 8%; }
         .table-fixed th:nth-child(2),
         .table-fixed td:nth-child(2) { width: 15%; }
         .table-fixed th:nth-child(3),
-        .table-fixed td:nth-child(3) { width: 7%; }
+        .table-fixed td:nth-child(3) { width: 8%; }
         .table-fixed th:nth-child(4),
         .table-fixed td:nth-child(4) { width: 8%; }
         .table-fixed th:nth-child(5),
-        .table-fixed td:nth-child(5) { width: 8%; }
+        .table-fixed td:nth-child(5) { width: 10%; }
         .table-fixed th:nth-child(6),
-        .table-fixed td:nth-child(6) { width: 11%; }
+        .table-fixed td:nth-child(6) { width: 10%; }
         .table-fixed th:nth-child(7),
-        .table-fixed td:nth-child(7) { width: 11%; }
+        .table-fixed td:nth-child(7) { width: 10%; }
         .table-fixed th:nth-child(8),
         .table-fixed td:nth-child(8) { width: 11%; }
         .table-fixed th:nth-child(9),
-        .table-fixed td:nth-child(9) { width: 7%; }
+        .table-fixed td:nth-child(9) { width: 6%; }
         .table-fixed th:nth-child(10),
         .table-fixed td:nth-child(10) { width: 7%; }
         .table-fixed th:nth-child(11),
         .table-fixed td:nth-child(11) { width: 7%; }
-        .table-fixed th:nth-child(12),
-        .table-fixed td:nth-child(12) { width: 3%; }
 
         input[readonly] {
             border: none;               
@@ -79,7 +74,7 @@ if(isset($_POST['fetch_estimate'])){
                 <table id="estimateTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
                     <thead>
                         <tr>
-                            <th class="small" width="5%">Image</th>
+                            <th width="5%">Image</th>
                             <th width="10%">Description</th>
                             <th width="5%" class="text-center">Color</th>
                             <th width="5%" class="text-center">Grade</th>
@@ -89,7 +84,7 @@ if(isset($_POST['fetch_estimate'])){
                             <th width="30%" class="text-center">Dimensions<br>(Width X Height)</th>
                             <th width="5%" class="text-center">Stock</th>
                             <th width="7%" class="text-center">Price</th>
-                            <th width="7%" class="text-center small">Customer<br>Price</th>
+                            <th width="7%" class="text-center">Customer<br>Price</th>
                             <th width="1%" class="text-center"> </th>
                         </tr>
                     </thead>
@@ -99,7 +94,6 @@ if(isset($_POST['fetch_estimate'])){
                         $total_customer_price = 0;
                         $totalquantity = 0;
                         $no = 1;
-                        $total_weight = 0;
                         if (!empty($_SESSION["cart"])) {
                             foreach ($_SESSION["cart"] as $keys => $values) {
                                 $data_id = $values["product_id"];
@@ -133,17 +127,11 @@ if(isset($_POST['fetch_estimate'])){
                                 $total_length = $estimate_length + ($estimate_length_inch / 12);
 
                                 $sold_by_feet = $product["sold_by_feet"];
-                                $extra_cost_per_foot = 0;
-                                if (isset($values["panel_type"]) && $values["panel_type"] == 'vented') {
-                                    $extra_cost_per_foot = 0.50;
+                                if($sold_by_feet == 1){
+                                    $product_price = $values["quantity_cart"] * $total_length * $values["unit_price"];
+                                }else{
+                                    $product_price = $values["quantity_cart"] * $values["unit_price"];
                                 }
-                                if ($sold_by_feet == 1) {
-                                    $product_price = $values["quantity_cart"] * $total_length * $values["unit_price"] + ($extra_cost_per_foot * $total_length);
-                                } else {
-                                    $product_price = $values["quantity_cart"] * $values["unit_price"] + ($extra_cost_per_foot);
-                                }
-
-                                $color_id = $values["custom_color"];
                             ?>
                                 <tr>
                                     <td>
@@ -178,26 +166,8 @@ if(isset($_POST['fetch_estimate'])){
                                         <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
                                     </td>
                                     <td>
-                                        <select id="color<?= $no ?>" class="form-control color-est text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
-                                            <option value="">Select Color...</option>
-                                            <?php
-                                            if (!empty($color_id)) {
-                                                echo '<option value="' . $color_id . '" selected data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
-                                            }
-
-                                            $query_colors = "SELECT color_id FROM inventory WHERE Product_id = '$data_id'";
-                                            $result_colors = mysqli_query($conn, $query_colors);
-
-                                            if (mysqli_num_rows($result_colors) > 0) {
-                                                while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                                    if ($color_id == $row_colors['color_id']) {
-                                                        continue;
-                                                    }
-                                                    echo '<option value="' . $row_colors['color_id'] . '" data-color="' . getColorHexFromColorID($row_colors['color_id']) . '">' . getColorName($row_colors['color_id']) . '</option>';
-                                                }
-                                            }
-                                            ?>
-                                        </select>
+                                        <?php echo getColorFromID($data_id); ?>
+                                        
                                     </td>
                                     <td>
                                         <?php echo getGradeFromID($data_id); ?>
@@ -223,7 +193,7 @@ if(isset($_POST['fetch_estimate'])){
                                     </td>
                                     <td>
                                         <div class="input-group text-start">
-                                            <select id="usage<?= $no ?>" class="form-control usage-est" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
+                                            <select id="usage<?= $no ?>" class="form-control select2-est" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
                                                 <option value="">Select Usage...</option>
                                                 <?php
                                                 $query_key = "SELECT * FROM key_components";
@@ -253,7 +223,7 @@ if(isset($_POST['fetch_estimate'])){
                                         </div>
                                     </td>
                                     <?php 
-                                    if($category_id == $panel_id){ // Panels ID
+                                    if($category_id == '46'){ // Panels ID
                                     ?>
                                     <td>
                                         <div class="d-flex flex-column align-items-center">
@@ -263,6 +233,7 @@ if(isset($_POST['fetch_estimate'])){
                                             if($sold_by_feet == 1){
                                                 ?>
                                                 <fieldset class="border p-1 position-relative">
+                                                    <legend class="w-auto py-0 mb-1 fs-3" style="color: #ffffff;">Length</legend>
                                                     <div class="input-group d-flex align-items-center">
                                                         <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                                         <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
@@ -279,7 +250,7 @@ if(isset($_POST['fetch_estimate'])){
                                         </div>
                                     </td>
                                     <?php
-                                    }else if($category_id == $trim_id){
+                                    }else if($category_id == '43'){
                                     ?>
                                     <td>
                                         <div class="d-flex flex-column align-items-center">
@@ -293,6 +264,7 @@ if(isset($_POST['fetch_estimate'])){
                                             if($sold_by_feet == 1){
                                             ?>
                                                 <fieldset class="border p-1 position-relative">
+                                                    <legend class="w-auto py-0 mb-1 fs-3" style="color: #ffffff;">Length</legend>
                                                     <div class="input-group d-flex align-items-center">
                                                         <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                                         <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
@@ -315,6 +287,7 @@ if(isset($_POST['fetch_estimate'])){
                                         if($sold_by_feet == 1){
                                         ?>
                                             <fieldset class="border p-1 position-relative">
+                                                <legend class="w-auto py-0 mb-1 fs-3" style="color: #ffffff;">Length</legend>
                                                 <div class="input-group d-flex align-items-center">
                                                     <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                                     <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
@@ -346,7 +319,11 @@ if(isset($_POST['fetch_estimate'])){
                                     </td>
                                     <td>
                                         <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
+                                        <?php
+                                        if (in_array($category_id, ['46', '43'])) {
+                                        ?>
                                         <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
+                                        <?php } ?>
                                         <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["product_id"]; ?>">
                                         <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $data_id;?>">
                                         <input class="form-control" type="hidden" size="5" value="<?php echo $values["line"];?>" id="line<?php echo $data_id;?>">
@@ -358,7 +335,6 @@ if(isset($_POST['fetch_estimate'])){
                                 $total += $subtotal;
                                 $total_customer_price += $customer_price;
                                 $no++;
-                                $total_weight += $values["weight"] * $values["quantity_cart"];
                             }
                         }
                         $_SESSION["total_quantity"] = $totalquantity;
@@ -418,10 +394,6 @@ if(isset($_POST['fetch_estimate'])){
                                             <td class="text-right border-bottom">$ <span id="delivery_amt_est"><?= number_format($delivery_price, 2) ?></span></td>
                                         </tr>
                                         <tr>
-                                            <th class="text-right border-bottom">Total Weight</th>
-                                            <td class="text-right border-bottom"><span id="total_weight_est"><?= number_format(floatval($total_weight), 2) ?></span></td>
-                                        </tr>
-                                        <tr>
                                             <th class="text-right border-bottom">Sales Tax</th>
                                             <td class="text-right border-bottom">$ <span id="sales_tax"><?= number_format((floatval($total_customer_price) + $delivery_price) * $tax, 2) ?></span></td>
                                         </tr>
@@ -443,9 +415,18 @@ if(isset($_POST['fetch_estimate'])){
         </div>
         <script>
             $(document).ready(function() {
-                
+                var table = $('#estimateTable').DataTable({
+                    language: {
+                        emptyTable: "No products added to cart"
+                    },
+                    paging: false,
+                    searching: false,
+                    info: false,
+                    ordering: false,
+                    autoWidth: false,
+                    responsive: true
+                });
 
-                
             });
         </script>
     <?php

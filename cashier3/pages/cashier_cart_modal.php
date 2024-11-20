@@ -7,13 +7,31 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
+$trim_id = 4;
+$panel_id = 3;
+
 if(isset($_POST['fetch_cart'])){
     $discount = 0;
+    $tax = 0;
     if(isset($_SESSION['customer_id'])){
         $customer_id = $_SESSION['customer_id'];
+        $customer_details = getCustomerDetails($customer_id);
+        $fullAddress = trim(implode(', ', array_filter([
+            $customer_details['address'] ?? null,
+            $customer_details['city'] ?? null,
+            $customer_details['state'] ?? null,
+            $customer_details['zip'] ?? null,
+        ])));
+        $fname = $customer_details['customer_first_name'];
+        $lname = $customer_details['customer_last_name'];
         $discount = floatval(getCustomerDiscount($customer_id)) / 100;
+        $tax = floatval(getCustomerTax($customer_id)) / 100;
     }
+    $delivery_price = getDeliveryCost();
     ?>
+    <!-- <script>
+        //console.log("<pre><?= print_r($_SESSION["cart"]) ?></pre>");
+    </script> -->
     <style>
         input[type="number"]::-webkit-inner-spin-button, 
         input[type="number"]::-webkit-outer-spin-button { 
@@ -39,27 +57,29 @@ if(isset($_POST['fetch_cart'])){
         }
 
         .table-fixed th:nth-child(1),
-        .table-fixed td:nth-child(1) { width: 8%; }
+        .table-fixed td:nth-child(1) { width: 5%; }
         .table-fixed th:nth-child(2),
         .table-fixed td:nth-child(2) { width: 15%; }
         .table-fixed th:nth-child(3),
-        .table-fixed td:nth-child(3) { width: 8%; }
+        .table-fixed td:nth-child(3) { width: 7%; }
         .table-fixed th:nth-child(4),
         .table-fixed td:nth-child(4) { width: 8%; }
         .table-fixed th:nth-child(5),
-        .table-fixed td:nth-child(5) { width: 10%; }
+        .table-fixed td:nth-child(5) { width: 8%; }
         .table-fixed th:nth-child(6),
-        .table-fixed td:nth-child(6) { width: 10%; }
+        .table-fixed td:nth-child(6) { width: 11%; }
         .table-fixed th:nth-child(7),
-        .table-fixed td:nth-child(7) { width: 10%; }
+        .table-fixed td:nth-child(7) { width: 11%; }
         .table-fixed th:nth-child(8),
         .table-fixed td:nth-child(8) { width: 11%; }
         .table-fixed th:nth-child(9),
-        .table-fixed td:nth-child(9) { width: 6%; }
+        .table-fixed td:nth-child(9) { width: 7%; }
         .table-fixed th:nth-child(10),
         .table-fixed td:nth-child(10) { width: 7%; }
         .table-fixed th:nth-child(11),
         .table-fixed td:nth-child(11) { width: 7%; }
+        .table-fixed th:nth-child(12),
+        .table-fixed td:nth-child(12) { width: 3%; }
 
         input[readonly] {
             border: none;               
@@ -77,7 +97,7 @@ if(isset($_POST['fetch_cart'])){
             <table id="cartTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
                 <thead>
                     <tr>
-                        <th>Image</th>
+                        <th class="small">Image</th>
                         <th>Description</th>
                         <th class="text-center">Color</th>
                         <th class="text-center">Grade</th>
@@ -87,7 +107,7 @@ if(isset($_POST['fetch_cart'])){
                         <th class="text-center">Dimensions<br>(Width X Height)</th>
                         <th class="text-center">Stock</th>
                         <th class="text-center">Price</th>
-                        <th class="text-center">Customer<br>Price</th>
+                        <th class="text-center small">Customer<br>Price</th>
                         <th class="text-center"> </th>
                     </tr>
                 </thead>
@@ -129,14 +149,20 @@ if(isset($_POST['fetch_cart'])){
                             $total_length = $estimate_length + ($estimate_length_inch / 12);
 
                             $sold_by_feet = $product["sold_by_feet"];
-                            if($sold_by_feet == 1){
-                                $product_price = $values["quantity_cart"] * $total_length * $values["unit_price"];
-                            }else{
-                                $product_price = $values["quantity_cart"] * $values["unit_price"];
+                            $extra_cost_per_foot = 0;
+                            if (isset($values["panel_type"]) && $values["panel_type"] == 'vented') {
+                                $extra_cost_per_foot = 0.50;
                             }
+                            if ($sold_by_feet == 1) {
+                                $product_price = $values["quantity_cart"] * $total_length * $values["unit_price"] + ($extra_cost_per_foot * $total_length);
+                            } else {
+                                $product_price = $values["quantity_cart"] * $values["unit_price"] + ($extra_cost_per_foot);
+                            }
+
+                            $color_id = $values["custom_color"];
                         ?>
                             <tr>
-                                <td>
+                                <td data-color="<?= getColorName($color_id) ?>">
                                     <?php
                                     if($data_id == '277'){
                                         if(!empty($values["custom_trim_src"])){
@@ -168,8 +194,26 @@ if(isset($_POST['fetch_cart'])){
                                     <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
                                 </td>
                                 <td>
-                                    <?php echo getColorFromID($data_id); ?>
-                                    
+                                    <select id="color<?= $no ?>" class="form-control color-cart text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
+                                        <option value="">Select Color...</option>
+                                        <?php
+                                        if (!empty($color_id)) {
+                                            echo '<option value="' . $color_id . '" selected data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
+                                        }
+
+                                        $query_colors = "SELECT color_id FROM inventory WHERE Product_id = '$data_id'";
+                                        $result_colors = mysqli_query($conn, $query_colors);
+
+                                        if (mysqli_num_rows($result_colors) > 0) {
+                                            while ($row_colors = mysqli_fetch_array($result_colors)) {
+                                                if ($color_id == $row_colors['color_id']) {
+                                                    continue;
+                                                }
+                                                echo '<option value="' . $row_colors['color_id'] . '" data-color="' . getColorHexFromColorID($row_colors['color_id']) . '">' . getColorName($row_colors['color_id']) . '</option>';
+                                            }
+                                        }
+                                        ?>
+                                    </select>
                                 </td>
                                 <td>
                                     <?php echo getGradeFromID($data_id); ?>
@@ -195,7 +239,7 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
                                 <td>
                                     <div class="input-group text-start">
-                                        <select id="usage<?= $no ?>" class="form-control select2-cart" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
+                                        <select id="usage<?= $no ?>" class="form-control usage-cart" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
                                             <option value="">Select Usage...</option>
                                             <?php
                                             $query_key = "SELECT * FROM key_components";
@@ -225,7 +269,7 @@ if(isset($_POST['fetch_cart'])){
                                     </div>
                                 </td>
                                 <?php 
-                                    if($category_id == '46'){ // Panels ID
+                                    if($category_id == $panel_id){ // Panels ID
                                     ?>
                                     <td>
                                         <div class="d-flex flex-column align-items-center">
@@ -235,7 +279,6 @@ if(isset($_POST['fetch_cart'])){
                                             if($sold_by_feet == 1){
                                                 ?>
                                                 <fieldset class="border p-1 position-relative">
-                                                    <legend class="w-auto py-0 mb-1 fs-3" style="color: #ffffff;">Length</legend>
                                                     <div class="input-group d-flex align-items-center">
                                                         <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                                         <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
@@ -252,7 +295,7 @@ if(isset($_POST['fetch_cart'])){
                                         </div>
                                     </td>
                                     <?php
-                                    }else if($category_id == '43'){
+                                    }else if($category_id == $trim_id){
                                     ?>
                                     <td>
                                         <div class="d-flex flex-column align-items-center">
@@ -266,7 +309,6 @@ if(isset($_POST['fetch_cart'])){
                                             if($sold_by_feet == 1){
                                             ?>
                                                 <fieldset class="border p-1 position-relative">
-                                                    <legend class="w-auto py-0 mb-1 fs-3" style="color: #ffffff;">Length</legend>
                                                     <div class="input-group d-flex align-items-center">
                                                         <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                                         <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
@@ -289,7 +331,6 @@ if(isset($_POST['fetch_cart'])){
                                         if($sold_by_feet == 1){
                                         ?>
                                             <fieldset class="border p-1 position-relative">
-                                                <legend class="w-auto py-0 mb-1 fs-3" style="color: #ffffff;">Length</legend>
                                                 <div class="input-group d-flex align-items-center">
                                                     <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                                     <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
@@ -321,11 +362,7 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
                                 <td>
                                     <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
-                                    <?php
-                                    if (in_array($category_id, ['46', '43'])) {
-                                    ?>
                                     <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
-                                    <?php } ?>
                                     <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["product_id"]; ?>">
                                     <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $data_id;?>">
                                     <input class="form-control" type="hidden" size="5" value="<?php echo $values["line"];?>" id="line<?php echo $data_id;?>">
@@ -335,6 +372,7 @@ if(isset($_POST['fetch_cart'])){
                     <?php
                             $totalquantity += $values["quantity_cart"];
                             $total += $subtotal;
+                            $total_customer_price += $customer_price;
                             $no++;
                         }
                     }
@@ -349,26 +387,75 @@ if(isset($_POST['fetch_cart'])){
                         <td colspan="5" class="text-end">Total Quantity:</td>
                         <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
                         <td colspan="3" class="text-end">Amount Due:</td>
-                        <td colspan="1" class="text-end"><span id="ammount_due"><?= $total ?> $</span></td>
+                        <td colspan="1" class="text-end"><span id="ammount_due"><?= number_format($total_customer_price,2) ?> $</span></td>
                         <td colspan="1"></td>
                     </tr>
                 </tfoot>
             </table>
         </div>
+        <div id="checkout" class="row mt-3">
+            <div class="col-md-6">
+                <div class="card box-shadow-0">
+                    <div class="card-body">
+                        <form>
+                            <div>
+                                <label>Total Items:</label>
+                                <span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span>
+                            </div>
+                            <div class="form-group">
+                                <label>Discount (%)</label>
+                                <input type="text" class="form-control" id="est_discount" placeholder="%" value="<?= $discount * 100 ?>">
+                            </div>
+                            <div class="form-group">
+                                <label>Amount</label>
+                                <input type="text" class="form-control" id="cash_amount" value="<?= $total_customer_price ?>">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body pricing">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th class="text-right border-bottom">Total</th>
+                                        <td class="text-right border-bottom">$ <span id="total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right border-bottom">Discount(-)</th>
+                                        <td class="text-right border-bottom">$ <span id="total_discount"><?= number_format(floatval($total_customer_price) * floatval($discount), 2) ?></span></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right border-bottom">Delivery</th>
+                                        <td class="text-right border-bottom">$ <span id="delivery_amt_est"><?= number_format($delivery_price, 2) ?></span></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right border-bottom">Sales Tax</th>
+                                        <td class="text-right border-bottom">$ <span id="sales_tax"><?= number_format((floatval($total_customer_price) + $delivery_price) * $tax, 2) ?></span></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right border-bottom">Total Payable</th>
+                                        <td class="text-right border-bottom">$ <span id="total_payable_est"><?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?></span></td>
+                                    </tr>
+                                    <tr class="bg-primary text-white" style="font-size: 1.25rem;">
+                                        <th class="text-right">Change</th>
+                                        <td class="text-right">$ 0.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>   
     <script>
         $(document).ready(function() {
-            var table = $('#cartTable').DataTable({
-                language: {
-                    emptyTable: "No products added to cart"
-                },
-                paging: false,
-                searching: false,
-                info: false,
-                ordering: false,
-                autoWidth: false,
-                responsive: true
-            });
+
+            
         });
     </script>
     <?php

@@ -1,8 +1,5 @@
 <?php
 session_start();
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
@@ -51,63 +48,26 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     }
 </style>
 <div class="product-list pt-4">
-    <!-- <div class="row row-xs pr-3">
-        <div class="col-md-9"></div>
-        <?php 
-        $discount = 0;
-        $tax = 0;
-        $totalQuantity = 0;
-        if(isset($_SESSION['customer_id'])){
-            $customer_id = $_SESSION['customer_id'];
-            $customer_details = getCustomerDetails($customer_id);
-            $discount = floatval(getCustomerDiscount($customer_id)) / 100;
-            $tax = floatval(getCustomerTax($customer_id)) / 100;
-        }
-        $delivery_price = getDeliveryCost();
-        
-        if (!empty($_SESSION["cart"])) {
-            foreach ($_SESSION["cart"] as $item) {
-                $totalQuantity += $item["quantity_cart"];
-            }
-        }
-        ?>
-        <div class="col-md-3 bg-primary rounded" style="padding: 1rem;">
-            <div id="thegrandtotal" style="background: transparent; color: #fff; font-size: 16px;">
-                <table style="width: 100%; margin: 0; border-spacing: 0;">
-                    <tbody>
-                        <tr style="height: 30px;">
-                            <td style="text-align: left; width: 70%;">Total:</td>
-                            <td style="text-align: right; width: 30%;"><?= "$" . number_format($_SESSION["grandtotal"] ?? 0, 2); ?></td>
-                        </tr>
-                        <tr style="height: 30px;">
-                            <td style="text-align: left; width: 70%;">Total items:</td>
-                            <td style="text-align: right; width: 30%;"><?= $totalQuantity ?></td>
-                        </tr>
-                        <tr style="height: 30px;">
-                            <td style="text-align: left; width: 70%;">Discount:</td>
-                            <td style="text-align: right; width: 30%;"><?= $discount * 100 ?>%</td>
-                        </tr>
-                        <tr style="height: 30px;">
-                            <td style="text-align: left; width: 70%;">Delivery Amount:</td>
-                            <td style="text-align: right; width: 30%;"><?= "$" . number_format($delivery_price, 2); ?></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div> -->
+    <div class="row row-xs pr-3">
+        <div class="col-md-8"></div>
+            <?php if(isset($_SESSION["grandtotal"])){?>
+                <div class="col-md-4 bg-primary" id="thegrandtotal" style="text-align:center;font-size:48px;display: flex;align-items: center;justify-content: center;text-align: center;" >$<?php echo number_format($_SESSION["grandtotal"],2);?> </div>
+            <?php }else{ ?>
+                <div class="col-md-4 bg-primary" id="thegrandtotal" style="text-align:center;font-size:48px;display: flex;align-items: center;justify-content: center;text-align: center;" >$0.00 </div>
+            <?php } ?>
+    </div>
     <div class="card">
-        <div class="card-body p-3">
+        <div class="card-body text-right p-3">
             
-            <div class="p-2 text-right">
+            <div class="p-2">
                 <input type="checkbox" id="toggleActive" checked> Show only In Stock
             </div>
-            <div class="d-flex justify-content-between align-items-center mb-9">
-                <div class="position-relative w-100 col-2 ps-0">
+            <div class="d-flex justify-content-between align-items-center  mb-9">
+                <div class="position-relative w-100 col-4">
                     <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
                     <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
-                <!-- <div class="position-relative w-100 px-1 col-2">
+                <div class="position-relative w-100 px-1 col-2">
                     <select class="form-control search-chat py-0 ps-5" id="select-color" data-category="">
                         <option value="" data-category="">All Colors</option>
                         <optgroup label="Product Colors">
@@ -117,38 +77,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             while ($row_color = mysqli_fetch_array($result_color)) {
                             ?>
                                 <option value="<?= $row_color['color_id'] ?>" data-category="category"><?= $row_color['color_name'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div> -->
-                <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-grade" data-category="">
-                        <option value="" data-category="">All Grades</option>
-                        <optgroup label="Product Grades">
-                            <?php
-                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
-                            $result_grade = mysqli_query($conn, $query_grade);
-                            while ($row_grade = mysqli_fetch_array($result_grade)) {
-                            ?>
-                                <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade"><?= $row_grade['product_grade'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-                <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-gauge" data-category="">
-                        <option value="" data-category="">All Gauges</option>
-                        <optgroup label="Product Gauges">
-                            <?php
-                            $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
-                            $result_gauge = mysqli_query($conn, $query_gauge);
-                            while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                            ?>
-                                <option value="<?= $row_gauge['product_gauge_id'] ?>" data-category="gauge"><?= $row_gauge['product_gauge'] ?></option>
                             <?php
                             }
                             ?>
@@ -172,15 +100,15 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     </select>
                 </div>
                 <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-profile" data-category="">
-                        <option value="" data-category="">All Profile Types</option>
+                    <select class="form-control search-chat py-0 ps-5" id="select-line" data-category="">
+                        <option value="" data-category="">All Product Lines</option>
                         <optgroup label="Product Line">
                             <?php
-                            $query_profile = "SELECT * FROM profile_type WHERE hidden = '0'";
-                            $result_profile = mysqli_query($conn, $query_profile);
-                            while ($row_profile = mysqli_fetch_array($result_profile)) {
+                            $query_line = "SELECT * FROM product_line WHERE hidden = '0'";
+                            $result_line = mysqli_query($conn, $query_line);
+                            while ($row_line = mysqli_fetch_array($result_line)) {
                             ?>
-                                <option value="<?= $row_profile['profile_type_id'] ?>" data-category="profile"><?= $row_profile['profile_type'] ?></option>
+                                <option value="<?= $row_line['product_line_id'] ?>" data-category="line"><?= $row_line['product_line'] ?></option>
                             <?php
                             }
                             ?>
@@ -209,14 +137,12 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     <thead>
                         <tr>
                             <th scope="col">Products</th>
-                            <th scope="col">Avail. Colors</th>
-                            <th scope="col">Grade</th>
-                            <th scope="col">Gauge</th>
+                            <th scope="col">Color</th>
                             <th scope="col">Type</th>
-                            <th scope="col">Profile</th>
+                            <th scope="col">Line</th>
                             <th scope="col">Category</th>
                             <th scope="col">Status</th>
-                           
+                            <th scope="col">Price</th>
                             <th scope="col">Actions</th>
                         </tr>
                     </thead>
@@ -226,9 +152,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 <div class="d-flex align-items-center justify-content-end py-1">
                     <p class="mb-0 fs-2">Rows per page:</p>
                     <select id="rowsPerPage" class="form-select w-auto ms-0 ms-sm-2 me-8 me-sm-4 py-1 pe-7 ps-2 border-0" aria-label="Rows per page">
-                        <option value="5">5</option>
+                        <option value="5" selected>5</option>
                         <option value="10">10</option>
-                        <option value="25" selected>25</option>
+                        <option value="25">25</option>
                     </select>
                     <p id="paginationInfo" class="mb-0 fs-2"></p>
                     <nav aria-label="...">
@@ -241,7 +167,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             <div class="row mt-4">
                 <div class="col-6">
                     <div class="d-flex justify-content-start">
-                        <!-- 
                         <button class="btn btn-primary mb-2 me-2" type="button" id="view_est_list">
                             <i class="fa fa-save fs-4 me-2"></i>
                             View Estimates
@@ -249,14 +174,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         <button class="btn btn-primary mb-2 me-2" type="button" id="view_order_list">
                             <i class="fa fa-rotate-left fs-4 me-2"></i>
                             Return
-                        </button> 
-                        -->
-                        <a href="/">
-                            <button class="btn btn-primary mb-2 me-2" type="button">
-                                <i class="fa fa-home fs-4 me-2"></i>
-                                Main Dashboard
-                            </button> 
-                        </a>
+                        </button>
                     </div>
                 </div>
                 <div class="col-6">
@@ -264,6 +182,14 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         <button class="btn btn-primary mb-2 me-2" type="button" id="view_cart">
                             <i class="fa fa-shopping-cart fs-4 me-2"></i>
                             Cart
+                        </button>
+                        <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" id="view_estimate">
+                            <i class="fa fa-save fs-4 me-2"></i>
+                            Estimate
+                        </button>
+                        <button type="button" class="btn btn-success d-flex align-items-center mb-2 me-2" id="view_order">
+                            <i class="fa fa-shopping-cart fs-4 me-2"></i>
+                            Order
                         </button>
                     </div>
                 </div>
@@ -300,94 +226,16 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
                 <h6 class="modal-title">Cart Contents</h6>
-                <button aria-label="Close" class="close text-light" data-bs-dismiss="modal" type="button">
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <div id="customer_cart_section">
-                    <?php 
-                        if(!empty($_SESSION["customer_id"])){
-                            $customer_id = $_SESSION["customer_id"];
-                            $customer_details = getCustomerDetails($customer_id);
-                            $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
-                            $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
-                        ?>
-
-                        <div class="form-group row align-items-center">
-                            <div class="col-6">
-                                <label class="mb-0 me-3">Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
-                                <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">
-                                    <i class="fe fe-reload"></i> Change
-                                </button>
-                                <div class="mt-1"> 
-                                    <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div>
-                                    <span class="fw-bold">Credit Limit:</span><br>
-                                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
-                                </div>
-                                <div>
-                                    <span class="fw-bold">Unpaid Credit:</span><br>
-                                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
-                                </div>
-                            </div>
-                        </div>
-                    <?php } else { ?>
-                        <div class="form-group row align-items-center">
-                            <div class="col-6">
-                                <label>Customer Name</label>
-                                <div class="input-group">
-                                    <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cart">
-                                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
-                                        <span class="input-group-text"> + </span>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <span class="fw-bold">Credit Limit:</span><br>
-                                <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
-                            </div>
-                        </div>
-                    <?php } ?>
-                </div>
-                <input type='hidden' id='customer_id_cart' name="customer_id"/>
                 <div id="cart-tbl">
                 </div>
             </div>
-            <div class="">
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <div class="d-flex flex-wrap justify-content-center">
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="clear_cart" style="background-color: #dc3545; color: white;">
-                                <i class="fa fa-trash fs-4 me-2"></i>
-                                Clear Cart
-                            </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="change_price_group" style="background-color: #007bff; color: white;">
-                                <i class="fa fa-tag fs-4 me-2"></i>
-                                Change Price Group
-                            </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="change_grade" style="background-color: #6c757d; color: white;">
-                                <i class="fa fa-chart-line fs-4 me-2"></i>
-                                Change Grade
-                            </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="btnColorModal" style="background-color: #17a2b8; color: white;">
-                                <i class="fa fa-palette fs-4 me-2"></i>
-                                Change Color
-                            </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="view_estimate" style="background-color: #ffc107; color: black;">
-                                <i class="fa fa-calculator fs-4 me-2"></i>
-                                Estimate
-                            </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="view_order" style="background-color: #28a745; color: white;">
-                                <i class="fa fa-shopping-cart fs-4 me-2"></i>
-                                Order
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>
@@ -530,6 +378,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                     <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
                                 </div>
                             </div>
+                            
                         <?php } ?>
                     </div>
                     <input type='hidden' id='customer_id_estimate' name="customer_id"/>
@@ -561,8 +410,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 <div class="modal" id="viewOutOfStockmodal"></div>
 
 <div class="modal" id="viewAvailablemodal"></div>
-
-<div class="modal" id="viewAvailableColormodal"></div>
 
 <div class="modal" id="cashmodal">
     <div class="modal-dialog modal-fullscreen" role="document">
@@ -764,10 +611,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     </div>
 </div>
 
-<div class="modal fade" id="chng-color-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
-
-<div class="modal fade" id="prompt-quantity-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
-
 <script>
     let map1;
     let marker1;
@@ -937,29 +780,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         $('#delivery_amt').val(deliveryAmount).trigger('change');
     }
 
-    function updateColor(element){
-        var color = $(element).val();
-        var id = $(element).data('id');
-        var line = $(element).data('line');
-
-        $.ajax({
-            url: 'pages/cashier_ajax.php',
-            type: 'POST',
-            data: {
-                color_id: color,
-                id: id,
-                line: line,
-                set_color: "set_color"
-            },
-            success: function(response) {
-                console.log(response);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    }
-    
     function updateEstimateBend(element){
         var bend = $(element).val();
         var id = $(element).data('id');
@@ -1221,40 +1041,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 fetch_cart: "fetch_cart"
             },
             success: function(response) {
-                
                 $('#cart-tbl').html(''); 
-                
-                setTimeout(function() {
-                    $(".color-cart").each(function() {
-                        if ($(this).data('select2')) {
-                            $(this).select2('destroy');
-                        }
-                        $(this).select2({
-                            width: '300px',
-                            placeholder: "Select...",
-                            dropdownAutoWidth: true,
-                            dropdownParent: $('#cartTable'),
-                            templateResult: formatOption,
-                            templateSelection: formatSelected
-                        });
-                    });
-
-                    $(".usage-cart").each(function() {
-                        if ($(this).data('select2')) {
-                            $(this).select2('destroy');
-                        }
-                        $(this).select2({
-                            width: '300px',
-                            placeholder: "Select...",
-                            dropdownAutoWidth: true,
-                            dropdownParent: $('#cartTable')
-                        });
-                    });
-                }, 100);
-
                 $('#cart-tbl').html(response); 
-
-                loadCartItemsHeader();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1271,37 +1059,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             },
             success: function(response) {
                 $('#order-tbl').html('');
-                setTimeout(function() {    
-                    $(".color-order").each(function() {
-                        if ($(this).data('select2')) {
-                            $(this).select2('destroy');
-                        }
-                        $(this).select2({
-                            width: '300px',
-                            placeholder: "Select...",
-                            dropdownAutoWidth: true,
-                            dropdownParent: $('#orderTable'),
-                            templateResult: formatOption,
-                            templateSelection: formatSelected
-                        });
-                    });
-
-                    $(".usage-order").each(function() {
-                        if ($(this).data('select2')) {
-                            $(this).select2('destroy');
-                        }
-                        $(this).select2({
-                            width: '300px',
-                            placeholder: "Select...",
-                            dropdownAutoWidth: true,
-                            dropdownParent: $('#orderTable')
-                        });
-                    });
-
-                }, 100);
                 $('#order-tbl').html(response);
                 calculateDeliveryAmount();
-                loadCartItemsHeader();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1317,37 +1076,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 fetch_estimate: "fetch_estimate"
             },
             success: function(response) {
-                $('#estimate-tbl').html('');
-                setTimeout(function() {
-                    $(".color-est").each(function() {
-                        if ($(this).data('select2')) {
-                            $(this).select2('destroy');
-                        }
-                        $(this).select2({
-                            width: '300px',
-                            placeholder: "Select...",
-                            dropdownAutoWidth: true,
-                            dropdownParent: $('#estimateTable'),
-                            templateResult: formatOption,
-                            templateSelection: formatSelected
-                        });
-                    });
-
-                    $(".usage-est").each(function() {
-                        if ($(this).data('select2')) {
-                            $(this).select2('destroy');
-                        }
-                        $(this).select2({
-                            width: '300px',
-                            placeholder: "Select...",
-                            dropdownAutoWidth: true,
-                            dropdownParent: $('#estimateTable')
-                        });
-                    });
-                }, 100);
                 $('#estimate-tbl').html(response);
-                loadCartItemsHeader();
-                
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1373,6 +1102,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1402,6 +1132,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1432,6 +1163,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
                 
             },
             error: function(xhr, status, error) {
@@ -1463,6 +1195,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1489,6 +1222,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function() {}
         });
@@ -1510,6 +1244,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
+                $("#thegrandtotal").load(location.href + " #thegrandtotal");
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1787,38 +1522,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         drawPlaceholderText();
     }
 
-    $("#customer_select_cart").autocomplete({
-        source: function(request, response) {
-            $.ajax({
-                url: "pages/cashier_ajax.php",
-                type: 'post',
-                dataType: "json",
-                data: {
-                    search_customer: request.term
-                },
-                success: function(data) {
-                    response(data);
-                },
-                error: function(xhr, status, error) {
-                    console.log("Error: " + xhr.responseText);
-                }
-            });
-        },
-        select: function(event, ui) {
-            $('#customer_select_cart').val(ui.item.label);
-            $('#customer_id_cart').val(ui.item.value);
-            return false;
-        },
-        focus: function(event, ui) {
-            $('#customer_select_cart').val(ui.item.label);
-            return false;
-        },
-        appendTo: "#view_cart_modal", 
-        open: function() {
-            $(".ui-autocomplete").css("z-index", 1050);
-        }
-    });
-
     $("#customer_select_estimate").autocomplete({
         source: function(request, response) {
             $.ajax({
@@ -1883,99 +1586,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         }
     });
 
-    function formatOption(state) {
-        if (!state.id) {
-            return state.text;
-        }
-        var color = $(state.element).data('color');
-        var $state = $(
-            '<span class="d-flex align-items-center small">' +
-                '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
-                state.text + 
-            '</span>'
-        );
-        return $state;
-    }
-
-    function formatSelected(state) {
-        if (!state.id) {
-            return state.text;
-        }
-        var color = $(state.element).data('color');
-        var $state = $( 
-            '<span class="d-flex align-items-center justify-content-center">' + 
-                '<span class="rounded-circle d-block p-1" style="background-color:' + color + '; width: 25px; height: 25px;"></span>' +
-                '&nbsp;' +
-            '</span>'
-        );
-        return $state;
-    }
-    
     $(document).ready(function() {
         $(document).on('click', '#openMap', function () {
             $('#map1Modal').modal('show');
-        });
-
-        $(document).on('click', '#btnColorModal', function () {
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: {
-                    fetch_change_color_modal: 'fetch_change_color_modal'
-                },
-                success: function(response) {
-                    $('#chng-color-modal').html(response);
-                    $('#chng-color-modal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
-
-        $(document).on('click', '#save_color_change', function () {
-            var orig_color = $('#orig-colors').val();
-            var in_stock_color = $('#in-stock-colors').val();
-            var category_id = $('#category_id').val();
-
-            console.log(orig_color);
-            console.log(in_stock_color);
-            console.log(category_id);
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: {
-                    orig_color: orig_color,
-                    in_stock_color: in_stock_color,
-                    category_id: category_id,
-                    change_color: 'change_color'
-                },
-                success: function(response) {
-                    $('.modal').modal("hide");
-                    if (response.trim() === "success") {
-                        $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Product Returned successfully.");
-                        $('#responseHeaderContainer').removeClass("bg-danger");
-                        $('#responseHeaderContainer').addClass("bg-success");
-                        $('#response-modal').modal("show");
-                        $('#response-modal').on('hide.bs.modal', function () {
-                            location.reload();
-                        });
-                    }else{
-                        $('#responseHeader').text("Failed");
-                        $('#responseMsg').text(response);
-                        $('#responseHeaderContainer').removeClass("bg-success");
-                        $('#responseHeaderContainer').addClass("bg-danger");
-                        $('#response-modal').modal("show");
-                        $('#response-modal').on('hide.bs.modal', function () {
-                            location.reload();
-                        });
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
         });
 
         var currentPage = 1,
@@ -1984,8 +1597,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             totalPages = 0,
             maxPageButtons = 5,
             stepSize = 5;
-
-        let animating = false;
 
         function updateTable() {
             var $rows = $('#productTableBody tr');
@@ -2034,23 +1645,20 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         }
 
         function performSearch(query) {
-            //var color_id = $('#select-color').find('option:selected').val();
-            var grade_id = $('#select-grade').find('option:selected').val();
-            var gauge_id = $('#select-gauge').find('option:selected').val();
-            var category_id = $('#select-category').find('option:selected').val();
-            var profile_id = $('#select-profile').find('option:selected').val();
+            var color_id = $('#select-color').find('option:selected').val();
             var type_id = $('#select-type').find('option:selected').val();
+            var line_id = $('#select-line').find('option:selected').val();
+            var category_id = $('#select-category').find('option:selected').val();
             var onlyInStock = $('#toggleActive').prop('checked');
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     query: query,
-                    grade_id: grade_id,
-                    gauge_id: gauge_id,
-                    category_id: category_id,
-                    profile_id: profile_id,
+                    color_id: color_id,
                     type_id: type_id,
+                    line_id: line_id,
+                    category_id: category_id,
                     onlyInStock: onlyInStock
                 },
                 success: function(response) {
@@ -2071,6 +1679,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             $('#total_payable').text(total_payable.toFixed(2));
             $('#order_cash').val(total_payable.toFixed(2));
         });
+
+        let animating = false;
 
         $(document).on("click", "#next_page_order", function() {
             if (animating) return false;
@@ -2128,26 +1738,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
             
         });
-        
-        $(document).on("click", "#add-to-cart-btn", function() {
-            var id = $(this).data('id');
-            $.ajax({
-                url: 'pages/cashier_quantity_modal.php',
-                type: 'POST',
-                data: {
-                    id: id,
-                    fetch_prompt_quantity: 'fetch_prompt_quantity'
-                },
-                success: function(response) {
-                    $('#prompt-quantity-modal').html(response);
-                    $('#prompt-quantity-modal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
-        
         
         $(document).on('click', '#save_estimate', function(event) {
             var discount = $('#est_discount').val();
@@ -2304,25 +1894,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             $('#change').text(change);
         });
 
-        $(document).on('click', '#clear_cart', function(event) {
-            event.preventDefault();
-            var isConfirmed = confirm("Are you sure you want to clear your cart contents?");
-            if (isConfirmed) {
-                $.ajax({
-                    url: 'pages/cashier_ajax.php',
-                    type: 'POST',
-                    data: {
-                        clear_cart: "clear_cart"
-                    },
-                    success: function(response) {
-                        loadCart();
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
-                });
-            }
-        });
+
 
         $(document).on('click', '#view_product_details', function(event) {
             event.preventDefault();
@@ -2337,80 +1909,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 success: function(response) {
                     $('#viewDetailsModal').html(response);
                     $('#viewDetailsModal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
-
-        $(document).on('change', '#customer_select_cart', function(event) {
-            var customer_id = $('#customer_id_cart').val();
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: {
-                    customer_id: customer_id,
-                    change_customer: "change_customer"
-                },
-                success: function(response) {
-                    if (response.trim() == 'success') {
-                        $('#customer_cart_section').load(location.href + " #customer_cart_section");
-                        loadOrderContents();
-                        loadEstimateContents();
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
-
-        $(document).on('click', '#customer_change_cart', function(event) {
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: {
-                    unset_customer: "unset_customer"
-                },
-                success: function(response) { 
-                    $('#customer_cart_section').load(location.href + " #customer_cart_section", function() {
-                        $.getScript("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", function() {
-                            $("#customer_select_cart").autocomplete({
-                                source: function(request, response) {
-                                    $.ajax({
-                                        url: "pages/cashier_ajax.php",
-                                        type: 'post',
-                                        dataType: "json",
-                                        data: {
-                                            search_customer: request.term
-                                        },
-                                        success: function(data) {
-                                            response(data);
-                                        },
-                                        error: function(xhr, status, error) {
-                                            console.log("Error: " + xhr.responseText);
-                                        }
-                                    });
-                                },
-                                select: function(event, ui) {
-                                    $('#customer_select_cart').val(ui.item.label);
-                                    $('#customer_id_cart').val(ui.item.value);
-                                    return false;
-                                },
-                                focus: function(event, ui) {
-                                    $('#customer_select_cart').val(ui.item.label);
-                                    return false;
-                                },
-                                appendTo: "#view_cart_modal", 
-                                open: function() {
-                                    $(".ui-autocomplete").css("z-index", 1050);
-                                }
-                            });
-                        });
-                        loadOrderContents();
-                        loadEstimateContents();
-                    });
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -2587,6 +2085,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
 
+
         $(document).on('click', '#custom_trim_draw', function(event) {
             loadDrawingModal(this);
             $('#custom_trim_draw_modal').modal('show');
@@ -2732,74 +2231,23 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
 
-        $(document).on('click', '#view_available_color', function(event) {
-            event.preventDefault();
-            var id = $(this).data('id');
-            $.ajax({
-                url: 'pages/cashier_available_color_modal.php',
-                type: 'POST',
-                data: {
-                    id: id,
-                    fetch_available: "fetch_available"
-                },
-                success: function(response) {
-                    $('#viewAvailableColormodal').html(response);
-                    $('#viewAvailableColormodal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
-
-        $(document).on('submit', '#quantity_form', function(event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            formData.append('add_to_cart', 'add_to_cart');
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    console.log(response);
-                    $('.modal').modal("hide");
-                    if (response.trim() === "success") {
-                        $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Added to Cart.");
-                        $('#responseHeaderContainer').removeClass("bg-danger");
-                        $('#responseHeaderContainer').addClass("bg-success");
-                        $('#response-modal').modal("show");
-                    }else{
-                        $('#responseHeader').text("Failed");
-                        $('#responseMsg').text(response);
-                        $('#responseHeaderContainer').removeClass("bg-success");
-                        $('#responseHeaderContainer').addClass("bg-danger");
-                        $('#response-modal').modal("show");
-                    }
-                    loadCart();
-                },
-                error: function (xhr, status, error) {
-                    console.error('Error:', xhr.responseText);
-                }
-            });
-        });
-
         $('#rowsPerPage').change(function() {
             rowsPerPage = parseInt($(this).val());
             currentPage = 1;
             updateTable();
         });
 
-        //$('#select-color').select2();
-        $('#select-grade').select2();
-        $('#select-gauge').select2();
-        $('#select-category').select2();
-        $('#select-profile').select2();
-        $('#select-type').select2();
 
-        $(document).on('input change', '#text-srh, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive', function() {
+        $(document).on('input change', '#text-srh, #select-category, #select-type, #select-line', function() {
+            performSearch($('#text-srh').val());
+        });
+
+        $('#select-color').select2();
+        $('#select-type').select2();
+        $('#select-line').select2();
+        $('#select-category').select2();
+
+        $(document).on('input change', '#text-srh, #select-color, #select-category, #select-type, #select-line, #toggleActive', function() {
             performSearch($('#text-srh').val());
         });
 
