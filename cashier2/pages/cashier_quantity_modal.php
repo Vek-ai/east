@@ -12,6 +12,7 @@ $lumber_id = 1;
 $truss_id = 2;
 $acc_id = 6;
 $fastener_id = 5;
+$stiffening_rib_id = 99999;
 if(isset($_POST['fetch_prompt_quantity'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     
@@ -89,7 +90,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                             </fieldset>
                         </div>
                         <div class="mb-2 <?= (($category_id == $fastener_id) || $id == 21) ? '' : 'd-none';?>">
-                            <label class="fs-5 fw-bold" for="quantity-product">Select Case</label>
+                            <label class="fs-5 fw-bold" for="case_type">Select Case</label>
                             <div class="input-group d-flex align-items-center">
                                 <select class="form-control mr-1" id="case_type" name="case_type" style="color:#ffffff;">
                                     <option>100</option>
@@ -99,6 +100,30 @@ if(isset($_POST['fetch_prompt_quantity'])){
                                 </select>
                             </div>
                         </div>
+                        <?php 
+                            if($category_id == $stiffening_rib_id) {
+                                ?>
+                                <div class="mb-2">
+                                    <div class="input-group d-flex align-items-center">
+                                        <div class="me-2">
+                                            <label class="fs-5 fw-bold" for="stiffening-rib-product">Standing Seam</label>
+                                            <select class="form-control mr-1" id="stiff_stand_seam" name="stiff_stand_seam" style="color:#ffffff;">
+                                                <option value="striated" selected>Striated</option>
+                                                <option value="minor_rib">Minor Rib</option>
+                                            </select>
+                                        </div>
+                                        <div class="me-2">
+                                            <label class="fs-5 fw-bold" for="stiffening-rib-product">Board and Batten</label>
+                                            <select class="form-control mr-1" id="stiff_board_batten" name="stiff_board_batten" style="color:#ffffff;">
+                                                <option value="flat" selected>Flat</option>
+                                                <option value="minor_rib">Minor Rib</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php
+                            }
+                        ?>
                     </div>
                     <div class="panel_options">
                         <div class="mb-2 <?= ($category_id == $panel_id)  ? '' : 'd-none';?>">

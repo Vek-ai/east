@@ -970,6 +970,9 @@ if (isset($_POST['add_to_cart'])) {
     $lengthInch = isset($_POST['length_inch']) ? intval($_POST['length_inch']) : 0;
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
     $panel_type = mysqli_real_escape_string($conn, $_POST['panel_type']);
+    $stiff_board_batten = isset($_POST['stiff_board_batten']) ? mysqli_real_escape_string($conn, $_POST['stiff_board_batten']) : '';
+    $stiff_stand_seam = isset($_POST['stiff_stand_seam']) ? mysqli_real_escape_string($conn, $_POST['stiff_stand_seam']) : '';
+
     $line = 1;
 
     $quantityInStock = getProductStockInStock($product_id);
@@ -1009,7 +1012,9 @@ if (isset($_POST['add_to_cart'])) {
                 'usage' => 0,
                 'custom_color' => $row['color'],
                 'panel_type' => $panel_type,
-                'weight' => $weight
+                'weight' => $weight,
+                'stiff_board_batten' => $stiff_board_batten,
+                'stiff_stand_seam' => $stiff_stand_seam
             );
 
             $_SESSION["cart"][] = $item_array;
