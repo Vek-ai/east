@@ -443,7 +443,7 @@ if(isset($_POST['fetch_order'])){
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th class="text-right border-bottom">Shipping Weight</th>
+                                                <th class="text-right border-bottom">Total Weight</th>
                                                 <td class="text-right border-bottom"><span id="total_weight"><?= number_format(floatval($total_weight), 2) ?></span></td>
                                             </tr>
                                             <tr>
