@@ -18,6 +18,22 @@ if(isset($_POST['fetch_prompt_quantity'])){
     
     $product_details = getProductDetails($id);
         ?>
+        <style>
+            .tooltip-custom {
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #333;
+                color: #fff;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                white-space: nowrap;
+                z-index: 10;
+                margin-top: 5px;
+            }
+        </style>
         <div class="modal-dialog" role="document">
             <form id="quantity_form" class="modal-content modal-content-demo">
                 <div class="modal-header">
@@ -129,12 +145,13 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     <div class="panel_options">
                         <div class="mb-2 <?= ($category_id == $panel_id)  ? '' : 'd-none';?>">
                             <label class="fs-5 fw-bold" for="quantity-product">Select Panel Type</label>
-                            <div class="input-group d-flex align-items-center">
+                            <div class="input-group d-flex align-items-center position-relative">
                                 <div class="form-control mr-1">
                                     <input type="radio" id="solid_panel" name="panel_type" value="solid" checked> Solid
                                 </div>
-                                <div class="form-control mr-1">
+                                <div class="form-control mr-1 position-relative">
                                     <input type="radio" id="vented_panel" name="panel_type" value="vented"> Vented
+                                    <div id="tooltip" class="tooltip-custom" style="display: none;">Double-click to select Vented</div>
                                 </div>
                             </div>
                         </div>
@@ -169,6 +186,30 @@ if(isset($_POST['fetch_prompt_quantity'])){
                             }
                             $('#quantity-product, #length_feet, #length_inch').on('input', calculateProductCost);
                             $('input[name="panel_type"]').on('change', calculateProductCost);
+
+                            $('#vented_panel').on('click', function (e) {
+                                if (!$(this).data('clicked')) {
+                                    e.preventDefault();
+                                    $('#tooltip').fadeIn(200);
+
+                                    $(this).data('clicked', true);
+
+                                    setTimeout(() => {
+                                        $('#tooltip').fadeOut(200);
+                                        $(this).data('clicked', false);
+                                    }, 2000);
+                                }
+                            });
+
+                            $('#vented_panel').on('dblclick', function () {
+                                $(this).prop('checked', true);
+                                $('#tooltip').fadeOut(200);
+                            });
+
+                            $('#solid_panel').on('click', function () {
+                                $('#tooltip').fadeOut(200);
+                                $('#vented_panel').data('clicked', false);
+                            });
                         });
                     </script>
                     <?php
