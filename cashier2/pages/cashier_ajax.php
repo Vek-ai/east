@@ -1000,7 +1000,6 @@ if (isset($_POST['add_to_cart'])) {
             $item_quantity = min($qty, $totalStock);
 
             $weight = floatval($row['weight']);
-            echo "category id: ".$row['produt_category']." \nstiff_board_batten : $stiff_board_batten \nstiff_stand_seam : $stiff_stand_seam\n";
 
             $item_array = array(
                 'product_id' => $row['product_id'],
