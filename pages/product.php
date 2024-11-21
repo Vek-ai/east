@@ -14,9 +14,9 @@ $type_id = isset($_REQUEST['type_id']) ? $_REQUEST['type_id'] : '';
 $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
 ?>
 <style>
-    .select2-container {
+    /* .select2-container {
         z-index: 9999 !important; 
-    }
+    } */
     .dz-preview {
         position: relative;
     }
@@ -943,7 +943,8 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
         $(".select2-add").select2({
             width: '100%',
             placeholder: "Select Correlated Products",
-            allowClear: true
+            allowClear: true,
+            dropdownParent: $('#addProductModal')
         });
 
         $('#product_category').on('change', function() {
@@ -1030,15 +1031,18 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                         $(".select2-update").select2({
                             width: '100%',
                             placeholder: "Select Correlated Products",
-                            allowClear: true
+                            allowClear: true,
+                            dropdownParent: $('#updateProductModal')
                         });
+
                         $('#updateProductModal').modal('show');
 
                         $('#updateProductModal').on('hide.bs.modal', function () {
                             $(".select2-add").select2({
                                 width: '100%',
                                 placeholder: "Select Correlated Products",
-                                allowClear: true
+                                allowClear: true,
+                                dropdownParent: $('#addProductModal')
                             });
                         });
                     },

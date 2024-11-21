@@ -236,7 +236,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     <select id="rowsPerPage" class="form-select w-auto ms-0 ms-sm-2 me-8 me-sm-4 py-1 pe-7 ps-2 border-0" aria-label="Rows per page">
                         <option value="5">5</option>
                         <option value="10">10</option>
-                        <option value="25" selected>25</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100" selected>100</option>
                     </select>
                     <p id="paginationInfo" class="mb-0 fs-2"></p>
                     <nav aria-label="...">
