@@ -1130,6 +1130,7 @@ if(isset($_REQUEST['action'])) {
             echo "Error updating status: " . mysqli_error($conn);
         }
     }
+
     if ($action == 'hide_category') {
         $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
         $query = "UPDATE product SET hidden='1' WHERE product_id='$product_id'";
@@ -1153,6 +1154,93 @@ if(isset($_REQUEST['action'])) {
             echo json_encode($fields);
         } else {
             echo 'error';
+        }
+    }
+
+    if ($action == 'fetch_table_data') {
+        $color_id = isset($_REQUEST['color_id']) ? mysqli_real_escape_string($conn, $_REQUEST['color_id']) : '';
+        $grade_id = isset($_REQUEST['grade_id']) ? mysqli_real_escape_string($conn, $_REQUEST['grade_id']) : '';
+        $gauge_id = isset($_REQUEST['gauge_id']) ? mysqli_real_escape_string($conn, $_REQUEST['gauge_id']) : '';
+        $category_id = isset($_REQUEST['category_id']) ? mysqli_real_escape_string($conn, $_REQUEST['category_id']) : '';
+        $profile_id = isset($_REQUEST['profile_id']) ? mysqli_real_escape_string($conn, $_REQUEST['profile_id']) : '';
+        $type_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['type_id']) : '';
+        $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
+    
+        $query_product="SELECT 
+                            p.*,
+                            COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
+                        FROM 
+                            product AS p
+                        LEFT JOIN 
+                            inventory AS i ON p.product_id = i.product_id
+                        WHERE 
+                            p.hidden = '0'";
+        if (!empty($color_id)) {
+            $query_product .= " AND p.color = '$color_id'";
+        }
+        if (!empty($grade_id)) {
+            $query_product .= " AND p.grade = '$grade_id'";
+        }
+        if (!empty($gauge_id)) {
+            $query_product .= " AND p.gauge = '$gauge_id'";
+        }
+        if (!empty($type_id)) {
+            $query_product .= " AND p.product_type = '$type_id'";
+        }
+        if (!empty($profile_id)) {
+            $query_product .= " AND p.profile = '$profile_id'";
+        }
+        if (!empty($category_id)) {
+            $query_product .= " AND p.product_category = '$category_id'";
+        }
+        $query_product .= " GROUP BY p.product_id";
+        if ($onlyInStock) {
+            $query_product .= " HAVING total_quantity > 1";
+        }
+        $result_product = mysqli_query($conn, $query_product);
+        $no = 1;
+        while ($row_product = mysqli_fetch_array($result_product)) {
+            $product_id = $row_product['product_id'];
+            $db_status = $row_product['status'];
+            $status_icon = $db_status == '0' ? "text-danger ti ti-trash" : "text-warning ti ti-reload";
+            $status = $db_status == '0'
+                ? "<a href='#'><div class='alert alert-danger bg-danger text-white' role='alert'>Inactive</div></a>"
+                : "<a href='#'><div class='alert alert-success bg-success text-white' role='alert'>Active</div></a>";
+            
+            $picture_path = !empty($row_product['main_image']) ? $row_product['main_image'] : "images/product/product.jpg";
+            ?>
+            <tr class="search-items">
+                <td>
+                    <a href="/?page=product_details&product_id=<?= $row_product['product_id'] ?>">
+                        <div class="d-flex align-items-center">
+                            <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
+                            <div class="ms-3">
+                                <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['product_item'] ?></h6>
+                            </div>
+                        </div>
+                    </a>
+                </td>
+                <td><?= $row_product['product_sku'] ?></td>
+                <td><?= getProductCategoryName($row_product['product_category']) ?></td>
+                <td><?= getProductLineName($row_product['product_line']) ?></td>
+                <td><?= getProductTypeName($row_product['product_type']) ?></td>
+                <td><?= $status ?></td>
+                <td>
+                    <div class="action-btn text-center">
+                        <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
+                            <i class="text-primary ti ti-eye fs-7"></i>
+                        </a>
+                        <a href="#" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>">
+                            <i class="text-warning ti ti-pencil fs-7"></i>
+                        </a>
+                        <a href="#" id="delete_product_btn" class="text-danger edit changeStatus" data-id="<?= $product_id ?>" data-status='<?= $db_status ?>'>
+                            <i class="text-danger ti ti-trash fs-7"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <?php
+            $no++;
         }
     }
     

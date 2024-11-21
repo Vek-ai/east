@@ -149,7 +149,7 @@ if (isset($_POST['deleteitem'])) {
 
 if (isset($_REQUEST['query'])) {
     $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
-    //$color_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['color_id']) : '';
+    $color_id = isset($_REQUEST['color_id']) ? mysqli_real_escape_string($conn, $_REQUEST['color_id']) : '';
     $grade_id = isset($_REQUEST['grade_id']) ? mysqli_real_escape_string($conn, $_REQUEST['grade_id']) : '';
     $gauge_id = isset($_REQUEST['gauge_id']) ? mysqli_real_escape_string($conn, $_REQUEST['gauge_id']) : '';
     $type_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['type_id']) : '';
@@ -172,6 +172,10 @@ if (isset($_REQUEST['query'])) {
 
     if (!empty($searchQuery)) {
         $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
+    }
+
+    if (!empty($color_id)) {
+        $query_product .= " AND p.color = '$color_id'";
     }
 
     if (!empty($grade_id)) {
@@ -282,8 +286,7 @@ if (isset($_REQUEST['query'])) {
                 </td>
                 <td>
                     <div class="d-flex mb-0 gap-8">
-                        <a href="javascript:void(0)" id="view_available_color" class="rounded-circle d-block p-6" data-id="'.$row_product['product_id'].'" style="background-color:' .getColorHexFromColorID($row_product['color']) .'"></a> '
-                        .getColorName($row_product['color']) .'
+                        <a href="javascript:void(0)" id="view_available_color" data-id="'.$row_product['product_id'].'">See Colors</a>
                     </div>
                 </td>
                 <td><p class="mb-0">'. getGradeName($row_product['grade']) .'</p></td>

@@ -99,110 +99,118 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     <div class="card">
         <div class="card-body p-3">
             
-            <div class="p-2 text-right">
-                <input type="checkbox" id="toggleActive" checked> Show only In Stock
+            <div class="p-2 d-flex justify-content-end align-items-center gap-4">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#trim_chart_modal" type="button">
+                    View Trim Chart
+                </button>
+                <div>
+                    <input type="checkbox" id="toggleActive" checked> Show only In Stock
+                </div>
             </div>
             <div class="d-flex justify-content-between align-items-center mb-9">
                 <div class="position-relative w-100 col-2 ps-0">
                     <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
                     <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
-                <!-- <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-color" data-category="">
-                        <option value="" data-category="">All Colors</option>
-                        <optgroup label="Product Colors">
-                            <?php
-                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
-                            $result_color = mysqli_query($conn, $query_color);
-                            while ($row_color = mysqli_fetch_array($result_color)) {
-                            ?>
-                                <option value="<?= $row_color['color_id'] ?>" data-category="category"><?= $row_color['color_name'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div> -->
-                <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-grade" data-category="">
-                        <option value="" data-category="">All Grades</option>
-                        <optgroup label="Product Grades">
-                            <?php
-                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
-                            $result_grade = mysqli_query($conn, $query_grade);
-                            while ($row_grade = mysqli_fetch_array($result_grade)) {
-                            ?>
-                                <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade"><?= $row_grade['product_grade'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
+                <div class="col-10 d-flex justify-content-between align-items-center">
+                    <div class="position-relative w-100 px-1 col-2">
+                        <select class="form-control search-chat py-0 ps-5" id="select-profile" data-category="">
+                            <option value="" data-category="">All Profile Types</option>
+                            <optgroup label="Product Line">
+                                <?php
+                                $query_profile = "SELECT * FROM profile_type WHERE hidden = '0'";
+                                $result_profile = mysqli_query($conn, $query_profile);
+                                while ($row_profile = mysqli_fetch_array($result_profile)) {
+                                ?>
+                                    <option value="<?= $row_profile['profile_type_id'] ?>" data-category="profile"><?= $row_profile['profile_type'] ?></option>
+                                <?php
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 col-2">
+                        <select class="form-control search-chat py-0 ps-5" id="select-color" data-category="">
+                            <option value="" data-category="">All Colors</option>
+                            <optgroup label="Product Colors">
+                                <?php
+                                $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                $result_color = mysqli_query($conn, $query_color);
+                                while ($row_color = mysqli_fetch_array($result_color)) {
+                                ?>
+                                    <option value="<?= $row_color['color_id'] ?>" data-category="category"><?= $row_color['color_name'] ?></option>
+                                <?php
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 col-2">
+                        <select class="form-control search-chat py-0 ps-5" id="select-grade" data-category="">
+                            <option value="" data-category="">All Grades</option>
+                            <optgroup label="Product Grades">
+                                <?php
+                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                                $result_grade = mysqli_query($conn, $query_grade);
+                                while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                ?>
+                                    <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade"><?= $row_grade['product_grade'] ?></option>
+                                <?php
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 col-2">
+                        <select class="form-control search-chat py-0 ps-5" id="select-gauge" data-category="">
+                            <option value="" data-category="">All Gauges</option>
+                            <optgroup label="Product Gauges">
+                                <?php
+                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                                $result_gauge = mysqli_query($conn, $query_gauge);
+                                while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                ?>
+                                    <option value="<?= $row_gauge['product_gauge_id'] ?>" data-category="gauge"><?= $row_gauge['product_gauge'] ?></option>
+                                <?php
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 col-2">
+                        <select class="form-control search-chat py-0 ps-5" id="select-category" data-category="">
+                            <option value="" data-category="">All Categories</option>
+                            <optgroup label="Category">
+                                <?php
+                                $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+                                $result_category = mysqli_query($conn, $query_category);
+                                while ($row_category = mysqli_fetch_array($result_category)) {
+                                ?>
+                                    <option value="<?= $row_category['product_category_id'] ?>" data-category="category"><?= $row_category['product_category'] ?></option>
+                                <?php
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 col-2">
+                        <select class="form-control search-chat py-0 ps-5" id="select-type" data-category="">
+                            <option value="" data-category="">All Product Types</option>
+                            <optgroup label="Product Type">
+                                <?php
+                                $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
+                                $result_type = mysqli_query($conn, $query_type);
+                                while ($row_type = mysqli_fetch_array($result_type)) {
+                                ?>
+                                    <option value="<?= $row_type['product_type_id'] ?>" data-category="type"><?= $row_type['product_type'] ?></option>
+                                <?php
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
                 </div>
-                <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-gauge" data-category="">
-                        <option value="" data-category="">All Gauges</option>
-                        <optgroup label="Product Gauges">
-                            <?php
-                            $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
-                            $result_gauge = mysqli_query($conn, $query_gauge);
-                            while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                            ?>
-                                <option value="<?= $row_gauge['product_gauge_id'] ?>" data-category="gauge"><?= $row_gauge['product_gauge'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-                <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-category" data-category="">
-                        <option value="" data-category="">All Categories</option>
-                        <optgroup label="Category">
-                            <?php
-                            $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
-                            $result_category = mysqli_query($conn, $query_category);
-                            while ($row_category = mysqli_fetch_array($result_category)) {
-                            ?>
-                                <option value="<?= $row_category['product_category_id'] ?>" data-category="category"><?= $row_category['product_category'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-                <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-profile" data-category="">
-                        <option value="" data-category="">All Profile Types</option>
-                        <optgroup label="Product Line">
-                            <?php
-                            $query_profile = "SELECT * FROM profile_type WHERE hidden = '0'";
-                            $result_profile = mysqli_query($conn, $query_profile);
-                            while ($row_profile = mysqli_fetch_array($result_profile)) {
-                            ?>
-                                <option value="<?= $row_profile['profile_type_id'] ?>" data-category="profile"><?= $row_profile['profile_type'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-                <div class="position-relative w-100 px-1 col-2">
-                    <select class="form-control search-chat py-0 ps-5" id="select-type" data-category="">
-                        <option value="" data-category="">All Product Types</option>
-                        <optgroup label="Product Type">
-                            <?php
-                            $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
-                            $result_type = mysqli_query($conn, $query_type);
-                            while ($row_type = mysqli_fetch_array($result_type)) {
-                            ?>
-                                <option value="<?= $row_type['product_type_id'] ?>" data-category="type"><?= $row_type['product_type'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
+                
             </div>
             <div class="table-responsive border rounded">
                 <table id="productTable" class="table align-middle text-nowrap mb-0">
@@ -238,10 +246,11 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     </nav>
                 </div>
             </div>
+            <!-- 
             <div class="row mt-4">
                 <div class="col-6">
                     <div class="d-flex justify-content-start">
-                        <!-- 
+                        
                         <button class="btn btn-primary mb-2 me-2" type="button" id="view_est_list">
                             <i class="fa fa-save fs-4 me-2"></i>
                             View Estimates
@@ -250,7 +259,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             <i class="fa fa-rotate-left fs-4 me-2"></i>
                             Return
                         </button> 
-                        -->
+                        
                         <a href="/">
                             <button class="btn btn-primary mb-2 me-2" type="button">
                                 <i class="fa fa-home fs-4 me-2"></i>
@@ -268,6 +277,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     </div>
                 </div>
             </div>
+            -->
         </div>
         
     </div>
@@ -289,6 +299,22 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             <div class="modal-footer">
                 <button id="saveDrawing" class="btn ripple btn-success" type="button">Save</button>
                 <button id="clearButton" class="btn ripple btn-warning" type="button">Reset</button>
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="trim_chart_modal">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Trim Chart</h6>
+            </div>
+            <div class="modal-body">
+                <img id="chartImage" src="../assets/images/trim_chart.jpg" alt="Trim Chart" class="img-fluid">
+            </div>
+            <div class="modal-footer">
                 <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
@@ -2033,7 +2059,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         }
 
         function performSearch(query) {
-            //var color_id = $('#select-color').find('option:selected').val();
+            var color_id = $('#select-color').find('option:selected').val();
             var grade_id = $('#select-grade').find('option:selected').val();
             var gauge_id = $('#select-gauge').find('option:selected').val();
             var category_id = $('#select-category').find('option:selected').val();
@@ -2045,6 +2071,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 type: 'POST',
                 data: {
                     query: query,
+                    color_id: color_id,
                     grade_id: grade_id,
                     gauge_id: gauge_id,
                     category_id: category_id,
@@ -2790,14 +2817,14 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             updateTable();
         });
 
-        //$('#select-color').select2();
+        $('#select-color').select2();
         $('#select-grade').select2();
         $('#select-gauge').select2();
         $('#select-category').select2();
         $('#select-profile').select2();
         $('#select-type').select2();
 
-        $(document).on('input change', '#text-srh, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive', function() {
+        $(document).on('input change', '#text-srh, #select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive', function() {
             performSearch($('#text-srh').val());
         });
 

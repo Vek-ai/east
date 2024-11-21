@@ -4,6 +4,14 @@ require 'includes/functions.php';
 
 $generate_rend_upc = generateRandomUPC();
 $picture_path = "images/product/product.jpg";
+
+$color_id = isset($_REQUEST['color_id']) ? $_REQUEST['color_id'] : '';
+$grade_id = isset($_REQUEST['grade_id']) ? $_REQUEST['grade_id'] : '';
+$gauge_id = isset($_REQUEST['gauge_id']) ? $_REQUEST['gauge_id'] : '';
+$category_id = isset($_REQUEST['category_id']) ? $_REQUEST['category_id'] : '';
+$profile_id = isset($_REQUEST['profile_id']) ? $_REQUEST['profile_id'] : '';
+$type_id = isset($_REQUEST['type_id']) ? $_REQUEST['type_id'] : '';
+$onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
 ?>
 <style>
     .select2-container {
@@ -30,6 +38,10 @@ $picture_path = "images/product/product.jpg";
         font-size: 12px;
         z-index: 9999; /* Ensure the remove button is on top of the image */
         cursor: pointer; /* Make sure it looks clickable */
+    }
+
+    #productList_filter {
+        display: none !important;
     }
 </style>
 <div class="container-fluid">
@@ -474,7 +486,6 @@ $picture_path = "images/product/product.jpg";
     </div>
 
     <div class="modal fade" id="updateProductModal" tabindex="-1" role="dialog" aria-labelledby="updateProductModal" aria-hidden="true">
-        
     </div>
 
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
@@ -505,160 +516,317 @@ $picture_path = "images/product/product.jpg";
             <div class="px-3"> 
                 <input type="checkbox" id="toggleActive" checked> Show Active Only
             </div>
+            <div class="p-2 text-right">
+                <input type="checkbox" id="onlyInStock" <?= $onlyInStock ? 'checked' : '' ?>> Show only In Stock
+            </div>
         </h3>
-        <table id="productList" class="table search-table align-middle text-nowrap">
-            <thead class="header-item">
-            <th>Product Name</th>
-            <th>SKU</th>
-            <th>Product Category</th>
-            <th>Product Line</th>
-            <th>Product Type</th>
-            <th>Status</th>
-            <th>Action</th>
-            </thead>
-            <tbody>
-            <?php
-                $no = 1;
-                $query_product = "SELECT * FROM product";
-                $result_product = mysqli_query($conn, $query_product);            
-                while ($row_product = mysqli_fetch_array($result_product)) {
-                    $product_id = $row_product['product_id'];
-                    $db_status = $row_product['status'];
+        
+        <div class="d-flex justify-content-between align-items-center mb-9">
+            <div class="position-relative w-100 col-2 px-0 mr-0">
+                <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
+                <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
+            </div>
+            <div class="col-10 d-flex justify-content-between align-items-center">
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-profile" data-category="">
+                        <option value="" data-category="">All Profile Types</option>
+                        <optgroup label="Product Line">
+                            <?php
+                            $query_profile = "SELECT * FROM profile_type WHERE hidden = '0'";
+                            $result_profile = mysqli_query($conn, $query_profile);
+                            while ($row_profile = mysqli_fetch_array($result_profile)) {
+                                $selected = ($profile_id == $row_profile['profile_type_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row_profile['profile_type_id'] ?>" data-category="profile" <?= $selected ?>><?= $row_profile['profile_type'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-color" data-category="">
+                        <option value="" data-category="">All Colors</option>
+                        <optgroup label="Product Colors">
+                            <?php
+                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                            $result_color = mysqli_query($conn, $query_color);
+                            while ($row_color = mysqli_fetch_array($result_color)) {
+                                $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row_color['color_id'] ?>" data-category="category" <?= $selected ?>><?= $row_color['color_name'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-grade" data-category="">
+                        <option value="" data-category="">All Grades</option>
+                        <optgroup label="Product Grades">
+                            <?php
+                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                            $result_grade = mysqli_query($conn, $query_grade);
+                            while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                $selected = ($grade_id == $row_grade['product_grade_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-gauge" data-category="">
+                        <option value="" data-category="">All Gauges</option>
+                        <optgroup label="Product Gauges">
+                            <?php
+                            $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                            $result_gauge = mysqli_query($conn, $query_gauge);
+                            while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                $selected = ($gauge_id == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row_gauge['product_gauge_id'] ?>" data-category="gauge" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-category" data-category="">
+                        <option value="" data-category="">All Categories</option>
+                        <optgroup label="Category">
+                            <?php
+                            $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+                            $result_category = mysqli_query($conn, $query_category);
+                            while ($row_category = mysqli_fetch_array($result_category)) {
+                                $selected = ($category_id == $row_category['product_category_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row_category['product_category_id'] ?>" data-category="category" <?= $selected ?>><?= $row_category['product_category'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 col-2">
+                    <select class="form-control search-chat py-0 ps-5" id="select-type" data-category="">
+                        <option value="" data-category="">All Product Types</option>
+                        <optgroup label="Product Type">
+                            <?php
+                            $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
+                            $result_type = mysqli_query($conn, $query_type);
+                            while ($row_type = mysqli_fetch_array($result_type)) {
+                                $selected = ($type_id == $row_type['product_type_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row_type['product_type_id'] ?>" data-category="type" <?= $selected ?>><?= $row_type['product_type'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="datatables">
+            <table id="productList" class="table search-table align-middle text-nowrap">
+                <thead class="header-item">
+                <th>Product Name</th>
+                <th>SKU</th>
+                <th>Product Category</th>
+                <th>Product Line</th>
+                <th>Product Type</th>
+                <th>Status</th>
+                <th>Action</th>
+                </thead>
+                <tbody>
+                <?php
+                    $no = 1;
+                    $query_product = "
+                        SELECT 
+                            p.*,
+                            COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
+                        FROM 
+                            product AS p
+                        LEFT JOIN 
+                            inventory AS i ON p.product_id = i.product_id
+                        WHERE 
+                            p.hidden = '0'
+                    ";
 
-                    if ($db_status == '0') {
-                        $status_icon = "text-danger ti ti-trash";
-                        $status = "<a href='#'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                    } else {
-                        $status_icon = "text-warning ti ti-reload";
-                        $status = "<a href='#'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+                    if (!empty($color_id)) {
+                        $query_product .= " AND p.color = '$color_id'";
                     }
 
-                    if(!empty($row_product['main_image'])){
-                        $picture_path = $row_product['main_image'];
-                    }else{
-                        $picture_path = "images/product/product.jpg";
+                    if (!empty($grade_id)) {
+                        $query_product .= " AND p.grade = '$grade_id'";
                     }
-   
-                ?>
-                    <!-- start row -->
-                    <tr class="search-items">
-                        <td>
-                            <a href="/?page=product_details&product_id=<?= $row_product['product_id'] ?>">
-                                <div class="d-flex align-items-center">
-                                    <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
-                                    <div class="ms-3">
-                                        <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['product_item'] ?></h6>
+
+                    if (!empty($gauge_id)) {
+                        $query_product .= " AND p.gauge = '$gauge_id'";
+                    }
+
+                    if (!empty($type_id)) {
+                        $query_product .= " AND p.product_type = '$type_id'";
+                    }
+
+                    if (!empty($profile_id)) {
+                        $query_product .= " AND p.profile = '$profile_id'";
+                    }
+
+                    if (!empty($category_id)) {
+                        $query_product .= " AND p.product_category = '$category_id'";
+                    }
+
+                    $query_product .= " GROUP BY p.product_id";
+
+                    if ($onlyInStock) {
+                        $query_product .= " HAVING total_quantity > 1";
+                    }
+
+                    $result_product = mysqli_query($conn, $query_product);            
+                    while ($row_product = mysqli_fetch_array($result_product)) {
+                        $product_id = $row_product['product_id'];
+                        $db_status = $row_product['status'];
+
+                        if ($db_status == '0') {
+                            $status_icon = "text-danger ti ti-trash";
+                            $status = "<a href='#'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+                        } else {
+                            $status_icon = "text-warning ti ti-reload";
+                            $status = "<a href='#'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+                        }
+
+                        if(!empty($row_product['main_image'])){
+                            $picture_path = $row_product['main_image'];
+                        }else{
+                            $picture_path = "images/product/product.jpg";
+                        }
+    
+                    ?>
+                        <!-- start row -->
+                        <tr class="search-items">
+                            <td>
+                                <a href="/?page=product_details&product_id=<?= $row_product['product_id'] ?>">
+                                    <div class="d-flex align-items-center">
+                                        <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
+                                        <div class="ms-3">
+                                            <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['product_item'] ?></h6>
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </td>
-                        <td><?= $row_product['product_sku'] ?></td>
-                        <td><?= getProductCategoryName($row_product['product_category']) ?></td>
-                        <td><?= getProductLineName($row_product['product_line']) ?></td>
-                        <td><?= getProductTypeName($row_product['product_type']) ?></td>
-                        <td><?= $status ?></td>
-                        <td>
-                            <div class="action-btn text-center">
-                                <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
-                                    <i class="text-primary ti ti-eye fs-7"></i>
                                 </a>
-                                <a href="#" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>">
-                                    <i class="text-warning ti ti-pencil fs-7"></i>
-                                </a>
-                                <a href="#" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $product_id ?>" data-status='<?= $db_status ?>'>
+                            </td>
+                            <td><?= $row_product['product_sku'] ?></td>
+                            <td><?= getProductCategoryName($row_product['product_category']) ?></td>
+                            <td><?= getProductLineName($row_product['product_line']) ?></td>
+                            <td><?= getProductTypeName($row_product['product_type']) ?></td>
+                            <td><?= $status ?></td>
+                            <td>
+                                <div class="action-btn text-center">
+                                    <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
+                                        <i class="text-primary ti ti-eye fs-7"></i>
+                                    </a>
+                                    <a href="#" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>">
+                                        <i class="text-warning ti ti-pencil fs-7"></i>
+                                    </a>
+                                    <a href="#" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $product_id ?>" data-status='<?= $db_status ?>'>
+                                        
+                                        <i class="text-danger ti ti-trash fs-7"></i>
+                                    </a>
                                     
-                                    <i class="text-danger ti ti-trash fs-7"></i>
-                                </a>
-                                
-                                
-                                <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_product['product_id'] ?>">
-                                    <i class="ti ti-trash fs-5"></i>
-                                </a> -->
-                            </div>
-                        </td>
-                    </tr>
-                <?php 
-                $no++;
-                } ?>
-            </tbody>
-            <script>
-                $(document).ready(function() {
-                    $(document).on('click', '.changeStatus', function(event) {
-                        var confirmed = confirm("Are you sure you want to change the status of this Product?");
-                        
-                        if (confirmed) {
-                            var product_id = $(this).data('id');
-                            var status = $(this).data('status');
-                            var no = $(this).data('no');
+                                    
+                                    <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_product['product_id'] ?>">
+                                        <i class="ti ti-trash fs-5"></i>
+                                    </a> -->
+                                </div>
+                            </td>
+                        </tr>
+                    <?php 
+                    $no++;
+                    } ?>
+                </tbody>
+                <script>
+                    $(document).ready(function() {
+                        $(document).on('click', '.changeStatus', function(event) {
+                            var confirmed = confirm("Are you sure you want to change the status of this Product?");
                             
+                            if (confirmed) {
+                                var product_id = $(this).data('id');
+                                var status = $(this).data('status');
+                                var no = $(this).data('no');
+                                
+                                $.ajax({
+                                    url: 'pages/product_ajax.php',
+                                    type: 'POST',
+                                    data: {
+                                        product_id: product_id,
+                                        status: status,
+                                        action: 'change_status'
+                                    },
+                                    success: function(response) {
+                                        if (response == 'success') {
+                                            var newStatus = (status == 1) ? 0 : 1;
+                                            var newStatusText = (status == 1) ? 'Inactive' : 'Active';
+                                            var newStatusClass = (status == 1) ? 'alert-danger bg-danger' : 'alert-success bg-success';
+                                            var newIconClass = (status == 1) ? 'text-danger ti ti-reload' : 'text-danger ti ti-trash';
+                                            var newButtonText = (status == 1) ? 'Archive' : 'Edit';
+                                            
+                                            $('#status-alert' + no)
+                                                .removeClass()
+                                                .addClass('alert ' + newStatusClass + ' text-white border-0 text-center py-1 px-2 my-0')
+                                                .text(newStatusText);
+                                            
+                                            $(".changeStatus[data-no='" + no + "']").data('status', newStatus);
+                                            $('.product' + no).toggleClass('emphasize-strike', newStatus == 0);
+                                            
+                                            $('#action-button-' + no).html('<a href="#" class="btn ' + (newStatus == 1 ? 'btn-light' : 'btn-primary') + ' py-1" data-id="' + product_id + '" data-row="' + no + '" style="border-radius: 10%;">' + newButtonText + '</a>');
+                                            
+                                            $('#delete_product_btn').find('i').removeClass().addClass(newIconClass + ' fs-7');
+                                            
+                                            $('#toggleActive').trigger('change');
+                                        } else {
+                                            alert('Failed to change status.');
+                                        }
+                                    },
+                                    error: function(jqXHR, textStatus, errorThrown) {
+                                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                                    }
+                                });
+                            }
+                        });
+
+
+
+                        $(document).on('click', '.hideProduct', function(event) {
+                            event.preventDefault();
+                            var product_id = $(this).data('id');
+                            var rowId = $(this).data('row');
                             $.ajax({
                                 url: 'pages/product_ajax.php',
                                 type: 'POST',
                                 data: {
                                     product_id: product_id,
-                                    status: status,
-                                    action: 'change_status'
+                                    action: 'hide_product'
                                 },
                                 success: function(response) {
                                     if (response == 'success') {
-                                        var newStatus = (status == 1) ? 0 : 1;
-                                        var newStatusText = (status == 1) ? 'Inactive' : 'Active';
-                                        var newStatusClass = (status == 1) ? 'alert-danger bg-danger' : 'alert-success bg-success';
-                                        var newIconClass = (status == 1) ? 'text-danger ti ti-reload' : 'text-danger ti ti-trash';
-                                        var newButtonText = (status == 1) ? 'Archive' : 'Edit';
-                                        
-                                        $('#status-alert' + no)
-                                            .removeClass()
-                                            .addClass('alert ' + newStatusClass + ' text-white border-0 text-center py-1 px-2 my-0')
-                                            .text(newStatusText);
-                                        
-                                        $(".changeStatus[data-no='" + no + "']").data('status', newStatus);
-                                        $('.product' + no).toggleClass('emphasize-strike', newStatus == 0);
-                                        
-                                        $('#action-button-' + no).html('<a href="#" class="btn ' + (newStatus == 1 ? 'btn-light' : 'btn-primary') + ' py-1" data-id="' + product_id + '" data-row="' + no + '" style="border-radius: 10%;">' + newButtonText + '</a>');
-                                        
-                                        $('#delete_product_btn').find('i').removeClass().addClass(newIconClass + ' fs-7');
-                                        
-                                        $('#toggleActive').trigger('change');
+                                        $('#product-row-' + rowId).remove();
                                     } else {
-                                        alert('Failed to change status.');
+                                        alert('Failed to hide product.');
                                     }
                                 },
                                 error: function(jqXHR, textStatus, errorThrown) {
                                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                                 }
                             });
-                        }
-                    });
-
-
-
-                    $(document).on('click', '.hideProduct', function(event) {
-                        event.preventDefault();
-                        var product_id = $(this).data('id');
-                        var rowId = $(this).data('row');
-                        $.ajax({
-                            url: 'pages/product_ajax.php',
-                            type: 'POST',
-                            data: {
-                                product_id: product_id,
-                                action: 'hide_product'
-                            },
-                            success: function(response) {
-                                if (response == 'success') {
-                                    $('#product-row-' + rowId).remove();
-                                } else {
-                                    alert('Failed to hide product.');
-                                }
-                            },
-                            error: function(jqXHR, textStatus, errorThrown) {
-                                alert('Error: ' + textStatus + ' - ' + errorThrown);
-                            }
                         });
                     });
-                });
-                </script>
-        </table>
+                    </script>
+            </table>
+        </div>
         </div>
     </div>
     </div>
@@ -743,7 +911,17 @@ $picture_path = "images/product/product.jpg";
         });
 
         var table = $('#productList').DataTable({
-            "order": [[1, "asc"]]
+            "order": [[1, "asc"]],
+            "pageLength": 100,
+            "lengthMenu": [
+                [10, 25, 50, 100],
+                [10, 25, 50, 100]
+            ],
+            "dom": 'lftp',
+        });
+
+        $('#text-srh').on('keyup', function () {
+            table.search(this.value).draw();
         });
 
         $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
@@ -943,7 +1121,6 @@ $picture_path = "images/product/product.jpg";
                         $('#responseHeaderContainer').addClass("bg-danger");
                         $('#response-modal').modal("show");
                     }
-
                     
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -952,6 +1129,55 @@ $picture_path = "images/product/product.jpg";
             });
         });
 
+        $('#select-color').select2();
+        $('#select-grade').select2();
+        $('#select-gauge').select2();
+        $('#select-category').select2();
+        $('#select-profile').select2();
+        $('#select-type').select2();
+
+        $('#select-color').on('change', function() {
+            updateURLParam('color_id', $(this).val());
+        });
+
+        $('#select-grade').on('change', function() {
+            updateURLParam('grade_id', $(this).val());
+        });
+
+        $('#select-gauge').on('change', function() {
+            updateURLParam('gauge_id', $(this).val());
+        });
+
+        $('#select-category').on('change', function() {
+            updateURLParam('category_id', $(this).val());
+        });
+
+        $('#select-profile').on('change', function() {
+            updateURLParam('profile_id', $(this).val());
+        });
+
+        $('#select-type').on('change', function() {
+            updateURLParam('type_id', $(this).val());
+        });
+
+        $('#onlyInStock').on('change', function() {
+            var checked = $(this).prop('checked') ? 1 : 0;
+            var url = new URL(window.location.href);
+            url.searchParams.set('onlyInStock', checked);
+            window.history.replaceState({}, '', url.toString());
+            window.location.reload();
+        });
+
+        function updateURLParam(param, value) {
+            var url = new URL(window.location.href);
+            if (value === 0 || value === '') {
+                url.searchParams.delete(param);
+            } else {
+                url.searchParams.set(param, value);
+            }
+            window.history.replaceState({}, '', url.toString());
+            window.location.reload();
+        }
 
     });
 </script>

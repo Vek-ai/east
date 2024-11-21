@@ -60,7 +60,11 @@ if(isset($_POST['fetch_available'])){
                             ?>
                         </tbody>
                     </table>
+                    <div class="fs-5 fw-bold mt-3">
+                        <h5>If desired Quantity is not shown, then there may be a manufacture lead time of 2-3 days.</h5>
+                    </div>
                 </div>
+                
                 <div class="modal-footer">
                     <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
                 </div>

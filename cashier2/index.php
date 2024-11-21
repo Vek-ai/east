@@ -64,6 +64,7 @@ if (!isset($_SESSION['userid'])) {
                     
                     <!-- Light Logo icon -->
                     <img src="../assets/images/logo.png" alt="homepage" class="light-logo" />
+                    <img src="../assets/images/logo.png" alt="homepage" class="dark-logo" />
                   </b>
                   <!--End Logo icon -->
                   <!-- Logo text -->
@@ -319,6 +320,12 @@ if (!isset($_SESSION['userid'])) {
                   </li>
                 </ul>
                 <ul class="navbar-nav gap-2 flex-row ms-auto align-items-center justify-content-center">
+
+                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
+                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="/" aria-expanded="false">
+                      <iconify-icon icon="ic:round-home" class="home-icon"></iconify-icon>
+                    </a>
+                  </li>
                 
                   <li class="nav-item nav-icon-hover-bg rounded-circle">
                     <a class="nav-link nav-icon-hover moon dark-layout" href="javascript:void(0)">
@@ -558,21 +565,21 @@ if (!isset($_SESSION['userid'])) {
                   </li>
 
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                      
                       <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="view_cart" aria-expanded="false">
-                          
-                          <span id="cartQty" class="me-1">
+                        <iconify-icon icon="ic:round-shopping-cart" class="cart-icon"></iconify-icon>
+                        <div class="cart-number">
+                          <span id="cartQty" class="cart-quantity">
                             <?php
                               $totalQuantity = 0;
                               if (!empty($_SESSION["cart"])) {
-                                  foreach ($_SESSION["cart"] as $item) {
-                                      $totalQuantity += $item["quantity_cart"];
-                                  }
+                                foreach ($_SESSION["cart"] as $item) {
+                                  $totalQuantity += $item["quantity_cart"];
+                                }
                               }
                               echo $totalQuantity;
                             ?>
                           </span>
-                          <iconify-icon icon="ic:round-shopping-cart" class="search-icon"></iconify-icon>
+                        </div>
                       </a>
 
                       <div class="dropdown-menu py-0 content-dd dropdown-menu-animate-up dropdown-menu-end" 
@@ -1402,6 +1409,40 @@ if (!isset($_SESSION['userid'])) {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
   
   <script>
+  function handleTheme() {
+    function setThemeAttributes(theme, darkDisplay, lightDisplay, sunDisplay, moonDisplay) {
+      $("html").attr("data-bs-theme", theme);
+      const layoutElement = $(`#${theme}-layout`);
+      if (layoutElement.length) {
+        layoutElement.prop("checked", true);
+      }
+      $(`.${darkDisplay}`).hide();
+      $(`.${lightDisplay}`).css("display", "flex");
+      $(`.${sunDisplay}`).hide();
+      $(`.${moonDisplay}`).css("display", "flex");
+    }
+
+    const currentTheme = $("html").attr("data-bs-theme") || "dark";
+    setThemeAttributes(
+      currentTheme,
+      currentTheme === "dark" ? "dark-logo" : "light-logo",
+      currentTheme === "dark" ? "light-logo" : "dark-logo",
+      currentTheme === "dark" ? "moon" : "sun",
+      currentTheme === "dark" ? "sun" : "moon"
+    );
+
+    $(".dark-layout").on("click", function () {
+      setThemeAttributes("dark", "dark-logo", "light-logo", "moon", "sun");
+    });
+
+    $(".light-layout").on("click", function () {
+      setThemeAttributes("light", "light-logo", "dark-logo", "sun", "moon");
+    });
+  }
+
+  handleTheme();
+
+
   function loadCartItemsHeader() {
       $.ajax({
           url: 'pages/index_ajax.php',
