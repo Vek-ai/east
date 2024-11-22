@@ -561,7 +561,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     </div>
 </div>
 
-<div class="modal fade" id="response-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+<div class="modal fade" id="response_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
     <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
         <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
@@ -580,13 +580,80 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     </div>
 </div>
 
-<div class="modal fade" id="chng-color-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
+<div class="modal fade" id="chng_color_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Color</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="change_color_container"></div>
+            </div>
+            <div class="modal-footer">
+                <div class="form-actions">
+                    <div class="card-body">
+                        <button type="button" id="save_color_change" class="btn bg-success-subtle text-light waves-effect text-start">Save</button>
+                        <button type="button" class="btn bg-danger-subtle text-light waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-<div class="modal fade" id="chng-price-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
+<div class="modal fade" id="chng_price_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Price Group</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="change_price_container"></div>
+            </div>
+            <div class="modal-footer">
+                <div class="form-actions">
+                    <div class="card-body">
+                        <button type="button" id="save_price_change" class="btn bg-success-subtle text-light waves-effect text-start">Save</button>
+                        <button type="button" class="btn bg-danger-subtle text-light waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-<div class="modal fade" id="chng-grade-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
+<div class="modal fade" id="chng_grade_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Grade</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="change_grade_container"></div>
+            </div>
+                <div class="modal-footer">
+                    <div class="form-actions">
+                        <div class="card-body">
+                            <button type="button" id="save_grade_change" class="btn bg-success-subtle text-light waves-effect text-start">Save</button>
+                            <button type="button" class="btn bg-danger-subtle text-light waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            
+        </div>
+    </div>
+</div>
 
-<div class="modal fade" id="prompt-quantity-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
+<div class="modal fade" id="prompt_quantity_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
 
 <script>
     let map1;
@@ -1638,8 +1705,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     fetch_change_color_modal: 'fetch_change_color_modal'
                 },
                 success: function(response) {
-                    $('#chng-color-modal').html(response);
-                    $('#chng-color-modal').modal('show');
+                    $('#change_color_container').html(response);
+                    $('#chng_color_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1655,8 +1722,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     fetch_change_price_modal: 'fetch_change_price_modal'
                 },
                 success: function(response) {
-                    $('#chng-price-modal').html(response);
-                    $('#chng-price-modal').modal('show');
+                    $('#change_price_container').html(response);
+                    $('#chng_price_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1672,8 +1739,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     fetch_change_grade_modal: 'fetch_change_grade_modal'
                 },
                 success: function(response) {
-                    $('#chng-grade-modal').html(response);
-                    $('#chng-grade-modal').modal('show');
+                    $('#change_grade_container').html(response);
+                    $('#chng_grade_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1700,8 +1767,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         $('#responseMsg').text("Product discount changed successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
-                        $('#response-modal').modal("show");
-                        $('#response-modal').on('hide.bs.modal', function () {
+                        $('#response_modal').modal("show");
+                        $('#response_modal').on('hide.bs.modal', function () {
                             location.reload();
                         });
                     }else{
@@ -1709,8 +1776,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         $('#responseMsg').text(response);
                         $('#responseHeaderContainer').removeClass("bg-success");
                         $('#responseHeaderContainer').addClass("bg-danger");
-                        $('#response-modal').modal("show");
-                        $('#response-modal').on('hide.bs.modal', function () {
+                        $('#response_modal').modal("show");
+                        $('#response_modal').on('hide.bs.modal', function () {
                             location.reload();
                         });
                     }
@@ -1745,8 +1812,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         $('#responseMsg').text("Product Grades Changed successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
-                        $('#response-modal').modal("show");
-                        $('#response-modal').on('hide.bs.modal', function () {
+                        $('#response_modal').modal("show");
+                        $('#response_modal').on('hide.bs.modal', function () {
                             location.reload();
                         });
                     }else{
@@ -1754,8 +1821,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         $('#responseMsg').text(response);
                         $('#responseHeaderContainer').removeClass("bg-success");
                         $('#responseHeaderContainer').addClass("bg-danger");
-                        $('#response-modal').modal("show");
-                        $('#response-modal').on('hide.bs.modal', function () {
+                        $('#response_modal').modal("show");
+                        $('#response_modal').on('hide.bs.modal', function () {
                             location.reload();
                         });
                     }
@@ -1861,8 +1928,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     fetch_prompt_quantity: 'fetch_prompt_quantity'
                 },
                 success: function(response) {
-                    $('#prompt-quantity-modal').html(response);
-                    $('#prompt-quantity-modal').modal('show');
+                    $('#prompt_quantity_modal').html(response);
+                    $('#prompt_quantity_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -2136,8 +2203,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             $('#responseMsg').text("Product Returned successfully.");
                             $('#responseHeaderContainer').removeClass("bg-danger");
                             $('#responseHeaderContainer').addClass("bg-success");
-                            $('#response-modal').modal("show");
-                            $('#response-modal').on('hide.bs.modal', function () {
+                            $('#response_modal').modal("show");
+                            $('#response_modal').on('hide.bs.modal', function () {
                                 location.reload();
                             });
                         }
@@ -2273,13 +2340,13 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         $('#responseMsg').text("Added to Cart.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
-                        $('#response-modal').modal("show");
+                        $('#response_modal').modal("show");
                     }else{
                         $('#responseHeader').text("Failed");
                         $('#responseMsg').text(response);
                         $('#responseHeaderContainer').removeClass("bg-success");
                         $('#responseHeaderContainer').addClass("bg-danger");
-                        $('#response-modal').modal("show");
+                        $('#response_modal').modal("show");
                     }
                     loadCart();
                 },

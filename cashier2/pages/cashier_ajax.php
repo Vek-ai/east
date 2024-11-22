@@ -450,7 +450,7 @@ if (isset($_POST['save_estimate'])) {
     $customerid = intval($_SESSION['customer_id']);
     $cart = $_SESSION['cart'];
     $estimated_date = date('Y-m-d H:i:s');
-    $discount = floatval(getCustomerDiscount($customerid)) / 100;
+    $discount_default = floatval(getCustomerDiscount($customerid)) / 100;
 
     $customer_details = getCustomerDetails($customerid);
     $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
@@ -473,8 +473,13 @@ if (isset($_POST['save_estimate'])) {
 
     $total_actual_price = 0;
     $total_discounted_price = 0;
-
     foreach ($cart as $item) {
+        $discount = 0;
+        if(isset($item['used_discount'])){
+            $discount = $item['used_discount'];
+        }else{
+            $discount = $discount_default;
+        }
         $unit_price = floatval($item['unit_price']);
         $quantity_cart = intval($item['quantity_cart']);
         $product_details = getProductDetails($item['product_id']);
@@ -499,6 +504,12 @@ if (isset($_POST['save_estimate'])) {
 
         $values = [];
         foreach ($cart as $item) {
+            $discount = 0;
+            if(isset($item['used_discount'])){
+                $discount = $item['used_discount'];
+            }else{
+                $discount = $discount_default;
+            }
             $product_id = intval($item['product_id']);
             $product_details = getProductDetails($product_id);
             $quantity_cart = intval($item['quantity_cart']);
@@ -517,10 +528,15 @@ if (isset($_POST['save_estimate'])) {
             $actual_price = $unit_price * $total_length;
             $discounted_price = $actual_price * (1 - $discount);
 
-            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade')";
+            $curr_discount = intval(getCustomerDiscountProfile($customerid));
+            $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
+            $used_discount = !empty($item['used_discount']) ? $item['used_discount'] : getCustomerDiscount($customerid);
+
+            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount')";
+
         }
 
-        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade) VALUES ";
+        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
@@ -638,7 +654,7 @@ if (isset($_POST['save_order'])) {
     $cashierid = intval($_SESSION['userid']);
     $cart = $_SESSION['cart'];
     $order_date = date('Y-m-d H:i:s');
-    $discount = floatval(getCustomerDiscount($customerid)) / 100;
+    $discount_default = floatval(getCustomerDiscount($customerid)) / 100;
 
     $customer_details = getCustomerDetails($customerid);
     $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
@@ -663,6 +679,12 @@ if (isset($_POST['save_order'])) {
     $total_discounted_price = 0;
 
     foreach ($cart as $item) {
+        $discount = 0;
+        if(isset($item['used_discount'])){
+            $discount = $item['used_discount'];
+        }else{
+            $discount = $discount_default;
+        }
         $product_id = intval($item['product_id']);
         $product_details = getProductDetails($product_id);
         $quantity_cart = intval($item['quantity_cart']);
@@ -706,10 +728,14 @@ if (isset($_POST['save_order'])) {
             $discounted_price = $actual_price * (1 - $discount);
             $product_category = intval($product_details['product_category']);
 
-            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade')";
+            $curr_discount = intval(getCustomerDiscountProfile($customerid));
+            $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
+            $used_discount = !empty($item['used_discount']) ? $item['used_discount'] : getCustomerDiscount($customerid);
+
+            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount')";
         }
 
-        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade) VALUES ";
+        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
@@ -905,62 +931,42 @@ if(isset($_POST['fetch_change_color_modal'])){
         $category_ids = array_unique($category_ids);
     }
     ?>
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Change Color</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                <div id="change_color_container" class="d-flex align-items-center justify-content-between w-100">
-                    <div class="col-md-5">
-                        <label class="form-label" for="orig-colors" style="display:block; width: 100%;">Change Color From:</label>
-                        <select id="orig-colors" class="form-select">
-                            <option value="">Select Original Color</option>
-                            <?php
-                            foreach ($cart_colors as $color_id) {
-                                echo '<option value="' . $color_id . '" data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>
-                    <span class="px-2"> TO </span>
-                    <div class="col-md-5">
-                        <label class="form-label" for="in-stock-colors" style="display:block; width: 100%;">New Color:</label>
-                        <select id="in-stock-colors" class="form-select">
-                            <option value="">Select Available Color</option>
-                            <?php
-                            foreach ($in_stock_colors as $color_id) {
-                                echo '<option value="' . $color_id . '" data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>
-                </div>
-
-                    <div id="change_category_container" class="mt-4">
-                        <label class="form-label" for="category_id" style="display:block; width: 100%;">Only for this category (Optional)</label>
-                        <select id="category_id" class="form-select">
-                            <option value="">Select Available Category</option>
-                            <?php
-                            foreach ($category_ids as $category_id) {
-                                echo '<option value="' . $category_id . '">' . getProductCategoryName($category_id) . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <div class="form-actions">
-                        <div class="card-body">
-                            <button type="button" id="save_color_change" class="btn bg-success-subtle text-light waves-effect text-start">Save</button>
-                            <button type="button" class="btn bg-danger-subtle text-light waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </div>
-                </div>
+        <div id="change_color_container" class="d-flex align-items-center justify-content-between w-100">
+            <div class="col-md-5">
+                <label class="form-label" for="orig-colors" style="display:block; width: 100%;">Change Color From:</label>
+                <select id="orig-colors" class="form-select">
+                    <option value="">Select Original Color</option>
+                    <?php
+                    foreach ($cart_colors as $color_id) {
+                        echo '<option value="' . $color_id . '" data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
+                    }
+                    ?>
+                </select>
             </div>
+            <span class="px-2"> TO </span>
+            <div class="col-md-5">
+                <label class="form-label" for="in-stock-colors" style="display:block; width: 100%;">New Color:</label>
+                <select id="in-stock-colors" class="form-select">
+                    <option value="">Select Available Color</option>
+                    <?php
+                    foreach ($in_stock_colors as $color_id) {
+                        echo '<option value="' . $color_id . '" data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
+                    }
+                    ?>
+                </select>
+            </div>
+        </div>
+
+        <div id="change_category_container" class="mt-4">
+            <label class="form-label" for="category_id" style="display:block; width: 100%;">Only for this category (Optional)</label>
+            <select id="category_id" class="form-select">
+                <option value="">Select Available Category</option>
+                <?php
+                foreach ($category_ids as $category_id) {
+                    echo '<option value="' . $category_id . '">' . getProductCategoryName($category_id) . '</option>';
+                }
+                ?>
+            </select>
         </div>
         <script>
             $(document).ready(function() {
@@ -998,59 +1004,40 @@ if(isset($_POST['fetch_change_color_modal'])){
 
 if(isset($_POST['fetch_change_price_modal'])){
     ?>
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Change Price Group</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="change_price_container" class="d-flex align-items-center justify-content-between w-100">
-                        <div class="col-md-12">
-                            <label class="form-label" for="price_group_select" style="display:block; width: 100%;">Discount Category</label>
-                            <select id="price_group_select" class="form-select custom-select text-start">
-                                <option value="">Select Discount</option>
-                                <?php
-                                    $query = "SELECT * FROM customer_types WHERE status = 1";
-                                    $result = mysqli_query($conn, $query);
-                                    if ($result) {
-                                        while ($row = mysqli_fetch_assoc($result)) {
-                                        ?>
-                                            <option value="<?= $row['customer_price_cat'] ?>"><?= $row['customer_type_name'] ?></option>
-                                        <?php
-                                        }
-                                    }
-                                ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div id="change_price_container" class="d-flex align-items-center justify-content-between w-100 mt-4">
-                        <div class="col-md-12">
-                            <label class="form-label" for="price_group_select" style="display:block; width: 100%;">Products Affected</label>
-                            <select id="product_select" class="form-select custom-select text-start" multiple="multiple">
-                                <?php
-                                    foreach ($_SESSION["cart"] as $keys => $values) {
-                                        ?>
-                                            <option value="<?= $values['product_id'] ?>"><?= $values['product_item'] ?></option>
-                                        <?php
-                                    }
-                                ?>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <div class="form-actions">
-                        <div class="card-body">
-                            <button type="button" id="save_price_change" class="btn bg-success-subtle text-light waves-effect text-start">Save</button>
-                            <button type="button" class="btn bg-danger-subtle text-light waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </div>
-                </div>
+        <div id="change_price_container" class="d-flex align-items-center justify-content-between w-100">
+            <div class="col-md-12">
+                <label class="form-label" for="price_group_select" style="display:block; width: 100%;">Discount Category</label>
+                <select id="price_group_select" class="form-select custom-select text-start">
+                    <option value="">Select Discount</option>
+                    <?php
+                        $query = "SELECT * FROM customer_types WHERE status = 1";
+                        $result = mysqli_query($conn, $query);
+                        if ($result) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                            ?>
+                                <option value="<?= $row['customer_price_cat'] ?>"><?= $row['customer_type_name'] ?></option>
+                            <?php
+                            }
+                        }
+                    ?>
+                </select>
             </div>
         </div>
+        <div id="change_price_container" class="d-flex align-items-center justify-content-between w-100 mt-4">
+            <div class="col-md-12">
+                <label class="form-label" for="price_group_select" style="display:block; width: 100%;">Products Affected</label>
+                <select id="product_select" class="form-select custom-select text-start" multiple="multiple">
+                    <?php
+                        foreach ($_SESSION["cart"] as $keys => $values) {
+                            ?>
+                                <option value="<?= $values['product_id'] ?>"><?= $values['product_item'] ?></option>
+                            <?php
+                        }
+                    ?>
+                </select>
+            </div>
+        </div>
+        
         <script>
             $(document).ready(function() {
                 $("#price_group_select").select2({
@@ -1112,62 +1099,44 @@ if(isset($_POST['fetch_change_grade_modal'])){
         });
     }
     ?>
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Change Grade</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                <div id="change_color_container" class="d-flex align-items-center justify-content-between w-100">
-                    <div class="col-md-5">
-                        <label class="form-label" for="orig-grade" style="display:block; width: 100%;">Change Grade From:</label>
-                        <select id="orig-grade" class="form-select">
-                            <option value="">Select Original Grade</option>
-                            <?php
-                            foreach ($cart_grade as $grade_id) {
-                                echo '<option value="' . $grade_id . '">' . getGradeName($grade_id) . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>
-                    <span class="px-2"> TO </span>
-                    <div class="col-md-5">
-                        <label class="form-label" for="in-stock-grade" style="display:block; width: 100%;">New Grade:</label>
-                        <select id="in-stock-grade" class="form-select">
-                            <option value="">Select Available Grade</option>
-                            <?php
-                            foreach ($in_stock_grade as $stock_grade_id) {
-                                echo '<option value="' . $stock_grade_id . '">' . getGradeName($stock_grade_id) . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>
-                </div>
-                <div id="change_category_container" class="mt-4">
-                    <label class="form-label" for="category_id" style="display:block; width: 100%;">Only for this category (Optional)</label>
-                    <select id="category_id" class="form-select">
-                        <option value="">Select Available Category</option>
-                        <?php
-                        foreach ($category_ids as $category_id) {
-                            echo '<option value="' . $category_id . '">' . getProductCategoryName($category_id) . '</option>';
-                        }
-                        ?>
-                    </select>
-                </div>
-                </div>
-                <div class="modal-footer">
-                    <div class="form-actions">
-                        <div class="card-body">
-                            <button type="button" id="save_grade_change" class="btn bg-success-subtle text-light waves-effect text-start">Save</button>
-                            <button type="button" class="btn bg-danger-subtle text-light waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </div>
-                </div>
+        <div id="change_color_container" class="d-flex align-items-center justify-content-between w-100">
+            <div class="col-md-5">
+                <label class="form-label" for="orig-grade" style="display:block; width: 100%;">Change Grade From:</label>
+                <select id="orig-grade" class="form-select">
+                    <option value="">Select Original Grade</option>
+                    <?php
+                    foreach ($cart_grade as $grade_id) {
+                        echo '<option value="' . $grade_id . '">' . getGradeName($grade_id) . '</option>';
+                    }
+                    ?>
+                </select>
+            </div>
+            <span class="px-2"> TO </span>
+            <div class="col-md-5">
+                <label class="form-label" for="in-stock-grade" style="display:block; width: 100%;">New Grade:</label>
+                <select id="in-stock-grade" class="form-select">
+                    <option value="">Select Available Grade</option>
+                    <?php
+                    foreach ($in_stock_grade as $stock_grade_id) {
+                        echo '<option value="' . $stock_grade_id . '">' . getGradeName($stock_grade_id) . '</option>';
+                    }
+                    ?>
+                </select>
             </div>
         </div>
+        <div id="change_category_container" class="mt-4">
+            <label class="form-label" for="category_id" style="display:block; width: 100%;">Only for this category (Optional)</label>
+            <select id="category_id" class="form-select">
+                <option value="">Select Available Category</option>
+                <?php
+                foreach ($category_ids as $category_id) {
+                    echo '<option value="' . $category_id . '">' . getProductCategoryName($category_id) . '</option>';
+                }
+                ?>
+            </select>
+        </div>
+    
+        
         <script>
             $(document).ready(function() {
                 $("#category_id").select2({

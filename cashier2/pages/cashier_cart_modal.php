@@ -210,6 +210,9 @@ if(isset($_POST['fetch_cart'])){
                             }
 
                             $color_id = $values["custom_color"];
+                            if (isset($values["used_discount"])){
+                                $discount = $values["used_discount"] / 100;
+                            }
                         ?>
                             <tr>
                                 <td data-color="<?= getColorName($color_id) ?>">
