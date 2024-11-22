@@ -512,7 +512,7 @@ if (isset($_POST['save_estimate'])) {
             $response['success'] = true;
 
             unset($_SESSION['cart']);
-            
+
             $response['message'] = "Estimate and products successfully saved.";
             $response['estimate_id'] = $estimateid;
         } else {
@@ -753,6 +753,7 @@ if (isset($_POST['search_customer'])) {
             OR 
             customer_last_name LIKE '%$search%')
             AND status != '3'
+            AND status != '0'
         LIMIT 15
     ";
 

@@ -2138,7 +2138,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
               
         $(document).on('click', '#save_estimate', function(event) {
             var discount = $('#est_discount').val();
-            var delivery_amt = $('#delivery_amt').val();
+            var delivery_amt = $('#est_delivery_amt').val();
             var cash_amt = $('#est_cash').val();
             var credit_amt = $('#est_credit').val();
             var job_name = $('#est_job_name').val();
