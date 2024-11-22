@@ -96,7 +96,7 @@ if(isset($_POST['fetch_order'])){
             display: none;
         }
     </style>
-    <div class="card-body">
+    <div class="card-body datatables">
         <form id="msform">
             <fieldset class="order-page-1">
                 <div id="product_details" class="product-details table-responsive text-nowrap">
@@ -493,10 +493,102 @@ if(isset($_POST['fetch_order'])){
     </div>
 
     <script>
-    $(document).ready(function() {
+        $(document).ready(function() {
+            let animating = false;
 
-    });
+            $(document).on('change', '#delivery_amt', function() {
+                var product_cost = parseFloat($('#total_amt').text()) || 0;
+                var delivery_cost = parseFloat($(this).val()) || 0;
+                var total_payable = product_cost + delivery_cost;
+                $('#total_payable').text(total_payable.toFixed(2));
+                $('#order_cash').val(total_payable.toFixed(2));
+            });
 
+            $(document).on("click", "#next_page_order", function() {
+                if (animating) return false;
+                animating = true;
+                var current_fs = $('.order-page-1');
+                var next_fs = $('.order-page-2');
+                $('#next_page_order').addClass("d-none");
+                $('#prev_page_order').removeClass("d-none");
+                $('#save_order').removeClass("d-none");
+                next_fs.show();
+                current_fs.animate({ opacity: 0 }, {
+                    step: function(now, mx) {
+                        var scale = 1 - (1 - now) * 0.2;
+                        var left = (now * 50) + "%";
+                        var opacity = 1 - now;
+                        current_fs.css({
+                            'transform': 'scale(' + scale + ')',
+                            'position': 'absolute'
+                        });
+                        next_fs.css({ 'left': left, 'opacity': opacity });
+                    },
+                    duration: 800,
+                    complete: function() {
+                        current_fs.hide();
+                        animating = false;
+                    },
+                    easing: 'easeInOutBack'
+                });
+            });
+
+            $(document).on("click", "#prev_page_order", function() {
+                if (animating) return false;
+                animating = true;
+                var current_fs = $('.order-page-2');
+                var previous_fs = $('.order-page-1');
+                $('#next_page_order').removeClass("d-none");
+                $('#prev_page_order').addClass("d-none");
+                $('#save_order').addClass("d-none");
+                previous_fs.show();
+                current_fs.animate({ opacity: 0 }, {
+                    step: function(now, mx) {
+                        var scale = 0.8 + (1 - now) * 0.2;
+                        var left = ((1 - now) * 50) + "%";
+                        var opacity = 1 - now;
+                        current_fs.css({ 'left': left });
+                        previous_fs.css({ 'transform': 'scale(' + scale + ')', 'opacity': opacity });
+                    },
+                    duration: 800,
+                    complete: function() {
+                        current_fs.hide();
+                        animating = false;
+                    },
+                    easing: 'easeInOutBack'
+                });
+                
+            });
+
+            setTimeout(function() {    
+                $(".color-order").each(function() {
+                    if ($(this).data('select2')) {
+                        $(this).select2('destroy');
+                    }
+                    $(this).select2({
+                        width: '300px',
+                        placeholder: "Select...",
+                        dropdownAutoWidth: true,
+                        dropdownParent: $('#orderTable'),
+                        templateResult: formatOption,
+                        templateSelection: formatSelected
+                    });
+                });
+
+                $(".usage-order").each(function() {
+                    if ($(this).data('select2')) {
+                        $(this).select2('destroy');
+                    }
+                    $(this).select2({
+                        width: '300px',
+                        placeholder: "Select...",
+                        dropdownAutoWidth: true,
+                        dropdownParent: $('#orderTable')
+                    });
+                });
+
+            }, 100);
+        });
     </script>
 
     <?php

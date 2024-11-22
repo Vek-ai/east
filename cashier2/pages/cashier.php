@@ -514,51 +514,113 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 <div class="form-group col-12">
                     <div id="customer_est_section">
                         <?php 
-                            if(!empty($_SESSION["customer_id"])){
-                                $customer_id = $_SESSION["customer_id"];
-                                $customer_details = getCustomerDetails($customer_id);
-                                $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
-                                $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
-                            ?>
+                        if(!empty($_SESSION["customer_id"])){
+                            $customer_id = $_SESSION["customer_id"];
+                            $customer_details = getCustomerDetails($customer_id);
+                            $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
+                            $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
+                            $lat = !empty($customer_details['lat']) ? $customer_details['lat'] : 0;
+                            $lng = !empty($customer_details['lng']) ? $customer_details['lng'] : 0;
 
-                            <div class="form-group row align-items-center">
-                                <div class="col-6">
-                                    <label class="mb-0 me-3">Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
-                                    <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_estimate">
-                                        <i class="fe fe-reload"></i> Change
-                                    </button>
-                                    <div class="mt-1"> 
+                            $addressDetails = implode(', ', [
+                                $customer_details['address'] ?? '',
+                                $customer_details['city'] ?? '',
+                                $customer_details['state'] ?? '',
+                                $customer_details['zip'] ?? ''
+                            ]);
+                        ?>
+                        <div class="form-group row align-items-center">
+                            <div class="col-6">
+                                <label>Customer Name: <?= get_customer_name($_SESSION["customer_id"]); ?></label>
+                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="customer_change_est">
+                                    <i class="fe fe-reload"></i> Change
+                                </button>
+                                <div class="mt-1"> 
+                                    <div id="defaultDeliverDetailsEst">
                                         <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
+                                        <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="address_change_est">
+                                            <i class="fe fe-reload"></i> Change
+                                        </button>
                                     </div>
-                                </div>
-                                <div class="col-6">
-                                    <div>
-                                        <span class="fw-bold">Credit Limit:</span><br>
-                                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
-                                    </div>
-                                    <div>
-                                        <span class="fw-bold">Unpaid Credit:</span><br>
-                                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
+                                    <div class="mt-1">
+                                        <div id="deliverDetailsEst" class="row d-none">
+                                            <div class="col-12">
+                                                <label>Recipient:</label>
+                                                <div class="row mb-3">
+                                                    <div class="col-sm-6">
+                                                        <input type="text" id="est_deliver_fname" name="est_deliver_fname" value="<?= $customer_details['customer_first_name'] ?>" class="form-control diffNameInput" placeholder="First Name">
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <input type="text" id="est_deliver_lname" name="est_deliver_lname" value="<?= $customer_details['customer_last_name'] ?>" class="form-control diffNameInput" placeholder="Last Name">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label>Address:</label>
+                                                <div class="row mb-3">
+                                                    <div class="col-sm-3">
+                                                        <input type="text" id="est_deliver_address" name="est_deliver_address" value="<?= $customer_details['address'] ?>" class="form-control" placeholder="Address">
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <input type="text" id="est_deliver_city" name="est_deliver_city" value="<?= $customer_details['city'] ?>" class="form-control" placeholder="City">
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <input type="text" id="est_deliver_state" name="est_deliver_state" value="<?= $customer_details['state'] ?>" class="form-control" placeholder="State">
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <input type="text" id="est_deliver_zip" name="est_deliver_zip" value="<?= $customer_details['zip'] ?>" class="form-control" placeholder="Zip">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <input type="hidden" id="est_lat" name="lat" class="form-control" value="<?= $lat ?>" />
+                                            <input type="hidden" id="est_lng" name="lng" class="form-control" value="<?= $lng ?>" />
+
+                                            <div class="col-12 text-end">
+                                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="openMap">
+                                                    <i class="fa fa-map"></i> Open Map
+                                                </button>
+                                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="cancel_change_address" >
+                                                    <i class="fa fa-rotate-left"></i> Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
-                        <?php } else { ?>
-                            <div class="form-group row align-items-center">
-                                <div class="col-6">
-                                    <label>Customer Name</label>
-                                    <div class="input-group">
-                                        <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_estimate">
-                                        <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
-                                            <span class="input-group-text"> + </span>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="col-6">
+                            <div class="col-6">
+                                <div>
                                     <span class="fw-bold">Credit Limit:</span><br>
-                                    <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+                                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                                </div>
+                                <div>
+                                    <span class="fw-bold">Unpaid Credit:</span><br>
+                                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
                                 </div>
                             </div>
-                        <?php } ?>
+                        </div>
+
+                        <?php } else {?>
+                        
+                        <div class="form-group row align-items-center">
+                            <div class="col-3">
+                                <label>Customer Name</label>
+                                <div class="input-group">
+                                    <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
+                                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
+                                        <span class="input-group-text"> + </span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <span class="fw-bold">Credit Limit:</span><br>
+                                <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+                            </div>
+                        </div>
+                        
+                    <?php } ?>
                     </div>
                     <input type='hidden' id='customer_id_estimate' name="customer_id"/>
                 </div>
@@ -566,14 +628,19 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary d-flex align-items-center mb-2 me-2" id="save_estimate">
-                    <i class="fa fa-save fs-4 me-2"></i>
-                    Save
+                <button class="btn ripple btn-primary next" type="button" id="next_page_est">
+                    <i class="fe fe-hard-drive"></i> Next
                 </button>
-                <a href="#" class="btn ripple btn-success d-none" type="button" id="print_estimate_category" target="_blank">
+                <button class="btn ripple btn-primary previous d-none" type="button" id="prev_page_est">
+                    <i class="fe fe-hard-drive"></i> Previous
+                </button>
+                <button class="btn ripple btn-success d-none" type="button" id="save_estimate">
+                    <i class="fe fe-hard-drive"></i> Save
+                </button>
+                <a href="#" class="btn ripple btn-light text-dark d-none" type="button" id="print_estimate_category" target="_blank">
                     <i class="fe fe-print"></i> Print Details
                 </a>
-                <a href="#" class="btn ripple btn-warning d-none" type="button" id="print_estimate" target="_blank">
+                <a href="#" class="btn ripple btn-warning text-dark d-none" type="button" id="print_estimate" target="_blank">
                     <i class="fe fe-print"></i> Print Total
                 </a>
                 <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
@@ -874,6 +941,30 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     $('#lat').val(lat);
                     $('#lng').val(lng);
 
+                    $('#est_deliver_address').val(
+                        address.road || 
+                        address.neighbourhood || 
+                        address.suburb || 
+                        ''
+                    );
+                    $('#est_deliver_city').val(
+                        address.city || 
+                        address.town || 
+                        address.village || 
+                        ''
+                    );
+                    $('#est_deliver_state').val(
+                        address.state || 
+                        address.province || 
+                        address.region || 
+                        address.county || 
+                        ''
+                    );
+                    $('#est_deliver_zip').val(address.postcode || '');
+
+                    $('#est_lat').val(lat);
+                    $('#est_lng').val(lng);
+
                 } else {
                     console.error("Address not found for these coordinates.");
                     $(inputId).val("Address not found");
@@ -963,6 +1054,26 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         }
 
         $('#delivery_amt').val(deliveryAmount).trigger('change');
+    }
+
+    function calculateDeliveryAmountEst() {
+        var customerLat = parseFloat($('#est_lat').val());
+        var customerLng = parseFloat($('#est_lng').val());
+        var lat2Float = parseFloat(lat2);
+        var lng2Float = parseFloat(lng2);
+
+        if (customerLat !== 0 && customerLng !== 0 && lat2Float !== 0 && lng2Float !== 0) {
+            const point1 = new google.maps.LatLng(customerLat, customerLng);
+            const point2 = new google.maps.LatLng(lat2Float, lng2Float);
+            const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
+            const distanceInMiles = distanceInMeters / 1609.34;
+            var deliveryAmount = amtPerMile * distanceInMiles;
+            deliveryAmount = deliveryAmount.toFixed(2);
+        } else {
+            deliveryAmount = amtDeliveryDefault.toFixed(2);
+        }
+
+        $('#est_delivery_amt').val(deliveryAmount).trigger('change');
     }
 
     function updateColor(element){
@@ -1249,39 +1360,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 fetch_cart: "fetch_cart"
             },
             success: function(response) {
-                
                 $('#cart-tbl').html(''); 
-                
-                setTimeout(function() {
-                    $(".color-cart").each(function() {
-                        if ($(this).data('select2')) {
-                            $(this).select2('destroy');
-                        }
-                        $(this).select2({
-                            width: '300px',
-                            placeholder: "Select...",
-                            dropdownAutoWidth: true,
-                            dropdownParent: $('#cartTable'),
-                            templateResult: formatOption,
-                            templateSelection: formatSelected
-                        });
-                    });
-
-                    $(".usage-cart").each(function() {
-                        if ($(this).data('select2')) {
-                            $(this).select2('destroy');
-                        }
-                        $(this).select2({
-                            width: '300px',
-                            placeholder: "Select...",
-                            dropdownAutoWidth: true,
-                            dropdownParent: $('#cartTable')
-                        });
-                    });
-                }, 100);
-
                 $('#cart-tbl').html(response); 
-
                 loadCartItemsHeader();
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -1299,34 +1379,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             },
             success: function(response) {
                 $('#order-tbl').html('');
-                setTimeout(function() {    
-                    $(".color-order").each(function() {
-                        if ($(this).data('select2')) {
-                            $(this).select2('destroy');
-                        }
-                        $(this).select2({
-                            width: '300px',
-                            placeholder: "Select...",
-                            dropdownAutoWidth: true,
-                            dropdownParent: $('#orderTable'),
-                            templateResult: formatOption,
-                            templateSelection: formatSelected
-                        });
-                    });
-
-                    $(".usage-order").each(function() {
-                        if ($(this).data('select2')) {
-                            $(this).select2('destroy');
-                        }
-                        $(this).select2({
-                            width: '300px',
-                            placeholder: "Select...",
-                            dropdownAutoWidth: true,
-                            dropdownParent: $('#orderTable')
-                        });
-                    });
-
-                }, 100);
                 $('#order-tbl').html(response);
                 calculateDeliveryAmount();
                 loadCartItemsHeader();
@@ -1346,34 +1398,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             },
             success: function(response) {
                 $('#estimate-tbl').html('');
-                setTimeout(function() {
-                    $(".color-est").each(function() {
-                        if ($(this).data('select2')) {
-                            $(this).select2('destroy');
-                        }
-                        $(this).select2({
-                            width: '300px',
-                            placeholder: "Select...",
-                            dropdownAutoWidth: true,
-                            dropdownParent: $('#estimateTable'),
-                            templateResult: formatOption,
-                            templateSelection: formatSelected
-                        });
-                    });
-
-                    $(".usage-est").each(function() {
-                        if ($(this).data('select2')) {
-                            $(this).select2('destroy');
-                        }
-                        $(this).select2({
-                            width: '300px',
-                            placeholder: "Select...",
-                            dropdownAutoWidth: true,
-                            dropdownParent: $('#estimateTable')
-                        });
-                    });
-                }, 100);
                 $('#estimate-tbl').html(response);
+                calculateDeliveryAmountEst();
                 loadCartItemsHeader();
                 
             },
@@ -2012,8 +2038,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             maxPageButtons = 5,
             stepSize = 5;
 
-        let animating = false;
-
         function updateTable() {
             var $rows = $('#productTableBody tr');
             totalRows = $rows.length;
@@ -2092,70 +2116,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         }
 
-        $(document).on('change', '#delivery_amt', function() {
-            var product_cost = parseFloat($('#total_amt').text()) || 0;
-            var delivery_cost = parseFloat($(this).val()) || 0;
-            var total_payable = product_cost + delivery_cost;
-            $('#total_payable').text(total_payable.toFixed(2));
-            $('#order_cash').val(total_payable.toFixed(2));
-        });
-
-        $(document).on("click", "#next_page_order", function() {
-            if (animating) return false;
-            animating = true;
-            var current_fs = $('.order-page-1');
-            var next_fs = $('.order-page-2');
-            $('#next_page_order').addClass("d-none");
-            $('#prev_page_order').removeClass("d-none");
-            $('#save_order').removeClass("d-none");
-            next_fs.show();
-            current_fs.animate({ opacity: 0 }, {
-                step: function(now, mx) {
-                    var scale = 1 - (1 - now) * 0.2;
-                    var left = (now * 50) + "%";
-                    var opacity = 1 - now;
-                    current_fs.css({
-                        'transform': 'scale(' + scale + ')',
-                        'position': 'absolute'
-                    });
-                    next_fs.css({ 'left': left, 'opacity': opacity });
-                },
-                duration: 800,
-                complete: function() {
-                    current_fs.hide();
-                    animating = false;
-                },
-                easing: 'easeInOutBack'
-            });
-        });
-
-        $(document).on("click", "#prev_page_order", function() {
-            
-            if (animating) return false;
-            animating = true;
-            var current_fs = $('.order-page-2');
-            var previous_fs = $('.order-page-1');
-            $('#next_page_order').removeClass("d-none");
-            $('#prev_page_order').addClass("d-none");
-            $('#save_order').addClass("d-none");
-            previous_fs.show();
-            current_fs.animate({ opacity: 0 }, {
-                step: function(now, mx) {
-                    var scale = 0.8 + (1 - now) * 0.2;
-                    var left = ((1 - now) * 50) + "%";
-                    var opacity = 1 - now;
-                    current_fs.css({ 'left': left });
-                    previous_fs.css({ 'transform': 'scale(' + scale + ')', 'opacity': opacity });
-                },
-                duration: 800,
-                complete: function() {
-                    current_fs.hide();
-                    animating = false;
-                },
-                easing: 'easeInOutBack'
-            });
-            
-        });
         
         $(document).on("click", "#add-to-cart-btn", function() {
             var id = $(this).data('id');
@@ -2178,15 +2138,33 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
               
         $(document).on('click', '#save_estimate', function(event) {
             var discount = $('#est_discount').val();
+            var delivery_amt = $('#delivery_amt').val();
+            var cash_amt = $('#est_cash').val();
+            var credit_amt = $('#est_credit').val();
             var job_name = $('#est_job_name').val();
             var job_po = $('#est_job_po').val();
+            var deliver_address = $('#est_deliver_address').val();
+            var deliver_city = $('#est_deliver_city').val();
+            var deliver_state = $('#est_deliver_state').val();
+            var deliver_zip = $('#est_deliver_zip').val();
+            var deliver_fname = $('#est_deliver_fname').val();
+            var deliver_lname = $('#est_deliver_lname').val();
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
+                    cash_amt: cash_amt,
+                    credit_amt: credit_amt,
                     discount: discount,
+                    delivery_amt: delivery_amt,
                     job_name: job_name,
                     job_po: job_po,
+                    deliver_address: deliver_address,
+                    deliver_city: deliver_city,
+                    deliver_state: deliver_state,
+                    deliver_zip: deliver_zip,
+                    deliver_fname: deliver_fname,
+                    deliver_lname: deliver_lname,
                     save_estimate: 'save_estimate'
                 },
                 success: function(response) {
@@ -2494,6 +2472,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
         $(document).on('click', '#cancel_change_address', function(event) {
             $('#customer_cash_section').load(location.href + " #customer_cash_section");
+            $('#customer_est_section').load(location.href + " #customer_est_section");
         });
 
         $(document).on('click', '#customer_change_cash', function(event) {
@@ -2562,7 +2541,18 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             $('#order_deliver_zip').val('');
         });
 
-        $(document).on('click', '#customer_change_estimate', function(event) {
+        $(document).on('click', '#address_change_est', function(event) {
+            $('#deliverDetailsEst').removeClass('d-none');
+            $('#defaultDeliverDetailsEst').addClass('d-none');
+            $('#est_deliver_fname').val('');
+            $('#est_deliver_lname').val('');
+            $('#est_deliver_address').val('');
+            $('#est_deliver_city').val('');
+            $('#est_deliver_state').val('');
+            $('#est_deliver_zip').val('');
+        });
+
+        $(document).on('click', '#customer_change_est', function(event) {
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
