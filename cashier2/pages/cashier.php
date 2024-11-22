@@ -1681,28 +1681,23 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
 
-        $(document).on('click', '#save_color_change', function () {
-            var orig_color = $('#orig-colors').val();
-            var in_stock_color = $('#in-stock-colors').val();
-            var category_id = $('#category_id').val();
+        $(document).on('click', '#save_price_change', function () {
+            var price_group_select = $('#price_group_select').val();
+            var product_select = $('#product_select').val();
 
-            console.log(orig_color);
-            console.log(in_stock_color);
-            console.log(category_id);
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
-                    orig_color: orig_color,
-                    in_stock_color: in_stock_color,
-                    category_id: category_id,
-                    change_color: 'change_color'
+                    price_group_select: price_group_select,
+                    product_select: product_select,
+                    change_price: 'change_price'
                 },
                 success: function(response) {
                     $('.modal').modal("hide");
                     if (response.trim() === "success") {
                         $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Product Colors Changed successfully.");
+                        $('#responseMsg').text("Product discount changed successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");

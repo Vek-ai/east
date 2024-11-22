@@ -24,6 +24,7 @@ if (!isset($_SESSION['userid'])) {
 
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" />
+  <link rel="stylesheet" href="../assets/libs/bootstrap/dist/css/bootstrap-multiselect.css">
   <link rel="stylesheet" href="../assets/libs/select2/dist/css/select2.min.css">
   <link rel="stylesheet" href="../assets/libs/owl.carousel/dist/assets/owl.carousel.min.css">
   <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css" />
@@ -34,9 +35,6 @@ if (!isset($_SESSION['userid'])) {
   <!-- Core Css -->
   <link rel="stylesheet" href="../assets/css/styles.css" />
   <link rel="stylesheet" href="css/cashier.css" />
-
-
-  
 
   <title>East Kentucky Metal</title>
 
@@ -1395,6 +1393,7 @@ if (!isset($_SESSION['userid'])) {
   <script src="../assets/js/theme/theme.js"></script>
   <script src="../assets/js/theme/app.min.js"></script>
   <script src="../assets/js/theme/feather.min.js"></script>
+  <script src="../assets/libs/bootstrap/dist/js/bootstrap-multiselect.min.js"></script>
 
   <!-- solar icons -->
   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>

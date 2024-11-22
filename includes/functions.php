@@ -635,6 +635,52 @@ function getCustomerDiscount($customer_id) {
     return max($discount_loyalty, $discount_customer);
 }
 
+function getCustomerDiscountLoyalty($customer_id) {
+    global $conn;
+    $customer_id = mysqli_real_escape_string($conn, $customer_id);
+    $customer_details = getCustomerDetails($customer_id);
+    $isLoyalty = intval($customer_details['loyalty']);
+
+    $discount_loyalty = 0;
+    if(!empty($isLoyalty)){
+        $customer_ttl_orders = getCustomerOrderTotal($customer_id);
+        $query = "
+            SELECT discount 
+            FROM loyalty_program 
+            WHERE accumulated_total_orders <= '$customer_ttl_orders' 
+            ORDER BY discount DESC 
+            LIMIT 1";
+        $result = mysqli_query($conn, $query);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $discount_loyalty = floatval($row['discount']) ?? 0;
+        }
+    }
+
+    return $discount_loyalty;
+}
+
+function getCustomerDiscountProfile($customer_id) {
+    global $conn;
+    $customer_id = mysqli_real_escape_string($conn, $customer_id);
+
+    $query = "
+        SELECT ct.customer_price_cat
+        FROM customer AS c
+        LEFT JOIN customer_types AS ct
+        ON c.customer_type_id = ct.customer_type_id
+        WHERE c.customer_id = '$customer_id'";
+    
+    $result = mysqli_query($conn, $query);
+    $discount_customer = 0;
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $discount_customer = floatval($row['customer_price_cat']) ?? 0;
+    }
+
+    return $discount_customer;
+}
+
 function getCustomerOrderTotal($customerid){
     global $conn;
     $query = "SELECT SUM(discounted_price) AS total_orders FROM orders WHERE customerid = '$customerid'";
