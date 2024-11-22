@@ -343,11 +343,11 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                 <i class="fa fa-trash fs-4 me-2"></i>
                                 Clear Cart
                             </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="change_price_group" style="background-color: #007bff; color: white;">
+                            <button type="button" class="btn mb-2 me-2 flex-fill" id="btnPriceGroupModal" style="background-color: #007bff; color: white;">
                                 <i class="fa fa-tag fs-4 me-2"></i>
                                 Change Price Group
                             </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="change_grade" style="background-color: #6c757d; color: white;">
+                            <button type="button" class="btn mb-2 me-2 flex-fill" id="btnGradeModal" style="background-color: #6c757d; color: white;">
                                 <i class="fa fa-chart-line fs-4 me-2"></i>
                                 Change Grade
                             </button>
@@ -582,6 +582,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
 <div class="modal fade" id="chng-color-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
 
+<div class="modal fade" id="chng-price-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
+
+<div class="modal fade" id="chng-grade-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
+
 <div class="modal fade" id="prompt-quantity-modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"></div>
 
 <script>
@@ -811,6 +815,29 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 id: id,
                 line: line,
                 set_color: "set_color"
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updateGrade(element){
+        var grade = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: {
+                grade: grade,
+                id: id,
+                line: line,
+                set_grade: "set_grade"
             },
             success: function(response) {
                 console.log(response);
@@ -1620,6 +1647,40 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
 
+        $(document).on('click', '#btnPriceGroupModal', function () {
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    fetch_change_price_modal: 'fetch_change_price_modal'
+                },
+                success: function(response) {
+                    $('#chng-price-modal').html(response);
+                    $('#chng-price-modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#btnGradeModal', function () {
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    fetch_change_grade_modal: 'fetch_change_grade_modal'
+                },
+                success: function(response) {
+                    $('#chng-grade-modal').html(response);
+                    $('#chng-grade-modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
         $(document).on('click', '#save_color_change', function () {
             var orig_color = $('#orig-colors').val();
             var in_stock_color = $('#in-stock-colors').val();
@@ -1641,7 +1702,52 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     $('.modal').modal("hide");
                     if (response.trim() === "success") {
                         $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Product Returned successfully.");
+                        $('#responseMsg').text("Product Colors Changed successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    }else{
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#save_grade_change', function () {
+            var orig_grade = $('#orig-grade').val();
+            var in_stock_grade = $('#in-stock-grade').val();
+            var category_id = $('#category_id').val();
+
+            console.log(orig_grade);
+            console.log(in_stock_grade);
+            console.log(category_id);
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    orig_grade: orig_grade,
+                    in_stock_grade: in_stock_grade,
+                    category_id: category_id,
+                    change_grade: 'change_grade'
+                },
+                success: function(response) {
+                    $('.modal').modal("hide");
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Product Grades Changed successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");

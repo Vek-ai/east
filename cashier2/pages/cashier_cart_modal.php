@@ -266,8 +266,22 @@ if(isset($_POST['fetch_cart'])){
                                     </select>
                                 </td>
                                 <td>
-                                    <?php echo getGradeFromID($data_id); ?>
-                                    
+                                    <div class="input-group text-start">
+                                        <select id="grade<?= $no ?>" class="form-control grade-cart" name="grade" onchange="updateGrade(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
+                                            <option value="">Select Grade...</option>
+                                            <?php
+                                            $query_grade = "SELECT * FROM product_grade WHERE status = 1";
+                                            $result_grade = mysqli_query($conn, $query_grade);
+
+                                            while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                                $selected = ($values['custom_grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
+                                                ?>
+                                                <option value="<?= $row_grade['product_grade_id']; ?>" <?= $selected; ?>><?= $row_grade['product_grade']; ?></option>
+                                                <?php
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
                                 </td>
                                 <td>
                                     <?php echo getProfileFromID($data_id); ?>
@@ -592,6 +606,18 @@ if(isset($_POST['fetch_cart'])){
                         dropdownParent: $('#cartTable'),
                         templateResult: formatOption,
                         templateSelection: formatSelected
+                    });
+                });
+
+                $(".grade-cart").each(function() {
+                    if ($(this).data('select2')) {
+                        $(this).select2('destroy');
+                    }
+                    $(this).select2({
+                        width: '300px',
+                        placeholder: "Select...",
+                        dropdownAutoWidth: true,
+                        dropdownParent: $('#cartTable')
                     });
                 });
 
