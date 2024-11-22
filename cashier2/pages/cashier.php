@@ -608,7 +608,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             <div class="col-3">
                                 <label>Customer Name</label>
                                 <div class="input-group">
-                                    <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
+                                    <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_estimate">
                                     <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
                                         <span class="input-group-text"> + </span>
                                     </a>
@@ -965,12 +965,13 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     $('#est_lat').val(lat);
                     $('#est_lng').val(lng);
 
+                    calculateDeliveryAmount();
+                    calculateDeliveryAmountEst();
+
                 } else {
                     console.error("Address not found for these coordinates.");
                     $(inputId).val("Address not found");
                 }
-
-                calculateDeliveryAmount();
             },
             error: function() {
                 console.error("Error retrieving address from Nominatim.");
@@ -2116,7 +2117,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         }
 
-        
         $(document).on("click", "#add-to-cart-btn", function() {
             var id = $(this).data('id');
             $.ajax({
@@ -2361,6 +2361,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 success: function(response) {
                     if (response.trim() == 'success') {
                         $('#customer_cart_section').load(location.href + " #customer_cart_section");
+                        $('#customer_est_section').load(location.href + " #customer_est_section");
+                        $('#customer_cash_section').load(location.href + " #customer_cash_section");
                         loadOrderContents();
                         loadEstimateContents();
                     }
@@ -2434,8 +2436,13 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 },
                 success: function(response) {
                     if (response.trim() == 'success') {
+                        $('#customer_cart_section').load(location.href + " #customer_cart_section");
                         $('#customer_est_section').load(location.href + " #customer_est_section");
+                        $('#customer_cash_section').load(location.href + " #customer_cash_section");
                         loadOrderContents();
+                        $('#next_page_est').removeClass("d-none");
+                        $('#prev_page_est').addClass("d-none");
+                        $('#save_estimate').addClass("d-none");
                         loadEstimateContents();
                     }
                 },
@@ -2456,6 +2463,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 },
                 success: function(response) {
                     if (response.trim() == 'success') {
+                        $('#customer_cart_section').load(location.href + " #customer_cart_section");
+                        $('#customer_est_section').load(location.href + " #customer_est_section");
                         $('#customer_cash_section').load(location.href + " #customer_cash_section");
                         loadOrderContents();
                         $('#next_page_order').removeClass("d-none");
