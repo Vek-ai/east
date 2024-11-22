@@ -509,6 +509,7 @@ if (isset($_POST['save_estimate'])) {
             $estimate_length = floatval($item['estimate_length']);
             $estimate_length_inch = floatval($item['estimate_length_inch']);
             $custom_color = $item['custom_color'];
+            $custom_grade = $item['custom_grade'];
             $is_sold_by_feet = intval($product_details['sold_by_feet']);
             
             $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
@@ -516,10 +517,10 @@ if (isset($_POST['save_estimate'])) {
             $actual_price = $unit_price * $total_length;
             $discounted_price = $actual_price * (1 - $discount);
 
-            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price' , '$custom_color')";
+            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade')";
         }
 
-        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color) VALUES ";
+        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
@@ -696,6 +697,7 @@ if (isset($_POST['save_order'])) {
             $estimate_length = floatval($item['estimate_length']);
             $estimate_length_inch = floatval($item['estimate_length_inch']);
             $custom_color = $item['custom_color'];
+            $custom_grade = $item['custom_grade'];
             $is_sold_by_feet = intval($product_details['sold_by_feet']);
 
             $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
@@ -704,10 +706,10 @@ if (isset($_POST['save_order'])) {
             $discounted_price = $actual_price * (1 - $discount);
             $product_category = intval($product_details['product_category']);
 
-            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color')";
+            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade')";
         }
 
-        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color) VALUES ";
+        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
