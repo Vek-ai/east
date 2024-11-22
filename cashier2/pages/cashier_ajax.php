@@ -958,8 +958,8 @@ if(isset($_POST['fetch_change_color_modal'])){
         </div>
 
         <div id="change_category_container" class="mt-4">
-            <label class="form-label" for="category_id" style="display:block; width: 100%;">Only for this category (Optional)</label>
-            <select id="category_id" class="form-select">
+            <label class="form-label" for="category_id_color" style="display:block; width: 100%;">Only for this category (Optional)</label>
+            <select id="category_id_color" class="form-select">
                 <option value="">Select Available Category</option>
                 <?php
                 foreach ($category_ids as $category_id) {
@@ -970,7 +970,7 @@ if(isset($_POST['fetch_change_color_modal'])){
         </div>
         <script>
             $(document).ready(function() {
-                $("#category_id").select2({
+                $("#category_id_color").select2({
                     width: '300px',
                     placeholder: "Select Category",
                     dropdownAutoWidth: true,
@@ -1025,7 +1025,7 @@ if(isset($_POST['fetch_change_price_modal'])){
         </div>
         <div id="change_price_container" class="d-flex align-items-center justify-content-between w-100 mt-4">
             <div class="col-md-12">
-                <label class="form-label" for="price_group_select" style="display:block; width: 100%;">Products Affected</label>
+                <label class="form-label" for="product_select" style="display:block; width: 100%;">Products Affected</label>
                 <select id="product_select" class="form-select custom-select text-start" multiple="multiple">
                     <?php
                         foreach ($_SESSION["cart"] as $keys => $values) {
@@ -1099,7 +1099,7 @@ if(isset($_POST['fetch_change_grade_modal'])){
         });
     }
     ?>
-        <div id="change_color_container" class="d-flex align-items-center justify-content-between w-100">
+        <div id="change_grade_container" class="d-flex align-items-center justify-content-between w-100">
             <div class="col-md-5">
                 <label class="form-label" for="orig-grade" style="display:block; width: 100%;">Change Grade From:</label>
                 <select id="orig-grade" class="form-select">
@@ -1152,7 +1152,7 @@ if(isset($_POST['fetch_change_grade_modal'])){
                     width: '300px',
                     placeholder: "Select Grade...",
                     dropdownAutoWidth: true,
-                    dropdownParent: $('#change_color_container'),
+                    dropdownParent: $('#change_grade_container'),
                     templateResult: formatOption,
                     templateSelection: formatOption
                 });
@@ -1161,7 +1161,7 @@ if(isset($_POST['fetch_change_grade_modal'])){
                     width: '300px',
                     placeholder: "Select Grade...",
                     dropdownAutoWidth: true,
-                    dropdownParent: $('#change_color_container'),
+                    dropdownParent: $('#change_grade_container'),
                     templateResult: formatOption,
                     templateSelection: formatOption
                 });
