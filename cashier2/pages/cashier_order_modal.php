@@ -96,6 +96,117 @@ if(isset($_POST['fetch_order'])){
             display: none;
         }
     </style>
+    <div id="customer_cash_section">
+        <?php 
+        if(!empty($_SESSION["customer_id"])){
+            $customer_id = $_SESSION["customer_id"];
+            $customer_details = getCustomerDetails($customer_id);
+            $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
+            $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
+            $lat = !empty($customer_details['lat']) ? $customer_details['lat'] : 0;
+            $lng = !empty($customer_details['lng']) ? $customer_details['lng'] : 0;
+
+            $addressDetails = implode(', ', [
+                $customer_details['address'] ?? '',
+                $customer_details['city'] ?? '',
+                $customer_details['state'] ?? '',
+                $customer_details['zip'] ?? ''
+            ]);
+        ?>
+        <div class="form-group row align-items-center">
+            <div class="col-6">
+                <label>Customer Name: <?= get_customer_name($_SESSION["customer_id"]); ?></label>
+                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="customer_change_cash">
+                    <i class="fe fe-reload"></i> Change
+                </button>
+                <div class="mt-1"> 
+                    <div id="defaultDeliverDetails">
+                        <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
+                        <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="address_change_cash">
+                            <i class="fe fe-reload"></i> Change
+                        </button>
+                    </div>
+                    <div class="mt-1">
+                        <div id="deliverDetails" class="row d-none">
+                            <div class="col-12">
+                                <label>Recipient:</label>
+                                <div class="row mb-3">
+                                    <div class="col-sm-6">
+                                        <input type="text" id="order_deliver_fname" name="order_deliver_fname" value="<?= $customer_details['customer_first_name'] ?>" class="form-control diffNameInput" placeholder="First Name">
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <input type="text" id="order_deliver_lname" name="order_deliver_lname" value="<?= $customer_details['customer_last_name'] ?>" class="form-control diffNameInput" placeholder="Last Name">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label>Address:</label>
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <input type="text" id="order_deliver_address" name="order_deliver_address" value="<?= $customer_details['address'] ?>" class="form-control" placeholder="Address">
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <input type="text" id="order_deliver_city" name="order_deliver_city" value="<?= $customer_details['city'] ?>" class="form-control" placeholder="City">
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <input type="text" id="order_deliver_state" name="order_deliver_state" value="<?= $customer_details['state'] ?>" class="form-control" placeholder="State">
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <input type="text" id="order_deliver_zip" name="order_deliver_zip" value="<?= $customer_details['zip'] ?>" class="form-control" placeholder="Zip">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input type="hidden" id="lat" name="lat" class="form-control" value="<?= $lat ?>" />
+                            <input type="hidden" id="lng" name="lng" class="form-control" value="<?= $lng ?>" />
+
+                            <div class="col-12 text-end">
+                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="openMap">
+                                    <i class="fa fa-map"></i> Open Map
+                                </button>
+                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="cancel_change_address_order" >
+                                    <i class="fa fa-rotate-left"></i> Cancel
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div>
+                    <span class="fw-bold">Credit Limit:</span><br>
+                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                </div>
+                <div>
+                    <span class="fw-bold">Unpaid Credit:</span><br>
+                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
+                </div>
+            </div>
+        </div>
+
+        <?php } else {?>
+        
+        <div class="form-group row align-items-center">
+            <div class="col-3">
+                <label>Customer Name</label>
+                <div class="input-group">
+                    <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
+                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
+                        <span class="input-group-text"> + </span>
+                    </a>
+                </div>
+            </div>
+            <div class="col-3">
+                <span class="fw-bold">Credit Limit:</span><br>
+                <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+            </div>
+        </div>
+        
+    <?php } ?>
+    </div>
+    <input type='hidden' id='customer_id_cash' name="customer_id"/>
     <div class="card-body datatables">
         <form id="msform">
             <fieldset class="order-page-1">
@@ -493,7 +604,96 @@ if(isset($_POST['fetch_order'])){
     </div>
 
     <script>
+        function init_select_cash(){
+            $("#customer_select_cash").autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "pages/cashier_ajax.php",
+                        type: 'post',
+                        dataType: "json",
+                        data: {
+                            search_customer: request.term
+                        },
+                        success: function(data) {
+                            response(data);
+                        },
+                        error: function(xhr, status, error) {
+                            console.log("Error: " + xhr.responseText);
+                        }
+                    });
+                },
+                select: function(event, ui) {
+                    $('#customer_select_cash').val(ui.item.label);
+                    $('#customer_id_cash').val(ui.item.value);
+                    return false;
+                },
+                focus: function(event, ui) {
+                    $('#customer_select_cash').val(ui.item.label);
+                    return false;
+                },
+                appendTo: "#cashmodal", 
+                open: function() {
+                    $(".ui-autocomplete").css("z-index", 1050);
+                }
+            });
+        }
         $(document).ready(function() {
+            init_select_cash();
+            
+            $(document).on('change', '#customer_select_cash', function(event) {
+                var customer_id = $('#customer_id_cash').val();
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        customer_id: customer_id,
+                        change_customer: "change_customer"
+                    },
+                    success: function(response) {
+                        if (response.trim() == 'success') {
+                            loadOrderContents();
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            });
+
+            $(document).on('click', '#customer_change_cash', function(event) {
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        unset_customer: "unset_customer"
+                    },
+                    success: function(response) {
+                        loadOrderContents();
+                        $('#next_page_order').removeClass("d-none");
+                        $('#prev_page_order').addClass("d-none");
+                        $('#save_order').addClass("d-none");
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            });
+            
+            $(document).on('click', '#cancel_change_address_order', function(event) {
+                loadOrderContents();
+            });
+            
+            $(document).on('click', '#address_change_cash', function(event) {
+                $('#deliverDetails').removeClass('d-none');
+                $('#defaultDeliverDetails').addClass('d-none');
+                $('#order_deliver_fname').val('');
+                $('#order_deliver_lname').val('');
+                $('#order_deliver_address').val('');
+                $('#order_deliver_city').val('');
+                $('#order_deliver_state').val('');
+                $('#order_deliver_zip').val('');
+            });
+
             let animating = false;
 
             $(document).on('change', '#delivery_amt', function() {

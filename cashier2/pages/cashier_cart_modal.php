@@ -92,6 +92,55 @@ if(isset($_POST['fetch_cart'])){
             background-color: transparent;
         }
     </style>
+    <div id="customer_cart_section">
+        <?php 
+            if(!empty($_SESSION["customer_id"])){
+                $customer_id = $_SESSION["customer_id"];
+                $customer_details = getCustomerDetails($customer_id);
+                $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
+                $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
+            ?>
+
+            <div class="form-group row align-items-center">
+                <div class="col-6">
+                    <label class="mb-0 me-3">Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
+                    <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">
+                        <i class="fe fe-reload"></i> Change
+                    </button>
+                    <div class="mt-1"> 
+                        <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div>
+                        <span class="fw-bold">Credit Limit:</span><br>
+                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                    </div>
+                    <div>
+                        <span class="fw-bold">Unpaid Credit:</span><br>
+                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
+                    </div>
+                </div>
+            </div>
+        <?php } else { ?>
+            <div class="form-group row align-items-center">
+                <div class="col-6">
+                    <label>Customer Name</label>
+                    <div class="input-group">
+                        <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cart">
+                        <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
+                            <span class="input-group-text"> + </span>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <span class="fw-bold">Credit Limit:</span><br>
+                    <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+                </div>
+            </div>
+        <?php } ?>
+    </div>
+    <input type='hidden' id='customer_id_cart' name="customer_id"/>
     <div class="card-body">
         <div class="product-details table-responsive text-nowrap">
             <table id="cartTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
@@ -459,7 +508,78 @@ if(isset($_POST['fetch_cart'])){
         </div>
     </div>   
     <script>
+        function initAutocomplete(){
+            $("#customer_select_cart").autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "pages/cashier_ajax.php",
+                        type: 'post',
+                        dataType: "json",
+                        data: {
+                            search_customer: request.term
+                        },
+                        success: function(data) {
+                            response(data);
+                        },
+                        error: function(xhr, status, error) {
+                            console.log("Error: " + xhr.responseText);
+                        }
+                    });
+                },
+                select: function(event, ui) {
+                    $('#customer_select_cart').val(ui.item.label);
+                    $('#customer_id_cart').val(ui.item.value);
+                    return false;
+                },
+                focus: function(event, ui) {
+                    $('#customer_select_cart').val(ui.item.label);
+                    return false;
+                },
+                appendTo: "#view_cart_modal", 
+                open: function() {
+                    $(".ui-autocomplete").css("z-index", 1050);
+                }
+            });
+        }
         $(document).ready(function() {
+            initAutocomplete();
+
+            $(document).on('change', '#customer_select_cart', function(event) {
+                var customer_id = $('#customer_id_cart').val();
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        customer_id: customer_id,
+                        change_customer: "change_customer"
+                    },
+                    success: function(response) {
+                        if (response.trim() == 'success') {
+                            loadCart();
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            });
+
+            $(document).on('click', '#customer_change_cart', function(event) {
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        unset_customer: "unset_customer"
+                    },
+                    success: function(response) { 
+                        loadCart();
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            });
+
             setTimeout(function() {
                 $(".color-cart").each(function() {
                     if ($(this).data('select2')) {
