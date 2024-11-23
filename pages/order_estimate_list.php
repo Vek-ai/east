@@ -101,7 +101,7 @@ require 'includes/functions.php';
     </div>
 </div>
 
-<div class="modal" id="view_order_estimate_details_modal" style="background-color: rgba(0, 0, 0, 0.5);"></div>
+<div class="modal fade" id="view_order_estimate_details_modal" style="background-color: rgba(0, 0, 0, 0.5);"></div>
 
 <script>
     $("#customer_search").autocomplete({
