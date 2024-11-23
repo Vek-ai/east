@@ -540,12 +540,15 @@ if (isset($_POST['save_estimate'])) {
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
-            $response['success'] = true;
-
-            unset($_SESSION['cart']);
-
-            $response['message'] = "Estimate and products successfully saved.";
-            $response['estimate_id'] = $estimateid;
+            $query = "INSERT INTO order_estimate (order_estimate_id, type) VALUES ('$estimateid','1')";
+            if ($conn->query($query) === TRUE) {
+                unset($_SESSION['cart']);
+                $response['success'] = true;
+                $response['message'] = "Estimate and products successfully saved.";
+                $response['estimate_id'] = $estimateid;
+            }else{
+                $response['message'] = "Error inserting order estimate records: " . $conn->error;
+            }
         } else {
             $response['message'] = "Error inserting estimate products: " . $conn->error;
         }
@@ -739,33 +742,37 @@ if (isset($_POST['save_order'])) {
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
-            $response['success'] = true;
-            $response['order_id'] = $orderid;
+            $query = "INSERT INTO order_estimate (order_estimate_id, type) VALUES ('$orderid','2')";
+            if ($conn->query($query) === TRUE) {
+                $response['success'] = true;
+                $response['order_id'] = $orderid;
 
-            unset($_SESSION['cart']);
+                unset($_SESSION['cart']);
 
-            $customer_total_orders = getCustomerOrderTotal($customerid);
-            $customer_details = getCustomerDetails($customerid);
-            $isLoyalty = $customer_details['loyalty'];
+                $customer_total_orders = getCustomerOrderTotal($customerid);
+                $customer_details = getCustomerDetails($customerid);
+                $isLoyalty = $customer_details['loyalty'];
 
-            if (!$isLoyalty) {
-                $query_loyalty = "SELECT * FROM loyalty_program WHERE date_from <= CURDATE() AND date_to >= CURDATE()";
-                $result_loyalty = $conn->query($query_loyalty);
+                if (!$isLoyalty) {
+                    $query_loyalty = "SELECT * FROM loyalty_program WHERE date_from <= CURDATE() AND date_to >= CURDATE()";
+                    $result_loyalty = $conn->query($query_loyalty);
 
-                if ($result_loyalty && $result_loyalty->num_rows > 0) {
-                    while ($row_loyalty = $result_loyalty->fetch_assoc()) {
-                        $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
+                    if ($result_loyalty && $result_loyalty->num_rows > 0) {
+                        while ($row_loyalty = $result_loyalty->fetch_assoc()) {
+                            $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
 
-                        if ($customer_total_orders >= $accumulated_loyalty_required) {
-                            $query_update_loyalty = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
-                            if ($conn->query($query_update_loyalty) === TRUE) {
-                                $response['message'] = 'Added Customer to Loyalty Program';
+                            if ($customer_total_orders >= $accumulated_loyalty_required) {
+                                $query_update_loyalty = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
+                                if ($conn->query($query_update_loyalty) === TRUE) {
+                                    $response['message'] = 'Added Customer to Loyalty Program';
+                                }
                             }
                         }
                     }
                 }
+            }else{
+                $response['message'] = "Error inserting order estimate records: " . $conn->error;
             }
-
         } else {
             $response['error'] = "Error inserting order products: " . $conn->error;
         }
