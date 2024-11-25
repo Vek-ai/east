@@ -38,25 +38,14 @@ if(isset($_POST['fetch_prompt_quantity'])){
         if (!empty($product_details)) {
             $category_id = $product_details['product_category'];
             $sold_by_feet = $product_details["sold_by_feet"];
+            $standing_seam = $product_details["standing_seam"];
+            $board_batten = $product_details["board_batten"];
         ?>
         <input type="hidden" id="product_id" name="product_id" value="<?= $id ?>" />
         <div class="quantity_input">
             <div class="mb-2">
                 <label class="fs-5 fw-bold" for="quantity-product">Quantity</label>
                 <input id="quantity-product" name="quantity_product" class="form-control" placeholder="Enter Quantity" list="quantity-product-list" autocomplete="off">
-                <datalist id="quantity-product-list">
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="5">5</option>
-                    <option value="10">10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="500">500</option>
-                    <option value="1000">1000</option>
-                    <option value="2000">2000</option>
-                    <option value="5000">5000</option>
-                </datalist>
             </div>
         </div>
         <div class="length_input">
@@ -65,34 +54,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     <legend class="fs-5 fw-bold">Length</legend>
                     <div class="input-group d-flex align-items-center">
                         <input class="form-control mr-1" type="number" id="length_feet" name="length_feet"  list="length_feet_datalist" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;">
-                        <datalist id="length_feet_datalist">
-                            <option value="0">0'</option>
-                            <option value="1">1'</option>
-                            <option value="5">5'</option>
-                            <option value="10">10'</option>
-                            <option value="25">25'</option>
-                            <option value="50">50'</option>
-                            <option value="100">100'</option>
-                            <option value="500">500'</option>
-                            <option value="1000">1000'</option>
-                            <option value="2000">2000'</option>
-                            <option value="5000">5000'</option>
-                        </datalist>
                         <input class="form-control" type="number" id="length_inch" name="length_inch" list="length_inch_datalist" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;">
-                        <datalist id="length_inch_datalist">
-                            <option value="0">0"</option>
-                            <option value="1">1"</option>
-                            <option value="2">2"</option>
-                            <option value="3">3"</option>
-                            <option value="4">4"</option>
-                            <option value="5">5"</option>
-                            <option value="6">6"</option>
-                            <option value="7">7"</option>
-                            <option value="8">8"</option>
-                            <option value="9">9"</option>
-                            <option value="10">10"</option>
-                            <option value="11">11"</option>
-                        </datalist>
                     </div>
                 </fieldset>
             </div>
@@ -107,31 +69,27 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     </select>
                 </div>
             </div>
-            <?php 
-                if($category_id == $stiffening_rib_id) {
-                    ?>
-                    <div class="mb-2">
-                        <div class="input-group d-flex align-items-center flex-wrap w-100">
-                            <div class="me-2 flex-grow-1">
-                                <label class="fs-5 fw-bold" for="stiff_stand_seam">Standing Seam</label>
-                                <select class="form-control" id="stiff_stand_seam" name="stiff_stand_seam" style="color:#ffffff; width: 100%;">
-                                    <option value="striated" selected>Striated</option>
-                                    <option value="flat">Flat</option>
-                                    <option value="minor_rib">Minor Rib</option>
-                                </select>
-                            </div>
-                            <div class="me-2 flex-grow-1">
-                                <label class="fs-5 fw-bold" for="stiff_board_batten">Board and Batten</label>
-                                <select class="form-control" id="stiff_board_batten" name="stiff_board_batten" style="color:#ffffff; width: 100%;">
-                                    <option value="flat" selected>Flat</option>
-                                    <option value="minor_rib">Minor Rib</option>
-                                </select>
-                            </div>
-                        </div>
+            <div class="mb-2 <?= empty($standing_seam) ? 'd-none' : '';?>">
+                <div class="input-group d-flex align-items-center flex-wrap w-100">
+                    <div class="me-2 flex-grow-1">
+                        <label class="fs-5 fw-bold" for="stiff_stand_seam">Standing Seam Style</label>
+                        <select class="form-control" id="stiff_stand_seam" name="stiff_stand_seam" style="color:#ffffff; width: 100%;">
+                            <option value="striated" selected>Striated</option>
+                            <option value="flat">Flat</option>
+                            <option value="minor_rib">Minor Rib</option>
+                        </select>
                     </div>
-                    <?php
-                }
-            ?>
+                </div>
+                <div class="mb-2 <?= empty($board_batten) ? 'd-none' : '';?>">
+                    <div class="me-2 flex-grow-1">
+                        <label class="fs-5 fw-bold" for="stiff_board_batten">Board and Batten Style</label>
+                        <select class="form-control" id="stiff_board_batten" name="stiff_board_batten" style="color:#ffffff; width: 100%;">
+                            <option value="flat" selected>Flat</option>
+                            <option value="minor_rib">Minor Rib</option>
+                        </select>
+                    </div>
+                </div>
+            </div> 
         </div>
         <div class="panel_options">
             <div class="mb-2 <?= ($category_id == $panel_id)  ? '' : 'd-none';?>">

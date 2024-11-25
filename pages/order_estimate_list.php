@@ -62,9 +62,9 @@ require 'includes/functions.php';
 
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label for="date_from" class="form-label">Job PO #</label>
+                        <label for="job_po_search" class="form-label">Job PO #</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <span class="input-group-text"><i class="fas fa-file-alt"></i></span>
                             <input class="form-control" placeholder="All Job PO" type="text" id="job_po_search">
                         </div>
                     </div>
@@ -72,10 +72,31 @@ require 'includes/functions.php';
 
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label for="date_to" class="form-label">Job Order Name</label>
+                        <label for="job_order_search" class="form-label">Job Order Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-clipboard"></i></span>
+                            <input class="form-control" placeholder="All Job Orders" type="text" id="job_order_search">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group date">
+                        <label for="date_from" class="form-label">Start Date</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                            <input class="form-control" placeholder="All Job Orders" type="text" id="job_order_search">
+                            <input class="form-control datepicker-autoclose" type="date" id="date_from">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group date">
+                        <label for="date_to" class="form-label">End Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input class="form-control datepicker-autoclose" type="date" id="date_to">
                         </div>
                     </div>
                 </div>
@@ -133,12 +154,20 @@ require 'includes/functions.php';
     });
 
     $(document).ready(function() {
+        $(".datepicker-autoclose").datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format: "yyyy-mm-dd",
+        });
+
         $('[data-toggle="tooltip"]').tooltip();
         
         function performSearch() {
             var customer_name = $('#customer_search').val();
             var job_po = $('#job_po_search').val();
             var job_order = $('#job_order_search').val();
+            var date_from = $('#date_from').val();
+            var date_to = $('#date_to').val();
 
             $.ajax({
                 url: 'pages/order_estimate_list_ajax.php',
@@ -147,6 +176,8 @@ require 'includes/functions.php';
                     customer_name: customer_name,
                     job_po: job_po,
                     job_order: job_order,
+                    date_from: date_from,
+                    date_to: date_to,
                     search_order_estimate: 'search_order_estimate'
                 },
                 success: function(response) {

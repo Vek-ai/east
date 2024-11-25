@@ -393,6 +393,18 @@ function log_order_changes($orderid, $product_id, $action){
     }
 }
 
+function getEstimateDetails($estimateid) {
+    global $conn;
+    $estimateid = mysqli_real_escape_string($conn, $estimateid);
+    $query = "SELECT * FROM estimates WHERE estimateid = '$estimateid'";
+    $result = mysqli_query($conn, $query);
+    $estimates = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $estimates = $row;
+    }
+    return $estimates;
+}
+
 function getEstimateProdDetails($id) {
     global $conn;
     $id = mysqli_real_escape_string($conn, $id);
@@ -403,6 +415,18 @@ function getEstimateProdDetails($id) {
         $estimate_prod = $row;
     }
     return $estimate_prod;
+}
+
+function getOrderDetails($orderid) {
+    global $conn;
+    $orderid = mysqli_real_escape_string($conn, $orderid);
+    $query = "SELECT * FROM orders WHERE orderid = '$orderid'";
+    $result = mysqli_query($conn, $query);
+    $orders = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $orders = $row;
+    }
+    return $orders;
 }
 
 function getOrderProdDetails($id) {

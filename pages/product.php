@@ -453,11 +453,23 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         <input type="text" id="upc" name="upc" class="form-control" value="<?= $generate_rend_upc ?>" readonly/>
                                         </div>
                                     </div>
-                                    <div class="col-md-4 d-flex align-items-center">
-                                        <div class="mb-3">
+                                    <div class="col-md-4">
+                                        <div class="mb-1">
                                             <div class="form-check form-check-inline">
                                                 <input class="form-check-input" type="checkbox" id="sold_by_feet" name="sold_by_feet" value="1">
                                                 <label class="form-check-label" for="sold_by_feet">Sold by feet</label>
+                                            </div>
+                                        </div>
+                                        <div class="mb-1">
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="checkbox" id="standing_seam" name="standing_seam" value="1">
+                                                <label class="form-check-label" for="standing_seam">Standing Seam Panel</label>
+                                            </div>
+                                        </div>
+                                        <div class="mb-1">
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="checkbox" id="board_batten" name="board_batten" value="1">
+                                                <label class="form-check-label" for="board_batten">Board & Batten Panel</label>
                                             </div>
                                         </div>
                                     </div>

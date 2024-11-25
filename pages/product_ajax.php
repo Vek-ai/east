@@ -38,6 +38,8 @@ if(isset($_REQUEST['action'])) {
         $unit_gross_margin = mysqli_real_escape_string($conn, $_POST['unitGrossMargin']);
         $product_usage = mysqli_real_escape_string($conn, $_POST['product_usage']);
         $sold_by_feet = isset($_POST['sold_by_feet']) ? 1 : 0;
+        $standing_seam = isset($_POST['standing_seam']) ? 1 : 0;
+        $board_batten = isset($_POST['board_batten']) ? 1 : 0;
         $comment = mysqli_real_escape_string($conn, $_POST['comment']);
 
         $correlatedProducts = $_POST['correlatedProducts'];
@@ -78,6 +80,8 @@ if(isset($_REQUEST['action'])) {
                 unit_gross_margin = '$unit_gross_margin', 
                 product_usage = '$product_usage',
                 sold_by_feet = '$sold_by_feet',
+                standing_seam = '$standing_seam',
+                board_batten = '$board_batten',
                 comment = '$comment' 
             WHERE product_id = '$product_id'";
     
@@ -142,6 +146,8 @@ if(isset($_REQUEST['action'])) {
                 unit_gross_margin, 
                 product_usage,
                 sold_by_feet,
+                standing_seam,
+                board_batten,
                 comment
             ) VALUES (
                 '$product_item', 
@@ -180,6 +186,8 @@ if(isset($_REQUEST['action'])) {
                 '$unit_gross_margin', 
                 '$product_usage', 
                 '$sold_by_feet',
+                '$standing_seam',
+                '$board_batten',
                 '$comment'
             )";
     
@@ -513,9 +521,17 @@ if(isset($_REQUEST['action'])) {
                                             </div>
                                         </div>
                                         <div class="col-md-4">
-                                            <div class="mb-3">
+                                            <div class="mb-1">
                                                 <label class="form-label">Sold By Feet:</label>
                                                 <p><?= $row['sold_by_feet'] == 1 ? 'Yes' : 'No' ?></p>
+                                            </div>
+                                            <div class="mb-1">
+                                                <label class="form-label">Standing Seam Panel:</label>
+                                                <p><?= $row['standing_seam'] == 1 ? 'Yes' : 'No' ?></p>
+                                            </div>
+                                            <div class="mb-1">
+                                                <label class="form-label">Board & Batten Panel:</label>
+                                                <p><?= $row['board_batten'] == 1 ? 'Yes' : 'No' ?></p>
                                             </div>
                                         </div>
                                     </div>
@@ -985,11 +1001,23 @@ if(isset($_REQUEST['action'])) {
                                             <input type="text" id="upc" name="upc" class="form-control" value="<?= $row['upc']?>" />
                                             </div>
                                         </div>
-                                        <div class="col-md-4 d-flex align-items-center">
-                                            <div class="mb-3">
+                                        <div class="col-md-4">
+                                            <div class="mb-1">
                                                 <div class="form-check form-check-inline">
                                                     <input class="form-check-input" type="checkbox" id="sold_by_feet" name="sold_by_feet" value="1" <?= $row['sold_by_feet'] == 1 ? 'checked' : '' ?>>
                                                     <label class="form-check-label" for="sold_by_feet">Sold by feet</label>
+                                                </div>
+                                            </div>
+                                            <div class="mb-1">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="standing_seam" name="standing_seam" value="1" <?= $row['standing_seam'] == 1 ? 'checked' : '' ?>>
+                                                    <label class="form-check-label" for="standing_seam">Standing Seam Panel</label>
+                                                </div>
+                                            </div>
+                                            <div class="mb-1">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="board_batten" name="board_batten" value="1" <?= $row['board_batten'] == 1 ? 'checked' : '' ?>>
+                                                    <label class="form-check-label" for="board_batten">Board & Batten Panel</label>
                                                 </div>
                                             </div>
                                         </div>
