@@ -2418,12 +2418,24 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             updateTable();
         });
 
-        $('#select-color').select2();
-        $('#select-grade').select2();
-        $('#select-gauge').select2();
-        $('#select-category').select2();
-        $('#select-profile').select2();
-        $('#select-type').select2();
+        $('#select-color').select2({
+            width: '100%'
+        });
+        $('#select-grade').select2({
+            width: '100%'
+        });
+        $('#select-gauge').select2({
+            width: '100%'
+        });
+        $('#select-category').select2({
+            width: '100%'
+        });
+        $('#select-profile').select2({
+            width: '100%'
+        });
+        $('#select-type').select2({
+            width: '100%'
+        });
 
         $(document).on('input change', '#text-srh, #select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive', function() {
             performSearch($('#text-srh').val());
