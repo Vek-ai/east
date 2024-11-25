@@ -112,9 +112,7 @@ require 'includes/functions.php';
 
             <div class="row">
                 <div class="datatables">
-                    <div id="tbl-orders-estimates" class="product-details table-responsive text-nowrap">
-                        
-                    </div>
+                    <div id="tbl-orders-estimates" class="product-details table-responsive text-nowrap"></div>
                 </div>
             </div>
         </div>

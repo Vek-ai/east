@@ -854,18 +854,24 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var lat2Float = parseFloat(lat2);
         var lng2Float = parseFloat(lng2);
 
-        if (customerLat !== 0 && customerLng !== 0 && lat2Float !== 0 && lng2Float !== 0) {
-            const point1 = new google.maps.LatLng(customerLat, customerLng);
-            const point2 = new google.maps.LatLng(lat2Float, lng2Float);
-            const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
-            const distanceInMiles = distanceInMeters / 1609.34;
-            var deliveryAmount = amtPerMile * distanceInMiles;
-            deliveryAmount = deliveryAmount.toFixed(2);
-        } else {
-            deliveryAmount = amtDeliveryDefault.toFixed(2);
-        }
+        var deliver_method = $('#order_delivery_method').val();
 
-        $('#delivery_amt').val(deliveryAmount).trigger('change');
+        if(deliver_method == 'pickup'){
+            $('#delivery_amt').val(0).trigger('change');
+        }else{
+            if (customerLat !== 0 && customerLng !== 0 && lat2Float !== 0 && lng2Float !== 0) {
+                const point1 = new google.maps.LatLng(customerLat, customerLng);
+                const point2 = new google.maps.LatLng(lat2Float, lng2Float);
+                const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
+                const distanceInMiles = distanceInMeters / 1609.34;
+                var deliveryAmount = amtPerMile * distanceInMiles;
+                deliveryAmount = deliveryAmount.toFixed(2);
+            } else {
+                deliveryAmount = amtDeliveryDefault.toFixed(2);
+            }
+
+            $('#delivery_amt').val(deliveryAmount).trigger('change');
+        }
     }
 
     function calculateDeliveryAmountEst() {
@@ -874,18 +880,24 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var lat2Float = parseFloat(lat2);
         var lng2Float = parseFloat(lng2);
 
-        if (customerLat !== 0 && customerLng !== 0 && lat2Float !== 0 && lng2Float !== 0) {
-            const point1 = new google.maps.LatLng(customerLat, customerLng);
-            const point2 = new google.maps.LatLng(lat2Float, lng2Float);
-            const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
-            const distanceInMiles = distanceInMeters / 1609.34;
-            var deliveryAmount = amtPerMile * distanceInMiles;
-            deliveryAmount = deliveryAmount.toFixed(2);
-        } else {
-            deliveryAmount = amtDeliveryDefault.toFixed(2);
-        }
+        var deliver_method = $('#est_delivery_method').val();
 
-        $('#est_delivery_amt').val(deliveryAmount).trigger('change');
+        if(deliver_method == 'pickup'){
+            $('#est_delivery_amt').val(0).trigger('change');
+        }else{
+            if (customerLat !== 0 && customerLng !== 0 && lat2Float !== 0 && lng2Float !== 0) {
+                const point1 = new google.maps.LatLng(customerLat, customerLng);
+                const point2 = new google.maps.LatLng(lat2Float, lng2Float);
+                const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
+                const distanceInMiles = distanceInMeters / 1609.34;
+                var deliveryAmount = amtPerMile * distanceInMiles;
+                deliveryAmount = deliveryAmount.toFixed(2);
+            } else {
+                deliveryAmount = amtDeliveryDefault.toFixed(2);
+            }
+
+            $('#est_delivery_amt').val(deliveryAmount).trigger('change');
+        }
     }
 
     function updateColor(element){
@@ -2442,5 +2454,13 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
 
         performSearch('');
+
+        $(document).on('change', '#est_delivery_method', function () {
+            calculateDeliveryAmountEst();
+        });
+
+        $(document).on('change', '#order_delivery_method', function () {
+            calculateDeliveryAmount();
+        });
     });
 </script>

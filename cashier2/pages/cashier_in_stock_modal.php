@@ -29,11 +29,15 @@ if(isset($_POST['fetch_in_stock_modal'])){
                     <div class="container py-4">
                         <h5 class="mb-3 fs-6 fw-semibold text-center">Inventory</h5>
                         <?php
-                        $query_inventory = "SELECT DISTINCT Warehouse_id FROM inventory WHERE Product_id = '$product_id' AND Warehouse_id != '0'";
+                        $query_inventory = "
+                            SELECT DISTINCT Warehouse_id FROM inventory WHERE Product_id = '$product_id'
+                            UNION
+                            SELECT 0 AS Warehouse_id";
                         $result_inventory = mysqli_query($conn, $query_inventory);
 
                         if ($result_inventory && mysqli_num_rows($result_inventory) > 0) {
                             echo '<div class="row">';
+
                             while ($row_inventory = mysqli_fetch_assoc($result_inventory)) {
                                 $WarehouseID = $row_inventory['Warehouse_id'];
 
@@ -45,36 +49,52 @@ if(isset($_POST['fetch_in_stock_modal'])){
 
                                 if ($result_inventory_details && mysqli_num_rows($result_inventory_details) > 0) {
                                     $total_quantity = 0;
+                                    $details = [];
+
+                                    $used_bin = false;
+                                    $used_row = false;
+                                    $used_shelf = false;
+
                                     while ($inventory = mysqli_fetch_assoc($result_inventory_details)) {
                                         $packs = $inventory['pack'];
                                         $quantity = $inventory['quantity'];
                                         $item_quantity = $inventory['quantity_ttl'];
-                                        $total_quantity += $inventory['quantity_ttl'];
-
-                                        $details[] = [
-                                            'type' => 'BIN',
-                                            'id' => $inventory['Bin_id'],
-                                            'name' => getWarehouseBinName($inventory['Bin_id']),
-                                            'quantity' => $item_quantity
-                                        ];
-                                        $details[] = [
-                                            'type' => 'ROW',
-                                            'id' => $inventory['Row_id'],
-                                            'name' => getWarehouseRowName($inventory['Row_id']),
-                                            'quantity' => $item_quantity
-                                        ];
-                                        $details[] = [
-                                            'type' => 'SHELF',
-                                            'id' => $inventory['Shelves_id'],
-                                            'name' => getWarehouseShelfName($inventory['Shelves_id']),
-                                            'quantity' => $item_quantity
-                                        ];
+                                        $total_quantity += $item_quantity;
+                                        if ($item_quantity > 0) {
+                                            if (!$used_bin && !empty($inventory['Bin_id']) && $inventory['Bin_id'] != '0') {
+                                                $details[] = [
+                                                    'type' => 'BIN',
+                                                    'id' => $inventory['Bin_id'],
+                                                    'name' => getWarehouseBinName($inventory['Bin_id']),
+                                                    'quantity' => $item_quantity
+                                                ];
+                                                $used_bin = true;
+                                            } elseif (!$used_row && !empty($inventory['Row_id']) && $inventory['Row_id'] != '0') {
+                                                $details[] = [
+                                                    'type' => 'ROW',
+                                                    'id' => $inventory['Row_id'],
+                                                    'name' => getWarehouseRowName($inventory['Row_id']),
+                                                    'quantity' => $item_quantity
+                                                ];
+                                                $used_row = true;
+                                            } elseif (!$used_shelf && !empty($inventory['Shelves_id']) && $inventory['Shelves_id'] != '0') {
+                                                $details[] = [
+                                                    'type' => 'SHELF',
+                                                    'id' => $inventory['Shelves_id'],
+                                                    'name' => getWarehouseShelfName($inventory['Shelves_id']),
+                                                    'quantity' => $item_quantity
+                                                ];
+                                                $used_shelf = true;
+                                            }
+                                        }
                                     }
 
-                                    echo "<div class='col-12 mt-3'>
+                                    $warehouse_name = $WarehouseID == 0 ? 'Unallocated' : htmlspecialchars(getWarehouseName($WarehouseID));
+                                    if($total_quantity > 0){
+                                        echo "<div class='col-12 mt-3'>
                                             <div class='row p-3 border rounded bg-light'>
                                                 <div class='col'>
-                                                    <h5 class='mb-0 fs-5 fw-bold'>" . htmlspecialchars(getWarehouseName($WarehouseID)) . "</h5>
+                                                    <h5 class='mb-0 fs-5 fw-bold'>$warehouse_name</h5>
                                                 </div>
                                                 <div class='col text-end'>
                                                     <p class='mb-0 fs-3'><span class='badge bg-primary fs-3'>" . htmlspecialchars($total_quantity) . " PCS</span></p>
@@ -82,17 +102,18 @@ if(isset($_POST['fetch_in_stock_modal'])){
                                             </div>
                                         </div>";
 
-                                    foreach ($details as $detail) {
-                                        if (!empty($detail['id']) && $detail['id'] != '0') {
-                                            echo "<div class='col'>
-                                                    <div class='row mb-0 p-2 border rounded bg-light'>
-                                                        <h5 class='mb-0 fs-3 fw-bold'>{$detail['type']}: " . htmlspecialchars($detail['name']) . "</h5>
-                                                        <p class='mb-0 fs-3'>{$packs} " . getPackName($packs) . " - " . htmlspecialchars($detail['quantity']) . " PCS</p>
-                                                    </div>
-                                                </div>";
+                                        foreach ($details as $detail) {
+                                            if (!empty($detail['id']) && $detail['id'] != '0') {
+                                                echo "<div class='col'>
+                                                        <div class='row mb-0 p-2 border rounded bg-light'>
+                                                            <h5 class='mb-0 fs-3 fw-bold'>{$detail['type']}: " . htmlspecialchars($detail['name']) . "</h5>
+                                                            <p class='mb-0 fs-3'>{$packs} " . getPackName($packs) . " - " . htmlspecialchars($detail['quantity']) . " PCS</p>
+                                                        </div>
+                                                    </div>";
+                                            }
                                         }
+                                        unset($details);
                                     }
-                                    unset($details);
                                 }
                             }
                             echo '</div>';
@@ -100,6 +121,7 @@ if(isset($_POST['fetch_in_stock_modal'])){
                             echo '<p class="mb-3 fs-4 fw-semibold text-center">This Product is not listed in the <a href="/?page=inventory">Inventory</a></p>';
                         }
                         ?>
+
                     </div>
                 </div>
                 <div class="modal-footer">

@@ -597,45 +597,43 @@ if(isset($_POST['fetch_cart'])){
                 });
             });
 
-            setTimeout(function() {
-                $(".color-cart").each(function() {
-                    if ($(this).data('select2')) {
-                        $(this).select2('destroy');
-                    }
-                    $(this).select2({
-                        width: '300px',
-                        placeholder: "Select...",
-                        dropdownAutoWidth: true,
-                        dropdownParent: $('#cartTable'),
-                        templateResult: formatOption,
-                        templateSelection: formatSelected
-                    });
+            $(".color-cart").each(function() {
+                if ($(this).data('select2')) {
+                    $(this).select2('destroy');
+                }
+                $(this).select2({
+                    width: '300px',
+                    placeholder: "Select...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('#cartTable'),
+                    templateResult: formatOption,
+                    templateSelection: formatSelected
                 });
+            });
 
-                $(".grade-cart").each(function() {
-                    if ($(this).data('select2')) {
-                        $(this).select2('destroy');
-                    }
-                    $(this).select2({
-                        width: '300px',
-                        placeholder: "Select...",
-                        dropdownAutoWidth: true,
-                        dropdownParent: $('#cartTable')
-                    });
+            $(".grade-cart").each(function() {
+                if ($(this).data('select2')) {
+                    $(this).select2('destroy');
+                }
+                $(this).select2({
+                    width: '300px',
+                    placeholder: "Select...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('#cartTable')
                 });
+            });
 
-                $(".usage-cart").each(function() {
-                    if ($(this).data('select2')) {
-                        $(this).select2('destroy');
-                    }
-                    $(this).select2({
-                        width: '300px',
-                        placeholder: "Select...",
-                        dropdownAutoWidth: true,
-                        dropdownParent: $('#cartTable')
-                    });
+            $(".usage-cart").each(function() {
+                if ($(this).data('select2')) {
+                    $(this).select2('destroy');
+                }
+                $(this).select2({
+                    width: '300px',
+                    placeholder: "Select...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('#cartTable')
                 });
-            }, 200);
+            });
         });
     </script>
     <?php

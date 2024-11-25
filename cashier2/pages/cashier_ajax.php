@@ -26,7 +26,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
 
     $quantityInStock = getProductStockInStock($product_id);
     $totalQuantity = getProductStockTotal($product_id);
-    $totalStock = $quantityInStock + $totalQuantity;
+    $totalStock = $totalQuantity;
 
     if (!isset($_SESSION["cart"])) {
         $_SESSION["cart"] = array();
@@ -76,19 +76,15 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             echo $item_quantity;
         }
     } elseif ($key !== false) {
-        // Handle existing item
         if (isset($_POST['setquantity'])) {
             $requestedQuantity = max($qty, 1);
-            echo "ID: $product_id, Line: $line, Key: $key, Quantity: $requestedQuantity";
-            $_SESSION["cart"][$key]['quantity_cart'] = min($requestedQuantity, $totalStock);
+            $_SESSION["cart"][$key]['quantity_cart'] = $requestedQuantity;
             echo $_SESSION["cart"][$key]['quantity_cart'];
         } elseif (isset($_POST['addquantity'])) {
-            echo "ID: $product_id, Line: $line, Key: $key";
             $newQuantity = $_SESSION["cart"][$key]['quantity_cart'] + 1;
-            $_SESSION["cart"][$key]['quantity_cart'] = min($newQuantity, $totalStock);
+            $_SESSION["cart"][$key]['quantity_cart'] = $newQuantity;
             echo $_SESSION["cart"][$key]['quantity_cart'];
         } elseif (isset($_POST['deductquantity'])) {
-            echo "ID: $product_id, Line: $line, Key: $key";
             $currentQuantity = $_SESSION["cart"][$key]['quantity_cart'];
             if ($currentQuantity <= 1) {
                 array_splice($_SESSION["cart"], $key, 1);
@@ -99,7 +95,6 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             }
         }
     } else {
-        // Product does not exist in cart
         $query = "SELECT * FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $query);
 
@@ -593,7 +588,7 @@ if (isset($_POST['load_estimate'])) {
 
                 $quantityInStock = getProductStockInStock($row['product_id']);
                 $totalQuantity = getProductStockTotal($row['product_id']);
-                $totalStock = $quantityInStock + $totalQuantity;
+                $totalStock = $totalQuantity;
 
                 $cart[] = [
                     'line' => $line,
@@ -1249,7 +1244,7 @@ if (isset($_POST['add_to_cart'])) {
 
     $quantityInStock = getProductStockInStock($product_id);
     $totalQuantity = getProductStockTotal($product_id);
-    $totalStock = $quantityInStock + $totalQuantity;
+    $totalStock = $totalQuantity;
 
     if (!isset($_SESSION["cart"])) {
         $_SESSION["cart"] = array();
@@ -1266,7 +1261,7 @@ if (isset($_POST['add_to_cart'])) {
 
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
-            $item_quantity = min($qty, $totalStock);
+            $item_quantity = $qty;
 
             $weight = floatval($row['weight']);
 
@@ -1300,7 +1295,7 @@ if (isset($_POST['add_to_cart'])) {
             if($row['product_category'] == $stiffening_rib_id && $stiff_board_batten == 'flat'){
                 $quantityInStock = getProductStockInStock($stiff_board_batten);
                 $totalQuantity = getProductStockTotal($stiff_board_batten);
-                $totalStock = $quantityInStock + $totalQuantity;
+                $totalStock = $totalQuantity;
                 $backer_rod_details = getProductDetails($backer_rod_3_8);
 
                 $item_array = array(
@@ -1325,7 +1320,7 @@ if (isset($_POST['add_to_cart'])) {
             }else if($row['product_category'] == $stiffening_rib_id && $stiff_stand_seam == 'flat'){
                 $quantityInStock = getProductStockInStock($stiffening_rib_id);
                 $totalQuantity = getProductStockTotal($stiffening_rib_id);
-                $totalStock = $quantityInStock + $totalQuantity;
+                $totalStock = $totalQuantity;
                 $backer_rod_details = getProductDetails($backer_rod_1_2);
 
                 $item_array = array(

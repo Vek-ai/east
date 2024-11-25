@@ -233,7 +233,8 @@ if(isset($_POST['fetch_order'])){
                             $total = 0;
                             $total_customer_price = 0;
                             $totalquantity = 0;
-                            $no = 1;
+                            $timestamp = time();
+                            $no = $timestamp . 1;
                             $total_weight = 0;
                             if (!empty($_SESSION["cart"])) {
                                 foreach ($_SESSION["cart"] as $keys => $values) {
@@ -588,6 +589,15 @@ if(isset($_POST['fetch_order'])){
                                                 <td class="text-right border-bottom">$<span id="total_discount"><?= number_format(floatval($total) * floatval($discount), 2) ?></span></td>
                                             </tr>
                                             <tr>
+                                                <th class="text-right border-bottom">Delivery Method</th>
+                                                <td class="text-right border-bottom">
+                                                    <select id="order_delivery_method" name="order_delivery_method" class="form-control text-right p-2">
+                                                        <option value="deliver">Deliver</option>
+                                                        <option value="pickup">Pickup</option>
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                            <tr>
                                                 <th class="text-right border-bottom">Delivery($)</th>
                                                 <td class="text-right border-bottom">
                                                     <input type="number" id="delivery_amt" name="delivery_amt" value="<?= number_format($delivery_price, 2) ?>" class="text-right form-control" placeholder="Delivery Amount">
@@ -778,46 +788,43 @@ if(isset($_POST['fetch_order'])){
                 
             });
 
-            setTimeout(function() {    
-                $(".color-order").each(function() {
-                    if ($(this).data('select2')) {
-                        $(this).select2('destroy');
-                    }
-                    $(this).select2({
-                        width: '300px',
-                        placeholder: "Select...",
-                        dropdownAutoWidth: true,
-                        dropdownParent: $('#orderTable'),
-                        templateResult: formatOption,
-                        templateSelection: formatSelected
-                    });
+            $(".color-order").each(function() {
+                if ($(this).data('select2')) {
+                    $(this).select2('destroy');
+                }
+                $(this).select2({
+                    width: '300px',
+                    placeholder: "Select...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('#orderTable'),
+                    templateResult: formatOption,
+                    templateSelection: formatSelected
                 });
+            });
 
-                $(".grade-order").each(function() {
-                    if ($(this).data('select2')) {
-                        $(this).select2('destroy');
-                    }
-                    $(this).select2({
-                        width: '300px',
-                        placeholder: "Select...",
-                        dropdownAutoWidth: true,
-                        dropdownParent: $('#orderTable')
-                    });
+            $(".grade-order").each(function() {
+                if ($(this).data('select2')) {
+                    $(this).select2('destroy');
+                }
+                $(this).select2({
+                    width: '300px',
+                    placeholder: "Select...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('#orderTable')
                 });
+            });
 
-                $(".usage-order").each(function() {
-                    if ($(this).data('select2')) {
-                        $(this).select2('destroy');
-                    }
-                    $(this).select2({
-                        width: '300px',
-                        placeholder: "Select...",
-                        dropdownAutoWidth: true,
-                        dropdownParent: $('#orderTable')
-                    });
+            $(".usage-order").each(function() {
+                if ($(this).data('select2')) {
+                    $(this).select2('destroy');
+                }
+                $(this).select2({
+                    width: '300px',
+                    placeholder: "Select...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('#orderTable')
                 });
-
-            }, 100);
+            });
         });
     </script>
 

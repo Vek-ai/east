@@ -57,6 +57,7 @@ if (isset($_POST['search_order_estimate'])) {
             CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name,
             o.job_po AS job_po,
             o.job_name AS job_name,
+            oe.status AS status,
             oe.type AS source_type,
             o.orderid AS id,
             o.order_date AS record_date
@@ -72,6 +73,7 @@ if (isset($_POST['search_order_estimate'])) {
             CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name,
             e.job_po AS job_po,
             e.job_name AS job_name,
+            oe.status AS status,
             oe.type AS source_type,
             e.estimateid AS id,
             e.estimated_date AS record_date
@@ -126,6 +128,7 @@ if (isset($_POST['search_order_estimate'])) {
                     <th>Job PO #</th>
                     <th>Job Name</th>
                     <th>Type</th>
+                    <th>Status</th>
                     <th></th>
                 </tr>
             </thead>
@@ -143,7 +146,13 @@ if (isset($_POST['search_order_estimate'])) {
                 }else{
                     $type_text = 'Order';
                 }
-
+                $status = $row['status'];
+                $status_badges = [
+                    0 => ['class' => 'bg-primary', 'text' => 'New'],
+                    1 => ['class' => 'bg-warning', 'text' => 'Pick Up'],
+                    2 => ['class' => 'bg-info', 'text' => 'Dispatched'],
+                    3 => ['class' => 'bg-success', 'text' => 'Delivered'],
+                ];
                 ?>
                 <tr>
                     <td>
@@ -157,6 +166,16 @@ if (isset($_POST['search_order_estimate'])) {
                     </td>
                     <td>
                         <?= $type_text ?>
+                    </td>
+                    <td>
+                        <?php
+                            if (isset($status_badges[$status])) {
+                                echo '<span class="d-flex align-items-center gap-2">';
+                                echo '<span class="badge ' . $status_badges[$status]['class'] . '">&nbsp;</span>';
+                                echo $status_badges[$status]['text'];
+                                echo '</span>';
+                            } 
+                        ?>
                     </td>
                     <td>
                         <a href="javascript:void(0)" data-id="<?= $row['id'] ?>" data-type="<?= $type ?>" id="view_details">
@@ -248,6 +267,8 @@ if($_POST['fetchType'] == 'fetch_order_details'){
                                                 <th>Grade</th>
                                                 <th>Profile</th>
                                                 <th class="text-center">Quantity</th>
+                                                <th class="text-center">In Stock</th>
+                                                <th class="text-center">To Manufacture</th>
                                                 <th class="text-center">Dimensions</th>
                                                 <th class="text-center">Price</th>
                                                 <th class="text-center">Customer Price</th>
@@ -282,6 +303,8 @@ if($_POST['fetchType'] == 'fetch_order_details'){
                                                             <?php echo getProfileTypeName($product_details['profile']); ?>
                                                         </td>
                                                         <td><?= $row['quantity'] ?></td>
+                                                        <td><?= getProductStockTotal($row['productid']) ?></td>
+                                                        <td><?= max(0, $row['quantity'] - getProductStockTotal($row['productid']))?></td>
                                                         <td>
                                                             <?php 
                                                             $width = $row['custom_width'];
@@ -311,7 +334,7 @@ if($_POST['fetchType'] == 'fetch_order_details'){
 
                                         <tfoot>
                                             <tr>
-                                                <td colspan="6"></td>
+                                                <td colspan="8"></td>
                                                 <td colspan="2" class="text-end">
                                                     <p class="m-1">Total Quantity: <?= $totalquantity ?></p>
                                                     <p class="m-1">Actual Price: <?= $total_actual_price ?></p>
@@ -421,6 +444,8 @@ if($_POST['fetchType'] == 'fetch_estimate_details'){
                                                     <th>Grade</th>
                                                     <th>Profile</th>
                                                     <th class="text-center">Quantity</th>
+                                                    <th class="text-center">In Stock</th>
+                                                    <th class="text-center">To Manufacture</th>
                                                     <th class="text-center">Dimensions</th>
                                                     <th class="text-center">Price</th>
                                                     <th class="text-center">Customer Price</th>
@@ -454,6 +479,8 @@ if($_POST['fetchType'] == 'fetch_estimate_details'){
                                                                 <?php echo getProfileTypeName($product_details['profile']); ?>
                                                             </td>
                                                             <td><?= $row['quantity'] ?></td>
+                                                            <td><?= getProductStockTotal($row['product_id']) ?></td>
+                                                            <td><?= max(0, $row['quantity'] - getProductStockTotal($row['product_id']))?></td>
                                                             <td>
                                                                 <?php 
                                                                 $width = $row['custom_width'];
@@ -482,7 +509,7 @@ if($_POST['fetchType'] == 'fetch_estimate_details'){
 
                                             <tfoot>
                                                 <tr>
-                                                    <td colspan="6"></td>
+                                                    <td colspan="8"></td>
                                                     <td colspan="2" class="text-end">
                                                         <p class="m-1">Total Quantity: <?= $totalquantity ?></p>
                                                         <p class="m-1">Actual Price: <?= $total_actual_price ?></p>
