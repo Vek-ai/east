@@ -99,7 +99,7 @@ if (isset($_POST['search_custom_discounted'])) {
             </thead>
             <tbody>     
             <?php
-
+            $grand_total = 0;
             while ($row = mysqli_fetch_assoc($result)) {
                 $customer_name = $row['customer_name'];
                 $productid = $row['productid'];
@@ -109,7 +109,8 @@ if (isset($_POST['search_custom_discounted'])) {
                 $current_loyalty_discount = $row['current_loyalty_discount'];
                 $actual_discount = max($current_customer_discount, $current_loyalty_discount);
                 $used_discount = $row['used_discount'];
-                $discounted_price = $row['discounted_price'];
+                $price = $row['discounted_price'] * $quantity;
+                $grand_total += $price;
                 ?>
                 <tr>
                     <td>
@@ -131,7 +132,7 @@ if (isset($_POST['search_custom_discounted'])) {
                         <?= $used_discount .'%' ?>
                     </td>
                     <td class="text-right">
-                        <?= '$' . number_format($discounted_price * $quantity,2) ?>
+                        <?= '$' . number_format($price,2) ?>
                     </td>
                     
                 </tr>
@@ -139,6 +140,10 @@ if (isset($_POST['search_custom_discounted'])) {
             }
             ?>
             </tbody>
+            <tfoot>
+                <th colspan="6" class="text-right">Grand Total</th>
+                <th class="text-right"><?= '$' . number_format($grand_total,2) ?></th>
+            </tfoot>
         </table>
         <?php
     } else {
