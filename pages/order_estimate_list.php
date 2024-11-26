@@ -122,6 +122,29 @@ require 'includes/functions.php';
 
 <div class="modal fade" id="view_order_estimate_details_modal" style="background-color: rgba(0, 0, 0, 0.5);"></div>
 
+<div class="modal fade" id="view_deliver_img_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="myLargeModalLabel">
+                    View Delivery Image
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="update_product" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div id="deliver_img" class="card-body">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script>
     $("#customer_search").autocomplete({
         source: function(request, response) {
@@ -212,6 +235,26 @@ require 'includes/functions.php';
                 success: function(response) {
                     $('#view_order_estimate_details_modal').html(response);
                     $('#view_order_estimate_details_modal').modal('toggle');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+            
+        });
+
+        $(document).on('click', '#view_deliver_img_btn', function(event) {
+            var id = $(this).data('id');
+            $.ajax({
+                url: 'pages/order_estimate_list_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    fetch_delivery_image: 'fetch_delivery_image'
+                },
+                success: function(response) {
+                    $('#deliver_img').html(response);
+                    $('#view_deliver_img_modal').modal('toggle');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);

@@ -53,6 +53,7 @@ if (isset($_POST['search_order_estimate'])) {
 
     $query = "
         SELECT 
+            oe.id AS list_id,
             c.customer_id,
             CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name,
             o.job_po AS job_po,
@@ -70,6 +71,7 @@ if (isset($_POST['search_order_estimate'])) {
         UNION ALL
 
         SELECT 
+            oe.id AS list_id,
             c.customer_id,
             CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name,
             e.job_po AS job_po,
@@ -145,7 +147,7 @@ if (isset($_POST['search_order_estimate'])) {
                 $type = $row['source_type'];
                 if($type == 1){
                     $type_text = 'Estimate';
-                }else{
+                }else if($type == 2){
                     $type_text = 'Order';
                 }
                 $status = $row['status'];
@@ -180,15 +182,15 @@ if (isset($_POST['search_order_estimate'])) {
 
                             if($status == 3){
                                 echo "
-                                    <a href='https://delivery.ilearnsda.com/deliverypictures/".$row['image_url']."' target='_blank' class='btn btn-sm btn-primary'>
-                                        View Image <i class='fa fa-arrow-right'></i>
+                                    <a href='javascript:void(0)' data-id='".$row['list_id']."' id='view_deliver_img_btn' class='d-flex align-items-center justify-items-center'>
+                                        <i class='fa fa-image fs-5 ms-1'></i>
                                     </a>
                                 ";
                             }
                         ?>
                     </td>
                     <td>
-                        <a href="javascript:void(0)" data-id="<?= $row['id'] ?>" data-type="<?= $type ?>" id="view_details">
+                        <a href="javascript:void(0)" data-id="<?= $row['oe.id'] ?>" data-type="<?= $type ?>" id="view_details">
                             <i class="fa fa-eye"></i>
                         </a>
                     </td>
@@ -202,6 +204,93 @@ if (isset($_POST['search_order_estimate'])) {
     } else {
         echo "<h4 class='text-center'>No orders found</h4>";
     }
+}
+
+if(isset($_POST['fetch_delivery_image'])){
+    $order_est_id = mysqli_real_escape_string($conn, $_POST['id']);
+    //https://delivery.ilearnsda.com/deliverypictures/".$row['image_url']."
+    ?>
+    <style>
+        .container {
+            position: relative;
+            width: 100%;
+        }
+
+        .image {
+            opacity: 1;
+            display: block;
+            height: 80vh;
+            transition: .5s ease;
+            backface-visibility: hidden;
+        } 
+
+        .bottom-info {
+            transition: .5s ease;
+            opacity: 0;
+            width: 100%;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background-color: #C0C0C04D;
+            padding: 30px;
+        }
+
+        .container:hover .image {
+            opacity: 0.3;
+        }
+
+        .container:hover .bottom-info {
+            opacity: 1;
+        }
+    </style>
+    <?php
+    $query = "SELECT * FROM order_estimate WHERE id = '$order_est_id'";
+    $result = mysqli_query($conn, $query);
+    
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+        ?>
+            <div class="container text-center">
+                <img src="https://delivery.ilearnsda.com/deliverypictures/<?=$row['image_url']?>" alt="Avatar" class="image d-block mx-auto">
+                <div class="bottom-info">
+                    <h5 class="fs-5 text-white"><?= $row['photo_address'] ?></h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <h5 class="text-white mb-0 text-muted">Latitude</h5>
+                                <h3 class="text-white"><?= $row['latitude'] ?></h3>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <h5 class="text-white mb-0 text-muted">Longitude</h5>
+                                <h3 class="text-white"><?= $row['longitude'] ?></h3>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <h5 class="text-white mb-0 text-muted">Time</h5>
+                                <h3 class="text-white"><?= date('g:i a', strtotime($row['datetime'])) ?></h3>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <h5 class="text-white mb-0 text-muted">Date</h5>
+                                <h3 class="text-white"><?= date('F j, Y', strtotime($row['datetime'])) ?></h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php
+        }
+    }
+    ?>
+    
+
+    <?php
 }
 
 if($_POST['fetchType'] == 'fetch_order_details'){
@@ -379,7 +468,7 @@ if($_POST['fetchType'] == 'fetch_order_details'){
         });
     </script>
     <?php
-} 
+}
 
 if($_POST['fetchType'] == 'fetch_estimate_details'){
     $estimateid = mysqli_real_escape_string($conn, $_POST['id']);
@@ -551,4 +640,4 @@ if($_POST['fetchType'] == 'fetch_estimate_details'){
 
         <?php
     
-} 
+}
