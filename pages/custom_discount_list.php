@@ -134,6 +134,8 @@ require 'includes/functions.php';
             autoclose: true,
             todayHighlight: true,
             format: "yyyy-mm-dd",
+            container: "body",
+            orientation: "bottom left"
         });
 
         $('[data-toggle="tooltip"]').tooltip();
