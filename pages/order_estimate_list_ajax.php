@@ -59,6 +59,7 @@ if (isset($_POST['search_order_estimate'])) {
             o.job_name AS job_name,
             oe.status AS status,
             oe.type AS source_type,
+            oe.image_url AS image_url,
             o.orderid AS id,
             o.order_date AS record_date
         FROM order_estimate AS oe
@@ -75,6 +76,7 @@ if (isset($_POST['search_order_estimate'])) {
             e.job_name AS job_name,
             oe.status AS status,
             oe.type AS source_type,
+            oe.image_url AS image_url,
             e.estimateid AS id,
             e.estimated_date AS record_date
         FROM order_estimate AS oe
@@ -167,7 +169,7 @@ if (isset($_POST['search_order_estimate'])) {
                     <td>
                         <?= $type_text ?>
                     </td>
-                    <td>
+                    <td class="d-flex align-items-center gap-1">
                         <?php
                             if (isset($status_badges[$status])) {
                                 echo '<span class="d-flex align-items-center gap-2">';
@@ -175,6 +177,14 @@ if (isset($_POST['search_order_estimate'])) {
                                 echo $status_badges[$status]['text'];
                                 echo '</span>';
                             } 
+
+                            if($status == 3){
+                                echo "
+                                    <a href='https://delivery.ilearnsda.com/deliverypictures/".$row['image_url']."' target='_blank' class='btn btn-sm btn-primary'>
+                                        View Image <i class='fa fa-arrow-right'></i>
+                                    </a>
+                                ";
+                            }
                         ?>
                     </td>
                     <td>

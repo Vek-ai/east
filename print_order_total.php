@@ -3,6 +3,12 @@ session_start();
 error_reporting(E_ALL & ~E_DEPRECATED);
 ini_set('display_errors', 1);
 
+if (!isset($_SESSION['userid'])) {
+    $redirect_url = urlencode($_SERVER['REQUEST_URI']);
+    header("Location: login.php?redirect=$redirect_url");
+    exit();
+}
+
 require 'includes/fpdf/fpdf.php';
 require 'includes/dbconn.php';
 require 'includes/functions.php';
