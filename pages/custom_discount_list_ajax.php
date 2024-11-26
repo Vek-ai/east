@@ -93,7 +93,7 @@ if (isset($_POST['search_custom_discounted'])) {
                     <th>Order Date</th>
                     <th>Qty</th>
                     <th>Discount</th>
-                    <th>Price</th>
+                    <th>Total Price</th>
                 </tr>
             </thead>
             <tbody>     
@@ -124,7 +124,7 @@ if (isset($_POST['search_custom_discounted'])) {
                         <?= htmlspecialchars($used_discount) .'%' ?>
                     </td>
                     <td>
-                        <?= $discounted_price ?>
+                        <?= $discounted_price * $quantity ?>
                     </td>
                     
                 </tr>
