@@ -90,10 +90,11 @@ if (isset($_POST['search_custom_discounted'])) {
                 <tr>
                     <th>Customer Name</th>
                     <th>Product Item</th>
-                    <th>Order Date</th>
-                    <th>Qty</th>
-                    <th>Discount</th>
-                    <th>Total Price</th>
+                    <th class="text-center">Order Date</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-center">Actual Discount</th>
+                    <th class="text-center">Discount Used</th>
+                    <th class="text-right">Total Price</th>
                 </tr>
             </thead>
             <tbody>     
@@ -104,6 +105,9 @@ if (isset($_POST['search_custom_discounted'])) {
                 $productid = $row['productid'];
                 $order_date = $row['order_date'];
                 $quantity = $row['quantity'];
+                $current_customer_discount = $row['current_customer_discount'];
+                $current_loyalty_discount = $row['current_loyalty_discount'];
+                $actual_discount = max($current_customer_discount, $current_loyalty_discount);
                 $used_discount = $row['used_discount'];
                 $discounted_price = $row['discounted_price'];
                 ?>
@@ -114,17 +118,20 @@ if (isset($_POST['search_custom_discounted'])) {
                     <td>
                         <?= getProductName($productid) ?>
                     </td>
-                    <td>
+                    <td class="text-center">
                         <?= date("F d, Y", strtotime($order_date)) ?>
                     </td>
-                    <td>
+                    <td class="text-center">
                         <?= htmlspecialchars($quantity) ?>
                     </td>
-                    <td>
-                        <?= htmlspecialchars($used_discount) .'%' ?>
+                    <td class="text-center">
+                        <?= $actual_discount .'%' ?>
                     </td>
-                    <td>
-                        <?= $discounted_price * $quantity ?>
+                    <td class="text-center">
+                        <?= $used_discount .'%' ?>
+                    </td>
+                    <td class="text-right">
+                        <?= '$' . number_format($discounted_price * $quantity,2) ?>
                     </td>
                     
                 </tr>
