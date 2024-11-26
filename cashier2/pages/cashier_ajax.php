@@ -471,7 +471,7 @@ if (isset($_POST['save_estimate'])) {
     foreach ($cart as $item) {
         $discount = 0;
         if(isset($item['used_discount'])){
-            $discount = $item['used_discount'];
+            $discount = $item['used_discount'] / 100;
         }else{
             $discount = $discount_default;
         }
@@ -501,7 +501,7 @@ if (isset($_POST['save_estimate'])) {
         foreach ($cart as $item) {
             $discount = 0;
             if(isset($item['used_discount'])){
-                $discount = $item['used_discount'];
+                $discount = $item['used_discount'] / 100;
             }else{
                 $discount = $discount_default;
             }
@@ -679,7 +679,7 @@ if (isset($_POST['save_order'])) {
     foreach ($cart as $item) {
         $discount = 0;
         if(isset($item['used_discount'])){
-            $discount = $item['used_discount'];
+            $discount = $item['used_discount'] / 100;
         }else{
             $discount = $discount_default;
         }

@@ -7,4 +7,9 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-echo getCustomerDiscount(1);
+echo '<h4>Cart Contents:</h4>';
+echo '<pre style="background: #f9f9f9; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">';
+print_r($_SESSION['cart']);
+echo '</pre>';
+
+?>
