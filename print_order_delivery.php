@@ -159,7 +159,6 @@ if (mysqli_num_rows($result) > 0) {
 
                 
             }
-
             
         }
 
@@ -171,10 +170,14 @@ if (mysqli_num_rows($result) > 0) {
 
         $lineheight = 6;
 
-        $pdf->SetFont('Arial', '', 10);
-        $pdf->SetXY($col1_x, $col_y);
-        $pdf->MultiCell(120, 4, "Customer is solely responsible for accuracy of order and for verifying accuracy of materials before leaving EKMS or at time of delivery. If an agent orders or takes materials on customer's behalf, EKMS is entitled to rely upon the agent as if s/he has full authority to act on customer's behalf. No returns on metal panels or special trim. All other materials returned undamaged within 60 days of invoice date are subject to a restocking fee equal to 25% of current retail price.", 1);
-
+        $query_qr = "SELECT * FROM order_estimate WHERE order_estimate_id = '$orderid' AND type = '2'";
+        $result_qr = mysqli_query($conn, $query_qr);
+        if (mysqli_num_rows($result_qr) > 0) {
+            $row_qr = mysqli_fetch_assoc($result_qr);
+            $pdf->SetXY($col1_x, $col_y);
+            $pdf->Image('https://delivery.ilearnsda.com/deliveryqr/qrcode'.$row_qr['id'].'.png', $col1_x, $col_y, 60, 60);
+        }
+        
         $pdf->SetFont('Arial', '', 9);
         $pdf->SetXY($col2_x, $col_y);
         $pdf->Cell(40, $lineheight, 'MISC:', 0, 0);
