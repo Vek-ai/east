@@ -537,6 +537,18 @@ if (isset($_POST['save_estimate'])) {
         if ($conn->query($query) === TRUE) {
             $query = "INSERT INTO order_estimate (order_estimate_id, type) VALUES ('$estimateid','1')";
             if ($conn->query($query) === TRUE) {
+                $order_estimate_id = $conn->insert_id;
+                $baseUrl = "https://delivery.ilearnsda.com/test.php";
+                $prodValue = $order_estimate_id;
+                $url = $baseUrl . "?prod=" . urlencode($prodValue);
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_NOBODY, true);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+                curl_setopt($ch, CURLOPT_HEADER, false);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+                curl_exec($ch);
+                curl_close($ch);
+                
                 unset($_SESSION['cart']);
                 $response['success'] = true;
                 $response['message'] = "Estimate and products successfully saved.";
