@@ -219,6 +219,7 @@ if(isset($_POST['fetch_delivery_image'])){
         .image {
             opacity: 1;
             display: block;
+            max-width: 100%;
             height: 80vh;
             transition: .5s ease;
             backface-visibility: hidden;
