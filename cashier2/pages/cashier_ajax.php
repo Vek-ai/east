@@ -542,7 +542,7 @@ if (isset($_POST['save_estimate'])) {
             $query = "INSERT INTO order_estimate (order_estimate_id, type) VALUES ('$estimateid','1')";
             if ($conn->query($query) === TRUE) {
                 $order_estimate_id = $conn->insert_id;
-                /* $baseUrl = "https://delivery.ilearnsda.com/test.php";
+                $baseUrl = "https://delivery.ilearnsda.com/test.php";
                 $prodValue = $order_estimate_id;
                 $url = $baseUrl . "?prod=" . urlencode($prodValue);
                 $ch = curl_init($url);
@@ -551,7 +551,7 @@ if (isset($_POST['save_estimate'])) {
                 curl_setopt($ch, CURLOPT_HEADER, false);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 1);
                 curl_exec($ch);
-                curl_close($ch); */
+                curl_close($ch);
                 
                 unset($_SESSION['cart']);
                 $response['success'] = true;
@@ -760,7 +760,7 @@ if (isset($_POST['save_order'])) {
             $query = "INSERT INTO order_estimate (order_estimate_id, type) VALUES ('$orderid','2')";
             if ($conn->query($query) === TRUE) {
                 $order_estimate_id = $conn->insert_id;
-                /* $baseUrl = "https://delivery.ilearnsda.com/test.php";
+                $baseUrl = "https://delivery.ilearnsda.com/test.php";
                 $prodValue = $order_estimate_id;
                 $url = $baseUrl . "?prod=" . urlencode($prodValue);
                 $ch = curl_init($url);
@@ -769,7 +769,7 @@ if (isset($_POST['save_order'])) {
                 curl_setopt($ch, CURLOPT_HEADER, false);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 1);
                 curl_exec($ch);
-                curl_close($ch); */
+                curl_close($ch);
 
                 $response['success'] = true;
                 $response['order_id'] = $orderid;
