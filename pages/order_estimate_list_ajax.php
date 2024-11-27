@@ -190,7 +190,7 @@ if (isset($_POST['search_order_estimate'])) {
                         ?>
                     </td>
                     <td>
-                        <a href="javascript:void(0)" data-id="<?= $row['oe.id'] ?>" data-type="<?= $type ?>" id="view_details">
+                        <a href="javascript:void(0)" data-id="<?= $row['id'] ?>" data-type="<?= $type ?>" id="view_details">
                             <i class="fa fa-eye"></i>
                         </a>
                     </td>
@@ -208,7 +208,6 @@ if (isset($_POST['search_order_estimate'])) {
 
 if(isset($_POST['fetch_delivery_image'])){
     $order_est_id = mysqli_real_escape_string($conn, $_POST['id']);
-    //https://delivery.ilearnsda.com/deliverypictures/".$row['image_url']."
     ?>
     <style>
         .container {
@@ -305,16 +304,17 @@ if($_POST['fetchType'] == 'fetch_order_details'){
     ])));
     ?>
     <style>
-        #est_dtls_tbl {
-            width: 100% !important;
-        }
-
-        #est_dtls_tbl td, #est_dtls_tbl th {
+        #order_dtls_tbl td, #order_dtls_tbl th {
             white-space: normal !important;
             word-wrap: break-word;
         }
+
+        .modal-xxl {
+            width: 90% !important;
+            max-width: 90% !important;
+        }
     </style>
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-xxl">
         <div class="modal-content">
             <div class="modal-header d-flex align-items-center">
                 <h4 class="modal-title" id="myLargeModalLabel">
@@ -358,18 +358,19 @@ if($_POST['fetchType'] == 'fetch_order_details'){
                                 </div>
                             </div>
                             <div class="datatables">
-                                <div class="order-details table-responsive text-nowrap">
-                                    <table id="est_dtls_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
+                                <div class="table-responsive">
+                                    <table id="order_dtls_tbl" class="table table-hover mb-0 text-wrap w-100">
                                         <thead>
                                             <tr>
                                                 <th>Description</th>
                                                 <th>Color</th>
                                                 <th>Grade</th>
                                                 <th>Profile</th>
-                                                <th class="text-center">Quantity</th>
+                                                <th class="text-center">Qty</th>
                                                 <th class="text-center">In Stock</th>
                                                 <th class="text-center">To Manufacture</th>
                                                 <th class="text-center">Dimensions</th>
+                                                <th class="text-center">Details</th>
                                                 <th class="text-center">Price</th>
                                                 <th class="text-center">Customer Price</th>
                                             </tr>
@@ -407,17 +408,85 @@ if($_POST['fetchType'] == 'fetch_order_details'){
                                                         <td><?= max(0, $row['quantity'] - getProductStockTotal($row['productid']))?></td>
                                                         <td>
                                                             <?php 
-                                                            $width = $row['custom_width'];
-                                                            $height = $row['custom_height'];
-                                                            
-                                                            if (!empty($width) && !empty($height)) {
-                                                                echo htmlspecialchars($width) . " X " . htmlspecialchars($height);
-                                                            } elseif (!empty($width)) {
-                                                                echo "Width: " . htmlspecialchars($width);
-                                                            } elseif (!empty($height)) {
-                                                                echo "Height: " . htmlspecialchars($height);
-                                                            }
+                                                                $width = $row['custom_width'];
+                                                                $height = $row['custom_height'];
+                                                                $feet = $row['custom_length'];
+                                                                $inch = $row['custom_length2'];
+
+                                                                if (!empty($width) && !empty($height)) {
+                                                                    echo htmlspecialchars($width) . " X " . htmlspecialchars($height);
+                                                                } elseif (!empty($width)) {
+                                                                    echo "Width: " . htmlspecialchars($width);
+                                                                } elseif (!empty($height)) {
+                                                                    echo "Height: " . htmlspecialchars($height);
+                                                                }
+
+                                                                if (!empty($feet) && !empty($inch)) {
+                                                                    echo " " . htmlspecialchars($feet) . " ft " . htmlspecialchars($inch) . " in";
+                                                                } elseif (!empty($feet)) {
+                                                                    echo " " . htmlspecialchars($feet) . " ft";
+                                                                } elseif (!empty($inch)) {
+                                                                    echo " " . htmlspecialchars($inch) . " in";
+                                                                }
                                                             ?>
+                                                        </td>
+                                                        <td>
+                                                            <?php 
+                                                                $stiff_stand_seam = $row['stiff_stand_seam'];
+                                                                $stiff_board_batten = $row['stiff_board_batten'];
+                                                                $panel_type = $row['panel_type'];
+
+                                                                if (!empty($stiff_stand_seam)) {
+                                                                    echo "Standing Seam Style: ";
+                                                                    switch ($stiff_stand_seam) {
+                                                                        case 1:
+                                                                            echo "Striated<br>";
+                                                                            break;
+                                                                        case 2:
+                                                                            echo "Flat<br>";
+                                                                            break;
+                                                                        case 3:
+                                                                            echo "Minor Rib<br>";
+                                                                            break;
+                                                                        default:
+                                                                            echo "";
+                                                                            break;
+                                                                    }
+                                                                }
+
+                                                                if (!empty($stiff_board_batten)) {
+                                                                    echo "Board and Batten Style: ";
+                                                                    switch ($stiff_board_batten) {
+                                                                        case 1:
+                                                                            echo "Flat<br>";
+                                                                            break;
+                                                                        case 2:
+                                                                            echo "Minor Rib<br>";
+                                                                            break;
+                                                                        default:
+                                                                            echo "";
+                                                                            break;
+                                                                    }
+                                                                }
+
+                                                                if (!empty($panel_type)) {
+                                                                    echo "Panel Type: ";
+                                                                    switch ($panel_type) {
+                                                                        case 1:
+                                                                            echo "Solid<br>";
+                                                                            break;
+                                                                        case 2:
+                                                                            echo "Vented<br>";
+                                                                            break;
+                                                                        case 3:
+                                                                            echo "Drip Stop<br>";
+                                                                            break;
+                                                                        default:
+                                                                            echo "";
+                                                                            break;
+                                                                    }
+                                                                }
+                                                                ?>
                                                         </td>
                                                         <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
                                                         <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
@@ -430,20 +499,18 @@ if($_POST['fetchType'] == 'fetch_order_details'){
                                             }
                                             ?>
                                         </tbody>
-                                            
-
-                                        <tfoot>
-                                            <tr>
-                                                <td colspan="8"></td>
-                                                <td colspan="2" class="text-end">
-                                                    <p class="m-1">Total Quantity: <?= $totalquantity ?></p>
-                                                    <p class="m-1">Actual Price: <?= $total_actual_price ?></p>
-                                                    <p class="m-1">Discounted Price: <?= $total_disc_price ?></p>
-                                                </td>
-                                            </tr>
-                                        </tfoot>
                                     </table>
-                                    
+                                    <div class="d-flex justify-content-between align-items-center mt-4">
+                                        <div>
+                                            <p class="m-1">Total Quantity: <?= $totalquantity ?></p>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="m-1">Actual Price: $<?= number_format($total_actual_price,2) ?></p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="m-1">Discounted Price: $<?= number_format($total_disc_price,2) ?></p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -454,17 +521,18 @@ if($_POST['fetchType'] == 'fetch_order_details'){
     </div>
     <script>
         $(document).ready(function() {
-            $('#est_dtls_tbl').DataTable({
+            var table = $('#order_dtls_tbl').DataTable({
                 language: {
                     emptyTable: "Order Details not found"
                 },
-                autoWidth: true,
                 responsive: true,
-                lengthChange: false
+                lengthChange: false,
+                paging: false,
+                info: false
             });
 
-            $('#viewOrderModal').on('shown.bs.modal', function () {
-                $('#est_dtls_tbl').DataTable().columns.adjust().responsive.recalc();
+            $('#view_order_estimate_details_modal').on('shown.bs.modal', function () {
+                table.columns.adjust().responsive.recalc();
             });
         });
     </script>
@@ -482,16 +550,17 @@ if($_POST['fetchType'] == 'fetch_estimate_details'){
     ])));
     ?>
         <style>
-            #est_dtls_tbl {
-                width: 100% !important;
-            }
-
             #est_dtls_tbl td, #est_dtls_tbl th {
                 white-space: normal !important;
                 word-wrap: break-word;
             }
+
+            .modal-xxl {
+                width: 90% !important;
+                max-width: 90% !important;
+            }
         </style>
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-xxl">
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
                     <h4 class="modal-title" id="myLargeModalLabel">
@@ -536,17 +605,18 @@ if($_POST['fetchType'] == 'fetch_estimate_details'){
                                 </div>
                                 <div class="datatables">
                                     <div class="estimate-details table-responsive text-nowrap">
-                                        <table id="est_dtls_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
+                                        <table id="est_dtls_tbl" class="table table-hover mb-0 text-wrap w-100">
                                             <thead>
                                                 <tr>
                                                     <th>Description</th>
                                                     <th>Color</th>
                                                     <th>Grade</th>
                                                     <th>Profile</th>
-                                                    <th class="text-center">Quantity</th>
+                                                    <th class="text-center">Qty</th>
                                                     <th class="text-center">In Stock</th>
                                                     <th class="text-center">To Manufacture</th>
                                                     <th class="text-center">Dimensions</th>
+                                                    <th class="text-center">Details</th>
                                                     <th class="text-center">Price</th>
                                                     <th class="text-center">Customer Price</th>
                                                 </tr>
@@ -595,6 +665,64 @@ if($_POST['fetchType'] == 'fetch_estimate_details'){
                                                                 }
                                                                 ?>
                                                             </td>
+                                                            <td>
+                                                                <?php 
+                                                                    $stiff_stand_seam = $row['stiff_stand_seam'];
+                                                                    $stiff_board_batten = $row['stiff_board_batten'];
+                                                                    $panel_type = $row['panel_type'];
+
+                                                                    if (!empty($stiff_stand_seam)) {
+                                                                        echo "Standing Seam Style: ";
+                                                                        switch ($stiff_stand_seam) {
+                                                                            case 1:
+                                                                                echo "Striated<br>";
+                                                                                break;
+                                                                            case 2:
+                                                                                echo "Flat<br>";
+                                                                                break;
+                                                                            case 3:
+                                                                                echo "Minor Rib<br>";
+                                                                                break;
+                                                                            default:
+                                                                                echo "";
+                                                                                break;
+                                                                        }
+                                                                    }
+
+                                                                    if (!empty($stiff_board_batten)) {
+                                                                        echo "Board and Batten Style: ";
+                                                                        switch ($stiff_board_batten) {
+                                                                            case 1:
+                                                                                echo "Flat<br>";
+                                                                                break;
+                                                                            case 2:
+                                                                                echo "Minor Rib<br>";
+                                                                                break;
+                                                                            default:
+                                                                                echo "";
+                                                                                break;
+                                                                        }
+                                                                    }
+
+                                                                    if (!empty($panel_type)) {
+                                                                        echo "Panel Type: ";
+                                                                        switch ($panel_type) {
+                                                                            case 1:
+                                                                                echo "Solid<br>";
+                                                                                break;
+                                                                            case 2:
+                                                                                echo "Vented<br>";
+                                                                                break;
+                                                                            case 3:
+                                                                                echo "Drip Stop<br>";
+                                                                                break;
+                                                                            default:
+                                                                                echo "";
+                                                                                break;
+                                                                        }
+                                                                    }
+                                                                    ?>
+                                                            </td>
                                                             <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
                                                             <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
                                                         </tr>
@@ -606,18 +734,18 @@ if($_POST['fetchType'] == 'fetch_estimate_details'){
                                                 }
                                                 ?>
                                             </tbody>
-
-                                            <tfoot>
-                                                <tr>
-                                                    <td colspan="8"></td>
-                                                    <td colspan="2" class="text-end">
-                                                        <p class="m-1">Total Quantity: <?= $totalquantity ?></p>
-                                                        <p class="m-1">Actual Price: <?= $total_actual_price ?></p>
-                                                        <p class="m-1">Discounted Price: <?= $total_disc_price ?></p>
-                                                    </td>
-                                                </tr>
-                                            </tfoot>
                                         </table>
+                                        <div class="d-flex justify-content-between align-items-center mt-4">
+                                            <div>
+                                                <p class="m-1">Total Quantity: <?= $totalquantity ?></p>
+                                            </div>
+                                            <div class="text-center">
+                                                <p class="m-1">Actual Price: $<?= number_format($total_actual_price,2) ?></p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="m-1">Discounted Price: $<?= number_format($total_disc_price,2) ?></p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -628,13 +756,18 @@ if($_POST['fetchType'] == 'fetch_estimate_details'){
         </div>
         <script>
             $(document).ready(function() {
-                $('#est_dtls_tbl').DataTable({
+                var table = $('#est_dtls_tbl').DataTable({
                     language: {
                         emptyTable: "Estimate Details not found"
                     },
-                    autoWidth: true,
                     responsive: true,
-                    lengthChange: false
+                    lengthChange: false,
+                    paging: false,
+                    info: false 
+                });
+
+                $('#view_order_estimate_details_modal').on('shown.bs.modal', function () {
+                    table.columns.adjust().responsive.recalc();
                 });
             });
         </script>

@@ -9,6 +9,8 @@ require '../includes/functions.php';
 $lat = 0;
 $lng = 0;
 
+$panel_id = 3;
+
 $deliveryAmt = getDeliveryCost();
 $addressSettings = getSettingAddressDetails();
 $amtPerMile = getSettingAmtPerMile();
@@ -557,6 +559,28 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                   </div>
               </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirm_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div id="confirmHeaderContainer" class="modal-header align-items-center modal-colored-header">
+                <h4 id="confirmHeader" class="text-center m-0 p-2 pb-0">Are you Sure?</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5 class="text-muted px-2">Add the product to cart with <span class="text-warning">VENTED</span> Panel Type?</h5>
+            </div>
+            <div class="text-center mb-2">
+                <button type="button" id="confirm_yes_btn" class="btn bg-success-subtle text-success waves-effect text-start">
+                    Yes
+                </button>
+                <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">
+                    No
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -1716,6 +1740,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     }
     
     $(document).ready(function() {
+        var panel_id = '<?= $panel_id ?>';
+
         if (typeof $.ui === 'undefined') {
             $.getScript("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", function() {
                 console.log("jQuery UI has been successfully loaded.");
@@ -2390,39 +2416,49 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
 
-        $(document).on('submit', '#quantity_form', function(event) {
+        $(document).on('submit', '#quantity_form', function (event) {
             event.preventDefault();
+
             const formData = new FormData(this);
-            formData.append('add_to_cart', 'add_to_cart');
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    console.log(response);
-                    $('.modal').modal("hide");
-                    if (response.trim() === "success") {
-                        $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Added to Cart.");
-                        $('#responseHeaderContainer').removeClass("bg-danger");
-                        $('#responseHeaderContainer').addClass("bg-success");
+            const category_id = formData.get('category_id');
+            const panel_type = formData.get('panel_type');
+
+            const performAjax = (formData) => {
+                formData.append('add_to_cart', 'add_to_cart');
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        $('.modal').modal("hide");
+                        const isSuccess = response.trim() === "success";
+                        $('#responseHeader').text(isSuccess ? "Success" : "Failed");
+                        $('#responseMsg').text(isSuccess ? "Added to Cart." : response);
+                        $('#responseHeaderContainer')
+                            .toggleClass("bg-success", isSuccess)
+                            .toggleClass("bg-danger", !isSuccess);
                         $('#response_modal').modal("show");
-                    }else{
-                        $('#responseHeader').text("Failed");
-                        $('#responseMsg').text(response);
-                        $('#responseHeaderContainer').removeClass("bg-success");
-                        $('#responseHeaderContainer').addClass("bg-danger");
-                        $('#response_modal').modal("show");
+                        if (isSuccess) loadCart();
+                    },
+                    error: function (xhr) {
+                        console.error('Error:', xhr.responseText);
                     }
-                    loadCart();
-                },
-                error: function (xhr, status, error) {
-                    console.error('Error:', xhr.responseText);
-                }
-            });
+                });
+            };
+
+            if (category_id === panel_id && panel_type === '2') {
+                $('#confirm_modal').modal('show');
+                $('#confirm_yes_btn').off('click').on('click', function () {
+                    $('#confirm_modal').modal('hide');
+                    performAjax(formData);
+                });
+            } else {
+                performAjax(formData);
+            }
         });
+
 
         $('#rowsPerPage').change(function() {
             rowsPerPage = parseInt($(this).val());

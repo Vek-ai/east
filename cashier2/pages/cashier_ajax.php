@@ -527,18 +527,22 @@ if (isset($_POST['save_estimate'])) {
             $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
             $used_discount = !empty($item['used_discount']) ? $item['used_discount'] : getCustomerDiscount($customerid);
 
-            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount')";
+            $stiff_stand_seam = !empty($item['stiff_stand_seam']) ? $item['stiff_stand_seam'] : '0';
+            $stiff_board_batten = !empty($item['stiff_board_batten']) ? $item['stiff_board_batten'] : '0';
+            $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
+
+            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
 
         }
 
-        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount) VALUES ";
+        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
             $query = "INSERT INTO order_estimate (order_estimate_id, type) VALUES ('$estimateid','1')";
             if ($conn->query($query) === TRUE) {
                 $order_estimate_id = $conn->insert_id;
-                $baseUrl = "https://delivery.ilearnsda.com/test.php";
+                /* $baseUrl = "https://delivery.ilearnsda.com/test.php";
                 $prodValue = $order_estimate_id;
                 $url = $baseUrl . "?prod=" . urlencode($prodValue);
                 $ch = curl_init($url);
@@ -547,7 +551,7 @@ if (isset($_POST['save_estimate'])) {
                 curl_setopt($ch, CURLOPT_HEADER, false);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 1);
                 curl_exec($ch);
-                curl_close($ch);
+                curl_close($ch); */
                 
                 unset($_SESSION['cart']);
                 $response['success'] = true;
@@ -742,17 +746,21 @@ if (isset($_POST['save_order'])) {
             $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
             $used_discount = !empty($item['used_discount']) ? $item['used_discount'] : getCustomerDiscount($customerid);
 
-            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount')";
+            $stiff_stand_seam = !empty($item['stiff_stand_seam']) ? $item['stiff_stand_seam'] : '0';
+            $stiff_board_batten = !empty($item['stiff_board_batten']) ? $item['stiff_board_batten'] : '0';
+            $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
+
+            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
         }
 
-        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount) VALUES ";
+        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
             $query = "INSERT INTO order_estimate (order_estimate_id, type) VALUES ('$orderid','2')";
             if ($conn->query($query) === TRUE) {
                 $order_estimate_id = $conn->insert_id;
-                $baseUrl = "https://delivery.ilearnsda.com/test.php";
+                /* $baseUrl = "https://delivery.ilearnsda.com/test.php";
                 $prodValue = $order_estimate_id;
                 $url = $baseUrl . "?prod=" . urlencode($prodValue);
                 $ch = curl_init($url);
@@ -761,7 +769,7 @@ if (isset($_POST['save_order'])) {
                 curl_setopt($ch, CURLOPT_HEADER, false);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 1);
                 curl_exec($ch);
-                curl_close($ch);
+                curl_close($ch); */
 
                 $response['success'] = true;
                 $response['order_id'] = $orderid;
@@ -1316,7 +1324,7 @@ if (isset($_POST['add_to_cart'])) {
             $stiffening_rib_id = 7;
 
             $backer_rod_details = array();
-            if($row['product_category'] == $stiffening_rib_id && $stiff_board_batten == 'flat'){
+            if($row['product_category'] == $stiffening_rib_id && $stiff_board_batten == '1'){
                 $quantityInStock = getProductStockInStock($stiff_board_batten);
                 $totalQuantity = getProductStockTotal($stiff_board_batten);
                 $totalStock = $totalQuantity;
@@ -1341,7 +1349,7 @@ if (isset($_POST['add_to_cart'])) {
                 );
     
                 $_SESSION["cart"][] = $item_array;
-            }else if($row['product_category'] == $stiffening_rib_id && $stiff_stand_seam == 'flat'){
+            }else if($row['product_category'] == $stiffening_rib_id && $stiff_stand_seam == '2'){
                 $quantityInStock = getProductStockInStock($stiffening_rib_id);
                 $totalQuantity = getProductStockTotal($stiffening_rib_id);
                 $totalStock = $totalQuantity;
