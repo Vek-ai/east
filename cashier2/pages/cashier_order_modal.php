@@ -284,7 +284,7 @@ if(isset($_POST['fetch_order'])){
 
                                     $color_id = $values["custom_color"];
                                     if (isset($values["used_discount"])){
-                                        $discount = $values["used_discount"] / 100;
+                                        $discount = is_numeric($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
                                     }
                                 ?>
                                     <tr class="border-bottom border-3 border-white">
