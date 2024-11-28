@@ -216,7 +216,8 @@ if(isset($_POST['fetch_cart'])){
 
                             $color_id = $values["custom_color"];
                             if (isset($values["used_discount"])){
-                                $discount = $values["used_discount"] / 100;
+                                $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
+
                             }
                         ?>
                             <tr>
