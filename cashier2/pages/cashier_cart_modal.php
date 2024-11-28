@@ -24,8 +24,9 @@ if(isset($_POST['fetch_cart'])){
         ])));
         $fname = $customer_details['customer_first_name'];
         $lname = $customer_details['customer_last_name'];
-        $discount = floatval(getCustomerDiscount($customer_id)) / 100;
-        $tax = floatval(getCustomerTax($customer_id)) / 100;
+        $discount = is_numeric(getCustomerDiscount($customer_id)) ? floatval(getCustomerDiscount($customer_id)) / 100 : 0;
+        $tax = is_numeric(getCustomerTax($customer_id)) ? floatval(getCustomerTax($customer_id)) / 100 : 0;
+
     }
     $delivery_price = getDeliveryCost();
     ?>
@@ -196,7 +197,8 @@ if(isset($_POST['fetch_cart'])){
 
                             $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? $values["estimate_length"] : 0;
                             $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? $values["estimate_length_inch"] : 0;
-                            $total_length = $estimate_length + ($estimate_length_inch / 12);
+                            $total_length = floatval($estimate_length) + (floatval($estimate_length_inch) / 12);
+
 
                             $sold_by_feet = $product["sold_by_feet"];
                             $extra_cost_per_foot = 0;
