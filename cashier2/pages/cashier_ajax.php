@@ -696,11 +696,12 @@ if (isset($_POST['save_order'])) {
 
     foreach ($cart as $item) {
         $discount = 0;
-        if(isset($item['used_discount'])){
-            $discount = $item['used_discount'] / 100;
-        }else{
-            $discount = $discount_default;
+        if (isset($item['used_discount']) && is_numeric($item['used_discount'])) {
+            $discount = floatval($item['used_discount']) / 100;
+        } else {
+            $discount = isset($discount_default) ? $discount_default : 0.0; // Fallback to 0.0 if default is not set
         }
+        
         $product_id = intval($item['product_id']);
         $product_details = getProductDetails($product_id);
         $quantity_cart = intval($item['quantity_cart']);
