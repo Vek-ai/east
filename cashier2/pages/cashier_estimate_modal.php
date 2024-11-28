@@ -263,10 +263,13 @@ if(isset($_POST['fetch_estimate'])){
                                         if (isset($values["panel_type"]) && $values["panel_type"] == 'vented') {
                                             $extra_cost_per_foot = 0.50;
                                         }
+                                        
+                                        $amount_discount = !empty($values["amount_discount"]) ? $values["amount_discount"] : 0;
+
                                         if ($sold_by_feet == 1) {
-                                            $product_price = $values["quantity_cart"] * $total_length * $values["unit_price"] + ($extra_cost_per_foot * $total_length);
+                                            $product_price = ($values["quantity_cart"] * $total_length * $values["unit_price"] + ($extra_cost_per_foot * $total_length)) - $amount_discount;
                                         } else {
-                                            $product_price = $values["quantity_cart"] * $values["unit_price"] + ($extra_cost_per_foot);
+                                            $product_price = ($values["quantity_cart"] * $values["unit_price"] + $extra_cost_per_foot) - $amount_discount;
                                         }
 
                                         $color_id = $values["custom_color"];

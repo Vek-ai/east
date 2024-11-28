@@ -483,9 +483,10 @@ if (isset($_POST['save_estimate'])) {
         $estimate_length_inch = floatval($item['estimate_length_inch']);
 
         $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
+        $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
         $actual_price = $unit_price * $total_length * $quantity_cart;
-        $discounted_price = $actual_price * (1 - $discount);
+        $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
 
         $total_actual_price += $actual_price;
         $total_discounted_price += $discounted_price;
@@ -519,9 +520,10 @@ if (isset($_POST['save_estimate'])) {
             $is_sold_by_feet = intval($product_details['sold_by_feet']);
             
             $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
+            $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
             $actual_price = $unit_price * $total_length;
-            $discounted_price = $actual_price * (1 - $discount);
+            $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
 
             $curr_discount = intval(getCustomerDiscountProfile($customerid));
             $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
@@ -708,8 +710,10 @@ if (isset($_POST['save_order'])) {
         $is_sold_by_feet = intval($product_details['sold_by_feet']);
 
         $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
+        $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
+
         $actual_price = $unit_price * $total_length * $quantity_cart;
-        $discounted_price = $actual_price * (1 - $discount);
+        $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
 
         $total_price += $actual_price;
         $total_discounted_price += $discounted_price;
@@ -723,6 +727,12 @@ if (isset($_POST['save_order'])) {
 
         $values = [];
         foreach ($cart as $item) {
+            $discount = 0;
+            if(isset($item['used_discount'])){
+                $discount = $item['used_discount'] / 100;
+            }else{
+                $discount = $discount_default;
+            }
             $product_id = intval($item['product_id']);
             $product_details = getProductDetails($product_id);
             $quantity_cart = intval($item['quantity_cart']);
@@ -738,8 +748,10 @@ if (isset($_POST['save_order'])) {
 
             $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
 
+            $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
+
             $actual_price = $unit_price * $total_length;
-            $discounted_price = $actual_price * (1 - $discount);
+            $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
             $product_category = intval($product_details['product_category']);
 
             $curr_discount = intval(getCustomerDiscountProfile($customerid));
@@ -1038,8 +1050,16 @@ if(isset($_POST['fetch_change_color_modal'])){
 
 if(isset($_POST['fetch_change_price_modal'])){
     ?>
-        <div id="change_price_container" class="d-flex align-items-center justify-content-between w-100">
+        <div id="change_price_container" class="row">
             <div class="col-md-12">
+                <label class="form-label" for="price_input">Price</label>
+                <input class="form-control" id="price_input" name="price_input" placeholder="Price" />
+            </div>
+            <div class="col-md-12 mt-4">
+                <label class="form-label" for="disc_input">Discount</label>
+                <input class="form-control" id="disc_input" name="disc_input" placeholder="Discount ($)" />
+            </div>
+            <div class="col-md-12 mt-4">
                 <label class="form-label" for="price_group_select" style="display:block; width: 100%;">Discount Category</label>
                 <select id="price_group_select" class="form-select custom-select text-start">
                     <option value="">Select Discount</option>
@@ -1056,9 +1076,7 @@ if(isset($_POST['fetch_change_price_modal'])){
                     ?>
                 </select>
             </div>
-        </div>
-        <div id="change_price_container" class="d-flex align-items-center justify-content-between w-100 mt-4">
-            <div class="col-md-12">
+            <div class="col-md-12 mt-4">
                 <label class="form-label" for="product_select" style="display:block; width: 100%;">Products Affected</label>
                 <select id="product_select" class="form-select custom-select text-start" multiple="multiple">
                     <?php
@@ -1070,10 +1088,15 @@ if(isset($_POST['fetch_change_price_modal'])){
                     ?>
                 </select>
             </div>
+            <div class="col-md-12 mt-4">
+                <label class="form-label" for="notes_input">Notes</label>
+                <textarea class="form-control" id="notes_input" name="notes_input" rows="3" placeholder="Notes here"></textarea>
+            </div>
         </div>
-        
         <script>
             $(document).ready(function() {
+                let isUpdating = false;
+
                 $("#price_group_select").select2({
                     width: '100%',
                     placeholder: "Select Discount",
@@ -1089,6 +1112,20 @@ if(isset($_POST['fetch_change_price_modal'])){
                         button: '<button type="button" class="multiselect dropdown-toggle text-start" data-bs-toggle="dropdown" aria-expanded="false"><span class="multiselect-selected-text"></span></button>',
                         ul: '<ul class="multiselect-container dropdown-menu dropdown-menu-start px-0"></ul>',
                     },
+                });
+
+                $('#disc_input').on('change', function () {
+                    if (isUpdating) return;
+                    isUpdating = true;
+                    $("#price_group_select").val(null).trigger('change');
+                    isUpdating = false;
+                });
+
+                $('#price_group_select').on('change', function () {
+                    if (isUpdating) return;
+                    isUpdating = true;
+                    $('#disc_input').val('');
+                    isUpdating = false;
                 });
             });
         </script>
@@ -1252,16 +1289,33 @@ if (isset($_POST['change_grade'])) {
 if (isset($_POST['change_price'])) {
     $price_group_select = $_POST['price_group_select'];
     $product_select = $_POST['product_select'];
+    $price = $_POST['price'];
+    $disc = $_POST['disc'];
+    $notes = $_POST['notes'];
 
-    foreach ($_SESSION['cart'] as $key => &$item) {
-        if (in_array($item['product_id'], $product_select)) {
-            $item['used_discount'] = $price_group_select;
+    if (!empty($product_select)) {
+        foreach ($_SESSION['cart'] as $key => &$item) {
+            if (in_array($item['product_id'], $product_select)) {
+                $item['used_discount'] = $price_group_select;
+
+                if (!empty($price)) {
+                    $item['unit_price'] = $price;
+                }
+
+                if (!empty($disc)) {
+                    $item['amount_discount'] = $disc;
+                }
+
+                if (!empty($notes)) {
+                    $item['notes'] = $notes;
+                }
+            }
         }
+        unset($item);
+        echo "success";
     }
-    unset($item);
-
-    echo "success";
 }
+
 
 if (isset($_POST['add_to_cart'])) {
     $qty = isset($_POST['quantity_product']) ? intval($_POST['quantity_product']) : 0;

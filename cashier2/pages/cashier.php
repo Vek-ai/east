@@ -1849,11 +1849,17 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         $(document).on('click', '#save_price_change', function () {
             var price_group_select = $('#price_group_select').val();
             var product_select = $('#product_select').val();
+            var price = $('#price_input').val();
+            var disc = $('#disc_input').val();
+            var notes = $('#notes_input').val();
 
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
+                    price: price,
+                    disc: disc,
+                    notes: notes,
                     price_group_select: price_group_select,
                     product_select: product_select,
                     change_price: 'change_price'
