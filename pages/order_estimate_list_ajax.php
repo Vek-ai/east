@@ -404,7 +404,7 @@ if($_POST['fetchType'] == 'fetch_order_details'){
                                                             <?php echo getProfileTypeName($product_details['profile']); ?>
                                                         </td>
                                                         <td><?= $row['quantity'] ?></td>
-                                                        <td><?= getProductStockTotal($row['productid']) ?></td>
+                                                        <td><?= min($row['quantity'], getProductStockTotal($row['productid'])) ?></td>
                                                         <td><?= max(0, $row['quantity'] - getProductStockTotal($row['productid']))?></td>
                                                         <td>
                                                             <?php 
@@ -649,7 +649,7 @@ if($_POST['fetchType'] == 'fetch_estimate_details'){
                                                                 <?php echo getProfileTypeName($product_details['profile']); ?>
                                                             </td>
                                                             <td><?= $row['quantity'] ?></td>
-                                                            <td><?= getProductStockTotal($row['product_id']) ?></td>
+                                                            <td><?= min($row['quantity'], getProductStockTotal($row['product_id'])) ?></td>
                                                             <td><?= max(0, $row['quantity'] - getProductStockTotal($row['product_id']))?></td>
                                                             <td>
                                                                 <?php 
