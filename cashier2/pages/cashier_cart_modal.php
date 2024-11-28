@@ -196,8 +196,7 @@ if(isset($_POST['fetch_cart'])){
                             $images_directory = "../images/drawing/";
 
                             $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 0;
-                            $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
-
+                            $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? $values["estimate_length_inch"] : 0;
                             $total_length = floatval($estimate_length) + (floatval($estimate_length_inch) / 12);
 
 
@@ -207,13 +206,12 @@ if(isset($_POST['fetch_cart'])){
                                 $extra_cost_per_foot = 0.50;
                             }
 
-                            $amount_discount = isset($values["amount_discount"]) && is_numeric($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
-
+                            $amount_discount = !empty($values["amount_discount"]) ? $values["amount_discount"] : 0;
 
                             if ($sold_by_feet == 1) {
-                                $product_price = ($values["quantity_cart"] * $total_length * floatval($values["unit_price"]) + ($extra_cost_per_foot * $total_length)) - $amount_discount;
+                                $product_price = ($values["quantity_cart"] * $total_length * $values["unit_price"] + ($extra_cost_per_foot * $total_length)) - $amount_discount;
                             } else {
-                                $product_price = ($values["quantity_cart"] * floatval($values["unit_price"]) + $extra_cost_per_foot) - $amount_discount;
+                                $product_price = ($values["quantity_cart"] * $values["unit_price"] + $extra_cost_per_foot) - $amount_discount;
                             }
 
                             $color_id = $values["custom_color"];
@@ -449,7 +447,7 @@ if(isset($_POST['fetch_cart'])){
                             $total += $subtotal;
                             $total_customer_price += $customer_price;
                             $no++;
-                            $total_weight += floatval($values["weight"] )* $values["quantity_cart"];
+                            $total_weight += $values["weight"] * $values["quantity_cart"];
                         }
                     }
                     $_SESSION["total_quantity"] = $totalquantity;
