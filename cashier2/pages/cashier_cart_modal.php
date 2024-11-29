@@ -505,7 +505,7 @@ if(isset($_POST['fetch_cart'])){
                                     </tr>
                                     <tr>
                                         <th class="text-right border-bottom">Delivery</th>
-                                        <td class="text-right border-bottom">$ <span id="delivery_amt_est"><?= number_format($delivery_price, 2) ?></span></td>
+                                        <td class="text-right border-bottom">$ <span id="delivery_amt"><?= number_format($delivery_price, 2) ?></span></td>
                                     </tr>
                                     <tr>
                                         <th class="text-right border-bottom">Sales Tax</th>

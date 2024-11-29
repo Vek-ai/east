@@ -573,7 +573,7 @@ if(isset($_POST['fetch_order'])){
                                         <div class="col-6">
                                             <div class="form-group">
                                                 <label>Cash Amount</label>
-                                                <input type="number" class="form-control" id="order_cash" value="<?= number_format($total_customer_price + $delivery_price,2) ?>">
+                                                <input type="number" class="form-control" id="order_cash" value="<?= round($total_customer_price + $delivery_price, 2) ?>">
                                             </div>
                                         </div>
                                     </div>

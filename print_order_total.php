@@ -46,6 +46,9 @@ if (mysqli_num_rows($result) > 0) {
         $customerDetails = getCustomerDetails($customer_id);
         $tax = floatval(getCustomerTax($customer_id)) / 100;
         $delivery_method = 'Deliver';
+        if($delivery_price == 0){
+            $delivery_method = 'Pickup';
+        }
         $pdf->SetFont('Arial', '', 10);
         $pdf->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
         $pdf->SetXY(10, 26);

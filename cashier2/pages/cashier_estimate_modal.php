@@ -559,7 +559,7 @@ if(isset($_POST['fetch_estimate'])){
                                             <div class="col-6">
                                                 <div class="form-group">
                                                     <label>Cash Amount</label>
-                                                    <input type="number" class="form-control" id="est_cash" value="<?= number_format($total_customer_price + $delivery_price,2) ?>">
+                                                    <input type="number" class="form-control" id="est_cash" value="<?= round($total_customer_price + $delivery_price, 2) ?>">
                                                 </div>
                                             </div>
                                         </div>
@@ -575,7 +575,7 @@ if(isset($_POST['fetch_estimate'])){
                                             <tbody>
                                                 <tr>
                                                     <th class="text-right border-bottom">Total</th>
-                                                    <td class="text-right border-bottom">$<span id="est_total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span></td>
+                                                    <td class="text-right border-bottom">$<span id="est_total_amt"><?= round(floatval($total_customer_price), 2) ?></span></td>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-right border-bottom">Discount(-)</th>
@@ -714,6 +714,7 @@ if(isset($_POST['fetch_estimate'])){
 
             $(document).on('change', '#est_delivery_amt', function() {
                 var product_cost = parseFloat($('#est_total_amt').text()) || 0;
+                console.log(product_cost)
                 var delivery_cost = parseFloat($(this).val()) || 0;
                 var total_payable = product_cost + delivery_cost;
                 $('#est_total_payable').text(total_payable.toFixed(2));
