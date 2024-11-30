@@ -85,6 +85,10 @@ if(isset($_POST['fetch_estimate'])){
         #msform fieldset:not(:first-of-type) {
             display: none;
         }
+
+        .select2-container--default .select2-results__option[aria-disabled=true] { 
+            display: none;
+        }
     </style>
         <div id="customer_est_section">
             <?php 
@@ -310,14 +314,14 @@ if(isset($_POST['fetch_estimate'])){
                                                 <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
                                             </td>
                                             <td>
-                                                <select id="color<?= $no ?>" class="form-control color-est text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
+                                                <select id="color_est<?= $no ?>" class="form-control color-est text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
                                                     <option value="">Select Color...</option>
                                                     <?php
                                                     if (!empty($color_id)) {
                                                         echo '<option value="' . $color_id . '" selected data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
                                                     }
 
-                                                    $query_colors = "SELECT color_id FROM inventory WHERE Product_id = '$data_id'";
+                                                    $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$data_id'";
                                                     $result_colors = mysqli_query($conn, $query_colors);
 
                                                     if (mysqli_num_rows($result_colors) > 0) {
@@ -325,7 +329,9 @@ if(isset($_POST['fetch_estimate'])){
                                                             if ($color_id == $row_colors['color_id']) {
                                                                 continue;
                                                             }
-                                                            echo '<option value="' . $row_colors['color_id'] . '" data-color="' . getColorHexFromColorID($row_colors['color_id']) . '">' . getColorName($row_colors['color_id']) . '</option>';
+                                                            $product_details = getProductDetails($row_colors['Product_id']);
+                                                            $disabled = $values['custom_grade'] != $product_details['grade'] ? 'disabled' : '';
+                                                            echo '<option value="' . $row_colors['color_id'] . '" data-color="' . getColorHexFromColorID($row_colors['color_id']) . '" data-grade="' . $product_details['grade'] . '"' .$disabled .'>' . getColorName($row_colors['color_id']) . '</option>';
                                                         }
                                                     }
                                                     ?>
@@ -814,6 +820,36 @@ if(isset($_POST['fetch_estimate'])){
                     dropdownParent: $('#estTable')
                 });
             });  
+
+            $(document).on('change', '.grade-est', function () {
+                const selectedGrade = $(this).val();
+                const no = $(this).attr('id').replace('grade', '');
+                const colorSelect = $(`#color_est${no}`);
+
+                if (colorSelect.length) {
+                    colorSelect.val(null).trigger('change');
+
+                    colorSelect.find('option').each(function () {
+                        const grade = String($(this).data('grade'));
+                        if (!selectedGrade || grade === String(selectedGrade)) {
+                            console.log('show')
+                            $(this).removeAttr('disabled').show();
+                        } else {
+                            console.log('hide')
+                            $(this).attr('disabled', 'disabled').hide();
+                        }
+                    });
+
+                    colorSelect.select2('destroy').select2({
+                        width: '300px',
+                        placeholder: "Select...",
+                        dropdownAutoWidth: true,
+                        dropdownParent: $('#estTable'),
+                        templateResult: formatOption,
+                        templateSelection: formatSelected
+                    });
+                }
+            });
 
             
         });

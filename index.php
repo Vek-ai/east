@@ -1387,6 +1387,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "custom_discount_list") {include 'pages/custom_discount_list.php';}
 
             if ($_REQUEST['page'] == "product_system") {include 'pages/product_system.php';}
+            if ($_REQUEST['page'] == "product_order_list") {include 'pages/product_order_list.php';}
           ?>
         </div>
       </div>
