@@ -70,14 +70,14 @@ if(!empty($_REQUEST['result'])){
             <div class="card-body px-0">
               <div class="d-flex justify-content-between align-items-center">
                 <div><br>
-                  <h4 class="font-weight-medium fs-14 mb-0">Categories</h4>
+                  <h4 class="font-weight-medium fs-14 mb-0">Product Systems</h4>
                   <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                       <li class="breadcrumb-item">
                         <a class="text-muted text-decoration-none" href="">Product Properties
                         </a>
                       </li>
-                      <li class="breadcrumb-item text-muted" aria-current="page">Categories</li>
+                      <li class="breadcrumb-item text-muted" aria-current="page">Product Systems</li>
                     </ol>
                   </nav>
                 </div>
