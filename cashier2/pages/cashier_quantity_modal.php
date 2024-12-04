@@ -159,7 +159,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     });
                 }
 
-                $('#quantity-product, #length_feet, #length_inch, input[name="panel_type"], #bends, #hems').change(function() {
+                $('#quantity-product, #length_feet, #length_inch, input[name="panel_type"], #bend_product, #hem_product').change(function() {
                     calculateProductCost();
                 });
 
