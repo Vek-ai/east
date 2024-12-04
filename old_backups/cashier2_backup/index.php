@@ -24,7 +24,6 @@ if (!isset($_SESSION['userid'])) {
 
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" />
-  <link rel="stylesheet" href="../assets/libs/bootstrap/dist/css/bootstrap-multiselect.css">
   <link rel="stylesheet" href="../assets/libs/select2/dist/css/select2.min.css">
   <link rel="stylesheet" href="../assets/libs/owl.carousel/dist/assets/owl.carousel.min.css">
   <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css" />
@@ -35,6 +34,9 @@ if (!isset($_SESSION['userid'])) {
   <!-- Core Css -->
   <link rel="stylesheet" href="../assets/css/styles.css" />
   <link rel="stylesheet" href="css/cashier.css" />
+
+
+  
 
   <title>East Kentucky Metal</title>
 
@@ -62,7 +64,6 @@ if (!isset($_SESSION['userid'])) {
                     
                     <!-- Light Logo icon -->
                     <img src="../assets/images/logo.png" alt="homepage" class="light-logo" />
-                    <img src="../assets/images/logo.png" alt="homepage" class="dark-logo" />
                   </b>
                   <!--End Logo icon -->
                   <!-- Logo text -->
@@ -318,12 +319,6 @@ if (!isset($_SESSION['userid'])) {
                   </li>
                 </ul>
                 <ul class="navbar-nav gap-2 flex-row ms-auto align-items-center justify-content-center">
-
-                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="/" aria-expanded="false">
-                      <iconify-icon icon="ic:round-home" class="home-icon"></iconify-icon>
-                    </a>
-                  </li>
                 
                   <li class="nav-item nav-icon-hover-bg rounded-circle">
                     <a class="nav-link nav-icon-hover moon dark-layout" href="javascript:void(0)">
@@ -332,6 +327,26 @@ if (!isset($_SESSION['userid'])) {
                     <a class="nav-link nav-icon-hover sun light-layout" href="javascript:void(0)">
                       <iconify-icon icon="solar:sun-2-line-duotone" class="sun"></iconify-icon>
                     </a>
+                  </li>
+
+                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
+                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="drop2" aria-expanded="false">
+                      <iconify-icon icon="ic:round-search" class="search-icon"></iconify-icon>
+                    </a>
+                    <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="drop2">
+
+                      <div class="py-3 px-4 bg-primary">
+                        <div class="mb-0 fs-6 fw-medium text-white">Search Customers</div>
+                      </div>
+                      <div class="p-3 d-flex align-items-center border-bottom">
+                        <div class="w-100">
+                          <div class="d-flex align-items-center justify-content-between">
+                            <input type="text" id="customer-search-input" class="form-control" placeholder="Search Customer Name">
+                          </div>
+                        </div>
+                      </div>
+                      <div id="customer-search-list"></div>
+                    </div>
                   </li>
 
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
@@ -540,69 +555,6 @@ if (!isset($_SESSION['userid'])) {
                       </div>
 
                     </div>
-                  </li>
-
-                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
-                      <iconify-icon icon="ic:round-search" class="search-icon"></iconify-icon>
-                    </a>
-                    <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="drop2">
-
-                      <div class="py-3 px-4 bg-primary">
-                        <div class="mb-0 fs-6 fw-medium text-white">Search Customers</div>
-                      </div>
-                      <div class="p-3 d-flex align-items-center border-bottom">
-                        <div class="w-100">
-                          <div class="d-flex align-items-center justify-content-between">
-                            <input type="text" id="customer-search-input" class="form-control" placeholder="Search Customer Name">
-                          </div>
-                        </div>
-                      </div>
-                      <div id="customer-search-list"></div>
-                    </div>
-                  </li>
-
-                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                      <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="view_cart" aria-expanded="false">
-                        <iconify-icon icon="ic:round-shopping-cart" class="cart-icon"></iconify-icon>
-                        <div class="cart-number">
-                          <span id="cartQty" class="cart-quantity">
-                            <?php
-                              $totalQuantity = 0;
-                              if (!empty($_SESSION["cart"])) {
-                                foreach ($_SESSION["cart"] as $item) {
-                                  $totalQuantity += $item["quantity_cart"];
-                                }
-                              }
-                              echo $totalQuantity;
-                            ?>
-                          </span>
-                        </div>
-                      </a>
-
-                      <div class="dropdown-menu py-0 content-dd dropdown-menu-animate-up dropdown-menu-end" 
-                          aria-labelledby="drop2" style="width: 40vw; max-height: 50vh; overflow-y: auto; padding: 0; margin: 0;">
-                          <div class="py-3 px-4 bg-primary">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <div class="mb-0 fs-6 fw-medium text-white">Cart Contents</div>
-                              <button type="button" class="btn btn-sm mb-2 me-2 " id="clear_cart" style="background-color: #dc3545; color: white;">
-                                  <i class="fa fa-trash fs-4 me-2"></i>
-                                  Clear Cart
-                              </button>
-                              <span id="cartTotal" class="mb-0 fs-6 fw-medium text-white"><?= "$" . number_format($_SESSION["grandtotal"] ?? 0, 2); ?></span>
-                            </div>
-                          </div>
-                          <div class="row bg-light text-secondary py-2 mx-0 text-center">
-                              <div class="col-1">Image</div>
-                              <div class="col-7">Description</div>
-                              <div class="col-2">Color</div>
-                              <div class="col-1">Qty</div>
-                              <div class="col-1"></div>
-                          </div>
-                          <div class="cart-body" data-simplebar>
-                              
-                          </div>
-                      </div>
                   </li>
 
                   <!-- ------------------------------- -->
@@ -1393,7 +1345,6 @@ if (!isset($_SESSION['userid'])) {
   <script src="../assets/js/theme/theme.js"></script>
   <script src="../assets/js/theme/app.min.js"></script>
   <script src="../assets/js/theme/feather.min.js"></script>
-  <script src="../assets/libs/bootstrap/dist/js/bootstrap-multiselect.min.js"></script>
 
   <!-- solar icons -->
   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
@@ -1405,97 +1356,8 @@ if (!isset($_SESSION['userid'])) {
   <script src="../assets/libs/owl.carousel/dist/owl.carousel.min.js"></script>
   <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
   <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
-  
   <script>
-  function handleTheme() {
-    function setThemeAttributes(theme, darkDisplay, lightDisplay, sunDisplay, moonDisplay) {
-      $("html").attr("data-bs-theme", theme);
-      const layoutElement = $(`#${theme}-layout`);
-      if (layoutElement.length) {
-        layoutElement.prop("checked", true);
-      }
-      $(`.${darkDisplay}`).hide();
-      $(`.${lightDisplay}`).css("display", "flex");
-      $(`.${sunDisplay}`).hide();
-      $(`.${moonDisplay}`).css("display", "flex");
-    }
-
-    const currentTheme = $("html").attr("data-bs-theme") || "dark";
-    setThemeAttributes(
-      currentTheme,
-      currentTheme === "dark" ? "dark-logo" : "light-logo",
-      currentTheme === "dark" ? "light-logo" : "dark-logo",
-      currentTheme === "dark" ? "moon" : "sun",
-      currentTheme === "dark" ? "sun" : "moon"
-    );
-
-    $(".dark-layout").on("click", function () {
-      setThemeAttributes("dark", "dark-logo", "light-logo", "moon", "sun");
-    });
-
-    $(".light-layout").on("click", function () {
-      setThemeAttributes("light", "light-logo", "dark-logo", "sun", "moon");
-    });
-  }
-
-  handleTheme();
-
-
-  function loadCartItemsHeader() {
-      $.ajax({
-          url: 'pages/index_ajax.php',
-          type: 'GET',
-          data: { fetch_cart: 'fetch_cart' },
-          dataType: 'json',
-          success: function(response) {
-              if (response.cart_items && Array.isArray(response.cart_items)) {
-                  $('.cart-body').empty();
-                  response.cart_items.forEach(function(item) {
-                      const itemRow = `
-                          <div class="row align-items-center text-center py-2 border-bottom mx-0">
-                              <div class="col-1 text-center">
-                                  <span class="d-flex justify-content-center align-items-center bg-primary-subtle rounded-circle text-primary" 
-                                      style="width: 50px; height: 50px;">
-                                      <img src="${item.img_src}" alt="Item Image" style="width: 100%; height: 100%; object-fit: cover;">
-                                  </span>
-                              </div>
-                              <div class="col-7">
-                                  <h6 class="mb-1">${item.item_name}</h6>
-                              </div>
-                              <div class="col-2">
-                                  <span class="rounded-circle d-inline-block" style="background-color: ${item.color_hex}; width: 20px; height: 20px;"></span>
-                              </div>
-                              <div class="col-1">
-                                  <h6 class="mb-1">${item.quantity}</h6>
-                              </div>
-                              <div class="col-1">
-                                  <button class="btn btn-sm" type="button" data-line="${item.line}" data-id="${item.product_id}" onClick="delete_item(this)">
-                                      <i class="fa fa-trash"></i>
-                                  </button>
-                              </div>
-                          </div>
-                      `;
-                      $('.cart-body').append(itemRow);
-                  });
-                  $("#cartQty").load(location.href + " #cartQty");
-                  $("#cartTotal").load(location.href + " #cartTotal");
-              } else {
-                  console.error('Invalid data format: cart_items is not an array.');
-              }
-          },
-          error: function(xhr, status, error) {
-              console.error('Error fetching cart items:', error);
-          }
-    });
-
-  }
-
-
   $(document).ready(function() {
-    
-    loadCartItemsHeader();
-
     $(".phone-inputmask").inputmask("(999) 999-9999");
 
     $('#customer-search-input').on('input', function() {

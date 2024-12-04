@@ -18,6 +18,7 @@ if(!empty($_REQUEST['product_type_id'])){
       $product_type = $row['product_type'];
       $type_abreviations = $row['type_abreviations'];
       $notes = $row['notes'];
+      $special = $row['special'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -65,47 +66,47 @@ if(!empty($_REQUEST['result'])){
 .inactive-row {
     display: none;
 }
-    </style>
-        <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
-            <div class="card-body px-0">
-              <div class="d-flex justify-content-between align-items-center">
-                <div><br>
-                  <h4 class="font-weight-medium fs-14 mb-0">Product type</h4>
-                  <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                      <li class="breadcrumb-item">
-                        <a class="text-muted text-decoration-none" href="">Product Properties
-                        </a>
-                      </li>
-                      <li class="breadcrumb-item text-muted" aria-current="page">Product type</li>
-                    </ol>
-                  </nav>
-                </div>
-                <div>
-                  <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
-                    <div class="d-flex gap-2">
-                      <div class="">
-                        <small>This Month</small>
-                        <h4 class="text-primary mb-0 ">$58,256</h4>
-                      </div>
-                      <div class="">
-                        <div class="breadbar"></div>
-                      </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                      <div class="">
-                        <small>Last Month</small>
-                        <h4 class="text-secondary mb-0 ">$58,256</h4>
-                      </div>
-                      <div class="">
-                        <div class="breadbar2"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+</style>
+<div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
+  <div class="card-body px-0">
+    <div class="d-flex justify-content-between align-items-center">
+      <div><br>
+        <h4 class="font-weight-medium fs-14 mb-0">Product type</h4>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a class="text-muted text-decoration-none" href="">Product Properties
+              </a>
+            </li>
+            <li class="breadcrumb-item text-muted" aria-current="page">Product type</li>
+          </ol>
+        </nav>
+      </div>
+      <div>
+        <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
+          <div class="d-flex gap-2">
+            <div class="">
+              <small>This Month</small>
+              <h4 class="text-primary mb-0 ">$58,256</h4>
+            </div>
+            <div class="">
+              <div class="breadbar"></div>
             </div>
           </div>
+          <div class="d-flex gap-2">
+            <div class="">
+              <small>Last Month</small>
+              <h4 class="text-secondary mb-0 ">$58,256</h4>
+            </div>
+            <div class="">
+              <div class="breadbar2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="col-12">
   <!-- start Default Form Elements -->
   <div class="card card-body">
@@ -138,6 +139,13 @@ if(!empty($_REQUEST['result'])){
       <div class="mb-3">
         <label class="form-label">Notes</label>
         <textarea class="form-control" id="notes" name="notes" rows="5"><?= $notes ?></textarea>
+      </div>
+
+      <div class="mb-3 d-flex justify-content-end">
+          <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" id="special" name="special" value="1" <?= $special == 1 ? 'checked' : '' ?>>
+              <label class="form-check-label" for="special">Special Product Type?</label>
+          </div>
       </div>
 
       <div class="form-actions">
@@ -177,6 +185,7 @@ if(!empty($_REQUEST['result'])){
               <tr>
                 <th>Product type</th>
                 <th>Type Abreviations</th>
+                <th>Special</th>
                 <th>Notes</th>
                 <th>Details</th>
                 <th>Status</th>
@@ -186,128 +195,125 @@ if(!empty($_REQUEST['result'])){
               <!-- end row -->
             </thead>
             <tbody>
-<?php
-$no = 1;
-$query_product_type = "SELECT * FROM product_type WHERE hidden=0";
-$result_product_type = mysqli_query($conn, $query_product_type);            
-while ($row_product_type = mysqli_fetch_array($result_product_type)) {
-    $product_type_id = $row_product_type['product_type_id'];
-    $product_type = $row_product_type['product_type'];
-    $type_abreviations = $row_product_type['type_abreviations'];
-    $db_status = $row_product_type['status'];
-    $notes = $row_product_type['notes'];
-   // $last_edit = $row_product_type['last_edit'];
-    $date = new DateTime($row_product_type['last_edit']);
-    $last_edit = $date->format('m-d-Y');
+              <?php
+              $no = 1;
+              $query_product_type = "SELECT * FROM product_type WHERE hidden=0";
+              $result_product_type = mysqli_query($conn, $query_product_type);            
+              while ($row_product_type = mysqli_fetch_array($result_product_type)) {
+                  $product_type_id = $row_product_type['product_type_id'];
+                  $product_type = $row_product_type['product_type'];
+                  $type_abreviations = $row_product_type['type_abreviations'];
+                  $db_status = $row_product_type['status'];
+                  $notes = $row_product_type['notes'];
+                  $special = $row_product_type['special'] == 1 ? 'Yes' : 'No';
+                  // $last_edit = $row_product_type['last_edit'];
+                  $date = new DateTime($row_product_type['last_edit']);
+                  $last_edit = $date->format('m-d-Y');
 
-    $added_by = $row_product_type['added_by'];
-    $edited_by = $row_product_type['edited_by'];
+                  $added_by = $row_product_type['added_by'];
+                  $edited_by = $row_product_type['edited_by'];
 
-    
-    if($edited_by != "0"){
-      $last_user_name = get_name($edited_by);
-    }else if($added_by != "0"){
-      $last_user_name = get_name($added_by);
-    }else{
-      $last_user_name = "";
-    }
+                  
+                  if($edited_by != "0"){
+                    $last_user_name = get_name($edited_by);
+                  }else if($added_by != "0"){
+                    $last_user_name = get_name($added_by);
+                  }else{
+                    $last_user_name = "";
+                  }
 
-    if ($row_product_type['status'] == '0') {
-        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_type_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-    } else {
-        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_type_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-    }
-?>
-<tr id="product-row-<?= $no ?>">
-    <td><span class="product<?= $no ?> <?php if ($row_product_type['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_type ?></span></td>
-    <td><?= $type_abreviations ?></td>
-    <td class="notes" style="width:30%;"><?= $notes ?></td>
-    <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
-    <td><?= $status ?></td>
-    <td class="text-center" id="action-button-<?= $no ?>">
-        <?php if ($row_product_type['status'] == '0') { ?>
-            <a href="#" class="btn btn-light py-1 text-dark hideProductType" data-id="<?= $product_type_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
-        <?php } else { ?>
-            <a href="/?page=product_type&product_type_id=<?= $product_type_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
-        <?php } ?>
-    </td>
-</tr>
-<?php
-$no++;
-}
-?>
-</tbody>
-<script>
-$(document).ready(function() {
-    // Use event delegation for dynamically generated elements
-    $(document).on('click', '.changeStatus', function(event) {
-        event.preventDefault(); 
-        var product_type_id = $(this).data('id');
-        var status = $(this).data('status');
-        var no = $(this).data('no');
-        $.ajax({
-            url: 'pages/product_type_ajax.php',
-            type: 'POST',
-            data: {
-                product_type_id: product_type_id,
-                status: status,
-                action: 'change_status'
-            },
-            success: function(response) {
-                if (response == 'success') {
-                    if (status == 1) {
-                        $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
-                        $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                        $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                        $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideProductType" data-id="' + product_type_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
-                        $('#toggleActive').trigger('change');
-                      } else {
-                        $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                        $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                        $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                        $('#action-button-' + no).html('<a href="/?page=product_type&product_type_id=' + product_type_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
-                        $('#toggleActive').trigger('change');
-                      }
-                } else {
-                    alert('Failed to change status.');
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    });
+                  if ($row_product_type['status'] == '0') {
+                      $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_type_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+                  } else {
+                      $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_type_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+                  }
+              ?>
+              <tr id="product-row-<?= $no ?>">
+                  <td><span class="product<?= $no ?> <?php if ($row_product_type['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_type ?></span></td>
+                  <td><?= $type_abreviations ?></td>
+                  <td><?= $special ?></td>
+                  <td class="notes" style="width:30%;"><?= $notes ?></td>
+                  <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
+                  <td><?= $status ?></td>
+                  <td class="text-center" id="action-button-<?= $no ?>">
+                      <?php if ($row_product_type['status'] == '0') { ?>
+                          <a href="#" class="btn btn-light py-1 text-dark hideProductType" data-id="<?= $product_type_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
+                      <?php } else { ?>
+                          <a href="/?page=product_type&product_type_id=<?= $product_type_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                      <?php } ?>
+                  </td>
+              </tr>
+              <?php
+              $no++;
+              }
+              ?>
+              </tbody>
+              <script>
+              $(document).ready(function() {
+                  // Use event delegation for dynamically generated elements
+                  $(document).on('click', '.changeStatus', function(event) {
+                      event.preventDefault(); 
+                      var product_type_id = $(this).data('id');
+                      var status = $(this).data('status');
+                      var no = $(this).data('no');
+                      $.ajax({
+                          url: 'pages/product_type_ajax.php',
+                          type: 'POST',
+                          data: {
+                              product_type_id: product_type_id,
+                              status: status,
+                              action: 'change_status'
+                          },
+                          success: function(response) {
+                              if (response == 'success') {
+                                  if (status == 1) {
+                                      $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
+                                      $(".changeStatus[data-no='" + no + "']").data('status', "0");
+                                      $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
+                                      $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideProductType" data-id="' + product_type_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
+                                      $('#toggleActive').trigger('change');
+                                    } else {
+                                      $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
+                                      $(".changeStatus[data-no='" + no + "']").data('status', "1");
+                                      $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
+                                      $('#action-button-' + no).html('<a href="/?page=product_type&product_type_id=' + product_type_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                                      $('#toggleActive').trigger('change');
+                                    }
+                              } else {
+                                  alert('Failed to change status.');
+                              }
+                          },
+                          error: function(jqXHR, textStatus, errorThrown) {
+                              alert('Error: ' + textStatus + ' - ' + errorThrown);
+                          }
+                      });
+                  });
 
-    $(document).on('click', '.hideProductType', function(event) {
-        event.preventDefault();
-        var product_type_id = $(this).data('id');
-        var rowId = $(this).data('row');
-        $.ajax({
-            url: 'pages/product_type_ajax.php',
-            type: 'POST',
-            data: {
-                product_type_id: product_type_id,
-                action: 'hide_product_type'
-            },
-            success: function(response) {
-                if (response == 'success') {
-                    $('#product-row-' + rowId).remove(); // Remove the row from the DOM
-                } else {
-                    alert('Failed to hide product type.');
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    });
-});
-</script>
-
-
-
-
-            
+                  $(document).on('click', '.hideProductType', function(event) {
+                      event.preventDefault();
+                      var product_type_id = $(this).data('id');
+                      var rowId = $(this).data('row');
+                      $.ajax({
+                          url: 'pages/product_type_ajax.php',
+                          type: 'POST',
+                          data: {
+                              product_type_id: product_type_id,
+                              action: 'hide_product_type'
+                          },
+                          success: function(response) {
+                              if (response == 'success') {
+                                  $('#product-row-' + rowId).remove(); // Remove the row from the DOM
+                              } else {
+                                  alert('Failed to hide product type.');
+                              }
+                          },
+                          error: function(jqXHR, textStatus, errorThrown) {
+                              alert('Error: ' + textStatus + ' - ' + errorThrown);
+                          }
+                      });
+                  });
+              });
+              </script>
           </table>
         </div>
       </div>
@@ -323,7 +329,6 @@ $(document).ready(function() {
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        
         <p id="responseMsg"></p>
       </div>
       <div class="modal-footer">

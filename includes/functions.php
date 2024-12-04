@@ -1,4 +1,5 @@
 <?php
+include "calculate_price.php";
 function get_userid(){
     if (isset($_COOKIE['userid'])) {
         $userId = $_COOKIE['userid'];
@@ -299,6 +300,19 @@ function getSupplierDetails($supplier_id) {
     return $supplier;
 }
 
+function getSetting($settingName) {
+    global $conn;
+    $query = "SELECT value FROM settings WHERE setting_name = '$settingName'";
+    $result = mysqli_query($conn, $query);
+    $setting = 0;
+
+    if ($row = mysqli_fetch_assoc($result)) {
+        $setting = floatval($row['value']);
+    }
+
+    return $setting;
+}
+
 function getSettingAddressDetails() {
     global $conn;
     $query = "SELECT * FROM settings WHERE setting_name = 'address'";
@@ -439,6 +453,18 @@ function getOrderProdDetails($id) {
         $order_product = $row;
     }
     return $order_product;
+}
+
+function getProductTypeDetails($product_type_id) {
+    global $conn;
+    $product_type_id = mysqli_real_escape_string($conn, $product_type_id);
+    $query = "SELECT * FROM product_type WHERE product_type_id = '$product_type_id'";
+    $result = mysqli_query($conn, $query);
+    $product_type = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $product_type = $row;
+    }
+    return $product_type;
 }
 
 function getOrderTotals($orderid) {

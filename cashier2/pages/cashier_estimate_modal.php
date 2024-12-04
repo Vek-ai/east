@@ -258,27 +258,17 @@ if(isset($_POST['fetch_estimate'])){
 
                                         $images_directory = "../images/drawing/";
 
-                                        $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? $values["estimate_length"] : 0;
+                                        $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 0;
                                         $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? $values["estimate_length_inch"] : 0;
-                                        $total_length = $estimate_length + ($estimate_length_inch / 12);
+                                        $total_length = floatval($estimate_length) + (floatval($estimate_length_inch) / 12);
 
-                                        $sold_by_feet = $product["sold_by_feet"];
-                                        $extra_cost_per_foot = 0;
-                                        if (isset($values["panel_type"]) && $values["panel_type"] == 'vented') {
-                                            $extra_cost_per_foot = 0.50;
-                                        }
-                                        
                                         $amount_discount = !empty($values["amount_discount"]) ? $values["amount_discount"] : 0;
 
-                                        if ($sold_by_feet == 1) {
-                                            $product_price = ($values["quantity_cart"] * $total_length * $values["unit_price"] + ($extra_cost_per_foot * $total_length)) - $amount_discount;
-                                        } else {
-                                            $product_price = ($values["quantity_cart"] * $values["unit_price"] + $extra_cost_per_foot) - $amount_discount;
-                                        }
+                                        $product_price = ($values["quantity_cart"] * $values["unit_price"]) - $amount_discount;
 
                                         $color_id = $values["custom_color"];
                                         if (isset($values["used_discount"])){
-                                            $discount = $values["used_discount"] / 100;
+                                            $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
                                         }
                                     ?>
                                         <tr class="border-bottom border-3 border-white">
