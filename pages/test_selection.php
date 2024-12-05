@@ -404,7 +404,7 @@ require 'includes/functions.php';
             }
 
             resultHtml += `
-                <h5 class="text-center pt-3 fs-5 fw-bold">Multiplied Product Cost: $<span id="multiplied-product-cost">${finalPrice}</span></h5>
+                <h5 class="text-center pt-3 fs-5 fw-bold">Final Product Cost: $<span id="multiplied-product-cost">${finalPrice}</span></h5>
             `;
 
             $('#selected-info').html(resultHtml).show();
