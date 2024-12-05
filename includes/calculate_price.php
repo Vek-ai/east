@@ -4,10 +4,14 @@ function calculateUnitPrice($basePrice, $lengthFeet, $lengthInch, $panelType, $s
 
     $pricePerBend = getPaymentSetting('price_per_bend');
     $pricePerHem = getPaymentSetting('price_per_hem');
-    $ventedPrice = 0.50;
+    $extraCostPerFoot = 0;
+    if ($panelType === 'vented') {
+        $extraCostPerFoot = getPaymentSetting('vented');
+    } elseif ($panelType === 'drip_stop') {
+        $extraCostPerFoot = getPaymentSetting('drip_stop');
+    }
 
     $totalLength = $lengthFeet + ($lengthInch / 12);
-    $extraCostPerFoot = ($panelType === 'vented') ? $ventedPrice : 0;
 
     if ($soldByFeet == 1) {
         $computedPrice = $totalLength * ($basePrice + $extraCostPerFoot);

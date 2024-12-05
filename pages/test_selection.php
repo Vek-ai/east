@@ -181,8 +181,15 @@ require 'includes/functions.php';
             <fieldset class="p-0 position-relative">
                 <legend class="fs-5 fw-bold">Length</legend>
                 <div class="input-group d-flex align-items-center">
-                    <input class="form-control mr-1" type="number" id="length_feet" name="length_feet"  list="length_feet_datalist" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;">
-                    <input class="form-control" type="number" id="length_inch" name="length_inch" list="length_inch_datalist" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;">
+                    <input class="form-control mr-1" type="number" id="length_feet" name="length_feet"  list="length_feet_datalist" placeholder="FT" size="5" style="color:#ffffff;">
+                    <input class="form-control" type="number" id="length_inch" name="length_inch" list="length_inch_datalist" placeholder="IN" size="5" style="color:#ffffff;">
+                </div>
+            </fieldset>
+            <fieldset class="p-0 position-relative mt-2">
+                <legend class="fs-5 fw-bold">Width</legend>
+                <div class="input-group d-flex align-items-center">
+                    <input class="form-control mr-1" type="number" id="width_feet" name="width_feet"  placeholder="FT" size="5" style="color:#ffffff;">
+                    <input class="form-control" type="number" id="width_inch" name="width_inch" placeholder="IN" size="5" style="color:#ffffff;">
                 </div>
             </fieldset>
         </div>
@@ -296,55 +303,51 @@ require 'includes/functions.php';
 
         $('#compute-button').on('click', function() {
             var systemName = $('#select-system option:selected').text();
-            var systemMultiplier = $('#select-system option:selected').data('multiplier') || 1;
-            
+            var systemMultiplier = parseFloat($('#select-system option:selected').data('multiplier')) || 1;
+
             var categoryName = $('#select-category option:selected').text();
-            var categoryMultiplier = $('#select-category option:selected').data('multiplier') || 1;
-            
+            var categoryMultiplier = parseFloat($('#select-category option:selected').data('multiplier')) || 1;
+
             var lineName = $('#select-line option:selected').text();
-            var lineMultiplier = $('#select-line option:selected').data('multiplier') || 1;
-            
+            var lineMultiplier = parseFloat($('#select-line option:selected').data('multiplier')) || 1;
+
             var typeName = $('#select-type option:selected').text();
-            var typeMultiplier = $('#select-type option:selected').data('multiplier') || 1;
-            
+            var typeMultiplier = parseFloat($('#select-type option:selected').data('multiplier')) || 1;
+
             var itemName = $('#select-item option:selected').text();
-            var itemPrice = $('#select-item option:selected').data('price') || 0;
+            var itemPrice = parseFloat($('#select-item option:selected').data('price')) || 0;
 
-            var bends = $('#bend').val() || 0;
-            var hems = $('#hem').val() || 0;
+            var basePrice = itemPrice * systemMultiplier * categoryMultiplier * lineMultiplier * typeMultiplier;
 
-            var quantity = parseInt($('#quantity_product').val()) || 0;
-            var lengthFeet = parseInt($('#length_feet').val()) || 0;
-            var lengthInch = parseInt($('#length_inch').val()) || 0;
+            var bends = parseFloat($('#bend').val()) || 0;
+            var hems = parseFloat($('#hem').val()) || 0;
+
+            var quantity = parseFloat($('#quantity_product').val()) || 0;
+            var lengthFeet = parseFloat($('#length_feet').val()) || 0;
+            var lengthInch = parseFloat($('#length_inch').val()) || 0;
+            var widthFeet = parseFloat($('#width_feet').val()) || 0;
+            var widthInch = parseFloat($('#width_inch').val()) || 0;
             var panelType = $('input[name="panel_type"]:checked').val();
-
-            $.ajax({
-                url: 'cashier2/pages/cashier_quantity_modal.php',
-                method: 'POST',
-                data: {
-                    quantity: quantity,
-                    lengthFeet: lengthFeet,
-                    lengthInch: lengthInch,
-                    panelType: panelType,
-                    soldByFeet: 1,
-                    bends: bends,
-                    hems: hems,
-                    basePrice: itemPrice,
-                    fetch_price: 'fetch_price'
-                },
-                success: function(response) {
-                    var returnedPrice = (parseFloat(response) || 0) * quantity;
-                    var totalMultiplier = systemMultiplier * categoryMultiplier * lineMultiplier * typeMultiplier;
-                    var finalPrice = returnedPrice * totalMultiplier;
-                    $('#product-cost').text(returnedPrice.toFixed(2));
-                    $('#multiplied-product-cost').text(finalPrice.toFixed(2));
-                }
-
-            });
 
             var pricePerBend = <?= number_format(getPaymentSetting('price_per_bend'),2) ?>;
             var pricePerHem = <?= number_format(getPaymentSetting('price_per_hem'),2) ?>;
+            var extraCostPerFoot = 0;
 
+            if (panelType === 'vented') {
+                extraCostPerFoot = parseFloat(<?= number_format(getPaymentSetting('vented'),2) ?>) || 0;
+            } else if (panelType === 'drip_stop') {
+                extraCostPerFoot = parseFloat(<?= number_format(getPaymentSetting('drip_stop'),2) ?>) || 0;
+            }
+
+            var totalLength = lengthFeet + (lengthInch / 12);
+            var totalWidth = widthFeet + (widthInch / 12);
+
+            var bendCost = bends * pricePerBend;
+            var hemCost = hems * pricePerHem;
+
+            var soldByFeet = 1;
+            var finalPrice = (basePrice * (totalLength * totalWidth) * quantity) + bendCost + hemCost + extraCostPerFoot;
+            
             var resultHtml = `
             <div class="d-flex justify-content-center gap-3 text-center mb-2">
                 <div class="mb-2">
@@ -352,6 +355,27 @@ require 'includes/functions.php';
                     <div>Base Price: $${itemPrice}</div>
                 </div>
             </div>
+
+            <div class="d-flex justify-content-between gap-3 text-center mt-3 mb-2">
+                <div class="mb-2">
+                    <div><strong>Product System: ${systemName}</strong></div>
+                    <div>Multiplier: ${systemMultiplier}</div>
+                </div>
+                <div class="mb-2">
+                    <div><strong>Product Category: ${categoryName}</strong></div>
+                    <div>Multiplier: ${categoryMultiplier}</div>
+                </div>
+                <div class="mb-2">
+                    <div><strong>Product Line: ${lineName}</strong></div>
+                    <div>Multiplier: ${lineMultiplier}</div>
+                </div>
+                <div class="mb-2">
+                    <div><strong>Product Type: ${typeName}</strong></div>
+                    <div>Multiplier: ${typeMultiplier}</div>
+                </div>
+            </div>  
+
+            <h5 class="text-center pt-3 fs-5 fw-bold mb-3">Initial Product Cost: $<span id="product-cost">${basePrice}</span></h5>
             `;
 
             if (bends > 0 || hems > 0) {
@@ -380,28 +404,7 @@ require 'includes/functions.php';
             }
 
             resultHtml += `
-                <h5 class="text-center pt-3 fs-5 fw-bold">Initial Product Cost: $<span id="product-cost">0.00</span></h5>
-
-                <div class="d-flex justify-content-between gap-3 text-center mt-3 mb-2">
-                    <div class="mb-2">
-                        <div><strong>Product System: ${systemName}</strong></div>
-                        <div>Multiplier: ${systemMultiplier}</div>
-                    </div>
-                    <div class="mb-2">
-                        <div><strong>Product Category: ${categoryName}</strong></div>
-                        <div>Multiplier: ${categoryMultiplier}</div>
-                    </div>
-                    <div class="mb-2">
-                        <div><strong>Product Line: ${lineName}</strong></div>
-                        <div>Multiplier: ${lineMultiplier}</div>
-                    </div>
-                    <div class="mb-2">
-                        <div><strong>Product Type: ${typeName}</strong></div>
-                        <div>Multiplier: ${typeMultiplier}</div>
-                    </div>
-                </div>  
-
-                <h5 class="text-center pt-3 fs-5 fw-bold">Multiplied Product Cost: $<span id="multiplied-product-cost">0.00</span></h5>
+                <h5 class="text-center pt-3 fs-5 fw-bold">Multiplied Product Cost: $<span id="multiplied-product-cost">${finalPrice}</span></h5>
             `;
 
             $('#selected-info').html(resultHtml).show();
