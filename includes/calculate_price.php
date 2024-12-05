@@ -2,8 +2,8 @@
 function calculateUnitPrice($basePrice, $lengthFeet, $lengthInch, $panelType, $soldByFeet, $bends, $hems) {
     global $conn;
 
-    $pricePerBend = getSetting('price_per_bend');
-    $pricePerHem = getSetting('price_per_hem');
+    $pricePerBend = getPaymentSetting('price_per_bend');
+    $pricePerHem = getPaymentSetting('price_per_hem');
     $ventedPrice = 0.50;
 
     $totalLength = $lengthFeet + ($lengthInch / 12);

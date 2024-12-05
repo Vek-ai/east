@@ -5,6 +5,7 @@ require 'includes/functions.php';
 $product_type = "";
 $type_abreviations = "";
 $notes = "";
+$multiplier = 0;
 
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
@@ -18,54 +19,39 @@ if(!empty($_REQUEST['product_type_id'])){
       $product_type = $row['product_type'];
       $type_abreviations = $row['type_abreviations'];
       $notes = $row['notes'];
+      $multiplier = $row['multiplier'];
       $special = $row['special'];
+      $notes = $row['notes'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
 }
-
-$message = "";
-if(!empty($_REQUEST['result'])){
-  if($_REQUEST['result'] == '1'){
-    $message = "New product type added successfully.";
-    $textColor = "text-success";
-  }else if($_REQUEST['result'] == '2'){
-    $message = "Product type updated successfully.";
-    $textColor = "text-success";
-  }else if($_REQUEST['result'] == '0'){
-    $message = "Failed to Perform Operation";
-    $textColor = "text-danger";
-  }
-  
-}
-
 ?>
 <style>
-        /* Ensure that the text within the notes column wraps properly */
-        td.notes,  td.last-edit{
-            white-space: normal;
-            word-wrap: break-word;
-        }
-        .emphasize-strike {
-            text-decoration: type-through;
-            font-weight: bold;
-            color: #9a841c; /* You can choose any color you like for emphasis */
-        }
-      .dataTables_filter input {
-    width: 100%; /* Adjust the width as needed */
-    height: 50px; /* Adjust the height as needed */
-    font-size: 16px; /* Adjust the font size as needed */
-    padding: 10px; /* Adjust the padding as needed */
-    border-radius: 5px; /* Adjust the border-radius as needed */
-}
-.dataTables_filter {  width: 100%;}
-#toggleActive {
-    margin-bottom: 10px;
-}
+    td.notes,  td.last-edit{
+        white-space: normal;
+        word-wrap: break-word;
+    }
+    .emphasize-strike {
+        text-decoration: type-through;
+        font-weight: bold;
+        color: #9a841c;
+    }
+    .dataTables_filter input {
+        width: 100%;
+        height: 50px;
+        font-size: 16px;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .dataTables_filter {  width: 100%;}
+    #toggleActive {
+        margin-bottom: 10px;
+    }
 
-.inactive-row {
-    display: none;
-}
+    .inactive-row {
+        display: none;
+    }
 </style>
 <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
   <div class="card-body px-0">
@@ -119,7 +105,6 @@ if(!empty($_REQUEST['result'])){
       </div>
     </div>
     
-
     <form id="typeForm" class="form-horizontal">
       <div class="row pt-3">
         <div class="col-md-6">
@@ -128,10 +113,19 @@ if(!empty($_REQUEST['result'])){
             <input type="text" id="product_type" name="product_type" class="form-control"  value="<?= $product_type ?>"/>
           </div>
         </div>
+      </div>
+
+      <div class="row pt-3">
         <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Type Abreviations</label>
             <input type="text" id="type_abreviations" name="type_abreviations" class="form-control" value="<?= $type_abreviations ?>" />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label">Multiplier</label>
+            <input type="number" id="multiplier" name="multiplier" class="form-control" value="<?= $multiplier ?>" />
           </div>
         </div>
       </div>
@@ -185,6 +179,7 @@ if(!empty($_REQUEST['result'])){
               <tr>
                 <th>Product type</th>
                 <th>Type Abreviations</th>
+                <th>Multiplier</th>
                 <th>Special</th>
                 <th>Notes</th>
                 <th>Details</th>
@@ -205,6 +200,7 @@ if(!empty($_REQUEST['result'])){
                   $type_abreviations = $row_product_type['type_abreviations'];
                   $db_status = $row_product_type['status'];
                   $notes = $row_product_type['notes'];
+                  $multiplier = $row_product_type['multiplier'];
                   $special = $row_product_type['special'] == 1 ? 'Yes' : 'No';
                   // $last_edit = $row_product_type['last_edit'];
                   $date = new DateTime($row_product_type['last_edit']);
@@ -231,6 +227,7 @@ if(!empty($_REQUEST['result'])){
               <tr id="product-row-<?= $no ?>">
                   <td><span class="product<?= $no ?> <?php if ($row_product_type['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_type ?></span></td>
                   <td><?= $type_abreviations ?></td>
+                  <td><?= $multiplier ?></td>
                   <td><?= $special ?></td>
                   <td class="notes" style="width:30%;"><?= $notes ?></td>
                   <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>

@@ -13,6 +13,7 @@ if(isset($_REQUEST['action'])) {
         $product_system = mysqli_real_escape_string($conn, $_POST['product_system']);
         $system_abbreviations = mysqli_real_escape_string($conn, $_POST['system_abbreviations']);
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
+        $multiplier = mysqli_real_escape_string($conn, floatval($_POST['multiplier'] ?? 0.00));
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
@@ -50,7 +51,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_system SET product_system = '$product_system', system_abbreviations = '$system_abbreviations', notes = '$notes', last_edit = NOW(), edited_by = '$userid'  WHERE product_system_id = '$product_system_id'";
+                $updateQuery = "UPDATE product_system SET product_system = '$product_system', system_abbreviations = '$system_abbreviations', notes = '$notes', multiplier = '$multiplier', last_edit = NOW(), edited_by = '$userid'  WHERE product_system_id = '$product_system_id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "success_update";
                 } else {
@@ -76,7 +77,7 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO product_system (product_system, system_abbreviations, notes, added_date, added_by) VALUES ('$product_system', '$system_abbreviations', '$notes', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO product_system (product_system, system_abbreviations, notes, multiplier, added_date, added_by) VALUES ('$product_system', '$system_abbreviations', '$notes', '$multiplier', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "success_add";
                 } else {

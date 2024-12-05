@@ -375,7 +375,5 @@ if(!empty($_REQUEST['id'])){
             }
         });
     });
-
-    
 });
 </script>

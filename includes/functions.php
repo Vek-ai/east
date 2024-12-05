@@ -313,6 +313,17 @@ function getSetting($settingName) {
     return $setting;
 }
 
+function getPaymentSetting($payment_setting_name) {
+    global $conn;
+    $query = "SELECT value FROM payment_settings WHERE payment_setting_name = '$payment_setting_name'";
+    $result = mysqli_query($conn, $query);
+    $value = 0;
+    if ($row = mysqli_fetch_assoc($result)) {
+        $value = floatval($row['value']);
+    }
+    return $value;
+}
+
 function getSettingAddressDetails() {
     global $conn;
     $query = "SELECT * FROM settings WHERE setting_name = 'address'";

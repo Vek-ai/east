@@ -1389,6 +1389,9 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "product_system") {include 'pages/product_system.php';}
             if ($_REQUEST['page'] == "product_order_list") {include 'pages/product_order_list.php';}
             if ($_REQUEST['page'] == "product_base") {include 'pages/product_base.php';}
+            if ($_REQUEST['page'] == "payment_settings") {include 'pages/payment_settings.php';}
+
+            if ($_REQUEST['page'] == "test_selection") {include 'pages/test_selection.php';}
           ?>
         </div>
       </div>

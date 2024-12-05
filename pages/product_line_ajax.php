@@ -13,6 +13,7 @@ if(isset($_REQUEST['action'])) {
         $product_line = mysqli_real_escape_string($conn, $_POST['product_line']);
         $line_abreviations = mysqli_real_escape_string($conn, $_POST['line_abreviations']);
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
+        $multiplier = mysqli_real_escape_string($conn, floatval($_POST['multiplier'] ?? 0.00));
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
@@ -50,7 +51,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_line SET product_line = '$product_line', line_abreviations = '$line_abreviations', notes = '$notes', last_edit = NOW(), edited_by = '$userid'  WHERE product_line_id = '$product_line_id'";
+                $updateQuery = "UPDATE product_line SET product_line = '$product_line', line_abreviations = '$line_abreviations', notes = '$notes', multiplier = '$multiplier', last_edit = NOW(), edited_by = '$userid'  WHERE product_line_id = '$product_line_id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "Product line updated successfully.";
                 } else {
@@ -76,7 +77,7 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO product_line (product_line, line_abreviations, notes, added_date, added_by) VALUES ('$product_line', '$line_abreviations', '$notes', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO product_line (product_line, line_abreviations, notes, multiplier, added_date, added_by) VALUES ('$product_line', '$line_abreviations', '$notes', '$multiplier', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "New product line added successfully.";
                 } else {
