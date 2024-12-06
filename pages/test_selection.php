@@ -78,7 +78,7 @@ require 'includes/functions.php';
     </div>
 
     <div class="d-flex justify-content-center align-items-center flex-wrap">
-        <div class="col-md-3 mb-3">
+        <div class="col-md-2 mb-3">
             <label class="form-label">Product System</label>
             <div>
                 <select class="form-control search-chat py-0 ps-5 select2-init" id="select-system" data-category="">
@@ -97,7 +97,7 @@ require 'includes/functions.php';
                 </select>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
+        <div class="col-md-2 mb-3">
             <label class="form-label">Product Category</label>
             <div>
                 <select class="form-control search-chat py-0 ps-5 select2-init" id="select-category" data-category="">
@@ -116,7 +116,7 @@ require 'includes/functions.php';
                 </select>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
+        <div class="col-md-2 mb-3">
             <label class="form-label">Product Line</label>
             <div>
                 <select class="form-control search-chat py-0 ps-5 select2-init" id="select-line" data-category="">
@@ -135,7 +135,7 @@ require 'includes/functions.php';
                 </select>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
+        <div class="col-md-2 mb-3">
             <p class="form-label">Product Type</p>
             <div>
                 <select class="form-control search-chat py-0 ps-5 select2-init" id="select-type" data-category="">
@@ -147,6 +147,25 @@ require 'includes/functions.php';
                         while ($row_type = mysqli_fetch_array($result_type)) {
                         ?>
                             <option value="<?= $row_type['product_type_id'] ?>" data-category="type" data-multiplier="<?= $row_type['multiplier'] ?>" data-special="<?= $row_type['special'] ?>"><?= $row_type['product_type'] ?></option>
+                        <?php
+                        }
+                        ?>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-2 mb-3">
+            <p class="form-label">Trim Multiplier</p>
+            <div>
+                <select class="form-control search-chat py-0 ps-5 select2-init" id="select-trim-color" data-category="">
+                    <option value="" data-category="">All Trim Multipliers</option>
+                    <optgroup label="Trim Multipliers">
+                        <?php
+                        $query_trim_color = "SELECT * FROM trim_color WHERE hidden = '0'";
+                        $result_trim_color = mysqli_query($conn, $query_trim_color);
+                        while ($row_trim_color = mysqli_fetch_array($result_trim_color)) {
+                        ?>
+                            <option value="<?= $row_trim_color['trim_color_id'] ?>" data-category="trim_color" data-multiplier="<?= $row_trim_color['multiplier'] ?>"><?= $row_trim_color['trim_color'] ?></option>
                         <?php
                         }
                         ?>
@@ -314,10 +333,13 @@ require 'includes/functions.php';
             var typeName = $('#select-type option:selected').text();
             var typeMultiplier = parseFloat($('#select-type option:selected').data('multiplier')) || 1;
 
+            var trimColorName = $('#select-trim-color option:selected').text();
+            var trimColorMultiplier = parseFloat($('#select-trim-color option:selected').data('multiplier')) || 1;
+
             var itemName = $('#select-item option:selected').text();
             var itemPrice = parseFloat($('#select-item option:selected').data('price')) || 0;
 
-            var basePrice = itemPrice * systemMultiplier * categoryMultiplier * lineMultiplier * typeMultiplier;
+            var basePrice = itemPrice * systemMultiplier * categoryMultiplier * lineMultiplier * typeMultiplier * trimColorMultiplier;
 
             var bends = parseFloat($('#bend').val()) || 0;
             var hems = parseFloat($('#hem').val()) || 0;
@@ -372,6 +394,10 @@ require 'includes/functions.php';
                 <div class="mb-2">
                     <div><strong>Product Type: ${typeName}</strong></div>
                     <div>Multiplier: ${typeMultiplier}</div>
+                </div>
+                <div class="mb-2">
+                    <div><strong>Product Type: ${trimColorName}</strong></div>
+                    <div>Multiplier: ${trimColorMultiplier}</div>
                 </div>
             </div>  
 
