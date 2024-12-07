@@ -1393,6 +1393,8 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "test_selection") {include 'pages/test_selection.php';}
             if ($_REQUEST['page'] == "trim_color") {include 'pages/trim_color.php';}
+
+            if ($_REQUEST['page'] == "coil_product") {include 'pages/coil_product.php';}
             
           ?>
         </div>
