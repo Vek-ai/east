@@ -48,6 +48,7 @@ if(isset($_REQUEST['action'])) {
         $avg_by_color = $price;
         $total = $remaining_feet * $price;
         $lb_per_ft = $weight / $og_length;
+        $current_weight = $lb_per_ft * $remaining_feet;
         $contract_ppf = isset($_POST['contract_ppf']) ? mysqli_real_escape_string($conn, $_POST['contract_ppf']) : 0;
         $contract_ppcwg = isset($_POST['contract_ppcwg']) ? mysqli_real_escape_string($conn, $_POST['contract_ppcwg']) : '';
         $invoice_price = isset($_POST['invoice_price']) ? mysqli_real_escape_string($conn, $_POST['invoice_price']) : 0;
@@ -87,6 +88,7 @@ if(isset($_REQUEST['action'])) {
                 price = '$price',
                 avg_by_color = '$avg_by_color',
                 total = '$total',
+                current_weight = '$current_weight',
                 lb_per_ft = '$lb_per_ft',
                 contract_ppf = '$contract_ppf',
                 contract_ppcwg = '$contract_ppcwg',
@@ -106,14 +108,14 @@ if(isset($_REQUEST['action'])) {
                 coil_id, entry_no, warehouse, color_family, color_close, coil_no, date, supplier, 
                 color_sold_as, product_id, og_length, weight, thickness, width, grade, coating, 
                 tag_no, invoice_no, remaining_feet, gauge, grade_no, year, month, extracting_price, 
-                price, avg_by_color, total, lb_per_ft, contract_ppf, contract_ppcwg, invoice_price, 
+                price, avg_by_color, total, current_weight, lb_per_ft, contract_ppf, contract_ppcwg, invoice_price, 
                 round_width, main_image
             ) VALUES (
                 '$coil_id', '$entry_no', '$warehouse', '$color_family', '$color_close', '$coil_no', 
                 '$date', '$supplier', '$color_sold_as', '$product_id', '$og_length', '$weight', 
                 '$thickness', '$width', '$grade', '$coating', '$tag_no', '$invoice_no', '$remaining_feet', 
                 '$gauge', '$grade_no', '$year', '$month', '$extracting_price', '$price', '$avg_by_color', 
-                '$total', '$lb_per_ft', '$contract_ppf', '$contract_ppcwg', '$invoice_price', 
+                '$total', '$current_weight', '$lb_per_ft', '$contract_ppf', '$contract_ppcwg', '$invoice_price', 
                 '$round_width', '$main_image'
             )";
 
