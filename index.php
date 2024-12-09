@@ -1395,6 +1395,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "trim_color") {include 'pages/trim_color.php';}
 
             if ($_REQUEST['page'] == "coil_product") {include 'pages/coil_product.php';}
+            if ($_REQUEST['page'] == "approval_list") {include 'pages/approval_list.php';}
             
           ?>
         </div>

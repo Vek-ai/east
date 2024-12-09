@@ -216,6 +216,18 @@ function getGradeDetails($product_grade_id) {
     return $product_grade;
 }
 
+function getColorDetails($color_id) {
+    global $conn;
+    $color_id = mysqli_real_escape_string($conn, $color_id);
+    $query = "SELECT * FROM paint_colors WHERE color_id = '$color_id'";
+    $result = mysqli_query($conn, $query);
+    $color = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $color = $row;
+    }
+    return $color;
+}
+
 function getWarrantyTypeName($product_warranty_type_id ){
     global $conn;
     $query = "SELECT product_warranty_type FROM product_warranty_type WHERE product_warranty_type_id = '$product_warranty_type_id   '";

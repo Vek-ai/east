@@ -843,6 +843,107 @@ if (isset($_POST['save_order'])) {
     echo json_encode($response);
 }
 
+if (isset($_POST['save_approval'])) {
+    header('Content-Type: application/json');
+    $response = [];
+    
+    if (!isset($_SESSION['customer_id']) || empty($_SESSION['cart'])) {
+        $response['error'] = "Customer ID or cart is not set.";
+        echo json_encode($response);
+        exit;
+    }
+
+    $customerid = intval($_SESSION['customer_id']);
+    $cashierid = intval($_SESSION['userid']);
+    $cart = $_SESSION['cart'];
+    $submitted_date = date('Y-m-d H:i:s');
+    $discount_default = floatval(getCustomerDiscount($customerid)) / 100;
+
+    $customer_details = getCustomerDetails($customerid);
+
+    $total_price = 0;
+    $total_discounted_price = 0;
+
+    foreach ($cart as $item) {
+        $discount = 0;
+        if (isset($item['used_discount']) && is_numeric($item['used_discount'])) {
+            $discount = floatval($item['used_discount']) / 100;
+        } else {
+            $discount = isset($discount_default) ? $discount_default : 0.0;
+        }
+        $product_id = intval($item['product_id']);
+        $product_details = getProductDetails($product_id);
+        $quantity_cart = intval($item['quantity_cart']);
+        $unit_price = floatval($item['unit_price']);
+        $estimate_length = floatval($item['estimate_length']);
+        $estimate_length_inch = floatval($item['estimate_length_inch']);
+        $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
+
+        $actual_price = $unit_price * $quantity_cart;
+        $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
+
+        $total_price += $actual_price;
+        $total_discounted_price += $discounted_price;
+    }
+
+    $query = "INSERT INTO approval (cashier, total_price, discounted_price, discount_percent, submitted_date, customerid, originalcustomerid) 
+              VALUES ('$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$submitted_date', '$customerid', '$customerid')";
+
+    if ($conn->query($query) === TRUE) {
+        $approval_id = $conn->insert_id;
+
+        $values = [];
+        foreach ($cart as $item) {
+            $discount = 0;
+            if (isset($item['used_discount']) && is_numeric($item['used_discount'])) {
+                $discount = floatval($item['used_discount']) / 100;
+            } else {
+                $discount = isset($discount_default) ? $discount_default : 0.0;
+            }
+            $product_id = intval($item['product_id']);
+            $product_details = getProductDetails($product_id);
+            $quantity_cart = intval($item['quantity_cart']);
+            $unit_price = floatval($item['unit_price']);
+            $estimate_width = !empty($item['estimate_width']) ? floatval($item['estimate_width']) : floatval($product_details['width']);
+            $estimate_bend = floatval($item['estimate_bend']);
+            $estimate_hem = floatval($item['estimate_hem']);
+            $estimate_length = floatval($item['estimate_length']);
+            $estimate_length_inch = floatval($item['estimate_length_inch']);
+            $custom_color = $item['custom_color'];
+            $custom_grade = $item['custom_grade'];
+            $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
+            $actual_price = $unit_price;
+            $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
+            $product_category = intval($product_details['product_category']);
+            $curr_discount = intval(getCustomerDiscountProfile($customerid));
+            $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
+            $used_discount = !empty($item['used_discount']) ? $item['used_discount'] : getCustomerDiscount($customerid);
+            $stiff_stand_seam = !empty($item['stiff_stand_seam']) ? $item['stiff_stand_seam'] : '0';
+            $stiff_board_batten = !empty($item['stiff_board_batten']) ? $item['stiff_board_batten'] : '0';
+            $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
+
+            $values[] = "('$approval_id', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
+        }
+
+        $query = "INSERT INTO approval_product (approval_id, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
+        $query .= implode(', ', $values);
+
+        if ($conn->query($query) === TRUE) {
+
+            $response['success'] = true;
+            $response['approval_id'] = $approval_id;
+
+        } else {
+            $response['error'] = "Error inserting order products: " . $conn->error;
+        }
+    } else {
+        $response['error'] = "Error inserting order: " . $conn->error;
+    }
+
+    $conn->close();
+    echo json_encode($response);
+}
+
 if (isset($_POST['clear_cart'])) {
     unset($_SESSION['cart']);
 }

@@ -357,6 +357,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                 <i class="fa fa-palette fs-4 me-2"></i>
                                 Change Color
                             </button>
+                            <button type="button" class="btn mb-2 me-2 flex-fill" id="btnApprovalModal" style="background-color: #800080; color: white;">
+                                <i class="fa fa-check-circle fs-4 me-2"></i>
+                                Submit Approval
+                            </button>
                             <button type="button" class="btn mb-2 me-2 flex-fill" id="view_estimate" style="background-color: #ffc107; color: black;">
                                 <i class="fa fa-calculator fs-4 me-2"></i>
                                 Estimate
@@ -579,6 +583,28 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 </button>
                 <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">
                     No
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="approval_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header align-items-center modal-colored-header pb-0">
+                <h4 id="responseHeader" class="m-0"></h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5 class="text-center pt-0"> Are you sure you want to submit these items for approval?</h5>
+            </div>
+            <div class="text-center p-3">
+                <button type="button" id="submitApprovalBtn" class="btn bg-success-subtle waves-effect text-start">
+                    Yes
+                </button>
+                <button type="button" class="btn bg-danger-subtle waves-effect text-start" data-bs-dismiss="modal">
+                    Cancel
                 </button>
             </div>
         </div>
@@ -1771,6 +1797,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
 
+        $(document).on('click', '#btnApprovalModal', function () {
+            $('#approval_modal').modal('show');
+        });
+
         $(document).on('click', '#btnPriceGroupModal', function () {
             $.ajax({
                 url: 'pages/cashier_ajax.php',
@@ -2153,6 +2183,29 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         $('#print_order').removeClass('d-none');
                         $('#print_deliver').removeClass('d-none');
                         print_deliver
+                    } else if (response.error) {
+                        alert("Error: " + response.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#submitApprovalBtn', function(event) {
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    save_approval: 'save_approval'
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response.success) {
+                        alert("Application for approval submitted!");
+                        location.reload();
                     } else if (response.error) {
                         alert("Error: " + response.error);
                     }
