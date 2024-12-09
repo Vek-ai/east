@@ -555,7 +555,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                             <i class="text-warning ti ti-pencil fs-7"></i>
                                         </a>
                                         <a href="#" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $coil_id ?>" data-status='<?= $db_status ?>'>
-                                            <i class="text-danger ti ti-trash fs-7"></i>
+                                            <i class="ti <?= $status_icon ?> fs-7"></i>
                                         </a>
                                     </div>
                                 </td>
@@ -600,8 +600,8 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                                 
                                                 $('#action-button-' + no).html('<a href="#" class="btn ' + (newStatus == 1 ? 'btn-light' : 'btn-primary') + ' py-1" data-id="' + coil_id + '" data-row="' + no + '" style="border-radius: 10%;">' + newButtonText + '</a>');
                                                 
-                                                $('#delete_product_btn').find('i').removeClass().addClass(newIconClass + ' fs-7');
-                                                
+                                                $('#delete_product_btn_' + no).find('i').removeClass().addClass(newIconClass + ' fs-7');
+
                                                 $('#toggleActive').trigger('change');
                                             } else {
                                                 alert('Failed to change status.');
