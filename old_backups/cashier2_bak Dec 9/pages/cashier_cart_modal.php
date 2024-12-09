@@ -203,13 +203,25 @@ if(isset($_POST['fetch_cart'])){
                             $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? $values["estimate_length_inch"] : 0;
                             $total_length = floatval($estimate_length) + (floatval($estimate_length_inch) / 12);
 
+
+                            $sold_by_feet = $product["sold_by_feet"];
+                            $extra_cost_per_foot = 0;
+                            if (isset($values["panel_type"]) && $values["panel_type"] == 'vented') {
+                                $extra_cost_per_foot = 0.50;
+                            }
+
                             $amount_discount = !empty($values["amount_discount"]) ? $values["amount_discount"] : 0;
 
-                            $product_price = ($values["quantity_cart"] * $values["unit_price"]) - $amount_discount;
+                            if ($sold_by_feet == 1) {
+                                $product_price = ($values["quantity_cart"] * $total_length * $values["unit_price"] + ($extra_cost_per_foot * $total_length)) - $amount_discount;
+                            } else {
+                                $product_price = ($values["quantity_cart"] * $values["unit_price"] + $extra_cost_per_foot) - $amount_discount;
+                            }
 
                             $color_id = $values["custom_color"];
                             if (isset($values["used_discount"])){
                                 $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
+
                             }
                         ?>
                             <tr>

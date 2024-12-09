@@ -46,49 +46,35 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
             $item_quantity = min($qty, $totalStock);
-        
+
             $length = $row['length'];
             $length_clean = preg_replace('/[^0-9.]/', '', $length);
             $length_float = floatval($length_clean);
             $estimate_length = floor($length_float);
             $estimate_length_inch = $length_float - $estimate_length;
-        
+
             $weight = floatval($row['weight']);
-            $basePrice = floatval($row['unit_price']);
-            $panelType = '';
-            $soldByFeet = $row['sold_by_feet'];
-            $bends = 0;
-            $hems = 0;
-        
-            $unitPrice = calculateUnitPrice(
-                            $basePrice, 
-                            $estimate_length, 
-                            $estimate_length_inch, 
-                            $panelType, 
-                            $soldByFeet, 
-                            $bends, 
-                            $hems
-                        );
-        
+
             $item_array = array(
                 'product_id' => $row['product_id'],
                 'product_item' => $row['product_item'],
-                'unit_price' => $unitPrice,
+                'unit_price' => $row['unit_price'],
                 'line' => $newLine,
                 'quantity_ttl' => $totalStock,
                 'quantity_in_stock' => $quantityInStock,
                 'quantity_cart' => $item_quantity,
                 'estimate_width' => $row['width'],
-                'estimate_length' => $estimate_length,
-                'estimate_length_inch' => $estimate_length_inch,
+                'estimate_length' => '',
+                'estimate_length_inch' => '',
                 'usage' => 0,
                 'custom_color' => $row['color'],
                 'weight' => $weight,
                 'custom_grade' => intval($row['grade'])
             );
-        
+
             $_SESSION["cart"][] = $item_array;
-        }        
+            echo $item_quantity;
+        }
     } elseif ($key !== false) {
         if (isset($_POST['setquantity'])) {
             $requestedQuantity = max($qty, 1);
@@ -117,18 +103,11 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $item_quantity = min($qty, $totalStock);
 
             $weight = floatval($row['weight']);
-            $basePrice = floatval($row['unit_price']);
-            $panelType = '';
-            $soldByFeet = $row['sold_by_feet'];
-            $bends = 0;
-            $hems = 0;
-
-            $unitPrice = calculateUnitPrice($basePrice, $estimate_length, $estimate_length_inch, $panelType, $soldByFeet, $bends, $hems);
 
             $item_array = array(
                 'product_id' => $row['product_id'],
                 'product_item' => $row['product_item'],
-                'unit_price' => $unitPrice,
+                'unit_price' => $row['unit_price'],
                 'line' => 1,
                 'quantity_ttl' => $totalStock,
                 'quantity_in_stock' => $quantityInStock,
@@ -143,8 +122,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             );
 
             $_SESSION["cart"][] = $item_array;
+            echo $item_quantity;
         }
-
     }
 }
 
@@ -499,11 +478,14 @@ if (isset($_POST['save_estimate'])) {
         $unit_price = floatval($item['unit_price']);
         $quantity_cart = intval($item['quantity_cart']);
         $product_details = getProductDetails($item['product_id']);
+        $is_sold_by_feet = intval($product_details['sold_by_feet']);
         $estimate_length = floatval($item['estimate_length']);
         $estimate_length_inch = floatval($item['estimate_length_inch']);
+
+        $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
         $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
-        $actual_price = $unit_price * $quantity_cart;
+        $actual_price = $unit_price * $total_length * $quantity_cart;
         $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
 
         $total_actual_price += $actual_price;
@@ -535,9 +517,12 @@ if (isset($_POST['save_estimate'])) {
             $estimate_length_inch = floatval($item['estimate_length_inch']);
             $custom_color = $item['custom_color'];
             $custom_grade = $item['custom_grade'];
+            $is_sold_by_feet = intval($product_details['sold_by_feet']);
+            
+            $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
             $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
-            $actual_price = $unit_price;
+            $actual_price = $unit_price * $total_length;
             $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
 
             $curr_discount = intval(getCustomerDiscountProfile($customerid));
@@ -714,7 +699,7 @@ if (isset($_POST['save_order'])) {
         if (isset($item['used_discount']) && is_numeric($item['used_discount'])) {
             $discount = floatval($item['used_discount']) / 100;
         } else {
-            $discount = isset($discount_default) ? $discount_default : 0.0;
+            $discount = isset($discount_default) ? $discount_default : 0.0; // Fallback to 0.0 if default is not set
         }
         
         $product_id = intval($item['product_id']);
@@ -723,9 +708,12 @@ if (isset($_POST['save_order'])) {
         $unit_price = floatval($item['unit_price']);
         $estimate_length = floatval($item['estimate_length']);
         $estimate_length_inch = floatval($item['estimate_length_inch']);
+        $is_sold_by_feet = intval($product_details['sold_by_feet']);
+
+        $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
         $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
-        $actual_price = $unit_price * $quantity_cart;
+        $actual_price = $unit_price * $total_length * $quantity_cart;
         $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
 
         $total_price += $actual_price;
@@ -744,7 +732,7 @@ if (isset($_POST['save_order'])) {
             if (isset($item['used_discount']) && is_numeric($item['used_discount'])) {
                 $discount = floatval($item['used_discount']) / 100;
             } else {
-                $discount = isset($discount_default) ? $discount_default : 0.0;
+                $discount = isset($discount_default) ? $discount_default : 0.0; // Fallback to 0.0 if default is not set
             }
             
             $product_id = intval($item['product_id']);
@@ -758,10 +746,13 @@ if (isset($_POST['save_order'])) {
             $estimate_length_inch = floatval($item['estimate_length_inch']);
             $custom_color = $item['custom_color'];
             $custom_grade = $item['custom_grade'];
+            $is_sold_by_feet = intval($product_details['sold_by_feet']);
+
+            $total_length = !empty($is_sold_by_feet) ? ($estimate_length + ($estimate_length_inch / 12)) : 1;
 
             $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
-            $actual_price = $unit_price;
+            $actual_price = $unit_price * $total_length;
             $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
             $product_category = intval($product_details['product_category']);
 
@@ -792,7 +783,7 @@ if (isset($_POST['save_order'])) {
             $query = "INSERT INTO order_estimate (order_estimate_id, type) VALUES ('$orderid','2')";
             if ($conn->query($query) === TRUE) {
                 $order_estimate_id = $conn->insert_id;
-                $baseUrl = "https://delivery.ilearnsda.com/test.php";
+                /* $baseUrl = "https://delivery.ilearnsda.com/test.php";
                 $prodValue = $order_estimate_id;
                 $url = $baseUrl . "?prod=" . urlencode($prodValue);
                 $ch = curl_init($url);
@@ -801,7 +792,7 @@ if (isset($_POST['save_order'])) {
                 curl_setopt($ch, CURLOPT_HEADER, false);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 1);
                 curl_exec($ch);
-                curl_close($ch);
+                curl_close($ch); */
 
                 $response['success'] = true;
                 $response['order_id'] = $orderid;
@@ -1345,8 +1336,7 @@ if (isset($_POST['add_to_cart'])) {
     $panel_type = mysqli_real_escape_string($conn, $_POST['panel_type']);
     $stiff_board_batten = isset($_POST['stiff_board_batten']) ? mysqli_real_escape_string($conn, $_POST['stiff_board_batten']) : '';
     $stiff_stand_seam = isset($_POST['stiff_stand_seam']) ? mysqli_real_escape_string($conn, $_POST['stiff_stand_seam']) : '';
-    $bend_product = isset($_POST['bend_product']) ? floatval($_POST['bend_product']) : 0;
-    $hem_product = isset($_POST['hem_product']) ? floatval($_POST['hem_product']) : 0;
+
     $line = 1;
 
     $quantityInStock = getProductStockInStock($product_id);
@@ -1358,6 +1348,7 @@ if (isset($_POST['add_to_cart'])) {
     }
 
     $key = findCartKey($_SESSION["cart"], $product_id, $line);
+
     if ($key !== false) {
         $requestedQuantity = max($qty, 1);
         $_SESSION["cart"][$key]['quantity_cart'] += min($requestedQuantity, $totalStock);
@@ -1368,20 +1359,13 @@ if (isset($_POST['add_to_cart'])) {
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
             $item_quantity = $qty;
-            $unit_price = calculateUnitPrice(
-                $row['unit_price'], 
-                $lengthFeet,
-                $lengthInch,
-                $panel_type,
-                $row['sold_by_feet'],
-                $bend_product,
-                $hem_product
-            );
+
             $weight = floatval($row['weight']);
+
             $item_array = array(
                 'product_id' => $row['product_id'],
                 'product_item' => $row['product_item'],
-                'unit_price' => $unit_price,
+                'unit_price' => $row['unit_price'],
                 'line' => 1,
                 'quantity_ttl' => $totalStock,
                 'quantity_in_stock' => $quantityInStock,
@@ -1400,14 +1384,16 @@ if (isset($_POST['add_to_cart'])) {
 
             $_SESSION["cart"][] = $item_array;
 
-            // will add backer rods if stiffening rib type
             $backer_rod_3_8 = 45;
             $backer_rod_1_2 = 46;
             $stiffening_rib_id = 7;
 
+            $backer_rod_details = array();
             if($row['product_category'] == $stiffening_rib_id && $stiff_board_batten == '1'){
+                $quantityInStock = getProductStockInStock($stiff_board_batten);
+                $totalQuantity = getProductStockTotal($stiff_board_batten);
+                $totalStock = $totalQuantity;
                 $backer_rod_details = getProductDetails($backer_rod_3_8);
-                $backer_rod_quantity = getProductStockInStock($backer_rod_3_8);
 
                 $item_array = array(
                     'product_id' => $backer_rod_details['product_id'],
@@ -1415,7 +1401,7 @@ if (isset($_POST['add_to_cart'])) {
                     'unit_price' => $backer_rod_details['unit_price'],
                     'line' => 1,
                     'quantity_ttl' => $totalStock,
-                    'quantity_in_stock' => $backer_rod_quantity,
+                    'quantity_in_stock' => $quantityInStock,
                     'quantity_cart' => 1,
                     'estimate_width' => $backer_rod_details['width'],
                     'estimate_length' => 0,
@@ -1426,10 +1412,13 @@ if (isset($_POST['add_to_cart'])) {
                     'weight' => floatval($backer_rod_details['weight']),
                     'custom_grade' => floatval($backer_rod_details['custom_grade'])
                 );
+    
                 $_SESSION["cart"][] = $item_array;
-            } else if($row['product_category'] == $stiffening_rib_id && $stiff_stand_seam == '2'){
+            }else if($row['product_category'] == $stiffening_rib_id && $stiff_stand_seam == '2'){
+                $quantityInStock = getProductStockInStock($stiffening_rib_id);
+                $totalQuantity = getProductStockTotal($stiffening_rib_id);
+                $totalStock = $totalQuantity;
                 $backer_rod_details = getProductDetails($backer_rod_1_2);
-                $backer_rod_quantity = getProductStockInStock($backer_rod_1_2);
 
                 $item_array = array(
                     'product_id' => $backer_rod_details['product_id'],
@@ -1437,7 +1426,7 @@ if (isset($_POST['add_to_cart'])) {
                     'unit_price' => $backer_rod_details['unit_price'],
                     'line' => 1,
                     'quantity_ttl' => $totalStock,
-                    'quantity_in_stock' => $backer_rod_quantity,
+                    'quantity_in_stock' => $quantityInStock,
                     'quantity_cart' => 1,
                     'estimate_width' => $backer_rod_details['width'],
                     'estimate_length' => 0,
@@ -1448,6 +1437,7 @@ if (isset($_POST['add_to_cart'])) {
                     'weight' => floatval($backer_rod_details['weight']),
                     'custom_grade' => floatval($backer_rod_details['custom_grade'])
                 );
+    
                 $_SESSION["cart"][] = $item_array;
             }
         }
@@ -1455,4 +1445,6 @@ if (isset($_POST['add_to_cart'])) {
 
     echo 'success';
 }
+
+
 ?>
