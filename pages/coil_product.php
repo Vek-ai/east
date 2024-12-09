@@ -255,29 +255,38 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                             <input type="text" id="product_id_add" name="product_id" class="form-control" />
                                         </div>
                                     </div>
-                                </div>        
-
-
+                                </div>   
+                                
                                 <div class="row pt-3">
-                                    <div class="col-md-3">
+                                    <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label">Original Length</label>
                                             <input type="text" id="og_length_add" name="og_length" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Remaining Length</label>
+                                            <input type="text" id="remaining_feet_add" name="remaining_feet" class="form-control" />
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row pt-3">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label class="form-label">Weight</label>
                                             <input type="text" id="weight_add" name="weight" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label class="form-label">Thickness</label>
                                             <input type="text" id="thickness_add" name="thickness" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label class="form-label">Width</label>
                                             <input type="text" id="width_add" name="width" class="form-control" />
@@ -770,23 +779,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                     },
                     success: function(response) {
                         $('#updateProductModal').html(response);
-                        $(".select2-update").select2({
-                            width: '100%',
-                            placeholder: "Select Correlated Products",
-                            allowClear: true,
-                            dropdownParent: $('#updateProductModal')
-                        });
-
                         $('#updateProductModal').modal('show');
-
-                        $('#updateProductModal').on('hide.bs.modal', function () {
-                            $(".select2-add").select2({
-                                width: '100%',
-                                placeholder: "Select Correlated Products",
-                                allowClear: true,
-                                dropdownParent: $('#addCoilModal')
-                            });
-                        });
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);

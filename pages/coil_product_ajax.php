@@ -29,7 +29,7 @@ if(isset($_REQUEST['action'])) {
         $coating = isset($_POST['coating']) ? mysqli_real_escape_string($conn, $_POST['coating']) : '';
         $tag_no = isset($_POST['tag_no']) ? mysqli_real_escape_string($conn, $_POST['tag_no']) : '';
         $invoice_no = isset($_POST['invoice_no']) ? mysqli_real_escape_string($conn, $_POST['invoice_no']) : '';
-        $remaining_feet = $og_length; 
+        $remaining_feet = isset($_POST['remaining_feet']) ? mysqli_real_escape_string($conn, $_POST['remaining_feet']) : 0; 
         $gauge = $thickness > 0.0161 ? '26' : '29';
         if (!empty($date)) {
             $year = date('Y', strtotime($date));
@@ -47,7 +47,7 @@ if(isset($_REQUEST['action'])) {
         $price = isset($_POST['price']) ? mysqli_real_escape_string($conn, $_POST['price']) : 0;
         $avg_by_color = $price;
         $total = $remaining_feet * $price;
-        $lb_per_ft = $og_length / $weight;
+        $lb_per_ft = $weight / $og_length;
         $contract_ppf = isset($_POST['contract_ppf']) ? mysqli_real_escape_string($conn, $_POST['contract_ppf']) : 0;
         $contract_ppcwg = isset($_POST['contract_ppcwg']) ? mysqli_real_escape_string($conn, $_POST['contract_ppcwg']) : '';
         $invoice_price = isset($_POST['invoice_price']) ? mysqli_real_escape_string($conn, $_POST['invoice_price']) : 0;
@@ -344,29 +344,38 @@ if(isset($_REQUEST['action'])) {
                                                 <input type="text" id="product_id_edit" name="product_id" class="form-control" value="<?= $row['product_id'] ?>"/>
                                             </div>
                                         </div>
-                                    </div>        
-
-
+                                    </div>    
+                                    
                                     <div class="row pt-3">
-                                        <div class="col-md-3">
+                                        <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Original Length</label>
                                                 <input type="text" id="og_length_edit" name="og_length" class="form-control" value="<?= $row['og_length'] ?>"/>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Remaining Length</label>
+                                                <input type="text" id="remaining_feet_edit" name="remaining_feet" class="form-control" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="row pt-3">
+                                        <div class="col-md-4">
                                             <div class="mb-3">
                                                 <label class="form-label">Weight</label>
                                                 <input type="text" id="weight_edit" name="weight" class="form-control" value="<?= $row['weight'] ?>"/>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <div class="mb-3">
                                                 <label class="form-label">Thickness</label>
                                                 <input type="text" id="thickness_edit" name="thickness" class="form-control" value="<?= $row['thickness'] ?>"/>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <div class="mb-3">
                                                 <label class="form-label">Width</label>
                                                 <input type="text" id="width_edit" name="width" class="form-control" value="<?= $row['width'] ?>"/>
