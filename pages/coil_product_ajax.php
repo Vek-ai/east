@@ -6,6 +6,9 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
+$gauge_29_id = 1;
+$gauge_26_id = 2;
+
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
@@ -30,7 +33,7 @@ if(isset($_REQUEST['action'])) {
         $tag_no = isset($_POST['tag_no']) ? mysqli_real_escape_string($conn, $_POST['tag_no']) : '';
         $invoice_no = isset($_POST['invoice_no']) ? mysqli_real_escape_string($conn, $_POST['invoice_no']) : '';
         $remaining_feet = isset($_POST['remaining_feet']) ? mysqli_real_escape_string($conn, $_POST['remaining_feet']) : 0; 
-        $gauge = $thickness > 0.0161 ? '26' : '29';
+        $gauge = $thickness > 0.0161 ? $gauge_26_id : $gauge_29_id;
         if (!empty($date)) {
             $year = date('Y', strtotime($date));
             $month = date('m', strtotime($date));

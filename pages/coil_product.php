@@ -481,7 +481,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             <div class="table-responsive">
                 <table id="productList" class="table search-table align-middle text-nowrap">
                     <thead class="header-item">
-                    <th>Coil #</th>
+                    <th>Entry #</th>
                     <th>Color</th>
                     <th>Grade</th>
                     <th>Remaining Feet</th>
@@ -531,6 +531,8 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                             }else{
                                 $picture_path = "images/coils/product.jpg";
                             }
+
+                            $color_details = getColorDetails($row_coil['color_sold_as']);
         
                         ?>
                             <!-- start row -->
@@ -540,12 +542,19 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         <div class="d-flex align-items-center">
                                             <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                                             <div class="ms-3">
-                                                <h6 class="fw-semibold mb-0 fs-4"><?= $row_coil['coil_no'] ?></h6>
+                                                <h6 class="fw-semibold mb-0 fs-4"><?= $row_coil['entry_no'] ?></h6>
                                             </div>
                                         </div>
                                     </a>
                                 </td>
-                                <td><?= getColorName($row_coil['color_family']) ?></td>
+                                <td>
+                                    <div class="d-inline-flex align-items-center gap-2">
+                                        <a href="javascript:void(0)" id="viewAvailableBtn" class="d-inline-flex align-items-center gap-2 text-decoration-none">
+                                            <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 30px; height: 30px;"></span>
+                                            <?= $color_details['color_name'] ?>
+                                        </a>
+                                    </div>
+                                </td>
                                 <td><?= getGradeName($row_coil['grade']) ?></td>
                                 <td><?= $remaining_feet ?></td>
                                 <td><?= $status ?></td>

@@ -115,7 +115,7 @@ if (isset($_POST['search_approval'])) {
                         $ <?= number_format($row['discounted_price'], 2) ?>
                     </td>
                     <td>
-                        <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="view_approval_details" data-id="<?php echo $row["approval_id"]; ?>" data-toggle="tooltip" data-placement="top" title="View"><i class="fa fa-eye"></i></a>
+                        <a href="?page=approval_details&id=<?= $row["approval_id"] ?>" target="_blank" class="py-1 pe-1 fs-5" data-id="<?php echo $row["approval_id"]; ?>" data-toggle="tooltip" data-placement="top" title="View"><i class="fa fa-eye"></i></a>
                     </td>
                 </tr>
                 <?php
@@ -123,7 +123,7 @@ if (isset($_POST['search_approval'])) {
             ?>
             </tbody>
             <tfoot>
-                <td colspan="2" class="text-end">Total Orders: </td>
+                <td colspan="2" class="text-end">Total Submissions: </td>
                 <td><?= $total_count ?></td>
                 <td colspan="2" class="text-end">Total Amount: </td>
                 <td class="text-end">$ <?= $total_amount ?></td>
