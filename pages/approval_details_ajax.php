@@ -28,7 +28,8 @@ if(isset($_POST['fetch_available'])){
                         <th class="text-center">Date</th>
                         <th class="text-center">Color</th>
                         <th class="text-center">Grade</th>
-                        <th class="text-center">Coating</th>
+                        <th class="text-center">Thickness</th>
+                        <th class="text-right">Width</th>
                         <th class="text-right">Rem. Feet</th>
                         <th class="text-right">Price Per Inch</th>
                     </tr>
@@ -67,6 +68,9 @@ if(isset($_POST['fetch_available'])){
                                     <?php echo $row['width']; ?>
                                 </td>
                                 <td class="text-right">
+                                    <?php echo $row['remaining_feet']; ?>
+                                </td>
+                                <td class="text-right">
                                     $<?php echo $row['price']; ?>
                                 </td>
                             </tr>
@@ -82,7 +86,7 @@ if(isset($_POST['fetch_available'])){
 
                 <tfoot>
                     <tr>
-                        <td class="text-end" colspan="6">Average Price</td>
+                        <td class="text-end" colspan="7">Average Price</td>
                         <td class="text-end">$ <?= number_format($average_price,2) ?></td>
                     </tr>
                 </tfoot>
