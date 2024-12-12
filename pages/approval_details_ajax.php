@@ -15,8 +15,9 @@ if(isset($_POST['fetch_available'])){
     $width = floatval($app_prod_arr['custom_width']);
     $lengthFeet = !empty($app_prod_arr['custom_length']) ? floatval($app_prod_arr['custom_length']) : 0;
     $lengthInch = !empty($app_prod_arr['custom_length2']) ? floatval($app_prod_arr['custom_length2']) : 0;
-    $quantity = !empty($app_prod_arr['quantity']) ? floatval($app_prod_arr['quantity']) : 0;
+    $quantity = !empty($app_prod_arr['quantity']) ? floatval($app_prod_arr['quantity']) : 1;
     $total_ln_in_ft = $lengthFeet + ($lengthInch / 12);
+    $total_ln_in_ft = !empty($total_ln_in_ft) ? $total_ln_in_ft : 1;
     $total_length = $total_ln_in_ft * $quantity;
     ?>
     <style>
