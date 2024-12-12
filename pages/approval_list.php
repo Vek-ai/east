@@ -187,35 +187,31 @@ require 'includes/functions.php';
         });
     }
 
+    function performSearch(query) {
+        var customer_name = $('#customer_search').val();
+        var date_from = $('#date_from').val();
+        var date_to = $('#date_to').val();
+
+        $.ajax({
+            url: 'pages/approval_list_ajax.php',
+            type: 'POST',
+            data: {
+                customer_name: customer_name,
+                date_from: date_from,
+                date_to: date_to,
+                search_approval: 'search_approval'
+            },
+            success: function(response) {
+                $('#tbl-approval').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
     $(document).ready(function() {
         $('[data-toggle="tooltip"]').tooltip();
-        
-        function performSearch(query) {
-            var customer_name = $('#customer_search').val();
-            var date_from = $('#date_from').val();
-            var date_to = $('#date_to').val();
-
-            if(!date_from && !date_to){
-                alert('Please select a start and end date!');
-            } else {
-                $.ajax({
-                    url: 'pages/approval_list_ajax.php',
-                    type: 'POST',
-                    data: {
-                        customer_name: customer_name,
-                        date_from: date_from,
-                        date_to: date_to,
-                        search_approval: 'search_approval'
-                    },
-                    success: function(response) {
-                        $('#tbl-approval').html(response);
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
-                });
-            }
-        }
 
         $('#btn-view-sales').on('click', function() {
             performSearch();
@@ -246,5 +242,7 @@ require 'includes/functions.php';
                 }
             });
         });
+
+        performSearch();
     });
 </script>

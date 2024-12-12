@@ -8,8 +8,14 @@ require '../includes/dbconn.php';
 require '../includes/functions.php';
 
 if(isset($_POST['fetch_available'])){
-    $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
-    $grade = mysqli_real_escape_string($conn, $_POST['grade']);
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $app_prod_arr = getApprovalProductDetails($id);
+    $color_id = $app_prod_arr['custom_color'];
+    $grade = $app_prod_arr['custom_grade'];
+    $width = floatval($app_prod_arr['custom_width']);
+    $length = floatval($app_prod_arr['custom_length']);
+    $quantity = floatval($app_prod_arr['quantity']);
+    $total_length = $length * $quantity;
     ?>
     <style>
         .tooltip-inner {
@@ -37,7 +43,7 @@ if(isset($_POST['fetch_available'])){
                 <tbody>
                     <?php 
                     $no = 1;
-                    $query = "SELECT * FROM coil_product WHERE color_sold_as='$color_id' AND grade='$grade'";
+                    $query = "SELECT * FROM coil_product WHERE color_sold_as='$color_id' AND grade='$grade' AND width >='$width' AND remaining_feet >= '$total_length'";
                     $result = mysqli_query($conn, $query);
                     $totalprice = 0;
                     if ($result && mysqli_num_rows($result) > 0) {

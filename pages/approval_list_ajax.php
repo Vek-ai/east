@@ -63,6 +63,8 @@ if (isset($_POST['search_approval'])) {
     if (!empty($date_from) && !empty($date_to)) {
         $date_to .= ' 23:59:59';
         $query .= " AND (a.submitted_date >= '$date_from' AND a.submitted_date <= '$date_to') ";
+    }else{
+        $query .= " AND (a.submitted_date >= DATE_SUB(curdate(), INTERVAL 2 WEEK) AND a.submitted_date <= NOW()) ";
     }
 
     $result = mysqli_query($conn, $query);

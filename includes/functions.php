@@ -69,6 +69,18 @@ function getCoilDetails($coil_id) {
     return $coil;
 }
 
+function getApprovalProductDetails($id) {
+    global $conn;
+    $id = mysqli_real_escape_string($conn, $id);
+    $query = "SELECT * FROM approval_product WHERE id = '$id'";
+    $result = mysqli_query($conn, $query);
+    $approval_product = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $approval_product = $row;
+    }
+    return $approval_product;
+}
+
 function getWarehouseName($WarehouseID){
     global $conn;
     $query = "SELECT WarehouseName FROM warehouses WHERE WarehouseID = '$WarehouseID'";

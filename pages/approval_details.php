@@ -96,9 +96,13 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                                                     </td>
                                                     <td>
                                                     <div class="d-inline-flex align-items-center gap-2">
-                                                        <a href="javascript:void(0)" id="viewAvailableBtn" data-color="<?= $row['custom_color'] ?>" data-grade="<?= $row['custom_grade'] ?>" data-product="<?= $row['productid'] ?>" class="d-inline-flex align-items-center gap-2 text-decoration-none">
-                                                            <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 20px; height: 20px;"></span>
-                                                            <?= $color_details['color_name'] ?>
+                                                        <a 
+                                                            href="javascript:void(0)" 
+                                                            id="viewAvailableBtn" 
+                                                            data-app-prod-id="<?= $row['id'] ?>" 
+                                                            class="d-inline-flex align-items-center gap-2 text-decoration-none">
+                                                                <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 20px; height: 20px;"></span>
+                                                                <?= $color_details['color_name'] ?>
                                                         </a>
                                                     </div>
                                                     </td>
@@ -218,15 +222,13 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
         $('[data-toggle="tooltip"]').tooltip();
 
         $(document).on('click', '#viewAvailableBtn', function(event) {
-            var color_id = $(this).data('color');
-            var grade = $(this).data('grade');
+            var id = $(this).data('app-prod-id');
 
             $.ajax({
                 url: 'pages/approval_details_ajax.php',
                 type: 'POST',
                 data: {
-                    color_id: color_id,
-                    grade: grade,
+                    id: id,
                     fetch_available: 'fetch_available'
                 },
                 success: function(response) {
