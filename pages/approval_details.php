@@ -71,8 +71,10 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                                             <th>Color</th>
                                             <th>Grade</th>
                                             <th>Profile</th>
+                                            <th>Width</th>
+                                            <th>Length</th>
                                             <th class="text-center">Quantity</th>
-                                            <th class="text-center">Dimensions</th>
+                                            <th class="text-center">Details</th>
                                             <th class="text-center">Price</th>
                                             <th class="text-center">Customer Price</th>
                                             <th></th>
@@ -89,6 +91,11 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                                             while ($row = mysqli_fetch_assoc($result)) {
                                                 $color_details = getColorDetails($row['custom_color']);
                                                 $product_id = $row['productid'];
+                                                $width = $row['custom_width'];
+                                                $bend = $row['custom_bend'];
+                                                $hem = $row['custom_hem'];
+                                                $length = $row['custom_length'];
+                                                $inch = $row['custom_length2'];
                                                 ?>
                                                 <tr data-id="<?= $product_id ?>">
                                                     <td class="text-wrap"> 
@@ -113,37 +120,36 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                                                         <?php echo getProfileFromID($product_id); ?>
                                                     </td>
                                                     <td class="text-center">
+                                                        <?php 
+                                                        if (!empty($width)) {
+                                                            echo htmlspecialchars($width);
+                                                        }
+                                                        ?>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <?php 
+                                                        if (!empty($length)) {
+                                                            echo htmlspecialchars($length) . " ft";
+                                                            
+                                                            if (!empty($inch)) {
+                                                                echo " " . htmlspecialchars($inch) . " in";
+                                                            }
+                                                        } elseif (!empty($inch)) {
+                                                            echo htmlspecialchars($inch) . " in";
+                                                        }
+                                                        ?>
+                                                    </td>
+                                                    <td class="text-center">
                                                         <?php echo $row['quantity']; ?>
                                                     </td>
                                                     <td class="text-center">
                                                         <?php 
-                                                        $width = $row['custom_width'];
-                                                        $bend = $row['custom_bend'];
-                                                        $hem = $row['custom_hem'];
-                                                        $length = $row['custom_length'];
-                                                        $inch = $row['custom_length2'];
-                                                        
-                                                        if (!empty($width)) {
-                                                            echo "Width: " . htmlspecialchars($width) . "<br>";
-                                                        }
-                                                        
                                                         if (!empty($bend)) {
                                                             echo "Bend: " . htmlspecialchars($bend) . "<br>";
                                                         }
                                                         
                                                         if (!empty($hem)) {
                                                             echo "Hem: " . htmlspecialchars($hem) . "<br>";
-                                                        }
-                                                        
-                                                        if (!empty($length)) {
-                                                            echo "Length: " . htmlspecialchars($length) . " ft";
-                                                            
-                                                            if (!empty($inch)) {
-                                                                echo " " . htmlspecialchars($inch) . " in";
-                                                            }
-                                                            echo "<br>";
-                                                        } elseif (!empty($inch)) {
-                                                            echo "Length: " . htmlspecialchars($inch) . " in<br>";
                                                         }
                                                         ?>
                                                     </td>
@@ -169,7 +175,7 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
 
                                     <tfoot>
                                         <tr>
-                                            <td class="text-end" colspan="4">Total</td>
+                                            <td class="text-end" colspan="6">Total</td>
                                             <td class="text-center"><?= $totalquantity ?></td>
                                             <td></td>
                                             <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
