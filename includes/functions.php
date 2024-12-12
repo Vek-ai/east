@@ -69,6 +69,18 @@ function getCoilDetails($coil_id) {
     return $coil;
 }
 
+function getApprovalDetails($approval_id) {
+    global $conn;
+    $approval_id = mysqli_real_escape_string($conn, $approval_id);
+    $query = "SELECT * FROM approval WHERE approval_id = '$approval_id'";
+    $result = mysqli_query($conn, $query);
+    $approval = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $approval = $row;
+    }
+    return $approval;
+}
+
 function getApprovalProductDetails($id) {
     global $conn;
     $id = mysqli_real_escape_string($conn, $id);

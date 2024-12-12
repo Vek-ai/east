@@ -54,10 +54,23 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
     </div>
     <?php
     if(!empty($approval_id)){
+        $approval_details = getApprovalDetails($approval_id);
+        $customer_id = $approval_details['originalcustomerid'];
+        $customer_details = getCustomerDetails($customer_id);
     ?>
     <div class="widget-content searchable-container list">
         <div class="card card-body">
             <div class="card-body">
+                <div style="display: flex;" class="pb-2">
+                    <div style="flex: 1; padding-right: 20px;">
+                        <h4 class="pb-1 mb-1"><?= $customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'] ?></h4>
+                        <h5 class="pb-1 mb-1">Address: <?= getCustomerAddress($customer_id) ?></h5>
+                    </div>
+                    <div style="flex: 1;">
+                        <h5 class="pb-1 mb-1">Contact Number: <?= $customer_details['contact_phone'] ?></h5>
+                        <h5 class="pb-1 mb-1">Contact Email: <?= $customer_details['contact_email'] ?></h5>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="datatables">
                         <div id="tbl-approval" class="product-details table-responsive text-nowrap">
