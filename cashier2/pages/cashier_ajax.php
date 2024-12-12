@@ -930,6 +930,8 @@ if (isset($_POST['save_approval'])) {
 
         if ($conn->query($query) === TRUE) {
 
+            unset($_SESSION['cart']);
+
             $response['success'] = true;
             $response['approval_id'] = $approval_id;
 
