@@ -13,9 +13,11 @@ if(isset($_POST['fetch_available'])){
     $color_id = $app_prod_arr['custom_color'];
     $grade = $app_prod_arr['custom_grade'];
     $width = floatval($app_prod_arr['custom_width']);
-    $length = floatval($app_prod_arr['custom_length']);
-    $quantity = floatval($app_prod_arr['quantity']);
-    $total_length = $length * $quantity;
+    $lengthFeet = !empty($app_prod_arr['custom_length']) ? floatval($app_prod_arr['custom_length']) : 0;
+    $lengthInch = !empty($app_prod_arr['custom_length2']) ? floatval($app_prod_arr['custom_length2']) : 0;
+    $quantity = !empty($app_prod_arr['quantity']) ? floatval($app_prod_arr['quantity']) : 0;
+    $total_ln_in_ft = $lengthFeet + ($lengthInch / 12);
+    $total_length = $total_ln_in_ft * $quantity;
     ?>
     <style>
         .tooltip-inner {
