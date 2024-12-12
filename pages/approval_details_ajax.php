@@ -46,8 +46,6 @@ if(isset($_POST['fetch_available'])){
                     $query = "SELECT * FROM coil_product WHERE color_sold_as='$color_id' AND grade='$grade' AND width >='$width' AND remaining_feet >= '$total_length'";
                     $result = mysqli_query($conn, $query);
                     $totalprice = 0;
-                    echo "<script>console.log('$query')</script>";
-                    echo "<script>console.log('ID: $id')</script>";
                     if ($result && mysqli_num_rows($result) > 0) {
                         $response = array();
                         while ($row = mysqli_fetch_assoc($result)) {
