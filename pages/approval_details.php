@@ -151,7 +151,7 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                                                     <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
                                                     <td>
                                                         <div class="action-btn text-center">
-                                                            <a href="#" class="text-decoration-none" id="viewAvailableBtn" data-color="<?= $row['custom_color'] ?>" data-grade="<?= $row['custom_grade'] ?>" data-product="<?= $row['productid'] ?>">
+                                                            <a href="#" class="text-decoration-none" id="viewAvailableBtn" data-app-prod-id="<?= $row['id'] ?>">
                                                                 <i class="text-white ti ti-eye fs-7"></i>
                                                             </a>
                                                         </div>
