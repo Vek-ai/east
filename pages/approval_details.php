@@ -153,8 +153,18 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                                                         }
                                                         ?>
                                                     </td>
-                                                    <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
-                                                    <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
+                                                    <td class="text-end">$<?= number_format($row['actual_price'],2) ?></td>
+                                                    <td class="text-end">
+                                                        <a 
+                                                            href="javascript:void(0)" 
+                                                            id="chngPriceAn" 
+                                                            data-app-prod-id="<?= $row['id'] ?>" 
+                                                            class="d-inline-flex align-items-center gap-2 text-decoration-none">
+                                                                <span id='price_<?= $row['id'] ?>'>
+                                                                    $<?= number_format($row['discounted_price'],2) ?>
+                                                                </span>
+                                                        </a>
+                                                    </td>
                                                     <td>
                                                         <div class="action-btn text-center">
                                                             <a href="#" class="text-decoration-none" id="viewAvailableBtn" data-app-prod-id="<?= $row['id'] ?>">
@@ -178,8 +188,8 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                                             <td class="text-end" colspan="6">Total</td>
                                             <td class="text-center"><?= $totalquantity ?></td>
                                             <td></td>
-                                            <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
-                                            <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
+                                            <td class="text-end">$<?= number_format($total_actual_price,2) ?></td>
+                                            <td class="text-end">$<?= number_format($total_disc_price,2) ?></td>
                                             <td></td>
                                         </tr>
                                     </tfoot>
@@ -221,6 +231,33 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
     </div>
 </div>
 
+<div class="modal" id="chng_price_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content p-2">
+            <div class="modal-header pb-1">
+                <h6 class="modal-title mb-0">Change Price</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="price-details">
+                    <form id="chngPriceForm" autocomplete="false">
+                        <input type="hidden" id="approval_product_id" name="approval_product_id" value="">
+                        <div class="form-group">
+                            <input class="form-control" type="text" id="inpt_price" name="inpt_price" placeholder="Enter new price">
+                        </div>
+                        <div class="text-center d-flex align-items-center justify-content-center gap-3">
+                            <button type="submit" class="btn ripple btn-success btn-secondary">Save</button>
+                            <button type="button" class="btn ripple btn-danger btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 <script>
@@ -246,5 +283,41 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                 }
             });
         });
+
+        $(document).on('click', '#chngPriceAn', function(event) {
+            var id = $(this).data('app-prod-id');
+            var price = $(this).text().trim().replace(/[^0-9.]/g, '');
+            $('#approval_product_id').val(id);
+            $('#inpt_price').val(price);
+            $('#chng_price_modal').modal('show');
+        });
+
+        $(document).on('submit', '#chngPriceForm', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            formData.append('chng_price', 'chng_price');
+            $.ajax({
+                url: 'pages/approval_details_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.trim() == 'success') {
+                        alert('Price changed successfully');
+                        $('#price_' + formData.get('approval_product_id')).text('$' + parseFloat(formData.get('inpt_price')).toFixed(2));
+                        $('#chng_price_modal').modal('hide');
+                    } else {
+                        alert('Failed to Update!');
+                        console.log(response);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + jqXHR.responseText);
+                }
+            });
+        });
+
+
     });
 </script>

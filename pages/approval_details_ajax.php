@@ -127,4 +127,23 @@ if(isset($_POST['fetch_available'])){
     <?php
 }
 
+if(isset($_POST['chng_price'])){
+    $id = mysqli_real_escape_string($conn, $_POST['approval_product_id']);
+    $inpt_price = mysqli_real_escape_string($conn, $_POST['inpt_price']);
+
+    if (!empty($inpt_price) && !empty($id)) {
+        $inpt_price = $conn->real_escape_string($inpt_price);
+        $id = $conn->real_escape_string($id);
+        $sql = "UPDATE approval_product SET discounted_price = $inpt_price WHERE id = $id";
+        if ($conn->query($sql) === TRUE) {
+            echo "success";
+        } else {
+            echo "Error updating price: " . $conn->error;
+        }
+    } else {
+        echo "Invalid input.";
+    }
+}
+
+
 
