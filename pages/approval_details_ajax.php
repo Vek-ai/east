@@ -33,6 +33,9 @@ if(isset($_POST['fetch_available'])){
             <table id="coil_dtls_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
                 <thead>
                     <tr>
+                        <th>
+                            <input type="checkbox" id="selectAll" >
+                        </th>
                         <th>Coil No</th>
                         <th class="text-center">Date</th>
                         <th class="text-center">Color</th>
@@ -55,6 +58,9 @@ if(isset($_POST['fetch_available'])){
                             $color_details = getColorDetails($row['color_sold_as']);
                             ?>
                             <tr data-id="<?= $product_id ?>">
+                                <td class="text-start">
+                                    <input type="checkbox" class="row-select" data-id="<?= $row['coil_id'] ?>">
+                                </td>
                                 <td class="text-wrap"> 
                                     <?= $row['entry_no'] ?>
                                 </td>
@@ -95,7 +101,7 @@ if(isset($_POST['fetch_available'])){
 
                 <tfoot>
                     <tr>
-                        <td class="text-end" colspan="7">Average Price</td>
+                        <td class="text-end" colspan="8">Average Price</td>
                         <td class="text-end">$ <?= number_format($average_price,2) ?></td>
                     </tr>
                 </tfoot>
@@ -105,6 +111,64 @@ if(isset($_POST['fetch_available'])){
        
     <script>
         $(document).ready(function() {
+            let selectedCoils = [];
+
+            $(document).off('change', '.row-select').on('change', '.row-select', function () {
+                const coilId = $(this).data('id');
+
+                if ($(this).is(':checked')) {
+                    if (!selectedCoils.includes(coilId)) {
+                        selectedCoils.push(coilId);
+                    }
+                } else {
+                    selectedCoils = selectedCoils.filter(id => id !== coilId);
+                }
+            });
+
+            $('#selectAll').off('change').on('change', function () {
+                const isChecked = $(this).is(':checked');
+                const table = $('#coil_dtls_tbl').DataTable();
+                const allRows = table.rows().nodes();
+
+                $(allRows).find('.row-select').prop('checked', isChecked).trigger('change');
+            });
+
+            $('#saveSelection').off('click').on('click', function () {
+                const table = $('#coil_dtls_tbl').DataTable();
+                const allRows = table.rows().nodes();
+
+                const id = <?= $id ?? 0 ?>;
+                
+                selectedCoils = [];
+
+                $(allRows).find('.row-select:checked').each(function () {
+                    selectedCoils.push($(this).data('id'));
+                });
+
+                const selectedCoilsJson = JSON.stringify(selectedCoils);
+
+                $.ajax({
+                    type: 'POST',
+                    url: 'pages/approval_details_ajax.php',
+                    data: { 
+                        id: id,
+                        selected_coils: selectedCoilsJson,
+                        assign_coil: 'assign_coil'
+                    },
+                    success: function(response) {
+                        if (response.trim() == 'success') {
+                            alert('Successfully Saved!');
+                        } else {
+                            alert('Failed to Update!');
+                            console.log(response);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Response Text:', xhr.responseText);
+                    }
+                });
+            });
+
             $('[data-toggle="tooltip"]').tooltip(); 
 
             if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
@@ -115,7 +179,10 @@ if(isset($_POST['fetch_available'])){
                         emptyTable: "No Available Coils with the selected color"
                     },
                     autoWidth: false,
-                    responsive: true
+                    responsive: true,
+                    columnDefs: [
+                        { targets: 0, width: "5%" }
+                    ]
                 });
             }
 
@@ -132,8 +199,6 @@ if(isset($_POST['chng_price'])){
     $inpt_price = mysqli_real_escape_string($conn, $_POST['inpt_price']);
 
     if (!empty($inpt_price) && !empty($id)) {
-        $inpt_price = $conn->real_escape_string($inpt_price);
-        $id = $conn->real_escape_string($id);
         $sql = "UPDATE approval_product SET discounted_price = $inpt_price WHERE id = $id";
         if ($conn->query($sql) === TRUE) {
             echo "success";
@@ -144,6 +209,41 @@ if(isset($_POST['chng_price'])){
         echo "Invalid input.";
     }
 }
+
+if(isset($_POST['chng_status'])){
+    $approval_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $status = mysqli_real_escape_string($conn, $_POST['status']);
+
+    if (!empty($approval_id) && !empty($status)) {
+        $sql = "UPDATE approval SET status = $status WHERE approval_id = $approval_id";
+        if ($conn->query($sql) === TRUE) {
+            echo "success";
+        } else {
+            echo "Error updating price: " . $conn->error;
+        }
+    } else {
+        echo "Invalid input. ID: $approval_id, Status: $status";
+    }
+}
+
+if(isset($_POST['assign_coil'])){
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $selected_coils = json_decode($_POST['selected_coils'], true);
+
+    $coils_json = json_encode($selected_coils);
+
+    $sql = "UPDATE approval_product 
+        SET assigned_coils = '$coils_json' 
+        WHERE id = $id";
+
+    if ($conn->query($sql) === TRUE) {
+        echo "success";
+    } else {
+        echo "Error updating records: " . $conn->error;
+    }
+}
+
+
 
 
 

@@ -208,6 +208,14 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                                     </tfoot>
                                 </table>
                             </div>
+                            <div class="d-flex align-items-center justify-content-end gap-3 pt-4">
+                                <button class="chng-status btn btn-success btn-md" data-id="<?= $approval_id ?>" data-status="2" type="button">
+                                    <span aria-hidden="true">Approve</span>
+                                </button>
+                                <button class="chng-status btn btn-danger btn-md" data-id="<?= $approval_id ?>" data-status="3" type="button">
+                                    <span aria-hidden="true">Reject</span>
+                                </button>
+                            </div>
                         </div>
                         </div>
                     </div>
@@ -238,7 +246,8 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                 <div id="available-details"></div>
             </div>
             <div class="modal-footer">
-                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                <button id="saveSelection" class="btn ripple btn-success" type="button">Save</button>
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>
@@ -303,6 +312,39 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
             $('#approval_product_id').val(id);
             $('#inpt_price').val(price);
             $('#chng_price_modal').modal('show');
+        });
+
+        $(document).on('click', '.chng-status', function(event) {
+            var id = $(this).data('id');
+            var status = $(this).data('status');
+
+            $.ajax({
+                url: 'pages/approval_details_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    status: status,
+                    chng_status: 'chng_status'
+                },
+                success: function(response) {
+                    if (response.trim() == 'success') {
+                        if(status == 2){
+                            alert('Submission Successfully Approved');
+                        }else if(status == 3){
+                            alert('Submission Successfully Declined');
+                        }else{
+                            alert('Operation Failed');
+                            console.log("Status: " +status)
+                        }
+                    } else {
+                        alert('Failed to Update!');
+                        console.log(response);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
         });
 
         $(document).on('submit', '#chngPriceForm', function(event) {
