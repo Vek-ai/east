@@ -318,7 +318,7 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                 success: function(response) {
                     if (response.trim() == 'success') {
                         alert('Price changed successfully');
-                        $('#price_' + formData.get('approval_product_id')).text('$' + parseFloat(formData.get('inpt_price')).toFixed(2));
+                        $('#approval_dtls_tbl').load(location.href + " #approval_dtls_tbl");
                         $('#chng_price_modal').modal('hide');
                     } else {
                         alert('Failed to Update!');
