@@ -550,6 +550,57 @@ if (isset($_POST['save_estimate'])) {
 
             $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
 
+            if ($product_details['product_origin'] == 2) {
+                $query = "INSERT INTO work_order_product (
+                            work_order_id, 
+                            type,
+                            productid, 
+                            quantity, 
+                            custom_width, 
+                            custom_bend, 
+                            custom_hem, 
+                            custom_length, 
+                            custom_length2, 
+                            actual_price, 
+                            discounted_price, 
+                            product_category, 
+                            custom_color, 
+                            custom_grade, 
+                            current_customer_discount, 
+                            current_loyalty_discount, 
+                            used_discount, 
+                            stiff_stand_seam, 
+                            stiff_board_batten, 
+                            panel_type
+                        ) 
+                        VALUES (
+                            '$estimateid', 
+                            '1',
+                            '$product_id', 
+                            '$quantity_cart', 
+                            '$estimate_width', 
+                            '$estimate_bend', 
+                            '$estimate_hem', 
+                            '$estimate_length', 
+                            '$estimate_length_inch', 
+                            '$actual_price', 
+                            '$discounted_price', 
+                            '$product_category', 
+                            '$custom_color', 
+                            '$custom_grade', 
+                            '$curr_discount', 
+                            '$loyalty_discount', 
+                            '$used_discount', 
+                            '$stiff_stand_seam', 
+                            '$stiff_board_batten', 
+                            '$panel_type'
+                        )";
+            
+                if ($conn->query($query) === TRUE) {
+                } else {
+                    die("Error: " . $conn->error);
+                }
+            }
         }
 
         $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
@@ -559,7 +610,7 @@ if (isset($_POST['save_estimate'])) {
             $query = "INSERT INTO order_estimate (order_estimate_id, type) VALUES ('$estimateid','1')";
             if ($conn->query($query) === TRUE) {
                 $order_estimate_id = $conn->insert_id;
-                $baseUrl = "https://delivery.ilearnsda.com/test.php";
+                /* $baseUrl = "https://delivery.ilearnsda.com/test.php";
                 $prodValue = $order_estimate_id;
                 $url = $baseUrl . "?prod=" . urlencode($prodValue);
                 $ch = curl_init($url);
@@ -568,7 +619,7 @@ if (isset($_POST['save_estimate'])) {
                 curl_setopt($ch, CURLOPT_HEADER, false);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 1);
                 curl_exec($ch);
-                curl_close($ch);
+                curl_close($ch); */
                 
                 unset($_SESSION['cart']);
                 $response['success'] = true;
@@ -783,6 +834,59 @@ if (isset($_POST['save_order'])) {
             if (!mysqli_query($conn, $upd_inventory)) {
                 echo "Error: " . mysqli_error($conn);
             }
+
+            if ($product_details['product_origin'] == 2) {
+                $query = "INSERT INTO work_order_product (
+                            work_order_id, 
+                            type,
+                            productid, 
+                            quantity, 
+                            custom_width, 
+                            custom_bend, 
+                            custom_hem, 
+                            custom_length, 
+                            custom_length2, 
+                            actual_price, 
+                            discounted_price, 
+                            product_category, 
+                            custom_color, 
+                            custom_grade, 
+                            current_customer_discount, 
+                            current_loyalty_discount, 
+                            used_discount, 
+                            stiff_stand_seam, 
+                            stiff_board_batten, 
+                            panel_type
+                        ) 
+                        VALUES (
+                            '$orderid', 
+                            '2', 
+                            '$product_id', 
+                            '$quantity_cart', 
+                            '$estimate_width', 
+                            '$estimate_bend', 
+                            '$estimate_hem', 
+                            '$estimate_length', 
+                            '$estimate_length_inch', 
+                            '$actual_price', 
+                            '$discounted_price', 
+                            '$product_category', 
+                            '$custom_color', 
+                            '$custom_grade', 
+                            '$curr_discount', 
+                            '$loyalty_discount', 
+                            '$used_discount', 
+                            '$stiff_stand_seam', 
+                            '$stiff_board_batten', 
+                            '$panel_type'
+                        )";
+            
+                if ($conn->query($query) === TRUE) {
+                } else {
+                    die("Error: " . $conn->error);
+                }
+            }
+            
         }
 
         $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
@@ -792,7 +896,7 @@ if (isset($_POST['save_order'])) {
             $query = "INSERT INTO order_estimate (order_estimate_id, type) VALUES ('$orderid','2')";
             if ($conn->query($query) === TRUE) {
                 $order_estimate_id = $conn->insert_id;
-                $baseUrl = "https://delivery.ilearnsda.com/test.php";
+                /* $baseUrl = "https://delivery.ilearnsda.com/test.php";
                 $prodValue = $order_estimate_id;
                 $url = $baseUrl . "?prod=" . urlencode($prodValue);
                 $ch = curl_init($url);
@@ -801,7 +905,7 @@ if (isset($_POST['save_order'])) {
                 curl_setopt($ch, CURLOPT_HEADER, false);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 1);
                 curl_exec($ch);
-                curl_close($ch);
+                curl_close($ch); */
 
                 $response['success'] = true;
                 $response['order_id'] = $orderid;

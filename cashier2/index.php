@@ -1376,6 +1376,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "cashier2") {include 'pages/cashier2.php';}
             if ($_REQUEST['page'] == "customer-dashboard") {include 'pages/customer-dash.php';}
             if ($_REQUEST['page'] == "approved_list") {include 'pages/approved_list.php';}
+            if ($_REQUEST['page'] == "work_order_list") {include 'pages/work_order_list.php';}
           ?>
         </div>
       </div>
