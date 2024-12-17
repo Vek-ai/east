@@ -1398,6 +1398,8 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "approval_list") {include 'pages/approval_list.php';}
             if ($_REQUEST['page'] == "approval_details") {include 'pages/approval_details.php';}
             if ($_REQUEST['page'] == "approved_list") {include 'pages/approved_list.php';}
+
+            if ($_REQUEST['page'] == "work_order_list") {include 'pages/work_order_list.php';}
           ?>
         </div>
       </div>
