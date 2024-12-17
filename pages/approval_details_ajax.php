@@ -38,26 +38,67 @@ if(isset($_POST['fetch_available'])){
                         </th>
                         <th>Coil No</th>
                         <th class="text-center">Date</th>
-                        <th class="text-center">Color</th>
+                        <th class="text-left">Color</th>
                         <th class="text-center">Grade</th>
                         <th class="text-center">Thickness</th>
                         <th class="text-right">Width</th>
                         <th class="text-right">Rem. Feet</th>
-                        <th class="text-right">Price Per Inch</th>
+                        <th class="text-right">Price/In</th>
+                        <th class="text-right">Avg Price</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php 
-                    $no = 1;
-                    $query = "SELECT * FROM coil_product WHERE color_sold_as='$color_id' AND grade='$grade' AND width >='$width'";
+                    $query = "SELECT * FROM coil_product";
                     $result = mysqli_query($conn, $query);
-                    $totalprice = 0;
+
+                    $grouped_data = [];
+                    $all_rows = [];
+
                     if ($result && mysqli_num_rows($result) > 0) {
-                        $response = array();
                         while ($row = mysqli_fetch_assoc($result)) {
+                            $all_rows[] = $row;
+
+                            $group_key = $row['color_sold_as'] . '-' . $row['grade'] . '-' . $row['gauge'] . '-' . $row['grade_no'];
+                            if (!isset($grouped_data[$group_key])) {
+                                $grouped_data[$group_key] = [
+                                    'total_price' => 0,
+                                    'count' => 0
+                                ];
+                            }
+                            
+                            $grouped_data[$group_key]['total_price'] += $row['price'];
+                            $grouped_data[$group_key]['count'] += 1;
+                        }
+                    }
+
+                    foreach ($grouped_data as $key => $data) {
+                        $grouped_data[$key]['average_price'] = $data['total_price'] / $data['count'];
+                    }
+
+                    $totalprice = 0;
+                    $no = 0;
+                    $group_count = count($grouped_data);
+                    $weighted_sum = 0;
+                    $total_weight = 0;
+
+                    foreach ($all_rows as $row) {
+                        if( $row['color_sold_as'] == $color_id &&
+                            $row['grade'] == $grade &&
+                            $row['width'] >= $width ){
+                        
                             $color_details = getColorDetails($row['color_sold_as']);
+                            $group_key = $row['color_sold_as'] . '-' . $row['grade'] . '-' . $row['gauge'] . '-' . $row['grade_no'];
+                            $average_price = $grouped_data[$group_key]['average_price'];
+
+                            $weighted_sum += $row['price'] * $row['remaining_feet'];
+                            $total_weight += $row['remaining_feet'];
+
+                            if ($total_weight > 0) {
+                                $weighted_average = $weighted_sum / $total_weight;
+                            }
                             ?>
-                            <tr data-id="<?= $product_id ?>">
+                            <tr data-id="<?= $row['coil_id'] ?>">
                                 <td class="text-start">
                                     <input type="checkbox" class="row-select" data-id="<?= $row['coil_id'] ?>">
                                 </td>
@@ -67,42 +108,47 @@ if(isset($_POST['fetch_available'])){
                                 <td class="text-wrap"> 
                                     <?= date("M d, Y", strtotime($row['date'])) ?>
                                 </td>
-                                <td>
-                                <div class="d-inline-flex align-items-center gap-2">
-                                    <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 20px; height: 20px;"></span>
-                                    <?= $color_details['color_name'] ?>
-                                </div>
+                                <td class="text-left">
+                                    <div class="d-inline-flex align-items-center gap-2">
+                                        <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 20px; height: 20px;"></span>
+                                        <?= $color_details['color_name'] ?>
+                                    </div>
                                 </td>
                                 <td>
-                                    <?php echo getGradeName($row['grade']); ?>
+                                    <?= getGradeName($row['grade']); ?>
                                 </td>
                                 <td>
-                                    <?php echo $row['thickness']; ?>
+                                    <?= $row['thickness']; ?>
                                 </td>
                                 <td class="text-right">
-                                    <?php echo $row['width']; ?>
+                                    <?= $row['width']; ?>
                                 </td>
                                 <td class="text-right">
-                                    <?php echo $row['remaining_feet']; ?>
+                                    <?= $row['remaining_feet']; ?>
                                 </td>
                                 <td class="text-right">
-                                    $<?php echo $row['price']; ?>
+                                    <?= number_format($row['price'], 2); ?>
+                                </td>
+                                <td class="text-right">
+                                    $<?= number_format($average_price, 2); ?>
                                 </td>
                             </tr>
                             <?php
-                            $totalprice += $row['price'] ;
+                            $totalprice += $average_price;
                             $no++;
                         }
 
-                        $average_price = $totalprice / $no;
+                        if ($total_weight > 0) {
+                            $weighted_average = $weighted_sum / $total_weight;
+                        }
                     }
                     ?>
                 </tbody>
 
                 <tfoot>
                     <tr>
-                        <td class="text-end" colspan="8">Average Price</td>
-                        <td class="text-end">$ <?= number_format($average_price,2) ?></td>
+                        <td colspan="9" class="text-right"><strong>Weighted Average Price:</strong></td>
+                        <td class="text-right"><strong>$<?= number_format($weighted_average, 2); ?></strong></td>
                     </tr>
                 </tfoot>
             </table>
