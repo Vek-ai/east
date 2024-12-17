@@ -59,7 +59,7 @@ if(isset($_POST['fetch_available'])){
                         while ($row = mysqli_fetch_assoc($result)) {
                             $all_rows[] = $row;
 
-                            $group_key = $row['color_sold_as'] . '-' . $row['grade'] . '-' . $row['gauge'] . '-' . $row['grade_no'];
+                            $group_key = $row['color_sold_as'] . '-' . $row['grade'] . '-' . $row['year'] . '-' . $row['grade_no'];
                             if (!isset($grouped_data[$group_key])) {
                                 $grouped_data[$group_key] = [
                                     'total_price' => 0,
@@ -88,7 +88,7 @@ if(isset($_POST['fetch_available'])){
                             $row['width'] >= $width ){
                         
                             $color_details = getColorDetails($row['color_sold_as']);
-                            $group_key = $row['color_sold_as'] . '-' . $row['grade'] . '-' . $row['gauge'] . '-' . $row['grade_no'];
+                            $group_key = $row['color_sold_as'] . '-' . $row['grade'] . '-' . $row['year'] . '-' . $row['grade_no'];
                             $average_price = $grouped_data[$group_key]['average_price'];
 
                             $weighted_sum += $row['price'] * $row['remaining_feet'];
