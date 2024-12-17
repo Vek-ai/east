@@ -44,7 +44,7 @@ require '../includes/functions.php';
         </div>
     </div>
     </div>
-    <a href="/cashier">
+    <a href="/cashier2">
         <button type="button" class="btn btn-primary">
             Back
         </button>
