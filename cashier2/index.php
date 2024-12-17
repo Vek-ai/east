@@ -543,7 +543,7 @@ if (!isset($_SESSION['userid'])) {
                   </li>
 
                   <li class="nav-item nav-icon-hover-bg d-lg-block rounded-circle">
-                    <a class="nav-link nav-icon-hover d-none d-md-flex waves-effect waves-dark" href="/?page=approved_list">
+                    <a class="nav-link nav-icon-hover d-none d-md-flex waves-effect waves-dark" href="?page=approved_list">
                       <i class="fa fa-check" aria-hidden="true"></i>
                     </a>
                   </li>
@@ -1375,6 +1375,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "customer") {include 'pages/customer.php';}
             if ($_REQUEST['page'] == "cashier2") {include 'pages/cashier2.php';}
             if ($_REQUEST['page'] == "customer-dashboard") {include 'pages/customer-dash.php';}
+            if ($_REQUEST['page'] == "approved_list") {include 'pages/approved_list.php';}
           ?>
         </div>
       </div>
