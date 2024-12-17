@@ -542,6 +542,12 @@ if (!isset($_SESSION['userid'])) {
                     </div>
                   </li>
 
+                  <li class="nav-item nav-icon-hover-bg d-lg-block rounded-circle">
+                    <a class="nav-link nav-icon-hover d-none d-md-flex waves-effect waves-dark" href="/?page=approved_list">
+                      <i class="fa fa-check" aria-hidden="true"></i>
+                    </a>
+                  </li>
+
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
                     <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
                       <iconify-icon icon="ic:round-search" class="search-icon"></iconify-icon>
