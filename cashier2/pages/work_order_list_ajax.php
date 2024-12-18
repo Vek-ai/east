@@ -240,7 +240,7 @@ if(isset($_POST['fetch_available'])){
 
                 const selectedCoilsJson = JSON.stringify(selectedCoils);
 
-                /* $.ajax({
+                $.ajax({
                     type: 'POST',
                     url: 'pages/work_order_list_ajax.php',
                     data: { 
@@ -251,6 +251,7 @@ if(isset($_POST['fetch_available'])){
                     success: function(response) {
                         if (response.trim() == 'success') {
                             alert('Successfully Saved!');
+                            location.reload();
                         } else {
                             alert('Failed to Update!');
                             console.log(response);
@@ -259,7 +260,7 @@ if(isset($_POST['fetch_available'])){
                     error: function(xhr, status, error) {
                         console.error('Response Text:', xhr.responseText);
                     }
-                }); */
+                });
             });
 
             $('[data-toggle="tooltip"]').tooltip(); 
@@ -300,6 +301,84 @@ if(isset($_POST['fetch_available'])){
         });
     </script>
     <?php
+}
+
+if(isset($_POST['assign_coil'])){
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $wrk_ordr = getWorkOrderDetails($id);
+
+    $userid = $_SESSION['userid'];
+
+    $selected_coils = json_decode($_POST['selected_coils'], true);
+    $coils_json = json_encode($selected_coils);
+
+    $sql = "
+        INSERT INTO work_order(
+            work_order_product_id,
+            productid,
+            status,
+            quantity,
+            custom_color,
+            custom_grade,
+            custom_width,
+            custom_height,
+            custom_bend,
+            custom_hem,
+            custom_length,
+            custom_length2,
+            actual_price,
+            discounted_price,
+            product_category,
+            usageid,
+            current_customer_discount,
+            current_loyalty_discount,
+            used_discount,
+            stiff_stand_seam,
+            stiff_board_batten,
+            panel_type,
+            submitted_date,
+            assigned_coils,
+            user_id
+        )
+        VALUES(
+            '".$id."',
+            '".$wrk_ordr['productid']."',
+            '1',
+            '".$wrk_ordr['quantity']."',
+            '".$wrk_ordr['custom_color']."',
+            '".$wrk_ordr['custom_grade']."',
+            '".$wrk_ordr['custom_width']."',
+            '".$wrk_ordr['custom_height']."',
+            '".$wrk_ordr['custom_bend']."',
+            '".$wrk_ordr['custom_hem']."',
+            '".$wrk_ordr['custom_length']."',
+            '".$wrk_ordr['custom_length2']."',
+            '".$wrk_ordr['actual_price']."',
+            '".$wrk_ordr['discounted_price']."',
+            '".$wrk_ordr['product_category']."',
+            '".$wrk_ordr['usageid']."',
+            '".$wrk_ordr['current_customer_discount']."',
+            '".$wrk_ordr['current_loyalty_discount']."',
+            '".$wrk_ordr['used_discount']."',
+            '".$wrk_ordr['stiff_stand_seam']."',
+            '".$wrk_ordr['stiff_board_batten']."',
+            '".$wrk_ordr['panel_type']."',
+            CURRENT_TIMESTAMP(), 
+            '$coils_json',
+            '$userid'
+        )
+    ";
+
+    if ($conn->query($sql) === TRUE) {
+        $sql = "UPDATE work_order_product SET status = '2' WHERE id = $id";
+        if ($conn->query($sql) === TRUE) {
+            echo "success";
+        } else {
+            echo "Error updating records: " . $conn->error;
+        }
+    } else {
+        echo "Error updating records: " . $conn->error;
+    }
 }
 
 if (isset($_POST['search_work_order'])) {
@@ -343,6 +422,7 @@ if (isset($_POST['search_work_order'])) {
                     <th>Length</th>
                     <th class="text-center">Quantity</th>
                     <th class="text-center">Details</th>
+                    <th class="text-center">Status</th>
                     <th class="text-center">Price</th>
                     <th class="text-center">Customer Price</th>
                     <th></th>
@@ -415,6 +495,30 @@ if (isset($_POST['search_work_order'])) {
                             echo "Hem: " . htmlspecialchars($hem) . "<br>";
                         }
                         ?>
+                    </td>
+                    <td class="text-center">
+                        <?php 
+                            $status = $row['status'];
+                            switch ($status) {
+                                case 1:
+                                    $statusText = 'New';
+                                    $statusColor = 'bg-primary';
+                                    break;
+                                case 2:
+                                    $statusText = 'Processing';
+                                    $statusColor = 'bg-warning';
+                                    break;
+                                case 3:
+                                    $statusText = 'Done';
+                                    $statusColor = 'bg-success';
+                                    break;
+                                default:
+                                    $statusText = 'Unknown';
+                                    $statusColor = 'bg-secondary';
+                                    break;
+                            }
+                        ?>
+                        <span class="badge <?= $statusColor; ?>"><?= $statusText; ?></span>
                     </td>
                     <td class="text-end">$<?= number_format($row['actual_price'],2) ?></td>
                     <td class="text-end">

@@ -105,6 +105,18 @@ function getWorkOrderDetails($id) {
     return $work_order;
 }
 
+function getSubmitWorkOrderDetails($id) {
+    global $conn;
+    $id = mysqli_real_escape_string($conn, $id);
+    $query = "SELECT * FROM work_order WHERE id = '$id'";
+    $result = mysqli_query($conn, $query);
+    $work_order = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $work_order = $row;
+    }
+    return $work_order;
+}
+
 function getWarehouseName($WarehouseID){
     global $conn;
     $query = "SELECT WarehouseName FROM warehouses WHERE WarehouseID = '$WarehouseID'";
