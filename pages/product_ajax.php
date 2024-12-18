@@ -41,6 +41,7 @@ if(isset($_REQUEST['action'])) {
         $standing_seam = isset($_POST['standing_seam']) ? 1 : 0;
         $board_batten = isset($_POST['board_batten']) ? 1 : 0;
         $comment = mysqli_real_escape_string($conn, $_POST['comment']);
+        $product_origin = mysqli_real_escape_string($conn, $_POST['product_origin']);
 
         $correlatedProducts = $_POST['correlatedProducts'];
     
@@ -82,6 +83,7 @@ if(isset($_REQUEST['action'])) {
                 sold_by_feet = '$sold_by_feet',
                 standing_seam = '$standing_seam',
                 board_batten = '$board_batten',
+                product_origin = '$product_origin',
                 comment = '$comment' 
             WHERE product_id = '$product_id'";
     
@@ -148,6 +150,7 @@ if(isset($_REQUEST['action'])) {
                 sold_by_feet,
                 standing_seam,
                 board_batten,
+                product_origin,
                 comment
             ) VALUES (
                 '$product_item', 
@@ -188,6 +191,7 @@ if(isset($_REQUEST['action'])) {
                 '$sold_by_feet',
                 '$standing_seam',
                 '$board_batten',
+                '$product_origin',
                 '$comment'
             )";
     
@@ -989,19 +993,33 @@ if(isset($_REQUEST['action'])) {
                                     </div>
 
                                     <div class="row pt-3">
-                                        <div class="col-md-4 opt_field_update" data-id="15">
+                                        <div class="col-md-6 opt_field_update" data-id="15">
                                             <div class="mb-3">
                                             <label class="form-label">Usage</label>
                                             <input type="text" id="product_usage" name="product_usage" class="form-control" value="<?= $row['product_usage']?>" />
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <div class="mb-3">
                                             <label class="form-label">UPC</label>
                                             <input type="text" id="upc" name="upc" class="form-control" value="<?= $row['upc']?>" />
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        
+                                    </div>
+
+                                    <div class="row pt-3">
+                                        <div class="col-md-6 opt_field" data-id="15">
+                                            <div class="mb-3">
+                                            <label class="form-label">Product Origin</label>
+                                            <select id="product_origin" class="form-control" name="product_origin">
+                                                <option value="" <?= empty($row['product_origin']) ? 'selected' : '' ?>>Select Origin...</option>
+                                                <option value="1" <?= $row['product_origin'] == '1' ? 'selected' : '' ?>>Source</option>
+                                                <option value="2" <?= $row['product_origin'] == '2' ? 'selected' : '' ?>>Manufactured</option>
+                                            </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
                                             <div class="mb-1">
                                                 <div class="form-check form-check-inline">
                                                     <input class="form-check-input" type="checkbox" id="sold_by_feet" name="sold_by_feet" value="1" <?= $row['sold_by_feet'] == 1 ? 'checked' : '' ?>>

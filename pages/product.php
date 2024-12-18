@@ -374,7 +374,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                     <div class="mb-3">
                                     <label class="form-label">Profile</label>
                                     <select id="profile" class="form-control" name="profile">
-                                        <option value="/" >Select Profile...</option>
+                                        <option value="" >Select Profile...</option>
                                         <?php
                                         $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0'";
                                         $result_profile_type = mysqli_query($conn, $query_profile_type);            
@@ -441,19 +441,32 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                 </div>
 
                                 <div class="row pt-3">
-                                    <div class="col-md-4 opt_field" data-id="15">
+                                    <div class="col-md-6 opt_field" data-id="15">
                                         <div class="mb-3">
                                         <label class="form-label">Usage</label>
                                         <input type="text" id="product_usage" name="product_usage" class="form-control"  />
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <div class="mb-3">
                                         <label class="form-label">UPC</label>
                                         <input type="text" id="upc" name="upc" class="form-control" value="<?= $generate_rend_upc ?>" readonly/>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                </div>
+
+                                <div class="row pt-3">
+                                    <div class="col-md-6 opt_field" data-id="15">
+                                        <div class="mb-3">
+                                        <label class="form-label">Product Origin</label>
+                                        <select id="product_origin" class="form-control" name="product_origin">
+                                            <option value="" >Select Origin...</option>
+                                            <option value="1" >Source</option>
+                                            <option value="2" >Manufactured</option>
+                                        </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
                                         <div class="mb-1">
                                             <div class="form-check form-check-inline">
                                                 <input class="form-check-input" type="checkbox" id="sold_by_feet" name="sold_by_feet" value="1">

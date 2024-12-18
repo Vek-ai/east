@@ -43,6 +43,17 @@ if (isset($_POST['search_product'])) {
 }
 
 if(isset($_POST['fetch_available'])){
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $app_prod_arr = getWorkOrderDetails($id);
+    $color_id = $app_prod_arr['custom_color'];
+    $grade = $app_prod_arr['custom_grade'];
+    $width = floatval($app_prod_arr['custom_width']);
+    $lengthFeet = !empty($app_prod_arr['custom_length']) ? floatval($app_prod_arr['custom_length']) : 0;
+    $lengthInch = !empty($app_prod_arr['custom_length2']) ? floatval($app_prod_arr['custom_length2']) : 0;
+    $quantity = !empty($app_prod_arr['quantity']) ? floatval($app_prod_arr['quantity']) : 1;
+    $total_ln_in_ft = $lengthFeet + ($lengthInch / 12);
+    $total_ln_in_ft = !empty($total_ln_in_ft) ? $total_ln_in_ft : 1;
+    $total_length = $total_ln_in_ft * $quantity;
     ?>
     <style>
         .tooltip-inner {
@@ -57,6 +68,7 @@ if(isset($_POST['fetch_available'])){
             <table id="coil_dtls_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
                 <thead>
                     <tr>
+                        <th></th>
                         <th>
                             <input type="checkbox" id="selectAll" >
                         </th>
@@ -73,7 +85,7 @@ if(isset($_POST['fetch_available'])){
                 </thead>
                 <tbody>
                     <?php 
-                    $query = "SELECT * FROM coil_product";
+                    $query = "SELECT * FROM coil_product ORDER BY date ASC";
                     $result = mysqli_query($conn, $query);
 
                     $grouped_data = [];
@@ -106,8 +118,13 @@ if(isset($_POST['fetch_available'])){
                     $weighted_sum = 0;
                     $total_weight = 0;
 
-                    foreach ($all_rows as $row) {
+                    $is_checked = 1;
+                    $total_length_reached = 0;
 
+                    foreach ($all_rows as $row) {
+                        if( $row['color_sold_as'] == $color_id &&
+                            $row['grade'] == $grade &&
+                            $row['width'] >= $width ){
                         
                             $color_details = getColorDetails($row['color_sold_as']);
                             $group_key = $row['color_sold_as'] . '-' . $row['gauge'] . '-' . $row['year'] . '-' . $row['grade_no'];
@@ -119,10 +136,18 @@ if(isset($_POST['fetch_available'])){
                             if ($total_weight > 0) {
                                 $weighted_average = $weighted_sum / $total_weight;
                             }
+
+                            if ($total_length_reached < $total_length) {
+                                $total_length_reached += $row['remaining_feet'];
+                            } else {
+                                $is_checked = 0;
+                            }
+
                             ?>
-                            <tr data-id="<?= $row['coil_id'] ?>">
+                            <tr data-id="<?= $row['coil_id'] ?>" data-length="<?= $total_length ?>">
+                                <td><?= $is_checked; ?></td>
                                 <td class="text-start">
-                                    <input type="checkbox" class="row-select" data-id="<?= $row['coil_id'] ?>">
+                                    <input type="checkbox" class="row-select" data-id="<?= $row['coil_id'] ?>" <?= !empty($is_checked) ? 'checked' : '' ?>>
                                 </td>
                                 <td class="text-wrap"> 
                                     <?= $row['entry_no'] ?>
@@ -158,6 +183,7 @@ if(isset($_POST['fetch_available'])){
                             <?php
                             $totalprice += $average_price;
                             $no++;
+                        }
 
                         if ($total_weight > 0) {
                             $weighted_average = $weighted_sum / $total_weight;
@@ -165,6 +191,13 @@ if(isset($_POST['fetch_available'])){
                     }
                     ?>
                 </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td colspan="10" class="text-right"><strong>Weighted Average Price:</strong></td>
+                        <td class="text-right"><strong>$<?= number_format($weighted_average, 2); ?></strong></td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
@@ -231,8 +264,21 @@ if(isset($_POST['fetch_available'])){
 
             $('[data-toggle="tooltip"]').tooltip(); 
 
+            $.fn.dataTable.ext.type.order['custom-date-pre'] = function (date) {
+                const months = {
+                    Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+                    Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+                };
+                const parts = date.split(' ');
+                const month = months[parts[0]];
+                const day = parseInt(parts[1].replace(',', ''), 10);
+                const year = parseInt(parts[2], 10);
+                var date_return = new Date(year, month, day).getTime();
+                return date_return;
+            };
+
             if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
-                $('#coil_dtls_tbl').DataTable().draw();
+                $('#coil_dtls_tbl').DataTable().order([[0, 'desc'], [3, 'asc']]).draw();
             } else {
                 $('#coil_dtls_tbl').DataTable({
                     language: {
@@ -241,14 +287,16 @@ if(isset($_POST['fetch_available'])){
                     autoWidth: false,
                     responsive: true,
                     columnDefs: [
-                        { targets: 0, width: "5%" }
+                        { targets: 0, visible: false },
+                        { targets: 1, width: "5%" },
+                        { targets: 3, type: 'custom-date' }
+                    ],
+                    order: [
+                        [0, 'desc'],
+                        [3, 'asc']
                     ]
                 });
             }
-
-            $('#view_available_modal').on('shown.bs.modal', function () {
-                $('#coil_dtls_tbl').DataTable().columns.adjust().responsive.recalc();
-            });
         });
     </script>
     <?php
