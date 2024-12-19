@@ -1,8 +1,8 @@
-<div class="container-fluid card">
+
 <!-- -------------------------------------------------------------- -->
 <!-- Breadcrumb -->
 <!-- -------------------------------------------------------------- -->
-<div class="font-weight-medium shadow-none position-relative overflow-hidden mb-0">
+<div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7 mt-4">
   <div class="card-body px-0">
     <div class="d-flex justify-content-between align-items-center">
       <div>
@@ -39,11 +39,6 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="d-flex justify-content-end align-items-center pt-3">
-        <a href="?page=work_order" class="btn btn-primary">
-            Work Orders <i class="fas fa-arrow-right ms-2"></i>
-        </a>
     </div>
   </div>
 </div>

@@ -34,9 +34,8 @@ if (!isset($_SESSION['work_order_user_id'])) {
 
   <!-- Core Css -->
   <link rel="stylesheet" href="../assets/css/styles.css" />
-  <link rel="stylesheet" href="css/cashier.css" />
 
-  <title>East Kentucky Metal</title>
+  <title>Work Order - East Kentucky Metal</title>
 
 </head>
 
@@ -46,6 +45,9 @@ if (!isset($_SESSION['work_order_user_id'])) {
     <img src="../assets/images/logos/logo-icon.svg" alt="loader" class="lds-ripple img-fluid" />
   </div>
   <div id="main-wrapper">
+
+    <?php include 'aside.php';?>
+
     <div class="page-wrapper">
       <!--  Header Start -->
       <header class="topbar rounded-0 border-0" style="background-color: rgb(0, 51, 160);">
@@ -1300,10 +1302,12 @@ if (!isset($_SESSION['work_order_user_id'])) {
       <!--  Header End -->
 
       <div class="body-wrapper">
+        <div class="container-fluid">
           <?php 
             if (empty($_REQUEST['page'])) {include 'pages/dashboard.php';}
             if ($_REQUEST['page'] == "work_order") {include 'pages/work_order.php';}
           ?>
+        </div>
       </div>
       <script>
   function handleColorTheme(e) {

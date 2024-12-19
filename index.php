@@ -32,7 +32,7 @@ if (!isset($_SESSION['userid'])) {
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
 
-  <title>East Kentucky Metal</title>
+  <title>Admin - East Kentucky Metal</title>
 
 </head>
 
@@ -43,7 +43,7 @@ if (!isset($_SESSION['userid'])) {
   </div>
   <div id="main-wrapper">
     <!-- Sidebar Start -->
-  <?php include 'aside.php';?>
+    <?php include 'aside.php';?>
     <!--  Sidebar End -->
     <div class="page-wrapper">
       <!--  Header Start -->
@@ -1400,6 +1400,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "approved_list") {include 'pages/approved_list.php';}
 
             if ($_REQUEST['page'] == "work_order_list") {include 'pages/work_order_list.php';}
+            if ($_REQUEST['page'] == "status_list") {include 'pages/status_list.php';}
           ?>
         </div>
       </div>
