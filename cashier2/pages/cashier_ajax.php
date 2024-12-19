@@ -1662,4 +1662,35 @@ if (isset($_POST['add_to_cart'])) {
 
     echo 'success';
 }
+
+if (isset($_POST['add_job_name'])) {
+    $customer_id = isset($_SESSION['customer_id']) ? intval($_SESSION['customer_id']) : 0;
+    $job_name = isset($_POST['job_name']) ? mysqli_real_escape_string($conn, $_POST['job_name']) : '';
+
+    if(empty($customer_id)){
+        echo "Customer is not set. Please select customer first!";
+        exit;
+    }
+
+    if(empty($job_name)){
+        echo "Job name cannot be empty!";
+        exit;
+    }
+
+    if (!empty($customer_id) && !empty($job_name)) {
+        $insert_query = "INSERT INTO job_names (
+                            customer_id, 
+                            job_name
+                        ) VALUES (
+                            '$customer_id', 
+                            '$job_name'
+                        )";
+        
+        if (mysqli_query($conn, $insert_query)) {
+            echo "success";
+        } else {
+            echo "Error inserting into product_returns.";
+        }
+    }
+}
 ?>

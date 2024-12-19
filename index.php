@@ -1401,6 +1401,8 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "work_order_list") {include 'pages/work_order_list.php';}
             if ($_REQUEST['page'] == "status_list") {include 'pages/status_list.php';}
+            if ($_REQUEST['page'] == "job_details") {include 'pages/job_details.php';}
+            
           ?>
         </div>
       </div>
