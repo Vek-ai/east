@@ -271,7 +271,7 @@ if(isset($_POST['fetch_status_details'])){
                     if ($result && mysqli_num_rows($result) > 0) {
                         $response = array();
                         while ($row = mysqli_fetch_assoc($result)) {
-                            
+                            $is_show_checkbox = false;
                             if($type == 'approval'){
                                 $data_id = $row['id'];
                                 $product_id = $row['productid'];
@@ -284,6 +284,17 @@ if(isset($_POST['fetch_status_details'])){
                                 $inch = $row['custom_length2'];
                                 $actual_price = $row['actual_price'];
                                 $discounted_price = $row['discounted_price'];
+
+                                $product_details = getProductDetails($product_id);
+                                if($product_details['product_origin'] == '1'){
+                                    $is_show_checkbox = true;
+                                }else{
+                                    $query_work_orders = "SELECT * FROM work_order_product WHERE type='3' AND work_order_id='$id' AND productid='$product_id'";
+                                    $result_work_orders = mysqli_query($conn, $query_work_orders);
+                                    if (mysqli_num_rows($result_work_orders) > 0) {
+                                        $is_show_checkbox = true;
+                                    } 
+                                }
                             }else if($type == 'estimate'){
                                 $data_id = $row['id'];
                                 $product_id = $row['product_id'];
@@ -296,6 +307,17 @@ if(isset($_POST['fetch_status_details'])){
                                 $inch = $row['custom_length2'];
                                 $actual_price = $row['actual_price'];
                                 $discounted_price = $row['discounted_price'];
+
+                                $product_details = getProductDetails($product_id);
+                                if($product_details['product_origin'] == '1'){
+                                    $is_show_checkbox = true;
+                                }else{
+                                    $query_work_orders = "SELECT * FROM work_order_product WHERE type='1' AND work_order_id='$id' AND productid='$product_id'";
+                                    $result_work_orders = mysqli_query($conn, $query_work_orders);
+                                    if (mysqli_num_rows($result_work_orders) > 0) {
+                                        $is_show_checkbox = true;
+                                    } 
+                                }
                             }else if($type == 'order'){
                                 $data_id = $row['id'];
                                 $product_id = $row['productid'];
@@ -308,22 +330,30 @@ if(isset($_POST['fetch_status_details'])){
                                 $inch = $row['custom_length2'];
                                 $actual_price = $row['actual_price'];
                                 $discounted_price = $row['discounted_price'];
+
+                                $product_details = getProductDetails($product_id);
+                                if($product_details['product_origin'] == '1'){
+                                    $is_show_checkbox = true;
+                                }else{
+                                    $query_work_orders = "SELECT * FROM work_order_product WHERE type='2' AND work_order_id='$id' AND productid='$product_id'";
+                                    $result_work_orders = mysqli_query($conn, $query_work_orders);
+                                    if (mysqli_num_rows($result_work_orders) > 0) {
+                                        $is_show_checkbox = true;
+                                    } 
+                                }
                             }
-
-                            $product_details = getProductDetails($product_id);
-
+                            
                             if($quantity > 0){
                             ?>
                             <tr>
                                 <td class="text-start">
                                     <?php
-                                    if($product_details['product_origin'] == '1'){
+                                    if($is_show_checkbox){
                                         ?>
                                         <input type="checkbox" class="row-select" data-id="<?= $data_id ?>" data-type="<?=$type?>">
                                         <?php
                                     }
                                     ?>
-                                    
                                 </td>
                                 <td class="text-wrap w-20" > 
                                     <?php echo getProductName($product_id) ?>
