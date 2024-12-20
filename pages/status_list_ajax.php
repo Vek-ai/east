@@ -310,11 +310,20 @@ if(isset($_POST['fetch_status_details'])){
                                 $discounted_price = $row['discounted_price'];
                             }
 
+                            $product_details = getProductDetails($product_id);
+
                             if($quantity > 0){
                             ?>
                             <tr>
                                 <td class="text-start">
-                                    <input type="checkbox" class="row-select" data-id="<?= $data_id ?>" data-type="<?=$type?>">
+                                    <?php
+                                    if($product_details['product_origin'] == '1'){
+                                        ?>
+                                        <input type="checkbox" class="row-select" data-id="<?= $data_id ?>" data-type="<?=$type?>">
+                                        <?php
+                                    }
+                                    ?>
+                                    
                                 </td>
                                 <td class="text-wrap w-20" > 
                                     <?php echo getProductName($product_id) ?>
