@@ -135,10 +135,6 @@ require 'includes/functions.php';
                 <div id="edit-details">
                 </div>
             </div>
-            <div class="modal-footer">
-                <button id="saveSelection" class="btn ripple btn-success" type="button">Save</button>
-                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-            </div>
         </div>
     </div>
 </div>

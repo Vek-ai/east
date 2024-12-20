@@ -636,6 +636,7 @@ if(isset($_POST['fetch_edit_details'])){
                         $product_details = getProductDetails($product_id);
                         ?>
                         <input type="hidden" id="id" name="id" value="<?=$data_id?>">
+                        <input type="hidden" id="type" name="type" value="<?=$type?>">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="mb-3">
@@ -691,6 +692,10 @@ if(isset($_POST['fetch_edit_details'])){
                                 </div>
                             </div>
                         </div>
+                        <div class="modal-footer">
+                            <button class="btn ripple btn-success" type="submit">Save</button>
+                            <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                        </div>
                         <?php
                     }
                 }
@@ -702,6 +707,31 @@ if(isset($_POST['fetch_edit_details'])){
         $(document).ready(function() {
             $('[data-toggle="tooltip"]').tooltip(); 
 
+            $(document).on('submit', '#formEditProduct', function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+                formData.append('edit_product', 'edit_product');
+                $.ajax({
+                    url: 'pages/status_list_ajax.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.trim() == 'success') {
+                            alert('Successfully Modified');
+                            location.reload();
+                        } else {
+                            alert('Failed to Update!');
+                            console.log(response);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + jqXHR.responseText);
+                    }
+                });
+            });
+
             $(".select2").select2({
                 width: '100%',
                 placeholder: "Select Correlated Products",
@@ -711,6 +741,41 @@ if(isset($_POST['fetch_edit_details'])){
         });
     </script>
     <?php
+}
+
+
+if (isset($_POST['edit_product'])) {
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $type = mysqli_real_escape_string($conn, $_POST['type']);
+    $color = mysqli_real_escape_string($conn, $_POST['color']);
+    $width = mysqli_real_escape_string($conn, $_POST['width']);
+    $length_feet = mysqli_real_escape_string($conn, $_POST['length_feet']);
+    $length_inch = mysqli_real_escape_string($conn, $_POST['length_inch']);
+
+    $table = '';
+    if ($type == 'approval') {
+        $table = 'approval_product';
+    } elseif ($type == 'estimate') {
+        $table = 'estimate_prod';
+    } elseif ($type == 'order') {
+        $table = 'order_product';
+    }
+
+    if ($table && !empty($id)) {
+        $sql = "UPDATE $table 
+                SET custom_color = '$color', 
+                    custom_width = '$width', 
+                    custom_length = '$length_feet', 
+                    custom_length2 = '$length_inch' 
+                WHERE id = '$id'";
+        if ($conn->query($sql) === TRUE) {
+            echo "success";
+        } else {
+            echo "Error updating records: " . $conn->error;
+        }
+    } else {
+        echo "Invalid type or missing ID.";
+    }
 }
 
 
