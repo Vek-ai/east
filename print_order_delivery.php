@@ -114,7 +114,7 @@ if (mysqli_num_rows($result) > 0) {
         $total_qty = 0;
 
         $data = array();
-        $query_product = "SELECT * FROM order_product WHERE orderid = '$orderid'";
+        $query_product = "SELECT * FROM order_product WHERE orderid = '$orderid' AND status = '3'";
         $result_product = mysqli_query($conn, $query_product);
         if (mysqli_num_rows($result_product) > 0) {
 
@@ -177,8 +177,12 @@ if (mysqli_num_rows($result) > 0) {
         $result_qr = mysqli_query($conn, $query_qr);
         if (mysqli_num_rows($result_qr) > 0) {
             $row_qr = mysqli_fetch_assoc($result_qr);
-            $pdf->SetXY($col1_x, $col_y);
-            $pdf->Image('https://delivery.ilearnsda.com/deliveryqr/qrcode'.$row_qr['id'].'.png', $col1_x, $col_y, 60, 60);
+            $image_url = 'https://delivery.ilearnsda.com/deliveryqr/qrcode' . $row_qr['id'] . '.png';
+            
+            if (@get_headers($image_url)[0] === 'HTTP/1.1 200 OK') {
+                $pdf->SetXY($col1_x, $col_y);
+                $pdf->Image($image_url, $col1_x, $col_y, 60, 60);
+            }
         }
         
         $pdf->SetFont('Arial', '', 9);

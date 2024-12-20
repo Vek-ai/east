@@ -238,6 +238,9 @@ if(isset($_POST['fetch_status_details'])){
             <table id="dtls_tbl" class="table table-hover mb-0 text-md-nowrap">
                 <thead>
                     <tr>
+                        <th>
+                            <input type="checkbox" id="selectAll" >
+                        </th>
                         <th class="w-20">Description</th>
                         <th>Color</th>
                         <th>Grade</th>
@@ -270,6 +273,7 @@ if(isset($_POST['fetch_status_details'])){
                         while ($row = mysqli_fetch_assoc($result)) {
                             
                             if($type == 'approval'){
+                                $data_id = $row['id'];
                                 $product_id = $row['productid'];
                                 $status = $row['status'];
                                 $quantity = $row['quantity'];
@@ -281,6 +285,7 @@ if(isset($_POST['fetch_status_details'])){
                                 $actual_price = $row['actual_price'];
                                 $discounted_price = $row['discounted_price'];
                             }else if($type == 'estimate'){
+                                $data_id = $row['id'];
                                 $product_id = $row['product_id'];
                                 $status = $row['status'];
                                 $quantity = $row['quantity'];
@@ -292,6 +297,7 @@ if(isset($_POST['fetch_status_details'])){
                                 $actual_price = $row['actual_price'];
                                 $discounted_price = $row['discounted_price'];
                             }else if($type == 'order'){
+                                $data_id = $row['id'];
                                 $product_id = $row['productid'];
                                 $status = $row['status'];
                                 $quantity = $row['quantity'];
@@ -307,6 +313,9 @@ if(isset($_POST['fetch_status_details'])){
                             if($quantity > 0){
                             ?>
                             <tr>
+                                <td class="text-start">
+                                    <input type="checkbox" class="row-select" data-id="<?= $data_id ?>" data-type="<?=$type?>">
+                                </td>
                                 <td class="text-wrap w-20" > 
                                     <?php echo getProductName($product_id) ?>
                                 </td>
@@ -392,7 +401,7 @@ if(isset($_POST['fetch_status_details'])){
 
                 <tfoot>
                     <tr>
-                        <td class="text-end" colspan="5">Total Qty</td>
+                        <td class="text-end" colspan="6">Total Qty</td>
                         <td><?= $totalquantity ?></td>
                         <td></td>
                         <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
@@ -404,6 +413,67 @@ if(isset($_POST['fetch_status_details'])){
     </div>
     <script>
         $(document).ready(function() {
+            let selectedProduct = [];
+            var type = '<?= $type ?? '' ?>';
+
+            $(document).off('change', '.row-select').on('change', '.row-select', function () {
+                const prodId = $(this).data('id');
+
+                if ($(this).is(':checked')) {
+                    if (!selectedProduct.includes(prodId)) {
+                        selectedProduct.push(prodId);
+                    }
+                } else {
+                    selectedProduct = selectedProduct.filter(id => id !== prodId);
+                }
+            });
+
+            $('#selectAll').off('change').on('change', function () {
+                const isChecked = $(this).is(':checked');
+                const table = $('#dtls_tbl').DataTable();
+                const allRows = table.rows().nodes();
+
+                $(allRows).find('.row-select').prop('checked', isChecked).trigger('change');
+            });
+
+            $('#saveSelection').off('click').on('click', function () {
+                const table = $('#dtls_tbl').DataTable();
+                const allRows = table.rows().nodes();
+
+                const id = <?= $id ?? 0 ?>;
+                
+                selectedProduct = [];
+
+                $(allRows).find('.row-select:checked').each(function () {
+                    selectedProduct.push($(this).data('id'));
+                });
+
+                const selectedProductJson = JSON.stringify(selectedProduct);
+
+                $.ajax({
+                    type: 'POST',
+                    url: 'pages/status_list_ajax.php',
+                    data: { 
+                        id: id,
+                        type: type,
+                        selected_products: selectedProductJson,
+                        assign_dispatch: 'assign_dispatch'
+                    },
+                    success: function(response) {
+                        if (response.trim() == 'success') {
+                            alert('Successfully Saved!');
+                            location.reload();
+                        } else {
+                            alert('Failed to Update!' +response);
+                            console.log(response);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Response Text:', xhr.responseText);
+                    }
+                });
+            });
+
             $('[data-toggle="tooltip"]').tooltip(); 
 
             $('#dtls_tbl').DataTable({
@@ -421,5 +491,38 @@ if(isset($_POST['fetch_status_details'])){
     </script>
     <?php
 }
+
+if (isset($_POST['assign_dispatch'])) {
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $type = mysqli_real_escape_string($conn, $_POST['type']);
+    $selected_products = json_decode($_POST['selected_products'], true);
+
+    if (is_array($selected_products) && !empty($selected_products)) {
+        $table = '';
+        if ($type == 'approval') {
+            $table = 'approval_product';
+        } elseif ($type == 'estimate') {
+            $table = 'estimate_prod';
+        } elseif ($type == 'order') {
+            $table = 'order_product';
+        }
+
+        if ($table) {
+            $ids = implode(',', array_map('intval', $selected_products)); // Safely process the IDs
+            $sql = "UPDATE $table SET status = '3' WHERE id IN ($ids)";
+
+            if ($conn->query($sql) === TRUE) {
+                echo "success";
+            } else {
+                echo "Error updating records: " . $conn->error;
+            }
+        } else {
+            echo "Invalid type specified.";
+        }
+    } else {
+        echo "No products selected for dispatch.";
+    }
+}
+
 
 
