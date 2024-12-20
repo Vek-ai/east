@@ -122,6 +122,27 @@ require 'includes/functions.php';
     </div>
 </div>
 
+<div class="modal" id="edit_details_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content p-2">
+            <div class="modal-header">
+                <h6 class="modal-title">Edit Product Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="edit-details">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveSelection" class="btn ripple btn-success" type="button">Save</button>
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     var id = '';
     var type = '';
@@ -207,6 +228,30 @@ require 'includes/functions.php';
             type = $(this).data('type');
             loadStatusDetails();
             $('#view_status_details_modal').modal('toggle');
+        });
+
+        $(document).on('click', '#edit_status_details', function(event) {
+            var data_id = $(this).data('id');
+            var data_type = $(this).data('type');
+            console.log(data_id);
+            console.log(data_type);
+            $.ajax({
+                url: 'pages/status_list_ajax.php',
+                type: 'POST',
+                data: {
+                    id: data_id,
+                    type: data_type,
+                    fetch_edit_details: "fetch_edit_details"
+                },
+                success: function(response) {
+                    $('#edit-details').html(response);
+                    $('#edit_details_modal').modal('toggle');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+            
         });
 
         performSearch();

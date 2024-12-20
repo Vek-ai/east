@@ -250,6 +250,7 @@ if(isset($_POST['fetch_status_details'])){
                         <th class="text-center">Status</th>
                         <th class="text-center">Price</th>
                         <th class="text-center">Customer Price</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -427,6 +428,9 @@ if(isset($_POST['fetch_status_details'])){
                                 </td>
                                 <td class="text-end">$ <?= number_format($actual_price,2) ?></td>
                                 <td class="text-end">$ <?= number_format($discounted_price,2) ?></td>
+                                <td>
+                                    <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="edit_status_details" data-id="<?= $data_id ?>" data-type="<?= $type ?>" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fa fa-pencil"></i></a>
+                                </td>
                             </tr>
                     <?php
                             $totalquantity += $quantity ;
@@ -445,6 +449,7 @@ if(isset($_POST['fetch_status_details'])){
                         <td></td>
                         <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
                         <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
+                        <td></td>
                     </tr>
                 </tfoot>
             </table>
@@ -501,7 +506,7 @@ if(isset($_POST['fetch_status_details'])){
                     success: function(response) {
                         if (response.trim() == 'success') {
                             alert('Successfully Saved!');
-                            location.reload();
+                            window.open("print_order_delivery.php?id=<?= $id ?? 0 ?>&type=<?= $type ?? 0 ?>", "_blank");
                         } else {
                             alert('Failed to Update!' +response);
                             console.log(response);
@@ -561,6 +566,151 @@ if (isset($_POST['assign_dispatch'])) {
     } else {
         echo "No products selected for dispatch.";
     }
+}
+
+if(isset($_POST['fetch_edit_details'])){
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $type = mysqli_real_escape_string($conn, $_POST['type']);
+    ?>
+    <style>
+        .tooltip-inner {
+            background-color: white !important;
+            color: black !important;
+            font-size: calc(0.875rem + 2px) !important;
+        }
+    </style>
+    <div class="card card-body datatables">
+        <div class="product-details text-wrap">
+            <form id="formEditProduct">
+            <?php 
+                $no = 0;
+                $totalquantity = $total_actual_price = $total_disc_price = 0;
+
+                if($type == 'approval'){
+                    $query = "SELECT * FROM approval_product WHERE id='$id'";
+                    $result = mysqli_query($conn, $query);
+                }else if($type == 'estimate'){
+                    $query = "SELECT * FROM estimate_prod WHERE id='$id'";
+                    $result = mysqli_query($conn, $query);
+                }else if($type == 'order'){
+                    $query = "SELECT * FROM order_product WHERE id='$id'";
+                    $result = mysqli_query($conn, $query);
+                }
+                
+                if ($result && mysqli_num_rows($result) > 0) {
+                    $response = array();
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        $is_show_checkbox = false;
+                        if($type == 'approval'){
+                            $data_id = $row['id'];
+                            $product_id = $row['productid'];
+                            $status = $row['status'];
+                            $quantity = $row['quantity'];
+                            $width = $row['custom_width'];
+                            $bend = $row['custom_bend'];
+                            $hem = $row['custom_hem'];
+                            $feet = $row['custom_length'];
+                            $inch = $row['custom_length2'];
+                        }else if($type == 'estimate'){
+                            $data_id = $row['id'];
+                            $product_id = $row['product_id'];
+                            $status = $row['status'];
+                            $quantity = $row['quantity'];
+                            $width = $row['custom_width'];
+                            $bend = $row['custom_bend'];
+                            $hem = $row['custom_hem'];
+                            $feet = $row['custom_length'];
+                            $inch = $row['custom_length2'];
+                        }else if($type == 'order'){
+                            $data_id = $row['id'];
+                            $product_id = $row['productid'];
+                            $status = $row['status'];
+                            $quantity = $row['quantity'];
+                            $width = $row['custom_width'];
+                            $bend = $row['custom_bend'];
+                            $hem = $row['custom_hem'];
+                            $feet = $row['custom_length'];
+                            $inch = $row['custom_length2'];
+                        }
+
+                        $product_details = getProductDetails($product_id);
+                        ?>
+                        <input type="hidden" id="id" name="id" value="<?=$data_id?>">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <h4><?=$product_details['product_item']?></h4>
+                                    <h5>Grade: <?= getGradeName($row['custom_grade']) ?></h5>
+                                    <h5>
+                                        <?php
+                                        if (!empty($bend)) {
+                                            echo "Bend: " . htmlspecialchars($bend) . "<br>";
+                                        }
+                                        
+                                        if (!empty($hem)) {
+                                            echo "Hem: " . htmlspecialchars($hem) . "<br>";
+                                        }
+                                        ?>
+                                    </h5>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Color</label>
+                                <div class="mb-3">
+                                    <select id="color" class="form-control select2" name="color">
+                                        <option value="" >Select Color...</option>
+                                        <?php
+                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                        $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                        while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                            $selected = ($product_details['color'] == $row_paint_colors['color_id']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Width</label>
+                                    <input type="text" id="width" name="width" class="form-control" value="<?= $width?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Length Feet</label>
+                                    <input type="text" id="length_feet" name="length_feet" class="form-control" value="<?= $feet ?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Length Inch</label>
+                                    <input type="text" id="length_inch" name="length_inch" class="form-control" value="<?= $inch ?>" />
+                                </div>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                }
+                ?>
+            </form>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('[data-toggle="tooltip"]').tooltip(); 
+
+            $(".select2").select2({
+                width: '100%',
+                placeholder: "Select Correlated Products",
+                allowClear: true,
+                dropdownParent: $('#edit_details_modal')
+            });
+        });
+    </script>
+    <?php
 }
 
 

@@ -29,17 +29,32 @@ $pdf->AddPage();
 $col1_x = 10;
 $col2_x = 140;
 
-$orderid = $_REQUEST['id'];
+$table_id = $_REQUEST['id'];
 $current_user_id = $_SESSION['userid'];
+$type = $_REQUEST['type'] ?? 'order';
 
-$query = "SELECT * FROM orders WHERE orderid = '$orderid'";
+if($type == 'approval'){
+    $query = "SELECT * FROM approval WHERE approval_id='$table_id'";
+}else if($type == 'estimate'){
+    $query = "SELECT * FROM estimates WHERE estimateid='$table_id'";
+}else if($type == 'order'){
+    $query = "SELECT * FROM orders WHERE orderid = '$table_id'";
+}
+
 $result = mysqli_query($conn, $query);
 
 if (mysqli_num_rows($result) > 0) {
     while($row_orders = mysqli_fetch_assoc($result)){
+        if($type == 'approval'){
+            $date = $row_orders['submitted_date'];
+        }else if($type == 'estimate'){
+            $date = $row_orders['estimated_date'];
+        }else if($type == 'order'){
+            $date = $row_orders['order_date'];
+        }
+
         $delivery_price = floatval($row_orders['delivery_amt']);
         $discount = floatval($row_orders['discount_percent']) / 100;
-        $orderid = $row_orders['orderid'];
         $customer_id = $row_orders['customerid'];
         $customerDetails = getCustomerDetails($customer_id);
         $tax = floatval(getCustomerTax($customer_id)) / 100;
@@ -55,9 +70,9 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->SetXY($col2_x,  10);
         $pdf->SetFont('Arial', '', 10);
-        $pdf->MultiCell(95, 5, "Estimate #: $orderid", 0, 'L');
+        $pdf->MultiCell(95, 5, ucwords($type) ." #: $table_id", 0, 'L');
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(95, 5, "Date: " .date("F d, Y", strtotime($row_orders['order_date'])), 0, 1, 'L');
+        $pdf->Cell(95, 5, "Date: " .date("F d, Y", strtotime($date)), 0, 1, 'L');
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(95, 5, 'Salesperson: ' . get_staff_name($current_user_id), 0, 0, 'L');
 
@@ -114,7 +129,15 @@ if (mysqli_num_rows($result) > 0) {
         $total_qty = 0;
 
         $data = array();
-        $query_product = "SELECT * FROM order_product WHERE orderid = '$orderid' AND status = '3'";
+        if($type == 'approval'){
+            $query_product = "SELECT * FROM approval_product WHERE approval_id = '$table_id' AND status = '3'";
+        }else if($type == 'estimate'){
+            $query_product = "SELECT * FROM estimate_prod WHERE estimateid = '$table_id' AND status = '3'";
+        }else if($type == 'order'){
+            $query_product = "SELECT * FROM order_product WHERE orderid = '$table_id' AND status = '3'";
+        }
+
+       
         $result_product = mysqli_query($conn, $query_product);
         if (mysqli_num_rows($result_product) > 0) {
 
@@ -128,7 +151,13 @@ if (mysqli_num_rows($result) > 0) {
             $pdf->Ln();
 
             while($row_product = mysqli_fetch_assoc($result_product)){
-                $productid = $row_product['productid'];
+                if($type == 'approval'){
+                    $productid = $row_product['productid'];
+                }else if($type == 'estimate'){
+                    $productid = $row_product['product_id'];
+                }else if($type == 'order'){
+                    $productid = $row_product['productid'];
+                }
                 $product_details = getProductDetails($productid);
                 $grade_details = getGradeDetails($product_details['grade']);
                 $data[] = [
@@ -173,7 +202,7 @@ if (mysqli_num_rows($result) > 0) {
 
         $lineheight = 6;
 
-        $query_qr = "SELECT * FROM order_estimate WHERE order_estimate_id = '$orderid' AND type = '2'";
+        $query_qr = "SELECT * FROM order_estimate WHERE order_estimate_id = '$table_id' AND type = '2'";
         $result_qr = mysqli_query($conn, $query_qr);
         if (mysqli_num_rows($result_qr) > 0) {
             $row_qr = mysqli_fetch_assoc($result_qr);
