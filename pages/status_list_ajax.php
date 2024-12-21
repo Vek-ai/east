@@ -277,6 +277,8 @@ if(isset($_POST['fetch_status_details'])){
                                 $data_id = $row['id'];
                                 $product_id = $row['productid'];
                                 $status = $row['status'];
+                                $custom_color = $row['custom_color'];
+                                $custom_grade = $row['custom_grade'];
                                 $quantity = $row['quantity'];
                                 $width = $row['custom_width'];
                                 $bend = $row['custom_bend'];
@@ -300,6 +302,8 @@ if(isset($_POST['fetch_status_details'])){
                                 $data_id = $row['id'];
                                 $product_id = $row['product_id'];
                                 $status = $row['status'];
+                                $custom_color = $row['custom_color'];
+                                $custom_grade = $row['custom_grade'];
                                 $quantity = $row['quantity'];
                                 $width = $row['custom_width'];
                                 $bend = $row['custom_bend'];
@@ -323,6 +327,8 @@ if(isset($_POST['fetch_status_details'])){
                                 $data_id = $row['id'];
                                 $product_id = $row['productid'];
                                 $status = $row['status'];
+                                $custom_color = $row['custom_color'];
+                                $custom_grade = $row['custom_grade'];
                                 $quantity = $row['quantity'];
                                 $width = $row['custom_width'];
                                 $bend = $row['custom_bend'];
@@ -362,15 +368,15 @@ if(isset($_POST['fetch_status_details'])){
                                 <td>
                                 <div class="d-flex mb-0 gap-8 align-items-center">
                                     <span class="rounded-circle d-block p-3" 
-                                        style="background-color: <?= getColorHexFromProdID($product_id) ?>; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center;">
+                                        style="background-color: <?= getColorHexFromColorID($custom_color) ?>; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center;">
                                     </span>
                                     <span>
-                                        <?= getColorFromID($product_id); ?>
+                                        <?= getColorName($custom_color); ?>
                                     </span>
                                 </div>
                                 </td>
                                 <td>
-                                    <?php echo getGradeFromID($product_id); ?>
+                                    <?php echo getGradeName($custom_grade); ?>
                                 </td>
                                 <td>
                                     <?php echo $quantity; ?>
@@ -430,6 +436,7 @@ if(isset($_POST['fetch_status_details'])){
                                 <td class="text-end">$ <?= number_format($discounted_price,2) ?></td>
                                 <td>
                                     <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="edit_status_details" data-id="<?= $data_id ?>" data-type="<?= $type ?>" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fa fa-pencil"></i></a>
+                                    <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="edit_history_details" data-id="<?= $data_id ?>" data-type="<?= $type ?>" data-toggle="tooltip" data-placement="top" title="History"><i class="fa fa-clock-rotate-left"></i></i></a>
                                 </td>
                             </tr>
                     <?php
@@ -605,6 +612,8 @@ if(isset($_POST['fetch_edit_details'])){
                             $data_id = $row['id'];
                             $product_id = $row['productid'];
                             $status = $row['status'];
+                            $custom_color = $row['custom_color'];
+                            $custom_grade = $row['custom_grade'];
                             $quantity = $row['quantity'];
                             $width = $row['custom_width'];
                             $bend = $row['custom_bend'];
@@ -615,6 +624,8 @@ if(isset($_POST['fetch_edit_details'])){
                             $data_id = $row['id'];
                             $product_id = $row['product_id'];
                             $status = $row['status'];
+                            $custom_color = $row['custom_color'];
+                            $custom_grade = $row['custom_grade'];
                             $quantity = $row['quantity'];
                             $width = $row['custom_width'];
                             $bend = $row['custom_bend'];
@@ -625,6 +636,8 @@ if(isset($_POST['fetch_edit_details'])){
                             $data_id = $row['id'];
                             $product_id = $row['productid'];
                             $status = $row['status'];
+                            $custom_color = $row['custom_color'];
+                            $custom_grade = $row['custom_grade'];
                             $quantity = $row['quantity'];
                             $width = $row['custom_width'];
                             $bend = $row['custom_bend'];
@@ -664,7 +677,7 @@ if(isset($_POST['fetch_edit_details'])){
                                         $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
                                         $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                         while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                            $selected = ($product_details['color'] == $row_paint_colors['color_id']) ? 'selected' : '';
+                                            $selected = ($custom_color == $row_paint_colors['color_id']) ? 'selected' : '';
                                         ?>
                                             <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
                                         <?php   
@@ -707,31 +720,6 @@ if(isset($_POST['fetch_edit_details'])){
         $(document).ready(function() {
             $('[data-toggle="tooltip"]').tooltip(); 
 
-            $(document).on('submit', '#formEditProduct', function(event) {
-                event.preventDefault();
-                var formData = new FormData(this);
-                formData.append('edit_product', 'edit_product');
-                $.ajax({
-                    url: 'pages/status_list_ajax.php',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        if (response.trim() == 'success') {
-                            alert('Successfully Modified');
-                            location.reload();
-                        } else {
-                            alert('Failed to Update!');
-                            console.log(response);
-                        }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + jqXHR.responseText);
-                    }
-                });
-            });
-
             $(".select2").select2({
                 width: '100%',
                 placeholder: "Select Correlated Products",
@@ -753,30 +741,177 @@ if (isset($_POST['edit_product'])) {
     $length_inch = mysqli_real_escape_string($conn, $_POST['length_inch']);
 
     $table = '';
+    $prod_details = array();
+    $main_id = 0;
+    $product_id = 0;
     if ($type == 'approval') {
         $table = 'approval_product';
+        $prod_details = getApprovalProductDetails($id);
+        $main_id = $prod_details['approval_id'];
+        $product_id = $prod_details['productid'];
     } elseif ($type == 'estimate') {
         $table = 'estimate_prod';
+        $prod_details = getEstimateProdDetails($id);
+        $main_id = $prod_details['estimateid'];
+        $product_id = $prod_details['product_id'];
     } elseif ($type == 'order') {
         $table = 'order_product';
+        $prod_details = getOrderProdDetails($id);
+        $main_id = $prod_details['orderid'];
+        $product_id = $prod_details['productid'];
     }
 
-    if ($table && !empty($id)) {
-        $sql = "UPDATE $table 
-                SET custom_color = '$color', 
-                    custom_width = '$width', 
-                    custom_length = '$length_feet', 
-                    custom_length2 = '$length_inch' 
-                WHERE id = '$id'";
-        if ($conn->query($sql) === TRUE) {
-            echo "success";
+    if (!empty($table) && !empty($id)) {
+        $sql_color = "UPDATE $table SET custom_color = '$color' WHERE id = '$id'";
+        if ($conn->query($sql_color) === TRUE) {
+            $color_name = getColorName($color);
+            if ($type == 'approval') {
+                log_approval_changes($main_id, $product_id, "Updated Color to $color_name", $id);
+            } elseif ($type == 'estimate') {
+                log_estimate_changes($main_id, $product_id, "Updated Color to $color_name", $id);
+            } elseif ($type == 'order') {
+                log_order_changes($main_id, $product_id, "Updated Color to $color_name", $id);
+            }
+            
         } else {
-            echo "Error updating records: " . $conn->error;
+            echo "Error updating Color: " . $conn->error;
         }
+
+        $sql_width = "UPDATE $table SET custom_width = '$width' WHERE id = '$id'";
+        if ($conn->query($sql_width) === TRUE) {
+            if ($type == 'approval') {
+                log_approval_changes($main_id, $product_id, "Updated Width to $width" , $id);
+            } elseif ($type == 'estimate') {
+                log_estimate_changes($main_id, $product_id, "Updated Width to $width" , $id);
+            } elseif ($type == 'order') {
+                log_order_changes($main_id, $product_id, "Updated Width to $width" , $id);
+            }
+            
+        } else {
+            echo "Error updating Width: " . $conn->error;
+        }
+
+        $length = $length_feet . "ft " . $length_inch . "in";
+        $sql_length = "UPDATE $table SET custom_length = '$length_feet', custom_length2 = '$length_inch'  WHERE id = '$id'";
+        if ($conn->query($sql_length) === TRUE) {
+            if ($type == 'approval') {
+                log_approval_changes($main_id, $product_id, "Updated Length to $length" , $id);
+            } elseif ($type == 'estimate') {
+                log_estimate_changes($main_id, $product_id, "Updated Length to $length" , $id);
+            } elseif ($type == 'order') {
+                log_order_changes($main_id, $product_id, "Updated Length to $length" , $id);
+            }
+            
+        } else {
+            echo "Error updating Length: " . $conn->error;
+        }
+
+        echo "success";
     } else {
-        echo "Invalid type or missing ID.";
+        echo "Invalid type or missing ID. table: $table, Type: $type";
     }
 }
+
+if (isset($_POST['fetch_changes_modal'])) {
+    ?>
+    <style>
+        #est_dtls_tbl {
+            width: 100% !important;
+        }
+
+        #est_dtls_tbl td, #est_dtls_tbl th {
+            white-space: normal !important;
+            word-wrap: break-word;
+        }
+    </style>
+    <div class="card">
+        <div class="card-body datatables">
+            <div class="table-responsive text-nowrap">
+                <table id="changes_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Action</th>
+                            <th>User</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                        $table_id = mysqli_real_escape_string($conn, $_POST['id']);
+                        $type = mysqli_real_escape_string($conn, $_POST['type']);
+
+                        if($type == 'approval'){
+                            $query = "SELECT * FROM approval_changes WHERE approval_product_id = '$table_id'";
+                        }else if($type == 'estimate'){
+                            $query = "SELECT * FROM estimate_changes WHERE estimate_prod_id = '$table_id'";
+                        }else if($type == 'order'){
+                            $query = "SELECT * FROM order_changes WHERE order_product_id = '$table_id'";
+                        }
+
+                        
+                        $result = mysqli_query($conn, $query);
+                        
+                        if ($result && mysqli_num_rows($result) > 0) {
+                            $response = array();
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $table_id = $row['orderid'];
+                                $product_details = getProductDetails($row['product_id']);
+                            ?> 
+                                <tr> 
+                                    <td>
+                                        <?php echo getProductName($row['product_id']) ?>
+                                    </td>
+                                    <td>
+                                        <?php echo $row['action'] ?>
+                                    </td>
+                                    <td>
+                                        <?php echo get_staff_name($row['user']) ?>
+                                    </td>
+                                    <td>
+                                        <?php 
+                                            if (isset($row["date_changed"]) && !empty($row["date_changed"]) && $row["date_changed"] !== '0000-00-00 00:00:00') {
+                                                echo date("m/d/Y", strtotime($row["date_changed"]));
+                                            } else {
+                                                echo '';
+                                            }
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php 
+                                            if (isset($row["date_changed"]) && !empty($row["date_changed"]) && $row["date_changed"] !== '0000-00-00 00:00:00') {
+                                                echo date("h:i A", strtotime($row["date_changed"]));
+                                            } else {
+                                                echo '';
+                                            }
+                                        ?>
+                                    </td>
+                                    
+                                </tr>
+                        <?php
+                            }
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#changes_tbl').DataTable({
+                language: {
+                    emptyTable: "No Changes Recorded"
+                },
+                autoWidth: false,
+                responsive: true,
+                lengthChange: false
+            });
+        });
+    </script>
+    <?php
+} 
 
 
 

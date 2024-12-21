@@ -445,15 +445,15 @@ function getCustomerAddress($customer_id) {
     return null;
 }
 
-
-function log_estimate_changes($estimate_id, $product_id, $action){
+function log_approval_changes($approval_id, $product_id, $action, $approval_product_id = 0){
     global $conn;
     session_start();
-    $estimate_id = mysqli_real_escape_string($conn, $estimate_id);
+    $approval_id = mysqli_real_escape_string($conn, $approval_id);
+    $approval_product_id = mysqli_real_escape_string($conn, $approval_product_id);
     $product_id = mysqli_real_escape_string($conn, $product_id);
     $action = mysqli_real_escape_string($conn, $action);
     $user_id = $_SESSION['userid'];
-    $query = "INSERT INTO estimate_changes (estimate_id, user, product_id, action) VALUES ('$estimate_id', '$user_id', '$product_id', '$action')";
+    $query = "INSERT INTO approval_changes (approval_id, approval_product_id, user, product_id, action) VALUES ('$approval_id', '$approval_product_id', '$user_id', '$product_id', '$action')";
     $result = mysqli_query($conn, $query);
     if ($result) {
         return true;
@@ -462,14 +462,32 @@ function log_estimate_changes($estimate_id, $product_id, $action){
     }
 }
 
-function log_order_changes($orderid, $product_id, $action){
+function log_estimate_changes($estimate_id, $product_id, $action, $estimate_prod_id = 0){
     global $conn;
     session_start();
-    $orderid = mysqli_real_escape_string($conn, $orderid);
+    $estimate_id = mysqli_real_escape_string($conn, $estimate_id);
+    $estimate_prod_id = mysqli_real_escape_string($conn, $estimate_prod_id);
     $product_id = mysqli_real_escape_string($conn, $product_id);
     $action = mysqli_real_escape_string($conn, $action);
     $user_id = $_SESSION['userid'];
-    $query = "INSERT INTO order_changes (orderid, user, product_id, action) VALUES ('$orderid', '$user_id', '$product_id', '$action')";
+    $query = "INSERT INTO estimate_changes (estimate_id, estimate_prod_id, user, product_id, action) VALUES ('$estimate_id', '$estimate_prod_id', '$user_id', '$product_id', '$action')";
+    $result = mysqli_query($conn, $query);
+    if ($result) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function log_order_changes($orderid, $product_id, $action, $order_product_id = 0){
+    global $conn;
+    session_start();
+    $orderid = mysqli_real_escape_string($conn, $orderid);
+    $order_product_id = mysqli_real_escape_string($conn, $order_product_id);
+    $product_id = mysqli_real_escape_string($conn, $product_id);
+    $action = mysqli_real_escape_string($conn, $action);
+    $user_id = $_SESSION['userid'];
+    $query = "INSERT INTO order_changes (orderid, order_product_id, user, product_id, action) VALUES ('$orderid', '$order_product_id', '$user_id', '$product_id', '$action')";
     $result = mysqli_query($conn, $query);
     if ($result) {
         return true;
