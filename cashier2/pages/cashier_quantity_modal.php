@@ -106,7 +106,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         <div id="tooltip" class="tooltip-custom" style="display: none;">Double-click to select Vented</div>
                     </div>
                     <div class="form-control">
-                        <input type="checkbox" id="drip_stop_panel" name="panel_type" value="drip_stop"> Drip Stop
+                        <input type="checkbox" id="drip_stop_panel" name="panel_drip_stop" value="drip_stop"> Drip Stop
                     </div>
                 </div>
             </div>
@@ -132,6 +132,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 const lengthInch = parseInt($('#length_inch').val()) || 0;
                 const totalLength = lengthFeet + lengthInch / 12;
                 const panelType = $('input[name="panel_type"]:checked').val();
+                const panel_drip_stop = $('input[name="panel_drip_stop"]:checked').val();
                 const bends = parseInt($('#bend_product').val()) || 0;
                 const hems = parseInt($('#hem_product').val()) || 0;
                 const soldByFeet = <?= $sold_by_feet; ?>;
@@ -145,6 +146,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         lengthFeet: lengthFeet,
                         lengthInch: lengthInch,
                         panelType: panelType,
+                        panel_drip_stop: panel_drip_stop,
                         soldByFeet: soldByFeet,
                         bends: bends,
                         hems: hems,
@@ -165,22 +167,20 @@ if(isset($_POST['fetch_prompt_quantity'])){
             $('#quantity-product, #length_feet, #length_inch').on('input', calculateProductCost);
             $('input[name="panel_type"]').on('change', calculateProductCost);
 
-            // Solid and Vented mutual exclusion logic
             $('#solid_panel').on('change', function () {
                 if ($(this).is(':checked')) {
                     $('#vented_panel').prop('checked', false);
                 }
-                calculateProductCost(); // Update cost
+                calculateProductCost();
             });
 
             $('#vented_panel').on('change', function () {
                 if ($(this).is(':checked')) {
                     $('#solid_panel').prop('checked', false);
                 }
-                calculateProductCost(); // Update cost
+                calculateProductCost();
             });
 
-            // Vented panel tooltip logic
             $('#vented_panel').on('click', function (e) {
                 if (!$(this).data('clicked')) {
                     e.preventDefault();
@@ -198,7 +198,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
             $('#vented_panel').on('dblclick', function () {
                 $(this).prop('checked', true);
                 $('#tooltip').fadeOut(200);
-                calculateProductCost(); // Ensure calculation is updated
+                calculateProductCost();
             });
 
             $('#solid_panel').on('click', function () {

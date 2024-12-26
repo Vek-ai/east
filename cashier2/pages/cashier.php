@@ -2528,6 +2528,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const formData = new FormData(this);
             const category_id = formData.get('category_id');
             const panel_type = formData.get('panel_type');
+            const panel_drip_stop = formData.get('panel_drip_stop');
 
             const performAjax = (formData) => {
                 formData.append('add_to_cart', 'add_to_cart');

@@ -1550,6 +1550,7 @@ if (isset($_POST['add_to_cart'])) {
     $lengthInch = isset($_POST['length_inch']) ? intval($_POST['length_inch']) : 0;
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
     $panel_type = mysqli_real_escape_string($conn, $_POST['panel_type']);
+    $panel_drip_stop = mysqli_real_escape_string($conn, $_POST['panel_drip_stop']);
     $stiff_board_batten = isset($_POST['stiff_board_batten']) ? mysqli_real_escape_string($conn, $_POST['stiff_board_batten']) : '';
     $stiff_stand_seam = isset($_POST['stiff_stand_seam']) ? mysqli_real_escape_string($conn, $_POST['stiff_stand_seam']) : '';
     $bend_product = isset($_POST['bend_product']) ? floatval($_POST['bend_product']) : 0;
