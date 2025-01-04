@@ -171,6 +171,15 @@ function getProductCategoryName($product_category_id){
     return  $product_category;
 }
 
+function getCustomerPricingName($id){
+    global $conn;
+    $query = "SELECT pricing_name FROM customer_pricing WHERE id = '$id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $pricing_name = $row['pricing_name'] ?? '';
+    return  $pricing_name;
+}
+
 function getProductTypeName($product_type_id){
     global $conn;
     $query = "SELECT product_type FROM product_type WHERE product_type_id = '$product_type_id'";
@@ -772,6 +781,25 @@ function getCustomerDiscount($customer_id) {
     }
 
     return max($discount_loyalty, $discount_customer);
+}
+
+function getPricingCategory($product_category_id, $customer_pricing_id) {
+    global $conn;
+    $percentage = 100;
+    $query = "
+        SELECT percentage 
+        FROM pricing_category 
+        WHERE 
+            product_category_id = '$product_category_id' AND
+            customer_pricing_id = '$customer_pricing_id'
+        ";
+    $result = mysqli_query($conn, $query);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $percentage = floatval($row['percentage']) ?? 100;
+    }
+
+    return $percentage;
 }
 
 function getCustomerDiscountLoyalty($customer_id) {

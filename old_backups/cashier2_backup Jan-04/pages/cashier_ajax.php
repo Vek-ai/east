@@ -550,57 +550,6 @@ if (isset($_POST['save_estimate'])) {
 
             $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
 
-            if ($product_details['product_origin'] == 2) {
-                $query = "INSERT INTO work_order_product (
-                            work_order_id, 
-                            type,
-                            productid, 
-                            quantity, 
-                            custom_width, 
-                            custom_bend, 
-                            custom_hem, 
-                            custom_length, 
-                            custom_length2, 
-                            actual_price, 
-                            discounted_price, 
-                            product_category, 
-                            custom_color, 
-                            custom_grade, 
-                            current_customer_discount, 
-                            current_loyalty_discount, 
-                            used_discount, 
-                            stiff_stand_seam, 
-                            stiff_board_batten, 
-                            panel_type
-                        ) 
-                        VALUES (
-                            '$estimateid', 
-                            '1',
-                            '$product_id', 
-                            '$quantity_cart', 
-                            '$estimate_width', 
-                            '$estimate_bend', 
-                            '$estimate_hem', 
-                            '$estimate_length', 
-                            '$estimate_length_inch', 
-                            '$actual_price', 
-                            '$discounted_price', 
-                            '$product_category', 
-                            '$custom_color', 
-                            '$custom_grade', 
-                            '$curr_discount', 
-                            '$loyalty_discount', 
-                            '$used_discount', 
-                            '$stiff_stand_seam', 
-                            '$stiff_board_batten', 
-                            '$panel_type'
-                        )";
-            
-                if ($conn->query($query) === TRUE) {
-                } else {
-                    die("Error: " . $conn->error);
-                }
-            }
         }
 
         $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
@@ -834,59 +783,6 @@ if (isset($_POST['save_order'])) {
             if (!mysqli_query($conn, $upd_inventory)) {
                 echo "Error: " . mysqli_error($conn);
             }
-
-            if ($product_details['product_origin'] == 2) {
-                $query = "INSERT INTO work_order_product (
-                            work_order_id, 
-                            type,
-                            productid, 
-                            quantity, 
-                            custom_width, 
-                            custom_bend, 
-                            custom_hem, 
-                            custom_length, 
-                            custom_length2, 
-                            actual_price, 
-                            discounted_price, 
-                            product_category, 
-                            custom_color, 
-                            custom_grade, 
-                            current_customer_discount, 
-                            current_loyalty_discount, 
-                            used_discount, 
-                            stiff_stand_seam, 
-                            stiff_board_batten, 
-                            panel_type
-                        ) 
-                        VALUES (
-                            '$orderid', 
-                            '2', 
-                            '$product_id', 
-                            '$quantity_cart', 
-                            '$estimate_width', 
-                            '$estimate_bend', 
-                            '$estimate_hem', 
-                            '$estimate_length', 
-                            '$estimate_length_inch', 
-                            '$actual_price', 
-                            '$discounted_price', 
-                            '$product_category', 
-                            '$custom_color', 
-                            '$custom_grade', 
-                            '$curr_discount', 
-                            '$loyalty_discount', 
-                            '$used_discount', 
-                            '$stiff_stand_seam', 
-                            '$stiff_board_batten', 
-                            '$panel_type'
-                        )";
-            
-                if ($conn->query($query) === TRUE) {
-                } else {
-                    die("Error: " . $conn->error);
-                }
-            }
-            
         }
 
         $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
@@ -936,109 +832,6 @@ if (isset($_POST['save_order'])) {
             }else{
                 $response['message'] = "Error inserting order estimate records: " . $conn->error;
             }
-        } else {
-            $response['error'] = "Error inserting order products: " . $conn->error;
-        }
-    } else {
-        $response['error'] = "Error inserting order: " . $conn->error;
-    }
-
-    $conn->close();
-    echo json_encode($response);
-}
-
-if (isset($_POST['save_approval'])) {
-    header('Content-Type: application/json');
-    $response = [];
-    
-    if (!isset($_SESSION['customer_id']) || empty($_SESSION['cart'])) {
-        $response['error'] = "Customer ID or cart is not set.";
-        echo json_encode($response);
-        exit;
-    }
-
-    $customerid = intval($_SESSION['customer_id']);
-    $cashierid = intval($_SESSION['userid']);
-    $cart = $_SESSION['cart'];
-    $submitted_date = date('Y-m-d H:i:s');
-    $discount_default = floatval(getCustomerDiscount($customerid)) / 100;
-
-    $customer_details = getCustomerDetails($customerid);
-
-    $total_price = 0;
-    $total_discounted_price = 0;
-
-    foreach ($cart as $item) {
-        $discount = 0;
-        if (isset($item['used_discount']) && is_numeric($item['used_discount'])) {
-            $discount = floatval($item['used_discount']) / 100;
-        } else {
-            $discount = isset($discount_default) ? $discount_default : 0.0;
-        }
-        $product_id = intval($item['product_id']);
-        $product_details = getProductDetails($product_id);
-        $quantity_cart = intval($item['quantity_cart']);
-        $unit_price = floatval($item['unit_price']);
-        $estimate_length = floatval($item['estimate_length']);
-        $estimate_length_inch = floatval($item['estimate_length_inch']);
-        $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
-
-        $actual_price = $unit_price * $quantity_cart;
-        $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
-
-        $total_price += $actual_price;
-        $total_discounted_price += $discounted_price;
-    }
-
-    $query = "INSERT INTO approval (cashier, total_price, discounted_price, discount_percent, submitted_date, customerid, originalcustomerid) 
-              VALUES ('$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$submitted_date', '$customerid', '$customerid')";
-
-    if ($conn->query($query) === TRUE) {
-        $approval_id = $conn->insert_id;
-
-        $values = [];
-        foreach ($cart as $item) {
-            $discount = 0;
-            if (isset($item['used_discount']) && is_numeric($item['used_discount'])) {
-                $discount = floatval($item['used_discount']) / 100;
-            } else {
-                $discount = isset($discount_default) ? $discount_default : 0.0;
-            }
-            $product_id = intval($item['product_id']);
-            $product_details = getProductDetails($product_id);
-            $quantity_cart = intval($item['quantity_cart']);
-            $unit_price = floatval($item['unit_price']);
-            $estimate_width = !empty($item['estimate_width']) ? floatval($item['estimate_width']) : floatval($product_details['width']);
-            $estimate_bend = floatval($item['estimate_bend']);
-            $estimate_hem = floatval($item['estimate_hem']);
-            $estimate_length = floatval($item['estimate_length']);
-            $estimate_length_inch = floatval($item['estimate_length_inch']);
-            $custom_color = $item['custom_color'];
-            $custom_grade = $item['custom_grade'];
-            $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
-            $actual_price = $unit_price;
-            $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
-            $product_category = intval($product_details['product_category']);
-            $curr_discount = intval(getCustomerDiscountProfile($customerid));
-            $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
-            $used_discount = !empty($item['used_discount']) ? $item['used_discount'] : getCustomerDiscount($customerid);
-            $stiff_stand_seam = !empty($item['stiff_stand_seam']) ? $item['stiff_stand_seam'] : '0';
-            $stiff_board_batten = !empty($item['stiff_board_batten']) ? $item['stiff_board_batten'] : '0';
-            $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
-
-            $values[] = "('$approval_id', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
-        }
-
-        $query = "INSERT INTO approval_product (approval_id, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
-        $query .= implode(', ', $values);
-
-        if ($conn->query($query) === TRUE) {
-
-            unset($_SESSION['cart']);
-
-            $response['success'] = true;
-            $response['approval_id'] = $approval_id;
-
         } else {
             $response['error'] = "Error inserting order products: " . $conn->error;
         }
@@ -1550,7 +1343,6 @@ if (isset($_POST['add_to_cart'])) {
     $lengthInch = isset($_POST['length_inch']) ? intval($_POST['length_inch']) : 0;
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
     $panel_type = mysqli_real_escape_string($conn, $_POST['panel_type']);
-    $panel_drip_stop = mysqli_real_escape_string($conn, $_POST['panel_drip_stop']);
     $stiff_board_batten = isset($_POST['stiff_board_batten']) ? mysqli_real_escape_string($conn, $_POST['stiff_board_batten']) : '';
     $stiff_stand_seam = isset($_POST['stiff_stand_seam']) ? mysqli_real_escape_string($conn, $_POST['stiff_stand_seam']) : '';
     $bend_product = isset($_POST['bend_product']) ? floatval($_POST['bend_product']) : 0;
@@ -1662,36 +1454,5 @@ if (isset($_POST['add_to_cart'])) {
     }
 
     echo 'success';
-}
-
-if (isset($_POST['add_job_name'])) {
-    $customer_id = isset($_SESSION['customer_id']) ? intval($_SESSION['customer_id']) : 0;
-    $job_name = isset($_POST['job_name']) ? mysqli_real_escape_string($conn, $_POST['job_name']) : '';
-
-    if(empty($customer_id)){
-        echo "Customer is not set. Please select customer first!";
-        exit;
-    }
-
-    if(empty($job_name)){
-        echo "Job name cannot be empty!";
-        exit;
-    }
-
-    if (!empty($customer_id) && !empty($job_name)) {
-        $insert_query = "INSERT INTO job_names (
-                            customer_id, 
-                            job_name
-                        ) VALUES (
-                            '$customer_id', 
-                            '$job_name'
-                        )";
-        
-        if (mysqli_query($conn, $insert_query)) {
-            echo "success";
-        } else {
-            echo "Error inserting into product_returns.";
-        }
-    }
 }
 ?>

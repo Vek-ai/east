@@ -3,7 +3,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require '../includes/dbconn.php';
+require '../../includes/dbconn.php';
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -20,8 +20,6 @@ if(isset($_REQUEST['action'])) {
         $city = mysqli_real_escape_string($conn, $_POST['city']);
         $state = mysqli_real_escape_string($conn, $_POST['state']);
         $zip = mysqli_real_escape_string($conn, $_POST['zip']);
-        $lat = mysqli_real_escape_string($conn, isset($_POST['lat']) ? $_POST['lat'] : '');
-        $lng = mysqli_real_escape_string($conn, isset($_POST['lng']) ? $_POST['lng'] : '');
         $secondary_contact_name = mysqli_real_escape_string($conn, $_POST['secondary_contact_name']);
         $secondary_contact_phone = mysqli_real_escape_string($conn, $_POST['secondary_contact_phone']);
         $ap_contact_name = mysqli_real_escape_string($conn, $_POST['ap_contact_name']);
@@ -33,9 +31,7 @@ if(isset($_REQUEST['action'])) {
         $new_customer_type_id = mysqli_real_escape_string($conn, $_POST['customer_type']);
         $call_status = isset($_POST['call_status']) ? mysqli_real_escape_string($conn, $_POST['call_status']) : '';
         $credit_limit = isset($_POST['credit_limit']) ? mysqli_real_escape_string($conn, $_POST['credit_limit']) : 0;
-        $loyalty = isset($_POST['loyalty']) ? mysqli_real_escape_string($conn, $_POST['loyalty']) : '';
-        $customer_pricing = isset($_POST['customer_pricing']) ? mysqli_real_escape_string($conn, $_POST['customer_pricing']) : 0;
-        
+
         $customer_name = $customer_first_name . "" . $customer_last_name;
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
@@ -81,8 +77,6 @@ if(isset($_REQUEST['action'])) {
                         city = '$city', 
                         state = '$state',
                         zip = '$zip',
-                        lat = '$lat',
-                        lng = '$lng',
                         secondary_contact_name = '$secondary_contact_name',
                         secondary_contact_phone = '$secondary_contact_phone',
                         ap_contact_name = '$ap_contact_name',
@@ -93,19 +87,18 @@ if(isset($_REQUEST['action'])) {
                         customer_notes = '$customer_notes',
                         call_status = '$call_status',
                         credit_limit = '$credit_limit',
-                        customer_type_id = '$new_customer_type_id',
-                        loyalty = '$loyalty',
-                        customer_pricing = '$customer_pricing'
+                        customer_type_id = '$new_customer_type_id'
+
                         
                         WHERE customer_id = '$customer_id'";
 
                 if (mysqli_query($conn, $updateQuery)) {
                     // Get the currently added customer
                         $sql = "SELECT c.customer_id, c.customer_type_id, ct.customer_type_name
-                                FROM customer c
-                                JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id
-                                WHERE c.customer_first_name = '$customer_first_name' 
-                                AND c.customer_last_name = '$customer_last_name'";
+                                            FROM customer c
+                                            JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id
+                                            WHERE c.customer_first_name = '$customer_first_name' 
+                                            AND c.customer_last_name = '$customer_last_name'";
 
                     // Get the current customer type ID
                         $resultSql = mysqli_query($conn, $sql);
@@ -167,8 +160,6 @@ if(isset($_REQUEST['action'])) {
                     city,
                     state,
                     zip,
-                    lat,
-                    lng,
                     secondary_contact_name,
                     secondary_contact_phone,
                     ap_contact_name,
@@ -178,10 +169,8 @@ if(isset($_REQUEST['action'])) {
                     tax_exempt_number,
                     customer_notes,
                     customer_type_id,
-                    call_status,
                     credit_limit,
-                    loyalty,
-                    customer_pricing) 
+                    call_status) 
                     VALUES (
                     '$customer_first_name', 
                     '$customer_last_name', 
@@ -193,8 +182,6 @@ if(isset($_REQUEST['action'])) {
                     '$city',
                     '$state',
                     '$zip',
-                    '$lat',
-                    '$lng',
                     '$secondary_contact_name',
                     '$secondary_contact_phone',
                     '$ap_contact_name',
@@ -204,10 +191,8 @@ if(isset($_REQUEST['action'])) {
                     '$tax_exempt_number',
                     '$customer_notes',
                     '$new_customer_type_id',
-                    '$call_status',
                     '$credit_limit',
-                    '$loyalty',
-                    '$customer_pricing')";
+                    '$call_status')";
 
                 if (mysqli_query($conn, $insertQuery)) {
                         // Get the currently added customer

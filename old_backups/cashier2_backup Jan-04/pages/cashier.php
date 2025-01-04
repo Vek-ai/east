@@ -357,10 +357,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                 <i class="fa fa-palette fs-4 me-2"></i>
                                 Change Color
                             </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="btnApprovalModal" style="background-color: #800080; color: white;">
-                                <i class="fa fa-check-circle fs-4 me-2"></i>
-                                Submit Approval
-                            </button>
                             <button type="button" class="btn mb-2 me-2 flex-fill" id="view_estimate" style="background-color: #ffc107; color: black;">
                                 <i class="fa fa-calculator fs-4 me-2"></i>
                                 Estimate
@@ -589,28 +585,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     </div>
 </div>
 
-<div class="modal fade" id="approval_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header align-items-center modal-colored-header pb-0">
-                <h4 id="responseHeader" class="m-0"></h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <h5 class="text-center pt-0"> Are you sure you want to submit these items for approval?</h5>
-            </div>
-            <div class="text-center p-3">
-                <button type="button" id="submitApprovalBtn" class="btn bg-success-subtle waves-effect text-start">
-                    Yes
-                </button>
-                <button type="button" class="btn bg-danger-subtle waves-effect text-start" data-bs-dismiss="modal">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="modal fade" id="response_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
     <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -717,34 +691,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             </div>
             <div class="modal-footer">
                 <button class="btn btn-success ripple btn-secondary" data-bs-dismiss="modal" type="submit">Add to Cart</button>
-                <button class="btn btn-danger ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-            </div>
-        </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="prompt_job_name_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog" role="document">
-        <form id="job_name_form" class="modal-content modal-content-demo">
-            <div class="modal-header">
-                <h6 class="modal-title">New Job Name</h6>
-                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="job_name_prompt_container">
-                    <div class="job_name_input">
-                        <div class="mb-2">
-                            <label class="fs-5 fw-bold" for="job_name">Job Name</label>
-                            <input id="job_name" name="job_name" class="form-control" placeholder="Enter Job Name" autocomplete="off">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-success ripple btn-secondary" data-bs-dismiss="modal" type="submit">Save</button>
                 <button class="btn btn-danger ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </form>
@@ -1825,10 +1771,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
 
-        $(document).on('click', '#btnApprovalModal', function () {
-            $('#approval_modal').modal('show');
-        });
-
         $(document).on('click', '#btnPriceGroupModal', function () {
             $.ajax({
                 url: 'pages/cashier_ajax.php',
@@ -2094,25 +2036,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 }
             });
         });
-
-        $(document).on("click", "#new-job-name-btn", function() {
-            var id = $(this).data('id');
-            $.ajax({
-                url: 'pages/cashier_job_name_modal.php',
-                type: 'POST',
-                data: {
-                    id: id,
-                    fetch_prompt_quantity: 'fetch_prompt_quantity'
-                },
-                success: function(response) {
-                    $('#qty_prompt_container').html(response);
-                    $('#prompt_quantity_modal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
               
         $(document).on('click', '#save_estimate', function(event) {
             var discount = $('#est_discount').val();
@@ -2230,29 +2153,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         $('#print_order').removeClass('d-none');
                         $('#print_deliver').removeClass('d-none');
                         print_deliver
-                    } else if (response.error) {
-                        alert("Error: " + response.error);
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.log('Response Text: ' + jqXHR.responseText);
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
-
-        $(document).on('click', '#submitApprovalBtn', function(event) {
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: {
-                    save_approval: 'save_approval'
-                },
-                success: function(response) {
-                    console.log(response);
-                    if (response.success) {
-                        alert("Application for approval submitted!");
-                        location.reload();
                     } else if (response.error) {
                         alert("Error: " + response.error);
                     }
@@ -2528,7 +2428,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const formData = new FormData(this);
             const category_id = formData.get('category_id');
             const panel_type = formData.get('panel_type');
-            const panel_drip_stop = formData.get('panel_drip_stop');
 
             const performAjax = (formData) => {
                 formData.append('add_to_cart', 'add_to_cart');
@@ -2564,34 +2463,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             } else {
                 performAjax(formData);
             }
-        });
-
-        $(document).on('submit', '#job_name_form', function (event) {
-            event.preventDefault();
-
-            const formData = new FormData(this);
-            formData.append('add_job_name', 'add_job_name');
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    $('.modal').modal("hide");
-                    const isSuccess = response.trim() === "success";
-                    $('#responseHeader').text(isSuccess ? "Success" : "Failed");
-                    $('#responseMsg').text(isSuccess ? "Successfully added Job Name." : response);
-                    $('#responseHeaderContainer')
-                        .toggleClass("bg-success", isSuccess)
-                        .toggleClass("bg-danger", !isSuccess);
-                    $('#response_modal').modal("show");
-                    if (isSuccess) loadCart();
-                },
-                error: function (xhr) {
-                    console.error('Error:', xhr.responseText);
-                }
-            });
         });
 
 

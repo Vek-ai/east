@@ -1403,6 +1403,8 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "status_list") {include 'pages/status_list.php';}
             if ($_REQUEST['page'] == "job_details") {include 'pages/job_details.php';}
             
+            if ($_REQUEST['page'] == "customer_pricing") {include 'pages/customer_pricing.php';}
+            if ($_REQUEST['page'] == "pricing_category") {include 'pages/pricing_category.php';}
           ?>
         </div>
       </div>

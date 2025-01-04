@@ -13,7 +13,6 @@ $panel_id = 3;
 if(isset($_POST['fetch_cart'])){
     $discount = 0;
     $tax = 0;
-    $customer_details_pricing = 0;
     if(isset($_SESSION['customer_id'])){
         $customer_id = $_SESSION['customer_id'];
         $customer_details = getCustomerDetails($customer_id);
@@ -27,7 +26,7 @@ if(isset($_POST['fetch_cart'])){
         $lname = $customer_details['customer_last_name'];
         $discount = is_numeric(getCustomerDiscount($customer_id)) ? floatval(getCustomerDiscount($customer_id)) / 100 : 0;
         $tax = is_numeric(getCustomerTax($customer_id)) ? floatval(getCustomerTax($customer_id)) / 100 : 0;
-        $customer_details_pricing = $customer_details['customer_pricing'];
+
     }
     $delivery_price = is_numeric(getDeliveryCost()) ? floatval(getDeliveryCost()) : 0;
     ?>
@@ -200,15 +199,13 @@ if(isset($_POST['fetch_cart'])){
 
                             $images_directory = "../images/drawing/";
 
-                            $customer_pricing = getPricingCategory($category_id, $customer_details_pricing) / 100;
-
                             $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 0;
                             $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? $values["estimate_length_inch"] : 0;
                             $total_length = floatval($estimate_length) + (floatval($estimate_length_inch) / 12);
 
                             $amount_discount = !empty($values["amount_discount"]) ? $values["amount_discount"] : 0;
 
-                            $product_price = ($values["quantity_cart"] * ($customer_pricing * $values["unit_price"])) - $amount_discount;
+                            $product_price = ($values["quantity_cart"] * $values["unit_price"]) - $amount_discount;
 
                             $color_id = $values["custom_color"];
                             if (isset($values["used_discount"])){

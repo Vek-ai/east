@@ -23,6 +23,7 @@ $tax_status = "";
 $tax_exempt_number = "";
 $customer_notes = "";
 $call_status = "";
+$customer_pricing = 0;
 $credit_limit = 0;
 $lat = 0;
 $lng = 0;
@@ -59,6 +60,7 @@ if (!empty($_REQUEST['customer_id'])) {
     $customer_notes = $row['customer_notes'];
     $call_status = $row['call_status'];
     $credit_limit = $row['credit_limit'] ?? 0;
+    $customer_pricing = $row['customer_pricing'] ?? 0;
     $lat = !empty($row['lat']) ? $row['lat'] : 0;
     $lng = !empty($row['lng']) ? $row['lng'] : 0;
 
@@ -414,6 +416,25 @@ if (!empty($_REQUEST['result'])) {
                 <div class="col-6">
                   <label class="form-label">Credit Limit</label>
                   <input class="form-control" type="text" id="credit_limit" name="credit_limit" value="<?= $credit_limit ?>">
+                </div>
+
+                <div class="col-6">
+                  <label class="form-label">Customer Pricing</label>
+                  <div class="mb-3" data-pricing="<?= $customer_pricing ?>">
+                      <select id="customer_pricing" class="form-control" name="customer_pricing">
+                          <option value="">Select One...</option>
+                          <?php
+                          $query_pricing = "SELECT * FROM customer_pricing WHERE hidden = '0'";
+                          $result_pricing = mysqli_query($conn, $query_pricing);            
+                          while ($row_pricing = mysqli_fetch_array($result_pricing)) {
+                              $selected = ($customer_pricing == $row_pricing['id']) ? 'selected' : '';
+                          ?>
+                              <option value="<?= $row_pricing['id'] ?>" <?= $selected ?>><?= $row_pricing['pricing_name'] ?></option>
+                          <?php   
+                          }
+                          ?>
+                      </select>
+                  </div>
                 </div>
               
               </div>

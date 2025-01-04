@@ -539,21 +539,7 @@ if(isset($_POST['fetch_order'])){
                     <div class="col-md-6"></div>
                     <div class="col-md-3 mb-3">
                         <label for="job_name" class="mb-0">Job Name</label>
-                        <div id="order_checkout">
-                            <select id="order_job_name" class="form-control" name="order_job_name">
-                                <option value="">Select Job Name...</option>
-                                <?php
-                                $query_job_name = "SELECT * FROM job_names WHERE customer_id = '$customer_id'";
-                                $result_job_name = mysqli_query($conn, $query_job_name);
-                                while ($row_job_name = mysqli_fetch_array($result_job_name)) {
-                                ?>
-                                    <option value="<?= $row_job_name['job_name']; ?>"><?= $row_job_name['job_name']; ?></option>
-                                <?php
-                                }
-                                ?>
-                                <option value="add_new_job_name">Add new Job Name</option>
-                            </select>
-                        </div>
+                        <input type="text" id="order_job_name" name="order_job_name" class="form-control" placeholder="Enter Job Name">
                     </div>
                     <div class="col-md-3 mb-3">
                         <label for="job_po" class="mb-0">Job PO #</label>
@@ -797,40 +783,6 @@ if(isset($_POST['fetch_order'])){
                     easing: 'easeInOutBack'
                 });
                 
-            });
-
-            $('#order_job_name').select2({
-                width: '100%',
-                placeholder: "Select Job Name...",
-                dropdownAutoWidth: true,
-                dropdownParent: $('#order_checkout'),
-                templateResult: function (data) {
-                    if (data.id === 'add_new_job_name') {
-                        return $(
-                            '<div style="border-top: 1px solid #ddd; margin-top: 0px; padding-top: 10px;">' +
-                            '<span style="font-style: italic; color: #ff6b6b;">' + data.text + '</span>' +
-                            '</div>'
-                        );
-                    }
-                    return data.text;
-                },
-                templateSelection: function (data) {
-                    return data.text;
-                },
-                matcher: function (params, data) {
-                    if (data.id === 'add_new_job_name') {
-                        return data;
-                    }
-                    return $.fn.select2.defaults.defaults.matcher(params, data);
-                }
-            });
-
-            $('#order_job_name').on('select2:select', function (e) {
-                const selectedValue = e.params.data.id;
-                if (selectedValue === 'add_new_job_name') {
-                    $('#prompt_job_name_modal').modal('show');
-                    $('#order_job_name').val(null).trigger('change');
-                }
             });
 
             $(".color-order").each(function() {

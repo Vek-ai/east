@@ -234,23 +234,14 @@ if (isset($_POST['search_jobs'])) {
                                             <h5 class="mb-1 text-center">$ <?= number_format($row_orders['job_amt'], 2) ?></h5>
                                         </td>
                                         <td>
-                                            <a href="?page=job_details&customer_id=<?=$customerid?>&job_name=<?=$row_orders['job_name']?>"
-                                                target="_blank" 
-                                                class="btn btn-danger-gradient btn-sm p-0 me-1" 
-                                                    type="button" 
-                                                    data-name="<?= $job; ?>"
-                                                    data-date-from="<?= $date_from ?? ''; ?>"
-                                                    data-date-to="<?= $date_to ?? ''; ?>">
-                                                        <i class="text-primary fa fa-eye fs-5"></i>
-                                            </a>
-                                            <!-- <button class="btn btn-danger-gradient btn-sm p-0 me-1" 
+                                            <button class="btn btn-danger-gradient btn-sm p-0 me-1" 
                                                     id="view_job_dtls_btn" 
                                                     type="button" 
                                                     data-name="<?= $job; ?>"
                                                     data-date-from="<?= $date_from ?? ''; ?>"
                                                     data-date-to="<?= $date_to ?? ''; ?>">
                                                         <i class="text-primary fa fa-eye fs-5"></i>
-                                            </button> -->
+                                            </button>
                                         </td>
                                     </tr>
                                     <?php

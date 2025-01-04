@@ -95,18 +95,18 @@ if(isset($_POST['fetch_prompt_quantity'])){
             </div> 
         </div>
         <div class="panel_options">
-            <div class="mb-2 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
+            <div class="mb-2 <?= ($category_id == $panel_id)  ? '' : 'd-none';?>">
                 <label class="fs-5 fw-bold" for="quantity-product">Select Panel Type</label>
                 <div class="input-group d-flex align-items-center position-relative">
                     <div class="form-control mr-1">
-                        <input type="checkbox" id="solid_panel" name="panel_type" value="solid"> Solid
+                        <input type="radio" id="solid_panel" name="panel_type" value="1" checked> Solid
                     </div>
                     <div class="form-control mr-1 position-relative">
-                        <input type="checkbox" id="vented_panel" name="panel_type" value="vented"> Vented
+                        <input type="radio" id="vented_panel" name="panel_type" value="2"> Vented
                         <div id="tooltip" class="tooltip-custom" style="display: none;">Double-click to select Vented</div>
                     </div>
                     <div class="form-control">
-                        <input type="checkbox" id="drip_stop_panel" name="panel_drip_stop" value="drip_stop"> Drip Stop
+                        <input type="radio" id="drip_stop_panel" name="panel_type" value="3" checked> Drip Stop
                     </div>
                 </div>
             </div>
@@ -125,87 +125,71 @@ if(isset($_POST['fetch_prompt_quantity'])){
             <h5 class="text-center pt-3 fs-5 fw-bold">Product Cost: $<span id="product-cost">0.00</span></h5>
         </div>
         <script>
-        $(document).ready(function () {
-            function calculateProductCost() {
-                const quantity = parseInt($('#quantity-product').val()) || 0;
-                const lengthFeet = parseInt($('#length_feet').val()) || 0;
-                const lengthInch = parseInt($('#length_inch').val()) || 0;
-                const totalLength = lengthFeet + lengthInch / 12;
-                const panelType = $('input[name="panel_type"]:checked').val();
-                const panel_drip_stop = $('input[name="panel_drip_stop"]:checked').val();
-                const bends = parseInt($('#bend_product').val()) || 0;
-                const hems = parseInt($('#hem_product').val()) || 0;
-                const soldByFeet = <?= $sold_by_feet; ?>;
-                const basePrice = <?= $product_details["unit_price"]; ?>;
+            $(document).ready(function () {
+                function calculateProductCost() {
+                    const quantity = parseInt($('#quantity-product').val()) || 0;
+                    const lengthFeet = parseInt($('#length_feet').val()) || 0;
+                    const lengthInch = parseInt($('#length_inch').val()) || 0;
+                    const totalLength = lengthFeet + lengthInch / 12;
+                    const panelType = $('input[name="panel_type"]:checked').val();
+                    const bends = parseInt($('#bend_product').val()) || 0;
+                    const hems = parseInt($('#hem_product').val()) || 0;
+                    const soldByFeet = <?= $sold_by_feet; ?>;
+                    const basePrice = <?= $product_details["unit_price"]; ?>;
 
-                $.ajax({
-                    url: 'pages/cashier_quantity_modal.php',
-                    method: 'POST',
-                    data: {
-                        quantity: quantity,
-                        lengthFeet: lengthFeet,
-                        lengthInch: lengthInch,
-                        panelType: panelType,
-                        panel_drip_stop: panel_drip_stop,
-                        soldByFeet: soldByFeet,
-                        bends: bends,
-                        hems: hems,
-                        basePrice: basePrice,
-                        fetch_price: 'fetch_price'
-                    },
-                    success: function(response) {
-                        $('#product-cost').text(response);
+                    $.ajax({
+                        url: 'pages/cashier_quantity_modal.php',
+                        method: 'POST',
+                        data: {
+                            quantity: quantity,
+                            lengthFeet: lengthFeet,
+                            lengthInch: lengthInch,
+                            panelType: panelType,
+                            soldByFeet: soldByFeet,
+                            bends: bends,
+                            hems: hems,
+                            basePrice: basePrice,
+                            fetch_price: 'fetch_price'
+                        },
+                        success: function(response) {
+                            $('#product-cost').text(response);
+                        }
+
+                        
+                    });
+                }
+
+                $('#quantity-product, #length_feet, #length_inch, input[name="panel_type"], #bend_product, #hem_product').change(function() {
+                    calculateProductCost();
+                });
+
+                $('#quantity-product, #length_feet, #length_inch').on('input', calculateProductCost);
+                $('input[name="panel_type"]').on('change', calculateProductCost);
+
+                $('#vented_panel').on('click', function (e) {
+                    if (!$(this).data('clicked')) {
+                        e.preventDefault();
+                        $('#tooltip').fadeIn(200);
+
+                        $(this).data('clicked', true);
+
+                        setTimeout(() => {
+                            $('#tooltip').fadeOut(200);
+                            $(this).data('clicked', false);
+                        }, 2000);
                     }
                 });
-            }
 
-            // Recalculate product cost on input or changes
-            $('#quantity-product, #length_feet, #length_inch, input[name="panel_type"], #bend_product, #hem_product').change(function() {
-                calculateProductCost();
+                $('#vented_panel').on('dblclick', function () {
+                    $(this).prop('checked', true);
+                    $('#tooltip').fadeOut(200);
+                });
+
+                $('#solid_panel').on('click', function () {
+                    $('#tooltip').fadeOut(200);
+                    $('#vented_panel').data('clicked', false);
+                });
             });
-
-            $('#quantity-product, #length_feet, #length_inch').on('input', calculateProductCost);
-            $('input[name="panel_type"]').on('change', calculateProductCost);
-
-            $('#solid_panel').on('change', function () {
-                if ($(this).is(':checked')) {
-                    $('#vented_panel').prop('checked', false);
-                }
-                calculateProductCost();
-            });
-
-            $('#vented_panel').on('change', function () {
-                if ($(this).is(':checked')) {
-                    $('#solid_panel').prop('checked', false);
-                }
-                calculateProductCost();
-            });
-
-            $('#vented_panel').on('click', function (e) {
-                if (!$(this).data('clicked')) {
-                    e.preventDefault();
-                    $('#tooltip').fadeIn(200);
-
-                    $(this).data('clicked', true);
-
-                    setTimeout(() => {
-                        $('#tooltip').fadeOut(200);
-                        $(this).data('clicked', false);
-                    }, 2000);
-                }
-            });
-
-            $('#vented_panel').on('dblclick', function () {
-                $(this).prop('checked', true);
-                $('#tooltip').fadeOut(200);
-                calculateProductCost();
-            });
-
-            $('#solid_panel').on('click', function () {
-                $('#tooltip').fadeOut(200);
-                $('#vented_panel').data('clicked', false);
-            });
-        });
         </script>
         <?php
         }else{
