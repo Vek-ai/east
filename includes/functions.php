@@ -766,7 +766,8 @@ function getCustomerDiscount($customer_id) {
         }
     }
 
-    $query = "
+    $discount_customer = 0;
+    /* $query = "
         SELECT ct.customer_price_cat
         FROM customer AS c
         LEFT JOIN customer_types AS ct
@@ -774,11 +775,10 @@ function getCustomerDiscount($customer_id) {
         WHERE c.customer_id = '$customer_id'";
     
     $result = mysqli_query($conn, $query);
-    $discount_customer = 0;
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
         $discount_customer = floatval($row['customer_price_cat']) ?? 0;
-    }
+    } */
 
     return max($discount_loyalty, $discount_customer);
 }

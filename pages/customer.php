@@ -369,7 +369,7 @@ if (!empty($_REQUEST['result'])) {
               </div>
 
               <div class="row pt-3">
-                <div class="col-md-6">
+                <div class="col-md-6 d-none">
                   <?php
                   // Fetch all customer types
                   $query = "SELECT * FROM customer_types";
@@ -503,28 +503,6 @@ if (!empty($_REQUEST['result'])) {
                 <th>Fax</th>
                 <th>Address</th>
                 <th>Loyalty</th>
-                <th>
-                  <div class="">
-                    <!-- Add a Dropdown for Filtering -->
-                    <?php
-                    $query = "SELECT * FROM customer_types";
-                    $result = mysqli_query($conn, $query);
-                    ?>
-
-                    <!-- Add a Dropdown for Filtering -->
-                    <select id="customerTypeFilter" class="form-control select2">
-                      <option value="">Category</option>
-                      <?php
-                      // Loop through the results and create dropdown options
-                      while ($row = mysqli_fetch_assoc($result)) {
-                        ?>
-                        <option value='<?= $row['customer_type_name'] ?>'><?= $row['customer_type_name'] ?></option>
-                        <?php
-                      }
-                      ?>
-                    </select>
-                  </div>
-                </th>
                 <th>Status</th>
 
                 <th>Action</th>
@@ -599,7 +577,6 @@ if (!empty($_REQUEST['result'])) {
                   <td><?= $fax ?></td>
                   <td><?= $address ?></td>
                   <td><?= $loyalty ?></td>
-                  <td><?= $customer_type_name ?></td>
                   <td><?= $status ?></td>
                   <td class="text-center fs-5" id="action-button-<?= $no ?>">
                     <?php if ($row_customer['status'] == '0') { ?>
