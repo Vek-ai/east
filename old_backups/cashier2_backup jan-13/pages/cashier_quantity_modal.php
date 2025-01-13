@@ -45,32 +45,22 @@ if(isset($_POST['fetch_prompt_quantity'])){
         ?>
         <input type="hidden" id="product_id" name="product_id" value="<?= $id ?>" />
         <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
-        <div class="row">
-            <div class="quantity-length-container row mx-0">
-                <div class="quantity-field <?= empty($sold_by_feet) ? 'col-12' : 'col-6'; ?> mb-2">
-                    <label class="fs-5 fw-bold" for="quantity-product">Quantity</label>
-                    <input id="quantity-product" name="quantity_product[]" class="form-control mb-1 quantity-product" placeholder="Enter Quantity" list="quantity-product-list" autocomplete="off">
-                </div>
-                <div class="col-6 mb-2 <?= empty($sold_by_feet) ? 'd-none' : '';?> length-field">
-                    <fieldset class="p-0 position-relative">
-                        <legend class="fs-5 fw-bold">Length</legend>
-                        <div id="length-field" class="input-group d-flex align-items-center mb-1">
-                            <input class="form-control mr-1 length_feet" type="number" id="length_feet" name="length_feet[]" list="length_feet_datalist" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;">
-                            <input class="form-control length_inch" type="number" id="length_inch" name="length_inch[]" list="length_inch_datalist" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;">
-                        </div>
-                    </fieldset>
-                </div>
+        <div class="quantity_input">
+            <div class="mb-2">
+                <label class="fs-5 fw-bold" for="quantity-product">Quantity</label>
+                <input id="quantity-product" name="quantity_product" class="form-control" placeholder="Enter Quantity" list="quantity-product-list" autocomplete="off">
             </div>
-
-            <?php
-            if($category_id == $panel_id){
-            ?>
-            <a href="javascript:void(0)" type="button" id="duplicateFields" class="text-end">
-                <i class="fas fa-plus"></i>
-            </a>
-            <?php 
-            } 
-            ?>
+        </div>
+        <div class="length_input">
+            <div class="mb-2 <?= empty($sold_by_feet) ? 'd-none' : '';?>">
+                <fieldset class="p-0 position-relative">
+                    <legend class="fs-5 fw-bold">Length</legend>
+                    <div class="input-group d-flex align-items-center">
+                        <input class="form-control mr-1" type="number" id="length_feet" name="length_feet"  list="length_feet_datalist" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;">
+                        <input class="form-control" type="number" id="length_inch" name="length_inch" list="length_inch_datalist" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;">
+                    </div>
+                </fieldset>
+            </div>
             <div class="mb-2 <?= (($category_id == $fastener_id) || $id == 21) ? '' : 'd-none';?>">
                 <label class="fs-5 fw-bold" for="case_type">Select Case</label>
                 <div class="input-group d-flex align-items-center">
@@ -137,24 +127,12 @@ if(isset($_POST['fetch_prompt_quantity'])){
         <script>
         $(document).ready(function () {
             function calculateProductCost() {
-                const quantities = [];
-                const lengthFeetArr = [];
-                const lengthInchArr = [];
-                
-                $('.quantity-field input').each(function() {
-                    quantities.push(parseInt($(this).val()) || 0);
-                });
-                
-                $('.length-field #length_feet').each(function() {
-                    lengthFeetArr.push(parseInt($(this).val()) || 0);
-                });
-                
-                $('.length-field #length_inch').each(function() {
-                    lengthInchArr.push(parseInt($(this).val()) || 0);
-                });
-
+                const quantity = parseInt($('#quantity-product').val()) || 0;
+                const lengthFeet = parseInt($('#length_feet').val()) || 0;
+                const lengthInch = parseInt($('#length_inch').val()) || 0;
+                const totalLength = lengthFeet + lengthInch / 12;
                 const panelType = $('input[name="panel_type"]:checked').val();
-                const panelDripStop = $('input[name="panel_drip_stop"]:checked').val();
+                const panel_drip_stop = $('input[name="panel_drip_stop"]:checked').val();
                 const bends = parseInt($('#bend_product').val()) || 0;
                 const hems = parseInt($('#hem_product').val()) || 0;
                 const soldByFeet = <?= $sold_by_feet; ?>;
@@ -164,11 +142,11 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     url: 'pages/cashier_quantity_modal.php',
                     method: 'POST',
                     data: {
-                        quantity: quantities,
-                        lengthFeet: lengthFeetArr,
-                        lengthInch: lengthInchArr,
+                        quantity: quantity,
+                        lengthFeet: lengthFeet,
+                        lengthInch: lengthInch,
                         panelType: panelType,
-                        panel_drip_stop: panelDripStop,
+                        panel_drip_stop: panel_drip_stop,
                         soldByFeet: soldByFeet,
                         bends: bends,
                         hems: hems,
@@ -181,20 +159,12 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 });
             }
 
-
-            $('#duplicateFields').click(function() {
-                var $quantityClone = $('#quantity-product').first().clone();
-                var $lengthClone = $('#length-field').first().clone();
-
-                $quantityClone.val('');
-                $lengthClone.find('input').val('');
-
-                $('.quantity-field').append($quantityClone);
-                $('.length-field').append($lengthClone);
+            // Recalculate product cost on input or changes
+            $('#quantity-product, #length_feet, #length_inch, input[name="panel_type"], #bend_product, #hem_product').change(function() {
+                calculateProductCost();
             });
 
-            $(document).on('change input', '.quantity-product, .length_feet, .length_inch, input[name="panel_type"], #bend_product, #hem_product', calculateProductCost);
-
+            $('#quantity-product, #length_feet, #length_inch').on('input', calculateProductCost);
             $('input[name="panel_type"]').on('change', calculateProductCost);
 
             $('#solid_panel').on('change', function () {
@@ -248,24 +218,17 @@ if(isset($_POST['fetch_prompt_quantity'])){
     
 }
 
-if (isset($_POST['fetch_price'])) {
-    $quantities = isset($_POST['quantity']) ? $_POST['quantity'] : [];
-    $lengthFeet = isset($_POST['lengthFeet']) ? $_POST['lengthFeet'] : [];
-    $lengthInch = isset($_POST['lengthInch']) ? $_POST['lengthInch'] : [];
+if(isset($_POST['fetch_price'])){
+    $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
+    $lengthFeet = isset($_POST['lengthFeet']) ? intval($_POST['lengthFeet']) : 0;
+    $lengthInch = isset($_POST['lengthInch']) ? intval($_POST['lengthInch']) : 0;
     $panelType = isset($_POST['panelType']) ? $_POST['panelType'] : '';
     $soldByFeet = isset($_POST['soldByFeet']) ? intval($_POST['soldByFeet']) : 0;
     $bends = isset($_POST['bends']) ? intval($_POST['bends']) : 0;
     $hems = isset($_POST['hems']) ? intval($_POST['hems']) : 0;
     $basePrice = isset($_POST['basePrice']) ? floatval($_POST['basePrice']) : 0;
 
-    $totalPrice = 0;
-
-    foreach ($quantities as $index => $quantity) {
-        $length_feet = isset($lengthFeet[$index]) ? intval($lengthFeet[$index]) : 0;
-        $length_inch = isset($lengthInch[$index]) ? intval($lengthInch[$index]) : 0;
-
-        $totalPrice += $quantity * calculateUnitPrice($basePrice, $length_feet, $length_inch, $panelType, $soldByFeet, $bends, $hems);
-    }
+    $totalPrice = calculateUnitPrice($basePrice, $lengthFeet, $lengthInch, $panelType, $soldByFeet, $bends, $hems);
 
     echo number_format($totalPrice, 2);
 }

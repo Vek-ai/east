@@ -496,10 +496,7 @@ if (isset($_POST['save_estimate'])) {
         }else{
             $discount = $discount_default;
         }
-        $product_id = intval($item['product_id']);
-        $product_details = getProductDetails($product_id);
-        $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
-        $unit_price = floatval($customer_pricing * $item['unit_price']);
+        $unit_price = floatval($item['unit_price']);
         $quantity_cart = intval($item['quantity_cart']);
         $product_details = getProductDetails($item['product_id']);
         $estimate_length = floatval($item['estimate_length']);
@@ -530,10 +527,7 @@ if (isset($_POST['save_estimate'])) {
             $product_id = intval($item['product_id']);
             $product_details = getProductDetails($product_id);
             $quantity_cart = intval($item['quantity_cart']);
-
-            $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
-
-            $unit_price = $customer_pricing * floatval($item['unit_price']);
+            $unit_price = floatval($item['unit_price']);
             $estimate_width = !empty($item['estimate_width']) ? floatval($item['estimate_width']) : $product_details['width'];
             $estimate_bend = floatval($item['estimate_bend']);
             $estimate_hem = floatval($item['estimate_hem']);
@@ -776,9 +770,8 @@ if (isset($_POST['save_order'])) {
         
         $product_id = intval($item['product_id']);
         $product_details = getProductDetails($product_id);
-        $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
         $quantity_cart = intval($item['quantity_cart']);
-        $unit_price = $customer_pricing * floatval($item['unit_price']);
+        $unit_price = floatval($item['unit_price']);
         $estimate_length = floatval($item['estimate_length']);
         $estimate_length_inch = floatval($item['estimate_length_inch']);
         $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
@@ -807,9 +800,8 @@ if (isset($_POST['save_order'])) {
             
             $product_id = intval($item['product_id']);
             $product_details = getProductDetails($product_id);
-            $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
             $quantity_cart = intval($item['quantity_cart']);
-            $unit_price = $customer_pricing * floatval($item['unit_price']);
+            $unit_price = floatval($item['unit_price']);
             $estimate_width = !empty($item['estimate_width']) ? floatval($item['estimate_width']) : floatval($product_details['width']);
             $estimate_bend = floatval($item['estimate_bend']);
             $estimate_hem = floatval($item['estimate_hem']);
@@ -985,9 +977,8 @@ if (isset($_POST['save_approval'])) {
         }
         $product_id = intval($item['product_id']);
         $product_details = getProductDetails($product_id);
-        $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
         $quantity_cart = intval($item['quantity_cart']);
-        $unit_price = $customer_pricing * floatval($item['unit_price']);
+        $unit_price = floatval($item['unit_price']);
         $estimate_length = floatval($item['estimate_length']);
         $estimate_length_inch = floatval($item['estimate_length_inch']);
         $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
@@ -1015,9 +1006,8 @@ if (isset($_POST['save_approval'])) {
             }
             $product_id = intval($item['product_id']);
             $product_details = getProductDetails($product_id);
-            $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
             $quantity_cart = intval($item['quantity_cart']);
-            $unit_price = $customer_pricing * floatval($item['unit_price']);
+            $unit_price = floatval($item['unit_price']);
             $estimate_width = !empty($item['estimate_width']) ? floatval($item['estimate_width']) : floatval($product_details['width']);
             $estimate_bend = floatval($item['estimate_bend']);
             $estimate_hem = floatval($item['estimate_hem']);
@@ -1555,9 +1545,9 @@ if (isset($_POST['change_price'])) {
 
 
 if (isset($_POST['add_to_cart'])) {
-    $quantity = isset($_POST['quantity_product']) ? $_POST['quantity_product'] : [];
-    $lengthFeet = isset($_POST['length_feet']) ? $_POST['length_feet'] : [];
-    $lengthInch = isset($_POST['length_inch']) ? $_POST['length_inch'] : [];
+    $qty = isset($_POST['quantity_product']) ? intval($_POST['quantity_product']) : 0;
+    $lengthFeet = isset($_POST['length_feet']) ? intval($_POST['length_feet']) : 0;
+    $lengthInch = isset($_POST['length_inch']) ? intval($_POST['length_inch']) : 0;
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
     $panel_type = mysqli_real_escape_string($conn, $_POST['panel_type']);
     $panel_drip_stop = mysqli_real_escape_string($conn, $_POST['panel_drip_stop']);
@@ -1567,117 +1557,109 @@ if (isset($_POST['add_to_cart'])) {
     $hem_product = isset($_POST['hem_product']) ? floatval($_POST['hem_product']) : 0;
     $line = 1;
 
-    foreach ($quantity as $index => $qty) {
-        $length_feet = isset($lengthFeet[$index]) ? intval($lengthFeet[$index]) : 0;
-        $length_inch = isset($lengthInch[$index]) ? intval($lengthInch[$index]) : 0;
+    $quantityInStock = getProductStockInStock($product_id);
+    $totalQuantity = getProductStockTotal($product_id);
+    $totalStock = $totalQuantity;
 
-        $quantityInStock = getProductStockInStock($product_id);
-        $totalQuantity = getProductStockTotal($product_id);
-        $totalStock = $totalQuantity;
-    
-        if (!isset($_SESSION["cart"])) {
-            $_SESSION["cart"] = array();
-        }
-    
-        $key = findCartKey($_SESSION["cart"], $product_id, $line);
-        if ($key !== false) {
-            $requestedQuantity = max($qty, 1);
-            $_SESSION["cart"][$key]['quantity_cart'] += min($requestedQuantity, $totalStock);
-        } else {
-            $query = "SELECT * FROM product WHERE product_id = '$product_id'";
-            $result = mysqli_query($conn, $query);
-    
-            if (mysqli_num_rows($result) > 0) {
-                $row = mysqli_fetch_assoc($result);
-                $item_quantity = $qty;
-                $unit_price = calculateUnitPrice(
-                    $row['unit_price'], 
-                    $length_feet,
-                    $length_inch,
-                    $panel_type,
-                    $row['sold_by_feet'],
-                    $bend_product,
-                    $hem_product
-                );
-                $weight = floatval($row['weight']);
-                $item_array = array(
-                    'product_id' => $row['product_id'],
-                    'product_item' => $row['product_item'],
-                    'unit_price' => $unit_price,
-                    'line' => 1,
-                    'quantity_ttl' => $totalStock,
-                    'quantity_in_stock' => $quantityInStock,
-                    'quantity_cart' => $item_quantity,
-                    'estimate_width' => $row['width'],
-                    'estimate_length' => $length_feet,
-                    'estimate_length_inch' => $length_inch,
-                    'usage' => 0,
-                    'custom_color' => $row['color'],
-                    'panel_type' => $panel_type,
-                    'weight' => $weight,
-                    'custom_grade' => intval($row['grade']),
-                    'stiff_board_batten' => $stiff_board_batten,
-                    'stiff_stand_seam' => $stiff_stand_seam
-                );
-    
-                $_SESSION["cart"][] = $item_array;
-    
-                // will add backer rods if stiffening rib type
-                $backer_rod_3_8 = 45;
-                $backer_rod_1_2 = 46;
-                $stiffening_rib_id = 7;
-    
-                if($row['product_category'] == $stiffening_rib_id && $stiff_board_batten == '1'){
-                    $backer_rod_details = getProductDetails($backer_rod_3_8);
-                    $backer_rod_quantity = getProductStockInStock($backer_rod_3_8);
-    
-                    $item_array = array(
-                        'product_id' => $backer_rod_details['product_id'],
-                        'product_item' => $backer_rod_details['product_item'],
-                        'unit_price' => $backer_rod_details['unit_price'],
-                        'line' => 1,
-                        'quantity_ttl' => $totalStock,
-                        'quantity_in_stock' => $backer_rod_quantity,
-                        'quantity_cart' => 1,
-                        'estimate_width' => $backer_rod_details['width'],
-                        'estimate_length' => 0,
-                        'estimate_length_inch' => 0,
-                        'usage' => 0,
-                        'custom_color' => $backer_rod_details['color'],
-                        'panel_type' => '',
-                        'weight' => floatval($backer_rod_details['weight']),
-                        'custom_grade' => floatval($backer_rod_details['custom_grade'])
-                    );
-                    $_SESSION["cart"][] = $item_array;
-                } else if($row['product_category'] == $stiffening_rib_id && $stiff_stand_seam == '2'){
-                    $backer_rod_details = getProductDetails($backer_rod_1_2);
-                    $backer_rod_quantity = getProductStockInStock($backer_rod_1_2);
-    
-                    $item_array = array(
-                        'product_id' => $backer_rod_details['product_id'],
-                        'product_item' => $backer_rod_details['product_item'],
-                        'unit_price' => $backer_rod_details['unit_price'],
-                        'line' => 1,
-                        'quantity_ttl' => $totalStock,
-                        'quantity_in_stock' => $backer_rod_quantity,
-                        'quantity_cart' => 1,
-                        'estimate_width' => $backer_rod_details['width'],
-                        'estimate_length' => 0,
-                        'estimate_length_inch' => 0,
-                        'usage' => 0,
-                        'custom_color' => $backer_rod_details['color'],
-                        'panel_type' => '',
-                        'weight' => floatval($backer_rod_details['weight']),
-                        'custom_grade' => floatval($backer_rod_details['custom_grade'])
-                    );
-                    $_SESSION["cart"][] = $item_array;
-                }
-            }
-        }
-        $line++;
+    if (!isset($_SESSION["cart"])) {
+        $_SESSION["cart"] = array();
     }
 
-    
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    if ($key !== false) {
+        $requestedQuantity = max($qty, 1);
+        $_SESSION["cart"][$key]['quantity_cart'] += min($requestedQuantity, $totalStock);
+    } else {
+        $query = "SELECT * FROM product WHERE product_id = '$product_id'";
+        $result = mysqli_query($conn, $query);
+
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $item_quantity = $qty;
+            $unit_price = calculateUnitPrice(
+                $row['unit_price'], 
+                $lengthFeet,
+                $lengthInch,
+                $panel_type,
+                $row['sold_by_feet'],
+                $bend_product,
+                $hem_product
+            );
+            $weight = floatval($row['weight']);
+            $item_array = array(
+                'product_id' => $row['product_id'],
+                'product_item' => $row['product_item'],
+                'unit_price' => $unit_price,
+                'line' => 1,
+                'quantity_ttl' => $totalStock,
+                'quantity_in_stock' => $quantityInStock,
+                'quantity_cart' => $item_quantity,
+                'estimate_width' => $row['width'],
+                'estimate_length' => $lengthFeet,
+                'estimate_length_inch' => $lengthInch,
+                'usage' => 0,
+                'custom_color' => $row['color'],
+                'panel_type' => $panel_type,
+                'weight' => $weight,
+                'custom_grade' => intval($row['grade']),
+                'stiff_board_batten' => $stiff_board_batten,
+                'stiff_stand_seam' => $stiff_stand_seam
+            );
+
+            $_SESSION["cart"][] = $item_array;
+
+            // will add backer rods if stiffening rib type
+            $backer_rod_3_8 = 45;
+            $backer_rod_1_2 = 46;
+            $stiffening_rib_id = 7;
+
+            if($row['product_category'] == $stiffening_rib_id && $stiff_board_batten == '1'){
+                $backer_rod_details = getProductDetails($backer_rod_3_8);
+                $backer_rod_quantity = getProductStockInStock($backer_rod_3_8);
+
+                $item_array = array(
+                    'product_id' => $backer_rod_details['product_id'],
+                    'product_item' => $backer_rod_details['product_item'],
+                    'unit_price' => $backer_rod_details['unit_price'],
+                    'line' => 1,
+                    'quantity_ttl' => $totalStock,
+                    'quantity_in_stock' => $backer_rod_quantity,
+                    'quantity_cart' => 1,
+                    'estimate_width' => $backer_rod_details['width'],
+                    'estimate_length' => 0,
+                    'estimate_length_inch' => 0,
+                    'usage' => 0,
+                    'custom_color' => $backer_rod_details['color'],
+                    'panel_type' => '',
+                    'weight' => floatval($backer_rod_details['weight']),
+                    'custom_grade' => floatval($backer_rod_details['custom_grade'])
+                );
+                $_SESSION["cart"][] = $item_array;
+            } else if($row['product_category'] == $stiffening_rib_id && $stiff_stand_seam == '2'){
+                $backer_rod_details = getProductDetails($backer_rod_1_2);
+                $backer_rod_quantity = getProductStockInStock($backer_rod_1_2);
+
+                $item_array = array(
+                    'product_id' => $backer_rod_details['product_id'],
+                    'product_item' => $backer_rod_details['product_item'],
+                    'unit_price' => $backer_rod_details['unit_price'],
+                    'line' => 1,
+                    'quantity_ttl' => $totalStock,
+                    'quantity_in_stock' => $backer_rod_quantity,
+                    'quantity_cart' => 1,
+                    'estimate_width' => $backer_rod_details['width'],
+                    'estimate_length' => 0,
+                    'estimate_length_inch' => 0,
+                    'usage' => 0,
+                    'custom_color' => $backer_rod_details['color'],
+                    'panel_type' => '',
+                    'weight' => floatval($backer_rod_details['weight']),
+                    'custom_grade' => floatval($backer_rod_details['custom_grade'])
+                );
+                $_SESSION["cart"][] = $item_array;
+            }
+        }
+    }
 
     echo 'success';
 }
