@@ -1556,6 +1556,9 @@ if (isset($_POST['change_price'])) {
 
 if (isset($_POST['add_to_cart'])) {
     $quantity = isset($_POST['quantity_product']) ? $_POST['quantity_product'] : [];
+    $quantity = array_map(function($qty) {
+        return empty($qty) ? 0 : $qty;
+    }, $quantity);
     $lengthFeet = isset($_POST['length_feet']) ? $_POST['length_feet'] : [];
     $lengthInch = isset($_POST['length_inch']) ? $_POST['length_inch'] : [];
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
