@@ -785,7 +785,7 @@ function getCustomerDiscount($customer_id) {
 
 function getPricingCategory($product_category_id, $customer_pricing_id) {
     global $conn;
-    $percentage = 100;
+    $percentage = 0;
     $query = "
         SELECT percentage 
         FROM pricing_category 

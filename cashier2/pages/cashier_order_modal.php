@@ -278,7 +278,7 @@ if(isset($_POST['fetch_order'])){
 
                                     $amount_discount = !empty($values["amount_discount"]) ? $values["amount_discount"] : 0;
 
-                                    $product_price = ($values["quantity_cart"] * ($customer_pricing * $values["unit_price"])) - $amount_discount;
+                                    $product_price = ($values["quantity_cart"] * ($values["unit_price"])) - $amount_discount;
 
                                     $color_id = $values["custom_color"];
                                     if (isset($values["used_discount"])){
@@ -497,7 +497,7 @@ if(isset($_POST['fetch_order'])){
                                         </td>
                                         <td class="text-end pl-3">$
                                             <?php
-                                            $customer_price = $product_price * (1 - $discount);
+                                            $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
                                             echo number_format($customer_price, 2);
                                             ?>
                                         </td>

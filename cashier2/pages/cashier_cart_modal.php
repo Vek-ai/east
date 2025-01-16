@@ -208,7 +208,7 @@ if(isset($_POST['fetch_cart'])){
 
                             $amount_discount = !empty($values["amount_discount"]) ? $values["amount_discount"] : 0;
 
-                            $product_price = ($values["quantity_cart"] * ($customer_pricing * $values["unit_price"])) - $amount_discount;
+                            $product_price = ($values["quantity_cart"] * ($values["unit_price"])) - $amount_discount;
 
                             $color_id = $values["custom_color"];
                             if (isset($values["used_discount"])){
@@ -216,7 +216,7 @@ if(isset($_POST['fetch_cart'])){
                             }
                         ?>
                             <tr>
-                                <td data-color="<?= getColorName($color_id) ?>">
+                                <td data-color="<?= getColorName($color_id) ?>" data-pricing="<?=$customer_pricing?>" data-category="<?=$category_id?>" data-customer-pricing="<?=$customer_details_pricing?>">
                                     <?php
                                     if($data_id == '277'){
                                         if(!empty($values["custom_trim_src"])){
@@ -426,7 +426,7 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
                                 <td class="text-end pl-3">$
                                     <?php
-                                    $customer_price = $product_price * (1 - $discount);
+                                    $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
                                     echo number_format($customer_price, 2);
                                     ?>
                                 </td>
