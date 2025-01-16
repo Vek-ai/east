@@ -2,13 +2,7 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-if(!empty($_REQUEST['category_id'])){
-  $category_id = $_REQUEST['category_id'];
-  $query = "SELECT * FROM product_category WHERE product_category_id = '$category_id'";
-  $result = mysqli_query($conn, $query);            
-  while ($row = mysqli_fetch_array($result)) {
-  }
-}
+$selected_supplier_ids = array();
 
 ?>
 <style>
@@ -146,7 +140,27 @@ if(!empty($_REQUEST['category_id'])){
                         </div>
                         </div>
 
-                        
+                        <div class="row pt-3">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label">Supplier Color</label>
+                                <div id="color_add">
+                                    <select id="supplier_color_add" class="form-control supplier_color" name="supplier_color[]" multiple>
+                                        <?php
+                                        $query_supplier_color = "SELECT * FROM supplier_color WHERE hidden = '0'";
+                                        $result_supplier_color = mysqli_query($conn, $query_supplier_color);            
+                                        while ($row_supplier_color = mysqli_fetch_array($result_supplier_color)) {
+                                            $selected = (in_array($row_supplier_color['supplierid'], $selected_supplier_ids)) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $row_supplier_color['supplierid'] ?>" <?= $selected ?> data-color="<?= $row_supplier_color['color_code'] ?>"><?= getSupplierName($row_supplier_color['supplierid']) ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
 
                         <div class="row pt-3">
                         <div class="col-md-6">
@@ -361,6 +375,34 @@ if(!empty($_REQUEST['category_id'])){
 </div>
 
 <script>
+    function formatOption(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        var color = $(state.element).data('color');
+        var $state = $(
+            '<span class="d-flex align-items-center small">' +
+                '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
+                state.text + 
+            '</span>'
+        );
+        return $state;
+    }
+
+    function formatSelected(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        var color = $(state.element).data('color');
+        var $state = $( 
+            '<span class="d-flex align-items-center justify-content-center">' + 
+                '<span class="rounded-circle d-block p-1" style="background-color:' + color + '; width: 25px; height: 25px;"></span>' +
+                '&nbsp;' +
+            '</span>'
+        );
+        return $state;
+    }
+
     $(document).ready(function() {
 
         $('#supplierList').DataTable({
@@ -414,6 +456,14 @@ if(!empty($_REQUEST['category_id'])){
             var defaultLogoPath = "images/supplier/logo.jpg";
             $('#logo_img').attr('src', defaultLogoPath);
             $('#logo_path').val('');
+        });
+
+        $('.supplier_color').select2({
+            placeholder: 'Select Supplier Color...',
+            width: '100%',
+            dropdownParent: $('#color_add'),
+            templateResult: formatOption,
+            templateSelection: formatOption
         });
 
         $(document).on('click', '.changeStatus', function(event) {
@@ -483,6 +533,13 @@ if(!empty($_REQUEST['category_id'])){
                     },
                     success: function(response) {
                         $('#updateContactModal').html(response);
+                        $('.supplier_color').select2({
+                            placeholder: 'Select Supplier Color...',
+                            width: '100%',
+                            dropdownParent: $('#color_upd'),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
                         $('#updateContactModal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
