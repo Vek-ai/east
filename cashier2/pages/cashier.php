@@ -1307,6 +1307,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 $('#order-tbl').html(response);
                 calculateDeliveryAmount();
                 loadCartItemsHeader();
+                $('#next_page_order').removeClass("d-none");
+                $('#prev_page_order').addClass("d-none");
+                $('#save_order').addClass("d-none");
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1326,7 +1329,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 $('#estimate-tbl').html(response);
                 calculateDeliveryAmountEst();
                 loadCartItemsHeader();
-                
+                $('#next_page_est').removeClass("d-none");
+                $('#prev_page_est').addClass("d-none");
+                $('#save_estimate').addClass("d-none");
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1897,6 +1902,26 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             location.reload();
                         });
                     }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('change', '.discount_input', function () {
+            var discount = $(this).val();
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    discount: discount,
+                    change_discount: 'change_discount'
+                },
+                success: function(response) {
+                    loadCart();
+                    loadEstimateContents();
+                    loadOrderContents();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);

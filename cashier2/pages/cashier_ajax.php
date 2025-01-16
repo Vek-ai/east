@@ -1553,6 +1553,14 @@ if (isset($_POST['change_price'])) {
     }
 }
 
+if (isset($_POST['change_discount'])) {
+    $discount = (float) $_POST['discount'];
+    foreach ($_SESSION['cart'] as $key => &$item) {
+        $item['used_discount'] = $discount;
+    }
+    unset($item);
+    echo "success";
+}
 
 if (isset($_POST['add_to_cart'])) {
     $quantity = isset($_POST['quantity_product']) ? $_POST['quantity_product'] : [];

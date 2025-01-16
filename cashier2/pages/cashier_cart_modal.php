@@ -476,7 +476,7 @@ if(isset($_POST['fetch_cart'])){
                             </div>
                             <div class="form-group">
                                 <label>Discount (%)</label>
-                                <input type="text" class="form-control" id="est_discount" placeholder="%" value="<?= $discount * 100 ?>">
+                                <input type="text" class="form-control discount_input" id="est_discount" placeholder="%" value="<?= $discount * 100 ?>">
                             </div>
                             <div class="form-group">
                                 <label>Amount</label>
