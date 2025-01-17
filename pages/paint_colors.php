@@ -20,6 +20,7 @@ if(!empty($_REQUEST['color_id'])){
       $color_code = $row['color_code'];
       $color_group = $row['color_group'];
       $provider_id = $row['provider_id'];
+      $ekm_color_code = $row['ekm_color_code'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -124,24 +125,30 @@ if(!empty($_REQUEST['result'])){
             <input type="text" id="color_name" name="color_name" class="form-control"  value="<?= $color_name ?>"/>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="mb-3">
             <label class="form-label">Color Code</label>
             <input type="color" id="color_code" name="color_code" class="form-control" value="<?= $color_code ?>" />
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
+          <div class="mb-3">
+            <label class="form-label">EKM Color Code</label>
+            <input type="text" id="ekm_color_code" name="ekm_color_code" class="form-control" value="<?= $ekm_color_code ?>" />
+          </div>
+        </div>
+        <div class="col-md-3">
           <div class="mb-3">
             <label class="form-label">Color Group</label>
             <input type="text" id="color_group" name="color_group" class="form-control" value="<?= $color_group ?>" />
           </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="mb-3">
             <label class="form-label">Provider</label>
             <select id="provider" class="form-control" name="provider" required>
-                <option value="/" >Select One...</option>
+                <option value="" >Select One...</option>
                 <?php
                 $query_rows = "SELECT * FROM paint_providers";
 
