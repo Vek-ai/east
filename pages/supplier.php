@@ -2,7 +2,7 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$selected_supplier_ids = array();
+$supplier_colors = array();
 
 ?>
 <style>
@@ -10,6 +10,36 @@ $selected_supplier_ids = array();
         white-space: normal;
         word-wrap: break-word;
     }
+    .select2-container .select2-selection {
+        height: auto !important;
+        padding: 2px !important;
+        display: flex;
+        align-items: center;
+    }
+
+    .select2-container--default .select2-selection--multiple {
+        min-height: auto;
+        line-height: 1.5;
+    }
+
+    .select2-results__option {
+        padding: 4px 3px !important;
+    }
+
+    .select2-selection__choice {
+        padding: 2px 8px !important;
+        margin: 2px 4px !important;
+        line-height: 1.5 !important;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .select2-selection__choice__display {
+        padding: 0px !important;
+        margin: 0 !important;
+        line-height: inherit !important;
+    }
+
 </style>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -84,183 +114,184 @@ $selected_supplier_ids = array();
                     </h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="add_supplier" class="form-horizontal">
-                    <div class="modal-body">
-                        <input type="hidden" id="supplier_id" name="supplier_id" class="form-control"  />
+                <div class="card card-body py-0 my-0">
+                    <form id="add_supplier" class="form-horizontal">
+                        <div class="modal-body">
+                            <input type="hidden" id="supplier_id" name="supplier_id" class="form-control"  />
 
-                        <div class="row">
-                            <div class="card-body p-0">
-                                <h4 class="card-title text-center">Logo Picture</h4>
-                                <div class="text-center">
-                                    <?php 
-                                        $logo_path = "images/supplier/logo.jpg";
-                                    ?>
-                                    <img src="<?= $logo_path ?>" id="logo_img_add" alt="logo-picture" class="img-fluid rounded-circle" width="120" height="120">
-                                    <div class="d-flex align-items-center justify-content-center my-4 gap-6">
-                                    <button id="upload_logo_add" type="button" class="btn btn-primary">Upload</button>
-                                    <button id="reset_logo_add" type="button" class="btn bg-danger-subtle text-danger">Reset</button>
+                            <div class="row">
+                                <div class="card-body p-0">
+                                    <h4 class="card-title text-center">Logo Picture</h4>
+                                    <div class="text-center">
+                                        <?php 
+                                            $logo_path = "images/supplier/logo.jpg";
+                                        ?>
+                                        <img src="<?= $logo_path ?>" id="logo_img_add" alt="logo-picture" class="img-fluid rounded-circle" width="120" height="120">
+                                        <div class="d-flex align-items-center justify-content-center my-4 gap-6">
+                                        <button id="upload_logo_add" type="button" class="btn btn-primary">Upload</button>
+                                        <button id="reset_logo_add" type="button" class="btn bg-danger-subtle text-danger">Reset</button>
+                                        </div>
+                                        <input type="file" id="logo_path_add" name="logo_path" class="form-control" style="display: none;"/>
                                     </div>
-                                    <input type="file" id="logo_path_add" name="logo_path" class="form-control" style="display: none;"/>
                                 </div>
                             </div>
-                        </div>
-                    
-                        <div class="row pt-3">
-                        <div class="col-md-12">
-                            <div class="mb-3">
-                            <label class="form-label">Supplier Name</label>
-                            <input type="text" id="supplier_name" name="supplier_name" class="form-control"  />
+                        
+                            <div class="row pt-3">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                <label class="form-label">Supplier Name</label>
+                                <input type="text" id="supplier_name" name="supplier_name" class="form-control"  />
+                                </div>
                             </div>
-                        </div>
-                        </div>
+                            </div>
 
-                        <div class="row pt-3">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                            <label class="form-label">Supplier Website</label>
-                            <input type="text" id="supplier_website" name="supplier_website" class="form-control"  />
+                            <div class="row pt-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Supplier Website</label>
+                                <input type="text" id="supplier_website" name="supplier_website" class="form-control"  />
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                            <label class="form-label">Supplier Type</label>
-                            <select id="supplier_type" class="form-control" name="supplier_type">
-                                <option value="/" >Select One...</option>
-                                <?php
-                                $query_roles = "SELECT * FROM supplier_type WHERE hidden = '0'";
-                                $result_roles = mysqli_query($conn, $query_roles);            
-                                while ($row_staff = mysqli_fetch_array($result_roles)) {
-                                ?>
-                                    <option value="<?= $row_staff['supplier_type_id'] ?>" ><?= $row_staff['supplier_type'] ?></option>
-                                <?php   
-                                }
-                                ?>
-                            </select>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Supplier Type</label>
+                                <select id="supplier_type" class="form-control" name="supplier_type">
+                                    <option value="/" >Select One...</option>
+                                    <?php
+                                    $query_roles = "SELECT * FROM supplier_type WHERE hidden = '0'";
+                                    $result_roles = mysqli_query($conn, $query_roles);            
+                                    while ($row_staff = mysqli_fetch_array($result_roles)) {
+                                    ?>
+                                        <option value="<?= $row_staff['supplier_type_id'] ?>" ><?= $row_staff['supplier_type'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </select>
+                                </div>
                             </div>
-                        </div>
-                        </div>
+                            </div>
 
-                        <div class="row pt-3">
-                        <div class="col-md-12">
-                            <div class="mb-3">
+                            <div class="row pt-3">
+                            <div class="col-md-12">
                                 <label class="form-label">Supplier Color</label>
-                                <div id="color_add">
-                                    <select id="supplier_color_add" class="form-control supplier_color" name="supplier_color[]" multiple>
+                                <div class="mb-3" id="color_add">
+                                    <select id="supplier_color_add" class="form-control supplier_color" name="supplier_color[]" multiple="multiple">
                                         <?php
-                                        $query_supplier_color = "SELECT * FROM supplier_color WHERE hidden = '0'";
-                                        $result_supplier_color = mysqli_query($conn, $query_supplier_color);            
-                                        while ($row_supplier_color = mysqli_fetch_array($result_supplier_color)) {
-                                            $selected = (in_array($row_supplier_color['supplierid'], $selected_supplier_ids)) ? 'selected' : '';
+                                        $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                        $result_color = mysqli_query($conn, $query_color);            
+                                        while ($row_color = mysqli_fetch_array($result_color)) {
+                                            $selected = (in_array($row_color['color_name'], $supplier_colors)) ? 'selected' : '';
                                         ?>
-                                            <option value="<?= $row_supplier_color['supplierid'] ?>" <?= $selected ?> data-color="<?= $row_supplier_color['color_code'] ?>"><?= getSupplierName($row_supplier_color['supplierid']) ?></option>
+                                            <option value="<?= $row_color['color_name'] . '|' . $row_color['color_code'] ?>" <?= $selected ?> data-color="<?= $row_color['color_code'] ?>"><?= $row_color['color_name'] ?></option>
                                         <?php   
                                         }
                                         ?>
                                     </select>
                                 </div>
                             </div>
-                        </div>
-                        </div>
+                            </div>
 
-                        <div class="row pt-3">
-                        <div class="col-md-6">
+                            <div class="row pt-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Contact Name</label>
+                                <input type="text" id="contact_name" name="contact_name" class="form-control"  />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Contact Email</label>
+                                <input type="text" id="contact_email" name="contact_email" class="form-control"  />
+                                </div>
+                            </div>
+                            </div>
+
+                            <div class="row pt-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Contact Phone</label>
+                                <input type="phone" id="contact_phone" name="contact_phone" class="form-control phone-inputmask"  />
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Contact Fax</label>
+                                <input type="phone" id="contact_fax" name="contact_fax" class="form-control phone-inputmask"  />
+                                </div>
+                            </div>
+                            </div>
+
+
                             <div class="mb-3">
-                            <label class="form-label">Contact Name</label>
-                            <input type="text" id="contact_name" name="contact_name" class="form-control"  />
+                            <label class="form-label">Secondary Name</label>
+                            <input type="text" id="secondary_name" name="secondary_name" class="form-control"  />
                             </div>
-                        </div>
-                        <div class="col-md-6">
+
+                            <div class="row pt-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Secondary Phone</label>
+                                <input type="phone" id="secondary_phone" name="secondary_phone" class="form-control phone-inputmask"  />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Secondary Email</label>
+                                <input type="text" id="secondary_email" name="secondary_email" class="form-control"  />
+                                </div>
+                            </div>
+                            </div>
+
                             <div class="mb-3">
-                            <label class="form-label">Contact Email</label>
-                            <input type="text" id="contact_email" name="contact_email" class="form-control"  />
+                            <label class="form-label">Address</label>
+                            <input type="text" id="address" name="address" class="form-control"  />
                             </div>
-                        </div>
-                        </div>
 
-                        <div class="row pt-3">
-                        <div class="col-md-6">
+                            <div class="row pt-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Last Ordered Date</label>
+                                <input type="date" id="last_ordered_date" name="last_ordered_date" class="form-control"  />
+                                </div>
+                            </div>
+                            </div>
+
+                            <div class="row pt-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">FreightRate</label>
+                                <input type="text" id="freight_rate" name="freight_rate" class="form-control"  />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">PaymentTerms</label>
+                                <input type="text" id="payment_terms" name="payment_terms" class="form-control"  />
+                                </div>
+                            </div>
+                            </div>
+
                             <div class="mb-3">
-                            <label class="form-label">Contact Phone</label>
-                            <input type="phone" id="contact_phone" name="contact_phone" class="form-control phone-inputmask"  />
+                            <label class="form-label">Comment</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="5"></textarea>
+                            </div>
+
+                            
+
+                            
+                        </div>
+                        <div class="modal-footer">
+                            <div class="form-actions">
+                                <div class="card-body">
+                                    <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+                                    <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">Close</button>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                            <label class="form-label">Contact Fax</label>
-                            <input type="phone" id="contact_fax" name="contact_fax" class="form-control phone-inputmask"  />
-                            </div>
-                        </div>
-                        </div>
-
-
-                        <div class="mb-3">
-                        <label class="form-label">Secondary Name</label>
-                        <input type="text" id="secondary_name" name="secondary_name" class="form-control"  />
-                        </div>
-
-                        <div class="row pt-3">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                            <label class="form-label">Secondary Phone</label>
-                            <input type="phone" id="secondary_phone" name="secondary_phone" class="form-control phone-inputmask"  />
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                            <label class="form-label">Secondary Email</label>
-                            <input type="text" id="secondary_email" name="secondary_email" class="form-control"  />
-                            </div>
-                        </div>
-                        </div>
-
-                        <div class="mb-3">
-                        <label class="form-label">Address</label>
-                        <input type="text" id="address" name="address" class="form-control"  />
-                        </div>
-
-                        <div class="row pt-3">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                            <label class="form-label">Last Ordered Date</label>
-                            <input type="date" id="last_ordered_date" name="last_ordered_date" class="form-control"  />
-                            </div>
-                        </div>
-                        </div>
-
-                        <div class="row pt-3">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                            <label class="form-label">FreightRate</label>
-                            <input type="text" id="freight_rate" name="freight_rate" class="form-control"  />
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                            <label class="form-label">PaymentTerms</label>
-                            <input type="text" id="payment_terms" name="payment_terms" class="form-control"  />
-                            </div>
-                        </div>
-                        </div>
-
-                        <div class="mb-3">
-                        <label class="form-label">Comment</label>
-                        <textarea class="form-control" id="comment" name="comment" rows="5"></textarea>
-                        </div>
-
-                        
-
-                        
-                    </div>
-                    <div class="modal-footer">
-                        <div class="form-actions">
-                            <div class="card-body">
-                                <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
-                                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
+                
             </div>
             <!-- /.modal-content -->
         </div>
@@ -381,9 +412,10 @@ $selected_supplier_ids = array();
         }
         var color = $(state.element).data('color');
         var $state = $(
-            '<span class="d-flex align-items-center small">' +
-                '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
-                state.text + 
+            '<span class="d-flex align-items-center" style="padding: 0; padding-left:10px; margin: 0; line-height: 1;">' +
+                '<span class="rounded-circle d-block" ' +
+                    'style="background-color:' + color + '; width: 16px; height: 16px; border: 1px solid #ccc; margin-right: 8px;"></span>' +
+                '<span>' + state.text + '</span>' +
             '</span>'
         );
         return $state;
@@ -394,14 +426,15 @@ $selected_supplier_ids = array();
             return state.text;
         }
         var color = $(state.element).data('color');
-        var $state = $( 
-            '<span class="d-flex align-items-center justify-content-center">' + 
-                '<span class="rounded-circle d-block p-1" style="background-color:' + color + '; width: 25px; height: 25px;"></span>' +
-                '&nbsp;' +
+        var $state = $(
+            '<span class="d-flex align-items-center justify-content-center">' +
+                '<span class="rounded-circle d-block" ' +
+                    'style="background-color:' + color + '; width: 20px; height: 20px; border: 1px solid #ccc;"></span>' +
             '</span>'
         );
         return $state;
     }
+
 
     $(document).ready(function() {
 
@@ -545,6 +578,17 @@ $selected_supplier_ids = array();
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
                     }
+            });
+        });
+
+        $('#updateContactModal').on('hidden.bs.modal', function() {
+            $('.supplier_color').select2('destroy');
+            $('.supplier_color').select2({
+                placeholder: 'Select Supplier Color...',
+                width: '100%',
+                dropdownParent: $('#color_add'),
+                templateResult: formatOption,
+                templateSelection: formatOption
             });
         });
 

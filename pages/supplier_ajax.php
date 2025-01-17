@@ -96,24 +96,24 @@ if(isset($_REQUEST['action'])) {
             }
         }
 
-        foreach ($supplier_colors as $color) {
+        if (!empty($supplier_colors)) {
             $deleteQuery = "DELETE FROM supplier_color WHERE supplierid = '$supplier_id'";
+            if (!mysqli_query($conn, $deleteQuery)) {
+                echo "Error deleting colors for supplierid $supplier_id: " . mysqli_error($conn);
+                exit;
+            }
         
-            if (mysqli_query($conn, $deleteQuery)) {
-                $color_code = $_POST['color_code'];
-        
+            foreach ($supplier_colors as $color) {
+                list($color_name, $color_code) = explode('|', $color);
                 $insertQuery = "INSERT INTO supplier_color (supplierid, color, color_code, added_date, added_by) 
-                                VALUES ('$supplierid', '$color', '$color_code', NOW(), '$userid')";
-        
-                if (mysqli_query($conn, $insertQuery)) {
-                    echo "success_add";
-                } else {
+                                VALUES ('$supplier_id', '$color_name', '$color_code', NOW(), '$userid')";
+                if (!mysqli_query($conn, $insertQuery)) {
                     echo "Error adding color: " . mysqli_error($conn);
+                    exit;
                 }
-            } else {
-                echo "Error deleting color for supplierid $supplierid: " . mysqli_error($conn);
             }
         }
+        
 
         $message = "";
         if (isset($_FILES['logo_path']) && $_FILES['logo_path']['error'] == UPLOAD_ERR_OK) {
@@ -171,8 +171,16 @@ if(isset($_REQUEST['action'])) {
 
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
-            $supplier_color = $row['supplier_color'] ?? '';  
-            $selected_supplier_ids = !empty($supplier_color) ? json_decode($supplier_color, true) : [];
+  
+            $supplier_colors = array();
+            $check_supplier_colors = "SELECT * FROM supplier_color WHERE supplierid = '$supplier_id'";
+            $result_supplier_colors = mysqli_query($conn, $check_supplier_colors);
+
+            if (mysqli_num_rows($result_supplier_colors) > 0) {
+                while($row_supplier_colors = mysqli_fetch_assoc($result_supplier_colors)){
+                    $supplier_colors[] = $row_supplier_colors['color'];
+                }
+            }
             ?>
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -250,15 +258,13 @@ if(isset($_REQUEST['action'])) {
                                     <div id="color_upd">
                                         <select id="supplier_color_update" class="form-control supplier_color" name="supplier_color[]" multiple>
                                             <?php
-                                            $query_supplier_color = "SELECT * FROM supplier_color WHERE hidden = '0'";
-                                            $result_supplier_color = mysqli_query($conn, $query_supplier_color);            
-                                            while ($row_supplier_color = mysqli_fetch_assoc($result_supplier_color)) {
-                                                $selected = (is_array($selected_supplier_ids) && in_array($row_supplier_color['supplierid'], $selected_supplier_ids)) ? 'selected' : '';
-                                                ?>
-                                                <option value="<?= htmlspecialchars($row_supplier_color['supplierid']) ?>" <?= $selected ?> data-color="<?= htmlspecialchars($row_supplier_color['color_code']) ?>">
-                                                    <?= htmlspecialchars(getSupplierName($row_supplier_color['supplierid'])) ?>
-                                                </option>
-                                                <?php
+                                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                            $result_color = mysqli_query($conn, $query_color);            
+                                            while ($row_color = mysqli_fetch_array($result_color)) {
+                                                $selected = (in_array($row_color['color_name'], $supplier_colors)) ? 'selected' : '';
+                                            ?>
+                                                <option value="<?= $row_color['color_name'] . '|' . $row_color['color_code'] ?>" <?= $selected ?> data-color="<?= $row_color['color_code'] ?>"><?= $row_color['color_name'] ?></option>
+                                            <?php   
                                             }
                                             ?>
                                         </select>
