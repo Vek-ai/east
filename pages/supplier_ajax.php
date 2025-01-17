@@ -281,7 +281,7 @@ if(isset($_REQUEST['action'])) {
                             <div class="col-md-12">
                                 <div class="mb-3">
                                 <label class="form-label">Supplier Code</label>
-                                <input type="text" id="supplier_code" name="supplier_code" class="form-control"  />
+                                <input type="text" id="supplier_code" name="supplier_code" class="form-control" value="<?= $row['supplier_code'] ?? "" ?>" />
                                 </div>
                             </div>
                             </div>
