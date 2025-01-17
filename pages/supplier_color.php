@@ -10,6 +10,10 @@ $color_code = 0;
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
 
+if(!empty($_REQUEST['supplier_id'])){
+  $supplier_id = $_REQUEST['supplier_id'];
+}
+
 if(!empty($_REQUEST['id'])){
   $id = $_REQUEST['id'];
   $query = "SELECT * FROM supplier_color WHERE id = '$id'";
@@ -103,13 +107,14 @@ if(!empty($_REQUEST['id'])){
         <div class="col-md-6">
         <label class="form-label">Supplier</label>
           <div class="mb-3">
-            <select id="supplierid" class="form-control" name="supplierid">
+            <select id="supplierid" class="form-control" name="supplierid" <?= !empty($_REQUEST['supplier_id']) ? 'disabled' : '' ?>>
                 <option value="" >Select Supplier...</option>
                 <?php
                 $query_supplier = "SELECT * FROM supplier";
                 $result_supplier = mysqli_query($conn, $query_supplier);            
                 while ($row_supplier = mysqli_fetch_array($result_supplier)) {
                     $selected = ($supplierid == $row_supplier['supplier_id']) ? 'selected' : '';
+                    $selected = ($supplier_id == $row_supplier['supplier_id']) ? 'selected' : '';
                 ?>
                     <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
                 <?php   
@@ -131,7 +136,10 @@ if(!empty($_REQUEST['id'])){
         <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Color Code</label>
-            <input type="color" id="color_code" name="color_code" class="form-control form-control-color" value="<?= $color_code ?>" />
+            <div class="d-flex align-items-center">
+              <input type="text" id="color_code" name="color_code" class="form-control me-2" value="<?= $color_code ?>" placeholder="#FFFFFF" />
+              <input type="color" id="color_picker" class="form-control form-control-color" value="<?= $color_code ?>" />
+            </div>
           </div>
         </div>
       </div>
@@ -184,6 +192,9 @@ if(!empty($_REQUEST['id'])){
               <?php
               $no = 1;
               $query_supplier_color = "SELECT * FROM supplier_color WHERE hidden=0";
+              if(!empty($_REQUEST['supplier_id'])){
+                $query_supplier_color .= " AND supplierid = '$supplier_id'";
+              }
               $result_supplier_color = mysqli_query($conn, $query_supplier_color);            
               while ($row_supplier_color = mysqli_fetch_array($result_supplier_color)) {
                   $id = $row_supplier_color['id'];
@@ -341,6 +352,18 @@ if(!empty($_REQUEST['id'])){
 
     $('#toggleActive').on('change', function() {
         table.draw();
+    });
+
+    $('#color_picker').on('input', function () {
+      const selectedColor = $(this).val();
+      $('#color_code').val(selectedColor);
+    });
+
+    $('#color_code').on('input', function () {
+      const textColor = $(this).val();
+      if (/^#[0-9A-Fa-f]{6}$/.test(textColor)) {
+        $('#color_picker').val(textColor);
+      }
     });
 
     $('#toggleActive').trigger('change');

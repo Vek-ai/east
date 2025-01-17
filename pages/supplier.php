@@ -173,7 +173,10 @@ $supplier_colors = array();
 
                             <div class="row pt-3">
                             <div class="col-md-12">
-                                <label class="form-label">Supplier Color</label>
+                                <div class="col-md-12 d-flex justify-content-between align-items-center">
+                                    <label class="form-label">Supplier Color</label>
+                                    <a href="?page=supplier_color" target="_blank" class="text-decoration-none">Edit Colors</a>
+                                </div>
                                 <div class="mb-3" id="color_add">
                                     <select id="supplier_color_add" class="form-control supplier_color" name="supplier_color[]" multiple="multiple">
                                         <?php
@@ -187,6 +190,15 @@ $supplier_colors = array();
                                         }
                                         ?>
                                     </select>
+                                </div>
+                            </div>
+                            </div>
+
+                            <div class="row pt-3">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                <label class="form-label">Supplier Code</label>
+                                <input type="text" id="supplier_code" name="supplier_code" class="form-control"  />
                                 </div>
                             </div>
                             </div>

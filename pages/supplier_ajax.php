@@ -16,6 +16,7 @@ if(isset($_REQUEST['action'])) {
         $supplier_type = mysqli_real_escape_string($conn, $_POST['supplier_type']);
         $supplier_colors = isset($_POST['supplier_color']) ? $_POST['supplier_color'] : [];
         $json_supplier_colors = json_encode($supplier_colors);
+        $supplier_code = mysqli_real_escape_string($conn, $_POST['supplier_code']);
         $contact_name = mysqli_real_escape_string($conn, $_POST['contact_name']);
         $contact_email = mysqli_real_escape_string($conn, $_POST['contact_email']);
         $contact_phone = mysqli_real_escape_string($conn, $_POST['contact_phone']);
@@ -56,7 +57,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE supplier SET supplier_name = '$supplier_name', supplier_website = '$supplier_website', supplier_type = '$supplier_type', contact_name = '$contact_name', contact_email = '$contact_email', contact_phone = '$contact_phone', contact_fax = '$contact_fax', secondary_name = '$secondary_name', secondary_phone = '$secondary_phone', secondary_email = '$secondary_email', address = '$address', last_ordered_date = '$last_ordered_date', freight_rate = '$freight_rate', payment_terms = '$payment_terms', comment = '$comment', last_edit = NOW(), edited_by = '$userid', supplier_color = '$json_supplier_colors' WHERE supplier_id = '$supplier_id'";
+                $updateQuery = "UPDATE supplier SET supplier_name = '$supplier_name', supplier_website = '$supplier_website', supplier_type = '$supplier_type', contact_name = '$contact_name', contact_email = '$contact_email', contact_phone = '$contact_phone', contact_fax = '$contact_fax', secondary_name = '$secondary_name', secondary_phone = '$secondary_phone', secondary_email = '$secondary_email', address = '$address', last_ordered_date = '$last_ordered_date', freight_rate = '$freight_rate', payment_terms = '$payment_terms', comment = '$comment', last_edit = NOW(), edited_by = '$userid', supplier_code = '$supplier_code' WHERE supplier_id = '$supplier_id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "Supplier updated successfully.";
                 } else {
@@ -86,7 +87,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with insert
-                $insertQuery = "INSERT INTO supplier (supplier_name, supplier_website, supplier_type, contact_name, contact_email, contact_phone, contact_fax, secondary_name, secondary_phone, secondary_email, address, last_ordered_date, freight_rate, payment_terms, comment, added_date, added_by, supplier_color) VALUES ('$supplier_name', '$supplier_website', '$supplier_type', '$contact_name', '$contact_email', '$contact_phone', '$contact_fax', '$secondary_name', '$secondary_phone', '$secondary_email', '$address', '$last_ordered_date', '$freight_rate', '$payment_terms', '$comment', NOW(), '$userid', '$json_supplier_colors')";
+                $insertQuery = "INSERT INTO supplier (supplier_name, supplier_website, supplier_type, contact_name, contact_email, contact_phone, contact_fax, secondary_name, secondary_phone, secondary_email, address, last_ordered_date, freight_rate, payment_terms, comment, added_date, added_by, supplier_code) VALUES ('$supplier_name', '$supplier_website', '$supplier_type', '$contact_name', '$contact_email', '$contact_phone', '$contact_fax', '$secondary_name', '$secondary_phone', '$secondary_email', '$address', '$last_ordered_date', '$freight_rate', '$payment_terms', '$comment', NOW(), '$userid', '$supplier_code')";
                 if (mysqli_query($conn, $insertQuery)) {
                     $supplier_id = $conn->insert_id;
                     echo "New supplier added successfully.";
@@ -254,7 +255,10 @@ if(isset($_REQUEST['action'])) {
                             <div class="row pt-3">
                             <div class="col-md-12">
                                 <div class="mb-3">
-                                    <label class="form-label">Supplier Color</label>
+                                    <div class="col-md-12 d-flex justify-content-between align-items-center">
+                                        <label class="form-label">Supplier Color</label>
+                                        <a href="?page=supplier_color&supplier_id=<?=$supplier_id?>" target="_blank" class="text-decoration-none">Edit Colors</a>
+                                    </div>
                                     <div id="color_upd">
                                         <select id="supplier_color_update" class="form-control supplier_color" name="supplier_color[]" multiple>
                                             <?php
@@ -269,6 +273,15 @@ if(isset($_REQUEST['action'])) {
                                             ?>
                                         </select>
                                     </div>
+                                </div>
+                            </div>
+                            </div>
+
+                            <div class="row pt-3">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                <label class="form-label">Supplier Code</label>
+                                <input type="text" id="supplier_code" name="supplier_code" class="form-control"  />
                                 </div>
                             </div>
                             </div>
