@@ -162,7 +162,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                 </div>
 
                                 <div class="row pt-3">
-                                <div class="col-md-6 opt_field">
+                                <div class="col-md-4 opt_field">
                                     <label class="form-label">Color Family</label>
                                     <div class="mb-3">
                                         <select id="color_family_add" class="form-control select2-add" name="color_family">
@@ -179,7 +179,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-6 opt_field">
+                                <div class="col-md-4 opt_field">
                                     <label class="form-label">Close EKM Color</label>
                                     <div class="mb-3">
                                         <select id="color_close_add" class="form-control select2-add" name="color_close">
@@ -196,22 +196,39 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         </select>
                                     </div>
                                 </div>
+                                <div class="col-md-4 opt_field">
+                                    <label class="form-label">Actual Color</label>
+                                    <div class="mb-3">
+                                        <select id="actual_color_add" class="form-control select2-add" name="actual_color">
+                                            <option value="" >Select Color...</option>
+                                            <?php
+                                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                            $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                            while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                            ?>
+                                                <option value="<?= $row_paint_colors['color_id'] ?>" ><?= $row_paint_colors['color_name'] ?></option>
+                                            <?php   
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
                                 </div>
 
                                 <div class="row pt-3">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Coil #</label>
                                             <input type="text" id="coil_no_add" name="coil_no" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Date</label>
                                             <input type="date" id="date_add" name="date" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label">Supplier</label>
                                         <div class="mb-3">
                                             <select id="supplier_add" class="form-control select2-add" name="supplier">
@@ -227,7 +244,10 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                                 ?>
                                             </select>
                                         </div>
-                                        
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Supplier Tag #</label>
+                                        <input type="text" id="supplier_tag" name="supplier_tag" class="form-control" />
                                     </div>
                                 </div>
 
@@ -258,16 +278,22 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                 </div>   
                                 
                                 <div class="row pt-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label class="form-label">Original Length</label>
                                             <input type="text" id="og_length_add" name="og_length" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label class="form-label">Remaining Length</label>
                                             <input type="text" id="remaining_feet_add" name="remaining_feet" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Last Inventory Count</label>
+                                            <input type="text" id="last_inventory_count_add" name="last_inventory_count" class="form-control" />
                                         </div>
                                     </div>
                                 </div>
@@ -336,7 +362,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                 </div>
 
                                 <div class="row pt-3">
-                                    <div class="col-md-4 opt_field" data-id="5">
+                                    <div class="col-md-3 opt_field" data-id="5">
                                         <label class="form-label">Grade No.</label>
                                         <div class="mb-3">
                                             <select id="grade_no_add" class="form-control select2-add" name="grade_no">
@@ -348,13 +374,24 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3 opt_field" data-id="5">
+                                        <label class="form-label">Coil Class</label>
+                                        <div class="mb-3">
+                                            <select id="coil_class_add" class="form-control select2-add" name="coil_class">
+                                                <option value="" >Select Coil Class...</option>
+                                                <option value="SW">SW</option>
+                                                <option value="FH">FH</option>
+                                                <option value="FL">FL</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Price ($)</label>
                                             <input type="text" id="price_add" name="price" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Contract PPF</label>
                                             <input type="text" id="contract_ppf_add" name="contract_ppf" class="form-control" />

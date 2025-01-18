@@ -15,6 +15,9 @@ if(isset($_REQUEST['action'])) {
         $color_group = mysqli_real_escape_string($conn, $_POST['color_group']);
         $provider_id = mysqli_real_escape_string($conn, $_POST['provider']);
         $ekm_color_code = mysqli_real_escape_string($conn, $_POST['ekm_color_code']);
+        $color_abbreviation = mysqli_real_escape_string($conn, $_POST['color_abbreviation']);
+        $stock_availability = mysqli_real_escape_string($conn, $_POST['stock_availability']);
+        $multiplier_category = mysqli_real_escape_string($conn, $_POST['multiplier_category']);
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
@@ -52,7 +55,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE paint_colors SET color_name = '$color_name', color_code = '$color_code', color_group = '$color_group', provider_id = '$provider_id', last_edit = NOW(), edited_by = '$userid', ekm_color_code = '$ekm_color_code'  WHERE color_id = '$color_id'";
+                $updateQuery = "UPDATE paint_colors SET color_name = '$color_name', color_code = '$color_code', color_group = '$color_group', provider_id = '$provider_id', last_edit = NOW(), edited_by = '$userid', ekm_color_code = '$ekm_color_code', color_abbreviation = '$color_abbreviation', stock_availability = '$stock_availability', multiplier_category = '$multiplier_category'  WHERE color_id = '$color_id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "Paint color updated successfully.";
                 } else {
@@ -78,7 +81,7 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO paint_colors (color_name, color_code, color_group, provider_id, added_date, added_by, ekm_color_code) VALUES ('$color_name', '$color_code', '$color_group', '$provider_id', NOW(), '$userid', '$ekm_color_code')";
+                $insertQuery = "INSERT INTO paint_colors (color_name, color_code, color_group, provider_id, added_date, added_by, ekm_color_code, color_abbreviation, stock_availability, multiplier_category) VALUES ('$color_name', '$color_code', '$color_group', '$provider_id', NOW(), '$userid', '$ekm_color_code', '$color_abbreviation', '$stock_availability', '$multiplier_category')";
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "New paint color added successfully.";
                 } else {

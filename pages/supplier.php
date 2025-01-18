@@ -195,10 +195,16 @@ $supplier_colors = array();
                             </div>
 
                             <div class="row pt-3">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="mb-3">
                                 <label class="form-label">Supplier Code</label>
                                 <input type="text" id="supplier_code" name="supplier_code" class="form-control"  />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Supplier Paint ID</label>
+                                <input type="text" id="supplier_paint_id" name="supplier_paint_id" class="form-control"  />
                                 </div>
                             </div>
                             </div>

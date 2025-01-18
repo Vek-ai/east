@@ -5,7 +5,9 @@ require 'includes/functions.php';
 $color_name = "";
 $color_code = "";
 $color_group = "";
-$color_group = "";
+$provider_id = "";
+$ekm_color_code = "";
+$color_abbreviation = "";
 
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
@@ -21,6 +23,7 @@ if(!empty($_REQUEST['color_id'])){
       $color_group = $row['color_group'];
       $provider_id = $row['provider_id'];
       $ekm_color_code = $row['ekm_color_code'];
+      $color_abbreviation = $row['color_abbreviation'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -162,6 +165,34 @@ if(!empty($_REQUEST['result'])){
                 ?>
             </select>
           </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="mb-3">
+            <label class="form-label">Color Abbreviation</label>
+            <input type="text" id="color_abbreviation" name="color_abbreviation" class="form-control" value="<?= $color_abbreviation ?>" />
+          </div>
+        </div>
+        <div class="col-md-3 opt_field" data-id="5">
+            <label class="form-label">Stock Availability</label>
+            <div class="mb-3">
+                <select id="stock_availability_add" class="form-control select2-add" name="stock_availability">
+                    <option value="" >Select Stock Availability...</option>
+                    <option value="stock">Stock</option>
+                    <option value="one_time">One-Time</option>
+                    <option value="special_order">Special Order</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3 opt_field" data-id="5">
+            <label class="form-label">Multiplier Category</label>
+            <div class="mb-3">
+                <select id="multiplier_category_add" class="form-control select2-add" name="multiplier_category">
+                    <option value="" >Select Multiplier Category...</option>
+                    <option value="painted">Painted</option>
+                    <option value="bare">Bare</option>
+                </select>
+            </div>
         </div>
       </div>
 

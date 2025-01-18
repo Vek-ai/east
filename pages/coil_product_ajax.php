@@ -19,9 +19,11 @@ if(isset($_REQUEST['action'])) {
         $warehouse = isset($_POST['warehouse']) ? mysqli_real_escape_string($conn, $_POST['warehouse']) : '';
         $color_family = isset($_POST['color_family']) ? mysqli_real_escape_string($conn, $_POST['color_family']) : '';
         $color_close = isset($_POST['color_close']) ? mysqli_real_escape_string($conn, $_POST['color_close']) : '';
+        $actual_color = isset($_POST['actual_color']) ? mysqli_real_escape_string($conn, $_POST['actual_color']) : '';
         $coil_no = isset($_POST['coil_no']) ? mysqli_real_escape_string($conn, $_POST['coil_no']) : '';
         $date = isset($_POST['date']) ? mysqli_real_escape_string($conn, $_POST['date']) : '';
         $supplier = isset($_POST['supplier']) ? mysqli_real_escape_string($conn, $_POST['supplier']) : '';
+        $supplier_tag = isset($_POST['supplier_tag']) ? mysqli_real_escape_string($conn, $_POST['supplier_tag']) : '';
         $color_sold_as = isset($_POST['color_sold_as']) ? mysqli_real_escape_string($conn, $_POST['color_sold_as']) : '';
         $product_id = isset($_POST['product_id']) ? mysqli_real_escape_string($conn, $_POST['product_id']) : '';
         $og_length = isset($_POST['og_length']) ? mysqli_real_escape_string($conn, $_POST['og_length']) : 0;
@@ -33,6 +35,8 @@ if(isset($_REQUEST['action'])) {
         $tag_no = isset($_POST['tag_no']) ? mysqli_real_escape_string($conn, $_POST['tag_no']) : '';
         $invoice_no = isset($_POST['invoice_no']) ? mysqli_real_escape_string($conn, $_POST['invoice_no']) : '';
         $remaining_feet = isset($_POST['remaining_feet']) ? mysqli_real_escape_string($conn, $_POST['remaining_feet']) : 0; 
+        $last_inventory_count = isset($_POST['last_inventory_count']) ? mysqli_real_escape_string($conn, $_POST['last_inventory_count']) : 0; 
+        $coil_class = isset($_POST['coil_class']) ? mysqli_real_escape_string($conn, $_POST['coil_class']) : '';
         $gauge = $thickness > 0.0161 ? $gauge_26_id : $gauge_29_id;
         if (!empty($date)) {
             $year = date('Y', strtotime($date));
@@ -69,9 +73,11 @@ if(isset($_REQUEST['action'])) {
                 warehouse = '$warehouse',
                 color_family = '$color_family',
                 color_close = '$color_close',
+                actual_color = '$actual_color',
                 coil_no = '$coil_no',
                 date = '$date',
                 supplier = '$supplier',
+                supplier_tag = '$supplier_tag',
                 color_sold_as = '$color_sold_as',
                 product_id = '$product_id',
                 og_length = '$og_length',
@@ -83,6 +89,8 @@ if(isset($_REQUEST['action'])) {
                 tag_no = '$tag_no',
                 invoice_no = '$invoice_no',
                 remaining_feet = '$remaining_feet',
+                last_inventory_count = '$last_inventory_count',
+                coil_class = '$coil_class',
                 gauge = '$gauge',
                 grade_no = '$grade_no',
                 year = '$year',
@@ -108,16 +116,16 @@ if(isset($_REQUEST['action'])) {
         } else {
             $isInsert = true;
             $insertQuery = "INSERT INTO coil_product (
-                coil_id, entry_no, warehouse, color_family, color_close, coil_no, date, supplier, 
+                coil_id, entry_no, warehouse, color_family, color_close, actual_color, coil_no, date, supplier, supplier_tag,
                 color_sold_as, product_id, og_length, weight, thickness, width, grade, coating, 
-                tag_no, invoice_no, remaining_feet, gauge, grade_no, year, month, extracting_price, 
+                tag_no, invoice_no, remaining_feet, last_inventory_count, coil_class, gauge, grade_no, year, month, extracting_price, 
                 price, avg_by_color, total, current_weight, lb_per_ft, contract_ppf, contract_ppcwg, invoice_price, 
                 round_width, main_image
             ) VALUES (
-                '$coil_id', '$entry_no', '$warehouse', '$color_family', '$color_close', '$coil_no', 
-                '$date', '$supplier', '$color_sold_as', '$product_id', '$og_length', '$weight', 
-                '$thickness', '$width', '$grade', '$coating', '$tag_no', '$invoice_no', '$remaining_feet', 
-                '$gauge', '$grade_no', '$year', '$month', '$extracting_price', '$price', '$avg_by_color', 
+                '$coil_id', '$entry_no', '$warehouse', '$color_family', '$color_close', '$actual_color', '$coil_no', 
+                '$date', '$supplier', '$supplier_tag', '$color_sold_as', '$product_id', '$og_length', '$weight', 
+                '$thickness', '$width', '$grade', '$coating', '$tag_no', '$invoice_no', '$remaining_feet', '$last_inventory_count',
+                '$coil_class', '$gauge', '$grade_no', '$year', '$month', '$extracting_price', '$price', '$avg_by_color', 
                 '$total', '$current_weight', '$lb_per_ft', '$contract_ppf', '$contract_ppcwg', '$invoice_price', 
                 '$round_width', '$main_image'
             )";
@@ -288,22 +296,39 @@ if(isset($_REQUEST['action'])) {
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="col-md-4 opt_field">
+                                        <label class="form-label">Actual Color</label>
+                                        <div class="mb-3">
+                                            <select id="actual_color_edit" class="form-control select2-edit" name="actual_color">
+                                                <option value="" >Select Color...</option>
+                                                <?php
+                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                                ?>
+                                                    <option value="<?= $row_paint_colors['color_id'] ?>" ><?= $row_paint_colors['color_name'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
+                                        </div>
+                                    </div>
                                     </div>
 
                                     <div class="row pt-3">
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="mb-3">
                                                 <label class="form-label">Coil #</label>
                                                 <input type="text" id="coil_no_edit" name="coil_no" class="form-control" value="<?= $row['coil_no'] ?>"/>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="mb-3">
                                                 <label class="form-label">Date</label>
                                                 <input type="date" id="date_edit" name="date" class="form-control" value="<?= trim($row['date']) ?>"/>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <label class="form-label">Supplier</label>
                                             <div class="mb-3">
                                                 <select id="supplier_edit" class="form-control select2-edit" name="supplier">
@@ -320,7 +345,10 @@ if(isset($_REQUEST['action'])) {
                                                     ?>
                                                 </select>
                                             </div>
-                                            
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Supplier Tag #</label>
+                                            <input type="text" id="supplier_tag" name="supplier_tag" class="form-control" />
                                         </div>
                                     </div>
 
@@ -352,16 +380,22 @@ if(isset($_REQUEST['action'])) {
                                     </div>    
                                     
                                     <div class="row pt-3">
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <div class="mb-3">
                                                 <label class="form-label">Original Length</label>
                                                 <input type="text" id="og_length_edit" name="og_length" class="form-control" value="<?= $row['og_length'] ?>"/>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <div class="mb-3">
                                                 <label class="form-label">Remaining Length</label>
                                                 <input type="text" id="remaining_feet_edit" name="remaining_feet" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Last Inventory Count</label>
+                                                <input type="text" id="last_inventory_count_edit" name="last_inventory_count" class="form-control" />
                                             </div>
                                         </div>
                                     </div>
@@ -440,6 +474,17 @@ if(isset($_REQUEST['action'])) {
                                                     <option value="2" <?= $row['grade_no'] == '2' ? 'selected' : '' ?>>2</option>
                                                     <option value="3" <?= $row['grade_no'] == '3' ? 'selected' : '' ?>>3</option>
                                                     <option value="4" <?= $row['grade_no'] == '4' ? 'selected' : '' ?>>4</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 opt_field" data-id="5">
+                                            <label class="form-label">Coil Class</label>
+                                            <div class="mb-3">
+                                                <select id="coil_class_edit" class="form-control select2-edit" name="coil_class">
+                                                    <option value="" >Select Coil Class...</option>
+                                                    <option value="SW">SW</option>
+                                                    <option value="FH">FH</option>
+                                                    <option value="FL">FL</option>
                                                 </select>
                                             </div>
                                         </div>
