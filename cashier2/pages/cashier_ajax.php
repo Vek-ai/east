@@ -95,7 +95,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $_SESSION["cart"][$key]['quantity_cart'] = $requestedQuantity;
             echo $_SESSION["cart"][$key]['quantity_cart'];
         } elseif (isset($_POST['addquantity'])) {
-            $newQuantity = $_SESSION["cart"][$key]['quantity_cart'] + 1;
+            $newQuantity = $_SESSION["cart"][$key]['quantity_cart'] + $qty;
             $_SESSION["cart"][$key]['quantity_cart'] = $newQuantity;
             echo $_SESSION["cart"][$key]['quantity_cart'];
         } elseif (isset($_POST['deductquantity'])) {
@@ -290,6 +290,10 @@ if (isset($_REQUEST['query'])) {
             ? "../" .$row_product['main_image']
             : $default_image;
 
+            $is_panel = $row_product['product_category'] == $panel_id ? true : false;
+            $qty_input = !$is_panel ? '<input class="form-control p-1 text-center" type="number" size="5" id="qty'.$row_product['product_id'].'">' : '';
+            $btn_id = $is_panel ? 'add-to-cart-btn' : 'add-to-cart-non-panel';
+
             $tableHTML .= '
             <tr>
                 <td>
@@ -315,9 +319,11 @@ if (isset($_REQUEST['query'])) {
                 <td>
                     <div class="d-flex align-items-center">'.$stock_text.'</div>
                 </td>
-                
                 <td>
-                    <button class="btn btn-sm btn-primary btn-add-to-cart" type="button" data-id="'.$row_product['product_id'].'" id="add-to-cart-btn">Add to Cart</button>
+                    '.$qty_input.'
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-primary btn-add-to-cart" type="button" data-id="'.$row_product['product_id'].'" id="'.$btn_id.'">Add to Cart</button>
                 </td>
             </tr>';
         }

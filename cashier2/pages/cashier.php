@@ -237,6 +237,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                     <th scope="col">Profile</th>
                                     <th scope="col">Category</th>
                                     <th scope="col">Status</th>
+                                    <th scope="col">Qty</th>
                                     <th scope="col">Actions</th>
                                 </tr>
                             </thead>
@@ -2098,6 +2099,54 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 }
             });
         });
+
+        $(document).on('click', '#add-to-cart-non-panel', function() {
+            var product_id = $(this).data('id');
+            var qty = parseInt($('#qty' + product_id).val(), 10) || 0;
+
+            $.ajax({
+                url: "pages/cashier_ajax.php",
+                type: "POST",
+                data: {
+                    product_id: product_id,
+                    line: 1,
+                    qty: qty,
+                    modifyquantity: 'modifyquantity',
+                    addquantity: 'addquantity'
+                },
+                success: function(data) {
+                    $('#qty' + product_id).val('');
+                    loadCartItemsHeader();
+
+                    if ($('#alert-container').length === 0) {
+                        $('body').append(`
+                            <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050; max-width: 300px;">
+                            </div>
+                        `);
+                    }
+
+                    var alertId = 'alert-' + Date.now();
+                    var alertHtml = `
+                        <div id="${alertId}" class="alert alert-success alert-dismissible fade show small mb-2" role="alert">
+                            <strong>Success!</strong> Item added to cart.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>`;
+                    $('#alert-container').append(alertHtml);
+
+                    setTimeout(function() {
+                        $('#' + alertId).alert('close');
+                    }, 5000);
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                }
+            });
+        });
+
 
         $(document).on("click", "#new-job-name-btn", function() {
             var id = $(this).data('id');
