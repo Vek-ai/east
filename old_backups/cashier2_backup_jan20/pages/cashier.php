@@ -100,6 +100,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     </div> -->
     <div class="card">
         <div class="card-body p-3">
+            
             <div class="p-2 d-flex justify-content-end align-items-center gap-4">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#trim_chart_modal" type="button">
                     View Trim Chart
@@ -211,6 +212,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         </select>
                     </div>
                 </div>
+                
             </div>
             <div class="table-responsive border rounded">
                 <table id="productTable" class="table align-middle text-nowrap mb-0">
@@ -248,7 +250,40 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     </nav>
                 </div>
             </div>
+            <!-- 
+            <div class="row mt-4">
+                <div class="col-6">
+                    <div class="d-flex justify-content-start">
+                        
+                        <button class="btn btn-primary mb-2 me-2" type="button" id="view_est_list">
+                            <i class="fa fa-save fs-4 me-2"></i>
+                            View Estimates
+                        </button>
+                        <button class="btn btn-primary mb-2 me-2" type="button" id="view_order_list">
+                            <i class="fa fa-rotate-left fs-4 me-2"></i>
+                            Return
+                        </button> 
+                        
+                        <a href="/">
+                            <button class="btn btn-primary mb-2 me-2" type="button">
+                                <i class="fa fa-home fs-4 me-2"></i>
+                                Main Dashboard
+                            </button> 
+                        </a>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex justify-content-end">
+                        <button class="btn btn-primary mb-2 me-2" type="button" id="view_cart">
+                            <i class="fa fa-shopping-cart fs-4 me-2"></i>
+                            Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+            -->
         </div>
+        
     </div>
 </div>
 <div class="modal" id="custom_trim_draw_modal">
@@ -1272,9 +1307,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 $('#order-tbl').html(response);
                 calculateDeliveryAmount();
                 loadCartItemsHeader();
-                $('#next_page_order').removeClass("d-none");
-                $('#prev_page_order').addClass("d-none");
-                $('#save_order').addClass("d-none");
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1294,9 +1326,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 $('#estimate-tbl').html(response);
                 calculateDeliveryAmountEst();
                 loadCartItemsHeader();
-                $('#next_page_est').removeClass("d-none");
-                $('#prev_page_est').addClass("d-none");
-                $('#save_estimate').addClass("d-none");
+                
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1867,26 +1897,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             location.reload();
                         });
                     }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
-
-        $(document).on('change', '.discount_input', function () {
-            var discount = $(this).val();
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: {
-                    discount: discount,
-                    change_discount: 'change_discount'
-                },
-                success: function(response) {
-                    loadCart();
-                    loadEstimateContents();
-                    loadOrderContents();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);

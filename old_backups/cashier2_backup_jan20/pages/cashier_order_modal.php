@@ -278,7 +278,7 @@ if(isset($_POST['fetch_order'])){
 
                                     $amount_discount = !empty($values["amount_discount"]) ? $values["amount_discount"] : 0;
 
-                                    $product_price = ($values["quantity_cart"] * ($values["unit_price"])) - $amount_discount;
+                                    $product_price = ($values["quantity_cart"] * ($customer_pricing * $values["unit_price"])) - $amount_discount;
 
                                     $color_id = $values["custom_color"];
                                     if (isset($values["used_discount"])){
@@ -497,7 +497,7 @@ if(isset($_POST['fetch_order'])){
                                         </td>
                                         <td class="text-end pl-3">$
                                             <?php
-                                            $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
+                                            $customer_price = $product_price * (1 - $discount);
                                             echo number_format($customer_price, 2);
                                             ?>
                                         </td>
@@ -572,7 +572,7 @@ if(isset($_POST['fetch_order'])){
                                     </div>
                                     <div class="form-group">
                                         <label>Discount (%)</label>
-                                        <input type="text" class="form-control discount_input" id="order_discount" placeholder="%" value="<?= $discount * 100 ?>">
+                                        <input type="text" class="form-control" id="order_discount" placeholder="%" value="<?= $discount * 100 ?>">
                                     </div>
                                     <div class="row">
                                         <div class="col-6">
@@ -736,6 +736,8 @@ if(isset($_POST['fetch_order'])){
                 $('#order_deliver_zip').val('');
             });
 
+            let animating = false;
+
             $(document).on('change', '#delivery_amt', function() {
                 var product_cost = parseFloat($('#total_amt').text()) || 0;
                 var delivery_cost = parseFloat($(this).val()) || 0;
@@ -744,37 +746,60 @@ if(isset($_POST['fetch_order'])){
                 $('#order_cash').val(total_payable.toFixed(2));
             });
 
-            let animating = false;
-
-            function changePage(currentPage, nextPage, isNext) {
+            $(document).on("click", "#next_page_order", function() {
                 if (animating) return false;
                 animating = true;
-
-                var current_fs = $(currentPage);
-                var next_fs = $(nextPage);
-
-                if (isNext) {
-                    $('#next_page_order').addClass("d-none");
-                    $('#prev_page_order').removeClass("d-none");
-                    $('#save_order').removeClass("d-none");
-                } else {
-                    $('#next_page_order').removeClass("d-none");
-                    $('#prev_page_order').addClass("d-none");
-                    $('#save_order').addClass("d-none");
-                }
-
+                var current_fs = $('.order-page-1');
+                var next_fs = $('.order-page-2');
+                $('#next_page_order').addClass("d-none");
+                $('#prev_page_order').removeClass("d-none");
+                $('#save_order').removeClass("d-none");
                 next_fs.show();
-                current_fs.hide();
-
-                animating = false;
-            }
-
-            $(document).on("click", "#next_page_order", function() {
-                changePage('.order-page-1', '.order-page-2', true);
+                current_fs.animate({ opacity: 0 }, {
+                    step: function(now, mx) {
+                        var scale = 1 - (1 - now) * 0.2;
+                        var left = (now * 50) + "%";
+                        var opacity = 1 - now;
+                        current_fs.css({
+                            'transform': 'scale(' + scale + ')',
+                            'position': 'absolute'
+                        });
+                        next_fs.css({ 'left': left, 'opacity': opacity });
+                    },
+                    duration: 800,
+                    complete: function() {
+                        current_fs.hide();
+                        animating = false;
+                    },
+                    easing: 'easeInOutBack'
+                });
             });
 
             $(document).on("click", "#prev_page_order", function() {
-                changePage('.order-page-2', '.order-page-1', false);
+                if (animating) return false;
+                animating = true;
+                var current_fs = $('.order-page-2');
+                var previous_fs = $('.order-page-1');
+                $('#next_page_order').removeClass("d-none");
+                $('#prev_page_order').addClass("d-none");
+                $('#save_order').addClass("d-none");
+                previous_fs.show();
+                current_fs.animate({ opacity: 0 }, {
+                    step: function(now, mx) {
+                        var scale = 0.8 + (1 - now) * 0.2;
+                        var left = ((1 - now) * 50) + "%";
+                        var opacity = 1 - now;
+                        current_fs.css({ 'left': left });
+                        previous_fs.css({ 'transform': 'scale(' + scale + ')', 'opacity': opacity });
+                    },
+                    duration: 800,
+                    complete: function() {
+                        current_fs.hide();
+                        animating = false;
+                    },
+                    easing: 'easeInOutBack'
+                });
+                
             });
 
             $('#order_job_name').select2({
