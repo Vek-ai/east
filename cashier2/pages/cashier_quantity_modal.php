@@ -109,7 +109,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 <label class="fs-5 fw-bold" for="quantity-product">Select Panel Type</label>
                 <div class="input-group d-flex align-items-center position-relative">
                     <div class="form-control mr-1">
-                        <input type="checkbox" id="solid_panel" name="panel_type" value="solid"> Solid
+                        <input type="checkbox" id="solid_panel" name="panel_type" value="solid" selected> Solid
                     </div>
                     <div class="form-control mr-1 position-relative">
                         <input type="checkbox" id="vented_panel" name="panel_type" value="vented"> Vented
