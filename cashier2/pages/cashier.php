@@ -56,6 +56,58 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         max-height: calc(100vh - 50px);
         overflow-y: auto;
     }
+
+    #productTable th,
+    #productTable td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    #productTable th:nth-child(1), 
+    #productTable td:nth-child(1) {
+        width: 25% !important; /* Products */
+    }
+
+    #productTable th:nth-child(2), 
+    #productTable td:nth-child(2) {
+        width: 8% !important; /* Avail. Colors */
+    }
+
+    #productTable th:nth-child(3), 
+    #productTable td:nth-child(3) {
+        width: 7% !important; /* Grade */
+    }
+
+    #productTable th:nth-child(4), 
+    #productTable td:nth-child(4) {
+        width: 10% !important; /* Gauge */
+    }
+
+    #productTable th:nth-child(5), 
+    #productTable td:nth-child(5) {
+        width: 10% !important; /* Type */
+    }
+
+    #productTable th:nth-child(6), 
+    #productTable td:nth-child(6) {
+        width: 10% !important; /* Profile */
+    }
+
+    #productTable th:nth-child(7), 
+    #productTable td:nth-child(7) {
+        width: 10% !important; /* Status */
+    }
+
+    #productTable th:nth-child(8), 
+    #productTable td:nth-child(8) {
+        width: 10% !important; /* Quantity */
+    }
+
+    #productTable th:nth-child(9), 
+    #productTable td:nth-child(9) {
+        width: 10% !important; /* Actions */
+    }
+
 </style>
 <div class="product-list pt-4">
     <!-- <div class="row row-xs pr-3">
@@ -226,7 +278,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         <div id="selected-tags"></div>
                     </div>
                     <div class="table-responsive border rounded">
-                        <table id="productTable" class="table align-middle text-nowrap mb-0">
+                        <table id="productTable" class="table align-middle text-wrap mb-0">
                             <thead>
                                 <tr>
                                     <th scope="col">Products</th>
@@ -235,9 +287,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                     <th scope="col">Gauge</th>
                                     <th scope="col">Type</th>
                                     <th scope="col">Profile</th>
-                                    <th scope="col">Category</th>
                                     <th scope="col">Status</th>
-                                    <th scope="col">Qty</th>
+                                    <th scope="col">Quantity</th>
                                     <th scope="col">Actions</th>
                                 </tr>
                             </thead>
@@ -2115,7 +2166,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     addquantity: 'addquantity'
                 },
                 success: function(data) {
-                    $('#qty' + product_id).val('');
+                    $('#qty' + product_id).val(1);
                     loadCartItemsHeader();
 
                     if ($('#alert-container').length === 0) {
@@ -2145,6 +2196,23 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     });
                 }
             });
+        });
+
+        $(document).on('click', '.btn-plus', function () {
+            var product_id = $(this).data('id');
+            var input = $('#qty' + product_id);
+            var currentValue = parseInt(input.val(), 10) || 0;
+            input.val(currentValue + 1).trigger('change');
+        });
+
+        $(document).on('click', '.btn-minus', function () {
+            var product_id = $(this).data('id');
+            var input = $('#qty' + product_id);
+            var currentValue = parseInt(input.val(), 10) || 0;
+            var minValue = parseInt(input.attr('min')) || 1;
+            if (currentValue > minValue) {
+                input.val(currentValue - 1).trigger('change');
+            }
         });
 
 

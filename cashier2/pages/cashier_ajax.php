@@ -291,7 +291,14 @@ if (isset($_REQUEST['query'])) {
             : $default_image;
 
             $is_panel = $row_product['product_category'] == $panel_id ? true : false;
-            $qty_input = !$is_panel ? '<input class="form-control p-1 text-center" type="number" size="5" id="qty'.$row_product['product_id'].'">' : '';
+            $qty_input = !$is_panel 
+                ? ' <div class="input-group input-group-sm">
+                        <button class="btn btn-outline-primary btn-minus" type="button" data-id="' . $row_product['product_id'] . '">-</button>
+                        <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1">
+                        <button class="btn btn-outline-primary btn-plus" type="button" data-id="' . $row_product['product_id'] . '">+</button>
+                    </div>'
+                : '';
+
             $btn_id = $is_panel ? 'add-to-cart-btn' : 'add-to-cart-non-panel';
 
             $tableHTML .= '
@@ -315,7 +322,6 @@ if (isset($_REQUEST['query'])) {
                 <td><p class="mb-0">'. getGaugeName($row_product['gauge']) .'</p></td>
                 <td><p class="mb-0">'. getProductTypeName($row_product['product_type']) .'</p></td>
                 <td><p class="mb-0">'. getProfileTypeName($row_product['profile']) .'</p></td>
-                <td><p class="mb-0">'. getProductCategoryName($row_product['product_category']) .'</p></td>
                 <td>
                     <div class="d-flex align-items-center">'.$stock_text.'</div>
                 </td>
