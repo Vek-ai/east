@@ -227,7 +227,7 @@ if(isset($_POST['fetch_order'])){
                                 <th width="5%" class="text-center">Profile</th>
                                 <th width="25%" class="text-center pl-3">Quantity</th>
                                 <th width="15%" class="text-center pl-3">Usage</th>
-                                <th width="30%" class="text-center">Dimensions<br>(Width X Height)</th>
+                                <th width="30%" class="text-center">Dimensions<br>(Width x Length)</th>
                                 <th width="5%" class="text-center">Stock</th>
                                 <th width="7%" class="text-center">Price</th>
                                 <th width="7%" class="text-center small">Customer<br>Price</th>

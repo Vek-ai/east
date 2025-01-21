@@ -159,7 +159,7 @@ if(isset($_POST['fetch_cart'])){
                         <th class="text-center">Profile</th>
                         <th class="text-center pl-3">Quantity</th>
                         <th class="text-center pl-3">Usage</th>
-                        <th class="text-center">Dimensions<br>(Width X Height)</th>
+                        <th class="text-center">Dimensions<br>(Width x Length)</th>
                         <th class="text-center">Stock</th>
                         <th class="text-center">Price</th>
                         <th class="text-center small">Customer<br>Price</th>
