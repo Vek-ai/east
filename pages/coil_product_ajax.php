@@ -539,11 +539,13 @@ if(isset($_REQUEST['action'])) {
             </div>
             <script>
                 $(document).ready(function() {
-                    $(".select2-edit").select2({
-                        width: '100%',
-                        placeholder: "Select One...",
-                        allowClear: true,
-                        dropdownParent: $('#updateProductModal')
+                    $(".select2-edit").each(function () {
+                        $(this).select2({
+                            width: '100%',
+                            placeholder: "Select One...",
+                            allowClear: true,
+                            dropdownParent: $(this).parent()
+                        });
                     });
 
                     let uploadedUpdateFiles = [];

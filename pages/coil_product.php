@@ -805,11 +805,13 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
 
         $('#toggleActive').trigger('change');
 
-        $(".select2-add").select2({
-            width: '100%',
-            placeholder: "Select One...",
-            allowClear: true,
-            dropdownParent: $('#addCoilModal')
+        $(".select2-add").each(function () {
+            $(this).select2({
+                width: '100%',
+                placeholder: "Select One...",
+                allowClear: true,
+                dropdownParent: $(this).parent()
+            });
         });
 
         // Show the Edit Product modal and log the product ID

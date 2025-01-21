@@ -2661,14 +2661,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     contentType: false,
                     success: function (response) {
                         $('.modal').modal("hide");
-                        const isSuccess = response.trim() === "success";
-                        $('#responseHeader').text(isSuccess ? "Success" : "Failed");
-                        $('#responseMsg').text(isSuccess ? "Added to Cart." : response);
-                        $('#responseHeaderContainer')
-                            .toggleClass("bg-success", isSuccess)
-                            .toggleClass("bg-danger", !isSuccess);
-                        $('#response_modal').modal("show");
-                        if (isSuccess) loadCart();
+                        loadCart();
                     },
                     error: function (xhr) {
                         console.error('Error:', xhr.responseText);
