@@ -107,7 +107,7 @@ if(isset($_POST['fetch_order'])){
         if(!empty($_SESSION["customer_id"])){
             $customer_id = $_SESSION["customer_id"];
             $customer_details = getCustomerDetails($customer_id);
-            $credit_limit = number_format(floatval($customer_details['credit_limit'] ?? 0), 2);
+            $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
             $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
             $lat = !empty($customer_details['lat']) ? $customer_details['lat'] : 0;
             $lng = !empty($customer_details['lng']) ? $customer_details['lng'] : 0;
@@ -227,7 +227,7 @@ if(isset($_POST['fetch_order'])){
                                 <th width="5%" class="text-center">Profile</th>
                                 <th width="25%" class="text-center pl-3">Quantity</th>
                                 <th width="15%" class="text-center pl-3">Usage</th>
-                                <th width="30%" class="text-center">Dimensions<br>(Width x Length)</th>
+                                <th width="30%" class="text-center">Dimensions<br>(Width X Height)</th>
                                 <th width="5%" class="text-center">Stock</th>
                                 <th width="7%" class="text-center">Price</th>
                                 <th width="7%" class="text-center small">Customer<br>Price</th>

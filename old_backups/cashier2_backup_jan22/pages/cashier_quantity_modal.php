@@ -49,7 +49,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
             <div class="quantity-length-container row mx-0">
                 <div class="quantity-field <?= empty($sold_by_feet) ? 'col-12' : 'col-6'; ?> mb-2">
                     <label class="fs-5 fw-bold" for="quantity-product">Quantity</label>
-                    <input type="number" value="1" id="quantity-product" name="quantity_product[]" class="form-control mb-1 quantity-product" placeholder="Enter Quantity" list="quantity-product-list" autocomplete="off">
+                    <input id="quantity-product" name="quantity_product[]" class="form-control mb-1 quantity-product" placeholder="Enter Quantity" list="quantity-product-list" autocomplete="off">
                 </div>
                 <div class="col-6 mb-2 <?= empty($sold_by_feet) ? 'd-none' : '';?> length-field">
                     <fieldset class="p-0 position-relative">
@@ -109,7 +109,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 <label class="fs-5 fw-bold" for="quantity-product">Select Panel Type</label>
                 <div class="input-group d-flex align-items-center position-relative">
                     <div class="form-control mr-1">
-                        <input type="checkbox" id="solid_panel" name="panel_type" value="solid" selected> Solid
+                        <input type="checkbox" id="solid_panel" name="panel_type" value="solid"> Solid
                     </div>
                     <div class="form-control mr-1 position-relative">
                         <input type="checkbox" id="vented_panel" name="panel_type" value="vented"> Vented

@@ -95,7 +95,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $_SESSION["cart"][$key]['quantity_cart'] = $requestedQuantity;
             echo $_SESSION["cart"][$key]['quantity_cart'];
         } elseif (isset($_POST['addquantity'])) {
-            $newQuantity = $_SESSION["cart"][$key]['quantity_cart'] + $qty;
+            $newQuantity = $_SESSION["cart"][$key]['quantity_cart'] + 1;
             $_SESSION["cart"][$key]['quantity_cart'] = $newQuantity;
             echo $_SESSION["cart"][$key]['quantity_cart'];
         } elseif (isset($_POST['deductquantity'])) {
@@ -290,17 +290,6 @@ if (isset($_REQUEST['query'])) {
             ? "../" .$row_product['main_image']
             : $default_image;
 
-            $is_panel = $row_product['product_category'] == $panel_id ? true : false;
-            $qty_input = !$is_panel 
-                ? ' <div class="input-group input-group-sm">
-                        <button class="btn btn-outline-primary btn-minus" type="button" data-id="' . $row_product['product_id'] . '">-</button>
-                        <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1">
-                        <button class="btn btn-outline-primary btn-plus" type="button" data-id="' . $row_product['product_id'] . '">+</button>
-                    </div>'
-                : '';
-
-            $btn_id = $is_panel ? 'add-to-cart-btn' : 'add-to-cart-non-panel';
-
             $tableHTML .= '
             <tr>
                 <td>
@@ -322,14 +311,13 @@ if (isset($_REQUEST['query'])) {
                 <td><p class="mb-0">'. getGaugeName($row_product['gauge']) .'</p></td>
                 <td><p class="mb-0">'. getProductTypeName($row_product['product_type']) .'</p></td>
                 <td><p class="mb-0">'. getProfileTypeName($row_product['profile']) .'</p></td>
+                <td><p class="mb-0">'. getProductCategoryName($row_product['product_category']) .'</p></td>
                 <td>
                     <div class="d-flex align-items-center">'.$stock_text.'</div>
                 </td>
+                
                 <td>
-                    '.$qty_input.'
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-primary btn-add-to-cart" type="button" data-id="'.$row_product['product_id'].'" id="'.$btn_id.'">Add to Cart</button>
+                    <button class="btn btn-sm btn-primary btn-add-to-cart" type="button" data-id="'.$row_product['product_id'].'" id="add-to-cart-btn">Add to Cart</button>
                 </td>
             </tr>';
         }

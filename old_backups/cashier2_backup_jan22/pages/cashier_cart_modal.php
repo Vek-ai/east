@@ -103,7 +103,7 @@ if(isset($_POST['fetch_cart'])){
             if(!empty($_SESSION["customer_id"])){
                 $customer_id = $_SESSION["customer_id"];
                 $customer_details = getCustomerDetails($customer_id);
-                $credit_limit = number_format(floatval($customer_details['credit_limit'] ?? 0), 2);
+                $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
                 $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
             ?>
 
@@ -159,7 +159,7 @@ if(isset($_POST['fetch_cart'])){
                         <th class="text-center">Profile</th>
                         <th class="text-center pl-3">Quantity</th>
                         <th class="text-center pl-3">Usage</th>
-                        <th class="text-center">Dimensions<br>(Width x Length)</th>
+                        <th class="text-center">Dimensions<br>(Width X Height)</th>
                         <th class="text-center">Stock</th>
                         <th class="text-center">Price</th>
                         <th class="text-center small">Customer<br>Price</th>
