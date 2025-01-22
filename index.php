@@ -26,6 +26,8 @@ if (!isset($_SESSION['userid'])) {
   <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/smoothness/jquery-ui.css">
 
+  <link rel="stylesheet" href="assets/libs/owl.carousel/dist/assets/owl.carousel.min.css">
+
   <!-- Core Css -->
   <link rel="stylesheet" href="assets/css/styles.css" />
 
