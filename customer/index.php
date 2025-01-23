@@ -1,10 +1,15 @@
 <?php
 session_start();
-if (!isset($_SESSION['userid'])) {
+if (!isset($_SESSION['customer_id'])) {
     $redirect_url = urlencode($_SERVER['REQUEST_URI']);
     header("Location: login.php?redirect=$redirect_url");
     exit();
 }
+include_once '../includes/dbconn.php';
+include_once '../includes/functions.php';
+
+$customer_id = $_SESSION['customer_id'];
+$customer_details = getCustomerDetails($customer_id);
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-bs-theme="dark" data-color-theme="Blue_Theme" data-layout="vertical">
@@ -34,10 +39,7 @@ if (!isset($_SESSION['userid'])) {
   <!-- Core Css -->
   <link rel="stylesheet" href="../assets/css/styles.css" />
 
-
-  
-
-  <title>East Kentucky Metal</title>
+  <title>Customers - East Kentucky Metal</title>
 
 </head>
 
@@ -554,9 +556,9 @@ if (!isset($_SESSION['userid'])) {
                           <div class="d-flex align-items-center px-3">
                             <img src="../assets/images/profile/user-1.jpg" class="rounded-circle round-50" alt="" />
                             <div class="ms-3">
-                              <h5 class="mb-1 fs-4">Markarn Doe</h5>
+                              <h5 class="mb-1 fs-4"><?= $customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'] ?></h5>
                               <p class="mb-0 fs-2 d-flex align-items-center text-muted">
-                                markrarn@wrappixel.com
+                                <?= $customer_details['contact_email'] ?>
                               </p>
                             </div>
                           </div>
@@ -1226,9 +1228,9 @@ if (!isset($_SESSION['userid'])) {
                           <div class="d-flex align-items-center px-3">
                             <img src="../assets/images/profile/user-1.jpg" class="rounded-circle round-50" alt="" />
                             <div class="ms-3">
-                              <h5 class="mb-1 fs-4">Markarn Doe</h5>
+                              <h5 class="mb-1 fs-4"><?= $customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'] ?></h5>
                               <p class="mb-0 fs-2 d-flex align-items-center text-muted">
-                                markrarn@wrappixel.com
+                                <?= $customer_details['contact_email'] ?>
                               </p>
                             </div>
                           </div>
@@ -1299,7 +1301,7 @@ if (!isset($_SESSION['userid'])) {
           <?php 
             if (empty($_REQUEST['page'])) {include 'pages/customer-dash.php';}
             if ($_REQUEST['page'] == "customer-profile") {include 'pages/customer-profile.php';}
-
+            if ($_REQUEST['page'] == "product") {include 'pages/product.php';}
           ?>
         </div>
       </div>

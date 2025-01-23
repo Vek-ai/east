@@ -4,31 +4,32 @@ session_start();
 include "../includes/dbconn.php";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $conn->real_escape_string($_POST['username']);
-    $password = $_POST['password'];
-    $redirect = (!empty($_REQUEST['redirect']) && $_REQUEST['redirect'] !== 'login.php') ? $_REQUEST['redirect'] : 'index.php';
+  $username = $conn->real_escape_string($_POST['username']);
+  $password = $_POST['password'];
+  $redirect = (!empty($_REQUEST['redirect']) && $_REQUEST['redirect'] !== 'login.php') ? $_REQUEST['redirect'] : 'index.php';
 
-    $sql = "SELECT customer_id, password FROM customer WHERE username = '$username'";
-    $result = $conn->query($sql);
+  $sql = "SELECT customer_id, password FROM customer WHERE username = '$username'";
+  $result = $conn->query($sql);
 
-    if ($result && $result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $db_password = $row['password'];
-        $customer_id = $row['customer_id'];
+  if ($result && $result->num_rows > 0) {
+      $row = $result->fetch_assoc();
+      $db_password = $row['password'];
+      $customer_id = $row['customer_id'];
 
-        if ($db_password == $password) {
-            $_SESSION['userid'] = $customer_id;
-            setcookie("userid", $customer_id, time() + (86400 * 30), "/");
+      if (password_verify($password, $db_password)) {
+          $_SESSION['customer_id'] = $customer_id;
+          setcookie("userid", $customer_id, time() + (86400 * 30), "/");
 
-            header("Location: $redirect");
-            exit();
-        } else {
-            $error = 'Invalid username or password.';
-        }
-    } else {
-        $error = 'Invalid username or password.';
-    }
+          header("Location: $redirect");
+          exit();
+      } else {
+          $error = 'Invalid username or password.';
+      }
+  } else {
+      $error = 'Invalid username or password.';
+  }
 }
+
 ?>
 
 

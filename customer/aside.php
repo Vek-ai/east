@@ -15,7 +15,7 @@
               <a href="javascript:void(0)" class="dropdown-toggle u-dropdown w-100 text-white
                   d-block
                   position-relative
-                " id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">Markarn Doe</a>
+                " id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false"><?= $customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'] ?></a>
               <div class="dropdown-menu animated flipInY" aria-labelledby="dropdownMenuLink">
                
                
@@ -26,7 +26,7 @@
                   Account Setting
                 </a>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item d-flex gap-2" href="logout.php">
+                <a class="dropdown-item d-flex gap-2" href="#">
                   <i data-feather="log-out" class="feather-sm text-danger "></i>
                   Logout
                 </a>
@@ -49,16 +49,23 @@
         </li>
         <li class="sidebar-item">
           <a class="sidebar-link" href="?page=customer-profile">
-            <iconify-icon icon="solar:pen-new-round-linear" class="aside-icon"></iconify-icon>
+            <i class="fa fa-user-circle aside-icon"></i>
             <span class="hide-menu">Profile</span>
           </a>
         </li>
         <li class="sidebar-item">
           <a class="sidebar-link" href="index.php">
-            <iconify-icon icon="solar:pen-new-round-linear" class="aside-icon"></iconify-icon>
+            <i class="fa fa-tachometer-alt aside-icon"></i>
             <span class="hide-menu">Dashboard</span>
           </a>
         </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="?page=product">
+            <i class="fa fa-shopping-cart aside-icon"></i>
+            <span class="hide-menu">Products</span>
+          </a>
+        </li>
+
       </ul>
         </nav>
 

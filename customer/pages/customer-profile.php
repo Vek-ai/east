@@ -1,14 +1,14 @@
 <?php
-include '../includes/dbconn.php';
+include_once '../includes/dbconn.php';
 
-if (!isset($_SESSION['userid'])) {
+if (!isset($_SESSION['customer_id'])) {
   header("Location: login.php");
   exit();
 }
 
 global $currentUser;
 
-$customer_id = $_SESSION['userid'];
+$customer_id = $_SESSION['customer_id'];
 
 $sql = "SELECT *, customer_types.customer_type_name 
         FROM customer 
