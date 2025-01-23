@@ -15,11 +15,10 @@ $category_id = isset($_REQUEST['category_id']) ? $_REQUEST['category_id'] : '';
 $profile_id = isset($_REQUEST['profile_id']) ? $_REQUEST['profile_id'] : '';
 $type_id = isset($_REQUEST['type_id']) ? $_REQUEST['type_id'] : '';
 $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
+$customer_details_pricing = $customer_details['customer_pricing'];
 ?>
 <style>
-    /* .select2-container {
-        z-index: 9999 !important; 
-    } */
+
     .dz-preview {
         position: relative;
     }
@@ -364,6 +363,11 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                             }
                                         }
                                     }
+
+                                    $customer_pricing = getPricingCategory($row_product['product_category'], $customer_details_pricing) / 100;
+
+                                    $product_price = floatval($row_product["unit_price"]);
+                                    $customer_price = $product_price * (1 - $customer_pricing);
                 
                                 ?>
                                     <!-- start row -->
@@ -391,15 +395,12 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         <td><?= getProductLineName($row_product['product_line']) ?></td>
                                         <td><?= getProductTypeName($row_product['product_type']) ?></td>
                                         <td><?= $stock_text ?></td>
-                                        <td>$ <?= number_format(floatval($row_product['product_type']),2) ?></td>
+                                        <td>$ <?= number_format(floatval($customer_price),2) ?></td>
                                         <td>
                                             <div class="action-btn text-center">
                                                 <a href="javascript:void(0);" class="view_product_details" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
                                                     <i class="text-primary ti ti-eye fs-7"></i>
                                                 </a>
-                                                <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_product['product_id'] ?>">
-                                                    <i class="ti ti-trash fs-5"></i>
-                                                </a> -->
                                             </div>
                                         </td>
                                     </tr>
@@ -621,11 +622,10 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                 }
             });
 
-            // Add event listener to remove tag buttons
             $('.remove-tag').on('click', function() {
                 const selectId = $(this).data('select');
-                $(selectId).val('').trigger('change'); // Clear and trigger change for re-filtering
-                $(this).parent().remove(); // Remove tag element
+                $(selectId).val('').trigger('change');
+                $(this).parent().remove();
             });
         }
     });
