@@ -209,8 +209,11 @@ if(!empty($_REQUEST['result'])){
             <div class="mb-3">
                 <select id="multiplier_category_add" class="form-control select2-add" name="multiplier_category">
                     <option value="" >Select Multiplier Category...</option>
-                    <option value="Painted" <?= $multiplier_category == 'Painted' ? 'selected' : '' ?>>Painted</option>
+                    <option value="Acrylic" <?= $multiplier_category == 'Acrylic' ? 'selected' : '' ?>>Acrylic</option>
                     <option value="Bare" <?= $multiplier_category == 'Bare' ? 'selected' : '' ?>>Bare</option>
+                    <option value="Metallic" <?= $multiplier_category == 'Metallic' ? 'selected' : '' ?>>Metallic</option>
+                    <option value="Painted" <?= $multiplier_category == 'Painted' ? 'selected' : '' ?>>Painted</option>
+                    <option value="Textured" <?= $multiplier_category == 'Textured' ? 'selected' : '' ?>>Textured</option>
                 </select>
             </div>
         </div>
