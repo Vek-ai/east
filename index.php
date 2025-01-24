@@ -1411,6 +1411,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "supplier_color") {include 'pages/supplier_color.php';}
 
             if ($_REQUEST['page'] == "product_color") {include 'pages/product_color.php';}
+            if ($_REQUEST['page'] == "table_gauge") {include 'pages/table_gauge.php';}
           ?>
         </div>
       </div>
