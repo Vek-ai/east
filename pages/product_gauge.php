@@ -5,6 +5,9 @@ require 'includes/functions.php';
 $product_gauge = "";
 $gauge_abbreviations = "";
 $notes = "";
+$thickness = "";
+$no_per_sqft = 0;
+$no_per_sqin = 0;
 
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
@@ -18,6 +21,9 @@ if(!empty($_REQUEST['product_gauge_id'])){
       $product_gauge = $row['product_gauge'];
       $gauge_abbreviations = $row['gauge_abbreviations'];
       $notes = $row['notes'];
+      $thickness = $row['thickness'];
+      $no_per_sqft = $row['no_per_sqft'];
+      $no_per_sqin = $row['no_per_sqin'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -135,6 +141,27 @@ if(!empty($_REQUEST['result'])){
         </div>
       </div>
 
+      <div class="row pt-3">
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label class="form-label">Thickness</label>
+            <input type="number" id="thickness" name="thickness" class="form-control"  value="<?= $thickness ?>"/>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label class="form-label">#/SQFT</label>
+            <input type="text" id="no_per_sqft" name="no_per_sqft" class="form-control" value="<?= $no_per_sqft ?>" />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label class="form-label">#/SQFT</label>
+            <input type="text" id="no_per_sqin" name="no_per_sqin" class="form-control" value="<?= $no_per_sqin ?>" />
+          </div>
+        </div>
+      </div>
+
       <div class="mb-3">
         <label class="form-label">Notes</label>
         <textarea class="form-control" id="notes" name="notes" rows="5"><?= $notes ?></textarea>
@@ -177,7 +204,9 @@ if(!empty($_REQUEST['result'])){
               <tr>
                 <th>Product gauge</th>
                 <th>Gauge Abreviations</th>
-                <th>Notes</th>
+                <th>Thickness</th>
+                <th>#/SQFT</th>
+                <th>#/SQIN</th>
                 <th>Details</th>
                 <th>Status</th>
               
@@ -196,6 +225,9 @@ while ($row_product_gauge = mysqli_fetch_array($result_product_gauge)) {
     $gauge_abbreviations = $row_product_gauge['gauge_abbreviations'];
     $db_status = $row_product_gauge['status'];
     $notes = $row_product_gauge['notes'];
+    $thickness = floatval($row_product_gauge['thickness']);
+    $no_per_sqft = floatval($row_product_gauge['no_per_sqft']);
+    $no_per_sqin = floatval($row_product_gauge['no_per_sqin']);
    // $last_edit = $row_product_gauge['last_edit'];
     $date = new DateTime($row_product_gauge['last_edit']);
     $last_edit = $date->format('m-d-Y');
@@ -221,7 +253,9 @@ while ($row_product_gauge = mysqli_fetch_array($result_product_gauge)) {
 <tr id="product-row-<?= $no ?>">
     <td><span class="product<?= $no ?> <?php if ($row_product_gauge['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_gauge ?></span></td>
     <td><?= $gauge_abbreviations ?></td>
-    <td class="notes" style="width:30%;"><?= $notes ?></td>
+    <td><?= $thickness ?></td>
+    <td><?= $no_per_sqft ?></td>
+    <td><?= $no_per_sqin ?></td>
     <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
     <td><?= $status ?></td>
     <td class="text-center" id="action-button-<?= $no ?>">

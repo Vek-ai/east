@@ -12,6 +12,9 @@ if(isset($_REQUEST['action'])) {
         $product_gauge_id = mysqli_real_escape_string($conn, $_POST['product_gauge_id']);
         $product_gauge = mysqli_real_escape_string($conn, $_POST['product_gauge']);
         $gauge_abbreviations = mysqli_real_escape_string($conn, $_POST['gauge_abbreviations']);
+        $thickness = mysqli_real_escape_string($conn, $_POST['thickness']);
+        $no_per_sqft = mysqli_real_escape_string($conn, $_POST['no_per_sqft']);
+        $no_per_sqin = mysqli_real_escape_string($conn, $_POST['no_per_sqin']);
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
@@ -50,7 +53,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_gauge SET product_gauge = '$product_gauge', gauge_abbreviations = '$gauge_abbreviations', notes = '$notes', last_edit = NOW(), edited_by = '$userid'  WHERE product_gauge_id = '$product_gauge_id'";
+                $updateQuery = "UPDATE product_gauge SET product_gauge = '$product_gauge', gauge_abbreviations = '$gauge_abbreviations', notes = '$notes', thickness = '$thickness', no_per_sqft = '$no_per_sqft', no_per_sqin = '$no_per_sqin', last_edit = NOW(), edited_by = '$userid'  WHERE product_gauge_id = '$product_gauge_id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "update-success";
                 } else {
@@ -76,7 +79,7 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO product_gauge (product_gauge, gauge_abbreviations, notes, added_date, added_by) VALUES ('$product_gauge', '$gauge_abbreviations', '$notes', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO product_gauge (product_gauge, gauge_abbreviations, notes, thickness, no_per_sqft, no_per_sqin, added_date, added_by) VALUES ('$product_gauge', '$gauge_abbreviations', '$thickness', '$no_per_sqft', '$no_per_sqin', '$notes', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "add-success";
                 } else {
