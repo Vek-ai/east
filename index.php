@@ -1409,6 +1409,8 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "pricing_category") {include 'pages/pricing_category.php';}
 
             if ($_REQUEST['page'] == "supplier_color") {include 'pages/supplier_color.php';}
+
+            if ($_REQUEST['page'] == "product_color") {include 'pages/product_color.php';}
           ?>
         </div>
       </div>
