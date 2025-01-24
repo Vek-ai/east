@@ -7,6 +7,10 @@ $color_code = "";
 $color_group = "";
 $provider_id = "";
 $ekm_color_code = "";
+$ekm_color_no = "";
+$ekm_paint_code = "";
+$stock_availability = '';
+$multiplier_category = '';
 $color_abbreviation = "";
 
 $saveBtnTxt = "Add";
@@ -22,7 +26,11 @@ if(!empty($_REQUEST['color_id'])){
       $color_code = $row['color_code'];
       $color_group = $row['color_group'];
       $provider_id = $row['provider_id'];
+      $stock_availability = $row['stock_availability'];
+      $multiplier_category = $row['multiplier_category'];
       $ekm_color_code = $row['ekm_color_code'];
+      $ekm_color_no = $row['ekm_color_no'];
+      $ekm_paint_code = $row['ekm_paint_code'];
       $color_abbreviation = $row['color_abbreviation'];
   }
   $saveBtnTxt = "Update";
@@ -142,6 +150,18 @@ if(!empty($_REQUEST['result'])){
         </div>
         <div class="col-md-3">
           <div class="mb-3">
+            <label class="form-label">EKM Color No</label>
+            <input type="text" id="ekm_color_no" name="ekm_color_no" class="form-control" value="<?= $ekm_color_no ?>" />
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="mb-3">
+            <label class="form-label">EKM Paint Code</label>
+            <input type="text" id="ekm_paint_code" name="ekm_paint_code" class="form-control" value="<?= $ekm_paint_code ?>" />
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="mb-3">
             <label class="form-label">Color Group</label>
             <input type="text" id="color_group" name="color_group" class="form-control" value="<?= $color_group ?>" />
           </div>
@@ -178,9 +198,9 @@ if(!empty($_REQUEST['result'])){
             <div class="mb-3">
                 <select id="stock_availability_add" class="form-control select2-add" name="stock_availability">
                     <option value="" >Select Stock Availability...</option>
-                    <option value="stock">Stock</option>
-                    <option value="one_time">One-Time</option>
-                    <option value="special_order">Special Order</option>
+                    <option value="Stock" <?= $stock_availability == 'Stock' ? 'selected' : '' ?> >Stock</option>
+                    <option value="One-Time" <?= $stock_availability == 'One-Time' ? 'selected' : '' ?>>One-Time</option>
+                    <option value="Special Order" <?= $stock_availability == 'Special Order' ? 'selected' : '' ?>>Special Order</option>
                 </select>
             </div>
         </div>
@@ -189,8 +209,8 @@ if(!empty($_REQUEST['result'])){
             <div class="mb-3">
                 <select id="multiplier_category_add" class="form-control select2-add" name="multiplier_category">
                     <option value="" >Select Multiplier Category...</option>
-                    <option value="painted">Painted</option>
-                    <option value="bare">Bare</option>
+                    <option value="Painted" <?= $multiplier_category == 'Painted' ? 'selected' : '' ?>>Painted</option>
+                    <option value="Bare" <?= $multiplier_category == 'Bare' ? 'selected' : '' ?>>Bare</option>
                 </select>
             </div>
         </div>
