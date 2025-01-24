@@ -199,32 +199,21 @@ $picture_path = "images/product/product.jpg";
                         <select class="form-control search-chat py-0 ps-5 select2-filter" id="select-grade" title="Color Multipliers">
                             <option value="">All Grades</option>
                             <optgroup label="Product Grades">
-                                <?php
-                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
-                                $result_grade = mysqli_query($conn, $query_grade);
-                                while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                    $selected = ($grade_id == $row_grade['product_grade_id']) ? 'selected' : '';
-                                ?>
-                                    <option value="<?= $row_grade['product_grade_id'] ?>"><?= $row_grade['product_grade'] ?></option>
-                                <?php
-                                }
-                                ?>
+                                <option value="1">1</option>
+                                <option value="1">1</option>
                             </optgroup>
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
                         <select class="form-control search-chat py-0 ps-5 select2-filter" id="select-gauge" title="Gauges">
                             <option value="">All Gauges</option>
-                            <optgroup label="Product Gauges">
-                                <?php
-                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
-                                $result_gauge = mysqli_query($conn, $query_gauge);
-                                while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                                ?>
-                                    <option value="<?= $row_gauge['product_gauge_id'] ?>"><?= $row_gauge['product_gauge'] ?></option>
-                                <?php
-                                }
-                                ?>
+                            <optgroup label="Category">
+                                <option value="24">24</option>
+                                <option value="26">26</option>
+                                <option value="27">27</option>
+                                <option value="28">28</option>
+                                <option value="29">29</option>
+                                <option value="30">30</option>
                             </optgroup>
                         </select>
                     </div>
@@ -290,8 +279,8 @@ $picture_path = "images/product/product.jpg";
                                         <td><?= getProductCategoryName($row_prod_color['product_category']) ?></td>
                                         <td><?= getProductColorMultName($row_prod_color['color_mult_id']) ?></td>
                                         <td><?= $row_prod_color['availability'] ?></td>
-                                        <td><?= getGradeName($row_prod_color['grade']) ?></td>
-                                        <td><?= getGaugeName($row_prod_color['gauge']) ?></td>
+                                        <td><?= $row_prod_color['grade'] ?></td>
+                                        <td><?= $row_prod_color['gauge'] ?></td>
                                         <td>
                                             <div class="action-btn text-center">
                                                 <a href="#" class="text-primary view_color_btn" data-title="Update" data-id="<?= $row_prod_color['id'] ?>">
@@ -417,9 +406,18 @@ $picture_path = "images/product/product.jpg";
                 contentType: false,
                 success: function(response) {
                     $('#updateProductModal').modal('hide');
-                    if (response.trim() === "success") {
+                    if (response.trim() === "success_update") {
                         $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Product updated successfully.");
+                        $('#responseMsg').text("Product Color updated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    }else if (response.trim() === "success_add") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("New Product Color added successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");

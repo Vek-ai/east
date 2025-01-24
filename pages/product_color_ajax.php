@@ -10,7 +10,6 @@ if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-
         $id = intval($_POST['id']);
         $color = mysqli_real_escape_string($conn, $_POST['color']);
         $product_category = mysqli_real_escape_string($conn, $_POST['product_category']);
@@ -21,18 +20,75 @@ if(isset($_REQUEST['action'])) {
         $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
         $grade = mysqli_real_escape_string($conn, $_POST['grade']);
     
+        $color_details = getColorDetails($color);
+        $color_name = $color_details['color_name'] ?? '';
+        $color_code = $color_details['ekm_color_code'] ?? '';
+        $color_no = $color_details['ekm_color_no'] ?? '';
+        $paint_code = $color_details['ekm_paint_code'] ?? '';
+        $system_mapping = ($grade == 2 ? 'e' : '') . $color_name;
+    
         $checkQuery = "SELECT * FROM product_color WHERE id = '$id'";
         $result = mysqli_query($conn, $checkQuery);
         $isInsert = false;
     
         if (mysqli_num_rows($result) > 0) {
             $isInsert = false;
+            $updateQuery = "UPDATE product_color SET 
+                product_category = '$product_category', 
+                color = '$color', 
+                system_mapping = '$system_mapping', 
+                color_mult_id = '$color_multiplier', 
+                availability = '$availability', 
+                color_code = '$color_code', 
+                color_no = '$color_no', 
+                coating = '$coating', 
+                surface = '$surface', 
+                grade = '$grade', 
+                gauge = '$gauge', 
+                paint_code = '$paint_code'
+            WHERE id = '$id'";
+    
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "success_update";
+            } else {
+                echo "Error updating product: " . mysqli_error($conn);
+            }
     
         } else {
-           
             $isInsert = true;
-            
-        } 
+            $insertQuery = "INSERT INTO product_color (
+                product_category, 
+                color, 
+                system_mapping, 
+                color_mult_id, 
+                availability, 
+                color_code, 
+                color_no, 
+                coating, 
+                surface, 
+                grade, 
+                gauge,
+                paint_code) 
+            VALUES (
+                '$product_category',
+                '$color',
+                '$system_mapping', 
+                '$color_multiplier', 
+                '$availability', 
+                '$color_code', 
+                '$color_no', 
+                '$paint_code', 
+                '$surface', 
+                '$grade', 
+                '$gauge', 
+                '$paint_code')";
+    
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "success_add";
+            } else {
+                echo "Error inserting product: " . mysqli_error($conn);
+            }
+        }
     }
 
     if ($action == "fetch_edit_modal") {
@@ -51,8 +107,6 @@ if(isset($_REQUEST['action'])) {
         $gauge = '';
         
         if (mysqli_num_rows($result) > 0) {
-
-            
             $row = mysqli_fetch_assoc($result);
             $id = $row['id'];
             $product_category = $row['product_category'];
@@ -166,16 +220,12 @@ if(isset($_REQUEST['action'])) {
                             <div class="mb-3">
                                 <select class="form-control select2-edit" id="gauge" name="gauge">
                                     <option value="" >Select Gauge...</option>
-                                    <?php
-                                    $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
-                                    $result_gauge = mysqli_query($conn, $query_gauge);            
-                                    while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                                        $selected = ($gauge == $row_gauge['product_gauge_id']) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_gauge['product_gauge_id'] ?>" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
-                                    <?php   
-                                    }
-                                    ?>
+                                    <option value="24" <?= $gauge == '24' ? 'selected' : '' ?>>24</option>
+                                    <option value="26" <?= $gauge == '26' ? 'selected' : '' ?>>26</option>
+                                    <option value="27" <?= $gauge == '27' ? 'selected' : '' ?>>27</option>
+                                    <option value="28" <?= $gauge == '28' ? 'selected' : '' ?>>28</option>
+                                    <option value="29" <?= $gauge == '29' ? 'selected' : '' ?>>29</option>
+                                    <option value="30" <?= $gauge == '30' ? 'selected' : '' ?>>30</option>
                                 </select>
                             </div>
                         </div>
@@ -184,16 +234,8 @@ if(isset($_REQUEST['action'])) {
                             <div class="mb-3">
                                 <select class="form-control select2-edit" id="grade" name="grade">
                                     <option value="">Select Grade...</option>
-                                    <?php
-                                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
-                                    $result_grade = mysqli_query($conn, $query_grade);            
-                                    while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                        $selected = ($grade == $row_grade['product_grade_id']) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_grade['product_grade_id'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
-                                    <?php   
-                                    }
-                                    ?>
+                                    <option value="1" <?= $grade == '1' ? 'selected' : '' ?>>1</option>
+                                    <option value="2" <?= $grade == '2' ? 'selected' : '' ?>>2</option>
                                 </select>
                             </div>
                         </div>
