@@ -318,10 +318,10 @@ if (isset($_REQUEST['query'])) {
                         <a href="javascript:void(0)" id="view_available_color" data-id="'.$row_product['product_id'].'">See Colors</a>
                     </div>
                 </td>
-                <td><p class="mb-0">'. getGradeName($row_product['grade']) .'</p></td>
-                <td><p class="mb-0">'. getGaugeName($row_product['gauge']) .'</p></td>
-                <td><p class="mb-0">'. getProductTypeName($row_product['product_type']) .'</p></td>
-                <td><p class="mb-0">'. getProfileTypeName($row_product['profile']) .'</p></td>
+                <td><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0">'. getGradeName($row_product['grade']) .'</a></td>
+                <td><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0">'. getGaugeName($row_product['gauge']) .'</a></td>
+                <td><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0">'. getProductTypeName($row_product['product_type']) .'</a></td>
+                <td><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0">'. getProfileTypeName($row_product['profile']) .'</a></td>
                 <td>
                     <div class="d-flex align-items-center">'.$stock_text.'</div>
                 </td>

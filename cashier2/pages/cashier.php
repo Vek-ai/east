@@ -190,6 +190,38 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                 </select>
                             </div>
                             <div class="position-relative w-100 py-2 px-1">
+                                <select class="form-control search-chat ps-5" id="select-category" data-category="">
+                                    <option value="" data-category="">All Categories</option>
+                                    <optgroup label="Category">
+                                        <?php
+                                        $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+                                        $result_category = mysqli_query($conn, $query_category);
+                                        while ($row_category = mysqli_fetch_array($result_category)) {
+                                        ?>
+                                            <option value="<?= $row_category['product_category_id'] ?>" data-category="category"><?= $row_category['product_category'] ?></option>
+                                        <?php
+                                        }
+                                        ?>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="position-relative w-100 py-2 px-1">
+                                <select class="form-control search-chat ps-5" id="select-type" data-category="">
+                                    <option value="" data-category="">All Product Types</option>
+                                    <optgroup label="Product Type">
+                                        <?php
+                                        $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
+                                        $result_type = mysqli_query($conn, $query_type);
+                                        while ($row_type = mysqli_fetch_array($result_type)) {
+                                        ?>
+                                            <option value="<?= $row_type['product_type_id'] ?>" data-category="type"><?= $row_type['product_type'] ?></option>
+                                        <?php
+                                        }
+                                        ?>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="position-relative w-100 py-2 px-1">
                                 <select class="form-control search-chat ps-5" id="select-color" data-category="">
                                     <option value="" data-category="">All Colors</option>
                                     <optgroup label="Product Colors">
@@ -237,38 +269,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                     </optgroup>
                                 </select>
                             </div>
-                            <div class="position-relative w-100 py-2 px-1">
-                                <select class="form-control search-chat ps-5" id="select-category" data-category="">
-                                    <option value="" data-category="">All Categories</option>
-                                    <optgroup label="Category">
-                                        <?php
-                                        $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
-                                        $result_category = mysqli_query($conn, $query_category);
-                                        while ($row_category = mysqli_fetch_array($result_category)) {
-                                        ?>
-                                            <option value="<?= $row_category['product_category_id'] ?>" data-category="category"><?= $row_category['product_category'] ?></option>
-                                        <?php
-                                        }
-                                        ?>
-                                    </optgroup>
-                                </select>
-                            </div>
-                            <div class="position-relative w-100 py-2 px-1">
-                                <select class="form-control search-chat ps-5" id="select-type" data-category="">
-                                    <option value="" data-category="">All Product Types</option>
-                                    <optgroup label="Product Type">
-                                        <?php
-                                        $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
-                                        $result_type = mysqli_query($conn, $query_type);
-                                        while ($row_type = mysqli_fetch_array($result_type)) {
-                                        ?>
-                                            <option value="<?= $row_type['product_type_id'] ?>" data-category="type"><?= $row_type['product_type'] ?></option>
-                                        <?php
-                                        }
-                                        ?>
-                                    </optgroup>
-                                </select>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -278,7 +278,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         <div id="selected-tags"></div>
                     </div>
                     <div class="table-responsive border rounded">
-                        <table id="productTable" class="table align-middle text-wrap mb-0">
+                        <table id="productTable" class="table align-middle text-wrap mb-0 text-white" style="color: white;">
                             <thead>
                                 <tr>
                                     <th scope="col">Products</th>
