@@ -94,7 +94,9 @@ if($_REQUEST['id']){
                         type="text"
                         name="username"
                         id="username"
-                        placeholder="Enter Username" />
+                        placeholder="Enter Username" 
+                        value="<?= $customer_details['username']  ?>"
+                        />
                 </div>
                 <div class="mb-3 col-md-6 form-password-toggle">
                     <label class="form-label" for="password">Password</label>
