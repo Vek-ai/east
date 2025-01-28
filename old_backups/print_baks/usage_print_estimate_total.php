@@ -101,9 +101,9 @@ if (mysqli_num_rows($result) > 0) {
         $total_qty = 0;
         $total_price_undisc = 0;
 
-        $query_category = "SELECT * FROM product_category WHERE hidden = 0";
-        $result_category = mysqli_query($conn, $query_category);
-        if (mysqli_num_rows($result_category) > 0) {
+        $query_key = "SELECT * FROM key_components";
+        $result_key = mysqli_query($conn, $query_key);
+        if (mysqli_num_rows($result_key) > 0) {
             $pdf->SetFont('Arial', 'B', 7);
             $widths = [35, 75, 28, 28, 25];
             $headers = ['QTY', 'DESCRIPTION', 'PRICE' , 'DISC PRICE', 'TOTAL'];
@@ -112,79 +112,82 @@ if (mysqli_num_rows($result) > 0) {
                 $pdf->Cell($widths[$i], 10, $headers[$i], 1, 0, 'C');
             }
             $pdf->Ln();
-            while ($row_category = mysqli_fetch_assoc($result_category)) {
-                $product_category_id = $row_category['product_category_id'];
+            while ($row_key = mysqli_fetch_assoc($result_key)) {
+                $component_name = $row_key['component_name'];
+                $componentid = $row_key['componentid'];
+                $query_usage = "SELECT * FROM component_usage WHERE componentid = '$componentid'";
+                $result_usage = mysqli_query($conn, $query_usage);
+                $usageArray = array();
 
-                $qty_per_component = 0;
-                $total_per_component = 0;
-                $undisc_total_per_component = 0;
+                if (mysqli_num_rows($result_usage) > 0) {
+                    $qty_per_component = 0;
+                    $total_per_component = 0;
+                    $undisc_total_per_component = 0;
+                    while ($row_usage = mysqli_fetch_assoc($result_usage)) {
+                        $usageArray[] = $row_usage['usageid'];
+                    }
 
-                $data = array();
-                $query_product="SELECT
-                                    p.product_category,
-                                    ep.*
-                                FROM
-                                    estimate_prod AS ep
-                                LEFT JOIN product AS p
-                                ON
-                                    p.product_id = ep.`product_id`
-                                WHERE estimateid = '$estimateid' AND p.product_category = '$product_category_id'";
-                $result_product = mysqli_query($conn, $query_product);
-                if (mysqli_num_rows($result_product) > 0) {
-                    while($row_product = mysqli_fetch_assoc($result_product)){
-                        $product_id = $row_product['product_id'];
-                        $product_details = getProductDetails($product_id);
-                        $grade_details = getGradeDetails($product_details['grade']);
+                    $usageArray = array_unique($usageArray);
+
+                    $usage_ids = implode(',' , $usageArray);
+                    $data = array();
+                    $query_product = "SELECT * FROM estimate_prod WHERE estimateid = '$estimateid' AND usageid IN ($usage_ids)";
+                    $result_product = mysqli_query($conn, $query_product);
+                    if (mysqli_num_rows($result_product) > 0) {
+                        while($row_product = mysqli_fetch_assoc($result_product)){
+                            $product_id = $row_product['product_id'];
+                            $product_details = getProductDetails($product_id);
+                            $grade_details = getGradeDetails($product_details['grade']);
+                            
+                            
+                            $total_price += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                            $total_price_undisc += $product_details['unit_price'] * $row_product['quantity'];
+                            $total_qty += $row_product['quantity'];
+
+                            $total_per_component += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                            $undisc_total_per_component += $product_details['unit_price'] * $row_product['quantity'];
+                            $qty_per_component += $row_product['quantity'];
+                            
+                        }
+
                         
-                        
-                        $total_price += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
-                        $total_price_undisc += $product_details['unit_price'] * $row_product['quantity'];
-                        $total_qty += $row_product['quantity'];
+                        $data[] = [
+                            $qty_per_component,
+                            $component_name,
+                            '$ ' .number_format($undisc_total_per_component,2),
+                            '$ ' .number_format($total_per_component,2),
+                            '$ ' .number_format($total_per_component,2) ,
+                        ];
+            
+                        $pdf->SetFont('Arial', '', 8);
+            
+                        foreach ($data as $row) {
+            
+                            $height = NbLines($pdf, $widths[2], $row[2]) * 5; 
+                            
+                            $y_initial = $pdf->GetY();
+            
+                            $pdf->Cell($widths[0], $height, $row[0], 'LR', 0, 'C');
+                            
+                            $x = $pdf->GetX();
+                            $y = $pdf->GetY();
+                            $pdf->MultiCell($widths[1], 5, $row[1], 'LR', 'C');
+                            $pdf->SetXY($x + $widths[1], $y_initial);
 
-                        $total_per_component += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
-                        $undisc_total_per_component += $product_details['unit_price'] * $row_product['quantity'];
-                        $qty_per_component += $row_product['quantity'];
+                            $pdf->Cell($widths[2], $height, $row[2], 'LR', 0, 'R');  
+                            $pdf->Cell($widths[3], $height, $row[3], 'LR', 0, 'R');  
+                            $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'R');  
+                            
+                            $pdf->Ln();
+                            $y_bottom = $pdf->GetY();
+                            $pdf->Line(10, $y_initial + $height, 210 - 10, $y_initial + $height);
+                            
+                        }
                         
                     }
 
-                    
-                    $data[] = [
-                        $qty_per_component,
-                        getProductCategoryName($product_category_id),
-                        '$ ' .number_format($undisc_total_per_component,2),
-                        '$ ' .number_format($total_per_component,2),
-                        '$ ' .number_format($total_per_component,2) ,
-                    ];
-        
-                    $pdf->SetFont('Arial', '', 8);
-        
-                    foreach ($data as $row) {
-        
-                        $height = NbLines($pdf, $widths[2], $row[2]) * 5; 
-                        
-                        $y_initial = $pdf->GetY();
-        
-                        $pdf->Cell($widths[0], $height, $row[0], 'LR', 0, 'C');
-                        
-                        $x = $pdf->GetX();
-                        $y = $pdf->GetY();
-                        $pdf->MultiCell($widths[1], 5, $row[1], 'LR', 'C');
-                        $pdf->SetXY($x + $widths[1], $y_initial);
-
-                        $pdf->Cell($widths[2], $height, $row[2], 'LR', 0, 'R');  
-                        $pdf->Cell($widths[3], $height, $row[3], 'LR', 0, 'R');  
-                        $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'R');  
-                        
-                        $pdf->Ln();
-                        $y_bottom = $pdf->GetY();
-                        $pdf->Line(10, $y_initial + $height, 210 - 10, $y_initial + $height);
-                        
-                    }
                     
                 }
-
-                    
-                
                 
             }
 
@@ -192,15 +195,7 @@ if (mysqli_num_rows($result) > 0) {
             $total_per_component = 0;
             $undisc_total_per_component = 0;
             $data = array();
-            $query_product = "SELECT
-                                p.product_category,
-                                ep.*
-                            FROM
-                                estimate_prod AS ep
-                            LEFT JOIN product AS p
-                            ON
-                                p.product_id = ep.`product_id`
-                            WHERE estimateid = '$estimateid' AND (p.product_category = '' OR p.product_category IS NULL OR p.product_category = '/')";
+            $query_product = "SELECT * FROM estimate_prod WHERE estimateid = '$estimateid' AND usageid = 0";
             $result_product = mysqli_query($conn, $query_product);
             if (mysqli_num_rows($result_product) > 0) {
                 while($row_product = mysqli_fetch_assoc($result_product)){

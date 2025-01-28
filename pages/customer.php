@@ -588,9 +588,13 @@ if (!empty($_REQUEST['result'])) {
                         data-toggle="tooltip" data-placement="top" title="Dashboard"><i
                           class="fa fa-chart-bar text-light"></i>
                       </a>
+                      <a href="?page=customer_login_creds&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
+                        data-toggle="tooltip" data-placement="top" title="Username and Password">
+                        <i class="fa-solid fa-lock text-info"></i>
+                      </a>
                       <a href="?page=customer&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
-                        data-toggle="tooltip" data-placement="top" title="Edit"><i
-                          class="fa fa-pencil text-warning"></i>
+                        data-toggle="tooltip" data-placement="top" title="Edit">
+                        <i class="fa fa-pencil text-warning"></i>
                       </a>
                       <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
                         style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i

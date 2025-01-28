@@ -29,20 +29,18 @@ $pdf->AddPage();
 $col1_x = 10;
 $col2_x = 140;
 
-$estimateid = $_REQUEST['id'];
+$orderid = $_REQUEST['id'];
 $current_user_id = $_SESSION['userid'];
 
-$tax = .15;
-
-$query = "SELECT * FROM estimates WHERE estimateid = '$estimateid'";
+$query = "SELECT * FROM orders WHERE orderid = '$orderid'";
 $result = mysqli_query($conn, $query);
 
 if (mysqli_num_rows($result) > 0) {
-    while($row_estimate = mysqli_fetch_assoc($result)){
-        $delivery_price = floatval($row_estimate['delivery_amt']);
-        $discount = floatval($row_estimate['discount_percent']) / 100;
-        $estimateid = $row_estimate['estimateid'];
-        $customer_id = $row_estimate['customerid'];
+    while($row_orders = mysqli_fetch_assoc($result)){
+        $delivery_price = floatval($row_orders['delivery_amt']);
+        $discount = floatval($row_orders['discount_percent']) / 100;
+        $orderid = $row_orders['orderid'];
+        $customer_id = $row_orders['customerid'];
         $customerDetails = getCustomerDetails($customer_id);
         $tax = floatval(getCustomerTax($customer_id)) / 100;
         $delivery_method = 'Deliver';
@@ -57,9 +55,9 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->SetXY($col2_x,  10);
         $pdf->SetFont('Arial', '', 10);
-        $pdf->MultiCell(95, 5, "Estimate #: $estimateid", 0, 'L');
+        $pdf->MultiCell(95, 5, "Estimate #: $orderid", 0, 'L');
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(95, 5, "Date: " .date("F d, Y", strtotime($row_estimate['order_date'])), 0, 1, 'L');
+        $pdf->Cell(95, 5, "Date: " .date("F d, Y", strtotime($row_orders['order_date'])), 0, 1, 'L');
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(95, 5, 'Salesperson: ' . get_staff_name($current_user_id), 0, 0, 'L');
 
@@ -70,13 +68,29 @@ if (mysqli_num_rows($result) > 0) {
         $col3_x = 140;
         $pdf->SetFont('Arial', 'B', 10);
 
-        $pdf->SetXY($col1_x, $pdf->GetY());
-        $pdf->Cell(60, 5, 'Sold To: ' .$customerDetails['customer_first_name'] . " " .$customerDetails['customer_last_name'], 0, 0, 'L');
+        $def_y = $pdf->GetY();
 
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(60, 5, 'Ship To: ' .$customerDetails['customer_first_name'] . " " .$customerDetails['customer_last_name'], 0, 1, 'L');
+        $pdf->SetXY($col1_x, $def_y);
+        $pdf->MultiCell(60, 5, 'Sold To: ' .$row_orders['deliver_fname'] . " " .$row_orders['deliver_lname'], 0, 'L');
 
-        $pdf->SetXY($col3_x, $pdf->GetY() - 5);
+        $addressParts = [];
+        if (!empty($row_orders['deliver_address'])) {
+            $addressParts[] = $row_orders['deliver_address'];
+        }
+        if (!empty($row_orders['deliver_city'])) {
+            $addressParts[] = $row_orders['deliver_city'];
+        }
+        if (!empty($row_orders['deliver_state'])) {
+            $addressParts[] = $row_orders['deliver_state'];
+        }
+        if (!empty($row_orders['deliver_zip'])) {
+            $addressParts[] = $row_orders['deliver_zip'];
+        }
+        $address = implode(', ', $addressParts);
+        $pdf->SetXY($col2_x, $def_y);
+        $pdf->MultiCell(60, 5, 'Ship To: ' .$address, 0, 'L');
+
+        $pdf->SetXY($col3_x, $def_y);
         $pdf->Cell(60, 5, 'Delivery Method: ' .$delivery_method, 0, 1, 'L');
 
         $pdf->SetFont('Arial', '', 9);
@@ -87,125 +101,123 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->Ln(5);
         $pdf->SetXY($col1_x, $pdf->GetY());
-        $pdf->Cell(10, 5, 'Tax Exempt #', 0, 0, 'L');
+        $pdf->Cell(10, 5, 'Tax Exempt #: ', 0, 0, 'L');
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(10, 5, 'Customer PO #', 0, 0, 'L');
+        $pdf->Cell(10, 5, 'Customer PO #: ' .$row_orders['job_po'], 0, 0, 'L');
 
         $pdf->SetXY($col3_x, $pdf->GetY());
-        $pdf->Cell(60, 5, 'Job Name:', 0, 1, 'L');
+        $pdf->Cell(60, 5, 'Job Name: ' .$row_orders['job_name'], 0, 1, 'L');
 
         $pdf->Ln(5);
 
         $total_price = 0;
         $total_qty = 0;
 
-        $query_category = "SELECT * FROM product_category WHERE hidden = 0";
-        $result_category = mysqli_query($conn, $query_category);
-        if (mysqli_num_rows($result_category) > 0) {
-            while ($row_category = mysqli_fetch_assoc($result_category)) {
-                $product_category_id = $row_category['product_category_id'];
+        $query_key = "SELECT * FROM key_components";
+        $result_key = mysqli_query($conn, $query_key);
+        if (mysqli_num_rows($result_key) > 0) {
+            while ($row_key = mysqli_fetch_assoc($result_key)) {
+                $componentid = $row_key['componentid'];
+                $query_usage = "SELECT * FROM component_usage WHERE componentid = '$componentid'";
+                $result_usage = mysqli_query($conn, $query_usage);
+                $usageArray = array();
 
-                $data = array();
-                $query_product="SELECT
-                                    p.product_category,
-                                    ep.*
-                                FROM
-                                    estimate_prod AS ep
-                                LEFT JOIN product AS p
-                                ON
-                                    p.product_id = ep.`product_id`
-                                WHERE estimateid = '$estimateid' AND p.product_category = '$product_category_id'";
-                $result_product = mysqli_query($conn, $query_product);
-                if (mysqli_num_rows($result_product) > 0) {
-                    $pdf->Ln();
-                    $pdf->SetFont('Arial', 'B', 9);
-                    $pdf->SetXY($col1_x, $pdf->GetY());
-                    $pdf->Cell(10, 5, getProductCategoryName($product_category_id), 0, 1, 'L');
-
-                    $pdf->SetFont('Arial', 'B', 7);
-                    $widths = [15, 20, 55, 20, 10, 10, 10, 18, 18, 15];
-                    $headers = ['QTY', "PART/COIL #", 'DESCRIPTION', 'COLOR', 'Grade', 'FT.', 'IN.', 'PRICE' , 'DISC PRICE', 'TOTAL'];
-
-                    for ($i = 0; $i < count($headers); $i++) {
-                        $pdf->Cell($widths[$i], 10, $headers[$i], 1, 0, 'C');
-                    }
-                    $pdf->Ln();
-
-                    while($row_product = mysqli_fetch_assoc($result_product)){
-                        $product_id = $row_product['product_id'];
-                        $product_details = getProductDetails($product_id);
-                        $grade_details = getGradeDetails($product_details['grade']);
-                        $data[] = [
-                            $row_product['quantity'],
-                            '',
-                            $product_details['product_item'],
-                            getColorName($product_details['color']),
-                            $grade_details['grade_abbreviations'] ?? '',
-                            '',
-                            '',
-                            '$ ' .number_format($product_details['unit_price'],2),
-                            '$ ' .number_format($product_details['unit_price'] * (1 - $discount),2),
-                            '$ ' .number_format(($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'],2) ,
-                        ];
-
-                        $total_price += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
-                        $total_qty += $row_product['quantity'];
+                if (mysqli_num_rows($result_usage) > 0) {
+                    while ($row_usage = mysqli_fetch_assoc($result_usage)) {
+                        $usageArray[] = $row_usage['usageid'];
                     }
 
-                    $pdf->SetFont('Arial', '', 8);
+                    $usageArray = array_unique($usageArray);
 
-                    foreach ($data as $row) {
+                    $usage_ids = implode(',' , $usageArray);
+                    $data = array();
+                    $query_product = "SELECT * FROM order_product WHERE orderid = '$orderid' AND usageid IN ($usage_ids)";
+                    $result_product = mysqli_query($conn, $query_product);
+                    if (mysqli_num_rows($result_product) > 0) {
+                        $pdf->Ln();
+                        $pdf->SetFont('Arial', 'B', 9);
+                        $pdf->SetXY($col1_x, $pdf->GetY());
+                        $pdf->Cell(10, 5, $row_key['component_name'], 0, 1, 'L');
 
-                        $height = NbLines($pdf, $widths[2], $row[2]) * 5; 
-                        
-                        $y_initial = $pdf->GetY();
+                        $pdf->SetFont('Arial', 'B', 7);
+                        $widths = [15, 20, 55, 20, 10, 10, 10, 18, 18, 15];
+                        $headers = ['QTY', "PART/COIL #", 'DESCRIPTION', 'COLOR', 'Grade', 'FT.', 'IN.', 'PRICE' , 'DISC PRICE', 'TOTAL'];
 
-                        $pdf->Cell($widths[0], $height, $row[0], 'LR', 0, 'C');
-                        $pdf->Cell($widths[1], $height, $row[1], 'LR', 0, 'C');
-                        
-                        $x = $pdf->GetX();
-                        $y = $pdf->GetY();
-                        $pdf->MultiCell($widths[2], 5, $row[2], 'LR', 'C');
-                        $pdf->SetXY($x + $widths[2], $y_initial);
-
-                        $x = $pdf->GetX();
-                        $y = $pdf->GetY();
-                        $pdf->MultiCell($widths[3], 5, $row[3], 'LR', 'C');
-                        $pdf->SetXY($x + $widths[3], $y_initial);
-
-                        $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'C');  
-                        $pdf->Cell($widths[5], $height, $row[5], 'LR', 0, 'C');  
-                        $pdf->Cell($widths[6], $height, $row[6], 'LR', 0, 'C');  
-                        $pdf->Cell($widths[7], $height, $row[7], 'LR', 0, 'R');  
-                        $pdf->Cell($widths[8], $height, $row[8], 'LR', 0, 'R');  
-                        $pdf->Cell($widths[9], $height, $row[9], 'LR', 0, 'R');  
-                        
-
+                        for ($i = 0; $i < count($headers); $i++) {
+                            $pdf->Cell($widths[$i], 10, $headers[$i], 1, 0, 'C');
+                        }
                         $pdf->Ln();
 
-                        $y_bottom = $pdf->GetY();
+                        while($row_product = mysqli_fetch_assoc($result_product)){
+                            $productid = $row_product['productid'];
+                            $product_details = getProductDetails($productid);
+                            $grade_details = getGradeDetails($product_details['grade']);
+                            $data[] = [
+                                $row_product['quantity'],
+                                '',
+                                $product_details['product_item'],
+                                getColorName($product_details['color']),
+                                $grade_details['grade_abbreviations'] ?? '',
+                                '',
+                                '',
+                                '$ ' .number_format($product_details['unit_price'],2),
+                                '$ ' .number_format($product_details['unit_price'] * (1 - $discount),2),
+                                '$ ' .number_format(($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'],2) ,
+                            ];
 
-                        $pdf->Line(10, $y_initial + $height, 210 - 10, $y_initial + $height);
+                            $total_price += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                            $total_qty += $row_product['quantity'];
+                        }
+
+                        $pdf->SetFont('Arial', '', 8);
+
+                        foreach ($data as $row) {
+                            $height_product = NbLines($pdf, $widths[2], $row[2]) * 5; 
+                            $height_color = NbLines($pdf, $widths[3], $row[3]) * 5;
+
+                            $height = max($height_product, $height_color);
+                            
+                            $y_initial = $pdf->GetY();
+
+                            $pdf->Cell($widths[0], $height, $row[0], 'LR', 0, 'C');
+                            $pdf->Cell($widths[1], $height, $row[1], 'LR', 0, 'C');
+                            
+                            $x = $pdf->GetX();
+                            $y = $pdf->GetY();
+                            $pdf->MultiCell($widths[2], 5, $row[2], 'LR', 'C');
+                            $pdf->SetXY($x + $widths[2], $y_initial);
+
+                            $x = $pdf->GetX();
+                            $y = $pdf->GetY();
+                            $pdf->MultiCell($widths[3], 5, $row[3], 'LR', 'C');
+                            $pdf->SetXY($x + $widths[3], $y_initial);
+
+                            $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'C');  
+                            $pdf->Cell($widths[5], $height, $row[5], 'LR', 0, 'C');  
+                            $pdf->Cell($widths[6], $height, $row[6], 'LR', 0, 'C');  
+                            $pdf->Cell($widths[7], $height, $row[7], 'LR', 0, 'R');  
+                            $pdf->Cell($widths[8], $height, $row[8], 'LR', 0, 'R');  
+                            $pdf->Cell($widths[9], $height, $row[9], 'LR', 0, 'R');  
+                            
+
+                            $pdf->Ln();
+
+                            $y_bottom = $pdf->GetY();
+
+                            $pdf->Line(10, $y_initial + $height, 210 - 10, $y_initial + $height);
+
+                            
+                        }
 
                         
                     }
 
-                    
                 }
-                
                 
             }
 
             $data = array();
-            $query_product="SELECT
-                                p.product_category,
-                                ep.*
-                            FROM
-                                estimate_prod AS ep
-                            LEFT JOIN product AS p
-                            ON
-                                p.product_id = ep.`product_id`
-                            WHERE estimateid = '$estimateid' AND (p.product_category = '' OR p.product_category IS NULL OR p.product_category = '/')";
+            $query_product = "SELECT * FROM order_product WHERE orderid = '$orderid' AND usageid = 0";
             $result_product = mysqli_query($conn, $query_product);
             if (mysqli_num_rows($result_product) > 0) {
                 $pdf->Ln();
@@ -223,8 +235,8 @@ if (mysqli_num_rows($result) > 0) {
                 $pdf->Ln();
 
                 while($row_product = mysqli_fetch_assoc($result_product)){
-                    $product_id = $row_product['product_id'];
-                    $product_details = getProductDetails($product_id);
+                    $productid = $row_product['productid'];
+                    $product_details = getProductDetails($productid);
                     $grade_details = getGradeDetails($product_details['grade']);
                     $data[] = [
                         $row_product['quantity'],
@@ -247,7 +259,10 @@ if (mysqli_num_rows($result) > 0) {
 
                 foreach ($data as $row) {
 
-                    $height = NbLines($pdf, $widths[2], $row[2]) * 5; 
+                    $height_product = NbLines($pdf, $widths[2], $row[2]) * 5; 
+                    $height_color = NbLines($pdf, $widths[3], $row[3]) * 5;
+
+                    $height = max($height_product, $height_color);
                     
                     $y_initial = $pdf->GetY();
 
@@ -283,7 +298,6 @@ if (mysqli_num_rows($result) > 0) {
 
                 
             }
-            
 
             
         }else{
@@ -322,12 +336,14 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'GRAND TOTAL:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' .number_format(($total_price - ($total_price * $discount) + $delivery_price),2), 0, 1, 'R');
+        $pdf->Cell(20, $lineheight, '$ ' .number_format(($total_price + $delivery_price),2), 0, 1, 'R');
 
         $pdf->Ln(5);
 
-        $pdf->SetTitle('Estimate');
-        $pdf->Output('Estimate.pdf', 'I');
+        $pdf->SetTitle('Receipt');
+        $pdf->Output('Receipt.pdf', 'I');
+            
+
         
     }
 }else{
