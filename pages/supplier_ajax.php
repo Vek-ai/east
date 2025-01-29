@@ -276,6 +276,33 @@ if(isset($_REQUEST['action'])) {
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <div class="col-md-12 d-flex justify-content-between align-items-center">
+                                        <label class="form-label">Supplier Packs</label>
+                                        <a href="?page=supplier_pack&supplier_id=<?=$supplier_id?>" target="_blank" class="text-decoration-none">Edit Packs</a>
+                                    </div>
+                                    <div id="pack_upd" class="bg-light p-3 rounded">
+                                        
+                                        <?php
+                                        $query_pack = "SELECT * FROM supplier_pack WHERE supplierid = '$supplier_id' AND hidden = '0'";
+                                        $result_pack = mysqli_query($conn, $query_pack);            
+                                        if (mysqli_num_rows($result_pack) > 0) {
+                                            while ($row_pack = mysqli_fetch_array($result_pack)) {
+                                        ?>
+                                            <span class="badge bg-primary me-1"><?= $row_pack['pack'] ?>(<?=$row_pack['pack_count']?>)</span>
+                                        <?php   
+                                            }
+                                        } else {
+                                        ?>
+                                            <span>No packs found</span>
+                                        <?php
+                                        }
+                                        ?>
+                                        
+                                    </div>
+                                </div>
+                            </div>
                             </div>
 
                             <div class="row pt-3">

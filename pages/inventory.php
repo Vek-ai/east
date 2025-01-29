@@ -129,7 +129,7 @@ require 'includes/functions.php';
                             <div class="col-md-6">
                                 <label class="form-label">Supplier</label>
                                 <div class="mb-3">
-                                <select id="supplier_id" class="form-control select2-add" name="supplier_id">
+                                <select id="supplier_id" class="form-control select2-add inventory_supplier" name="supplier_id">
                                     <option value="" >Select Supplier...</option>
                                     <optgroup label="Supplier">
                                         <?php
@@ -235,19 +235,8 @@ require 'includes/functions.php';
                                 <div class="col-md-4">
                                     <label class="form-label">Pack</label>
                                     <div class="mb-3">
-                                    <select id="pack_add" class="form-control select2-add" name="pack">
+                                    <select id="pack_add" class="form-control select2-add pack_select" name="pack">
                                         <option value="" >Select Pack...</option>
-                                        <optgroup label="Pack">
-                                            <?php
-                                            $query_pack = "SELECT * FROM product_pack WHERE hidden = '0'";
-                                            $result_pack = mysqli_query($conn, $query_pack);            
-                                            while ($row_pack = mysqli_fetch_array($result_pack)) {
-                                            ?>
-                                                <option value="<?= $row_pack['id'] ?>" data-count="<?= $row_pack['pieces_count'] ?>" ><?= $row_pack['pack_name'] ?></option>
-                                            <?php   
-                                            }
-                                            ?>
-                                        </optgroup>
                                     </select>
                                     </div>
                                 </div>
@@ -571,6 +560,39 @@ require 'includes/functions.php';
         return $state;
     }
     $(document).ready(function() {
+        $(document).on('change', '.inventory_supplier', function () {
+            let supplier_id = $(this).val();
+
+            if (supplier_id) {
+            $.ajax({
+                url: 'pages/inventory_ajax.php',
+                type: 'POST',
+                data: { 
+                supplier_id: supplier_id,
+                action: 'fetch_supplier_packs'
+                },
+                dataType: 'json',
+                success: function (response) {
+                let packDropdown = $('.pack_select');
+                packDropdown.empty();
+                packDropdown.append('<option value="">Select Pack...</option>');
+
+                if (response.length > 0) {
+                    $.each(response, function (index, pack) {
+                    packDropdown.append('<option value="' + pack.pack_count + '" data-count="' + pack.pack_count + '">' + pack.pack + ' (' + pack.pack_count + ')</option>');
+                    });
+                } else {
+                    packDropdown.append('<option value="">No Packs Available</option>');
+                }
+                
+                packDropdown.trigger('change');
+                }
+            });
+            } else {
+            $('.pack_select').empty().append('<option value="">Select Pack...</option>').trigger('change');
+            }
+        });
+
         $(".select2-add").each(function() {
             $(this).select2({
                 dropdownParent: $(this).parent(),

@@ -121,7 +121,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="modal-content">
                     <div class="modal-header d-flex align-items-center">
                         <h4 class="modal-title" id="myLargeModalLabel">
-                            Add Product
+                            Update Inventory
                         </h4>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -182,19 +182,19 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-6">
                                     <label class="form-label">Supplier</label>
                                     <div class="mb-3">
-                                    <select id="inventory_supplier" class="form-control select2-update" name="supplier_id">
-                                    <option value="" >Select Supplier...</option>
-                                    <?php
-                                    $query_supplier = "SELECT * FROM supplier";
-                                    $result_supplier = mysqli_query($conn, $query_supplier);            
-                                    while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                                        $selected = ($row['supplier_id'] == $row_supplier['supplier_id']) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
-                                    <?php   
-                                    }
-                                    ?>
-                                </select>
+                                        <select id="inventory_supplier" class="form-control select2-update inventory_supplier" name="supplier_id">
+                                            <option value="" >Select Supplier...</option>
+                                            <?php
+                                            $query_supplier = "SELECT * FROM supplier";
+                                            $result_supplier = mysqli_query($conn, $query_supplier);            
+                                            while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                                                $selected = ($row['supplier_id'] == $row_supplier['supplier_id']) ? 'selected' : '';
+                                            ?>
+                                                <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
+                                            <?php   
+                                            }
+                                            ?>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -282,20 +282,8 @@ if(isset($_REQUEST['action'])) {
                                 <div class="col-md-4">
                                     <label class="form-label">Pack</label>
                                     <div class="mb-3">
-                                    <select id="pack_update" class="form-control select2-update" name="pack">
-                                        <option value="" >Select Pack...</option>
-                                        <optgroup label="Pack">
-                                            <?php
-                                            $query_pack = "SELECT * FROM product_pack WHERE hidden = '0'";
-                                            $result_pack = mysqli_query($conn, $query_pack);            
-                                            while ($row_pack = mysqli_fetch_array($result_pack)) {
-                                                $selected = ($row['pack'] == $row_pack['id']) ? 'selected' : '';
-                                            ?>
-                                                <option value="<?= $row_pack['id'] ?>" data-count="<?= $row_pack['pieces_count'] ?>" ><?= $row_pack['pack_name'] ?></option>
-                                            <?php   
-                                            }
-                                            ?>
-                                        </optgroup>
+                                    <select id="pack_update" class="form-control select2-update pack_select" name="pack">
+                                        <option value="">Select Pack...</option>
                                     </select>
                                     </div>
                                 </div>
@@ -358,6 +346,23 @@ if(isset($_REQUEST['action'])) {
         } else {
             echo "Error updating status: " . mysqli_error($conn);
         }
+    }
+
+    if ($action == "fetch_supplier_packs") {
+        $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
+    
+        $query_pack = "SELECT * FROM supplier_pack WHERE supplierid = '$supplier_id' AND hidden = '0'";
+        $result_pack = mysqli_query($conn, $query_pack);
+
+        $packs = [];
+        while ($row_pack = mysqli_fetch_assoc($result_pack)) {
+            $packs[] = [
+                'pack' => $row_pack['pack'],
+                'pack_count' => $row_pack['pack_count']
+            ];
+        }
+        
+        echo json_encode($packs);
     }
     
     mysqli_close($conn);

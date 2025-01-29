@@ -2,11 +2,14 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 $id = 0;
 $supplierid = 0;
-$color = '';
-$color_code = '';
-$color_hex = '';
+$pack = '';
+$pack_count = '';
 
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
@@ -17,14 +20,13 @@ if(!empty($_REQUEST['supplier_id'])){
 
 if(!empty($_REQUEST['id'])){
   $id = $_REQUEST['id'];
-  $query = "SELECT * FROM supplier_color WHERE id = '$id'";
+  $query = "SELECT * FROM supplier_pack WHERE id = '$id'";
   $result = mysqli_query($conn, $query);            
   while ($row = mysqli_fetch_array($result)) {
       $id = $row['id'];
       $supplierid = $row['supplierid'];
-      $color = $row['color'];
-      $color_code = $row['color_code'];
-      $color_hex = $row['color_hex'];
+      $pack = $row['pack'];
+      $pack_count = $row['pack_count'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -60,14 +62,14 @@ if(!empty($_REQUEST['id'])){
   <div class="card-body px-0">
     <div class="d-flex justify-content-between align-items-center">
       <div><br>
-        <h4 class="font-weight-medium fs-14 mb-0">Supplier Color</h4>
+        <h4 class="font-weight-medium fs-14 mb-0">Supplier Pack</h4>
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
             <li class="breadcrumb-item">
               <a class="text-muted text-decoration-none" href="">Supplier
               </a>
             </li>
-            <li class="breadcrumb-item text-muted" aria-current="page">Supplier Color</li>
+            <li class="breadcrumb-item text-muted" aria-current="page">Supplier Pack</li>
           </ol>
         </nav>
       </div>
@@ -101,10 +103,10 @@ if(!empty($_REQUEST['id'])){
   <div class="card card-body">
     <div class="row">
       <div class="col-3">
-        <h4 class="card-title"><?= $addHeaderTxt ?> Supplier Color</h4>
+        <h4 class="card-title"><?= $addHeaderTxt ?> Supplier Pack</h4>
       </div>
     </div>
-    <form id="supplierColorForm" class="form-horizontal">
+    <form id="supplierPackForm" class="form-horizontal">
       <div class="row pt-3">
         <div class="col-md-6">
         <label class="form-label">Supplier</label>
@@ -131,25 +133,17 @@ if(!empty($_REQUEST['id'])){
       </div>
 
       <div class="row pt-3">
-        <div class="col-md-5">
+        <div class="col-md-6">
           <div class="mb-3">
-            <label class="form-label">Color Name</label>
-            <input type="text" id="color" name="color" class="form-control" placeholder="ex. Red" value="<?= $color ?>" />
+            <label class="form-label">Pack Name</label>
+            <input type="text" id="pack" name="pack" class="form-control" placeholder="ex. Box" value="<?= $pack ?>" />
           </div>
         </div>
-        <div class="col-md-5">
+        <div class="col-md-6">
           <div class="mb-3">
-            <label class="form-label">Color Code</label>
+            <label class="form-label">Pieces</label>
             <div class="d-flex align-items-center">
-              <input type="text" id="color_code" name="color_code" class="form-control me-2" value="<?= $color_code ?>"/>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-2">
-          <div class="mb-3">
-            <label class="form-label">Select Color Appearance</label>
-            <div class="d-flex align-items-center">
-                <input type="color" id="color_hex" name="color_hex" class="form-control form-control-color w-100" value="<?= $color_hex ?>" />
+              <input type="number" id="pack_count" name="pack_count" class="form-control me-2" value="<?= $pack_count ?>"/>
             </div>
           </div>
         </div>
@@ -179,21 +173,20 @@ if(!empty($_REQUEST['id'])){
   <div class="datatables">
     <div class="card">
       <div class="card-body">
-          <h4 class="card-title d-flex justify-content-between align-items-center">Supplier Color List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['id'])){ ?>
-            <a href="/?page=supplier_color" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
+          <h4 class="card-title d-flex justify-content-between align-items-center">Supplier Pack List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['id'])){ ?>
+            <a href="?page=supplier_pack" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
             <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
           </h4>
         
         <div class="table-responsive">
        
-          <table id="display_supplier_color" class="table table-striped table-bordered text-nowrap align-middle text-center">
+          <table id="display_supplier_pack" class="table table-striped table-bordered text-nowrap align-middle text-center">
             <thead>
               <!-- start row -->
               <tr>
                 <th>Supplier</th>
-                <th>Color</th>
-                <th>Color Code</th>
-                <th>Appearance</th>
+                <th>Pack Name</th>
+                <th>Pieces</th>
                 <th>Details</th>
                 <th>Status</th>
                 <th>Action</th>
@@ -203,24 +196,23 @@ if(!empty($_REQUEST['id'])){
             <tbody>
               <?php
               $no = 1;
-              $query_supplier_color = "SELECT * FROM supplier_color WHERE hidden=0";
+              $query_supplier_pack = "SELECT * FROM supplier_pack WHERE hidden=0";
               if(!empty($_REQUEST['supplier_id'])){
-                $query_supplier_color .= " AND supplierid = '$supplier_id'";
+                $query_supplier_pack .= " AND supplierid = '$supplier_id'";
               }
-              $result_supplier_color = mysqli_query($conn, $query_supplier_color);            
-              while ($row_supplier_color = mysqli_fetch_array($result_supplier_color)) {
-                  $id = $row_supplier_color['id'];
-                  $supplierid = $row_supplier_color['supplierid'];
-                  $db_status = $row_supplier_color['status'];
-                  $color = $row_supplier_color['color'];
-                  $color_code = $row_supplier_color['color_code'];
-                  $color_hex = $row_supplier_color['color_hex'];
-                // $last_edit = $row_supplier_color['last_edit'];
-                  $date = new DateTime($row_supplier_color['last_edit']);
+              $result_supplier_pack = mysqli_query($conn, $query_supplier_pack);            
+              while ($row_supplier_pack = mysqli_fetch_array($result_supplier_pack)) {
+                  $id = $row_supplier_pack['id'];
+                  $supplierid = $row_supplier_pack['supplierid'];
+                  $db_status = $row_supplier_pack['status'];
+                  $pack = $row_supplier_pack['pack'];
+                  $pack_count = $row_supplier_pack['pack_count'];
+                // $last_edit = $row_supplier_pack['last_edit'];
+                  $date = new DateTime($row_supplier_pack['last_edit'] ?? '');
                   $last_edit = $date->format('m-d-Y');
 
-                  $added_by = $row_supplier_color['added_by'];
-                  $edited_by = $row_supplier_color['edited_by'];
+                  $added_by = $row_supplier_pack['added_by'];
+                  $edited_by = $row_supplier_pack['edited_by'];
 
                   
                   if($edited_by != "0"){
@@ -231,24 +223,23 @@ if(!empty($_REQUEST['id'])){
                     $last_user_name = "";
                   }
 
-                  if ($row_supplier_color['status'] == '0') {
+                  if ($row_supplier_pack['status'] == '0') {
                       $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
                   } else {
                       $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
                   }
               ?>
               <tr id="product-row-<?= $no ?>">
-                  <td><span class="product<?= $no ?> <?php if ($row_supplier_color['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= getSupplierName($supplierid) ?></span></td>
-                  <td><?= ucwords($color) ?></td>
-                  <td><?= $color_code ?></td>
-                  <td><a class="d-block " href="javascript:void(0)" style="height: 20px; background-color: <?= $color_hex ?>;"></a></td>
+                  <td><span class="product<?= $no ?> <?php if ($row_supplier_pack['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= getSupplierName($supplierid) ?></span></td>
+                  <td><?= ucwords($pack) ?></td>
+                  <td><?= $pack_count ?></td>
                   <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                   <td><?= $status ?></td>
                   <td class="text-center" id="action-button-<?= $no ?>">
-                      <?php if ($row_supplier_color['status'] == '0') { ?>
-                          <a href="#" class="btn btn-light py-1 text-dark hideSupplierColor" data-id="<?= $id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
+                      <?php if ($row_supplier_pack['status'] == '0') { ?>
+                          <a href="#" class="btn btn-light py-1 text-dark hideSupplierPack" data-id="<?= $id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
                       <?php } else { ?>
-                          <a href="?page=supplier_color&id=<?= $id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                          <a href="?page=supplier_pack&id=<?= $id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
                       <?php } ?>
                   </td>
               </tr>
@@ -266,7 +257,7 @@ if(!empty($_REQUEST['id'])){
                       var status = $(this).data('status');
                       var no = $(this).data('no');
                       $.ajax({
-                          url: 'pages/supplier_color_ajax.php',
+                          url: 'pages/supplier_pack_ajax.php',
                           type: 'POST',
                           data: {
                               id: id,
@@ -279,13 +270,13 @@ if(!empty($_REQUEST['id'])){
                                       $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
                                       $(".changeStatus[data-no='" + no + "']").data('status', "0");
                                       $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                      $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideSupplierColor" data-id="' + id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
+                                      $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideSupplierPack" data-id="' + id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
                                       $('#toggleActive').trigger('change');
                                     } else {
                                       $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                                       $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                       $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                      $('#action-button-' + no).html('<a href="/?page=supplier_color&id=' + id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                                      $('#action-button-' + no).html('<a href="/?page=supplier_pack&id=' + id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                                       $('#toggleActive').trigger('change');
                                     }
                               } else {
@@ -298,16 +289,16 @@ if(!empty($_REQUEST['id'])){
                       });
                   });
 
-                  $(document).on('click', '.hideSupplierColor', function(event) {
+                  $(document).on('click', '.hideSupplierPack', function(event) {
                       event.preventDefault();
                       var id = $(this).data('id');
                       var rowId = $(this).data('row');
                       $.ajax({
-                          url: 'pages/supplier_color_ajax.php',
+                          url: 'pages/supplier_pack_ajax.php',
                           type: 'POST',
                           data: {
                               id: id,
-                              action: 'hide_supplier_color'
+                              action: 'hide_supplier_pack'
                           },
                           success: function(response) {
                               if (response == 'success') {
@@ -352,7 +343,7 @@ if(!empty($_REQUEST['id'])){
 
 <script>
   $(document).ready(function() {
-    var table = $('#display_supplier_color').DataTable();
+    var table = $('#display_supplier_pack').DataTable();
 
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -366,18 +357,6 @@ if(!empty($_REQUEST['id'])){
 
     $('#toggleActive').on('change', function() {
         table.draw();
-    });
-
-    $('#color_picker').on('input', function () {
-      const selectedColor = $(this).val();
-      $('#color_code').val(selectedColor);
-    });
-
-    $('#color_code').on('input', function () {
-      const textColor = $(this).val();
-      if (/^#[0-9A-Fa-f]{6}$/.test(textColor)) {
-        $('#color_picker').val(textColor);
-      }
     });
 
     $('#toggleActive').trigger('change');
@@ -399,12 +378,12 @@ if(!empty($_REQUEST['id'])){
         allowClear: true
     });
 
-    $('#supplierColorForm').on('submit', function(event) {
+    $('#supplierPackForm').on('submit', function(event) {
         event.preventDefault(); 
 
-        $('#supplierid').prop('disabled', false);
-
         var userid = getCookie('userid');
+
+        $('#supplierid').prop('disabled', false);
 
         var formData = new FormData(this);
         formData.append('action', 'add_update');
@@ -413,41 +392,41 @@ if(!empty($_REQUEST['id'])){
         var appendResult = "";
 
         $.ajax({
-            url: 'pages/supplier_color_ajax.php',
+            url: 'pages/supplier_pack_ajax.php',
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
             success: function(response) {
-              $('#supplierid').prop('disabled', true);
-              if (response.trim() === "success_update") {
-                  $('#responseHeader').text("Success");
-                  $('#responseMsg').text('Supplier Color updated successfully.');
-                  $('#responseHeaderContainer').removeClass("bg-danger");
-                  $('#responseHeaderContainer').addClass("bg-success");
-                  $('#response-modal').modal("show");
+                $('#supplierid').prop('disabled', true);
+                if (response.trim() === "success_update") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text('Supplier Pack updated successfully.');
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
 
-                  $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=supplier_color";
-                  });
-              } else if (response.trim() === "success_add") {
-                  $('#responseHeader').text("Success");
-                  $('#responseMsg').text('New Supplier Color added successfully.');
-                  $('#responseHeaderContainer').removeClass("bg-danger");
-                  $('#responseHeaderContainer').addClass("bg-success");
-                  $('#response-modal').modal("show");
+                    $('#response-modal').on('hide.bs.modal', function () {
+                        window.location.href = "?page=supplier_pack";
+                    });
+                } else if (response.trim() === "success_add") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text('New Supplier Pack added successfully.');
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
 
-                  $('#response-modal').on('hide.bs.modal', function () {
-                      location.reload();
-                  });
-              } else {
-                  $('#responseHeader').text("Failed");
-                  $('#responseMsg').text(response);
+                    $('#response-modal').on('hide.bs.modal', function () {
+                        location.reload();
+                    });
+                } else {
+                    $('#responseHeader').text("Failed");
+                    $('#responseMsg').text(response);
 
-                  $('#responseHeaderContainer').removeClass("bg-success");
-                  $('#responseHeaderContainer').addClass("bg-danger");
-                  $('#response-modal').modal("show");
-              }
+                    $('#responseHeaderContainer').removeClass("bg-success");
+                    $('#responseHeaderContainer').addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);

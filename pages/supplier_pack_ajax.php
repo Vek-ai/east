@@ -11,20 +11,18 @@ if(isset($_REQUEST['action'])) {
     if ($action == "add_update") {
         $id = mysqli_real_escape_string($conn, $_POST['id'] ?? null);
         $supplierid = mysqli_real_escape_string($conn, $_POST['supplierid'] ?? '');
-        $color = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
-        $color_code = mysqli_real_escape_string($conn, $_POST['color_code'] ?? '');
-        $color_hex = mysqli_real_escape_string($conn, $_POST['color_hex'] ?? '');
+        $pack = mysqli_real_escape_string($conn, $_POST['pack'] ?? '');
+        $pack_count = mysqli_real_escape_string($conn, $_POST['pack_count'] ?? 0);
         $userid = mysqli_real_escape_string($conn, $_POST['userid'] ?? '');
 
-        $checkQuery = "SELECT * FROM supplier_color WHERE id = '$id'";
+        $checkQuery = "SELECT * FROM supplier_pack WHERE id = '$id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if ($result && mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE supplier_color 
+            $updateQuery = "UPDATE supplier_pack 
                             SET supplierid = '$supplierid', 
-                                color = '$color', 
-                                color_code = '$color_code', 
-                                color_hex = '$color_hex', 
+                                pack = '$pack', 
+                                pack_count = '$pack_count', 
                                 last_edit = NOW(), 
                                 edited_by = '$userid' 
                             WHERE id = '$id'";
@@ -32,16 +30,16 @@ if(isset($_REQUEST['action'])) {
             if (mysqli_query($conn, $updateQuery)) {
                 echo "success_update";
             } else {
-                echo "Error updating color: " . mysqli_error($conn);
+                echo "Error updating supplier pack: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO supplier_color (supplierid, color, color_code, color_hex, added_by) 
-                            VALUES ('$supplierid', '$color', '$color_code', '$color_hex', '$userid')";
+            $insertQuery = "INSERT INTO supplier_pack (supplierid, pack, pack_count, added_by) 
+                            VALUES ('$supplierid', '$pack', '$pack_count', '$userid')";
 
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";
             } else {
-                echo "Error adding color: " . mysqli_error($conn);
+                echo "Error adding supplier pack: " . mysqli_error($conn);
             }
         }
     } 
@@ -51,16 +49,16 @@ if(isset($_REQUEST['action'])) {
         $status = mysqli_real_escape_string($conn, $_POST['status']);
         $new_status = ($status == '0') ? '1' : '0';
 
-        $statusQuery = "UPDATE supplier_color SET status = '$new_status' WHERE id = '$id'";
+        $statusQuery = "UPDATE supplier_pack SET status = '$new_status' WHERE id = '$id'";
         if (mysqli_query($conn, $statusQuery)) {
             echo "success";
         } else {
             echo "Error updating status: " . mysqli_error($conn);
         }
     }
-    if ($action == 'hide_supplier_color') {
+    if ($action == 'hide_supplier_pack') {
         $id = mysqli_real_escape_string($conn, $_POST['id']);
-        $query = "UPDATE supplier_color SET hidden='1' WHERE id='$id'";
+        $query = "UPDATE supplier_pack SET hidden='1' WHERE id='$id'";
         if (mysqli_query($conn, $query)) {
             echo 'success';
         } else {

@@ -1414,6 +1414,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "table_gauge") {include 'pages/table_gauge.php';}
 
             if ($_REQUEST['page'] == "customer_login_creds") {include 'pages/customer_login_creds.php';}
+            if ($_REQUEST['page'] == "supplier_pack") {include 'pages/supplier_pack.php';}
           ?>
         </div>
       </div>
