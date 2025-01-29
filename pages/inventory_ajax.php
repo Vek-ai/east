@@ -357,6 +357,7 @@ if(isset($_REQUEST['action'])) {
         $packs = [];
         while ($row_pack = mysqli_fetch_assoc($result_pack)) {
             $packs[] = [
+                'id' => $row_pack['id'],
                 'pack' => $row_pack['pack'],
                 'pack_count' => $row_pack['pack_count']
             ];

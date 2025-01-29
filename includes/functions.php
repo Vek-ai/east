@@ -332,20 +332,20 @@ function getPaintProviderName($provider_id){
 
 function getPackPieces($id){
     global $conn;
-    $query = "SELECT pieces_count FROM product_pack WHERE id = '$id'";
+    $query = "SELECT pack_count FROM supplier_pack WHERE id = '$id'";
     $result = mysqli_query($conn,$query);
     $row = mysqli_fetch_array($result); 
-    $pieces_count = $row['pieces_count'] ?? '';
-    return  $pieces_count;
+    $pack_count = $row['pack_count'] ?? 0;
+    return  $pack_count;
 }
 
 function getPackName($id){
     global $conn;
-    $query = "SELECT pack_name FROM product_pack WHERE id = '$id'";
+    $query = "SELECT pack FROM supplier_pack WHERE id = '$id'";
     $result = mysqli_query($conn,$query);
     $row = mysqli_fetch_array($result); 
-    $pack_name = $row['pack_name'] ?? '';
-    return  $pack_name;
+    $pack = $row['pack'] ?? '';
+    return  $pack;
 }
 
 function getSupplierType($supplier_type_id){

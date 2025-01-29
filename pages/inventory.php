@@ -579,7 +579,7 @@ require 'includes/functions.php';
 
                 if (response.length > 0) {
                     $.each(response, function (index, pack) {
-                    packDropdown.append('<option value="' + pack.pack_count + '" data-count="' + pack.pack_count + '">' + pack.pack + ' (' + pack.pack_count + ')</option>');
+                    packDropdown.append('<option value="' + pack.id + '" data-count="' + pack.pack_count + '">' + pack.pack + ' (' + pack.pack_count + ')</option>');
                     });
                 } else {
                     packDropdown.append('<option value="">No Packs Available</option>');
