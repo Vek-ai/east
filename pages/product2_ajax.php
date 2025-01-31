@@ -42,6 +42,9 @@ if(isset($_REQUEST['action'])) {
         $board_batten = isset($_POST['board_batten']) ? 1 : 0;
         $comment = mysqli_real_escape_string($conn, $_POST['comment']);
         $product_origin = mysqli_real_escape_string($conn, $_POST['product_origin']);
+        $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id'] ?? '');
+        $product_base = mysqli_real_escape_string($conn, $_POST['product_base'] ?? '');
+        
 
         $correlatedProducts = $_POST['correlatedProducts'];
     
@@ -84,7 +87,9 @@ if(isset($_REQUEST['action'])) {
                 standing_seam = '$standing_seam',
                 board_batten = '$board_batten',
                 product_origin = '$product_origin',
-                comment = '$comment' 
+                comment = '$comment', 
+                product_base = '$product_base', 
+                supplier_id = '$supplier_id'
             WHERE product_id = '$product_id'";
     
             if (mysqli_query($conn, $updateQuery)) {
@@ -151,7 +156,9 @@ if(isset($_REQUEST['action'])) {
                 standing_seam,
                 board_batten,
                 product_origin,
-                comment
+                comment,
+                product_base,
+                supplier_id
             ) VALUES (
                 '$product_item', 
                 '$product_sku', 
@@ -192,7 +199,9 @@ if(isset($_REQUEST['action'])) {
                 '$standing_seam',
                 '$board_batten',
                 '$product_origin',
-                '$comment'
+                '$comment',
+                '$product_base',
+                '$supplier_id'
             )";
     
             if (mysqli_query($conn, $insertQuery)) {
@@ -611,6 +620,8 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "fetch_add_inventory") {
         $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+        $prouct_details = getProductDetails($product_id);
+        $supplier_id = $prouct_details['supplier_id'];
         ?>
         
         <form id="add_inventory" class="form-horizontal">
@@ -618,6 +629,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="card-body">
                     <h4 class="fw-bold"><?= getProductName($product_id)?></h4>
                     <input type="hidden" id="product_id_filter" class="form-control select2-add" name="Product_id" value="<?= $product_id ?>" />
+                    <input type="hidden" id="operation" name="operation" value="add" />
                     <div class="row">
                         <div class="col-md-6">
                             <label class="form-label">Color</label>
@@ -640,21 +652,8 @@ if(isset($_REQUEST['action'])) {
                         <div class="col-md-6">
                             <label class="form-label">Supplier</label>
                             <div class="mb-3">
-                            <select id="supplier_id" class="form-control select2-inventory inventory_supplier" name="supplier_id">
-                                <option value="" >Select Supplier...</option>
-                                <optgroup label="Supplier">
-                                    <?php
-                                    $query_supplier = "SELECT * FROM supplier";
-                                    $result_supplier = mysqli_query($conn, $query_supplier);            
-                                    while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                                    ?>
-                                        <option value="<?= $row_supplier['supplier_id'] ?>" ><?= $row_supplier['supplier_name'] ?></option>
-                                    <?php   
-                                    }
-                                    ?>
-                                </optgroup>
-                                
-                            </select>
+                                <p><?= !empty($supplier_id) ? getSupplierName($supplier_id) : 'No Supplier Set for Product' ?></p>
+                                <input type="hidden" id="supplier_id_update" name="supplier_id" value="<?= $supplier_id ?>" />
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -743,6 +742,17 @@ if(isset($_REQUEST['action'])) {
                             <div class="mb-3">
                             <select id="pack_add" class="form-control select2-inventory pack_select" name="pack">
                                 <option value="" >Select Pack...</option>
+                                <optgroup label="Supplier Packs">
+                                    <?php
+                                    $query_packs = "SELECT * FROM supplier_pack WHERE supplierid = $supplier_id";
+                                    $result_packs = mysqli_query($conn, $query_packs);            
+                                    while ($row_packs = mysqli_fetch_array($result_packs)) {
+                                    ?>
+                                        <option value="<?= $row_packs['id'] ?>" data-count="<?= $row_packs['pack_count'] ?>" ><?= $row_packs['pack'] ?> ( <?= $row_packs['pack_count'] ?> )</option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </optgroup>
                             </select>
                             </div>
                         </div>
@@ -822,6 +832,28 @@ if(isset($_REQUEST['action'])) {
                                             ?>
                                         </div>
                                     </div>
+
+                                    <div class="row pt-3">
+                                        <label class="form-label">Select Base Product</label>
+                                        <div class="col-md-12">
+                                        <select id="base_product_update" name="product_base" class="select2-update form-control">
+                                            <option value="" selected>Select Base Product...</option>
+                                            <optgroup label="Select Base Product">
+                                                <?php
+                                                $selected = '';
+                                                $query_base = "SELECT * FROM product_base";
+                                                $result_base = mysqli_query($conn, $query_base);            
+                                                while ($row_base = mysqli_fetch_array($result_base)) {
+                                                    $selected = ($row['product_base'] == $row_base['id']) ? 'selected' : '';
+                                                ?>
+                                                    <option value="<?= $row_base['id'] ?>" data-base-price="<?= $row_base['base_price'] ?>" <?= $selected ?>><?= $row_base['product_name'] .'( $'.number_format(floatval($row_base['base_price']),2).' )' ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </optgroup>
+                                        </select>
+                                        </div>
+                                    </div> 
                                 
 
                                     <div class="row pt-3">
@@ -933,27 +965,6 @@ if(isset($_REQUEST['action'])) {
                                         </div>
                                     </div>  
 
-                                    <div class="row pt-3">
-                                        <label class="form-label">Select Base Product</label>
-                                        <div class="col-md-12">
-                                        <select id="base_product_update" name="baseProduct" class="select2-update form-control">
-                                            <option value="" selected>Select Base Product...</option>
-                                            <optgroup label="Select Base Product">
-                                                <?php
-                                                $selected = '';
-                                                $query_base = "SELECT * FROM product_base";
-                                                $result_base = mysqli_query($conn, $query_base);            
-                                                while ($row_base = mysqli_fetch_array($result_base)) {
-                                                    $selected = ($row['product_base'] == $row_base['id']) ? 'selected' : '';
-                                                ?>
-                                                    <option value="<?= $row_base['id'] ?>" data-base-price="<?= $row_base['base_price'] ?>" <?= $selected ?>><?= $row_base['product_name'] .'( $'.number_format(floatval($row_base['base_price']),2).' )' ?></option>
-                                                <?php   
-                                                }
-                                                ?>
-                                            </optgroup>
-                                        </select>
-                                        </div>
-                                    </div> 
 
                                     <div class="row pt-3">
                                     <div class="col-md-6 opt_field_update" data-id="1">
@@ -1009,7 +1020,7 @@ if(isset($_REQUEST['action'])) {
                                             while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                                                 $selected = ($row['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
                                             ?>
-                                                <option value="<?= $row_gauge['product_gauge_id'] ?>" data-multiplier="<?= $row_gauge['multiplier'] ?>" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
+                                                <option value="<?= $row_gauge['product_gauge_id'] ?>" data-multiplier="<?= $row_gauge['multiplier'] ?>" <?= $selected ?>><?= $row_gauge['product_gauge'] ?> ( x<?= $row_gauge['multiplier'] ?> )</option>
                                             <?php   
                                             }
                                             ?>
@@ -1027,7 +1038,7 @@ if(isset($_REQUEST['action'])) {
                                             while ($row_grade = mysqli_fetch_array($result_grade)) {
                                                 $selected = ($row['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
                                             ?>
-                                                <option value="<?= $row_grade['product_grade_id'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                                <option value="<?= $row_grade['product_grade_id'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?> ( x<?= $row_grade['multiplier'] ?> )</option>
                                             <?php   
                                             }
                                             ?>
@@ -1048,7 +1059,7 @@ if(isset($_REQUEST['action'])) {
                                             while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                                 $selected = ($row['color'] == $row_paint_colors['color_id']) ? 'selected' : '';
                                             ?>
-                                                <option value="<?= $row_paint_colors['color_id'] ?>" data-multiplier="<?= getProductColorMultValue($row_paint_colors['multiplier_category']) ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
+                                                <option value="<?= $row_paint_colors['color_id'] ?>" data-multiplier="<?= getProductColorMultValue($row_paint_colors['multiplier_category']) ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?> ( x<?= getProductColorMultValue($row_paint_colors['multiplier_category']) ?> )</option>
                                             <?php   
                                             }
                                             ?>
@@ -1120,32 +1131,33 @@ if(isset($_REQUEST['action'])) {
                                     </div>
                                     </div>
 
-                                    <div class="row pt-3">
+                                    <div class="row pt-3 d-none">
                                     <div class="col-md-6 opt_field_update" data-id="11">
                                         <div class="mb-3">
                                         <label class="form-label">Width</label>
                                         <input type="text" id="width" name="width" class="form-control" value="<?= $row['width']?>" />
                                         </div>
                                     </div>
-                                    <div class="col-md-6 opt_field_update" data-id="12">
-                                        <div class="mb-3">
-                                        <label class="form-label">Length</label>
-                                        <input type="text" id="length" name="length" class="form-control" value="<?= $row['length']?>" />
-                                        </div>
-                                    </div>
-                                    </div>
-
-                                    <div class="row pt-3">
                                     <div class="col-md-6 opt_field_update" data-id="13">
                                         <div class="mb-3">
                                         <label class="form-label">Weight</label>
                                         <input type="number" id="weight" name="weight" class="form-control" value="<?= $row['weight']?>" />
                                         </div>
                                     </div>
+                                    
+                                    </div>
+
+                                    <div class="row pt-3">
                                     <div class="col-md-6 opt_field_update" data-id="14">
                                         <div class="mb-3">
                                         <label class="form-label">Unit of Measure</label>
                                         <input type="text" id="unitofMeasure" name="unitofMeasure" class="form-control" value="<?= $row['unit_of_measure']?>" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 opt_field_update" data-id="12">
+                                        <div class="mb-3">
+                                        <label class="form-label">Length</label>
+                                        <input type="text" id="length" name="length" class="form-control" value="<?= $row['length']?>" />
                                         </div>
                                     </div>
                                     </div>
@@ -1220,9 +1232,31 @@ if(isset($_REQUEST['action'])) {
                                         </div>
                                     </div>
 
-                                    <div class="mb-3 opt_field_update" data-id="16">
-                                    <label class="form-label">Comment</label>
-                                    <textarea class="form-control" id="comment" name="comment" rows="5"><?= $row['comment']?></textarea>
+                                    <div class="pt-3 mb-3 opt_field_update" data-id="16">
+                                        <label class="form-label">Comment</label>
+                                        <textarea class="form-control" id="comment" name="comment" rows="5"><?= $row['comment']?></textarea>
+                                    </div>
+
+                                    <div class="row pt-3">
+                                        <label class="form-label">Select Supplier</label>
+                                        <div class="mb-3">
+                                            <select id="supplier_id" class="form-control select2-update" name="supplier_id">
+                                                <option value="" >Select Supplier...</option>
+                                                <optgroup label="Supplier">
+                                                    <?php
+                                                    $query_supplier = "SELECT * FROM supplier";
+                                                    $result_supplier = mysqli_query($conn, $query_supplier);            
+                                                    while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                                                        $selected = ($row['supplier_id'] == $row_supplier['supplier_id']) ? 'selected' : '';
+                                                    ?>
+                                                        <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
+                                                    <?php   
+                                                    }
+                                                    ?>
+                                                </optgroup>
+                                                
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                                 

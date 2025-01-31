@@ -208,14 +208,14 @@ if(!empty($_REQUEST['result'])){
                 <label class="form-label mb-1">Multiplier Category</label>
                 <a href="?page=color_multiplier" class="mb-1" target="_blank">Edit</a>
             </div>
-            <div class="mb-3">
+            <div class="mb-3" data-color-multiplier="<?= $multiplier_category ?>">
                 <select id="multiplier_category_add" class="form-control select2-add" name="multiplier_category">
                     <option value="" >Select Multiplier Category...</option>
                     <?php
                     $query_mult = "SELECT * FROM color_multiplier";
                     $result_mult = mysqli_query($conn, $query_mult);            
                     while ($row_mult = mysqli_fetch_array($result_mult)) {
-                      $selected = ($row_mult['provider_id'] == $multiplier_category) ? 'selected' : '';
+                      $selected = ($row_mult['id'] == $multiplier_category) ? 'selected' : '';
                     ?>
                         <option value="<?= $row_mult['multiplier'] ?>" <?= $selected ?> ><?= $row_mult['color'] .'( x'.number_format($row_mult['multiplier'],2).' )' ?></option>
                     <?php   
@@ -249,7 +249,7 @@ if(!empty($_REQUEST['result'])){
     <div class="card">
       <div class="card-body">
           <h4 class="card-title d-flex justify-content-between align-items-center">Paint color List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['color_id'])){ ?>
-            <a href="/?page=paint_colors" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
+            <a href="?page=paint_colors" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
             <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
           </h4>
         
@@ -315,7 +315,7 @@ while ($row_paint_color = mysqli_fetch_array($result_paint_color)) {
         <?php if ($row_paint_color['color_status'] == '0') { ?>
             <a href="#" class="btn btn-light py-1 text-dark hideProductLine" data-id="<?= $color_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
         <?php } else { ?>
-            <a href="/?page=paint_colors&color_id=<?= $color_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+            <a href="?page=paint_colors&color_id=<?= $color_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
         <?php } ?>
     </td>
 </tr>
@@ -352,7 +352,7 @@ $(document).ready(function() {
                         $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                         $(".changeStatus[data-no='" + no + "']").data('status', "1");
                         $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                        $('#action-button-' + no).html('<a href="/?page=paint_colors&color_id=' + color_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                        $('#action-button-' + no).html('<a href="?page=paint_colors&color_id=' + color_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                         $('#toggleActive').trigger('change');
                       }
                 } else {

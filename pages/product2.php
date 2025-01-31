@@ -138,6 +138,26 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         </p>
                                     </div>
                                 </div>
+
+                                <div class="row pt-3">
+                                    <label class="form-label">Select Base Product</label>
+                                    <div class="col-md-12">
+                                    <select id="base_product_add" name="product_base" class="select2-add form-control">
+                                        <option value="" selected>Select Base Product...</option>
+                                        <optgroup label="Select Base Product">
+                                            <?php
+                                            $query_base = "SELECT * FROM product_base";
+                                            $result_base = mysqli_query($conn, $query_base);            
+                                            while ($row_base = mysqli_fetch_array($result_base)) {
+                                            ?>
+                                                <option value="<?= $row_base['id'] ?>" data-base-price="<?= $row_base['base_price'] ?>"><?= $row_base['product_name'] .'( $'.number_format(floatval($row_base['base_price']),2).' )' ?></option>
+                                            <?php   
+                                            }
+                                            ?>
+                                        </optgroup>
+                                    </select>
+                                    </div>
+                                </div>
                                 
 
                                 <div class="row pt-3">
@@ -233,27 +253,6 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                     </select>
                                     </div>
                                 </div>       
-                                
-                                <div class="row pt-3">
-                                        <label class="form-label">Select Base Product</label>
-                                        <div class="col-md-12">
-                                        <select id="base_product_add" name="baseProduct" class="select2-add form-control">
-                                            <option value="" selected>Select Base Product...</option>
-                                            <optgroup label="Select Base Product">
-                                                <?php
-                                                $query_base = "SELECT * FROM product_base";
-                                                $result_base = mysqli_query($conn, $query_base);            
-                                                while ($row_base = mysqli_fetch_array($result_base)) {
-                                                ?>
-                                                    <option value="<?= $row_base['id'] ?>" data-base-price="<?= $row_base['base_price'] ?>"><?= $row_base['product_name'] .'( $'.number_format(floatval($row_base['base_price']),2).' )' ?></option>
-                                                <?php   
-                                                }
-                                                ?>
-                                            </optgroup>
-                                        </select>
-                                        </div>
-                                    </div> 
-
 
                                 <div class="row pt-3">
                                 <div class="col-md-6 opt_field" data-id="1">
@@ -307,7 +306,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         $result_gauge = mysqli_query($conn, $query_gauge);            
                                         while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                                         ?>
-                                            <option value="<?= $row_gauge['product_gauge_id'] ?>" data-multiplier="<?= $row_gauge['multiplier'] ?>" ><?= $row_gauge['product_gauge'] ?></option>
+                                            <option value="<?= $row_gauge['product_gauge_id'] ?>" data-multiplier="<?= $row_gauge['multiplier'] ?>" ><?= $row_gauge['product_gauge'] ?> ( x<?= $row_gauge['multiplier'] ?> )</option>
                                         <?php   
                                         }
                                         ?>
@@ -324,7 +323,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         $result_grade = mysqli_query($conn, $query_grade);            
                                         while ($row_grade = mysqli_fetch_array($result_grade)) {
                                         ?>
-                                            <option value="<?= $row_grade['product_grade_id'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>" ><?= $row_grade['product_grade'] ?></option>
+                                            <option value="<?= $row_grade['product_grade_id'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>" ><?= $row_grade['product_grade'] ?> ( <?= $row_grade['multiplier'] ?> )</option>
                                         <?php   
                                         }
                                         ?>
@@ -344,7 +343,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                         while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                         ?>
-                                            <option value="<?= $row_paint_colors['color_id'] ?>" data-multiplier="<?= getProductColorMultValue($row_paint_colors['multiplier_category']) ?>" ><?= $row_paint_colors['color_name'] ?></option>
+                                            <option value="<?= $row_paint_colors['color_id'] ?>" data-multiplier="<?= getProductColorMultValue($row_paint_colors['multiplier_category']) ?>" ><?= $row_paint_colors['color_name'] ?> ( x<?= getProductColorMultValue($row_paint_colors['multiplier_category']) ?> )</option>
                                         <?php   
                                         }
                                         ?>
@@ -414,11 +413,27 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                 </div>
                                 </div>
 
-                                <div class="row pt-3">
+                                <div class="row pt-3 d-none">
                                 <div class="col-md-6 opt_field" data-id="11">
                                     <div class="mb-3">
                                     <label class="form-label">Width</label>
                                     <input type="text" id="width" name="width" class="form-control"  />
+                                    </div>
+                                </div>
+                                <div class="col-md-6 opt_field" data-id="13">
+                                    <div class="mb-3">
+                                    <label class="form-label">Weight</label>
+                                    <input type="number" id="weight" name="weight" class="form-control"  />
+                                    </div>
+                                </div>
+                                </div>
+
+                                <div class="row pt-3">
+                                
+                                <div class="col-md-6 opt_field" data-id="14">
+                                    <div class="mb-3">
+                                    <label class="form-label">Unit of Measure</label>
+                                    <input type="text" id="unitofMeasure" name="unitofMeasure" class="form-control"  />
                                     </div>
                                 </div>
                                 <div class="col-md-6 opt_field" data-id="12">
@@ -430,25 +445,10 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                 </div>
 
                                 <div class="row pt-3">
-                                <div class="col-md-6 opt_field" data-id="13">
-                                    <div class="mb-3">
-                                    <label class="form-label">Weight</label>
-                                    <input type="number" id="weight" name="weight" class="form-control"  />
-                                    </div>
-                                </div>
-                                <div class="col-md-6 opt_field" data-id="14">
-                                    <div class="mb-3">
-                                    <label class="form-label">Unit of Measure</label>
-                                    <input type="text" id="unitofMeasure" name="unitofMeasure" class="form-control"  />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                     <label class="form-label">Unit Price</label>
-                                    <input type="text" id="unitPrice" name="unitPrice" class="form-control"  />
+                                    <input type="text" id="unit_price_add" name="unitPrice" class="form-control"  />
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -513,9 +513,30 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                     </div>
                                 </div>
 
-                                <div class="mb-3 opt_field" data-id="16">
-                                <label class="form-label">Comment</label>
-                                <textarea class="form-control" id="comment" name="comment" rows="5"></textarea>
+                                <div class="pt-3 opt_field" data-id="16">
+                                    <label class="form-label">Comment</label>
+                                    <textarea class="form-control" id="comment" name="comment" rows="5"></textarea>
+                                </div>
+
+                                <div class="row pt-3">
+                                    <label class="form-label">Select Supplier</label>
+                                    <div class="mb-3">
+                                        <select id="supplier_id" class="form-control select2-add" name="supplier_id">
+                                            <option value="" >Select Supplier...</option>
+                                            <optgroup label="Supplier">
+                                                <?php
+                                                $query_supplier = "SELECT * FROM supplier";
+                                                $result_supplier = mysqli_query($conn, $query_supplier);            
+                                                while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                                                ?>
+                                                    <option value="<?= $row_supplier['supplier_id'] ?>" ><?= $row_supplier['supplier_name'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </optgroup>
+                                            
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
