@@ -4,6 +4,7 @@ require 'includes/functions.php';
 
 $product_grade = "";
 $grade_abbreviations = "";
+$multiplier = 1;
 $notes = "";
 
 $saveBtnTxt = "Add";
@@ -17,6 +18,7 @@ if(!empty($_REQUEST['product_grade_id'])){
       $product_grade_id = $row['product_grade_id'];
       $product_grade = $row['product_grade'];
       $grade_abbreviations = $row['grade_abbreviations'];
+      $multiplier = $row['multiplier'];
       $notes = $row['notes'];
   }
   $saveBtnTxt = "Update";
@@ -128,9 +130,18 @@ if(!empty($_REQUEST['result'])){
           </div>
         </div>
         <div class="col-md-6">
+          
+        </div>
+        <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Grade Abreviations</label>
             <input type="text" id="grade_abbreviations" name="grade_abbreviations" class="form-control" value="<?= $grade_abbreviations ?>" />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label">Multiplier</label>
+            <input type="number" id="multiplier" name="multiplier" class="form-control" value="<?= $multiplier ?>" />
           </div>
         </div>
       </div>
@@ -165,7 +176,7 @@ if(!empty($_REQUEST['result'])){
     <div class="card">
       <div class="card-body">
           <h4 class="card-title d-flex justify-content-between align-items-center">Product grade List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['product_grade_id'])){ ?>
-            <a href="/?page=product_grade" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
+            <a href="?page=product_grade" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
             <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
           </h4>
         
@@ -177,6 +188,7 @@ if(!empty($_REQUEST['result'])){
               <tr>
                 <th>Product grade</th>
                 <th>Grade Abreviations</th>
+                <th>Multiplier</th>
                 <th>Notes</th>
                 <th>Details</th>
                 <th>Status</th>
@@ -194,6 +206,7 @@ while ($row_product_grade = mysqli_fetch_array($result_product_grade)) {
     $product_grade_id = $row_product_grade['product_grade_id'];
     $product_grade = $row_product_grade['product_grade'];
     $grade_abbreviations = $row_product_grade['grade_abbreviations'];
+    $multiplier = $row_product_grade['multiplier'];
     $db_status = $row_product_grade['status'];
     $notes = $row_product_grade['notes'];
    // $last_edit = $row_product_grade['last_edit'];
@@ -221,6 +234,7 @@ while ($row_product_grade = mysqli_fetch_array($result_product_grade)) {
 <tr id="product-row-<?= $no ?>">
     <td><span class="product<?= $no ?> <?php if ($row_product_grade['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_grade ?></span></td>
     <td><?= $grade_abbreviations ?></td>
+    <td><?= $multiplier ?></td>
     <td class="notes" style="width:30%;"><?= $notes ?></td>
     <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
     <td><?= $status ?></td>
@@ -228,7 +242,7 @@ while ($row_product_grade = mysqli_fetch_array($result_product_grade)) {
         <?php if ($row_product_grade['status'] == '0') { ?>
             <a href="#" class="btn btn-light py-1 text-dark hideProductGrade" data-id="<?= $product_grade_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
         <?php } else { ?>
-            <a href="/?page=product_grade&product_grade_id=<?= $product_grade_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+            <a href="?page=product_grade&product_grade_id=<?= $product_grade_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
         <?php } ?>
     </td>
 </tr>
@@ -265,7 +279,7 @@ $(document).ready(function() {
                         $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                         $(".changeStatus[data-no='" + no + "']").data('status', "1");
                         $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                        $('#action-button-' + no).html('<a href="/?page=product_grade&product_grade_id=' + product_grade_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                        $('#action-button-' + no).html('<a href="?page=product_grade&product_grade_id=' + product_grade_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                         $('#toggleActive').trigger('change');
                       }
                 } else {

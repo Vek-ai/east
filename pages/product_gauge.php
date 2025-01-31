@@ -134,9 +134,21 @@ if(!empty($_REQUEST['result'])){
           </div>
         </div>
         <div class="col-md-6">
+          
+        </div>
+      </div>
+
+      <div class="row pt-3">
+        <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Gauge Abreviations</label>
             <input type="text" id="gauge_abbreviations" name="gauge_abbreviations" class="form-control" value="<?= $gauge_abbreviations ?>" />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label">Multiplier</label>
+            <input type="number" id="multiplier" name="multiplier" class="form-control" value="<?= $multiplier ?>" />
           </div>
         </div>
       </div>
@@ -204,6 +216,7 @@ if(!empty($_REQUEST['result'])){
               <tr>
                 <th>Product gauge</th>
                 <th>Gauge Abreviations</th>
+                <th>Multiplier</th>
                 <th>Thickness</th>
                 <th>#/SQFT</th>
                 <th>#/SQIN</th>
@@ -223,6 +236,7 @@ while ($row_product_gauge = mysqli_fetch_array($result_product_gauge)) {
     $product_gauge_id = $row_product_gauge['product_gauge_id'];
     $product_gauge = $row_product_gauge['product_gauge'];
     $gauge_abbreviations = $row_product_gauge['gauge_abbreviations'];
+    $multiplier = $row_product_gauge['multiplier'];
     $db_status = $row_product_gauge['status'];
     $notes = $row_product_gauge['notes'];
     $thickness = floatval($row_product_gauge['thickness']);
@@ -253,6 +267,7 @@ while ($row_product_gauge = mysqli_fetch_array($result_product_gauge)) {
 <tr id="product-row-<?= $no ?>">
     <td><span class="product<?= $no ?> <?php if ($row_product_gauge['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_gauge ?></span></td>
     <td><?= $gauge_abbreviations ?></td>
+    <td><?= $multiplier ?></td>
     <td><?= $thickness ?></td>
     <td><?= $no_per_sqft ?></td>
     <td><?= $no_per_sqin ?></td>

@@ -54,6 +54,16 @@ function getProductColorMultName($id){
     return  $color;
 }
 
+function getProductColorMultValue($id) {
+    global $conn;
+    $query = "SELECT multiplier FROM color_multiplier WHERE id = '$id'";
+    $result = mysqli_query($conn, $query);
+    if ($row = mysqli_fetch_array($result)) {
+        return $row['multiplier'];
+    }
+    return 1;
+}
+
 function getProductDetails($product_id) {
     global $conn;
     $product_id = mysqli_real_escape_string($conn, $product_id);
