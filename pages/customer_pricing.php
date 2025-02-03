@@ -3,6 +3,7 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $pricing_name = "";
+$pricing_abbreviation = "";
 
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
@@ -14,6 +15,7 @@ if(!empty($_REQUEST['id'])){
   while ($row = mysqli_fetch_array($result)) {
       $id = $row['id'];
       $pricing_name = $row['pricing_name'];
+      $pricing_abbreviation = $row['pricing_abbreviation'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -95,10 +97,16 @@ if(!empty($_REQUEST['id'])){
     </div>
     <form id="customerPricingForm" class="form-horizontal">
       <div class="row pt-3">
-        <div class="col-md-12">
+        <div class="col-md-8">
           <div class="mb-3">
             <label class="form-label">Pricing Name</label>
             <input type="text" id="pricing_name" name="pricing_name" class="form-control"  value="<?= $pricing_name ?>"/>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label class="form-label">Pricing Abbreviation</label>
+            <input type="text" id="pricing_abbreviation" name="pricing_abbreviation" class="form-control"  value="<?= $pricing_abbreviation ?>"/>
           </div>
         </div>
       </div>
@@ -128,7 +136,7 @@ if(!empty($_REQUEST['id'])){
     <div class="card">
       <div class="card-body">
           <h4 class="card-title d-flex justify-content-between align-items-center">Customer Pricing List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['id'])){ ?>
-            <a href="/?page=customer_pricing" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
+            <a href="?page=customer_pricing" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
             <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
           </h4>
         
@@ -138,6 +146,7 @@ if(!empty($_REQUEST['id'])){
             <thead>
               <tr>
                 <th>Pricing Name</th>
+                <th>Abbrev.</th>
                 <th>Added By</th>
                 <th>Details</th>
                 <th>Status</th>
@@ -152,6 +161,7 @@ if(!empty($_REQUEST['id'])){
               while ($row_customer_pricing = mysqli_fetch_array($result_customer_pricing)) {
                   $id = $row_customer_pricing['id'];
                   $pricing_name = $row_customer_pricing['pricing_name'];
+                  $pricing_abbreviation = $row_customer_pricing['pricing_abbreviation'];
                   $db_status = $row_customer_pricing['status'];
                 // $last_edit = $row_customer_pricing['last_edit'];
                   $date = new DateTime($row_customer_pricing['last_edit']);
@@ -177,6 +187,7 @@ if(!empty($_REQUEST['id'])){
               ?>
               <tr id="product-row-<?= $no ?>">
                   <td><span class="product<?= $no ?> <?php if ($row_customer_pricing['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $pricing_name ?></span></td>
+                  <td><?= $pricing_abbreviation ?></td>
                   <td><?= get_name($added_by) ?></td>
                   <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                   <td><?= $status ?></td>
@@ -184,7 +195,7 @@ if(!empty($_REQUEST['id'])){
                       <?php if ($row_customer_pricing['status'] == '0') { ?>
                           <a href="#" class="btn btn-light py-1 text-dark hideCustomerPricing" data-id="<?= $id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
                       <?php } else { ?>
-                          <a href="/?page=customer_pricing&id=<?= $id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                          <a href="?page=customer_pricing&id=<?= $id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
                       <?php } ?>
                   </td>
               </tr>
@@ -221,7 +232,7 @@ if(!empty($_REQUEST['id'])){
                                       $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                                       $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                       $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                      $('#action-button-' + no).html('<a href="/?page=customer_pricing&id=' + id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                                      $('#action-button-' + no).html('<a href="?page=customer_pricing&id=' + id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                                       $('#toggleActive').trigger('change');
                                     }
                               } else {

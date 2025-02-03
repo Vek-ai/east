@@ -11,6 +11,7 @@ if(isset($_REQUEST['action'])) {
     if ($action == "add_update") {
         $id = mysqli_real_escape_string($conn, $_POST['id']);
         $pricing_name = mysqli_real_escape_string($conn, $_POST['pricing_name']);
+        $pricing_abbreviation = mysqli_real_escape_string($conn, $_POST['pricing_abbreviation']);
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
         // SQL query to check if the record exists
@@ -38,7 +39,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE customer_pricing SET pricing_name = '$pricing_name', last_edit = NOW(), edited_by = '$userid'  WHERE id = '$id'";
+                $updateQuery = "UPDATE customer_pricing SET pricing_name = '$pricing_name', pricing_abbreviation = '$pricing_abbreviation', last_edit = NOW(), edited_by = '$userid'  WHERE id = '$id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "success_update";
                 } else {
@@ -58,7 +59,7 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO customer_pricing (pricing_name, added_date, added_by) VALUES ('$pricing_name', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO customer_pricing (pricing_name, pricing_abbreviation, added_date, added_by) VALUES ('$pricing_name', '$pricing_abbreviation', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "success_add";
                 } else {

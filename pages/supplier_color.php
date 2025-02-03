@@ -5,6 +5,7 @@ require 'includes/functions.php';
 $id = 0;
 $supplierid = 0;
 $color = '';
+$color_abbreviation = '';
 $color_code = '';
 $color_hex = '';
 
@@ -23,6 +24,7 @@ if(!empty($_REQUEST['id'])){
       $id = $row['id'];
       $supplierid = $row['supplierid'];
       $color = $row['color'];
+      $color_abbreviation = $row['color_abbreviation'];
       $color_code = $row['color_code'];
       $color_hex = $row['color_hex'];
   }
@@ -127,7 +129,12 @@ if(!empty($_REQUEST['id'])){
             </select>
           </div>
         </div>
-        <div class="col-md-6"></div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label">Color Abbreviation</label>
+            <input type="text" id="color_abbreviation" name="color_abbreviation" class="form-control" placeholder="ex. RD" value="<?= $color_abbreviation ?>" />
+          </div>
+        </div>
       </div>
 
       <div class="row pt-3">
@@ -192,6 +199,7 @@ if(!empty($_REQUEST['id'])){
               <tr>
                 <th>Supplier</th>
                 <th>Color</th>
+                <th>Abbrev.</th>
                 <th>Color Code</th>
                 <th>Appearance</th>
                 <th>Details</th>
@@ -213,6 +221,7 @@ if(!empty($_REQUEST['id'])){
                   $supplierid = $row_supplier_color['supplierid'];
                   $db_status = $row_supplier_color['status'];
                   $color = $row_supplier_color['color'];
+                  $color_abbreviation = $row_supplier_color['color_abbreviation'];
                   $color_code = $row_supplier_color['color_code'];
                   $color_hex = $row_supplier_color['color_hex'];
                 // $last_edit = $row_supplier_color['last_edit'];
@@ -240,6 +249,7 @@ if(!empty($_REQUEST['id'])){
               <tr id="product-row-<?= $no ?>">
                   <td><span class="product<?= $no ?> <?php if ($row_supplier_color['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= getSupplierName($supplierid) ?></span></td>
                   <td><?= ucwords($color) ?></td>
+                  <td><?= $color_abbreviation ?></td>
                   <td><?= $color_code ?></td>
                   <td><a class="d-block " href="javascript:void(0)" style="height: 20px; background-color: <?= $color_hex ?>;"></a></td>
                   <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>

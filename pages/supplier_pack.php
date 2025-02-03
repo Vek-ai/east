@@ -2,13 +2,10 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 $id = 0;
 $supplierid = 0;
 $pack = '';
+$pack_abbreviation = '';
 $pack_count = '';
 
 $saveBtnTxt = "Add";
@@ -26,6 +23,7 @@ if(!empty($_REQUEST['id'])){
       $id = $row['id'];
       $supplierid = $row['supplierid'];
       $pack = $row['pack'];
+      $pack_abbreviation = $row['pack_abbreviation'];
       $pack_count = $row['pack_count'];
   }
   $saveBtnTxt = "Update";
@@ -129,7 +127,12 @@ if(!empty($_REQUEST['id'])){
             </select>
           </div>
         </div>
-        <div class="col-md-6"></div>
+        <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Pack Abbreviation</label>
+              <input type="text" id="pack_abbreviation" name="pack_abbreviation" class="form-control" placeholder="ex. BX" value="<?= $pack_abbreviation ?>" />
+            </div>
+        </div>
       </div>
 
       <div class="row pt-3">
@@ -186,6 +189,7 @@ if(!empty($_REQUEST['id'])){
               <tr>
                 <th>Supplier</th>
                 <th>Pack Name</th>
+                <th>Abbrev.</th>
                 <th>Pieces</th>
                 <th>Details</th>
                 <th>Status</th>
@@ -206,6 +210,7 @@ if(!empty($_REQUEST['id'])){
                   $supplierid = $row_supplier_pack['supplierid'];
                   $db_status = $row_supplier_pack['status'];
                   $pack = $row_supplier_pack['pack'];
+                  $pack_abbreviation = $row_supplier_pack['pack_abbreviation'];
                   $pack_count = $row_supplier_pack['pack_count'];
                 // $last_edit = $row_supplier_pack['last_edit'];
                   $date = new DateTime($row_supplier_pack['last_edit'] ?? '');
@@ -232,6 +237,7 @@ if(!empty($_REQUEST['id'])){
               <tr id="product-row-<?= $no ?>">
                   <td><span class="product<?= $no ?> <?php if ($row_supplier_pack['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= getSupplierName($supplierid) ?></span></td>
                   <td><?= ucwords($pack) ?></td>
+                  <td><?= $pack_abbreviation ?></td>
                   <td><?= $pack_count ?></td>
                   <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                   <td><?= $status ?></td>

@@ -12,6 +12,7 @@ if(isset($_REQUEST['action'])) {
         $id = mysqli_real_escape_string($conn, $_POST['id'] ?? null);
         $supplierid = mysqli_real_escape_string($conn, $_POST['supplierid'] ?? '');
         $pack = mysqli_real_escape_string($conn, $_POST['pack'] ?? '');
+        $pack_abbreviation = mysqli_real_escape_string($conn, $_POST['pack_abbreviation'] ?? '');
         $pack_count = mysqli_real_escape_string($conn, $_POST['pack_count'] ?? 0);
         $userid = mysqli_real_escape_string($conn, $_POST['userid'] ?? '');
 
@@ -22,6 +23,7 @@ if(isset($_REQUEST['action'])) {
             $updateQuery = "UPDATE supplier_pack 
                             SET supplierid = '$supplierid', 
                                 pack = '$pack', 
+                                pack_abbreviation = '$pack_abbreviation', 
                                 pack_count = '$pack_count', 
                                 last_edit = NOW(), 
                                 edited_by = '$userid' 
@@ -33,8 +35,8 @@ if(isset($_REQUEST['action'])) {
                 echo "Error updating supplier pack: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO supplier_pack (supplierid, pack, pack_count, added_by) 
-                            VALUES ('$supplierid', '$pack', '$pack_count', '$userid')";
+            $insertQuery = "INSERT INTO supplier_pack (supplierid, pack, pack_abbreviation, pack_count, added_by) 
+                            VALUES ('$supplierid', '$pack', '$pack_abbreviation', '$pack_count', '$userid')";
 
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";

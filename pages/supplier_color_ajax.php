@@ -12,6 +12,7 @@ if(isset($_REQUEST['action'])) {
         $id = mysqli_real_escape_string($conn, $_POST['id'] ?? null);
         $supplierid = mysqli_real_escape_string($conn, $_POST['supplierid'] ?? '');
         $color = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
+        $color_abbreviation = mysqli_real_escape_string($conn, $_POST['color_abbreviation'] ?? '');
         $color_code = mysqli_real_escape_string($conn, $_POST['color_code'] ?? '');
         $color_hex = mysqli_real_escape_string($conn, $_POST['color_hex'] ?? '');
         $userid = mysqli_real_escape_string($conn, $_POST['userid'] ?? '');
@@ -23,6 +24,7 @@ if(isset($_REQUEST['action'])) {
             $updateQuery = "UPDATE supplier_color 
                             SET supplierid = '$supplierid', 
                                 color = '$color', 
+                                color_abbreviation = '$color_abbreviation', 
                                 color_code = '$color_code', 
                                 color_hex = '$color_hex', 
                                 last_edit = NOW(), 
@@ -35,8 +37,8 @@ if(isset($_REQUEST['action'])) {
                 echo "Error updating color: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO supplier_color (supplierid, color, color_code, color_hex, added_by) 
-                            VALUES ('$supplierid', '$color', '$color_code', '$color_hex', '$userid')";
+            $insertQuery = "INSERT INTO supplier_color (supplierid, color, color_abbreviation,  color_code, color_hex, added_by) 
+                            VALUES ('$supplierid', '$color', '$color_abbreviation', '$color_code', '$color_hex', '$userid')";
 
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";
