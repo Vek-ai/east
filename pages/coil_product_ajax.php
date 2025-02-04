@@ -17,9 +17,14 @@ if(isset($_REQUEST['action'])) {
         $coil_id = isset($_POST['coil_id']) ? mysqli_real_escape_string($conn, $_POST['coil_id']) : '';
         $entry_no = isset($_POST['entry_no']) ? mysqli_real_escape_string($conn, $_POST['entry_no']) : '';
         $warehouse = isset($_POST['warehouse']) ? mysqli_real_escape_string($conn, $_POST['warehouse']) : '';
-        $color_family = isset($_POST['color_family']) ? mysqli_real_escape_string($conn, $_POST['color_family']) : '';
         $color_close = isset($_POST['color_close']) ? mysqli_real_escape_string($conn, $_POST['color_close']) : '';
         $actual_color = isset($_POST['actual_color']) ? mysqli_real_escape_string($conn, $_POST['actual_color']) : '';
+        $color_family = isset($_POST['color_family']) ? mysqli_real_escape_string($conn, $_POST['color_family']) : '';
+        $color_abbreviation = isset($_POST['color_abbreviation']) ? mysqli_real_escape_string($conn, $_POST['color_abbreviation']) : '';
+        $paint_supplier = isset($_POST['paint_supplier']) ? mysqli_real_escape_string($conn, $_POST['paint_supplier']) : '';
+        $paint_code = isset($_POST['paint_code']) ? mysqli_real_escape_string($conn, $_POST['paint_code']) : '';
+        $stock_availability = isset($_POST['stock_availability']) ? mysqli_real_escape_string($conn, $_POST['stock_availability']) : '';
+        $multiplier_category = isset($_POST['multiplier_category']) ? mysqli_real_escape_string($conn, $_POST['multiplier_category']) : '';
         $coil_no = isset($_POST['coil_no']) ? mysqli_real_escape_string($conn, $_POST['coil_no']) : '';
         $date = isset($_POST['date']) ? mysqli_real_escape_string($conn, $_POST['date']) : '';
         $supplier = isset($_POST['supplier']) ? mysqli_real_escape_string($conn, $_POST['supplier']) : '';
@@ -52,10 +57,10 @@ if(isset($_REQUEST['action'])) {
 
         $grade_no = isset($_POST['grade_no']) ? mysqli_real_escape_string($conn, $_POST['grade_no']) : '';
         $price = isset($_POST['price']) ? mysqli_real_escape_string($conn, $_POST['price']) : 0;
-        $avg_by_color = $price;
-        $total = $remaining_feet * $price;
-        $lb_per_ft = $weight / $og_length;
-        $current_weight = $lb_per_ft * $remaining_feet;
+        $avg_by_color = floatval($price);
+        $total = floatval($remaining_feet) * floatval($price);
+        $lb_per_ft = (floatval($og_length) != 0) ? (floatval($weight) / floatval($og_length)) : 0;
+        $current_weight = floatval($lb_per_ft) * floatval($remaining_feet);
         $contract_ppf = isset($_POST['contract_ppf']) ? mysqli_real_escape_string($conn, $_POST['contract_ppf']) : 0;
         $contract_ppcwg = isset($_POST['contract_ppcwg']) ? mysqli_real_escape_string($conn, $_POST['contract_ppcwg']) : '';
         $invoice_price = isset($_POST['invoice_price']) ? mysqli_real_escape_string($conn, $_POST['invoice_price']) : 0;
@@ -71,9 +76,14 @@ if(isset($_REQUEST['action'])) {
             $updateQuery = "UPDATE coil_product SET
                 entry_no = '$entry_no',
                 warehouse = '$warehouse',
-                color_family = '$color_family',
                 color_close = '$color_close',
                 actual_color = '$actual_color',
+                color_family = '$color_family',
+                color_abbreviation = '$color_abbreviation',
+                paint_supplier = '$paint_supplier',
+                paint_code = '$paint_code',
+                stock_availability = '$stock_availability',
+                multiplier_category = '$multiplier_category',
                 coil_no = '$coil_no',
                 date = '$date',
                 supplier = '$supplier',
@@ -109,20 +119,20 @@ if(isset($_REQUEST['action'])) {
             WHERE coil_id = '$coil_id'";
 
             if (mysqli_query($conn, $updateQuery)) {
-                echo "Record updated successfully!";
+                echo "success_update";
             } else {
                 echo "Error updating record: " . mysqli_error($conn);
             }
         } else {
             $isInsert = true;
             $insertQuery = "INSERT INTO coil_product (
-                coil_id, entry_no, warehouse, color_family, color_close, actual_color, coil_no, date, supplier, supplier_tag,
+                coil_id, entry_no, warehouse, color_family, color_abbreviation, paint_supplier, paint_code, stock_availability, multiplier_category, color_close, actual_color, coil_no, date, supplier, supplier_tag,
                 color_sold_as, product_id, og_length, weight, thickness, width, grade, coating, 
                 tag_no, invoice_no, remaining_feet, last_inventory_count, coil_class, gauge, grade_no, year, month, extracting_price, 
                 price, avg_by_color, total, current_weight, lb_per_ft, contract_ppf, contract_ppcwg, invoice_price, 
                 round_width, main_image
             ) VALUES (
-                '$coil_id', '$entry_no', '$warehouse', '$color_family', '$color_close', '$actual_color', '$coil_no', 
+                '$coil_id', '$entry_no', '$warehouse', '$color_family', '$color_abbreviation', '$paint_supplier', '$paint_code', '$stock_availability', '$multiplier_category', '$color_close', '$actual_color', '$coil_no', 
                 '$date', '$supplier', '$supplier_tag', '$color_sold_as', '$product_id', '$og_length', '$weight', 
                 '$thickness', '$width', '$grade', '$coating', '$tag_no', '$invoice_no', '$remaining_feet', '$last_inventory_count',
                 '$coil_class', '$gauge', '$grade_no', '$year', '$month', '$extracting_price', '$price', '$avg_by_color', 
@@ -132,7 +142,7 @@ if(isset($_REQUEST['action'])) {
 
             if (mysqli_query($conn, $insertQuery)) {
                 $coil_id = $conn->insert_id;
-                echo "success";
+                echo "success_add";
             } else {
                 echo "Error inserting record: " . mysqli_error($conn);
             }
@@ -200,7 +210,7 @@ if(isset($_REQUEST['action'])) {
                         <div class="modal-body">
                             <div class="card">
                                 <div class="card-body">
-                                    <input type="hidden" id="coil_id_edit" name="coil_id" class="form-control" />
+                                    <input type="hidden" id="coil_id_edit" name="coil_id" class="form-control" value="<?= $row['coil_id'] ?>"/>
 
                                     <div class="row">
                                         <div class="card-body p-0">
@@ -259,60 +269,84 @@ if(isset($_REQUEST['action'])) {
                                         </div>
                                     </div>
 
-                                    <div class="row pt-3">
-                                    <div class="col-md-6 opt_field">
-                                        <label class="form-label">Color Family</label>
-                                        <div class="mb-3">
-                                            <select id="color_family_edit" class="form-control select2-edit" name="color_family">
-                                                <option value="" >Select Color...</option>
-                                                <?php
-                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
-                                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                                    $selected = ($row['color_family'] == $row_paint_colors['color_id']) ? 'selected' : '';
-                                                ?>
-                                                    <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
-                                                <?php   
-                                                }
-                                                ?>
-                                            </select>
+                                    <div class="card">
+                                        <h4 class="card-header">Color Details</h4>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6 opt_field">
+                                                    <label class="form-label">Close EKM Color</label>
+                                                    <div class="mb-3">
+                                                        <select id="color_close_edit" class="form-control select2-edit colors-edit" name="color_close">
+                                                            <option value="" >Select Color...</option>
+                                                            <?php
+                                                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                            $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                                            while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                                                $selected = ($row['color_close'] == $row_paint_colors['color_id']) ? 'selected' : '';
+                                                            ?>
+                                                                <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
+                                                            <?php
+                                                            }
+                                                            ?>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 opt_field">
+                                                    <label class="form-label">Actual Color</label>
+                                                    <div class="mb-3">
+                                                        <select id="actual_color_edit" class="form-control select2-edit colors-edit" name="actual_color">
+                                                            <option value="" >Select Color...</option>
+                                                            <?php
+                                                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                            $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                                            while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                                                $selected = ($row['actual_color'] == $row_paint_colors['color_id']) ? 'selected' : '';
+                                                            ?>
+                                                                <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
+                                                            <?php   
+                                                            }
+                                                            ?>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 opt_field">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Color Family</label>
+                                                        <input type="text" id="color_family_edit" name="color_family" class="form-control" value="<?= $row['color_family'] ?>"/>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Color Abbreviation</label>
+                                                        <input type="text" id="color_abbreviation_edit" name="color_abbreviation" class="form-control" value="<?= $row['color_abbreviation'] ?>"/>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Paint Supplier</label>
+                                                        <input type="text" id="paint_supplier_edit" name="paint_supplier" class="form-control" value="<?= $row['paint_supplier'] ?>"/>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Paint ID Code ID</label>
+                                                        <input type="text" id="paint_code_edit" name="paint_code" class="form-control" value="<?= $row['paint_code'] ?>"/>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Stock Availability</label>
+                                                        <input type="text" id="stock_availability_edit" name="stock_availability" class="form-control" value="<?= $row['stock_availability'] ?>"/>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Multiplier Category</label>
+                                                        <input type="text" id="multiplier_category_edit" name="multiplier_category" class="form-control" value="<?= $row['multiplier_category'] ?>"/>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6 opt_field">
-                                        <label class="form-label">Close EKM Color</label>
-                                        <div class="mb-3">
-                                            <select id="color_close_edit" class="form-control select2-edit" name="color_close">
-                                                <option value="" >Select Color...</option>
-                                                <?php
-                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
-                                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                                    $selected = ($row['color_close'] == $row_paint_colors['color_id']) ? 'selected' : '';
-                                                ?>
-                                                    <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
-                                                <?php
-                                                }
-                                                ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 opt_field">
-                                        <label class="form-label">Actual Color</label>
-                                        <div class="mb-3">
-                                            <select id="actual_color_edit" class="form-control select2-edit" name="actual_color">
-                                                <option value="" >Select Color...</option>
-                                                <?php
-                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
-                                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                                ?>
-                                                    <option value="<?= $row_paint_colors['color_id'] ?>" ><?= $row_paint_colors['color_name'] ?></option>
-                                                <?php   
-                                                }
-                                                ?>
-                                            </select>
-                                        </div>
-                                    </div>
                                     </div>
 
                                     <div class="row pt-3">
@@ -548,6 +582,37 @@ if(isset($_REQUEST['action'])) {
                         });
                     });
 
+                    $(document).on("change", ".colors-edit", function () {
+                        let colorId = $(this).val();
+                        if (colorId) {
+                            $.ajax({
+                                url: "pages/coil_product_ajax.php",
+                                type: "POST",
+                                data: { 
+                                    color_id: colorId,
+                                    action: 'fetch_color_details'
+                                },
+                                dataType: "json",
+                                success: function (response) {
+                                    if (response.success) {
+                                        $("#color_family_edit").val(response.color_group);
+                                        $("#color_abbreviation_edit").val(response.color_abbreviation);
+                                        $("#paint_supplier_edit").val(response.provider_id);
+                                        $("#paint_code_edit").val(response.ekm_paint_code);
+                                        $("#stock_availability_edit").val(response.stock_availability);
+                                        $("#multiplier_category_edit").val(response.multiplier_category);
+                                    }
+                                },
+                                error: function (xhr, status, error) {
+                                    console.error("XHR Response:", xhr.responseText);
+                                    console.error("Status:", status);
+                                    console.error("Error:", error);
+                                    alert("Error fetching color details.");
+                                }
+                            });
+                        }
+                    });
+
                     let uploadedUpdateFiles = [];
 
                     $('#myUpdateDropzone').dropzone({
@@ -634,6 +699,29 @@ if(isset($_REQUEST['action'])) {
             <?php
         }
     } 
+
+    if ($action == "fetch_color_details") {
+        $color_id = intval($_POST['color_id']);
+
+        $query = "SELECT * FROM paint_colors WHERE color_id = $color_id AND hidden = 0";
+        $result = mysqli_query($conn, $query);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            
+            echo json_encode([
+                "success" => true,
+                "color_group" => $row['color_group'],
+                "color_abbreviation" => $row['color_abbreviation'],
+                "provider_id" => strtoupper(getPaintProviderName($row['provider_id'])),
+                "ekm_paint_code" => $row['ekm_paint_code'],
+                "stock_availability" => $row['stock_availability'],
+                "multiplier_category" => $row['multiplier_category']
+            ]);
+        } else {
+            echo json_encode(["success" => false, "message" => "No color details found."]);
+        }
+    }
 
     if ($action == "remove_image") {
         $image_id = $_POST['image_id'];
