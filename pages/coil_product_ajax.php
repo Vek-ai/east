@@ -716,7 +716,7 @@ if(isset($_REQUEST['action'])) {
                 "provider_id" => strtoupper(getPaintProviderName($row['provider_id'])),
                 "ekm_paint_code" => $row['ekm_paint_code'],
                 "stock_availability" => $row['stock_availability'],
-                "multiplier_category" => $row['multiplier_category']
+                "multiplier_category" => getColorMultiplierName($row['multiplier_category'])
             ]);
         } else {
             echo json_encode(["success" => false, "message" => "No color details found."]);

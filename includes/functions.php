@@ -226,6 +226,15 @@ function getColorName($color_id ){
     return  $color_name;
 }
 
+function getColorMultiplierName($id){
+    global $conn;
+    $query = "SELECT color FROM color_multiplier WHERE id  = '$id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $color = $row['color'] ?? '';
+    return  $color;
+}
+
 function getColorFromID($product_id){
     global $conn;
     $query = "SELECT color FROM product WHERE product_id  = '$product_id'";
