@@ -12,6 +12,7 @@ if(isset($_REQUEST['action'])) {
         $profile_type_id = mysqli_real_escape_string($conn, $_POST['profile_type_id']);
         $profile_type = mysqli_real_escape_string($conn, $_POST['profile_type']);
         $profile_abbreviations = mysqli_real_escape_string($conn, $_POST['profile_abbreviations']);
+        $product_category = mysqli_real_escape_string($conn, $_POST['product_category']);
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
@@ -50,7 +51,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE profile_type SET profile_type = '$profile_type', profile_abbreviations = '$profile_abbreviations', notes = '$notes', last_edit = NOW(), edited_by = '$userid'  WHERE profile_type_id = '$profile_type_id'";
+                $updateQuery = "UPDATE profile_type SET profile_type = '$profile_type', profile_abbreviations = '$profile_abbreviations', product_category = '$product_category', notes = '$notes', last_edit = NOW(), edited_by = '$userid'  WHERE profile_type_id = '$profile_type_id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "update-success";
                 } else {
@@ -76,7 +77,7 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO profile_type (profile_type, profile_abbreviations, notes, added_date, added_by) VALUES ('$profile_type', '$profile_abbreviations', '$notes', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO profile_type (profile_type, profile_abbreviations, product_category, notes, added_date, added_by) VALUES ('$profile_type', '$profile_abbreviations', '$product_category', '$notes', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "add-success";
                 } else {

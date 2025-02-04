@@ -436,22 +436,40 @@ if(isset($_REQUEST['action'])) {
 
 
                                     <div class="row pt-3">
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="mb-3">
                                                 <label class="form-label">Weight</label>
                                                 <input type="text" id="weight_edit" name="weight" class="form-control" value="<?= $row['weight'] ?>"/>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="mb-3">
                                                 <label class="form-label">Thickness</label>
                                                 <input type="text" id="thickness_edit" name="thickness" class="form-control" value="<?= $row['thickness'] ?>"/>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
+                                            <label class="form-label">Width</label>
                                             <div class="mb-3">
-                                                <label class="form-label">Width</label>
-                                                <input type="text" id="width_edit" name="width" class="form-control" value="<?= $row['width'] ?>"/>
+                                                <select id="width_edit" class="form-control select2-edit width-select" data-type="edit" name="width">
+                                                    <option value="" >Select Coil Width...</option>
+                                                    <?php
+                                                    $query_width = "SELECT * FROM coil_width WHERE hidden = '0'";
+                                                    $result_width = mysqli_query($conn, $query_width);            
+                                                    while ($row_width = mysqli_fetch_array($result_width)) {
+                                                        $selected = ($row['width'] == $row_width['id']) ? 'selected' : '';
+                                                    ?>
+                                                        <option value="<?= $row_width['id'] ?>" ><?= $row_width['actual_width'] ?></option>
+                                                    <?php
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 opt_field" data-id="5">
+                                            <label class="form-label">Coil Class</label>
+                                            <div class="mb-3">
+                                                <input type="text" id="coil_class_edit" name="coil_class" class="form-control" />
                                             </div>
                                         </div>
                                     </div>
@@ -508,17 +526,6 @@ if(isset($_REQUEST['action'])) {
                                                     <option value="2" <?= $row['grade_no'] == '2' ? 'selected' : '' ?>>2</option>
                                                     <option value="3" <?= $row['grade_no'] == '3' ? 'selected' : '' ?>>3</option>
                                                     <option value="4" <?= $row['grade_no'] == '4' ? 'selected' : '' ?>>4</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 opt_field" data-id="5">
-                                            <label class="form-label">Coil Class</label>
-                                            <div class="mb-3">
-                                                <select id="coil_class_edit" class="form-control select2-edit" name="coil_class">
-                                                    <option value="" >Select Coil Class...</option>
-                                                    <option value="SW">SW</option>
-                                                    <option value="FH">FH</option>
-                                                    <option value="FL">FL</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -720,6 +727,24 @@ if(isset($_REQUEST['action'])) {
             ]);
         } else {
             echo json_encode(["success" => false, "message" => "No color details found."]);
+        }
+    }
+
+    if ($action == "fetch_width_details") {
+        $id = intval($_POST['width_id']);
+
+        $query = "SELECT * FROM coil_width WHERE id = $id AND hidden = 0";
+        $result = mysqli_query($conn, $query);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            
+            echo json_encode([
+                "success" => true,
+                "classification" => $row['classification']
+            ]);
+        } else {
+            echo json_encode(["success" => false, "message" => "No width details found."]);
         }
     }
 

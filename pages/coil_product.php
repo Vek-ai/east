@@ -326,22 +326,39 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
 
 
                                 <div class="row pt-3">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Weight</label>
                                             <input type="text" id="weight_add" name="weight" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Thickness</label>
                                             <input type="text" id="thickness_add" name="thickness" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Width</label>
                                         <div class="mb-3">
-                                            <label class="form-label">Width</label>
-                                            <input type="text" id="width_add" name="width" class="form-control" />
+                                            <select id="width_add" class="form-control select2-add width-select" data-type="add" name="width">
+                                                <option value="" >Select Coil Width...</option>
+                                                <?php
+                                                $query_width = "SELECT * FROM coil_width WHERE hidden = '0'";
+                                                $result_width = mysqli_query($conn, $query_width);            
+                                                while ($row_width = mysqli_fetch_array($result_width)) {
+                                                ?>
+                                                    <option value="<?= $row_width['id'] ?>" ><?= $row_width['actual_width'] ?></option>
+                                                <?php
+                                                }
+                                                ?>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 opt_field" data-id="5">
+                                        <label class="form-label">Coil Class</label>
+                                        <div class="mb-3">
+                                            <input type="text" id="coil_class_add" name="coil_class" class="form-control" />
                                         </div>
                                     </div>
                                 </div>
@@ -388,7 +405,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                 </div>
 
                                 <div class="row pt-3">
-                                    <div class="col-md-3 opt_field" data-id="5">
+                                    <div class="col-md-4 opt_field" data-id="5">
                                         <label class="form-label">Grade No.</label>
                                         <div class="mb-3">
                                             <select id="grade_no_add" class="form-control select2-add" name="grade_no">
@@ -400,24 +417,13 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-3 opt_field" data-id="5">
-                                        <label class="form-label">Coil Class</label>
-                                        <div class="mb-3">
-                                            <select id="coil_class_add" class="form-control select2-add" name="coil_class">
-                                                <option value="" >Select Coil Class...</option>
-                                                <option value="SW">SW</option>
-                                                <option value="FH">FH</option>
-                                                <option value="FL">FL</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label class="form-label">Price ($)</label>
                                             <input type="text" id="price_add" name="price" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label class="form-label">Contract PPF</label>
                                             <input type="text" id="contract_ppf_add" name="contract_ppf" class="form-control" />
@@ -774,6 +780,33 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
 
             fileInput.files = dataTransfer.files;
         }
+
+        $(document).on("change", ".width-select", function () {
+            var width_id = $(this).val();
+            var type = $(this).data("type");
+            if (width_id) {
+                $.ajax({
+                    url: "pages/coil_product_ajax.php",
+                    type: "POST",
+                    data: { 
+                        width_id: width_id,
+                        action: 'fetch_width_details'
+                    },
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.success) {
+                            $("#coil_class_" + type).val(response.classification);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("XHR Response:", xhr.responseText);
+                        console.error("Status:", status);
+                        console.error("Error:", error);
+                        alert("Error fetching color details.");
+                    }
+                });
+            }
+        });
 
         $(document).on("change", ".colors-add", function () {
             let colorId = $(this).val();

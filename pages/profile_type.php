@@ -4,6 +4,7 @@ require 'includes/functions.php';
 
 $profile_type = "";
 $profile_abbreviations = "";
+$product_category = '';
 $notes = "";
 
 $saveBtnTxt = "Add";
@@ -17,6 +18,7 @@ if(!empty($_REQUEST['profile_type_id'])){
       $profile_type_id = $row['profile_type_id'];
       $profile_type = $row['profile_type'];
       $profile_abbreviations = $row['profile_abbreviations'];
+      $product_category = $row['product_category'];
       $notes = $row['notes'];
   }
   $saveBtnTxt = "Update";
@@ -127,6 +129,25 @@ if(!empty($_REQUEST['result'])){
             <input type="text" id="profile_type" name="profile_type" class="form-control"  value="<?= $profile_type ?>"/>
           </div>
         </div>
+        <div class="col-md-6"></div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Product Category</label>
+                <select id="product_category" class="form-control" name="product_category">
+                    <option value="">Select One...</option>
+                    <?php
+                    $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                    $result_roles = mysqli_query($conn, $query_roles);            
+                    while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                        $selected = ($product_category == $row_product_category['product_id']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
+                    <?php   
+                    }
+                    ?>
+                </select>
+            </div>
+        </div>
         <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Profile Type Abreviations</label>
@@ -165,7 +186,7 @@ if(!empty($_REQUEST['result'])){
     <div class="card">
       <div class="card-body">
           <h4 class="card-title d-flex justify-content-between align-items-center">Profile type List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['profile_type_id'])){ ?>
-            <a href="/?page=profile_type" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
+            <a href="?page=profile_type" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
             <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
           </h4>
         
@@ -176,7 +197,8 @@ if(!empty($_REQUEST['result'])){
               <!-- start row -->
               <tr>
                 <th>Profile type</th>
-                <th>Profile type Abreviations</th>
+                <th>Abreviations</th>
+                <th>Category</th>
                 <th>Notes</th>
                 <th>Details</th>
                 <th>Status</th>
@@ -194,6 +216,7 @@ while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
     $profile_type_id = $row_profile_type['profile_type_id'];
     $profile_type = $row_profile_type['profile_type'];
     $profile_abbreviations = $row_profile_type['profile_abbreviations'];
+    $product_category = $row_profile_type['product_category'];
     $db_status = $row_profile_type['status'];
     $notes = $row_profile_type['notes'];
    // $last_edit = $row_profile_type['last_edit'];
@@ -221,6 +244,7 @@ while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
 <tr id="product-row-<?= $no ?>">
     <td><span class="product<?= $no ?> <?php if ($row_profile_type['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $profile_type ?></span></td>
     <td><?= $profile_abbreviations ?></td>
+    <td><?= getProductCategoryName($product_category) ?></td>
     <td class="notes" style="width:30%;"><?= $notes ?></td>
     <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
     <td><?= $status ?></td>
@@ -228,7 +252,7 @@ while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
         <?php if ($row_profile_type['status'] == '0') { ?>
             <a href="#" class="btn btn-light py-1 text-dark hideProfileType" data-id="<?= $profile_type_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
         <?php } else { ?>
-            <a href="/?page=profile_type&profile_type_id=<?= $profile_type_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+            <a href="?page=profile_type&profile_type_id=<?= $profile_type_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
         <?php } ?>
     </td>
 </tr>
@@ -265,7 +289,7 @@ $(document).ready(function() {
                         $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                         $(".changeStatus[data-no='" + no + "']").data('status', "1");
                         $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                        $('#action-button-' + no).html('<a href="/?page=profile_type&profile_type_id=' + profile_type_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                        $('#action-button-' + no).html('<a href="?page=profile_type&profile_type_id=' + profile_type_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                         $('#toggleActive').trigger('change');
                       }
                 } else {

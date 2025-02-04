@@ -4,6 +4,7 @@ require 'includes/functions.php';
 
 $product_line = "";
 $line_abreviations = "";
+$product_category = "";
 $notes = "";
 $multiplier = 0;
 
@@ -18,6 +19,7 @@ if(!empty($_REQUEST['product_line_id'])){
       $product_line_id = $row['product_line_id'];
       $product_line = $row['product_line'];
       $line_abreviations = $row['line_abreviations'];
+      $product_category = $row['product_category'];
       $notes = $row['notes'];
       $multiplier = $row['multiplier'];
   }
@@ -109,6 +111,24 @@ if(!empty($_REQUEST['product_line_id'])){
             <input type="text" id="product_line" name="product_line" class="form-control"  value="<?= $product_line ?>"/>
           </div>
         </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Product Category</label>
+                <select id="product_category" class="form-control" name="product_category">
+                    <option value="">Select One...</option>
+                    <?php
+                    $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                    $result_roles = mysqli_query($conn, $query_roles);            
+                    while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                        $selected = ($product_category == $row_product_category['product_id']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
+                    <?php   
+                    }
+                    ?>
+                </select>
+            </div>
+        </div>
       </div>
 
       <div class="row pt-3">
@@ -167,7 +187,8 @@ if(!empty($_REQUEST['product_line_id'])){
               <!-- start row -->
               <tr>
                 <th>Product line</th>
-                <th>Line Abreviations</th>
+                <th>Abreviations</th>
+                <th>Category</th>
                 <th>Multiplier</th>
                 <th>Notes</th>
                 <th>Details</th>
@@ -185,6 +206,7 @@ if(!empty($_REQUEST['product_line_id'])){
                   $product_line_id = $row_product_line['product_line_id'];
                   $product_line = $row_product_line['product_line'];
                   $line_abreviations = $row_product_line['line_abreviations'];
+                  $product_category = $row_product_line['product_category'];
                   $db_status = $row_product_line['status'];
                   $notes = $row_product_line['notes'];
                   $multiplier = $row_product_line['multiplier'];
@@ -213,6 +235,7 @@ if(!empty($_REQUEST['product_line_id'])){
               <tr id="product-row-<?= $no ?>">
                   <td><span class="product<?= $no ?> <?php if ($row_product_line['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_line ?></span></td>
                   <td><?= $line_abreviations ?></td>
+                  <td><?= getProductCategoryName($product_category) ?></td>
                   <td><?= $multiplier ?></td>
                   <td class="notes" style="width:30%;"><?= $notes ?></td>
                   <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
