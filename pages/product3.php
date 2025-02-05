@@ -161,6 +161,26 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                 
                                 <div id="fields" class="d-none">
                                     <div class="row pt-3">
+                                        <label class="form-label">Select Base Product</label>
+                                        <div class="col-md-12">
+                                        <select id="base_product_add" name="product_base" class=" form-control">
+                                            <option value="" selected>Select Base Product...</option>
+                                            <optgroup label="Select Base Product">
+                                                <?php
+                                                $query_base = "SELECT * FROM product_base";
+                                                $result_base = mysqli_query($conn, $query_base);            
+                                                while ($row_base = mysqli_fetch_array($result_base)) {
+                                                ?>
+                                                    <option value="<?= $row_base['id'] ?>" data-base-price="<?= $row_base['base_price'] ?>"><?= $row_base['product_name'] .'( $'.number_format(floatval($row_base['base_price']),2).' )' ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </optgroup>
+                                        </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="row pt-3">
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Product Name</label>
@@ -251,14 +271,14 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         <div class="col-md-4 opt_field">
                                             <div class="mb-3">
                                             <label class="form-label">Color</label>
-                                            <select id="color" class="form-control" name="color">
+                                            <select id="color_add" class="form-control" name="color">
                                                 <option value="" >Select Color...</option>
                                                 <?php
                                                 $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
                                                 $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                                 while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                                 ?>
-                                                    <option value="<?= $row_paint_colors['color_id'] ?>" ><?= $row_paint_colors['color_name'] ?></option>
+                                                    <option value="<?= $row_paint_colors['color_id'] ?>" data-multiplier="<?= getProductColorMultValue($row_paint_colors['multiplier_category']) ?>"><?= $row_paint_colors['color_name'] ?></option>
                                                 <?php   
                                                 }
                                                 ?>
@@ -268,14 +288,14 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         <div class="col-md-4 opt_field">
                                             <div class="mb-3">
                                             <label class="form-label">Gauge</label>
-                                            <select id="gauge" class="form-control" name="gauge">
+                                            <select id="gauge_add" class="form-control" name="gauge">
                                                 <option value="" >Select Gauge...</option>
                                                 <?php
                                                 $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
                                                 $result_gauge = mysqli_query($conn, $query_gauge);            
                                                 while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                                                 ?>
-                                                    <option value="<?= $row_gauge['product_gauge_id'] ?>" ><?= $row_gauge['product_gauge'] ?></option>
+                                                    <option value="<?= $row_gauge['product_gauge_id'] ?>" data-multiplier="<?= $row_gauge['multiplier'] ?>"><?= $row_gauge['product_gauge'] ?></option>
                                                 <?php   
                                                 }
                                                 ?>
@@ -285,14 +305,14 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         <div class="col-md-4 opt_field">
                                             <div class="mb-3">
                                             <label class="form-label">Grade</label>
-                                            <select id="grade" class="form-control" name="grade">
+                                            <select id="grade_add" class="form-control" name="grade">
                                                 <option value="" >Select Grade...</option>
                                                 <?php
                                                 $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
                                                 $result_grade = mysqli_query($conn, $query_grade);            
                                                 while ($row_grade = mysqli_fetch_array($result_grade)) {
                                                 ?>
-                                                    <option value="<?= $row_grade['product_grade_id'] ?>" ><?= $row_grade['product_grade'] ?></option>
+                                                    <option value="<?= $row_grade['product_grade_id'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>"><?= $row_grade['product_grade'] ?></option>
                                                 <?php   
                                                 }
                                                 ?>
@@ -304,8 +324,8 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                     <div class="row pt-3 trim-fields d-none">
                                         <div class="col-md-6 opt_field" data-id="2">
                                             <div class="mb-3">
-                                            <label class="form-label"># of Hems</label>
-                                            <input type="text" id="hems" name="hems" class="form-control"  />
+                                            <label class="form-label"># of Bends</label>
+                                            <input type="text" id="bends" name="bends" class="form-control"  />
                                             </div>
                                         </div>
                                         <div class="col-md-6 opt_field" data-id="2">
@@ -345,6 +365,27 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                             </select>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <div class="row pt-3">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                        <label class="form-label">Unit Price</label>
+                                        <input type="text" id="unit_price_add" name="unitPrice" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                        <label class="form-label">Unit Cost</label>
+                                        <input type="text" id="unitCost" name="unitCost" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                        <label class="form-label">Unit Gross Margin</label>
+                                        <input type="text" id="unitGrossMargin" name="unitGrossMargin" class="form-control"  />
+                                        </div>
+                                    </div>
                                     </div>
 
                                     <div class="mb-3">
@@ -487,27 +528,6 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         <div class="mb-3">
                                         <label class="form-label">Unit of Measure</label>
                                         <input type="text" id="unitofMeasure" name="unitofMeasure" class="form-control"  />
-                                        </div>
-                                    </div>
-                                    </div>
-
-                                    <div class="row pt-3">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                        <label class="form-label">Unit Price</label>
-                                        <input type="text" id="unitPrice" name="unitPrice" class="form-control"  />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                        <label class="form-label">Unit Cost</label>
-                                        <input type="text" id="unitCost" name="unitCost" class="form-control"  />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                        <label class="form-label">Unit Gross Margin</label>
-                                        <input type="text" id="unitGrossMargin" name="unitGrossMargin" class="form-control"  />
                                         </div>
                                     </div>
                                     </div>
@@ -1000,6 +1020,13 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
         console.log(fileNames);
     }
     $(document).ready(function() {
+        var price_per_hem = <?= getPaymentSetting('price_per_hem'); ?>;
+        var price_per_bend = <?= getPaymentSetting('price_per_bend'); ?>;
+
+        var basePrice = 0;
+
+        var selectedCategory = '';
+
         displayFileNames()
         let uploadedFiles = []; // Array to hold the files
 
@@ -1077,11 +1104,12 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
 
         $('#toggleActive').trigger('change');
 
-        $(".select2-add").select2({
-            width: '100%',
-            placeholder: "Select Correlated Products",
-            allowClear: true,
-            dropdownParent: $('#addProductModal')
+        $(".select2-add").each(function () {
+            $(this).select2({
+                width: '100%',
+                allowClear: true,
+                dropdownParent: $(this).parent()
+            });
         });
 
         /* $('#product_category').on('change', function() {
@@ -1306,14 +1334,35 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             });
         });
 
+        $(document).on("change", "#base_product_add, #color_add, #gauge_add, #grade_add, #bends, #hems", function () {
+            basePrice = parseFloat($("#base_product_add").find(":selected").data("base-price")) || 0;
+
+            let colorMultiplier = parseFloat($("#color_add").find(":selected").data("multiplier")) || 1;
+            let gaugeMultiplier = parseFloat($("#gauge_add").find(":selected").data("multiplier")) || 1;
+            let gradeMultiplier = parseFloat($("#grade_add").find(":selected").data("multiplier")) || 1;
+
+            let unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier;
+
+            if (String(selectedCategory) == '4') {
+                var num_bends = parseFloat($("#bends").val()) || 0;
+                var num_hems = parseFloat($("#hems").val()) || 0;
+                unitPrice = unitPrice + (num_bends * price_per_bend) + (num_hems * price_per_hem);
+            }
+
+            $("#unit_price_add").val(unitPrice.toFixed(2));
+        });
+
         function updateSearchCategory() {
-            let selectedCategory = $('#product_category_add').val();;
+            selectedCategory = $('#product_category_add').val();
             let hasCategory = !!selectedCategory; 
 
             $('.add-category option').each(function() {
                 let match = String($(this).data('category')) === String(selectedCategory);
                 $(this).toggle(match);
             });
+
+            $("#bends").val('').trigger('change');
+            $("#hems").val('').trigger('change');
 
             if (hasCategory) {
                 $('#fields').removeClass('d-none');
