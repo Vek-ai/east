@@ -1389,6 +1389,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             let gaugeMultiplier = parseFloat($("#gauge_add").find(":selected").data("multiplier")) || 1;
             let gradeMultiplier = parseFloat($("#grade_add").find(":selected").data("multiplier")) || 1;
 
+            //category 4 = TRIM
             if (String(selectedCategory) == '4') {
                 basePrice = 2.69;
             }
@@ -1401,6 +1402,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             let coil_width = parseFloat($("#coil_width_add option:selected").data("width")) || 1; 
             var width = parseFloat($("#width").val()) || 0;
 
+            //category 4 = TRIM
             if (String(selectedCategory) == '4') {
                 var num_bends = parseFloat($("#bends").val()) || 0;
                 var num_hems = parseFloat($("#hems").val()) || 0;
