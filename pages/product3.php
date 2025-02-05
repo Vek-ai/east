@@ -138,365 +138,434 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         </p>
                                     </div>
                                 </div>
-                                
 
-                                <div class="row pt-3">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Product Name</label>
-                                            <input type="text" id="product_item" name="product_item" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Product SKU</label>
-                                            <input type="text" id="product_sku" name="product_sku" class="form-control" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                    <label class="form-label">Product Category</label>
-                                    <select id="product_category" class="form-control" name="product_category">
-                                        <option value="/" >Select One...</option>
-                                        <?php
-                                        $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
-                                        $result_roles = mysqli_query($conn, $query_roles);            
-                                        while ($row_product_category = mysqli_fetch_array($result_roles)) {
-                                        ?>
-                                            <option value="<?= $row_product_category['product_category_id'] ?>" ><?= $row_product_category['product_category'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                    <label class="form-label">Product Line</label>
-                                    <select id="product_line" class="form-control" name="product_line">
-                                        <option value="/" >Select One...</option>
-                                        <?php
-                                        $query_roles = "SELECT * FROM product_line WHERE hidden = '0'";
-                                        $result_roles = mysqli_query($conn, $query_roles);            
-                                        while ($row_product_line = mysqli_fetch_array($result_roles)) {
-                                        ?>
-                                            <option value="<?= $row_product_line['product_line_id'] ?>" ><?= $row_product_line['product_line'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                    <label class="form-label">Product Type</label>
-                                    <select id="product_type" class="form-control" name="product_type">
-                                        <option value="/" >Select One...</option>
-                                        <?php
-                                        $query_roles = "SELECT * FROM product_type WHERE hidden = '0'";
-                                        $result_roles = mysqli_query($conn, $query_roles);            
-                                        while ($row_product_type = mysqli_fetch_array($result_roles)) {
-                                        ?>
-                                            <option value="<?= $row_product_type['product_type_id'] ?>" ><?= $row_product_type['product_type'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </select>
-                                    </div>
-                                </div>
-                                </div>
-
-
-                                <div class="mb-3">
-                                <label class="form-label">Description</label>
-                                <textarea class="form-control" id="description" name="description" rows="5"></textarea>
-                                </div>
-
-                                <div class="row pt-3">
+                                <div class="row">
                                     <div class="col-md-12">
-                                    <label class="form-label">Correlated products</label>
-                                    <select id="correlatedProducts" name="correlatedProducts[]" class="select2-add form-control" multiple="multiple">
-                                        <optgroup label="Select Correlated Products">
+                                        <label class="form-label">Product Category</label>
+                                        <div class="mb-3">
+                                        <select id="product_category_add" class="form-control select2" name="product_category">
+                                            <option value="" >Select One...</option>
                                             <?php
-                                            $query_products = "SELECT * FROM product";
-                                            $result_products = mysqli_query($conn, $query_products);            
-                                            while ($row_products = mysqli_fetch_array($result_products)) {
+                                            $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                                            $result_roles = mysqli_query($conn, $query_roles);            
+                                            while ($row_product_category = mysqli_fetch_array($result_roles)) {
                                             ?>
-                                                <option value="<?= $row_products['product_id'] ?>" ><?= $row_products['product_item'] ?></option>
+                                                <option value="<?= $row_product_category['product_category_id'] ?>" data-category="<?= $row_product_category['product_category'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
                                             <?php   
                                             }
                                             ?>
-                                        </optgroup>
-                                    </select>
-                                    </div>
-                                </div>        
-
-
-                                <div class="row pt-3">
-                                <div class="col-md-6 opt_field" data-id="1">
-                                    <div class="mb-3">
-                                    <label class="form-label">Stock Type</label>
-                                    <select id="stock_type" class="form-control" name="stock_type">
-                                        <option value="/" >Select Stock Type...</option>
-                                        <?php
-                                        $query_stock_type = "SELECT * FROM stock_type WHERE hidden = '0'";
-                                        $result_stock_type = mysqli_query($conn, $query_stock_type);            
-                                        while ($row_stock_type = mysqli_fetch_array($result_stock_type)) {
-                                        ?>
-                                            <option value="<?= $row_stock_type['stock_type_id'] ?>" ><?= $row_stock_type['stock_type'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 opt_field" data-id="2">
-                                    <div class="mb-3">
-                                    <label class="form-label">Material</label>
-                                    <input type="text" id="material" name="material" class="form-control"  />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-6 opt_field" data-id="3">
-                                    <div class="mb-3">
-                                    <label class="form-label">Dimensions</label>
-                                    <input type="text" id="dimensions" name="dimensions" class="form-control"  />
-                                    </div>
-                                </div>
-                                <div class="col-md-6 opt_field" data-id="4">
-                                    <div class="mb-3">
-                                    <label class="form-label">Thickness</label>
-                                    <input type="text" id="thickness" name="thickness" class="form-control"  />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-6 opt_field" data-id="5">
-                                    <div class="mb-3">
-                                    <label class="form-label">Gauge</label>
-                                    <select id="gauge" class="form-control" name="gauge">
-                                        <option value="/" >Select Gauge...</option>
-                                        <?php
-                                        $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
-                                        $result_gauge = mysqli_query($conn, $query_gauge);            
-                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                                        ?>
-                                            <option value="<?= $row_gauge['product_gauge_id'] ?>" ><?= $row_gauge['product_gauge'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 opt_field" data-id="6">
-                                    <div class="mb-3">
-                                    <label class="form-label">Grade</label>
-                                    <select id="grade" class="form-control" name="grade">
-                                        <option value="/" >Select Grade...</option>
-                                        <?php
-                                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
-                                        $result_grade = mysqli_query($conn, $query_grade);            
-                                        while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                        ?>
-                                            <option value="<?= $row_grade['product_grade_id'] ?>" ><?= $row_grade['product_grade'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </select>
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-4 opt_field" data-id="7">
-                                    <div class="mb-3">
-                                    <label class="form-label">Color</label>
-                                    <select id="color" class="form-control" name="color">
-                                        <option value="/" >Select Color...</option>
-                                        <?php
-                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
-                                        $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                        while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                        ?>
-                                            <option value="<?= $row_paint_colors['color_id'] ?>" ><?= $row_paint_colors['color_name'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 opt_field" data-id="8">
-                                    <div class="mb-3">
-                                    <label class="form-label">Paint Provider</label>
-                                    <select id="paintProvider" class="form-control" name="paintProvider">
-                                        <option value="/" >Select Color...</option>
-                                        <?php
-                                        $query_paint_providers = "SELECT * FROM paint_providers WHERE hidden = '0'";
-                                        $result_paint_providers = mysqli_query($conn, $query_paint_providers);            
-                                        while ($row_paint_providers = mysqli_fetch_array($result_paint_providers)) {
-                                        ?>
-                                            <option value="<?= $row_paint_providers['provider_id'] ?>" ><?= $row_paint_providers['provider_name'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 opt_field" data-id="17">
-                                    <div class="mb-3">
-                                    <label class="form-label">Coating</label>
-                                    <input type="text" id="coating" name="coating" class="form-control"  />
-                                    </div>
-                                </div>
-                                </div>
-
-
-                                <div class="row pt-3">
-                                <div class="col-md-6 opt_field" data-id="9">
-                                    <div class="mb-3">
-                                    <label class="form-label">Warranty Type</label>
-                                    <select id="warrantyType" class="form-control" name="warrantyType">
-                                        <option value="/" >Select Warranty Type...</option>
-                                        <?php
-                                        $query_product_warranty_type = "SELECT * FROM product_warranty_type WHERE hidden = '0'";
-                                        $result_product_warranty_type = mysqli_query($conn, $query_product_warranty_type);            
-                                        while ($row_product_warranty_type = mysqli_fetch_array($result_product_warranty_type)) {
-                                        ?>
-                                            <option value="<?= $row_product_warranty_type['product_warranty_type_id'] ?>" ><?= $row_product_warranty_type['product_warranty_type'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 opt_field" data-id="10">
-                                    <div class="mb-3">
-                                    <label class="form-label">Profile</label>
-                                    <select id="profile" class="form-control" name="profile">
-                                        <option value="" >Select Profile...</option>
-                                        <?php
-                                        $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0'";
-                                        $result_profile_type = mysqli_query($conn, $query_profile_type);            
-                                        while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
-                                        ?>
-                                            <option value="<?= $row_profile_type['profile_type_id'] ?>" ><?= $row_profile_type['profile_type'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </select>
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-6 opt_field" data-id="11">
-                                    <div class="mb-3">
-                                    <label class="form-label">Width</label>
-                                    <input type="text" id="width" name="width" class="form-control"  />
-                                    </div>
-                                </div>
-                                <div class="col-md-6 opt_field" data-id="12">
-                                    <div class="mb-3">
-                                    <label class="form-label">Length</label>
-                                    <input type="text" id="length" name="length" class="form-control"  />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-6 opt_field" data-id="13">
-                                    <div class="mb-3">
-                                    <label class="form-label">Weight</label>
-                                    <input type="number" id="weight" name="weight" class="form-control"  />
-                                    </div>
-                                </div>
-                                <div class="col-md-6 opt_field" data-id="14">
-                                    <div class="mb-3">
-                                    <label class="form-label">Unit of Measure</label>
-                                    <input type="text" id="unitofMeasure" name="unitofMeasure" class="form-control"  />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                    <label class="form-label">Unit Price</label>
-                                    <input type="text" id="unitPrice" name="unitPrice" class="form-control"  />
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                    <label class="form-label">Unit Cost</label>
-                                    <input type="text" id="unitCost" name="unitCost" class="form-control"  />
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                    <label class="form-label">Unit Gross Margin</label>
-                                    <input type="text" id="unitGrossMargin" name="unitGrossMargin" class="form-control"  />
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                    <div class="col-md-6 opt_field" data-id="15">
-                                        <div class="mb-3">
-                                        <label class="form-label">Usage</label>
-                                        <input type="text" id="product_usage" name="product_usage" class="form-control"  />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                        <label class="form-label">UPC</label>
-                                        <input type="text" id="upc" name="upc" class="form-control" value="<?= $generate_rend_upc ?>" readonly/>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                    <div class="col-md-6 opt_field" data-id="15">
-                                        <div class="mb-3">
-                                        <label class="form-label">Product Origin</label>
-                                        <select id="product_origin" class="form-control" name="product_origin">
-                                            <option value="" >Select Origin...</option>
-                                            <option value="1" >Source</option>
-                                            <option value="2" >Manufactured</option>
                                         </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-1">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="checkbox" id="sold_by_feet" name="sold_by_feet" value="1">
-                                                <label class="form-check-label" for="sold_by_feet">Sold by feet</label>
+                                </div>
+                                
+                                <div id="fields" class="d-none">
+                                    <div class="row pt-3">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Product Name</label>
+                                                <input type="text" id="product_item" name="product_item" class="form-control" />
                                             </div>
                                         </div>
-                                        <div class="mb-1">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="checkbox" id="standing_seam" name="standing_seam" value="1">
-                                                <label class="form-check-label" for="standing_seam">Standing Seam Panel</label>
-                                            </div>
-                                        </div>
-                                        <div class="mb-1">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="checkbox" id="board_batten" name="board_batten" value="1">
-                                                <label class="form-check-label" for="board_batten">Board & Batten Panel</label>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Product SKU</label>
+                                                <input type="text" id="product_sku" name="product_sku" class="form-control" />
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="row pt-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Product System</label>
+                                            <div class="mb-3">
+                                            <select id="product_system_add" class="form-control add-category" name="product_system">
+                                                <option value="" >Select One...</option>
+                                                <?php
+                                                $query_system = "SELECT * FROM product_system WHERE hidden = '0'";
+                                                $result_system = mysqli_query($conn, $query_system);
+                                                while ($row_system = mysqli_fetch_array($result_system)) {
+                                                    $selected = ($product_system == $row_system['product_system_id']) ? 'selected' : '';
+                                                ?>
+                                                    <option value="<?= $row_system['product_system_id'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
+                                                <?php
+                                                }
+                                                ?>
+                                            </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Product Line</label>
+                                            <div class="mb-3">
+                                            <select id="product_line_add" class="form-control add-category" name="product_line">
+                                                <option value="" >Select One...</option>
+                                                <?php
+                                                $query_roles = "SELECT * FROM product_line WHERE hidden = '0'";
+                                                $result_roles = mysqli_query($conn, $query_roles);            
+                                                while ($row_product_line = mysqli_fetch_array($result_roles)) {
+                                                ?>
+                                                    <option value="<?= $row_product_line['product_line_id'] ?>" data-category="<?= $row_product_line['product_category'] ?>"><?= $row_product_line['product_line'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Product Type</label>
+                                            <div class="mb-3">
+                                            <select id="product_type_add" class="form-control add-category" name="product_type">
+                                                <option value="" >Select One...</option>
+                                                <?php
+                                                $query_roles = "SELECT * FROM product_type WHERE hidden = '0'";
+                                                $result_roles = mysqli_query($conn, $query_roles);            
+                                                while ($row_product_type = mysqli_fetch_array($result_roles)) {
+                                                ?>
+                                                    <option value="<?= $row_product_type['product_type_id'] ?>" data-category="<?= $row_product_type['product_category'] ?>"><?= $row_product_type['product_type'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 opt_field" data-id="10">
+                                            <label class="form-label">Profile</label>
+                                            <div class="mb-3">
+                                            <select id="profile" class="form-control add-category" name="profile">
+                                                <option value="" >Select Profile...</option>
+                                                <?php
+                                                $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0'";
+                                                $result_profile_type = mysqli_query($conn, $query_profile_type);            
+                                                while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
+                                                ?>
+                                                    <option value="<?= $row_profile_type['profile_type_id'] ?>" data-category="<?= $row_profile_type['product_category'] ?>"><?= $row_profile_type['profile_type'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row pt-3">
+                                        <div class="col-md-4 opt_field">
+                                            <div class="mb-3">
+                                            <label class="form-label">Color</label>
+                                            <select id="color" class="form-control" name="color">
+                                                <option value="" >Select Color...</option>
+                                                <?php
+                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                                ?>
+                                                    <option value="<?= $row_paint_colors['color_id'] ?>" ><?= $row_paint_colors['color_name'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 opt_field">
+                                            <div class="mb-3">
+                                            <label class="form-label">Gauge</label>
+                                            <select id="gauge" class="form-control" name="gauge">
+                                                <option value="" >Select Gauge...</option>
+                                                <?php
+                                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                                                $result_gauge = mysqli_query($conn, $query_gauge);            
+                                                while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                                ?>
+                                                    <option value="<?= $row_gauge['product_gauge_id'] ?>" ><?= $row_gauge['product_gauge'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 opt_field">
+                                            <div class="mb-3">
+                                            <label class="form-label">Grade</label>
+                                            <select id="grade" class="form-control" name="grade">
+                                                <option value="" >Select Grade...</option>
+                                                <?php
+                                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                                                $result_grade = mysqli_query($conn, $query_grade);            
+                                                while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                                ?>
+                                                    <option value="<?= $row_grade['product_grade_id'] ?>" ><?= $row_grade['product_grade'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row pt-3 trim-fields d-none">
+                                        <div class="col-md-6 opt_field" data-id="2">
+                                            <div class="mb-3">
+                                            <label class="form-label"># of Hems</label>
+                                            <input type="text" id="hems" name="hems" class="form-control"  />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 opt_field" data-id="2">
+                                            <div class="mb-3">
+                                            <label class="form-label"># of Hems</label>
+                                            <input type="text" id="hems" name="hems" class="form-control"  />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <label class="form-label">Supplier</label>
+                                            <div class="mb-3">
+                                                <select id="supplier_id" class="form-control select-2 inventory_supplier" name="supplier_id">
+                                                    <option value="" >Select Supplier...</option>
+                                                    <optgroup label="Supplier">
+                                                        <?php
+                                                        $query_supplier = "SELECT * FROM supplier";
+                                                        $result_supplier = mysqli_query($conn, $query_supplier);            
+                                                        while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                                                        ?>
+                                                            <option value="<?= $row_supplier['supplier_id'] ?>" ><?= $row_supplier['supplier_name'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </optgroup>
+                                                    
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col screw-fields">
+                                            <label class="form-label">Pack</label>
+                                            <div class="mb-3">
+                                            <select id="pack_add" class="form-control select-2 pack_select" name="pack">
+                                                <option value="" >Select Pack...</option>
+                                            </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control" id="description" name="description" rows="5"></textarea>
+                                    </div>
+
+                                    <div class="row pt-3">
+                                        <div class="col-md-12">
+                                        <label class="form-label">Correlated products</label>
+                                        <select id="correlatedProducts" name="correlatedProducts[]" class="select2-add form-control" multiple="multiple">
+                                            <optgroup label="Select Correlated Products">
+                                                <?php
+                                                $query_products = "SELECT * FROM product";
+                                                $result_products = mysqli_query($conn, $query_products);            
+                                                while ($row_products = mysqli_fetch_array($result_products)) {
+                                                ?>
+                                                    <option value="<?= $row_products['product_id'] ?>" ><?= $row_products['product_item'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </optgroup>
+                                        </select>
+                                        </div>
+                                    </div>        
+
+
+                                    <div class="row pt-3">
+                                    <div class="col-md-6 opt_field" data-id="1">
+                                        <div class="mb-3">
+                                        <label class="form-label">Stock Type</label>
+                                        <select id="stock_type" class="form-control" name="stock_type">
+                                            <option value="/" >Select Stock Type...</option>
+                                            <?php
+                                            $query_stock_type = "SELECT * FROM stock_type WHERE hidden = '0'";
+                                            $result_stock_type = mysqli_query($conn, $query_stock_type);            
+                                            while ($row_stock_type = mysqli_fetch_array($result_stock_type)) {
+                                            ?>
+                                                <option value="<?= $row_stock_type['stock_type_id'] ?>" ><?= $row_stock_type['stock_type'] ?></option>
+                                            <?php   
+                                            }
+                                            ?>
+                                        </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 opt_field" data-id="2">
+                                        <div class="mb-3">
+                                        <label class="form-label">Material</label>
+                                        <input type="text" id="material" name="material" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    </div>
+
+                                    <div class="row pt-3">
+                                    <div class="col-md-6 opt_field" data-id="3">
+                                        <div class="mb-3">
+                                        <label class="form-label">Dimensions</label>
+                                        <input type="text" id="dimensions" name="dimensions" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 opt_field" data-id="4">
+                                        <div class="mb-3">
+                                        <label class="form-label">Thickness</label>
+                                        <input type="text" id="thickness" name="thickness" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    </div>
+
+                                    <div class="row pt-3">
+                                    
+                                    <div class="col-md-6 opt_field" data-id="8">
+                                        <div class="mb-3">
+                                        <label class="form-label">Paint Provider</label>
+                                        <select id="paintProvider" class="form-control" name="paintProvider">
+                                            <option value="/" >Select Color...</option>
+                                            <?php
+                                            $query_paint_providers = "SELECT * FROM paint_providers WHERE hidden = '0'";
+                                            $result_paint_providers = mysqli_query($conn, $query_paint_providers);            
+                                            while ($row_paint_providers = mysqli_fetch_array($result_paint_providers)) {
+                                            ?>
+                                                <option value="<?= $row_paint_providers['provider_id'] ?>" ><?= $row_paint_providers['provider_name'] ?></option>
+                                            <?php   
+                                            }
+                                            ?>
+                                        </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 opt_field" data-id="17">
+                                        <div class="mb-3">
+                                        <label class="form-label">Coating</label>
+                                        <input type="text" id="coating" name="coating" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    </div>
+
+
+                                    <div class="row pt-3">
+                                    <div class="col-md-12 opt_field" data-id="9">
+                                        <div class="mb-3">
+                                        <label class="form-label">Warranty Type</label>
+                                        <select id="warrantyType" class="form-control" name="warrantyType">
+                                            <option value="/" >Select Warranty Type...</option>
+                                            <?php
+                                            $query_product_warranty_type = "SELECT * FROM product_warranty_type WHERE hidden = '0'";
+                                            $result_product_warranty_type = mysqli_query($conn, $query_product_warranty_type);            
+                                            while ($row_product_warranty_type = mysqli_fetch_array($result_product_warranty_type)) {
+                                            ?>
+                                                <option value="<?= $row_product_warranty_type['product_warranty_type_id'] ?>" ><?= $row_product_warranty_type['product_warranty_type'] ?></option>
+                                            <?php   
+                                            }
+                                            ?>
+                                        </select>
+                                        </div>
+                                    </div>
+                                    </div>
+
+                                    <div class="row pt-3">
+                                    <div class="col-md-6 opt_field" data-id="11">
+                                        <div class="mb-3">
+                                        <label class="form-label">Width</label>
+                                        <input type="text" id="width" name="width" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 opt_field" data-id="12">
+                                        <div class="mb-3">
+                                        <label class="form-label">Length</label>
+                                        <input type="text" id="length" name="length" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    </div>
+
+                                    <div class="row pt-3">
+                                    <div class="col-md-6 opt_field" data-id="13">
+                                        <div class="mb-3">
+                                        <label class="form-label">Weight</label>
+                                        <input type="number" id="weight" name="weight" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 opt_field" data-id="14">
+                                        <div class="mb-3">
+                                        <label class="form-label">Unit of Measure</label>
+                                        <input type="text" id="unitofMeasure" name="unitofMeasure" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    </div>
+
+                                    <div class="row pt-3">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                        <label class="form-label">Unit Price</label>
+                                        <input type="text" id="unitPrice" name="unitPrice" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                        <label class="form-label">Unit Cost</label>
+                                        <input type="text" id="unitCost" name="unitCost" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                        <label class="form-label">Unit Gross Margin</label>
+                                        <input type="text" id="unitGrossMargin" name="unitGrossMargin" class="form-control"  />
+                                        </div>
+                                    </div>
+                                    </div>
+
+                                    <div class="row pt-3">
+                                        <div class="col-md-6 opt_field" data-id="15">
+                                            <div class="mb-3">
+                                            <label class="form-label">Usage</label>
+                                            <input type="text" id="product_usage" name="product_usage" class="form-control"  />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                            <label class="form-label">UPC</label>
+                                            <input type="text" id="upc" name="upc" class="form-control" value="<?= $generate_rend_upc ?>" readonly/>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row pt-3">
+                                        <div class="col-md-6 opt_field" data-id="15">
+                                            <div class="mb-3">
+                                            <label class="form-label">Product Origin</label>
+                                            <select id="product_origin" class="form-control" name="product_origin">
+                                                <option value="" >Select Origin...</option>
+                                                <option value="1" >Source</option>
+                                                <option value="2" >Manufactured</option>
+                                            </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-1">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="sold_by_feet" name="sold_by_feet" value="1">
+                                                    <label class="form-check-label" for="sold_by_feet">Sold by feet</label>
+                                                </div>
+                                            </div>
+                                            <div class="mb-1">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="standing_seam" name="standing_seam" value="1">
+                                                    <label class="form-check-label" for="standing_seam">Standing Seam Panel</label>
+                                                </div>
+                                            </div>
+                                            <div class="mb-1">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="board_batten" name="board_batten" value="1">
+                                                    <label class="form-check-label" for="board_batten">Board & Batten Panel</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3 opt_field" data-id="16">
+                                    <label class="form-label">Comment</label>
+                                    <textarea class="form-control" id="comment" name="comment" rows="5"></textarea>
+                                    </div>
                                 </div>
 
-                                <div class="mb-3 opt_field" data-id="16">
-                                <label class="form-label">Comment</label>
-                                <textarea class="form-control" id="comment" name="comment" rows="5"></textarea>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -1082,6 +1151,39 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             });
         });
 
+        $(document).on('change', '.inventory_supplier', function () {
+            let supplier_id = $(this).val();
+
+            if (supplier_id) {
+            $.ajax({
+                url: 'pages/inventory_ajax.php',
+                type: 'POST',
+                data: { 
+                supplier_id: supplier_id,
+                action: 'fetch_supplier_packs'
+                },
+                dataType: 'json',
+                success: function (response) {
+                let packDropdown = $('.pack_select');
+                packDropdown.empty();
+                packDropdown.append('<option value="">Select Pack...</option>');
+
+                if (response.length > 0) {
+                    $.each(response, function (index, pack) {
+                    packDropdown.append('<option value="' + pack.id + '" data-count="' + pack.pack_count + '">' + pack.pack + ' (' + pack.pack_count + ')</option>');
+                    });
+                } else {
+                    packDropdown.append('<option value="">No Packs Available</option>');
+                }
+                
+                packDropdown.trigger('change');
+                }
+            });
+            } else {
+            $('.pack_select').empty().append('<option value="">Select Pack...</option>').trigger('change');
+            }
+        });
+
 
         // Show the Edit Product modal and log the product ID
         $(document).on('click', '#edit_product_btn', function(event) {
@@ -1204,65 +1306,39 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             });
         });
 
-        $(".search-category, .search-chat").each(function () {
-            let $select = $(this);
-
-            if ($select.data("select2")) {
-                $select.select2("destroy");
-            }
-
-            $select.addClass("d-none");
-
-            $select.select2({
-                width: "100%",
-                dropdownParent: $select.parent()
-            });
-
-            $select.next(".select2").addClass("d-none");
-        });
-
         function updateSearchCategory() {
-            let selectedCategory = $('#select-category').find('option:selected').data('category');
+            let selectedCategory = $('#product_category_add').val();;
             let hasCategory = !!selectedCategory; 
 
-            $('.search-category').each(function() {
-                let $select = $(this);
-
-                if (!$select.data('original-options')) {
-                    $select.data('original-options', $select.find('option').clone());
-                }
-
-                if ($select.data('select2')) {
-                    $select.select2('destroy');
-                }
-
-                let $defaultOption = $select.find('option[value=""]').first().clone();
-                let $originalOptions = $select.data('original-options').not('[value=""]');
-
-                let filteredOptions = hasCategory ? 
-                    $originalOptions.filter(function() {
-                        return $(this).data('category') === selectedCategory;
-                    }) : $originalOptions;
-
-                $select.empty().append($defaultOption).append(filteredOptions.clone());
-
-                $select.select2({
-                    width: '100%',
-                    dropdownParent: $select.parent()
-                });
-
-                let $select2Container = $select.next('.select2-container');
-                $select2Container.toggleClass('d-none', !hasCategory);
+            $('.add-category option').each(function() {
+                let match = String($(this).data('category')) === String(selectedCategory);
+                $(this).toggle(match);
             });
 
-            $('.search-chat').each(function() {
-                let $select = $(this);
-                let $select2Container = $select.next('.select2-container');
-                $select2Container.toggleClass('d-none', !hasCategory);
-            });
+            if (hasCategory) {
+                $('#fields').removeClass('d-none');
+            } else {
+                $('#fields').addClass('d-none');
+            }
 
-            filterTable();
-            updateSelectedTags();
+            if(selectedCategory == 3){ // PANELS
+                $('.panel-fields').removeClass('d-none');
+            }else{
+                $('.panel-fields').addClass('d-none');
+            }
+
+            if(selectedCategory == 4){ // TRIM
+                $('.trim-fields').removeClass('d-none');
+            }else{
+                $('.trim-fields').addClass('d-none');
+            }
+
+            if(selectedCategory == 16){ // SCREW
+                $('.screw-fields').removeClass('d-none');
+            }else{
+                $('.screw-fields').addClass('d-none');
+            }
+
         }
 
 
@@ -1316,7 +1392,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             updateSelectedTags();
         }
 
-        $('#select-category').on('change', function() {
+        $('#product_category_add').on('change', function() {
             updateSearchCategory();
         });
 
@@ -1359,8 +1435,6 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             $('.remove-tag').on('click', function() {
                 const selectId = $(this).data('select');
                 $(selectId).val('').trigger('change');
-
-                updateSearchCategory();
 
                 $(this).parent().remove();
             });
