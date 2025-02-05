@@ -546,12 +546,12 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                     Filter Products 
                 </h3>
                 <div class="position-relative w-100 px-0 mr-0 mb-2">
-                    <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
+                    <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search Product">
                     <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
                 <div class="align-items-center">
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2" id="select-category" data-category="">
+                        <select class="form-control py-0 ps-5 select2" id="select-category" data-category="">
                             <option value="" data-category="">All Categories</option>
                             <optgroup label="Category">
                                 <?php
@@ -585,7 +585,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2" id="select-lines" data-category="">
+                        <select class="form-control search-category py-0 ps-5 select2" id="select-line" data-category="">
                             <option value="" data-category="">All Product Lines</option>
                             <optgroup label="Product Type">
                                 <?php
@@ -777,6 +777,9 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                 ?>
                                     <!-- start row -->
                                     <tr class="search-items" 
+                                        data-system="<?= $row_product['product_system'] ?>"
+                                        data-line="<?= $row_product['product_line'] ?>"
+                                        data-profile="<?= $row_product['profile'] ?>"
                                         data-profile="<?= $row_product['profile'] ?>"
                                         data-color="<?= $row_product['color'] ?>"
                                         data-grade="<?= $row_product['grade'] ?>"
@@ -961,32 +964,6 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             fileInput.files = dataTransfer.files;
         }
 
-        $('#select-category').on('change', function() {
-            let selectedCategory = $(this).find('option:selected').data('category');
-
-            $('.search-category').each(function() {
-                let $select = $(this);
-
-                if ($select.data('select2')) {
-                    $select.select2('destroy');
-                }
-
-                let $options = $select.find('option');
-                let allOption = $select.find('option[value=""]').clone();
-
-                $select.empty().append(allOption);
-
-                $options.each(function() {
-                    let category = $(this).data('category');
-                    if (selectedCategory === "" || category === selectedCategory) {
-                        $select.append($(this).clone());
-                    }
-                });
-
-                $select.select2();
-            });
-        });
-
         $(document).on('click', '.remove-image-btn', function(event) {
             event.preventDefault();
             let imageId = $(this).data('image-id');
@@ -1023,7 +1000,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             "dom": 'lftp',
         });
 
-        $('#select-profile, #select-color, #select-grade, #select-gauge, #select-category, #select-type, #onlyInStock').on('change', filterTable);
+        $('#select-system, #select-line, #select-profile, #select-color, #select-grade, #select-gauge, #select-category, #select-type, #onlyInStock').on('change', filterTable);
 
         $('#text-srh').on('keyup', filterTable);
 
@@ -1038,7 +1015,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             dropdownParent: $('#addProductModal')
         });
 
-        $('#product_category').on('change', function() {
+        /* $('#product_category').on('change', function() {
             var product_category_id = $(this).val();
             $.ajax({
                 url: 'pages/product3_ajax.php',
@@ -1067,7 +1044,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
-        });
+        }); */
 
         
 
@@ -1227,7 +1204,73 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             });
         });
 
+        $(".search-category, .search-chat").each(function () {
+            let $select = $(this);
+
+            if ($select.data("select2")) {
+                $select.select2("destroy");
+            }
+
+            $select.addClass("d-none");
+
+            $select.select2({
+                width: "100%",
+                dropdownParent: $select.parent()
+            });
+
+            $select.next(".select2").addClass("d-none");
+        });
+
+        function updateSearchCategory() {
+            let selectedCategory = $('#select-category').find('option:selected').data('category');
+            let hasCategory = !!selectedCategory; 
+
+            $('.search-category').each(function() {
+                let $select = $(this);
+
+                if (!$select.data('original-options')) {
+                    $select.data('original-options', $select.find('option').clone());
+                }
+
+                if ($select.data('select2')) {
+                    $select.select2('destroy');
+                }
+
+                let $defaultOption = $select.find('option[value=""]').first().clone();
+                let $originalOptions = $select.data('original-options').not('[value=""]');
+
+                let filteredOptions = hasCategory ? 
+                    $originalOptions.filter(function() {
+                        return $(this).data('category') === selectedCategory;
+                    }) : $originalOptions;
+
+                $select.empty().append($defaultOption).append(filteredOptions.clone());
+
+                $select.select2({
+                    width: '100%',
+                    dropdownParent: $select.parent()
+                });
+
+                let $select2Container = $select.next('.select2-container');
+                $select2Container.toggleClass('d-none', !hasCategory);
+            });
+
+            $('.search-chat').each(function() {
+                let $select = $(this);
+                let $select2Container = $select.next('.select2-container');
+                $select2Container.toggleClass('d-none', !hasCategory);
+            });
+
+            filterTable();
+            updateSelectedTags();
+        }
+
+
+
         function filterTable() {
+            var system = $('#select-system').val()?.toString() || '';
+            var line = $('#select-line').val()?.toString() || '';
+            var profile = $('#select-profile').val()?.toString() || '';
             var profile = $('#select-profile').val()?.toString() || '';
             var color = $('#select-color').val()?.toString() || '';
             var grade = $('#select-grade').val()?.toString() || '';
@@ -1241,49 +1284,41 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             $.fn.dataTable.ext.search = [];
 
             if (textSearch) {
-                $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                     var rowText = $(table.row(dataIndex).node()).text().toLowerCase();
                     return rowText.includes(textSearch);
                 });
             }
 
             if (isActive) {
-                $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                     var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
                     return status === 'Active';
                 });
             }
 
-            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                 var row = $(table.row(dataIndex).node());
-
-                if (profile && profile !== '' && profile !== '/' && row.data('profile').toString() !== profile) {
-                    return false;
-                }
-                if (color && color !== '' && color !== '/' && row.data('color').toString() !== color) {
-                    return false;
-                }
-                if (grade && grade !== '' && grade !== '/' && row.data('grade').toString() !== grade) {
-                    return false;
-                }
-                if (gauge && gauge !== '' && gauge !== '/' && row.data('gauge').toString() !== gauge) {
-                    return false;
-                }
-                if (category && category !== '' && category !== '/' && row.data('category').toString() !== category) {
-                    return false;
-                }
-                if (type && type !== '' && type !== '/' && row.data('type').toString() !== type) {
-                    return false;
-                }
+                if (system && system !== '/' && row.data('system').toString() !== system) return false;
+                if (line && line !== '/' && row.data('line').toString() !== line) return false;
+                if (profile && profile !== '/' && row.data('profile').toString() !== profile) return false;
+                if (color && color !== '/' && row.data('color').toString() !== color) return false;
+                if (grade && grade !== '/' && row.data('grade').toString() !== grade) return false;
+                if (gauge && gauge !== '/' && row.data('gauge').toString() !== gauge) return false;
+                if (category && category !== '/' && row.data('category').toString() !== category) return false;
+                if (type && type !== '/' && row.data('type').toString() !== type) return false;
                 if (onlyInStock && row.data('instock') != onlyInStock) return false;
 
                 return true;
             });
 
             table.draw();
-
             updateSelectedTags();
         }
+
+        $('#select-category').on('change', function() {
+            updateSearchCategory();
+        });
 
         function updateSelectedTags() {
             const sections = [
@@ -1291,6 +1326,9 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                 { id: '#select-grade', title: 'Grade' },
                 { id: '#select-gauge', title: 'Gauge' },
                 { id: '#select-category', title: 'Category' },
+                { id: '#select-profile', title: 'Profile' },
+                { id: '#select-system', title: 'System' },
+                { id: '#select-line', title: 'Line' },
                 { id: '#select-profile', title: 'Profile' },
                 { id: '#select-type', title: 'Type' },
             ];
@@ -1321,9 +1359,13 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             $('.remove-tag').on('click', function() {
                 const selectId = $(this).data('select');
                 $(selectId).val('').trigger('change');
+
+                updateSearchCategory();
+
                 $(this).parent().remove();
             });
         }
+
     });
 </script>
 
