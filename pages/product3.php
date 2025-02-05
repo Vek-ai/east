@@ -12,6 +12,10 @@ $category_id = isset($_REQUEST['category_id']) ? $_REQUEST['category_id'] : '';
 $profile_id = isset($_REQUEST['profile_id']) ? $_REQUEST['profile_id'] : '';
 $type_id = isset($_REQUEST['type_id']) ? $_REQUEST['type_id'] : '';
 $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
+
+$price_per_hem = getPaymentSetting('price_per_hem');
+$price_per_bend = getPaymentSetting('price_per_bend');
+
 ?>
 <style>
     /* .select2-container {
@@ -334,6 +338,52 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                             <input type="text" id="hems" name="hems" class="form-control"  />
                                             </div>
                                         </div>
+                                        <div class="col-md-6 opt_field" data-id="2">
+                                            <div class="mb-3">
+                                            <label class="form-label">Cost per Bend</label>
+                                            <input type="text" id="price_per_bend" name="price_per_bend" class="form-control" value="<?=$price_per_bend?>" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 opt_field" data-id="2">
+                                            <div class="mb-3">
+                                            <label class="form-label">Cost per Hem</label>
+                                            <input type="text" id="price_per_hem" name="price_per_hem" class="form-control" value="<?=$price_per_hem?>" />
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label">Coil Width</label>
+                                            <div class="mb-3">
+                                                <select id="coil_width_add" class="form-control width-select" data-type="add" name="coil_width">
+                                                    <option value="" >Select Coil Width...</option>
+                                                    <?php
+                                                    $query_width = "SELECT * FROM coil_width WHERE hidden = '0'";
+                                                    $result_width = mysqli_query($conn, $query_width);            
+                                                    while ($row_width = mysqli_fetch_array($result_width)) {
+                                                    ?>
+                                                        <option value="<?= $row_width['id'] ?>" data-width="<?= $row_width['actual_width'] ?>"><?= $row_width['actual_width'] ?></option>
+                                                    <?php
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 opt_field" data-id="11">
+                                            <div class="mb-3">
+                                            <label class="form-label">Width</label>
+                                            <input type="text" id="width" name="width" class="form-control"  />
+                                            </div>
+                                        </div>
+                                        <div class="col-12 d-flex flex-row align-items-center justify-content-center gap-3">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" id="hemming_machine" name="hemming_machine">
+                                                <label class="form-check-label" for="hemming_machine">Hemming Machine</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" id="trim_rollformer" name="trim_rollformer">
+                                                <label class="form-check-label" for="trim_rollformer">Trim Rollformer</label>
+                                            </div>
+                                        </div>
+
                                     </div>
 
                                     <div class="row">
@@ -503,28 +553,19 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                     </div>
 
                                     <div class="row pt-3">
-                                    <div class="col-md-6 opt_field" data-id="11">
-                                        <div class="mb-3">
-                                        <label class="form-label">Width</label>
-                                        <input type="text" id="width" name="width" class="form-control"  />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 opt_field" data-id="12">
+                                    <div class="col-md-4 opt_field" data-id="12">
                                         <div class="mb-3">
                                         <label class="form-label">Length</label>
                                         <input type="text" id="length" name="length" class="form-control"  />
                                         </div>
                                     </div>
-                                    </div>
-
-                                    <div class="row pt-3">
-                                    <div class="col-md-6 opt_field" data-id="13">
+                                    <div class="col-md-4 opt_field" data-id="13">
                                         <div class="mb-3">
                                         <label class="form-label">Weight</label>
                                         <input type="number" id="weight" name="weight" class="form-control"  />
                                         </div>
                                     </div>
-                                    <div class="col-md-6 opt_field" data-id="14">
+                                    <div class="col-md-4 opt_field" data-id="14">
                                         <div class="mb-3">
                                         <label class="form-label">Unit of Measure</label>
                                         <input type="text" id="unitofMeasure" name="unitofMeasure" class="form-control"  />
@@ -1020,8 +1061,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
         console.log(fileNames);
     }
     $(document).ready(function() {
-        var price_per_hem = <?= getPaymentSetting('price_per_hem'); ?>;
-        var price_per_bend = <?= getPaymentSetting('price_per_bend'); ?>;
+        
 
         var basePrice = 0;
 
@@ -1337,19 +1377,33 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             });
         });
 
-        $(document).on("change", "#base_product_add, #color_add, #gauge_add, #grade_add, #bends, #hems", function () {
+        $(document).on("change", "#base_product_add, #color_add, #gauge_add, #grade_add, #bends, #hems, #price_per_bend, #price_per_hem, #coil_width_add, #width", function () {
             basePrice = parseFloat($("#base_product_add").find(":selected").data("base-price")) || 0;
 
             let colorMultiplier = parseFloat($("#color_add").find(":selected").data("multiplier")) || 1;
             let gaugeMultiplier = parseFloat($("#gauge_add").find(":selected").data("multiplier")) || 1;
             let gradeMultiplier = parseFloat($("#grade_add").find(":selected").data("multiplier")) || 1;
 
+            if (String(selectedCategory) == '4') {
+                basePrice = 2.69;
+            }
+
             let unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier;
+
+            var price_per_bend = parseFloat($("#price_per_bend").val()) || 0;
+            var price_per_hem = parseFloat($("#price_per_hem").val()) || 0;
+
+            let coil_width = parseFloat($("#coil_width_add option:selected").data("width")) || 1; 
+            var width = parseFloat($("#width").val()) || 0;
 
             if (String(selectedCategory) == '4') {
                 var num_bends = parseFloat($("#bends").val()) || 0;
                 var num_hems = parseFloat($("#hems").val()) || 0;
                 unitPrice = unitPrice + (num_bends * price_per_bend) + (num_hems * price_per_hem);
+
+                if (coil_width > 0) {
+                    unitPrice = (width / coil_width) * unitPrice;
+                }
             }
 
             $("#unit_price_add").val(unitPrice.toFixed(2));
@@ -1381,8 +1435,10 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
 
             if(selectedCategory == 4){ // TRIM
                 $('.trim-fields').removeClass('d-none');
+                $('#base_product_add').addClass('d-none');
             }else{
                 $('.trim-fields').addClass('d-none');
+                $('#base_product_add').removeClass('d-none');
             }
 
             if(selectedCategory == 16){ // SCREW
