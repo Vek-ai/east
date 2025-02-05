@@ -350,7 +350,10 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                             <input type="text" id="price_per_hem" name="price_per_hem" class="form-control" value="<?=$price_per_hem?>" />
                                             </div>
                                         </div>
-                                        <div class="col-6">
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col trim-fields">
                                             <label class="form-label">Coil Width</label>
                                             <div class="mb-3">
                                                 <select id="coil_width_add" class="form-control width-select" data-type="add" name="coil_width">
@@ -367,12 +370,15 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-6 opt_field" data-id="11">
+                                        <div class="col opt_field" data-id="11">
                                             <div class="mb-3">
                                             <label class="form-label">Width</label>
                                             <input type="text" id="width" name="width" class="form-control"  />
                                             </div>
                                         </div>
+                                    </div>
+                                      
+                                    <div class="row trim-fields">
                                         <div class="col-12 d-flex flex-row align-items-center justify-content-center gap-3">
                                             <div class="form-check">
                                                 <input type="checkbox" class="form-check-input" id="hemming_machine" name="hemming_machine">
@@ -383,7 +389,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                                 <label class="form-check-label" for="trim_rollformer">Trim Rollformer</label>
                                             </div>
                                         </div>
-
                                     </div>
 
                                     <div class="row">
@@ -1399,6 +1404,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             if (String(selectedCategory) == '4') {
                 var num_bends = parseFloat($("#bends").val()) || 0;
                 var num_hems = parseFloat($("#hems").val()) || 0;
+
                 unitPrice = unitPrice + (num_bends * price_per_bend) + (num_hems * price_per_hem);
 
                 if (coil_width > 0) {
