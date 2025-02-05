@@ -3,6 +3,7 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $product_name = "";
+$product_category = '';
 $notes = "";
 
 $saveBtnTxt = "Add";
@@ -15,6 +16,7 @@ if(!empty($_REQUEST['id'])){
   while ($row = mysqli_fetch_array($result)) {
       $id = $row['id'];
       $product_name = $row['product_name'];
+      $product_category = $row['product_category'];
       $base_price = $row['base_price'];
   }
   $saveBtnTxt = "Update";
@@ -99,13 +101,32 @@ if(!empty($_REQUEST['id'])){
 
     <form id="baseForm" class="form-horizontal">
       <div class="row pt-3">
-        <div class="col-md-8">
+        <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Product Name</label>
             <input type="text" id="product_name" name="product_name" class="form-control"  value="<?= $product_name ?>"/>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6"></div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Product Category</label>
+                <select id="product_category" class="form-control" name="product_category">
+                    <option value="">Select One...</option>
+                    <?php
+                    $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                    $result_roles = mysqli_query($conn, $query_roles);            
+                    while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                        $selected = ($product_category == $row_product_category['product_id']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
+                    <?php   
+                    }
+                    ?>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Base Price</label>
             <input type="text" id="base_price" name="base_price" class="form-control" value="<?= $base_price ?>" />
@@ -146,6 +167,7 @@ if(!empty($_REQUEST['id'])){
               <tr>
                 <th>Product Name</th>
                 <th>Base Price</th>
+                <th>Category</th>
                 <th>Details</th>
                 <th>Status</th>
                 <th>Action</th>
@@ -161,6 +183,7 @@ if(!empty($_REQUEST['id'])){
                   $id = $row_product_base['id'];
                   $product_name = $row_product_base['product_name'];
                   $base_price = $row_product_base['base_price'];
+                  $product_category = $row_product_base['product_category'];
                   $db_status = $row_product_base['status'];
                   $date = new DateTime($row_product_base['last_edit']);
                   $last_edit = $date->format('m-d-Y');
@@ -184,6 +207,7 @@ if(!empty($_REQUEST['id'])){
               <tr id="product-row-<?= $no ?>">
                   <td><span class="product<?= $no ?> <?php if ($row_product_base['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_name ?></span></td>
                   <td><?= $base_price ?></td>
+                  <td><?= getProductCategoryName($product_category) ?></td>
                   <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                   <td><?= $status ?></td>
                   <td class="text-center" id="action-button-<?= $no ?>">

@@ -12,6 +12,7 @@ if(isset($_REQUEST['action'])) {
         $id = mysqli_real_escape_string($conn, $_POST['id']);
         $product_name = mysqli_real_escape_string($conn, $_POST['product_name']);
         $base_price = mysqli_real_escape_string($conn, $_POST['base_price']);
+        $product_category = mysqli_real_escape_string($conn, $_POST['product_category']);
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
         // SQL query to check if the record exists
@@ -38,7 +39,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_base SET product_name = '$product_name', base_price = '$base_price', last_edit = NOW(), edited_by = '$userid' WHERE id = '$id'";
+                $updateQuery = "UPDATE product_base SET product_name = '$product_name', base_price = '$base_price', product_category = '$product_category', last_edit = NOW(), edited_by = '$userid' WHERE id = '$id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "success_update";
                 } else {
@@ -58,7 +59,7 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO product_base (product_name, base_price, added_date, added_by) VALUES ('$product_name', '$base_price', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO product_base (product_name, base_price, product_category, added_date, added_by) VALUES ('$product_name', '$base_price', '$product_category', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "success_add";
                 } else {
