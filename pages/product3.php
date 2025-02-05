@@ -1226,21 +1226,24 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                     },
                     success: function(response) {
                         $('#updateProductModal').html(response);
-                        $(".select2-update").select2({
-                            width: '100%',
-                            placeholder: "Select Correlated Products",
-                            allowClear: true,
-                            dropdownParent: $('#updateProductModal')
+
+                        $(".select2-update").each(function () {
+                            $(this).select2({
+                                width: '100%',
+                                allowClear: true,
+                                dropdownParent: $(this).parent()
+                            });
                         });
 
                         $('#updateProductModal').modal('show');
 
                         $('#updateProductModal').on('hide.bs.modal', function () {
-                            $(".select2-add").select2({
-                                width: '100%',
-                                placeholder: "Select Correlated Products",
-                                allowClear: true,
-                                dropdownParent: $('#addProductModal')
+                            $(".select2-add").each(function () {
+                                $(this).select2({
+                                    width: '100%',
+                                    allowClear: true,
+                                    dropdownParent: $(this).parent()
+                                });
                             });
                         });
                     },
