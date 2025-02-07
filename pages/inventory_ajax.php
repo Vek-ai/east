@@ -365,6 +365,24 @@ if(isset($_REQUEST['action'])) {
         
         echo json_encode($packs);
     }
+
+    if ($action == "fetch_supplier_cases") {
+        $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
+    
+        $query_case = "SELECT * FROM supplier_case WHERE supplierid = '$supplier_id' AND hidden = '0'";
+        $result_case = mysqli_query($conn, $query_case);
+
+        $cases = [];
+        while ($row_case = mysqli_fetch_assoc($result_case)) {
+            $cases[] = [
+                'id' => $row_case['id'],
+                'case' => $row_case['case'],
+                'case_count' => $row_case['case_count']
+            ];
+        }
+        
+        echo json_encode($cases);
+    }
     
     mysqli_close($conn);
 }

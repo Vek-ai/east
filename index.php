@@ -1417,6 +1417,7 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "customer_login_creds") {include 'pages/customer_login_creds.php';}
             if ($_REQUEST['page'] == "supplier_pack") {include 'pages/supplier_pack.php';}
+            if ($_REQUEST['page'] == "supplier_case") {include 'pages/supplier_case.php';}
 
             if ($_REQUEST['page'] == "color_multiplier") {include 'pages/color_multiplier.php';}
             if ($_REQUEST['page'] == "coil_width") {include 'pages/coil_width.php';}

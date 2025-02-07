@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
+
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
@@ -274,15 +278,18 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                     <div class="row pt-3">
                                         <div class="col-md-4 opt_field">
                                             <div class="mb-3">
-                                            <label class="form-label">Color</label>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <label class="form-label mb-1">Color</label>
+                                                <a href="?page=product_color" class="mb-1" target="_blank">Edit</a>
+                                            </div>
                                             <select id="color_add" class="form-control" name="color">
                                                 <option value="" >Select Color...</option>
                                                 <?php
-                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
-                                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                                $query_colors = "SELECT * FROM product_color";
+                                                $result_colors = mysqli_query($conn, $query_colors);            
+                                                while ($row_colors = mysqli_fetch_array($result_colors)) {
                                                 ?>
-                                                    <option value="<?= $row_paint_colors['color_id'] ?>" data-multiplier="<?= getProductColorMultValue($row_paint_colors['multiplier_category']) ?>"><?= $row_paint_colors['color_name'] ?></option>
+                                                    <option value="<?= $row_colors['id'] ?>" data-price=" <?=$row_colors['price'] ?>" data-multiplier="<?= getProductColorMultValue($row_colors['color_mult_id']) ?>"><?= $row_colors['color_name'] ?> ( <?=$row_colors['price'] ?> )</option>
                                                 <?php   
                                                 }
                                                 ?>
@@ -412,12 +419,106 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col screw-fields">
-                                            <label class="form-label">Pack</label>
-                                            <div class="mb-3">
-                                            <select id="pack_add" class="form-control select-2 pack_select" name="pack">
-                                                <option value="" >Select Pack...</option>
-                                            </select>
+                                        <div class="col-12 row screw-fields">
+                                            <div class="col-md-12">
+                                                <label class="form-label">Warehouse</label>
+                                                <div class="mb-3">
+                                                <select id="Warehouse_id" class="form-control select2-add" name="Warehouse_id">
+                                                    <option value="" >Select Warehouse...</option>
+                                                    <optgroup label="Warehouse">
+                                                        <?php
+                                                        $query_warehouse = "SELECT * FROM warehouses WHERE status = '1'";
+                                                        $result_warehouse = mysqli_query($conn, $query_warehouse);            
+                                                        while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
+                                                        ?>
+                                                            <option value="<?= $row_warehouse['WarehouseID'] ?>" ><?= $row_warehouse['WarehouseName'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </optgroup>
+                                                    
+                                                </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">Shelf</label>
+                                                <div class="mb-3">
+                                                <select id="Shelves_id" class="form-control select2-add" name="Shelves_id">
+                                                    <option value="" >Select Shelf...</option>
+                                                    <optgroup label="Shelf">
+                                                        <?php
+                                                        $query_shelf = "SELECT * FROM shelves";
+                                                        $result_shelf = mysqli_query($conn, $query_shelf);            
+                                                        while ($row_shelf = mysqli_fetch_array($result_shelf)) {
+                                                        ?>
+                                                            <option value="<?= $row_shelf['ShelfID'] ?>" ><?= $row_shelf['ShelfCode'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </optgroup>
+                                                </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Bin</label>
+                                                <div class="mb-3">
+                                                <select id="Bin_id" class="form-control select2-add" name="Bin_id">
+                                                    <option value="" >Select Bin...</option>
+                                                    <optgroup label="Bin">
+                                                        <?php
+                                                        $query_bin = "SELECT * FROM bins";
+                                                        $result_bin = mysqli_query($conn, $query_bin);            
+                                                        while ($row_bin = mysqli_fetch_array($result_bin)) {
+                                                        ?>
+                                                            <option value="<?= $row_bin['BinID'] ?>" ><?= $row_bin['BinCode'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </optgroup>
+                                                </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Row</label>
+                                                <div class="mb-3">
+                                                <select id="Row_id" class="form-control select2-add" name="Row_id">
+                                                    <option value="" >Select Row...</option>
+                                                    <optgroup label="Row">
+                                                        <?php
+                                                        $query_rows = "SELECT * FROM warehouse_rows";
+                                                        $result_rows = mysqli_query($conn, $query_rows);            
+                                                        while ($row_rows = mysqli_fetch_array($result_rows)) {
+                                                        ?>
+                                                            <option value="<?= $row_rows['WarehouseRowID'] ?>" ><?= $row_rows['WarehouseRowID'] ?></option>
+                                                        <?php   
+                                                        }
+                                                        ?>
+                                                    </optgroup>
+                                                </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <label class="form-label mb-1">Case</label>
+                                                    <a href="?page=supplier_case" class="mb-1" target="_blank">Edit</a>
+                                                </div>
+                                                <div class="mb-3">
+                                                <select id="case_add" class="form-control select-2 case_select" name="case">
+                                                    <option value="" >Select Case...</option>
+                                                </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <label class="form-label mb-1">Pack</label>
+                                                    <a href="?page=supplier_pack" class="mb-1" target="_blank">Edit</a>
+                                                </div>
+                                                <div class="mb-3">
+                                                <select id="pack_add" class="form-control select-2 pack_select" name="pack">
+                                                    <option value="" >Select Pack...</option>
+                                                </select>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1228,35 +1329,66 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             let supplier_id = $(this).val();
 
             if (supplier_id) {
-            $.ajax({
-                url: 'pages/inventory_ajax.php',
-                type: 'POST',
-                data: { 
-                supplier_id: supplier_id,
-                action: 'fetch_supplier_packs'
-                },
-                dataType: 'json',
-                success: function (response) {
-                let packDropdown = $('.pack_select');
-                packDropdown.empty();
-                packDropdown.append('<option value="">Select Pack...</option>');
+                $.ajax({
+                    url: 'pages/inventory_ajax.php',
+                    type: 'POST',
+                    data: { 
+                    supplier_id: supplier_id,
+                    action: 'fetch_supplier_packs'
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        let packDropdown = $('.pack_select');
+                        packDropdown.empty();
+                        packDropdown.append('<option value="">Select Pack...</option>');
 
-                if (response.length > 0) {
-                    $.each(response, function (index, pack) {
-                    packDropdown.append('<option value="' + pack.id + '" data-count="' + pack.pack_count + '">' + pack.pack + ' (' + pack.pack_count + ')</option>');
-                    });
-                } else {
-                    packDropdown.append('<option value="">No Packs Available</option>');
-                }
-                
-                packDropdown.trigger('change');
-                }
-            });
+                        if (response.length > 0) {
+                            $.each(response, function (index, pack) {
+                            packDropdown.append('<option value="' + pack.id + '" data-count="' + pack.pack_count + '">' + pack.pack + ' (' + pack.pack_count + ')</option>');
+                            });
+                        } else {
+                            packDropdown.append('<option value="">No Packs Available</option>');
+                        }
+                        
+                        packDropdown.trigger('change');
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("AJAX Error: ", status, error);
+                    }
+                });
+
+                $.ajax({
+                    url: 'pages/inventory_ajax.php',
+                    type: 'POST',
+                    data: { 
+                        supplier_id: supplier_id,
+                        action: 'fetch_supplier_cases'
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        let caseDropdown = $('.case_select');
+                        caseDropdown.empty();
+                        caseDropdown.append('<option value="">Select Case...</option>');
+
+                        if (response.length > 0) {
+                            $.each(response, function (index, caseItem) {
+                                caseDropdown.append('<option value="' + caseItem.id + '" data-count="' + caseItem.case_count + '">' + caseItem.case + ' (' + caseItem.case_count + ')</option>');
+                            });
+                        } else {
+                            caseDropdown.append('<option value="">No Cases Available</option>');
+                        }
+                        
+                        caseDropdown.trigger('change');
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("AJAX Error: ", status, error);
+                    }
+                });
+
             } else {
-            $('.pack_select').empty().append('<option value="">Select Pack...</option>').trigger('change');
+            $('.case_select').empty().append('<option value="">Select Case...</option>').trigger('change');
             }
         });
-
 
         // Show the Edit Product modal and log the product ID
         $(document).on('click', '#edit_product_btn', function(event) {
@@ -1382,36 +1514,45 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             });
         });
 
-        $(document).on("change", "#base_product_add, #color_add, #gauge_add, #grade_add, #bends, #hems, #price_per_bend, #price_per_hem, #coil_width_add, #width", function () {
+        $(document).on("change", "#base_product_add, #color_add, #gauge_add, #grade_add, #bends, #hems, #price_per_bend, #price_per_hem, #coil_width_add, #width, #pack_add", function () {
             basePrice = parseFloat($("#base_product_add").find(":selected").data("base-price")) || 0;
 
             let colorMultiplier = parseFloat($("#color_add").find(":selected").data("multiplier")) || 1;
             let gaugeMultiplier = parseFloat($("#gauge_add").find(":selected").data("multiplier")) || 1;
             let gradeMultiplier = parseFloat($("#grade_add").find(":selected").data("multiplier")) || 1;
 
-            //category 4 = TRIM
-            if (String(selectedCategory) == '4') {
-                basePrice = 2.69;
-            }
+            //selectedCategory is declared global
+            if (String(selectedCategory) == '4') { //category 4 = TRIM
+                basePrice = parseFloat($("#color_add").find(":selected").data("price")) || 0;
 
-            let unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier;
-
-            var price_per_bend = parseFloat($("#price_per_bend").val()) || 0;
-            var price_per_hem = parseFloat($("#price_per_hem").val()) || 0;
-
-            let coil_width = parseFloat($("#coil_width_add option:selected").data("width")) || 1; 
-            var width = parseFloat($("#width").val()) || 0;
-
-            //category 4 = TRIM
-            if (String(selectedCategory) == '4') {
                 var num_bends = parseFloat($("#bends").val()) || 0;
                 var num_hems = parseFloat($("#hems").val()) || 0;
 
-                unitPrice = unitPrice + (num_bends * price_per_bend) + (num_hems * price_per_hem);
+                var price_per_bend = parseFloat($("#price_per_bend").val()) || 0;
+                var price_per_hem = parseFloat($("#price_per_hem").val()) || 0;
+
+                let coil_width = parseFloat($("#coil_width_add option:selected").data("width")) || 1; 
+                var width = parseFloat($("#width").val()) || 0;
+
+                var unitPrice = basePrice;
+
+                if (num_bends > 0) {
+                    unitPrice += num_bends * price_per_bend;
+                }
+
+                if (num_hems > 0) {
+                    unitPrice += num_hems * price_per_hem;
+                }
 
                 if (coil_width > 0) {
                     unitPrice = (width / coil_width) * unitPrice;
                 }
+            }else if (String(selectedCategory) == '16') {  //category 16 = SCREWS
+                var pieces = parseFloat($("#pack_add").find(":selected").data("count")) || 1;
+
+                var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier * pieces;
+            }else{
+                var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier;
             }
 
             $("#unit_price_add").val(unitPrice.toFixed(2));

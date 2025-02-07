@@ -4,12 +4,9 @@ require 'includes/functions.php';
 
 $id = 0;
 $supplierid = 0;
-$pack = '';
-$pack_abbreviation = '';
-$pack_count = '';
-
-$case_packs = 0;
 $case = '';
+$case_abbreviation = '';
+$case_count = '';
 
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
@@ -20,14 +17,14 @@ if(!empty($_REQUEST['supplier_id'])){
 
 if(!empty($_REQUEST['id'])){
   $id = $_REQUEST['id'];
-  $query = "SELECT * FROM supplier_pack WHERE id = '$id'";
+  $query = "SELECT * FROM supplier_case WHERE id = '$id'";
   $result = mysqli_query($conn, $query);            
   while ($row = mysqli_fetch_array($result)) {
       $id = $row['id'];
       $supplierid = $row['supplierid'];
-      $pack = $row['pack'];
-      $pack_abbreviation = $row['pack_abbreviation'];
-      $pack_count = $row['pack_count'];
+      $case = $row['case'];
+      $case_abbreviation = $row['case_abbreviation'];
+      $case_count = $row['case_count'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -63,14 +60,14 @@ if(!empty($_REQUEST['id'])){
   <div class="card-body px-0">
     <div class="d-flex justify-content-between align-items-center">
       <div><br>
-        <h4 class="font-weight-medium fs-14 mb-0">Supplier Pack</h4>
+        <h4 class="font-weight-medium fs-14 mb-0">Supplier Case</h4>
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
             <li class="breadcrumb-item">
               <a class="text-muted text-decoration-none" href="">Supplier
               </a>
             </li>
-            <li class="breadcrumb-item text-muted" aria-current="page">Supplier Pack</li>
+            <li class="breadcrumb-item text-muted" aria-current="page">Supplier Case</li>
           </ol>
         </nav>
       </div>
@@ -104,10 +101,10 @@ if(!empty($_REQUEST['id'])){
   <div class="card card-body">
     <div class="row">
       <div class="col-3">
-        <h4 class="card-title"><?= $addHeaderTxt ?> Supplier Pack</h4>
+        <h4 class="card-title"><?= $addHeaderTxt ?> Supplier Case</h4>
       </div>
     </div>
-    <form id="supplierPackForm" class="form-horizontal">
+    <form id="supplierCaseForm" class="form-horizontal">
       <div class="row pt-3">
         <div class="col-md-6">
         <label class="form-label">Supplier</label>
@@ -132,8 +129,8 @@ if(!empty($_REQUEST['id'])){
         </div>
         <div class="col-md-6">
             <div class="mb-3">
-              <label class="form-label">Pack Abbreviation</label>
-              <input type="text" id="pack_abbreviation" name="pack_abbreviation" class="form-control" placeholder="ex. BX" value="<?= $pack_abbreviation ?>" />
+              <label class="form-label">Case Abbreviation</label>
+              <input type="text" id="case_abbreviation" name="case_abbreviation" class="form-control" placeholder="ex. BX" value="<?= $case_abbreviation ?>" />
             </div>
         </div>
       </div>
@@ -147,26 +144,9 @@ if(!empty($_REQUEST['id'])){
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="form-label">Packs in Case</label>
-            <div class="d-flex align-items-center">
-              <input type="number" id="case_packs" name="case_packs" class="form-control me-2" value="<?= $case_packs ?>"/>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row pt-3">
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="form-label">Pack Name</label>
-            <input type="text" id="pack" name="pack" class="form-control" placeholder="ex. Box" value="<?= $pack ?>" />
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
             <label class="form-label">Pieces</label>
             <div class="d-flex align-items-center">
-              <input type="number" id="pack_count" name="pack_count" class="form-control me-2" value="<?= $pack_count ?>"/>
+              <input type="number" id="case_count" name="case_count" class="form-control me-2" value="<?= $case_count ?>"/>
             </div>
           </div>
         </div>
@@ -196,19 +176,19 @@ if(!empty($_REQUEST['id'])){
   <div class="datatables">
     <div class="card">
       <div class="card-body">
-          <h4 class="card-title d-flex justify-content-between align-items-center">Supplier Pack List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['id'])){ ?>
-            <a href="?page=supplier_pack" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
+          <h4 class="card-title d-flex justify-content-between align-items-center">Supplier Case List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['id'])){ ?>
+            <a href="?page=supplier_case" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
             <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
           </h4>
         
         <div class="table-responsive">
        
-          <table id="display_supplier_pack" class="table table-striped table-bordered text-nowrap align-middle text-center">
+          <table id="display_supplier_case" class="table table-striped table-bordered text-nowrap align-middle text-center">
             <thead>
               <!-- start row -->
               <tr>
                 <th>Supplier</th>
-                <th>Pack Name</th>
+                <th>Case Name</th>
                 <th>Abbrev.</th>
                 <th>Pieces</th>
                 <th>Details</th>
@@ -220,24 +200,24 @@ if(!empty($_REQUEST['id'])){
             <tbody>
               <?php
               $no = 1;
-              $query_supplier_pack = "SELECT * FROM supplier_pack WHERE hidden=0";
+              $query_supplier_case = "SELECT * FROM supplier_case WHERE hidden=0";
               if(!empty($_REQUEST['supplier_id'])){
-                $query_supplier_pack .= " AND supplierid = '$supplier_id'";
+                $query_supplier_case .= " AND supplierid = '$supplier_id'";
               }
-              $result_supplier_pack = mysqli_query($conn, $query_supplier_pack);            
-              while ($row_supplier_pack = mysqli_fetch_array($result_supplier_pack)) {
-                  $id = $row_supplier_pack['id'];
-                  $supplierid = $row_supplier_pack['supplierid'];
-                  $db_status = $row_supplier_pack['status'];
-                  $pack = $row_supplier_pack['pack'];
-                  $pack_abbreviation = $row_supplier_pack['pack_abbreviation'];
-                  $pack_count = $row_supplier_pack['pack_count'];
-                // $last_edit = $row_supplier_pack['last_edit'];
-                  $date = new DateTime($row_supplier_pack['last_edit'] ?? '');
+              $result_supplier_case = mysqli_query($conn, $query_supplier_case);            
+              while ($row_supplier_case = mysqli_fetch_array($result_supplier_case)) {
+                  $id = $row_supplier_case['id'];
+                  $supplierid = $row_supplier_case['supplierid'];
+                  $db_status = $row_supplier_case['status'];
+                  $case = $row_supplier_case['case'];
+                  $case_abbreviation = $row_supplier_case['case_abbreviation'];
+                  $case_count = $row_supplier_case['case_count'];
+                // $last_edit = $row_supplier_case['last_edit'];
+                  $date = new DateTime($row_supplier_case['last_edit'] ?? '');
                   $last_edit = $date->format('m-d-Y');
 
-                  $added_by = $row_supplier_pack['added_by'];
-                  $edited_by = $row_supplier_pack['edited_by'];
+                  $added_by = $row_supplier_case['added_by'];
+                  $edited_by = $row_supplier_case['edited_by'];
 
                   
                   if($edited_by != "0"){
@@ -248,24 +228,24 @@ if(!empty($_REQUEST['id'])){
                     $last_user_name = "";
                   }
 
-                  if ($row_supplier_pack['status'] == '0') {
+                  if ($row_supplier_case['status'] == '0') {
                       $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
                   } else {
                       $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
                   }
               ?>
               <tr id="product-row-<?= $no ?>">
-                  <td><span class="product<?= $no ?> <?php if ($row_supplier_pack['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= getSupplierName($supplierid) ?></span></td>
-                  <td><?= ucwords($pack) ?></td>
-                  <td><?= $pack_abbreviation ?></td>
-                  <td><?= $pack_count ?></td>
+                  <td><span class="product<?= $no ?> <?php if ($row_supplier_case['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= getSupplierName($supplierid) ?></span></td>
+                  <td><?= ucwords($case) ?></td>
+                  <td><?= $case_abbreviation ?></td>
+                  <td><?= $case_count ?></td>
                   <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                   <td><?= $status ?></td>
                   <td class="text-center" id="action-button-<?= $no ?>">
-                      <?php if ($row_supplier_pack['status'] == '0') { ?>
-                          <a href="#" class="btn btn-light py-1 text-dark hideSupplierPack" data-id="<?= $id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
+                      <?php if ($row_supplier_case['status'] == '0') { ?>
+                          <a href="#" class="btn btn-light py-1 text-dark hideSupplierCase" data-id="<?= $id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
                       <?php } else { ?>
-                          <a href="?page=supplier_pack&id=<?= $id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                          <a href="?page=supplier_case&id=<?= $id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
                       <?php } ?>
                   </td>
               </tr>
@@ -283,7 +263,7 @@ if(!empty($_REQUEST['id'])){
                       var status = $(this).data('status');
                       var no = $(this).data('no');
                       $.ajax({
-                          url: 'pages/supplier_pack_ajax.php',
+                          url: 'pages/supplier_case_ajax.php',
                           type: 'POST',
                           data: {
                               id: id,
@@ -296,13 +276,13 @@ if(!empty($_REQUEST['id'])){
                                       $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
                                       $(".changeStatus[data-no='" + no + "']").data('status', "0");
                                       $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                      $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideSupplierPack" data-id="' + id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
+                                      $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideSupplierCase" data-id="' + id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
                                       $('#toggleActive').trigger('change');
                                     } else {
                                       $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                                       $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                       $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                      $('#action-button-' + no).html('<a href="/?page=supplier_pack&id=' + id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                                      $('#action-button-' + no).html('<a href="/?page=supplier_case&id=' + id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                                       $('#toggleActive').trigger('change');
                                     }
                               } else {
@@ -315,16 +295,16 @@ if(!empty($_REQUEST['id'])){
                       });
                   });
 
-                  $(document).on('click', '.hideSupplierPack', function(event) {
+                  $(document).on('click', '.hideSupplierCase', function(event) {
                       event.preventDefault();
                       var id = $(this).data('id');
                       var rowId = $(this).data('row');
                       $.ajax({
-                          url: 'pages/supplier_pack_ajax.php',
+                          url: 'pages/supplier_case_ajax.php',
                           type: 'POST',
                           data: {
                               id: id,
-                              action: 'hide_supplier_pack'
+                              action: 'hide_supplier_case'
                           },
                           success: function(response) {
                               if (response == 'success') {
@@ -369,7 +349,7 @@ if(!empty($_REQUEST['id'])){
 
 <script>
   $(document).ready(function() {
-    var table = $('#display_supplier_pack').DataTable();
+    var table = $('#display_supplier_case').DataTable();
 
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -404,7 +384,7 @@ if(!empty($_REQUEST['id'])){
         allowClear: true
     });
 
-    $('#supplierPackForm').on('submit', function(event) {
+    $('#supplierCaseForm').on('submit', function(event) {
         event.preventDefault(); 
 
         var userid = getCookie('userid');
@@ -418,7 +398,7 @@ if(!empty($_REQUEST['id'])){
         var appendResult = "";
 
         $.ajax({
-            url: 'pages/supplier_pack_ajax.php',
+            url: 'pages/supplier_case_ajax.php',
             type: 'POST',
             data: formData,
             processData: false,
@@ -427,17 +407,17 @@ if(!empty($_REQUEST['id'])){
                 $('#supplierid').prop('disabled', true);
                 if (response.trim() === "success_update") {
                     $('#responseHeader').text("Success");
-                    $('#responseMsg').text('Supplier Pack updated successfully.');
+                    $('#responseMsg').text('Supplier Case updated successfully.');
                     $('#responseHeaderContainer').removeClass("bg-danger");
                     $('#responseHeaderContainer').addClass("bg-success");
                     $('#response-modal').modal("show");
 
                     $('#response-modal').on('hide.bs.modal', function () {
-                        window.location.href = "?page=supplier_pack";
+                        window.location.href = "?page=supplier_case";
                     });
                 } else if (response.trim() === "success_add") {
                     $('#responseHeader').text("Success");
-                    $('#responseMsg').text('New Supplier Pack added successfully.');
+                    $('#responseMsg').text('New Supplier Case added successfully.');
                     $('#responseHeaderContainer').removeClass("bg-danger");
                     $('#responseHeaderContainer').addClass("bg-success");
                     $('#response-modal').modal("show");

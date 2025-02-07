@@ -117,6 +117,7 @@ if(isset($_REQUEST['action'])) {
             $surface = $row['surface'];
             $grade = $row['grade'];
             $gauge = $row['gauge'];
+            $price = $row['price'];
         }
         ?>
             <div class="card">
@@ -141,6 +142,10 @@ if(isset($_REQUEST['action'])) {
                                     ?>
                                 </select>
                             </div>
+                        </div>
+                        <div class="col-md-6 mb-3" data-id="7">
+                            <label class="form-label">Price</label>
+                            <input type="text" class="form-control" name="price" id="price" value="<?=$price?>">
                         </div>
                     </div>
 

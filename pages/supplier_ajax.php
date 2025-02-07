@@ -303,6 +303,33 @@ if(isset($_REQUEST['action'])) {
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <div class="col-md-12 d-flex justify-content-between align-items-center">
+                                        <label class="form-label">Supplier Cases</label>
+                                        <a href="?page=supplier_case&supplier_id=<?=$supplier_id?>" target="_blank" class="text-decoration-none">Edit Cases</a>
+                                    </div>
+                                    <div id="case_upd" class="bg-light p-3 rounded">
+                                        
+                                        <?php
+                                        $query_case = "SELECT * FROM supplier_case WHERE supplierid = '$supplier_id' AND hidden = '0'";
+                                        $result_case = mysqli_query($conn, $query_case);            
+                                        if (mysqli_num_rows($result_case) > 0) {
+                                            while ($row_case = mysqli_fetch_array($result_case)) {
+                                        ?>
+                                            <span class="badge bg-primary me-1"><?= $row_case['case'] ?>(<?=$row_case['case_count']?>)</span>
+                                        <?php   
+                                            }
+                                        } else {
+                                        ?>
+                                            <span>No cases found</span>
+                                        <?php
+                                        }
+                                        ?>
+                                        
+                                    </div>
+                                </div>
+                            </div>
                             </div>
 
                             <div class="row pt-3">
