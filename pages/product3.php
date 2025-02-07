@@ -1558,9 +1558,10 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 }
             }else if (String(selectedCategory) == '16') {  //category 16 = SCREWS
                 var packs = parseFloat($("#pack_add").find(":selected").data("count")) || 1;
-                var case = parseFloat($("#case_add").find(":selected").data("count")) || 1;
+                var caseCount = parseFloat($("#case_add").find(":selected").data("count")) || 1;
 
-                var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier * packs * case;
+                var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier * packs * caseCount;
+
             }else{
                 var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier;
             }
