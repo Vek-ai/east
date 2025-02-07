@@ -1560,7 +1560,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 var packs = parseFloat($("#pack_add").find(":selected").data("count")) || 1;
                 var case = parseFloat($("#case_add").find(":selected").data("count")) || 1;
 
-                var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier * pieces;
+                var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier * packs * case;
             }else{
                 var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier;
             }
