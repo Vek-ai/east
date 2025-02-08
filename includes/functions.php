@@ -201,11 +201,16 @@ function getCustomerPricingName($id){
 
 function getProductTypeName($product_type_id){
     global $conn;
+    $product_type_id = intval($product_type_id);
     $query = "SELECT product_type FROM product_type WHERE product_type_id = '$product_type_id'";
-    $result = mysqli_query($conn,$query);
-    $row = mysqli_fetch_array($result); 
-    $product_type = $row['product_type'] ?? '';
-    return  $product_type;
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['product_type'];
+    }
+
+    return '';
 }
 
 function getStockTypeName($stock_type_id){
