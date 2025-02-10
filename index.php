@@ -1421,6 +1421,8 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "color_multiplier") {include 'pages/color_multiplier.php';}
             if ($_REQUEST['page'] == "coil_width") {include 'pages/coil_width.php';}
+
+            if ($_REQUEST['page'] == "upload_excel") {include 'pages/upload_excel.php';}
           ?>
         </div>
       </div>

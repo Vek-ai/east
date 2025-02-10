@@ -1,0 +1,7 @@
+{
+    "name": "edria/includes",
+    "type": "library",
+    "require": {
+        "phpoffice/phpspreadsheet": "^4.0"
+    }
+}
