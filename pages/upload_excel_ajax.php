@@ -8,7 +8,7 @@ require '../includes/vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-$table = 'test';
+$table = 'product_duplicate';
 
 if ($_REQUEST['action'] == "upload_excel") {
     if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] === 0) {
