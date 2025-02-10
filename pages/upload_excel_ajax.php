@@ -8,7 +8,12 @@ require '../includes/vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-$table = 'product_duplicate';
+$table = 'test';
+//4 = TRIM
+$trim_id = 4;
+
+$category_id = 4;
+ 
 
 if ($_REQUEST['action'] == "upload_excel") {
     if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] === 0) {
@@ -51,12 +56,16 @@ if ($_REQUEST['action'] == "upload_excel") {
             'BS' => 'trim_rollformer',
             'BT' => 'cost_per_hem',
             'BU' => 'cost_per_bend',
-            'BV' => 'cost_per_square_inch',
+            'CM' => 'coil_width',
         ];
 
         foreach ($worksheet->getRowIterator() as $rowIndex => $row) {
             if ($rowIndex === 1) continue;
             $rowData = [];
+
+            $colorPrice = 0;
+            $coil_width = 0;
+            $width = 0;
 
             foreach ($row->getCellIterator() as $cell) {
                 $columnLetter = $cell->getColumn();
@@ -64,8 +73,20 @@ if ($_REQUEST['action'] == "upload_excel") {
                 if (isset($columnMapping[$columnLetter])) {
                     $dbColumn = $columnMapping[$columnLetter];
                     $cellValue = $cell->getValue();
+                    
 
-                    if ($columnLetter === 'X') { //product_system
+                    if ($dbColumn === 'color') { //color
+                        $query = "SELECT * FROM product_color WHERE product_category = '$category_id' ORDER BY RAND() LIMIT 1";
+                        $result = mysqli_query($conn, $query);
+
+                        if ($result && mysqli_num_rows($result) > 0) {
+                            $row = mysqli_fetch_assoc($result);
+                            $cellValue = $row['id'];
+                            $colorPrice = $row['price'];
+                        }
+                    }
+
+                    if ($dbColumn === 'product_system') { //product_system
                         $query = "SELECT product_system_id FROM product_system WHERE product_system LIKE '%$cellValue%'";
                         $result = mysqli_query($conn, $query);
 
@@ -75,11 +96,11 @@ if ($_REQUEST['action'] == "upload_excel") {
                         }
                     }
                     
-                    if ($columnLetter === 'Z') { //category
-                        $cellValue = '4'; //4 = TRIM
+                    if ($dbColumn === 'product_category') { //category
+                        $cellValue = $category_id; //4 = TRIM
                     }
 
-                    if ($columnLetter === 'AB') { //product_line
+                    if ($dbColumn === 'product_line') { //product_line
                         $query = "SELECT product_line_id FROM product_line WHERE product_line LIKE '%$cellValue%'";
                         $result = mysqli_query($conn, $query);
 
@@ -89,7 +110,7 @@ if ($_REQUEST['action'] == "upload_excel") {
                         }
                     }
 
-                    if ($columnLetter === 'AD') { //product_type
+                    if ($dbColumn === 'product_type') { //product_type
                         $query = "SELECT product_type_id FROM product_type WHERE product_type LIKE '%$cellValue%'";
                         $result = mysqli_query($conn, $query);
 
@@ -99,11 +120,11 @@ if ($_REQUEST['action'] == "upload_excel") {
                         }
                     }
 
-                    if ($columnLetter === 'BA') { //manufactured or sourced
+                    if ($dbColumn === 'product_origin') { //manufactured or sourced
                         $cellValue = (strtolower($cell->getValue() ?? '') == 'manufactured' ? '2' : '1'); //2 = manufactured
                     }
 
-                    if ($columnLetter === 'BB') { // Supplier
+                    if ($dbColumn === 'supplier_id') { // supplier_id
                         $cellValue = strtolower($cell->getValue() ?? '');
                         $invalidValues = ['manufactured', 'n/a', '#n/a'];
                     
@@ -122,32 +143,49 @@ if ($_REQUEST['action'] == "upload_excel") {
                         }
                     }
 
-                    if ($columnLetter === 'BP') { //bends
+                    if ($dbColumn === 'bends') { //bends
                         $cellValue = floatval($cell->getValue());
                     }
 
-                    if ($columnLetter === 'BV') { //hems
+                    if ($dbColumn === 'hems') { //hems
                         $cellValue = floatval($cell->getValue());
                     }
 
-                    if ($columnLetter === 'BP') { //hemming machine
+                    if ($dbColumn === 'hemming_machine') { //hemming_machine
                         $cellValue = (strtolower($cell->getValue() ?? '') == 'yes' ? '1' : '0');
                     }
 
-                    if ($columnLetter === 'BV') { //trim rollformer
+                    if ($dbColumn === 'trim_rollformer') { //trim_rollformer
                         $cellValue = (strtolower($cell->getValue() ?? '') == 'yes' ? '1' : '0');
                     }
 
-                    if ($columnLetter === 'BV') { //cost_per_square_inch
+                    if ($dbColumn === 'coil_width') { //coil_width
                         $cellValue = floatval($cell->getValue());
+                        $coil_width = $cellValue;
+                    }
+
+                    if ($dbColumn === 'width') { //coil_width
+                        $cellValue = floatval($cell->getValue());
+                        $width = $cellValue;
                     }
             
                     $rowData[$dbColumn] = mysqli_real_escape_string($conn, $cellValue !== null ? (string) $cellValue : '');
-                }
+                }     
+
             }
 
             if (empty($rowData)) {
                 continue;
+            }
+
+            if($category_id = $trim_id){
+                $cost_per_square_inch = 0;
+
+                if ($coil_width > 0) {
+                    $cost_per_square_inch = ($width / $coil_width) * $colorPrice;
+                }
+
+                $rowData['cost_per_square_inch'] = $cost_per_square_inch;
             }
 
             $dbColumns = implode(", ", array_keys($rowData));
