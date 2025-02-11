@@ -914,20 +914,16 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 }
                 
                 $("#cost_per_sq_in").val(cost_per_sq_in.toFixed(2));
-
                 var cost_per_sq_ft = cost_per_sq_in * 144;
-
                 $("#cost_per_sq_ft").val(cost_per_sq_ft.toFixed(2));
-
                 var cost_per_linear_ft = width / cost_per_sq_ft;
-
                 $("#cost_per_linear_ft").val(cost_per_linear_ft.toFixed(2));
 
             }else if (String(selectedCategory) == '16') {  //category 16 = SCREWS
                 var packs = parseFloat($("#pack_add").find(":selected").data("count")) || 1;
                 var caseCount = parseFloat($("#case_add").find(":selected").data("count")) || 1;
 
-                var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier * packs * caseCount;
+                var unitPrice = basePrice  * packs * caseCount;
 
             }if (String(selectedCategory) == '3') { //category 3 = panels
                 let coil_width = parseFloat($("#coil_width_add option:selected").data("width")) || 1; 
@@ -971,7 +967,8 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             }
 
             $('.panel-fields, .trim-fields, .screw-fields').addClass('d-none');
-            $('#base_product_add').removeClass('d-none');
+            $('#base_product_div').removeClass('d-none');
+            $('#unit_price_div').removeClass('d-none');
 
             if (selectedCategory == 3) { // PANELS
                 $('.panel-fields').removeClass('d-none');
@@ -979,7 +976,8 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
             if (selectedCategory == 4) { // TRIM
                 $('.trim-fields').removeClass('d-none');
-                $('#base_product_add').addClass('d-none');
+                $('#unit_price_div').addClass('d-none');
+                $('#base_product_div').addClass('d-none');
             }
 
             if (selectedCategory == 16) { // SCREW

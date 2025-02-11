@@ -147,7 +147,95 @@ if ($result->num_rows > 0) { ?>
                         while ($row = $result->fetch_assoc()) {
                             echo "<tr>";
                             foreach ($row as $key => $value) {
-                                echo "<td contenteditable='true' data-column='{$key}' style='border: 1px solid #ddd; text-align: center; padding: 2px'>{$value}</td>";
+                              ?>
+                              <td contenteditable='true' data-column='<?= $key ?>' style='border: 1px solid #ddd; text-align: center; padding: 2px'>
+                                <?php
+                                if($key == 'product_category'){
+                                  ?>
+                                  <select id="product_category" class="form-control" name="product_category">
+                                      <option value="" >Select One...</option>
+                                      <?php
+                                      $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                                      $result_roles = mysqli_query($conn, $query_roles);            
+                                      while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                                          $selected = ($value == $row_product_category['product_category_id']) ? 'selected' : '';
+                                      ?>
+                                          <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
+                                      <?php   
+                                      }
+                                      ?>
+                                  </select>
+                                  <?php
+                                }else if($key == 'product_system'){
+                                  ?>
+                                  <select id="product_system" class="form-control" name="product_system">
+                                      <option value="" >Select One...</option>
+                                      <?php
+                                      $query_roles = "SELECT * FROM product_system WHERE hidden = '0'";
+                                      $result_roles = mysqli_query($conn, $query_roles);            
+                                      while ($row_product_system = mysqli_fetch_array($result_roles)) {
+                                          $selected = ($value == $row_product_system['product_system_id']) ? 'selected' : '';
+                                      ?>
+                                          <option value="<?= $row_product_system['product_system_id'] ?>" <?= $selected ?>><?= $row_product_system['product_system'] ?></option>
+                                      <?php   
+                                      }
+                                      ?>
+                                  </select>
+                                  <?php
+                                }else if($key == 'product_type'){
+                                  ?>
+                                  <select id="product_type" class="form-control" name="product_type">
+                                      <option value="" >Select One...</option>
+                                      <?php
+                                      $query_roles = "SELECT * FROM product_type WHERE hidden = '0'";
+                                      $result_roles = mysqli_query($conn, $query_roles);            
+                                      while ($row_product_type = mysqli_fetch_array($result_roles)) {
+                                          $selected = ($value == $row_product_type['product_type_id']) ? 'selected' : '';
+                                      ?>
+                                          <option value="<?= $row_product_type['product_type_id'] ?>" <?= $selected ?>><?= $row_product_type['product_type'] ?></option>
+                                      <?php   
+                                      }
+                                      ?>
+                                  </select>
+                                  <?php
+                                }else if($key == 'product_line'){
+                                  ?>
+                                  <select id="product_line" class="form-control" name="product_line">
+                                      <option value="" >Select One...</option>
+                                      <?php
+                                      $query_roles = "SELECT * FROM product_line WHERE hidden = '0'";
+                                      $result_roles = mysqli_query($conn, $query_roles);            
+                                      while ($row_product_line = mysqli_fetch_array($result_roles)) {
+                                          $selected = ($value == $row_product_line['product_line_id']) ? 'selected' : '';
+                                      ?>
+                                          <option value="<?= $row_product_line['product_line_id'] ?>" <?= $selected ?>><?= $row_product_line['product_line'] ?></option>
+                                      <?php   
+                                      }
+                                      ?>
+                                  </select>
+                                  <?php
+                                }else if($key == 'color'){
+                                  ?>
+                                  <select id="color" class="form-control" name="color">
+                                      <option value="" >Select One...</option>
+                                      <?php
+                                      $query_color = "SELECT * FROM product_color";
+                                      $result_color = mysqli_query($conn, $query_color);            
+                                      while ($row_color = mysqli_fetch_array($result_color)) {
+                                          $selected = ($value == $row_color['id']) ? 'selected' : '';
+                                      ?>
+                                          <option value="<?= $row_color['id'] ?>" <?= $selected ?>><?= $row_color['color_name'] ?></option>
+                                      <?php   
+                                      }
+                                      ?>
+                                  </select>
+                                  <?php
+                                }else{
+                                  echo $value;
+                                }
+                                ?>
+                              </td>
+                              <?php
                             }
                             echo "</tr>";
                         }

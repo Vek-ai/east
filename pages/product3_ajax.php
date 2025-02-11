@@ -315,7 +315,7 @@ if(isset($_REQUEST['action'])) {
                     </div>
                     
                     <div id="add-fields" class="d-none">
-                        <div class="row pt-3">
+                        <div id="base_product_div" class="row pt-3">
                             <label class="form-label">Select Base Product</label>
                             <div class="col-md-12">
                             <select id="base_product_add" name="product_base" class="select2 form-control">
@@ -542,7 +542,7 @@ if(isset($_REQUEST['action'])) {
                         </div>
 
                         <div class="row pt-3">
-                            <div class="col">
+                            <div id="unit_price_div" class="col">
                                 <div class="mb-3">
                                 <label class="form-label">Unit Price</label>
                                 <input type="text" id="unit_price_add" name="unitPrice" class="form-control"  />
