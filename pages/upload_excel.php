@@ -215,6 +215,7 @@ if ($result->num_rows > 0) { ?>
                                   </select>
                                   <?php
                                 }else if($key == 'color'){
+                                  
                                   ?>
                                   <select id="color" class="form-control" name="color">
                                       <option value="" >Select One...</option>
