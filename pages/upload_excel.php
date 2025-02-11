@@ -2,6 +2,10 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 ?>
 <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
   <div class="card-body px-0">
@@ -215,7 +219,7 @@ if ($result->num_rows > 0) { ?>
                                   </select>
                                   <?php
                                 }else if($key == 'color'){
-                                  
+
                                   ?>
                                   <select id="color" class="form-control" name="color">
                                       <option value="" >Select One...</option>
