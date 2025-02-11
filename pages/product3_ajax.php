@@ -513,7 +513,7 @@ if(isset($_REQUEST['action'])) {
                         </div>
 
                         <div class="row">
-                            <div class="col trim-fields">
+                            <div class="col trim-fields panel-fields">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <label class="form-label mb-1">Coil Width</label>
                                     <a href="?page=coil_width" class="mb-1" target="_blank">Edit</a>
@@ -537,6 +537,27 @@ if(isset($_REQUEST['action'])) {
                                 <div class="mb-3">
                                 <label class="form-label">Width</label>
                                 <input type="text" id="width" name="width" class="form-control"  />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row trim-fields panel-fields">
+                            <div class="col">
+                                <div class="mb-3">
+                                    <label class="form-label">Cost per SQ IN</label>
+                                    <input type="text" id="cost_per_sq_in" name="cost_per_sq_in" class="form-control"  />
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="mb-3">
+                                    <label class="form-label">Cost per SQ FT</label>
+                                    <input type="text" id="cost_per_sq_ft" name="cost_per_sq_ft" class="form-control"  />
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="mb-3">
+                                    <label class="form-label">Cost per Linear FT</label>
+                                    <input type="text" id="cost_per_linear_ft" name="cost_per_linear_ft" class="form-control"  />
                                 </div>
                             </div>
                         </div>

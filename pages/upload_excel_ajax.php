@@ -11,7 +11,6 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 $table = 'test';
 //4 = TRIM
 $trim_id = 4;
-
 $category_id = 4;
  
 
@@ -59,6 +58,12 @@ if ($_REQUEST['action'] == "upload_excel") {
             'CM' => 'coil_width',
         ];
 
+        $truncateSql = "TRUNCATE TABLE $table";
+        if (!mysqli_query($conn, $truncateSql)) {
+            echo "Error truncating table: " . mysqli_error($conn) . "<br>";
+            exit();
+        }
+
         foreach ($worksheet->getRowIterator() as $rowIndex => $row) {
             if ($rowIndex === 1) continue;
             $rowData = [];
@@ -72,17 +77,26 @@ if ($_REQUEST['action'] == "upload_excel") {
                 
                 if (isset($columnMapping[$columnLetter])) {
                     $dbColumn = $columnMapping[$columnLetter];
-                    $cellValue = $cell->getValue();
+                    $cellValue = $cell->getValue() ?? '';
                     
 
                     if ($dbColumn === 'color') { //color
-                        $query = "SELECT * FROM product_color WHERE product_category = '$category_id' ORDER BY RAND() LIMIT 1";
-                        $result = mysqli_query($conn, $query);
+                        if(strtolower($cellValue) == 'multi'){
+                            $query = "SELECT * FROM product_color WHERE product_category = '$category_id' ORDER BY RAND() LIMIT 1";
+                            $result = mysqli_query($conn, $query);
 
-                        if ($result && mysqli_num_rows($result) > 0) {
-                            $row = mysqli_fetch_assoc($result);
-                            $cellValue = $row['id'];
-                            $colorPrice = $row['price'];
+                            if ($result && mysqli_num_rows($result) > 0) {
+                                $row = mysqli_fetch_assoc($result);
+                                $cellValue = $row['id'];
+                                $colorPrice = $row['price'];
+                            }
+                        }else{
+                            $query = "SELECT * FROM product_color WHERE color_name LIKE '%$cellValue%'";
+                            $result = mysqli_query($conn, $query);
+                            if ($result && mysqli_num_rows($result) > 0) {
+                                $row = mysqli_fetch_assoc($result);
+                                $cellValue = $row['id'];
+                            }
                         }
                     }
 
@@ -192,7 +206,6 @@ if ($_REQUEST['action'] == "upload_excel") {
             $dbValues = "'" . implode("', '", $rowData) . "'";
 
             $sql = "INSERT INTO $table ($dbColumns) VALUES ($dbValues)";
-
             if (!mysqli_query($conn, $sql)) {
                 echo "Error inserting row $rowIndex: " . mysqli_error($conn) . "<br>";
             }
@@ -201,6 +214,35 @@ if ($_REQUEST['action'] == "upload_excel") {
         echo "success";
     } else {
         echo "Error: No file uploaded or file upload failed.";
+    }
+}
+
+if ($_REQUEST['action'] == "save_table") {
+    $table = "product_duplicate";
+
+    $columnsSql = "SHOW COLUMNS FROM test";
+    $columnsResult = $conn->query($columnsSql);
+
+    $columns = [];
+    while ($row = $columnsResult->fetch_assoc()) {
+        if ($row['Field'] !== 'product_id') {
+            $columns[] = $row['Field'];
+        }
+    }
+
+    $columnsList = implode(", ", $columns);
+
+    $sql = "INSERT INTO $table ($columnsList) SELECT $columnsList FROM test";
+
+    if ($conn->query($sql) === TRUE) {
+        echo "Data has been successfully saved";
+
+        $truncateSql = "TRUNCATE TABLE test";
+        if ($conn->query($truncateSql) !== TRUE) {
+            echo " but failed to clear test table: " . $conn->error;
+        }
+    } else {
+        echo "Error: " . $conn->error;
     }
 }
 

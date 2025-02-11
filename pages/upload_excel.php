@@ -44,8 +44,8 @@ require 'includes/functions.php';
   </div>
 </div>
 
-<div class="card p-4 shadow w-50 mx-auto">
-    <h2 class="text-center mb-3">Upload an Excel File</h2>
+<div class="card p-3 shadow w-50 mx-auto">
+    <h3 class="text-center mb-3">Upload TRIM Excel File</h3>
     <form id="uploadForm" action="#" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <input type="file" class="form-control" name="excel_file" accept=".xls,.xlsx" required>
@@ -55,6 +55,113 @@ require 'includes/functions.php';
         </div>
     </form>
 </div>
+
+<?php
+$sql = "SELECT * FROM test";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) { ?>
+    <div class="card p-3 shadow">
+        <h3 class="text-center mb-3">Uploaded Data</h3>
+
+        <form id="tableForm">
+            <div style="overflow-x: auto; overflow-y: auto; max-height: 800px; max-width: 100%;">
+                <table class="table table-bordered table-striped text-center">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>SKU</th>
+                            <th>Coil Part No</th>
+                            <th>Price 1</th>
+                            <th>Price 2</th>
+                            <th>Price 3</th>
+                            <th>Price 4</th>
+                            <th>Price 5</th>
+                            <th>Price 6</th>
+                            <th>Price 7</th>
+                            <th>Category</th>
+                            <th>Line</th>
+                            <th>Type</th>
+                            <th>System</th>
+                            <th>Item</th>
+                            <th>Stock Type</th>
+                            <th>Desc.</th>
+                            <th>Material</th>
+                            <th>Dimensions</th>
+                            <th>Thickness</th>
+                            <th>Gauge</th>
+                            <th>Grade</th>
+                            <th>Color</th>
+                            <th>Color Code</th>
+                            <th>Paint Provider</th>
+                            <th>Color Group</th>
+                            <th>Warranty Type</th>
+                            <th>Coating</th>
+                            <th>Profile</th>
+                            <th>Width</th>
+                            <th>Bends</th>
+                            <th>Hems</th>
+                            <th>Hemming Machine</th>
+                            <th>Trim Rollformer</th>
+                            <th>$ per Hem</th>
+                            <th>$ per Bend</th>
+                            <th>$ per Sq. In.</th>
+                            <th>Coil Width</th>
+                            <th>Length</th>
+                            <th>Weight</th>
+                            <th>Qty Stock</th>
+                            <th>Qty Quoted</th>
+                            <th>Qty Committed</th>
+                            <th>Qty Available</th>
+                            <th>Qty In Transit</th>
+                            <th>Unit Price</th>
+                            <th>Date Added</th>
+                            <th>Date Modified</th>
+                            <th>Last Ordered Date</th>
+                            <th>Last Sold Date</th>
+                            <th>Supplier ID</th>
+                            <th>Supplier SKU</th>
+                            <th>UPC</th>
+                            <th>Unit of Measure</th>
+                            <th>Coil ID</th>
+                            <th>Coil Qty</th>
+                            <th>Unit Gross Margin</th>
+                            <th>Unit Cost</th>
+                            <th>Comment</th>
+                            <th>Product Usage</th>
+                            <th>Sold By Feet</th>
+                            <th>Standing Seam</th>
+                            <th>Board Batten</th>
+                            <th>Correlated Product ID</th>
+                            <th>SmartBuild ID</th>
+                            <th>Status</th>
+                            <th>Hidden</th>
+                            <th>Main Image</th>
+                            <th>Product Origin</th>
+                            <th>Product Base</th>
+                            <th>Product Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr>";
+                            foreach ($row as $key => $value) {
+                                echo "<td contenteditable='true' data-column='{$key}' style='border: 1px solid #ddd; text-align: center; padding: 2px'>{$value}</td>";
+                            }
+                            echo "</tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-end">
+                <button type="button" id="saveTable" class="btn btn-primary mt-3">Save</button>
+            </div>
+        </form>
+    </div>
+<?php } ?>
+
 
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -91,24 +198,22 @@ require 'includes/functions.php';
                 processData: false,
                 success: function (response) {
                     response = response.trim();
-
-                    console.log(response)
-
-                    /* if (response.toLowerCase() === "success") {
+                    if (response.trim() === "success") {
                         $('#responseHeader').text("Success");
-                        $('#responseMsg').text("File uploaded successfully.");
-                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                        $('#responseMsg').text("Data Uploaded successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");
                         $('#response-modal').on('hide.bs.modal', function () {
                             location.reload();
                         });
-
                     } else {
                         $('#responseHeader').text("Failed");
-                        $('#responseMsg').html(response);
-                        $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
                         $('#response-modal').modal("show");
-                    } */
+                    }  
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.error('AJAX Error:', textStatus, errorThrown);
@@ -121,5 +226,28 @@ require 'includes/functions.php';
                 }
             });
         });
+
+        $("#saveTable").click(function () {
+            if (confirm("Are you sure you want to save this Excel data to the products?")) {
+                var formData = new FormData();
+                formData.append("action", "save_table");
+
+                $.ajax({
+                    url: "pages/upload_excel_ajax.php",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        response = response.trim();
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                        $('#response-modal').modal("show");
+                    }
+                });
+            }
+        });
+
     });
 </script>

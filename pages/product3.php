@@ -892,13 +892,10 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             //selectedCategory is declared global
             if (String(selectedCategory) == '4') { //category 4 = TRIM
                 basePrice = parseFloat($("#color_add").find(":selected").data("price")) || 0;
-
                 var num_bends = parseFloat($("#bends").val()) || 0;
                 var num_hems = parseFloat($("#hems").val()) || 0;
-
                 var price_per_bend = parseFloat($("#price_per_bend").val()) || 0;
                 var price_per_hem = parseFloat($("#price_per_hem").val()) || 0;
-
                 let coil_width = parseFloat($("#coil_width_add option:selected").data("width")) || 1; 
                 var width = parseFloat($("#width").val()) || 0;
 
@@ -913,14 +910,39 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 }
 
                 if (coil_width > 0) {
-                    unitPrice = (width / coil_width) * unitPrice;
+                    cost_per_sq_in = (width / coil_width) * unitPrice;
                 }
+                
+                $("#cost_per_sq_in").val(cost_per_sq_in.toFixed(2));
+
+                var cost_per_sq_ft = cost_per_sq_in * 144;
+
+                $("#cost_per_sq_ft").val(cost_per_sq_ft.toFixed(2));
+
+                var cost_per_linear_ft = width / cost_per_sq_ft;
+
+                $("#cost_per_linear_ft").val(cost_per_linear_ft.toFixed(2));
+
             }else if (String(selectedCategory) == '16') {  //category 16 = SCREWS
                 var packs = parseFloat($("#pack_add").find(":selected").data("count")) || 1;
                 var caseCount = parseFloat($("#case_add").find(":selected").data("count")) || 1;
 
                 var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier * packs * caseCount;
 
+            }if (String(selectedCategory) == '3') { //category 3 = panels
+                let coil_width = parseFloat($("#coil_width_add option:selected").data("width")) || 1; 
+                var width = parseFloat($("#width").val()) || 0;
+                var unitPrice = basePrice;
+
+                if (coil_width > 0) {
+                    cost_per_sq_in = (width / coil_width) * unitPrice;
+                }
+                
+                $("#cost_per_sq_in").val(cost_per_sq_in.toFixed(2));
+                var cost_per_sq_ft = cost_per_sq_in * 144;
+                $("#cost_per_sq_ft").val(cost_per_sq_ft.toFixed(2));
+                var cost_per_linear_ft = width / cost_per_sq_ft;
+                $("#cost_per_linear_ft").val(cost_per_linear_ft.toFixed(2));
             }else{
                 var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier;
             }
@@ -946,24 +968,20 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 $('#add-fields').addClass('d-none');
             }
 
-            if(selectedCategory == 3){ // PANELS
+            $('.panel-fields, .trim-fields, .screw-fields').addClass('d-none');
+            $('#base_product_add').removeClass('d-none');
+
+            if (selectedCategory == 3) { // PANELS
                 $('.panel-fields').removeClass('d-none');
-            }else{
-                $('.panel-fields').addClass('d-none');
             }
 
-            if(selectedCategory == 4){ // TRIM
+            if (selectedCategory == 4) { // TRIM
                 $('.trim-fields').removeClass('d-none');
                 $('#base_product_add').addClass('d-none');
-            }else{
-                $('.trim-fields').addClass('d-none');
-                $('#base_product_add').removeClass('d-none');
             }
 
-            if(selectedCategory == 16){ // SCREW
+            if (selectedCategory == 16) { // SCREW
                 $('.screw-fields').removeClass('d-none');
-            }else{
-                $('.screw-fields').addClass('d-none');
             }
 
             $(".select2").each(function() {
