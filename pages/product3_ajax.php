@@ -541,27 +541,48 @@ if(isset($_REQUEST['action'])) {
                             </div>
                         </div>
 
-                        <div class="row trim-fields panel-fields">
+                        <div class="row pt-3">
                             <div class="col">
+                                <div class="mb-3">
+                                <label class="form-label">Unit Price</label>
+                                <input type="text" id="unit_price_add" name="unitPrice" class="form-control"  />
+                                </div>
+                            </div>
+                            <div class="col trim-fields panel-fields">
                                 <div class="mb-3">
                                     <label class="form-label">Cost per SQ IN</label>
                                     <input type="text" id="cost_per_sq_in" name="cost_per_sq_in" class="form-control"  />
                                 </div>
                             </div>
-                            <div class="col">
+                            <div class="col trim-fields panel-fields">
                                 <div class="mb-3">
                                     <label class="form-label">Cost per SQ FT</label>
                                     <input type="text" id="cost_per_sq_ft" name="cost_per_sq_ft" class="form-control"  />
                                 </div>
                             </div>
-                            <div class="col">
+                            <div class="col trim-fields panel-fields">
                                 <div class="mb-3">
                                     <label class="form-label">Cost per Linear FT</label>
                                     <input type="text" id="cost_per_linear_ft" name="cost_per_linear_ft" class="form-control"  />
                                 </div>
                             </div>
                         </div>
-                            
+
+                        <div class="row pt-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Unit Cost</label>
+                                <input type="text" id="unitCost" name="unitCost" class="form-control"  />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                <label class="form-label">Unit Gross Margin</label>
+                                <input type="text" id="unitGrossMargin" name="unitGrossMargin" class="form-control"  />
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row trim-fields">
                             <div class="col-12 d-flex flex-row align-items-center justify-content-center gap-3">
                                 <div class="form-check">
@@ -575,154 +596,138 @@ if(isset($_REQUEST['action'])) {
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col">
-                                <label class="form-label">Supplier</label>
-                                <div class="mb-3">
-                                    <select id="supplier_id" class="form-control select-2 inventory_supplier" name="supplier_id">
-                                        <option value="" >Select Supplier...</option>
-                                        <optgroup label="Supplier">
-                                            <?php
-                                            $query_supplier = "SELECT * FROM supplier";
-                                            $result_supplier = mysqli_query($conn, $query_supplier);            
-                                            while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                                            ?>
-                                                <option value="<?= $row_supplier['supplier_id'] ?>" ><?= $row_supplier['supplier_name'] ?></option>
-                                            <?php   
-                                            }
-                                            ?>
-                                        </optgroup>
-                                        
-                                    </select>
+                        <div class="card">
+                            <h4 class="card-header">Inventory Details</h4>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <label class="form-label">Supplier</label>
+                                        <div class="mb-3">
+                                            <select id="supplier_id" class="form-control select-2 inventory_supplier" name="supplier_id">
+                                                <option value="" >Select Supplier...</option>
+                                                <optgroup label="Supplier">
+                                                    <?php
+                                                    $query_supplier = "SELECT * FROM supplier";
+                                                    $result_supplier = mysqli_query($conn, $query_supplier);            
+                                                    while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                                                    ?>
+                                                        <option value="<?= $row_supplier['supplier_id'] ?>" ><?= $row_supplier['supplier_name'] ?></option>
+                                                    <?php   
+                                                    }
+                                                    ?>
+                                                </optgroup>
+                                                
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <label class="form-label">Warehouse</label>
-                                <div class="mb-3">
-                                <select id="Warehouse_id" class="form-control select2" name="Warehouse_id">
-                                    <option value="" >Select Warehouse...</option>
-                                    <optgroup label="Warehouse">
-                                        <?php
-                                        $query_warehouse = "SELECT * FROM warehouses WHERE status = '1'";
-                                        $result_warehouse = mysqli_query($conn, $query_warehouse);            
-                                        while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
-                                        ?>
-                                            <option value="<?= $row_warehouse['WarehouseID'] ?>" ><?= $row_warehouse['WarehouseName'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </optgroup>
-                                    
-                                </select>
-                                </div>
-                            </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Warehouse</label>
+                                        <div class="mb-3">
+                                        <select id="Warehouse_id" class="form-control select2" name="Warehouse_id">
+                                            <option value="" >Select Warehouse...</option>
+                                            <optgroup label="Warehouse">
+                                                <?php
+                                                $query_warehouse = "SELECT * FROM warehouses WHERE status = '1'";
+                                                $result_warehouse = mysqli_query($conn, $query_warehouse);            
+                                                while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
+                                                ?>
+                                                    <option value="<?= $row_warehouse['WarehouseID'] ?>" ><?= $row_warehouse['WarehouseName'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </optgroup>
+                                            
+                                        </select>
+                                        </div>
+                                    </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label">Shelf</label>
-                                <div class="mb-3">
-                                <select id="Shelves_id" class="form-control select2" name="Shelves_id">
-                                    <option value="" >Select Shelf...</option>
-                                    <optgroup label="Shelf">
-                                        <?php
-                                        $query_shelf = "SELECT * FROM shelves";
-                                        $result_shelf = mysqli_query($conn, $query_shelf);            
-                                        while ($row_shelf = mysqli_fetch_array($result_shelf)) {
-                                        ?>
-                                            <option value="<?= $row_shelf['ShelfID'] ?>" ><?= $row_shelf['ShelfCode'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </optgroup>
-                                </select>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Shelf</label>
+                                        <div class="mb-3">
+                                        <select id="Shelves_id" class="form-control select2" name="Shelves_id">
+                                            <option value="" >Select Shelf...</option>
+                                            <optgroup label="Shelf">
+                                                <?php
+                                                $query_shelf = "SELECT * FROM shelves";
+                                                $result_shelf = mysqli_query($conn, $query_shelf);            
+                                                while ($row_shelf = mysqli_fetch_array($result_shelf)) {
+                                                ?>
+                                                    <option value="<?= $row_shelf['ShelfID'] ?>" ><?= $row_shelf['ShelfCode'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </optgroup>
+                                        </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Bin</label>
+                                        <div class="mb-3">
+                                        <select id="Bin_id" class="form-control select2" name="Bin_id">
+                                            <option value="" >Select Bin...</option>
+                                            <optgroup label="Bin">
+                                                <?php
+                                                $query_bin = "SELECT * FROM bins";
+                                                $result_bin = mysqli_query($conn, $query_bin);            
+                                                while ($row_bin = mysqli_fetch_array($result_bin)) {
+                                                ?>
+                                                    <option value="<?= $row_bin['BinID'] ?>" ><?= $row_bin['BinCode'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </optgroup>
+                                        </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Row</label>
+                                        <div class="mb-3">
+                                        <select id="Row_id" class="form-control select2" name="Row_id">
+                                            <option value="" >Select Row...</option>
+                                            <optgroup label="Row">
+                                                <?php
+                                                $query_rows = "SELECT * FROM warehouse_rows";
+                                                $result_rows = mysqli_query($conn, $query_rows);            
+                                                while ($row_rows = mysqli_fetch_array($result_rows)) {
+                                                ?>
+                                                    <option value="<?= $row_rows['WarehouseRowID'] ?>" ><?= $row_rows['WarehouseRowID'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </optgroup>
+                                        </select>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Bin</label>
-                                <div class="mb-3">
-                                <select id="Bin_id" class="form-control select2" name="Bin_id">
-                                    <option value="" >Select Bin...</option>
-                                    <optgroup label="Bin">
-                                        <?php
-                                        $query_bin = "SELECT * FROM bins";
-                                        $result_bin = mysqli_query($conn, $query_bin);            
-                                        while ($row_bin = mysqli_fetch_array($result_bin)) {
-                                        ?>
-                                            <option value="<?= $row_bin['BinID'] ?>" ><?= $row_bin['BinCode'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </optgroup>
-                                </select>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Row</label>
-                                <div class="mb-3">
-                                <select id="Row_id" class="form-control select2" name="Row_id">
-                                    <option value="" >Select Row...</option>
-                                    <optgroup label="Row">
-                                        <?php
-                                        $query_rows = "SELECT * FROM warehouse_rows";
-                                        $result_rows = mysqli_query($conn, $query_rows);            
-                                        while ($row_rows = mysqli_fetch_array($result_rows)) {
-                                        ?>
-                                            <option value="<?= $row_rows['WarehouseRowID'] ?>" ><?= $row_rows['WarehouseRowID'] ?></option>
-                                        <?php   
-                                        }
-                                        ?>
-                                    </optgroup>
-                                </select>
+                                <div class="row mb-3 screw-fields">
+                                    <div class="col-md-6">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <label class="form-label mb-1">Case</label>
+                                            <a href="?page=supplier_case" class="mb-1" target="_blank">Edit</a>
+                                        </div>
+                                        <div class="mb-3">
+                                        <select id="case_add" class="form-control select-2 case_select" name="case">
+                                            <option value="" >Select Case...</option>
+                                        </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <label class="form-label mb-1">Pack</label>
+                                            <a href="?page=supplier_pack" class="mb-1" target="_blank">Edit</a>
+                                        </div>
+                                        <div class="mb-3">
+                                        <select id="pack_add" class="form-control select-2 pack_select" name="pack">
+                                            <option value="" >Select Pack...</option>
+                                        </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row mb-3 screw-fields">
-                            <div class="col-md-6">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <label class="form-label mb-1">Case</label>
-                                    <a href="?page=supplier_case" class="mb-1" target="_blank">Edit</a>
-                                </div>
-                                <div class="mb-3">
-                                <select id="case_add" class="form-control select-2 case_select" name="case">
-                                    <option value="" >Select Case...</option>
-                                </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <label class="form-label mb-1">Pack</label>
-                                    <a href="?page=supplier_pack" class="mb-1" target="_blank">Edit</a>
-                                </div>
-                                <div class="mb-3">
-                                <select id="pack_add" class="form-control select-2 pack_select" name="pack">
-                                    <option value="" >Select Pack...</option>
-                                </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row pt-3">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                            <label class="form-label">Unit Price</label>
-                            <input type="text" id="unit_price_add" name="unitPrice" class="form-control"  />
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                            <label class="form-label">Unit Cost</label>
-                            <input type="text" id="unitCost" name="unitCost" class="form-control"  />
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                            <label class="form-label">Unit Gross Margin</label>
-                            <input type="text" id="unitGrossMargin" name="unitGrossMargin" class="form-control"  />
-                            </div>
-                        </div>
-                        </div>
-
+                        
                         <div class="mb-3">
                             <label class="form-label">Description</label>
                             <textarea class="form-control" id="description" name="description" rows="5"></textarea>

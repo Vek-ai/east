@@ -932,10 +932,10 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             }if (String(selectedCategory) == '3') { //category 3 = panels
                 let coil_width = parseFloat($("#coil_width_add option:selected").data("width")) || 1; 
                 var width = parseFloat($("#width").val()) || 0;
-                var unitPrice = basePrice;
+                var color_price = parseFloat($("#color_add").find(":selected").data("price")) || 0;
 
                 if (coil_width > 0) {
-                    cost_per_sq_in = (width / coil_width) * unitPrice;
+                    cost_per_sq_in = (width / coil_width) * color_price;
                 }
                 
                 $("#cost_per_sq_in").val(cost_per_sq_in.toFixed(2));
@@ -943,6 +943,8 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 $("#cost_per_sq_ft").val(cost_per_sq_ft.toFixed(2));
                 var cost_per_linear_ft = width / cost_per_sq_ft;
                 $("#cost_per_linear_ft").val(cost_per_linear_ft.toFixed(2));
+
+                var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier;
             }else{
                 var unitPrice = basePrice * colorMultiplier * gaugeMultiplier * gradeMultiplier;
             }
