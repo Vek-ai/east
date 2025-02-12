@@ -1423,6 +1423,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "coil_width") {include 'pages/coil_width.php';}
 
             if ($_REQUEST['page'] == "upload_excel") {include 'pages/upload_excel.php';}
+            if ($_REQUEST['page'] == "download_excel") {include 'pages/download_excel.php';}
           ?>
         </div>
       </div>
