@@ -8,7 +8,6 @@ require '../includes/vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 if (isset($_REQUEST['action']) && $_REQUEST['action'] == "download_excel") {
     $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
@@ -23,32 +22,77 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == "download_excel") {
     $sheet = $spreadsheet->getActiveSheet();
 
     $headers = [
-        'product_id', 'product_sku', 'coil_part_no', 'price_1', 'price_2', 'price_3', 'price_4', 'price_5', 'price_6', 'price_7',
-        'product_category', 'product_line', 'product_type', 'product_system', 'product_item', 'stock_type', 'description',
-        'material', 'dimensions', 'thickness', 'gauge', 'grade', 'color', 'color_code', 'paint_provider', 'color_group',
-        'warranty_type', 'coating', 'profile', 'width', 'bends', 'hems', 'hemming_machine', 'trim_rollformer',
-        'cost_per_hem', 'cost_per_bend', 'cost_per_square_inch', 'coil_width', 'length', 'weight', 'quantity_in_stock',
-        'quantity_quoted', 'quantity_committed', 'quantity_available', 'quantity_in_transit', 'unit_price', 'date_added',
-        'date_modified', 'last_ordered_date', 'last_sold_date', 'supplier_id', 'supplier_sku', 'upc', 'unit_of_measure',
-        'coil_id', 'coil_qty', 'unit_gross_margin', 'unit_cost', 'comment', 'product_usage', 'sold_by_feet',
-        'standing_seam', 'board_batten', 'correlated_product_id', 'smartbuild_id', 'status', 'hidden', 'main_image',
-        'product_origin', 'product_base', 'product_code'
+        'A' => 'InvID', 'B' => 'Coil/Part Number', 'C' => 'Description', 'D' => 'Color', 'E' => 'Qty', 'F' => 'Units', 'G' => 'Notes', 'H' => 'Price',
+        'I' => 'Price2', 'J' => 'Price3', 'K' => 'Price4', 'L' => 'Price5', 'M' => 'Price6', 'N' => 'Price7', 'O' => 'Order', 'P' => 'ItemType', 'Q' => 'VendorID',
+        'R' => 'Cost', 'S' => 'Blank 1', 'T' => 'Blank 2', 'U' => 'Color Options', 'V' => 'Length Options', 'W' => 'Product System Abreviations',
+        'X' => 'Product Systems', 'Y' => 'Category Abreviations', 'Z' => 'Product Category', 'AA' => 'Line Abreviations', 'AB' => 'Product Line',
+        'AC' => 'Type Abreviations', 'AD' => 'Product Type', 'AE' => 'Product Item', 'AF' => 'Product Code Abreviation', 'AG' => 'Item Abreviation',
+        'AH' => 'COLOR CODE Table', 'AI' => 'Color Consolidation', 'AJ' => 'LENGTH/Size Table CODE', 'AK' => 'Size consolidation', 'AL' => 'Gauge',
+        'AM' => 'Product Code', 'AN' => 'Concatenated', 'AO' => 'Product Description', 'AP' => 'Size Scrub', 'AQ' => 'Comments', 'AR' => 'Blank4',
+        'AS' => 'Intent? Usage?', 'AT' => 'Width', 'AU' => '# of Hems', 'AV' => '# of Bends', 'AW' => 'Length', 'AX' => 'Thickness', 'AY' => 'What Size?',
+        'AZ' => 'Stock or Special Order', 'BA' => 'Mfg or Purchased', 'BB' => 'SupplierName', 'BC' => 'Cost Example', 'BD' => 'Old System Description',
+        'BE' => 'Category Use-Area (Cousin) (Marketing-Sales?)', 'BF' => 'Category Type-Category (2nd-Cousin) (Marketing-Sales?)',
+        'BG' => 'Category Use-Application (3nd-Cousin) (Marketing-Sales?)', 'BH' => 'SPM1', 'BI' => 'SPM2', 'BJ' => 'SPM3', 'BK' => 'SPM4', 'BL' => 'SPM5',
+        'BM' => 'SPM6', 'BN' => 'SPM7', 'BO' => 'Flat Sheet Width', 'BP' => 'Number of Bends', 'BQ' => 'Number of Hems', 'BR' => 'Hemming Machine',
+        'BS' => 'Trim Rollformer', 'BT' => '$ per Hem', 'BU' => '$ Per Bend', 'BV' => '$ Per square inch', 'BW' => '', 'BX' => '', 'BY' => 'Actual Moving Cost',
+        'BZ' => 'Manual Assigned Cost', 'CA' => 'Retail Pricing', 'CB' => '', 'CC' => 'Retail Pricing $/ft', 'CD' => 'Contractor Pricing (Level 2)',
+        'CE' => 'Contractor Pricing (Level 3)', 'CF' => 'Contractor Pricing (Level 4)', 'CG' => 'Wholesale Pricing (Level 5)',
+        'CH' => 'Wholesale Pricing (Level 6)', 'CI' => 'Penetration Pricing (Level 7)', 'CJ' => 'Retail', 'CK' => 'Contractor 1',
+        'CL' => 'Contractor 2', 'CM' => 'Low Rib Coil Width', 'CN' => 'Number of Trim per sheet width', 'CO' => 'Drop', 'CP' => 'Ft or Each',
+        'CQ' => 'Flat Sheet Length converted to Inches', 'CR' => '', 'CS' => '', 'CT' => 'Square Inches per piece', 'CU' => 'Full Flat Stock Width',
+        'CV' => "$'s per square Inch", 'CW' => '$ Per Piece', 'CX' => '$ per piece', 'CY' => 'Flat Sheet Length (Ft)', 'CZ' => '', 'DA' => '',
+        'DB' => 'Square Inches per piece', 'DC' => '10', 'DD' => '12', 'DE' => '14', 'DF' => '16', 'DG' => '18', 'DH' => '20', 'DI' => '24',
+        'DJ' => 'Full Flat Stock Width', 'DK' => "#'s per square Inch", 'DL' => '# of Pieces per sheet', 'DM' => 'Weight per piece'
     ];
 
-    $col = 1;
-    foreach ($headers as $header) {
-        $columnLetter = Coordinate::stringFromColumnIndex($col);
-        $sheet->setCellValue($columnLetter . '1', $header);
-        $col++;
+    foreach ($headers as $columnLetter => $headerName) {
+        $sheet->setCellValue($columnLetter . '1', $headerName);
     }
+
+    // Column Mapping
+    $columnMapping = [
+        'A' => 'product_id',
+        'B' => 'coil_part_no',
+        'D' => 'color',
+        'E' => 'quantity_in_stock',
+        'F' => 'unit_of_measure',
+        'H' => 'price_1',
+        'I' => 'price_2',
+        'J' => 'price_3',
+        'K' => 'price_4',
+        'L' => 'price_5',
+        'M' => 'price_6',
+        'N' => 'price_7',
+        'X' => 'product_system',
+        'Z' => 'product_category',
+        'AB' => 'product_line',
+        'AD' => 'product_type',
+        'AE' => 'product_item',
+        'AL' => 'gauge',
+        'AM' => 'product_code',
+        'AO' => 'description',
+        'AQ' => 'comment',
+        'AS' => 'product_usage',
+        'BO' => 'width',
+        'AW' => 'length',
+        'AX' => 'thickness',
+        'AZ' => 'stock_type',
+        'BA' => 'product_origin',
+        'BB' => 'supplier_id',
+        'BP' => 'bends',
+        'BQ' => 'hems',
+        'BR' => 'hemming_machine',
+        'BS' => 'trim_rollformer',
+        'BT' => 'cost_per_hem',
+        'BU' => 'cost_per_bend',
+        'BV' => 'cost_per_square_inch',
+        'CM' => 'coil_width',
+    ];
 
     $row = 2;
     while ($data = $result->fetch_assoc()) {
-        $col = 1;
-        foreach ($headers as $header) {
-            $columnLetter = Coordinate::stringFromColumnIndex($col);
-            $sheet->setCellValue($columnLetter . $row, $data[$header] ?? '');
-            $col++;
+        foreach ($columnMapping as $columnLetter => $dbColumn) {
+            $sheet->setCellValue($columnLetter . $row, $data[$dbColumn] ?? '');
         }
         $row++;
     }
@@ -67,7 +111,6 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == "download_excel") {
     readfile($filePath);
 
     unlink($filePath);
-
     exit;
 }
 
