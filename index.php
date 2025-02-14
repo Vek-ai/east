@@ -1424,6 +1424,7 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "upload_excel") {include 'pages/upload_excel.php';}
             if ($_REQUEST['page'] == "download_excel") {include 'pages/download_excel.php';}
+            if ($_REQUEST['page'] == "flat_sheet_width") {include 'pages/flat_sheet_width.php';}
           ?>
         </div>
       </div>

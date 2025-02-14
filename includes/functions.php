@@ -213,6 +213,15 @@ function getProductTypeName($product_type_id){
     return '';
 }
 
+function getProductSystemName($id){
+    global $conn;
+    $query = "SELECT product_system FROM product_system WHERE product_system_id = '$id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $product_system = $row['product_system'] ?? '';
+    return  $product_system;
+}
+
 function getStockTypeName($stock_type_id){
     global $conn;
     $query = "SELECT stock_type FROM stock_type WHERE stock_type_id = '$stock_type_id'";
