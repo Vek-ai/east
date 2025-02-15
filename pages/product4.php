@@ -151,14 +151,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="product_form" class="form-horizontal">
-                    <div class="modal-footer">
-                        <div class="form-actions">
-                            <div class="card-body">
-                                <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
-                                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
+                    
                 </form>
             </div>
             <!-- /.modal-content -->
@@ -811,16 +804,13 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 let retail_cost = trim_multiplier * price * length;
                 $("#retail_cost").val(retail_cost.toFixed(2));
 
-                let typeText = '';
-                if(selectedType != ''){
-                    typeText = $("#product_type option:selected").text().trim();
-                }
-                let fSWidthText = '';
-                if(flat_sheet_width != 0){
-                    fSWidthText = $("#flat_sheet_width option:selected").text().trim();
-                }
-                
-                $("#description").val(typeText + ' - ' + length + 'ft - ' + fSWidthText);
+                let descriptionParts = [];
+
+                if (selectedType) descriptionParts.push($("#product_type option:selected").text().trim());
+                if (length) descriptionParts.push(length + "ft");
+                if (flat_sheet_width) descriptionParts.push($("#flat_sheet_width option:selected").text().trim());
+
+                $("#description").val(descriptionParts.join(" - "));
             }
         });
 

@@ -484,6 +484,12 @@ if(isset($_REQUEST['action'])) {
                                 </div>
                             </div>
                         </div>
+                        <div class="modal-footer">
+                            <div class="form-actions">
+                                <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+                                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
