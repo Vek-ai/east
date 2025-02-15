@@ -1332,6 +1332,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "product") {include 'pages/product.php';}
             if ($_REQUEST['page'] == "product2") {include 'pages/product2.php';}
             if ($_REQUEST['page'] == "product3") {include 'pages/product3.php';}
+            if ($_REQUEST['page'] == "product4") {include 'pages/product4.php';}
             if ($_REQUEST['page'] == "warehouses_test") {include 'pages/warehouses_test.php';}
             if ($_REQUEST['page'] == "paint_providers") {include 'pages/paint_providers.php';}
             if ($_REQUEST['page'] == "paint_colors") {include 'pages/paint_colors.php';}

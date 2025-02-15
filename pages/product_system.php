@@ -173,7 +173,7 @@ if(!empty($_REQUEST['product_system_id'])){
     <div class="card">
       <div class="card-body">
           <h4 class="card-title d-flex justify-content-between align-items-center">Product System List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['product_system_id'])){ ?>
-            <a href="/?page=product_system" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
+            <a href="?page=product_system" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
             <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
           </h4>
         
@@ -242,7 +242,7 @@ if(!empty($_REQUEST['product_system_id'])){
                       <?php if ($row_product_system['status'] == '0') { ?>
                           <a href="#" class="btn btn-light py-1 text-dark hideSystem" data-id="<?= $product_system_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
                       <?php } else { ?>
-                          <a href="/?page=product_system&product_system_id=<?= $product_system_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                          <a href="?page=product_system&product_system_id=<?= $product_system_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
                       <?php } ?>
                   </td>
               </tr>
@@ -279,7 +279,7 @@ if(!empty($_REQUEST['product_system_id'])){
                                     $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                                     $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                     $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                    $('#action-button-' + no).html('<a href="/?page=product_system&product_system_id=' + product_system_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                                    $('#action-button-' + no).html('<a href="?page=product_system&product_system_id=' + product_system_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                                     $('#toggleActive').trigger('change');
                                   }
                             } else {
