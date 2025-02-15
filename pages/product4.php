@@ -128,14 +128,15 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
             </form> -->
         </div>
-        <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
-            <div class="action-btn show-btn">
-            <a href="javascript:void(0)" class="delete-multiple bg-danger-subtle btn me-2 text-danger d-flex align-items-center ">
-                <i class="ti ti-trash me-1 fs-5"></i> Delete All Row
-            </a>
-            </div>
+        <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
             <button type="button" id="addProductModalBtn" class="btn btn-primary d-flex align-items-center" data-id="">
-                <i class="ti ti-users text-white me-1 fs-5"></i> Add Product
+                <i class="ti ti-plus text-white me-1 fs-5"></i> Add Product
+            </button>
+            <button type="button" id="downloadProductModalBtn" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-download text-white me-1 fs-5"></i> Download Product
+            </button>
+            <button type="button" id="uploadProductModalBtn" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-upload text-white me-1 fs-5"></i> Upload Product
             </button>
         </div>
         </div>
@@ -154,10 +155,101 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                     
                 </form>
             </div>
-            <!-- /.modal-content -->
         </div>
-    <!-- /.modal-dialog -->
     </div>
+
+    <div class="modal fade" id="downloadProductModal" tabindex="-1" aria-labelledby="downloadProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Download Product
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="download_product_form" class="form-horizontal">
+                        <label for="select-category" class="form-label fw-semibold">Select Category</label>
+                        <div class="mb-3">
+                            <select class="form-select select2" id="select-download-category" name="category">
+                                <option value="">All Categories</option>
+                                <optgroup label="Category">
+                                    <?php
+                                    $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+                                    $result_category = mysqli_query($conn, $query_category);
+                                    while ($row_category = mysqli_fetch_array($result_category)) {
+                                    ?>
+                                        <option value="<?= $row_category['product_category_id'] ?>"><?= $row_category['product_category'] ?></option>
+                                    <?php
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary fw-semibold">
+                                <i class="fas fa-download me-2"></i> Download Excel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="uploadProductModal" tabindex="-1" aria-labelledby="uploadProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Upload Product
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="upload_product_form" action="#" method="post" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="excel_file" class="form-label fw-semibold">Select Excel File</label>
+                                    <input type="file" class="form-control" name="excel_file" accept=".xls,.xlsx" required>
+                                </div>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary">Upload & Read</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card mb-0 mt-2">
+                        <div class="card-body d-flex justify-content-center align-items-center">
+                            <button type="button" id="readUploadProductBtn" class="btn btn-primary fw-semibold">
+                                <i class="fas fa-eye me-2"></i> View Uploaded File
+                            </button>
+                        </div>
+                    </div>    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="readUploadProductModal" tabindex="-1" aria-labelledby="readUploadProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Uploaded Excel Product
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="uploaded_excel" class="modal-body">
+                
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
 
     <div class="modal fade" id="updateProductModal" tabindex="-1" role="dialog" aria-labelledby="updateProductModal" aria-hidden="true">
     </div>
@@ -622,6 +714,117 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             });
         });
 
+        $(document).on('click', '#downloadProductModalBtn', function(event) {
+            $('#downloadProductModal').modal('show');
+        });
+
+        $(document).on('click', '#uploadProductModalBtn', function(event) {
+            $('#uploadProductModal').modal('show');
+        });
+
+        $(document).on('click', '#readUploadProductBtn', function(event) {
+            $.ajax({
+                url: 'pages/product4_ajax.php',
+                type: 'POST',
+                data: {
+                    action: "fetch_uploaded_modal"
+                },
+                success: function(response) {
+                    $('#uploaded_excel').html(response);
+                    $('#readUploadProductModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $("#download_product_form").submit(function (e) {
+            e.preventDefault();
+
+            let formData = new FormData(this);
+            formData.append("action", "download_excel");
+
+            $.ajax({
+                url: "pages/download_excel_ajax.php",
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    window.location.href = "pages/download_excel_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
+                },
+                error: function (xhr, status, error) {
+                    alert("Error downloading file: " + error);
+                }
+            });
+        });
+
+        $('#upload_product_form').on('submit', function (e) {
+            e.preventDefault();
+            
+            var formData = new FormData(this);
+            formData.append('action', 'upload_excel');
+
+            $.ajax({
+                url: 'pages/upload_excel_ajax.php',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    response = response.trim();
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Data Uploaded successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }  
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX Error:', textStatus, errorThrown);
+                    console.error('Response:', jqXHR.responseText);
+
+                    $('#responseHeader').text("Error");
+                    $('#responseMsg').text("An error occurred while processing your request.");
+                    $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            });
+        });
+
+        $(document).on('click', '#saveTable', function(event) {
+            if (confirm("Are you sure you want to save this Excel data to the products?")) {
+                var formData = new FormData();
+                formData.append("action", "save_table");
+
+                $.ajax({
+                    url: "pages/upload_excel_ajax.php",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        response = response.trim();
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                        $('#response-modal').modal("show");
+                    }
+                });
+            }
+        });
+
         $(document).on('click', '#view_product_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
@@ -792,17 +995,17 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 var current_retail_price = parseFloat($("#current_retail_price").val()) || 0;
                 var cost_per_sq_in = 0;
                 if (current_retail_price > 0) {
-                    cost_per_sq_in = flat_sheet_width / current_retail_price;
+                    cost_per_sq_in = current_retail_price / flat_sheet_width;
                 }
-                $("#cost_per_sq_in").val(cost_per_sq_in.toFixed(2));
+                $("#cost_per_sq_in").val(cost_per_sq_in.toFixed(3));
 
                 let price = parseFloat($("#color option:selected").attr("data-price")) || 0;
                 let trim_multiplier = price * current_retail_price;
-                $("#trim_multiplier").val(trim_multiplier.toFixed(2));
+                $("#trim_multiplier").val(trim_multiplier.toFixed(3));
 
                 let length = $("#length").val().trim();
                 let retail_cost = trim_multiplier * price * length;
-                $("#retail_cost").val(retail_cost.toFixed(2));
+                $("#retail_cost").val(retail_cost.toFixed(3));
 
                 let descriptionParts = [];
 

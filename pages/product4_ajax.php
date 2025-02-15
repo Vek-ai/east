@@ -844,6 +844,139 @@ if(isset($_REQUEST['action'])) {
         }
     } 
 
+    if ($action == "fetch_uploaded_modal") {
+        $sql = "SELECT * FROM test";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) { 
+        ?>
+        <div class="card card-body shadow">
+            <form id="tableForm">
+                <div style="overflow-x: auto; overflow-y: auto; max-height: 800px; max-width: 100%;">
+                    <table class="table table-bordered table-striped text-center">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>SKU</th>
+                                <th>Coil Part No</th>
+                                <th>Price 1</th>
+                                <th>Price 2</th>
+                                <th>Price 3</th>
+                                <th>Price 4</th>
+                                <th>Price 5</th>
+                                <th>Price 6</th>
+                                <th>Price 7</th>
+                                <th>Category</th>
+                                <th>Line</th>
+                                <th>Type</th>
+                                <th>System</th>
+                                <th>Item</th>
+                                <th>Stock Type</th>
+                                <th>Desc.</th>
+                                <th>Material</th>
+                                <th>Dimensions</th>
+                                <th>Thickness</th>
+                                <th>Gauge</th>
+                                <th>Grade</th>
+                                <th>Color</th>
+                                <th>Color Code</th>
+                                <th>Paint Provider</th>
+                                <th>Color Group</th>
+                                <th>Warranty Type</th>
+                                <th>Coating</th>
+                                <th>Profile</th>
+                                <th>Width</th>
+                                <th>Bends</th>
+                                <th>Hems</th>
+                                <th>Hemming Machine</th>
+                                <th>Trim Rollformer</th>
+                                <th>$ per Hem</th>
+                                <th>$ per Bend</th>
+                                <th>$ per Sq. In.</th>
+                                <th>Coil Width</th>
+                                <th>Length</th>
+                                <th>Weight</th>
+                                <th>Qty Stock</th>
+                                <th>Qty Quoted</th>
+                                <th>Qty Committed</th>
+                                <th>Qty Available</th>
+                                <th>Qty In Transit</th>
+                                <th>Unit Price</th>
+                                <th>Date Added</th>
+                                <th>Date Modified</th>
+                                <th>Last Ordered Date</th>
+                                <th>Last Sold Date</th>
+                                <th>Supplier ID</th>
+                                <th>Supplier SKU</th>
+                                <th>UPC</th>
+                                <th>Unit of Measure</th>
+                                <th>Coil ID</th>
+                                <th>Coil Qty</th>
+                                <th>Unit Gross Margin</th>
+                                <th>Unit Cost</th>
+                                <th>Comment</th>
+                                <th>Product Usage</th>
+                                <th>Sold By Feet</th>
+                                <th>Standing Seam</th>
+                                <th>Board Batten</th>
+                                <th>Correlated Product ID</th>
+                                <th>SmartBuild ID</th>
+                                <th>Status</th>
+                                <th>Hidden</th>
+                                <th>Main Image</th>
+                                <th>Product Origin</th>
+                                <th>Product Base</th>
+                                <th>Product Code</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<tr>";
+                                foreach ($row as $key => $value) {
+                                ?>
+                                <td contenteditable='true' data-column='<?= $key ?>' style='border: 1px solid #ddd; text-align: center; padding: 2px'>
+                                    <?php
+                                    if($key == 'product_category'){
+                                        echo getProductCategoryName($value);
+                                    }else if($key == 'product_system'){
+                                        echo getProductSystemName($value);
+                                    }else if($key == 'product_type'){
+                                        echo getProductTypeName($value);
+                                    }else if($key == 'product_line'){
+                                        echo getProductLineName($value);
+                                    }else if($key == 'color'){
+                                        echo getColorName($value);
+                                    }else{
+                                    echo $value;
+                                    }
+                                    ?>
+                                </td>
+                                <?php
+                                }
+                                echo "</tr>";
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-end">
+                    <button type="button" id="saveTable" class="btn btn-primary mt-3">Save</button>
+                </div>
+            </form>
+        </div>
+        <?php 
+        }else{
+        ?>
+        <div class="card-body d-flex justify-content-center align-items-center h-100">
+            <h4 class="text-center">No uploaded data found!</h3>
+        </div>
+        <?php
+        }
+    } 
+                
+
+    
+
     if ($action == "fetch_edit_modal") {
         $product_id = mysqli_real_escape_string($conn, $_POST['id']);
 

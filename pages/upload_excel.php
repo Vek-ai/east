@@ -253,7 +253,9 @@ if ($result->num_rows > 0) { ?>
             </div>
         </form>
     </div>
-<?php } ?>
+<?php 
+} 
+?>
 
 
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
