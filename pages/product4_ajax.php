@@ -958,59 +958,92 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "download_excel") {
         $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
-
-        $sql = "SELECT * FROM product_duplicate2";
+        $category_name = strtoupper(getProductCategoryName($product_category));
+    
+        $includedColumns = array();
+        $column_txt = '*';
+    
+        if($product_category == 4){ // TRIM
+            $includedColumns = [ 
+                'product_id',
+                'product_category',
+                'product_system',
+                'product_line',
+                'product_type',
+                'flat_sheet_width',
+                'current_retail_price',
+                'cost_per_sq_in',
+                'grade',
+                'gauge',
+                'color',
+                'trim_multiplier',
+                'length',
+                'retail_cost',
+                'description'
+            ];
+            $column_txt = implode(', ', $includedColumns);
+        } else if($product_category == 16){ // SCREW
+            $includedColumns = [ 
+                'product_id',
+                'product_category',
+                'product_type',
+                'color',
+                'size',
+                'supplier_id',
+                'pack',
+                'cost',
+                'price',
+                'retail',
+                'description'
+            ];
+            $column_txt = implode(', ', $includedColumns);
+        }
+    
+        $sql = "SELECT " . $column_txt . " FROM product_duplicate2";
         if (!empty($product_category)) {
             $sql .= " WHERE product_category = '$product_category'";
         }
         $result = $conn->query($sql);
-
+    
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-
-        $columns = [];
-        $query = "SHOW COLUMNS FROM product_duplicate2";
-        $columnResult = $conn->query($query);
-        while ($column = $columnResult->fetch_assoc()) {
-            $columns[] = $column['Field'];
-        }
-
+    
         $headers = [];
-        foreach ($columns as $index => $column) {
+        $row = 1;
+        
+        foreach ($includedColumns as $index => $column) {
             $header = ucwords(str_replace('_', ' ', $column));
-            $headers[chr(65 + $index)] = $header;
+            $columnLetter = chr(65 + $index);
+            $headers[$columnLetter] = $header;
+            $sheet->setCellValue($columnLetter . $row, $header);
         }
-
-        foreach ($headers as $columnLetter => $headerName) {
-            $sheet->setCellValue($columnLetter . '1', $headerName);
-        }
-
-        $columnMapping = array_combine(array_keys($headers), $columns);
-
+    
         $row = 2;
         while ($data = $result->fetch_assoc()) {
-            foreach ($columnMapping as $columnLetter => $dbColumn) {
-                $sheet->setCellValue($columnLetter . $row, $data[$dbColumn] ?? '');
+            foreach ($includedColumns as $index => $column) {
+                $columnLetter = chr(65 + $index);
+                $sheet->setCellValue($columnLetter . $row, $data[$column] ?? '');
             }
             $row++;
         }
-
-        $filename = "products.xlsx";
+    
+        $filename = "$category_name.xlsx";
         $filePath = $filename;
-
+    
         $writer = new Xlsx($spreadsheet);
         $writer->save($filePath);
-
+    
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Content-Length: ' . filesize($filePath));
         header('Cache-Control: max-age=0');
-
+    
         readfile($filePath);
-
+    
         unlink($filePath);
         exit;
     }
+    
 
     if ($action == "update_product_data") {
         $column_name = $_POST['header_name'];
