@@ -797,6 +797,17 @@ if(isset($_REQUEST['action'])) {
             $row = $result->fetch_assoc();
             $columns = array_keys($row);
             $result->data_seek(0);
+    
+            $columnsWithData = [];
+            while ($row = $result->fetch_assoc()) {
+                foreach ($columns as $column) {
+                    if (!empty($row[$column])) {
+                        $columnsWithData[$column] = true;
+                    }
+                }
+            }
+    
+            $result->data_seek(0);
             ?>
             
             <div class="card card-body shadow">
@@ -807,8 +818,10 @@ if(isset($_REQUEST['action'])) {
                                 <tr>
                                     <?php
                                     foreach ($columns as $column) {
-                                        $formattedColumn = ucwords(str_replace('_', ' ', $column));
-                                        echo "<th class='fs-4'>" . $formattedColumn . "</th>";
+                                        if (isset($columnsWithData[$column])) {
+                                            $formattedColumn = ucwords(str_replace('_', ' ', $column));
+                                            echo "<th class='fs-4'>" . $formattedColumn . "</th>";
+                                        }
                                     }
                                     ?>
                                 </tr>
@@ -819,39 +832,41 @@ if(isset($_REQUEST['action'])) {
                                     $product_id = $row['product_id'];
                                     echo '<tr>';
                                     foreach ($columns as $column) {
-                                        $value = $row[$column] ?? '';
-                                        if($column == 'product_category'){
-                                            ?>
-                                            <td class="" contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
-                                                <?= getProductCategoryName($value) ?>
-                                            </td>
-                                            <?php
-                                        } else if($column == 'product_system'){
-                                            ?>
-                                            <td class="" contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
-                                                <?= getProductSystemName($value) ?>
-                                            </td>
-                                            <?php
-                                        } else if($column == 'product_type'){
-                                            ?>
-                                            <td class="" contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
-                                                <?= getProductTypeName($value) ?>
-                                            </td>
-                                            <?php
-                                        } else if($column == 'product_line'){
-                                            ?>
-                                            <td class="" contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
-                                                <?= getProductLineName($value) ?>
-                                            </td>
-                                            <?php
-                                        } else if($column == 'color'){
-                                            ?>
-                                            <td class="" contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
-                                                <?= getColorName($value) ?>
-                                            </td>
-                                            <?php
-                                        } else {
-                                            echo "<td contenteditable='true' class='table_data' data-header-name='".$column."' data-id='".$product_id."'>$value</td>";
+                                        if (isset($columnsWithData[$column])) {
+                                            $value = $row[$column] ?? '';
+                                            if ($column == 'product_category') {
+                                                ?>
+                                                <td contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
+                                                    <?= getProductCategoryName($value) ?>
+                                                </td>
+                                                <?php
+                                            } else if ($column == 'product_system') {
+                                                ?>
+                                                <td contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
+                                                    <?= getProductSystemName($value) ?>
+                                                </td>
+                                                <?php
+                                            } else if ($column == 'product_type') {
+                                                ?>
+                                                <td contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
+                                                    <?= getProductTypeName($value) ?>
+                                                </td>
+                                                <?php
+                                            } else if ($column == 'product_line') {
+                                                ?>
+                                                <td contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
+                                                    <?= getProductLineName($value) ?>
+                                                </td>
+                                                <?php
+                                            } else if ($column == 'color') {
+                                                ?>
+                                                <td contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
+                                                    <?= getColorName($value) ?>
+                                                </td>
+                                                <?php
+                                            } else {
+                                                echo "<td contenteditable='true' class='table_data' data-header-name='".$column."' data-id='".$product_id."'>$value</td>";
+                                            }
                                         }
                                     }
                                     echo '</tr>';
@@ -870,6 +885,7 @@ if(isset($_REQUEST['action'])) {
             echo "<p>No data found in the table.</p>";
         }
     }
+    
 
     if ($action == "upload_excel") {
         if (isset($_FILES['excel_file'])) {
