@@ -877,55 +877,61 @@ if(isset($_REQUEST['action'])) {
             $fileName = $_FILES['excel_file']['name'];
             $fileNameCmps = explode(".", $fileName);
             $fileExtension = strtolower(end($fileNameCmps));
-
-            $table_test = 'test'; // The table to insert data into
-
+    
+            $table_test = 'test';
+    
             if ($fileExtension != "xlsx" && $fileExtension != "xls") {
                 echo "Please upload a valid Excel file.";
                 exit;
             }
-
+    
             $spreadsheet = IOFactory::load($fileTmpPath);
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray();
-
-            $columns = $rows[0]; // Get the header row
+    
+            $columns = $rows[0];
             $dbColumns = [];
             $columnMapping = [];
-
-            // Reverse the column names to match the database format
+    
             foreach ($columns as $col) {
                 $dbColumn = strtolower(str_replace(' ', '_', $col));
                 $dbColumns[] = $dbColumn;
                 $columnMapping[$dbColumn] = $col;
             }
-
-            // Insert the data into the database
+    
+            $truncateSql = "TRUNCATE TABLE $table_test";
+            $truncateResult = $conn->query($truncateSql);
+    
+            if (!$truncateResult) {
+                echo "Error truncating table: " . $conn->error;
+                exit;
+            }
+    
             foreach ($rows as $index => $row) {
                 if ($index == 0) {
-                    continue; // Skip the header row
+                    continue;
                 }
-
-                $data = array_combine($dbColumns, $row); // Map data to columns using reversed headers
-
+    
+                $data = array_combine($dbColumns, $row);
+    
                 $columnNames = implode(", ", array_keys($data));
                 $columnValues = implode("', '", array_map(function($value) { return $value ?? ''; }, array_values($data)));
-
+    
                 $sql = "INSERT INTO $table_test ($columnNames) VALUES ('$columnValues')";
                 $result = $conn->query($sql);
-
+    
                 if (!$result) {
                     echo "Error inserting data: " . $conn->error;
                     exit;
                 }
             }
-
-            echo "success"; // Return success message
+    
+            echo "success";
         } else {
             echo "No file uploaded.";
             exit;
         }
-    }
+    }    
     
     if ($action == "save_table") {
         $table = "product_duplicate2";
