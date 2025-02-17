@@ -1037,6 +1037,9 @@ if(isset($_REQUEST['action'])) {
                         </tbody>
                     </table>
                 </div>
+                <div class="text-end mt-3">
+                    <button type="button" id="saveTable" class="btn btn-primary mt-3">Save</button>
+                </div>
             </form>
         </div>
         <?php
@@ -2133,7 +2136,7 @@ if(isset($_REQUEST['action'])) {
         $new_value = mysqli_real_escape_string($conn, $new_value);
         $product_id = mysqli_real_escape_string($conn, $product_id);
         
-        $sql = "UPDATE product_table SET `$column_name` = '$new_value' WHERE product_id = '$product_id'";
+        $sql = "UPDATE test SET `$column_name` = '$new_value' WHERE product_id = '$product_id'";
 
         if ($conn->query($sql) === TRUE) {
             echo 'success';
