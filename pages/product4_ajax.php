@@ -5,6 +5,16 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require '../includes/dbconn.php';
 require '../includes/functions.php';
+require '../includes/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+$table = 'test';
+//4 = TRIM
+$trim_id = 4;
+$category_id = 4;
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -46,14 +56,14 @@ if(isset($_REQUEST['action'])) {
         $correlatedProducts = $_POST['correlatedProducts'];
     
         // SQL query to check if the record exists
-        $checkQuery = "SELECT * FROM product_duplicate WHERE product_id = '$product_id'";
+        $checkQuery = "SELECT * FROM product_duplicate2 WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $checkQuery);
         $isInsert = false;
     
         if (mysqli_num_rows($result) > 0) {
             // Record exists, proceed with update
             $isInsert = false;
-            $updateQuery = "UPDATE product_duplicate SET 
+            $updateQuery = "UPDATE product_duplicate2 SET 
                 product_item = '$product_item', 
                 product_sku = '$product_sku', 
                 product_category = '$product_category', 
@@ -111,7 +121,7 @@ if(isset($_REQUEST['action'])) {
             $upc = generateRandomUPC();
             // Record does not exist, proceed with insert
             $isInsert = true;
-            $insertQuery = "INSERT INTO product_duplicate (
+            $insertQuery = "INSERT INTO product_duplicate2 (
                 product_item, 
                 product_sku, 
                 product_category, 
@@ -239,7 +249,7 @@ if(isset($_REQUEST['action'])) {
         
                         // Update main image only for the first file (or as per your logic)
                         if ($i == 0) {
-                            $sql = "UPDATE product_duplicate SET main_image='images/product/$newFileName' WHERE product_id='$product_id'";
+                            $sql = "UPDATE product_duplicate2 SET main_image='images/product/$newFileName' WHERE product_id='$product_id'";
                             if (!$conn->query($sql)) {
                                 echo "Error updating record: " . $conn->error;
                             }
@@ -260,7 +270,7 @@ if(isset($_REQUEST['action'])) {
             }
         } else {
             if ($isInsert) {
-                $sql = "UPDATE product_duplicate SET main_image='images/product/product.jpg' WHERE product_id='$product_id'";
+                $sql = "UPDATE product_duplicate2 SET main_image='images/product/product.jpg' WHERE product_id='$product_id'";
                 if (!$conn->query($sql)) {
                     echo "Error updating record: " . $conn->error;
                 }
@@ -270,7 +280,7 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "fetch_product_modal") {
         $product_id = mysqli_real_escape_string($conn, $_POST['id']);
-        $checkQuery = "SELECT * FROM product_duplicate WHERE product_id = '$product_id'";
+        $checkQuery = "SELECT * FROM product_duplicate2 WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
@@ -507,7 +517,7 @@ if(isset($_REQUEST['action'])) {
         $product_id = mysqli_real_escape_string($conn, $_POST['id']);
 
         // SQL query to check if the record exists
-        $checkQuery = "SELECT * FROM product_duplicate WHERE product_id = '$product_id'";
+        $checkQuery = "SELECT * FROM product_duplicate2 WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
@@ -845,143 +855,199 @@ if(isset($_REQUEST['action'])) {
     } 
 
     if ($action == "fetch_uploaded_modal") {
-        $sql = "SELECT * FROM test";
+        $table = "test";
+    
+        $headers = [
+            'InvID' => ['label' => 'product_id'],
+            'Coil/Part Number' => ['label' => 'coil_part_no'],
+            'Description' => ['label' => ''],
+            'Color' => ['label' => 'color'],
+            'Qty' => ['label' => 'quantity_in_stock'],
+            'Units' => ['label' => 'unit_of_measure'],
+            'Notes' => ['label' => ''],
+            'Price' => ['label' => 'price_1'],
+            'Price2' => ['label' => 'price_2'],
+            'Price3' => ['label' => 'price_3'],
+            'Price4' => ['label' => 'price_4'],
+            'Price5' => ['label' => 'price_5'],
+            'Price6' => ['label' => 'price_6'],
+            'Price7' => ['label' => 'price_7'],
+            'Order' => ['label' => ''],
+            'ItemType' => ['label' => ''],
+            'VendorID' => ['label' => ''],
+            'Cost' => ['label' => ''],
+            'Blank 1' => ['label' => ''],
+            'Blank 2' => ['label' => ''],
+            'Color Options' => ['label' => ''],
+            'Length Options' => ['label' => ''],
+            'Product System Abbreviations' => ['label' => ''],
+            'Product Systems' => ['label' => 'product_system'],
+            'Category Abbreviations' => ['label' => ''],
+            'Product Category' => ['label' => 'product_category'],
+            'Line Abbreviations' => ['label' => ''],
+            'Product Line' => ['label' => 'product_line'],
+            'Type Abbreviations' => ['label' => ''],
+            'Product Type' => ['label' => 'product_type'],
+            'Product Item' => ['label' => 'product_item'],
+            'Product Code Abbreviation' => ['label' => ''],
+            'Item Abbreviation' => ['label' => ''],
+            'COLOR CODE Table' => ['label' => ''],
+            'Color Consolidation' => ['label' => ''],
+            'LENGTH/Size Table CODE' => ['label' => ''],
+            'Size Consolidation' => ['label' => ''],
+            'Gauge' => ['label' => 'gauge'],
+            'Product Code' => ['label' => 'product_code'],
+            'Concatenated' => ['label' => ''],
+            'Product Description' => ['label' => 'description'],
+            'Size Scrub' => ['label' => ''],
+            'Comments' => ['label' => 'comment'],
+            'Blank 4' => ['label' => ''],
+            'Intent? Usage?' => ['label' => 'product_usage'],
+            'Width' => ['label' => ''],
+            '# of Hems' => ['label' => ''],
+            '# of Bends' => ['label' => ''],
+            'Length' => ['label' => ''],
+            'Thickness' => ['label' => ''],
+            'What Size?' => ['label' => ''],
+            'Stock or Special Order' => ['label' => 'stock_type'],
+            'Mfg or Purchased' => ['label' => 'product_origin'],
+            'SupplierName' => ['label' => 'supplier_id'],
+            'Cost Example' => ['label' => ''],
+            'Old System Description' => ['label' => ''],
+            'Category Use-Area (Cousin) (Marketing-Sales?)' => ['label' => ''],
+            'Category Type-Category (2nd-Cousin) (Marketing-Sales?)' => ['label' => ''],
+            'Category Use-Application (3rd-Cousin) (Marketing-Sales?)' => ['label' => ''],
+            'SPM1' => ['label' => ''],
+            'SPM2' => ['label' => ''],
+            'SPM3' => ['label' => ''],
+            'SPM4' => ['label' => ''],
+            'SPM5' => ['label' => ''],
+            'SPM6' => ['label' => ''],
+            'SPM7' => ['label' => ''],
+            'Flat Sheet Width' => ['label' => ''],
+            'Number of Bends' => ['label' => 'bends'],
+            'Number of Hems' => ['label' => 'hems'],
+            'Hemming Machine' => ['label' => ''],
+            'Trim Rollformer' => ['label' => ''],
+            '$ per Hem' => ['label' => 'cost_per_hem'],
+            '$ Per Bend' => ['label' => 'cost_per_bend'],
+            '$ per square inch' => ['label' => 'cost_per_square_inch'],
+            '' => ['label' => ''],
+            'Actual Moving Cost' => ['label' => ''],
+            'Manual Assigned Cost' => ['label' => ''],
+            'Retail Pricing' => ['label' => ''],
+            'Retail Pricing $/ft' => ['label' => ''],
+            'Contractor Pricing (Level 2)' => ['label' => ''],
+            'Contractor Pricing (Level 3)' => ['label' => ''],
+            'Contractor Pricing (Level 4)' => ['label' => ''],
+            'Wholesale Pricing (Level 5)' => ['label' => ''],
+            'Wholesale Pricing (Level 6)' => ['label' => ''],
+            'Penetration Pricing (Level 7)' => ['label' => ''],
+            'Retail' => ['label' => ''],
+            'Contractor 1' => ['label' => ''],
+            'Contractor 2' => ['label' => ''],
+            'Low Rib Coil Width' => ['label' => 'coil_width'],
+            'Number of Trim per sheet width' => ['label' => ''],
+            'Drop' => ['label' => ''],
+            'Ft or Each' => ['label' => ''],
+            'Flat Sheet Length converted to Inches' => ['label' => ''],
+            'Square Inches per piece' => ['label' => ''],
+            'Full Flat Stock Width' => ['label' => ''],
+            "$'s per square Inch" => ['label' => ''],
+            '$ Per Piece' => ['label' => ''],
+            '$ per piece' => ['label' => ''],
+            'Flat Sheet Length (Ft)' => ['label' => ''],
+            'Square Inches per piece' => ['label' => ''],
+            '10' => ['label' => ''],
+            '12' => ['label' => ''],
+            '14' => ['label' => ''],
+            '16' => ['label' => ''],
+            '18' => ['label' => ''],
+            '20' => ['label' => ''],
+            '24' => ['label' => ''],
+            'Full Flat Stock Width' => ['label' => ''],
+            "#'s per square Inch" => ['label' => ''],
+            '# of Pieces per sheet' => ['label' => ''],
+            'Weight per piece' => ['label' => '']
+        ];
+    
+        $sql = "SELECT * FROM $table";
         $result = $conn->query($sql);
-        if ($result->num_rows > 0) { 
+    
+        $output = [];
         ?>
+        
         <div class="card card-body shadow">
             <form id="tableForm">
-                <div style="overflow-x: auto; overflow-y: auto; max-height: 800px; max-width: 100%;">
+                <div style="overflow-x: auto; overflow-y: auto; max-height: 90vh; max-width: 100%;">
                     <table class="table table-bordered table-striped text-center">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>SKU</th>
-                                <th>Coil Part No</th>
-                                <th>Price 1</th>
-                                <th>Price 2</th>
-                                <th>Price 3</th>
-                                <th>Price 4</th>
-                                <th>Price 5</th>
-                                <th>Price 6</th>
-                                <th>Price 7</th>
-                                <th>Category</th>
-                                <th>Line</th>
-                                <th>Type</th>
-                                <th>System</th>
-                                <th>Item</th>
-                                <th>Stock Type</th>
-                                <th>Desc.</th>
-                                <th>Material</th>
-                                <th>Dimensions</th>
-                                <th>Thickness</th>
-                                <th>Gauge</th>
-                                <th>Grade</th>
-                                <th>Color</th>
-                                <th>Color Code</th>
-                                <th>Paint Provider</th>
-                                <th>Color Group</th>
-                                <th>Warranty Type</th>
-                                <th>Coating</th>
-                                <th>Profile</th>
-                                <th>Width</th>
-                                <th>Bends</th>
-                                <th>Hems</th>
-                                <th>Hemming Machine</th>
-                                <th>Trim Rollformer</th>
-                                <th>$ per Hem</th>
-                                <th>$ per Bend</th>
-                                <th>$ per Sq. In.</th>
-                                <th>Coil Width</th>
-                                <th>Length</th>
-                                <th>Weight</th>
-                                <th>Qty Stock</th>
-                                <th>Qty Quoted</th>
-                                <th>Qty Committed</th>
-                                <th>Qty Available</th>
-                                <th>Qty In Transit</th>
-                                <th>Unit Price</th>
-                                <th>Date Added</th>
-                                <th>Date Modified</th>
-                                <th>Last Ordered Date</th>
-                                <th>Last Sold Date</th>
-                                <th>Supplier ID</th>
-                                <th>Supplier SKU</th>
-                                <th>UPC</th>
-                                <th>Unit of Measure</th>
-                                <th>Coil ID</th>
-                                <th>Coil Qty</th>
-                                <th>Unit Gross Margin</th>
-                                <th>Unit Cost</th>
-                                <th>Comment</th>
-                                <th>Product Usage</th>
-                                <th>Sold By Feet</th>
-                                <th>Standing Seam</th>
-                                <th>Board Batten</th>
-                                <th>Correlated Product ID</th>
-                                <th>SmartBuild ID</th>
-                                <th>Status</th>
-                                <th>Hidden</th>
-                                <th>Main Image</th>
-                                <th>Product Origin</th>
-                                <th>Product Base</th>
-                                <th>Product Code</th>
+                                <?php
+                                foreach ($headers as $column => $header) {
+                                    echo "<th class='fs-4'>" . ($column) . "</th>";
+                                }
+                                ?>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php
+                        <?php
                             while ($row = $result->fetch_assoc()) {
-                                echo "<tr>";
-                                foreach ($row as $key => $value) {
-                                ?>
-                                <td contenteditable='true' data-column='<?= $key ?>' style='border: 1px solid #ddd; text-align: center; padding: 2px'>
-                                    <?php
-                                    if($key == 'product_category'){
-                                        echo getProductCategoryName($value);
-                                    }else if($key == 'product_system'){
-                                        echo getProductSystemName($value);
-                                    }else if($key == 'product_type'){
-                                        echo getProductTypeName($value);
-                                    }else if($key == 'product_line'){
-                                        echo getProductLineName($value);
-                                    }else if($key == 'color'){
-                                        echo getColorName($value);
-                                    }else{
-                                    echo $value;
+                                $product_id = $row['product_id'];
+                                echo '<tr>';
+                                foreach ($headers as $column => $header) {
+                                    $value = $row[$header['label']] ?? '';
+                                    if($header['label'] == 'product_category'){
+                                        ?>
+                                        <td class="" contenteditable="false" data-header-name="<?= $header['label'] ?>" data-id="<?=$product_id?>">
+                                            <?= getProductCategoryName($value) ?>
+                                        </td>
+                                        <?php
+                                    } else if($header['label'] == 'product_system'){
+                                        ?>
+                                        <td class="" contenteditable="false" data-header-name="<?= $header['label'] ?>" data-id="<?=$product_id?>">
+                                            <?= getProductSystemName($value) ?>
+                                        </td>
+                                        <?php
+                                    } else if($header['label'] == 'product_type'){
+                                        ?>
+                                        <td class="" contenteditable="false" data-header-name="<?= $header['label'] ?>" data-id="<?=$product_id?>">
+                                            <?= getProductTypeName($value) ?>
+                                        </td>
+                                        <?php
+                                    } else if($header['label'] == 'product_line'){
+                                        ?>
+                                        <td class="" contenteditable="false" data-header-name="<?= $header['label'] ?>" data-id="<?=$product_id?>">
+                                            <?= getProductLineName($value) ?>
+                                        </td>
+                                        <?php
+                                    } else if($header['label'] == 'color'){
+                                        ?>
+                                        <td class="" contenteditable="false" data-header-name="<?= $header['label'] ?>" data-id="<?=$product_id?>">
+                                            <?= getColorName($value) ?>
+                                        </td>
+                                        <?php
+                                    } else {
+                                        echo "<td contenteditable='true' class='table_data' data-header-name='".$header['label']."' data-id='".$product_id."'>$value</td>";
                                     }
-                                    ?>
-                                </td>
-                                <?php
                                 }
-                                echo "</tr>";
+                                echo '</tr>';
                             }
-                            ?>
+                        ?>
                         </tbody>
                     </table>
                 </div>
-                <div class="text-end">
-                    <button type="button" id="saveTable" class="btn btn-primary mt-3">Save</button>
-                </div>
             </form>
         </div>
-        <?php 
-        }else{
-        ?>
-        <div class="card-body d-flex justify-content-center align-items-center h-100">
-            <h4 class="text-center">No uploaded data found!</h3>
-        </div>
         <?php
-        }
-    } 
-                
-
+    }    
     
 
     if ($action == "fetch_edit_modal") {
         $product_id = mysqli_real_escape_string($conn, $_POST['id']);
 
         // SQL query to check if the record exists
-        $checkQuery = "SELECT * FROM product_duplicate WHERE product_id = '$product_id'";
+        $checkQuery = "SELECT * FROM product_duplicate2 WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
@@ -1130,7 +1196,7 @@ if(isset($_REQUEST['action'])) {
                                                     $correlated_product_ids[] = $row_correlated['correlated_id'];
                                                 }
                                                 
-                                                $query_products = "SELECT * FROM product_duplicate";
+                                                $query_products = "SELECT * FROM product_duplicate2";
                                                 $result_products = mysqli_query($conn, $query_products);            
                                                 while ($row_products = mysqli_fetch_array($result_products)) {
                                                     $selected = in_array($row_products['product_id'], $correlated_product_ids) ? 'selected' : '';
@@ -1537,7 +1603,7 @@ if(isset($_REQUEST['action'])) {
         $status = mysqli_real_escape_string($conn, $_POST['status']);
         $new_status = ($status == '0') ? '1' : '0';
 
-        $statusQuery = "UPDATE product_duplicate SET status = '$new_status' WHERE product_id = '$product_id'";
+        $statusQuery = "UPDATE product_duplicate2 SET status = '$new_status' WHERE product_id = '$product_id'";
         if (mysqli_query($conn, $statusQuery)) {
             echo "success";
         } else {
@@ -1547,7 +1613,7 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == 'hide_category') {
         $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
-        $query = "UPDATE product_duplicate SET hidden='1' WHERE product_id='$product_id'";
+        $query = "UPDATE product_duplicate2 SET hidden='1' WHERE product_id='$product_id'";
         if (mysqli_query($conn, $query)) {
             echo 'success';
         } else {
@@ -1584,7 +1650,7 @@ if(isset($_REQUEST['action'])) {
                             p.*,
                             COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
                         FROM 
-                            product_duplicate AS p
+                            product_duplicate2 AS p
                         LEFT JOIN 
                             inventory AS i ON p.product_id = i.product_id
                         WHERE 
@@ -1656,6 +1722,426 @@ if(isset($_REQUEST['action'])) {
             <?php
             $no++;
         }
+    }
+
+    if ($action == "upload_excel") {
+        if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] === 0) {
+            $filePath = $_FILES['excel_file']['tmp_name'];
+    
+            $spreadsheet = IOFactory::load($filePath);
+            $worksheet = $spreadsheet->getActiveSheet();
+    
+            $columnMapping = [
+                'B' => 'coil_part_no',
+                'D' => 'color',
+                'E' => 'quantity_in_stock',
+                'F' => 'unit_of_measure',
+                'H' => 'price_1',
+                'I' => 'price_2',
+                'J' => 'price_3',
+                'K' => 'price_4',
+                'L' => 'price_5',
+                'M' => 'price_6',
+                'N' => 'price_7',
+                'X' => 'product_system',
+                'Z' => 'product_category',
+                'AB' => 'product_line',
+                'AD' => 'product_type',
+                'AE' => 'product_item',
+                'AL' => 'gauge',
+                'AM' => 'product_code',
+                'AO' => 'description',
+                'AQ' => 'comment',
+                'AS' => 'product_usage',
+                'BO' => 'width',
+                'AW' => 'length',
+                'AX' => 'thickness',
+                'AZ' => 'stock_type',
+                'BA' => 'product_origin',
+                'BB' => 'supplier_id',
+                'BP' => 'bends',
+                'BQ' => 'hems',
+                'BR' => 'hemming_machine',
+                'BS' => 'trim_rollformer',
+                'BT' => 'cost_per_hem',
+                'BU' => 'cost_per_bend',
+                'CM' => 'coil_width',
+            ];
+    
+            $truncateSql = "TRUNCATE TABLE $table";
+            if (!mysqli_query($conn, $truncateSql)) {
+                echo "Error truncating table: " . mysqli_error($conn) . "<br>";
+                exit();
+            }
+    
+            foreach ($worksheet->getRowIterator() as $rowIndex => $row) {
+                if ($rowIndex === 1) continue;
+                $rowData = [];
+    
+                $colorPrice = 0;
+                $coil_width = 0;
+                $width = 0;
+    
+                foreach ($row->getCellIterator() as $cell) {
+                    $columnLetter = $cell->getColumn();
+                    
+                    if (isset($columnMapping[$columnLetter])) {
+                        $dbColumn = $columnMapping[$columnLetter];
+                        $cellValue = $cell->getValue() ?? '';
+                        
+    
+                        if ($dbColumn === 'color') { //color
+                            if(strtolower($cellValue) == 'multi'){
+                                $query = "SELECT * FROM product_color WHERE product_category = '$category_id' ORDER BY RAND() LIMIT 1";
+                                $result = mysqli_query($conn, $query);
+    
+                                if ($result && mysqli_num_rows($result) > 0) {
+                                    $row = mysqli_fetch_assoc($result);
+                                    $cellValue = $row['id'];
+                                    $colorPrice = $row['price'];
+                                }
+                            }else{
+                                $query = "SELECT * FROM product_color WHERE color_name LIKE '%$cellValue%'";
+                                $result = mysqli_query($conn, $query);
+                                if ($result && mysqli_num_rows($result) > 0) {
+                                    $row = mysqli_fetch_assoc($result);
+                                    $cellValue = $row['id'];
+                                }
+                            }
+                        }
+    
+                        if ($dbColumn === 'product_system') { //product_system
+                            $query = "SELECT product_system_id FROM product_system WHERE product_system LIKE '%$cellValue%'";
+                            $result = mysqli_query($conn, $query);
+    
+                            if ($result && mysqli_num_rows($result) > 0) {
+                                $row = mysqli_fetch_assoc($result);
+                                $cellValue = $row['product_system_id'];
+                            }
+                        }
+                        
+                        if ($dbColumn === 'product_category') { //category
+                            $cellValue = $category_id; //4 = TRIM
+                        }
+    
+                        if ($dbColumn === 'product_line') { //product_line
+                            $query = "SELECT product_line_id FROM product_line WHERE product_line LIKE '%$cellValue%'";
+                            $result = mysqli_query($conn, $query);
+    
+                            if ($result && mysqli_num_rows($result) > 0) {
+                                $row = mysqli_fetch_assoc($result);
+                                $cellValue = $row['product_line_id'];
+                            }
+                        }
+    
+                        if ($dbColumn === 'product_type') { //product_type
+                            $query = "SELECT product_type_id FROM product_type WHERE product_type LIKE '%$cellValue%'";
+                            $result = mysqli_query($conn, $query);
+    
+                            if ($result && mysqli_num_rows($result) > 0) {
+                                $row = mysqli_fetch_assoc($result);
+                                $cellValue = $row['product_type_id'];
+                            }
+                        }
+    
+                        if ($dbColumn === 'product_origin') { //manufactured or sourced
+                            $cellValue = (strtolower($cell->getValue() ?? '') == 'manufactured' ? '2' : '1'); //2 = manufactured
+                        }
+    
+                        if ($dbColumn === 'supplier_id') { // supplier_id
+                            $cellValue = strtolower($cell->getValue() ?? '');
+                            $invalidValues = ['manufactured', 'n/a', '#n/a'];
+                        
+                            $ekm_id = 5; //from database
+                            $cellValue = in_array($cellValue, $invalidValues) ? $ekm_id : $cellValue; // If in list, make empty; otherwise, set to '1'
+    
+                            if($cellValue != $ekm_id){
+    
+                            }
+                            $query = "SELECT supplier_id FROM supplier WHERE supplier_name LIKE '%$cellValue%'";
+                            $result = mysqli_query($conn, $query);
+    
+                            if ($result && mysqli_num_rows($result) > 0) {
+                                $row = mysqli_fetch_assoc($result);
+                                $cellValue = $row['supplier_id'];
+                            }
+                        }
+    
+                        if ($dbColumn === 'bends') { //bends
+                            $cellValue = floatval($cell->getValue());
+                        }
+    
+                        if ($dbColumn === 'hems') { //hems
+                            $cellValue = floatval($cell->getValue());
+                        }
+    
+                        if ($dbColumn === 'hemming_machine') { //hemming_machine
+                            $cellValue = (strtolower($cell->getValue() ?? '') == 'yes' ? '1' : '0');
+                        }
+    
+                        if ($dbColumn === 'trim_rollformer') { //trim_rollformer
+                            $cellValue = (strtolower($cell->getValue() ?? '') == 'yes' ? '1' : '0');
+                        }
+    
+                        if ($dbColumn === 'coil_width') { //coil_width
+                            $cellValue = floatval($cell->getValue());
+                            $coil_width = $cellValue;
+                        }
+    
+                        if ($dbColumn === 'width') { //coil_width
+                            $cellValue = floatval($cell->getValue());
+                            $width = $cellValue;
+                        }
+                
+                        $rowData[$dbColumn] = mysqli_real_escape_string($conn, $cellValue !== null ? (string) $cellValue : '');
+                    }     
+    
+                }
+    
+                if (empty($rowData)) {
+                    continue;
+                }
+    
+                if($category_id = $trim_id){
+                    $cost_per_square_inch = 0;
+    
+                    if ($coil_width > 0) {
+                        $cost_per_square_inch = ($width / $coil_width) * $colorPrice;
+                    }
+    
+                    $rowData['cost_per_square_inch'] = $cost_per_square_inch;
+                }
+    
+                $dbColumns = implode(", ", array_keys($rowData));
+                $dbValues = "'" . implode("', '", $rowData) . "'";
+    
+                $sql = "INSERT INTO $table ($dbColumns) VALUES ($dbValues)";
+                if (!mysqli_query($conn, $sql)) {
+                    echo "Error inserting row $rowIndex: " . mysqli_error($conn) . "<br>";
+                }
+            }
+    
+            echo "success";
+        } else {
+            echo "Error: No file uploaded or file upload failed.";
+        }
+    }
+    
+    if ($action == "save_table") {
+        $table = "product_duplicate2";
+    
+        $columnsSql = "SHOW COLUMNS FROM test";
+        $columnsResult = $conn->query($columnsSql);
+    
+        $columns = [];
+        while ($row = $columnsResult->fetch_assoc()) {
+            if ($row['Field'] !== 'product_id') {
+                $columns[] = $row['Field'];
+            }
+        }
+
+        $headers = [
+            'A' => 'InvID', 'B' => 'Coil/Part Number', 'C' => 'Description', 'D' => 'Color', 'E' => 'Qty', 'F' => 'Units', 'G' => 'Notes', 'H' => 'Price',
+            'I' => 'Price2', 'J' => 'Price3', 'K' => 'Price4', 'L' => 'Price5', 'M' => 'Price6', 'N' => 'Price7', 'O' => 'Order', 'P' => 'ItemType', 'Q' => 'VendorID',
+            'R' => 'Cost', 'S' => 'Blank 1', 'T' => 'Blank 2', 'U' => 'Color Options', 'V' => 'Length Options', 'W' => 'Product System Abreviations',
+            'X' => 'Product Systems', 'Y' => 'Category Abreviations', 'Z' => 'Product Category', 'AA' => 'Line Abreviations', 'AB' => 'Product Line',
+            'AC' => 'Type Abreviations', 'AD' => 'Product Type', 'AE' => 'Product Item', 'AF' => 'Product Code Abreviation', 'AG' => 'Item Abreviation',
+            'AH' => 'COLOR CODE Table', 'AI' => 'Color Consolidation', 'AJ' => 'LENGTH/Size Table CODE', 'AK' => 'Size consolidation', 'AL' => 'Gauge',
+            'AM' => 'Product Code', 'AN' => 'Concatenated', 'AO' => 'Product Description', 'AP' => 'Size Scrub', 'AQ' => 'Comments', 'AR' => 'Blank4',
+            'AS' => 'Intent? Usage?', 'AT' => 'Width', 'AU' => '# of Hems', 'AV' => '# of Bends', 'AW' => 'Length', 'AX' => 'Thickness', 'AY' => 'What Size?',
+            'AZ' => 'Stock or Special Order', 'BA' => 'Mfg or Purchased', 'BB' => 'SupplierName', 'BC' => 'Cost Example', 'BD' => 'Old System Description',
+            'BE' => 'Category Use-Area (Cousin) (Marketing-Sales?)', 'BF' => 'Category Type-Category (2nd-Cousin) (Marketing-Sales?)',
+            'BG' => 'Category Use-Application (3nd-Cousin) (Marketing-Sales?)', 'BH' => 'SPM1', 'BI' => 'SPM2', 'BJ' => 'SPM3', 'BK' => 'SPM4', 'BL' => 'SPM5',
+            'BM' => 'SPM6', 'BN' => 'SPM7', 'BO' => 'Flat Sheet Width', 'BP' => 'Number of Bends', 'BQ' => 'Number of Hems', 'BR' => 'Hemming Machine',
+            'BS' => 'Trim Rollformer', 'BT' => '$ per Hem', 'BU' => '$ Per Bend', 'BV' => '$ Per square inch', 'BW' => '', 'BX' => '', 'BY' => 'Actual Moving Cost',
+            'BZ' => 'Manual Assigned Cost', 'CA' => 'Retail Pricing', 'CB' => '', 'CC' => 'Retail Pricing $/ft', 'CD' => 'Contractor Pricing (Level 2)',
+            'CE' => 'Contractor Pricing (Level 3)', 'CF' => 'Contractor Pricing (Level 4)', 'CG' => 'Wholesale Pricing (Level 5)',
+            'CH' => 'Wholesale Pricing (Level 6)', 'CI' => 'Penetration Pricing (Level 7)', 'CJ' => 'Retail', 'CK' => 'Contractor 1',
+            'CL' => 'Contractor 2', 'CM' => 'Low Rib Coil Width', 'CN' => 'Number of Trim per sheet width', 'CO' => 'Drop', 'CP' => 'Ft or Each',
+            'CQ' => 'Flat Sheet Length converted to Inches', 'CR' => '', 'CS' => '', 'CT' => 'Square Inches per piece', 'CU' => 'Full Flat Stock Width',
+            'CV' => "$'s per square Inch", 'CW' => '$ Per Piece', 'CX' => '$ per piece', 'CY' => 'Flat Sheet Length (Ft)', 'CZ' => '', 'DA' => '',
+            'DB' => 'Square Inches per piece', 'DC' => '10', 'DD' => '12', 'DE' => '14', 'DF' => '16', 'DG' => '18', 'DH' => '20', 'DI' => '24',
+            'DJ' => 'Full Flat Stock Width', 'DK' => "#'s per square Inch", 'DL' => '# of Pieces per sheet', 'DM' => 'Weight per piece'
+        ];
+
+        $columnMapping = [
+            'A' => 'product_id',
+            'B' => 'coil_part_no',
+            'D' => 'color',
+            'E' => 'quantity_in_stock',
+            'F' => 'unit_of_measure',
+            'H' => 'price_1',
+            'I' => 'price_2',
+            'J' => 'price_3',
+            'K' => 'price_4',
+            'L' => 'price_5',
+            'M' => 'price_6',
+            'N' => 'price_7',
+            'X' => 'product_system',
+            'Z' => 'product_category',
+            'AB' => 'product_line',
+            'AD' => 'product_type',
+            'AE' => 'product_item',
+            'AL' => 'gauge',
+            'AM' => 'product_code',
+            'AO' => 'description',
+            'AQ' => 'comment',
+            'AS' => 'product_usage',
+            'BO' => 'width',
+            'AW' => 'length',
+            'AX' => 'thickness',
+            'AZ' => 'stock_type',
+            'BA' => 'product_origin',
+            'BB' => 'supplier_id',
+            'BP' => 'bends',
+            'BQ' => 'hems',
+            'BR' => 'hemming_machine',
+            'BS' => 'trim_rollformer',
+            'BT' => 'cost_per_hem',
+            'BU' => 'cost_per_bend',
+            'BV' => 'cost_per_square_inch',
+            'CM' => 'coil_width',
+        ];
+    
+        $columnsList = implode(", ", $columns);
+    
+        $sql = "INSERT INTO $table ($columnsList) SELECT $columnsList FROM test";
+    
+        if ($conn->query($sql) === TRUE) {
+            echo "Data has been successfully saved";
+    
+            $truncateSql = "TRUNCATE TABLE test";
+            if ($conn->query($truncateSql) !== TRUE) {
+                echo " but failed to clear test table: " . $conn->error;
+            }
+        } else {
+            echo "Error: " . $conn->error;
+        }
+    }
+
+    if ($action == "download_excel") {
+        $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
+    
+        $sql = "SELECT * FROM product_duplicate2";
+        if (!empty($product_category)) {
+            $sql .= " WHERE product_category = '$product_category'";
+        }
+        $result = $conn->query($sql);
+    
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+    
+        $headers = [
+            'A' => 'InvID', 'B' => 'Coil/Part Number', 'C' => 'Description', 'D' => 'Color', 'E' => 'Qty', 'F' => 'Units', 'G' => 'Notes', 'H' => 'Price',
+            'I' => 'Price2', 'J' => 'Price3', 'K' => 'Price4', 'L' => 'Price5', 'M' => 'Price6', 'N' => 'Price7', 'O' => 'Order', 'P' => 'ItemType', 'Q' => 'VendorID',
+            'R' => 'Cost', 'S' => 'Blank 1', 'T' => 'Blank 2', 'U' => 'Color Options', 'V' => 'Length Options', 'W' => 'Product System Abreviations',
+            'X' => 'Product Systems', 'Y' => 'Category Abreviations', 'Z' => 'Product Category', 'AA' => 'Line Abreviations', 'AB' => 'Product Line',
+            'AC' => 'Type Abreviations', 'AD' => 'Product Type', 'AE' => 'Product Item', 'AF' => 'Product Code Abreviation', 'AG' => 'Item Abreviation',
+            'AH' => 'COLOR CODE Table', 'AI' => 'Color Consolidation', 'AJ' => 'LENGTH/Size Table CODE', 'AK' => 'Size consolidation', 'AL' => 'Gauge',
+            'AM' => 'Product Code', 'AN' => 'Concatenated', 'AO' => 'Product Description', 'AP' => 'Size Scrub', 'AQ' => 'Comments', 'AR' => 'Blank4',
+            'AS' => 'Intent? Usage?', 'AT' => 'Width', 'AU' => '# of Hems', 'AV' => '# of Bends', 'AW' => 'Length', 'AX' => 'Thickness', 'AY' => 'What Size?',
+            'AZ' => 'Stock or Special Order', 'BA' => 'Mfg or Purchased', 'BB' => 'SupplierName', 'BC' => 'Cost Example', 'BD' => 'Old System Description',
+            'BE' => 'Category Use-Area (Cousin) (Marketing-Sales?)', 'BF' => 'Category Type-Category (2nd-Cousin) (Marketing-Sales?)',
+            'BG' => 'Category Use-Application (3nd-Cousin) (Marketing-Sales?)', 'BH' => 'SPM1', 'BI' => 'SPM2', 'BJ' => 'SPM3', 'BK' => 'SPM4', 'BL' => 'SPM5',
+            'BM' => 'SPM6', 'BN' => 'SPM7', 'BO' => 'Flat Sheet Width', 'BP' => 'Number of Bends', 'BQ' => 'Number of Hems', 'BR' => 'Hemming Machine',
+            'BS' => 'Trim Rollformer', 'BT' => '$ per Hem', 'BU' => '$ Per Bend', 'BV' => '$ Per square inch', 'BW' => '', 'BX' => '', 'BY' => 'Actual Moving Cost',
+            'BZ' => 'Manual Assigned Cost', 'CA' => 'Retail Pricing', 'CB' => '', 'CC' => 'Retail Pricing $/ft', 'CD' => 'Contractor Pricing (Level 2)',
+            'CE' => 'Contractor Pricing (Level 3)', 'CF' => 'Contractor Pricing (Level 4)', 'CG' => 'Wholesale Pricing (Level 5)',
+            'CH' => 'Wholesale Pricing (Level 6)', 'CI' => 'Penetration Pricing (Level 7)', 'CJ' => 'Retail', 'CK' => 'Contractor 1',
+            'CL' => 'Contractor 2', 'CM' => 'Low Rib Coil Width', 'CN' => 'Number of Trim per sheet width', 'CO' => 'Drop', 'CP' => 'Ft or Each',
+            'CQ' => 'Flat Sheet Length converted to Inches', 'CR' => '', 'CS' => '', 'CT' => 'Square Inches per piece', 'CU' => 'Full Flat Stock Width',
+            'CV' => "$'s per square Inch", 'CW' => '$ Per Piece', 'CX' => '$ per piece', 'CY' => 'Flat Sheet Length (Ft)', 'CZ' => '', 'DA' => '',
+            'DB' => 'Square Inches per piece', 'DC' => '10', 'DD' => '12', 'DE' => '14', 'DF' => '16', 'DG' => '18', 'DH' => '20', 'DI' => '24',
+            'DJ' => 'Full Flat Stock Width', 'DK' => "#'s per square Inch", 'DL' => '# of Pieces per sheet', 'DM' => 'Weight per piece'
+        ];
+    
+        foreach ($headers as $columnLetter => $headerName) {
+            $sheet->setCellValue($columnLetter . '1', $headerName);
+        }
+    
+        // Column Mapping
+        $columnMapping = [
+            'A' => 'product_id',
+            'B' => 'coil_part_no',
+            'D' => 'color',
+            'E' => 'quantity_in_stock',
+            'F' => 'unit_of_measure',
+            'H' => 'price_1',
+            'I' => 'price_2',
+            'J' => 'price_3',
+            'K' => 'price_4',
+            'L' => 'price_5',
+            'M' => 'price_6',
+            'N' => 'price_7',
+            'X' => 'product_system',
+            'Z' => 'product_category',
+            'AB' => 'product_line',
+            'AD' => 'product_type',
+            'AE' => 'product_item',
+            'AL' => 'gauge',
+            'AM' => 'product_code',
+            'AO' => 'description',
+            'AQ' => 'comment',
+            'AS' => 'product_usage',
+            'BO' => 'width',
+            'AW' => 'length',
+            'AX' => 'thickness',
+            'AZ' => 'stock_type',
+            'BA' => 'product_origin',
+            'BB' => 'supplier_id',
+            'BP' => 'bends',
+            'BQ' => 'hems',
+            'BR' => 'hemming_machine',
+            'BS' => 'trim_rollformer',
+            'BT' => 'cost_per_hem',
+            'BU' => 'cost_per_bend',
+            'BV' => 'cost_per_square_inch',
+            'CM' => 'coil_width',
+        ];
+    
+        $row = 2;
+        while ($data = $result->fetch_assoc()) {
+            foreach ($columnMapping as $columnLetter => $dbColumn) {
+                $sheet->setCellValue($columnLetter . $row, $data[$dbColumn] ?? '');
+            }
+            $row++;
+        }
+    
+        $filename = "products.xlsx";
+        $filePath = $filename;
+    
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filePath);
+    
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: max-age=0');
+    
+        readfile($filePath);
+    
+        unlink($filePath);
+        exit;
+    }
+
+    if ($action == "update_product_data") {
+        $column_name = $_POST['header_name'];
+        $new_value = $_POST['new_value'];
+        $product_id = $_POST['id'];
+        
+        $column_name = mysqli_real_escape_string($conn, $column_name);
+        $new_value = mysqli_real_escape_string($conn, $new_value);
+        $product_id = mysqli_real_escape_string($conn, $product_id);
+        
+        $sql = "UPDATE product_table SET `$column_name` = '$new_value' WHERE product_id = '$product_id'";
+
+        if ($conn->query($sql) === TRUE) {
+            echo 'success';
+        } else {
+            echo 'Error updating record: ' . $conn->error;
+        }
+
+        echo $sql;
     }
     
     mysqli_close($conn);

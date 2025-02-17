@@ -454,7 +454,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                         p.*,
                                         COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
                                     FROM 
-                                        product_duplicate AS p
+                                        product_duplicate2 AS p
                                     LEFT JOIN 
                                         inventory AS i ON p.product_id = i.product_id
                                     WHERE 
@@ -746,13 +746,13 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             formData.append("action", "download_excel");
 
             $.ajax({
-                url: "pages/download_excel_ajax.php",
+                url: "pages/product4_ajax.php",
                 type: "POST",
                 data: formData,
                 contentType: false,
                 processData: false,
                 success: function (response) {
-                    window.location.href = "pages/download_excel_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
+                    window.location.href = "pages/product4_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
                 },
                 error: function (xhr, status, error) {
                     alert("Error downloading file: " + error);
@@ -767,7 +767,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             formData.append('action', 'upload_excel');
 
             $.ajax({
-                url: 'pages/upload_excel_ajax.php',
+                url: 'pages/product4_ajax.php',
                 type: 'POST',
                 data: formData,
                 contentType: false,
@@ -809,7 +809,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 formData.append("action", "save_table");
 
                 $.ajax({
-                    url: "pages/upload_excel_ajax.php",
+                    url: "pages/product4_ajax.php",
                     type: "POST",
                     data: formData,
                     processData: false,
@@ -1122,6 +1122,45 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         $(document).on('change', '#product_category', function() {
             updateSearchCategory();
         });
+
+        $(document).on('blur', '.table_data', function() {
+            let newValue;
+            let updatedData = {};
+            
+            // Determine the new value based on the element type (select or td)
+            if ($(this)[0].tagName.toLowerCase() === 'select') {
+                const selectedValue = $(this).val();
+                const selectedText = $(this).find('option:selected').text();
+                newValue = selectedValue ? selectedValue : selectedText;
+            } 
+            else if ($(this).is('td')) {
+                newValue = $(this).text();
+            }
+            
+            const headerName = $(this).data('header-name');
+            const id = $(this).data('id');
+
+            updatedData = {
+                action: 'update_product_data',
+                id: id,
+                header_name: headerName,
+                new_value: newValue,
+            };
+
+            $.ajax({
+                url: 'pages/product4_ajax.php',
+                type: 'POST',
+                data: updatedData,
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error: ' + error);
+                    alert('Error updating data');
+                }
+            });
+        });
+
 
         function updateSelectedTags() {
             const sections = [
