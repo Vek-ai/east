@@ -12,6 +12,7 @@ if(isset($_REQUEST['action'])) {
         $product_type_id = mysqli_real_escape_string($conn, $_POST['product_type_id']);
         $product_type = mysqli_real_escape_string($conn, $_POST['product_type']);
         $type_abreviations = mysqli_real_escape_string($conn, $_POST['type_abreviations']);
+        $product_category = mysqli_real_escape_string($conn, $_POST['product_category']);
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $multiplier = mysqli_real_escape_string($conn, floatval($_POST['multiplier'] ?? 0.00));
         $special = isset($_POST['special']) ? intval($_POST['special']) : 0;
@@ -51,7 +52,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_type SET product_type = '$product_type', type_abreviations = '$type_abreviations', notes = '$notes', multiplier = '$multiplier', special = '$special', last_edit = NOW(), edited_by = '$userid'  WHERE product_type_id = '$product_type_id'";
+                $updateQuery = "UPDATE product_type SET product_type = '$product_type', type_abreviations = '$type_abreviations', product_category = '$product_category', notes = '$notes', multiplier = '$multiplier', special = '$special', last_edit = NOW(), edited_by = '$userid'  WHERE product_type_id = '$product_type_id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "Product type updated successfully.";
                 } else {
@@ -77,7 +78,7 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO product_type (product_type, type_abreviations, notes, multiplier, special, added_date, added_by) VALUES ('$product_type', '$type_abreviations', '$notes', '$multiplier', '$special', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO product_type (product_type, type_abreviations, product_category, notes, multiplier, special, added_date, added_by) VALUES ('$product_type', '$type_abreviations', '$product_category', '$notes', '$multiplier', '$special', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "New product type added successfully.";
                 } else {

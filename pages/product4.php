@@ -516,7 +516,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                         data-system="<?= $row_product['product_system'] ?>"
                                         data-line="<?= $row_product['product_line'] ?>"
                                         data-profile="<?= $row_product['profile'] ?>"
-                                        data-profile="<?= $row_product['profile'] ?>"
                                         data-color="<?= $row_product['color'] ?>"
                                         data-grade="<?= $row_product['grade'] ?>"
                                         data-gauge="<?= $row_product['gauge'] ?>"
@@ -530,7 +529,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                                 <div class="d-flex align-items-center">
                                                     <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                                                     <div class="ms-3">
-                                                        <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['product_item'] ?></h6>
+                                                        <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['description'] ?></h6>
                                                     </div>
                                                 </div>
                                             </a>
@@ -692,6 +691,9 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 },
                 success: function(response) {
                     $('#product_form').html(response);
+
+                    updateSearchCategory();
+                    
                     $(".select2").each(function() {
                         let $this = $(this);
 
@@ -845,44 +847,44 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             });
         });
 
-        $(document).on('submit', '#update_product', function(event) {
-            event.preventDefault(); 
+        $(document).on('change', '.inventory_supplier', function () {
+            let supplier_id = $(this).val();
 
-            var formData = new FormData(this);
-            formData.append('action', 'add_update');
+            if (supplier_id) {
+                $.ajax({
+                    url: 'pages/inventory_ajax.php',
+                    type: 'POST',
+                    data: { 
+                    supplier_id: supplier_id,
+                    action: 'fetch_supplier_packs'
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        let packDropdown = $('.pack_select');
+                        packDropdown.empty();
+                        packDropdown.append('<option value="">Select Pack...</option>');
 
-            $.ajax({
-                url: 'pages/product4_ajax.php',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    $('#updateProductModal').modal('hide');
-                    if (response.trim() === "success") {
-                        $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Product updated successfully.");
-                        $('#responseHeaderContainer').removeClass("bg-danger");
-                        $('#responseHeaderContainer').addClass("bg-success");
-                        $('#response-modal').modal("show");
-                        $('#response-modal').on('hide.bs.modal', function () {
-                            location.reload();
-                        });
-                    } else {
-                        $('#responseHeader').text("Failed");
-                        $('#responseMsg').text(response);
-                        $('#responseHeaderContainer').removeClass("bg-success");
-                        $('#responseHeaderContainer').addClass("bg-danger");
-                        $('#response-modal').modal("show");
-                    }  
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
+                        if (response.length > 0) {
+                            $.each(response, function (index, pack) {
+                            packDropdown.append('<option value="' + pack.id + '" data-count="' + pack.pack_count + '">' + pack.pack + ' (' + pack.pack_count + ')</option>');
+                            });
+                        } else {
+                            packDropdown.append('<option value="">No Packs Available</option>');
+                        }
+                        
+                        packDropdown.trigger('change');
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("AJAX Error: ", status, error);
+                    }
+                });
+
+            } else {
+            $('.pack_select').empty().append('<option value="0">Select Pack...</option>').trigger('change');
+            }
         });
 
-        $(document).on('submit', '#add_product', function(event) {
+        $(document).on('submit', '#product_form', function(event) {
             event.preventDefault(); 
 
             var formData = new FormData(this);
@@ -896,7 +898,17 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 contentType: false,
                 success: function(response) {
                     $('#addProductModal').modal('hide');
-                    if (response.trim() === "success") {
+                    if (response.trim() === "success_update") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Product successfully updated.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else if (response.trim() === "success_add") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("New product added successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
@@ -986,11 +998,11 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             } else {
                 $flatSheetWidth.val('');
             }
-
-            updateColorSelect();
             
             //selectedCategory is declared global
             if (String(selectedCategory) == '4') { //category 4 = TRIM
+                updateColorSelect();
+
                 let flat_sheet_width = parseFloat($("#flat_sheet_width").val()) || 0; 
                 var current_retail_price = parseFloat($("#current_retail_price").val()) || 0;
                 var cost_per_sq_in = 0;
@@ -1014,52 +1026,52 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 if (flat_sheet_width) descriptionParts.push($("#flat_sheet_width option:selected").text().trim());
 
                 $("#description").val(descriptionParts.join(" - "));
+            }else if (String(selectedCategory) == '16') { //category 16 = SCREWS
+
+                let descriptionParts = [];
+
+                let pieces = $("#pack option:selected").data('count');
+                let cost = $("#cost").val() || 0;
+                let price = pieces * cost;
+                $("#price").val(price.toFixed(3));
+                
+                let size = parseFloat($("#size").val()) || 0; 
+                if (size) descriptionParts.push(size);
+                if (selectedType) descriptionParts.push($("#product_type option:selected").text().trim());
+
+                $("#description").val(descriptionParts.join(" - "));
             }
         });
 
         function updateSearchCategory() {
-            selectedCategory = $('#product_category').val();
-            let hasCategory = !!selectedCategory; 
+            let selectedCategory = $('#product_category').val() || '';
 
             $('.add-category option').each(function() {
                 let match = String($(this).data('category')) === String(selectedCategory);
                 $(this).toggle(match);
             });
 
-            $("#bends").val('').trigger('change');
-            $("#hems").val('').trigger('change');
+            $('.panel-fields, .trim-field, .screw-fields, #add-fields').addClass('d-none');
+            $('#color').removeClass('d-none');
 
-            if (hasCategory) {
+            if (selectedCategory) {
                 $('#add-fields').removeClass('d-none');
-            } else {
-                $('#add-fields').addClass('d-none');
             }
 
-            $('.panel-fields, .trim-fields, .screw-fields').addClass('d-none');
-            $('#base_product_div').removeClass('d-none');
-            $('#unit_price_div').removeClass('d-none');
-
-            if (selectedCategory == 3) { // PANELS
+            if (selectedCategory == 3) {
                 $('.panel-fields').removeClass('d-none');
-            }
-
-            if (selectedCategory == 4) { // TRIM
-                $('.trim-fields').removeClass('d-none');
-                $('#unit_price_div').addClass('d-none');
-                $('#base_product_div').addClass('d-none');
-            }
-
-            if (selectedCategory == 16) { // SCREW
+            } else if (selectedCategory == 4) {
+                $('.trim-field').removeClass('d-none');
+                $('#color').addClass('d-none');
+            } else if (selectedCategory == 16) {
                 $('.screw-fields').removeClass('d-none');
             }
 
-            $(".select2").each(function() {
+            $(".select2").each(function () {
                 let $this = $(this);
 
                 if ($this.hasClass("select2-hidden-accessible")) {
                     $this.select2('destroy');
-                    $this.removeAttr('data-select2-id');
-                    $this.next('.select2-container').remove();
                 }
 
                 $this.select2({
@@ -1067,8 +1079,8 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                     dropdownParent: $this.parent()
                 });
             });
-
         }
+
 
         function filterTable() {
             var system = $('#select-system').val()?.toString() || '';

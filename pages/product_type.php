@@ -4,6 +4,7 @@ require 'includes/functions.php';
 
 $product_type = "";
 $type_abreviations = "";
+$product_category = '';
 $notes = "";
 $multiplier = 0;
 
@@ -18,6 +19,7 @@ if(!empty($_REQUEST['product_type_id'])){
       $product_type_id = $row['product_type_id'];
       $product_type = $row['product_type'];
       $type_abreviations = $row['type_abreviations'];
+      $product_category = $row['product_category'];
       $notes = $row['notes'];
       $multiplier = $row['multiplier'];
       $special = $row['special'];
@@ -113,6 +115,24 @@ if(!empty($_REQUEST['product_type_id'])){
             <input type="text" id="product_type" name="product_type" class="form-control"  value="<?= $product_type ?>"/>
           </div>
         </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Product Category</label>
+                <select id="product_category" class="form-control" name="product_category">
+                    <option value="">Select One...</option>
+                    <?php
+                    $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                    $result_roles = mysqli_query($conn, $query_roles);            
+                    while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                        $selected = ($product_category == $row_product_category['product_category_id']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
+                    <?php   
+                    }
+                    ?>
+                </select>
+            </div>
+        </div>
       </div>
 
       <div class="row pt-3">
@@ -167,7 +187,7 @@ if(!empty($_REQUEST['product_type_id'])){
     <div class="card">
       <div class="card-body">
           <h4 class="card-title d-flex justify-content-between align-items-center">Product type List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['product_type_id'])){ ?>
-            <a href="/?page=product_type" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
+            <a href="?page=product_type" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
             <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
           </h4>
         
@@ -178,7 +198,8 @@ if(!empty($_REQUEST['product_type_id'])){
               <!-- start row -->
               <tr>
                 <th>Product type</th>
-                <th>Type Abreviations</th>
+                <th>Abreviations</th>
+                <th>Category</th>
                 <th>Multiplier</th>
                 <th>Special</th>
                 <th>Notes</th>
@@ -198,6 +219,7 @@ if(!empty($_REQUEST['product_type_id'])){
                   $product_type_id = $row_product_type['product_type_id'];
                   $product_type = $row_product_type['product_type'];
                   $type_abreviations = $row_product_type['type_abreviations'];
+                  $product_category = $row_product_type['product_category'];
                   $db_status = $row_product_type['status'];
                   $notes = $row_product_type['notes'];
                   $multiplier = $row_product_type['multiplier'];
@@ -227,6 +249,7 @@ if(!empty($_REQUEST['product_type_id'])){
               <tr id="product-row-<?= $no ?>">
                   <td><span class="product<?= $no ?> <?php if ($row_product_type['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_type ?></span></td>
                   <td><?= $type_abreviations ?></td>
+                  <td><?= getProductCategoryName($product_category) ?></td>
                   <td><?= $multiplier ?></td>
                   <td><?= $special ?></td>
                   <td class="notes" style="width:30%;"><?= $notes ?></td>
@@ -236,7 +259,7 @@ if(!empty($_REQUEST['product_type_id'])){
                       <?php if ($row_product_type['status'] == '0') { ?>
                           <a href="#" class="btn btn-light py-1 text-dark hideProductType" data-id="<?= $product_type_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
                       <?php } else { ?>
-                          <a href="/?page=product_type&product_type_id=<?= $product_type_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                          <a href="?page=product_type&product_type_id=<?= $product_type_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
                       <?php } ?>
                   </td>
               </tr>
@@ -273,7 +296,7 @@ if(!empty($_REQUEST['product_type_id'])){
                                       $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                                       $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                       $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                      $('#action-button-' + no).html('<a href="/?page=product_type&product_type_id=' + product_type_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                                      $('#action-button-' + no).html('<a href="?page=product_type&product_type_id=' + product_type_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                                       $('#toggleActive').trigger('change');
                                     }
                               } else {
