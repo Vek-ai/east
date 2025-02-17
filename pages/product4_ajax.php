@@ -2132,6 +2132,10 @@ if(isset($_REQUEST['action'])) {
         $new_value = $_POST['new_value'];
         $product_id = $_POST['id'];
         
+        if (empty($column_name) || empty($product_id)) {
+            exit;
+        }
+        
         $column_name = mysqli_real_escape_string($conn, $column_name);
         $new_value = mysqli_real_escape_string($conn, $new_value);
         $product_id = mysqli_real_escape_string($conn, $product_id);
@@ -2139,12 +2143,10 @@ if(isset($_REQUEST['action'])) {
         $sql = "UPDATE test SET `$column_name` = '$new_value' WHERE product_id = '$product_id'";
 
         if ($conn->query($sql) === TRUE) {
-            echo 'success';
+            echo 'Success';
         } else {
             echo 'Error updating record: ' . $conn->error;
         }
-
-        echo $sql;
     }
     
     mysqli_close($conn);
