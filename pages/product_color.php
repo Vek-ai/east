@@ -626,7 +626,65 @@ $picture_path = "images/product/product.jpg";
                         multiplier = pricing_data[i].multiplier;
                         break;
                     }
+
+                    
+
+                    
                 }
+
+                if (gauge == "29") {
+                    const colorOptions = ["Standard", "Premium", "Textured", "Metallic", "Woodgrain", "Embossed"];
+                    if (colorOptions.includes(color)) {
+                        let selectedPricingData = null;
+                        for (let i = 0; i < pricing_data.length; i++) {
+                            if (
+                                pricing_data[i].color === color &&
+                                pricing_data[i].gauge == gauge &&
+                                pricing_data[i].system === product_system && 
+                                pricing_data[i].width == width
+                            ) {
+                                selectedPricingData = pricing_data[i];
+                                break;
+                            }
+                        }
+
+                        if (selectedPricingData) {
+                            let basePrice = selectedPricingData.multiplier;
+
+                            let lowRibPrice = 0;
+                            let acrylicPrice = 0;
+
+                            for (let i = 0; i < pricing_data.length; i++) {
+                                if (
+                                    pricing_data[i].color === "Low-Rib" &&
+                                    pricing_data[i].gauge == gauge &&
+                                    pricing_data[i].system === product_system
+                                ) {
+                                    lowRibPrice = pricing_data[i].multiplier;
+                                }
+
+                                if (
+                                    pricing_data[i].color === "Acrylic" &&
+                                    pricing_data[i].gauge == gauge &&
+                                    pricing_data[i].system === product_system
+                                ) {
+                                    acrylicPrice = pricing_data[i].multiplier;
+                                }
+                            }
+
+                            if (lowRibPrice && acrylicPrice) {
+                                multiplier = (1 + ((basePrice - lowRibPrice) / acrylicPrice)) * G7;
+                                console.log("Calculated Multiplier: " + multiplier);
+                            } else {
+                                console.log("Required pricing data not found.");
+                            }
+                        } else {
+                            console.log("Pricing data not found for selected options.");
+                        }
+                    }
+                }
+
+
                 $("#multiplier").val(multiplier.toFixed(3));
             }
         });
