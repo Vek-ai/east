@@ -649,6 +649,8 @@ $price_per_bend = getPaymentSetting('price_per_bend');
     </div>
 </div>
 
+<script src="includes/pricing_data.js"></script>
+
 <script>
     $(document).ready(function() {
         var selectedCategory = '';

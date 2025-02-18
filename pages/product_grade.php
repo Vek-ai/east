@@ -4,6 +4,7 @@ require 'includes/functions.php';
 
 $product_grade = "";
 $grade_abbreviations = "";
+$product_category = "";
 $multiplier = 1;
 $notes = "";
 
@@ -17,6 +18,7 @@ if(!empty($_REQUEST['product_grade_id'])){
   while ($row = mysqli_fetch_array($result)) {
       $product_grade_id = $row['product_grade_id'];
       $product_grade = $row['product_grade'];
+      $product_category = $row['product_category'];
       $grade_abbreviations = $row['grade_abbreviations'];
       $multiplier = $row['multiplier'];
       $notes = $row['notes'];
@@ -130,7 +132,22 @@ if(!empty($_REQUEST['result'])){
           </div>
         </div>
         <div class="col-md-6">
-          
+            <div class="mb-3">
+                <label class="form-label">Product Category</label>
+                <select id="product_category" class="form-control" name="product_category">
+                    <option value="">Select One...</option>
+                    <?php
+                    $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                    $result_roles = mysqli_query($conn, $query_roles);            
+                    while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                        $selected = ($product_category == $row_product_category['product_category_id']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
+                    <?php   
+                    }
+                    ?>
+                </select>
+            </div>
         </div>
         <div class="col-md-6">
           <div class="mb-3">
@@ -188,6 +205,7 @@ if(!empty($_REQUEST['result'])){
               <tr>
                 <th>Product grade</th>
                 <th>Grade Abreviations</th>
+                <th>Category</th>
                 <th>Multiplier</th>
                 <th>Notes</th>
                 <th>Details</th>
@@ -206,6 +224,7 @@ while ($row_product_grade = mysqli_fetch_array($result_product_grade)) {
     $product_grade_id = $row_product_grade['product_grade_id'];
     $product_grade = $row_product_grade['product_grade'];
     $grade_abbreviations = $row_product_grade['grade_abbreviations'];
+    $product_category = $row_product_grade['product_category'];
     $multiplier = $row_product_grade['multiplier'];
     $db_status = $row_product_grade['status'];
     $notes = $row_product_grade['notes'];
@@ -234,6 +253,7 @@ while ($row_product_grade = mysqli_fetch_array($result_product_grade)) {
 <tr id="product-row-<?= $no ?>">
     <td><span class="product<?= $no ?> <?php if ($row_product_grade['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_grade ?></span></td>
     <td><?= $grade_abbreviations ?></td>
+    <td><?= getProductCategoryName($product_category) ?></td>
     <td><?= $multiplier ?></td>
     <td class="notes" style="width:30%;"><?= $notes ?></td>
     <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>

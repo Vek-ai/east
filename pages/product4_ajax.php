@@ -116,7 +116,7 @@ if(isset($_REQUEST['action'])) {
                     
                     <div id="add-fields" class="<?= empty($row) ? 'd-none' : ''?>">
                         <div class="row pt-3">
-                            <div class="col-md-4 trim-field">
+                            <div class="col-md-4 trim-field panel-fields">
                                 <label class="form-label">Product System</label>
                                 <div class="mb-3">
                                 <select id="product_system" class="form-control add-category calculate" name="product_system">
@@ -134,7 +134,7 @@ if(isset($_REQUEST['action'])) {
                                 </select>
                                 </div>
                             </div>
-                            <div class="col-md-4 trim-field">
+                            <div class="col-md-4 trim-field panel-fields">
                                 <label class="form-label">Product Line</label>
                                 <div class="mb-3">
                                 <select id="product_line" class="form-control add-category calculate" name="product_line">
@@ -152,7 +152,7 @@ if(isset($_REQUEST['action'])) {
                                 </select>
                                 </div>
                             </div>
-                            <div class="col-md-4 trim-field screw-fields">
+                            <div class="col-md-4 trim-field screw-fields panel-fields">
                                 <label class="form-label">Product Type</label>
                                 <div class="mb-3">
                                 <select id="product_type" class="form-control add-category calculate" name="product_type">
@@ -209,7 +209,7 @@ if(isset($_REQUEST['action'])) {
                                     <input type="text" id="cost_per_sq_in" name="cost_per_sq_in" class="form-control readonly" value="<?=$row['cost_per_sq_in']?>"/>
                                 </div>
                             </div>
-                            <div class="col-md-4 trim-field">
+                            <div class="col-md-4 trim-field panel-fields">
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <label class="form-label mb-1">Grade</label>
@@ -229,7 +229,7 @@ if(isset($_REQUEST['action'])) {
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4 trim-field">
+                            <div class="col-md-4 trim-field panel-fields">
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <label class="form-label mb-1">Gauge</label>
@@ -238,18 +238,29 @@ if(isset($_REQUEST['action'])) {
                                         <option value="" >Select Gauge...</option>
                                         <?php
                                         $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
-                                        $result_gauge = mysqli_query($conn, $query_gauge);            
+                                        $result_gauge = mysqli_query($conn, $query_gauge);
+
+                                        $unique_gauges = [];
+
                                         while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            if (in_array($row_gauge['product_gauge'], $unique_gauges)) {
+                                                continue;
+                                            }
+
+                                            $unique_gauges[] = $row_gauge['product_gauge'];
+                                            
                                             $selected = (($row['gauge'] ?? '') == $row_gauge['product_gauge']) ? 'selected' : '';
-                                        ?>
-                                            <option value="<?= $row_gauge['product_gauge'] ?>" data-multiplier="<?= $row_gauge['multiplier'] ?>" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
-                                        <?php   
+                                            ?>
+                                            <option value="<?= $row_gauge['product_gauge'] ?>" data-multiplier="<?= $row_gauge['multiplier'] ?>" <?= $selected ?>>
+                                                <?= $row_gauge['product_gauge'] ?>
+                                            </option>
+                                            <?php
                                         }
                                         ?>
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4 trim-field screw-fields">
+                            <div class="col-md-4 trim-field screw-fields panel-fields">
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <label class="form-label">Color</label>
@@ -278,6 +289,52 @@ if(isset($_REQUEST['action'])) {
                                     </select>
                                 </div>
                             </div>
+                            <!--PANELS EXCLUSIVE-->
+                            <div class="col-md-4 panel-fields">
+                                <div class="mb-3">
+                                    <label class="form-label">Width</label>
+                                    <input type="text" id="width" name="width" class="form-control" value="<?=$row['width'] ?? ''?>"/>
+                                </div>
+                            </div>
+                            <div class="col-md-4 panel-fields">
+                                <div class="mb-3">
+                                    <label class="form-label">Thickness</label>
+                                    <input type="text" id="thickness" name="thickness" class="form-control" value="<?=$row['thickness'] ?? ''?>"/>
+                                </div>
+                            </div>
+                            <div class="col-md-4 panel-fields">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="form-label">Stock Type</label>
+                                    </div>
+                                    <select id="stock_type" class="form-control calculate" name="stock_type">
+                                        <option value="" >Select Stock Type...</option>
+                                        <?php
+                                        $query_availability = "SELECT * FROM product_availability WHERE hidden = '0'";
+                                        $result_availability = mysqli_query($conn, $query_availability);            
+                                        while ($row_availability = mysqli_fetch_array($result_availability)) {
+                                            $selected = (($row['stock_type'] ?? '') == $row_availability['product_availability']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $row_availability['product_availability'] ?>" data-multiplier="<?= $row_availability['multiplier'] ?>" <?= $selected ?>><?= $row_availability['product_availability'] ?></option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4 panel-fields">
+                                <div class="mb-3">
+                                    <label class="form-label">Color Multiplier</label>
+                                    <input type="text" id="color_multiplier" name="color_multiplier" class="form-control readonly" value="<?=$row['color_multiplier'] ?? ''?>"/>
+                                </div>
+                            </div>
+                            <div class="col-md-4 panel-fields">
+                                <div class="mb-3">
+                                    <label class="form-label">Cost</label>
+                                    <input type="text" id="cost" name="cost" class="form-control" value="<?=$row['cost'] ?? ''?>"/>
+                                </div>
+                            </div>
+
                             <div class="col-md-4 trim-field">
                                 <div class="mb-3">
                                     <label class="form-label">Trim Multiplier</label>
