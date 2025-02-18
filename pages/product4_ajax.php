@@ -174,7 +174,7 @@ if(isset($_REQUEST['action'])) {
                                 <label class="form-label">Flat Sheet Width</label>
                                 <div class="mb-3">
                                 <select id="flat_sheet_width" class="form-control readonly" name="flat_sheet_width">
-                                    <option value="0">0</option>
+                                    <option value="">0</option>
                                     <?php
                                     $query_flat_sheet_width = "SELECT * FROM flat_sheet_width WHERE hidden = '0'";
                                     $result_flat_sheet_width = mysqli_query($conn, $query_flat_sheet_width);            
@@ -359,9 +359,9 @@ if(isset($_REQUEST['action'])) {
                                 </div>
                             </div>
 
-                            <div class="col-md-4 screw-fields">
+                            <div class="col-md-4 trim-field screw-fields">
                                 <div class="mb-3">
-                                    <label class="form-label">Retail</label>
+                                    <label class="form-label">Retail Price</label>
                                     <input type="text" id="retail" name="retail" class="form-control" value="<?=$row['retail'] ?? ''?>"/>
                                 </div>
                             </div>
