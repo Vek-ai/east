@@ -158,7 +158,7 @@ if(!empty($_REQUEST['result'])){
         <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Multiplier</label>
-            <input type="number" id="multiplier" name="multiplier" class="form-control" value="<?= $multiplier ?>" />
+            <input type="text" id="multiplier" name="multiplier" class="form-control" value="<?= $multiplier ?>" />
           </div>
         </div>
       </div>

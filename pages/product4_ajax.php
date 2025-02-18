@@ -423,7 +423,7 @@ if(isset($_REQUEST['action'])) {
                                 </div>
                             </div>
 
-                            <div class="col-md-12 trim-field screw-fields">
+                            <div class="col-md-12 trim-field screw-fields panel-fields">
                                 <div class="mb-3">
                                     <label class="form-label">Description</label>
                                     <input type="text" id="description" name="description" class="form-control" value="<?=$row['description']?>"/>

@@ -12,6 +12,7 @@ if(isset($_REQUEST['action'])) {
         $product_grade_id = mysqli_real_escape_string($conn, $_POST['product_grade_id']);
         $product_grade = mysqli_real_escape_string($conn, $_POST['product_grade']);
         $grade_abbreviations = mysqli_real_escape_string($conn, $_POST['grade_abbreviations']);
+        $product_category = mysqli_real_escape_string($conn, $_POST['product_category']);
         $multiplier = floatval(mysqli_real_escape_string($conn, $_POST['multiplier']));
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
 
@@ -51,7 +52,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_grade SET product_grade = '$product_grade', grade_abbreviations = '$grade_abbreviations', multiplier = '$multiplier', notes = '$notes', last_edit = NOW(), edited_by = '$userid'  WHERE product_grade_id = '$product_grade_id'";
+                $updateQuery = "UPDATE product_grade SET product_grade = '$product_grade', grade_abbreviations = '$grade_abbreviations', product_category = '$product_category', multiplier = '$multiplier', notes = '$notes', last_edit = NOW(), edited_by = '$userid'  WHERE product_grade_id = '$product_grade_id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "update-success";
                 } else {
@@ -77,7 +78,7 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO product_grade (product_grade, grade_abbreviations, multiplier, notes, added_date, added_by) VALUES ('$product_grade', '$grade_abbreviations', '$multiplier', '$notes', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO product_grade (product_grade, grade_abbreviations, product_category, multiplier, notes, added_date, added_by) VALUES ('$product_grade', '$grade_abbreviations', '$product_category', '$multiplier', '$notes', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "add-success";
                 } else {
