@@ -319,6 +319,169 @@ $picture_path = "images/product/product.jpg";
             "dom": 'lftp',
         });
 
+        const pricing_data = [
+            { color: "Bare", gauge: 29, system: "Corrugated", width: 28, multiplier: 2.49 },
+            { color: "Bare", gauge: 29, system: "5V", width: 28, multiplier: 2.49 },
+            { color: "Bare", gauge: 29, system: "Low-Rib", width: 41, multiplier: 2.26 },
+
+            { color: "Acrylic", gauge: 29, system: "Corrugated", width: 28, multiplier: 2.49 },
+            { color: "Acrylic", gauge: 29, system: "5V", width: 28, multiplier: 2.49 },
+            { color: "Acrylic", gauge: 29, system: "Low-Rib", width: 41, multiplier: 2.26 },
+
+            { color: "Standard", gauge: 29, system: "Corrugated", width: 28, multiplier: 2.96 },
+            { color: "Standard", gauge: 29, system: "5V", width: 28, multiplier: 2.96 },
+            { color: "Standard", gauge: 29, system: "Low-Rib", width: 41, multiplier: 2.69 },
+
+            { color: "Premium", gauge: 29, system: "Corrugated", width: 28, multiplier: 3.18 },
+            { color: "Premium", gauge: 29, system: "5V", width: 28, multiplier: 3.18 },
+            { color: "Premium", gauge: 29, system: "Low-Rib", width: 41, multiplier: 2.89 },
+
+            { color: "Textured", gauge: 29, system: "Corrugated", width: 28, multiplier: 3.4 },
+            { color: "Textured", gauge: 29, system: "5V", width: 28, multiplier: 3.4 },
+            { color: "Textured", gauge: 29, system: "Low-Rib", width: 41, multiplier: 3.09 },
+
+            { color: "Metallic", gauge: 29, system: "Corrugated", width: 28, multiplier: 3.55 },
+            { color: "Metallic", gauge: 29, system: "5V", width: 28, multiplier: 3.55 },
+            { color: "Metallic", gauge: 29, system: "Low-Rib", width: 41, multiplier: 3.23 },
+
+            { color: "Woodgrain", gauge: 29, system: "Corrugated", width: 28, multiplier: 3.66 },
+            { color: "Woodgrain", gauge: 29, system: "5V", width: 28, multiplier: 3.66 },
+            { color: "Woodgrain", gauge: 29, system: "Low-Rib", width: 41, multiplier: 3.33 },
+
+            { color: "Embossed", gauge: 29, system: "Corrugated", width: 28, multiplier: 3.77 },
+            { color: "Embossed", gauge: 29, system: "5V", width: 28, multiplier: 3.77 },
+            { color: "Embossed", gauge: 29, system: "Low-Rib", width: 41, multiplier: 3.43 },
+
+            { color: "Bare", gauge: 26, system: "Board and Batten", width: 13.625, multiplier: 1.99 },
+            { color: "Bare", gauge: 26, system: "Standing Seam 15", width: 20.5, multiplier: 1.5 },
+            { color: "Bare", gauge: 26, system: "Standing Seam 175", width: 20.5, multiplier: 1.5 },
+            { color: "Bare", gauge: 26, system: "Standing Seam 2", width: 20.5, multiplier: 1.5 },
+            { color: "Bare", gauge: 26, system: "Board and Batten", width: 20.5, multiplier: 1.5 },
+            { color: "Bare", gauge: 26, system: "R-panel", width: 41.625, multiplier: 2.75 },
+            { color: "Bare", gauge: 26, system: "Hi-Rib/PBR", width: 43, multiplier: 2.87 },
+
+            { color: "Acrylic", gauge: 26, system: "Board and Batten", width: 13.625, multiplier: 1.99 },
+            { color: "Acrylic", gauge: 26, system: "Standing Seam 15", width: 20.5, multiplier: 1.5 },
+            { color: "Acrylic", gauge: 26, system: "Standing Seam 175", width: 20.5, multiplier: 1.5 },
+            { color: "Acrylic", gauge: 26, system: "Standing Seam 2", width: 20.5, multiplier: 1.5 },
+            { color: "Acrylic", gauge: 26, system: "Board and Batten", width: 20.5, multiplier: 1.5 },
+            { color: "Acrylic", gauge: 26, system: "R-panel", width: 41.625, multiplier: 2.75 },
+            { color: "Acrylic", gauge: 26, system: "Hi-Rib/PBR", width: 43, multiplier: 2.87 },
+
+            { color: "Standard", gauge: 26, system: "Board and Batten", width: 13.625, multiplier: 2.19 },
+            { color: "Standard", gauge: 26, system: "Standing Seam 15", width: 20.5, multiplier: 2.69 },
+            { color: "Standard", gauge: 26, system: "Standing Seam 175", width: 20.5, multiplier: 2.69 },
+            { color: "Standard", gauge: 26, system: "Standing Seam 2", width: 20.5, multiplier: 2.69 },
+            { color: "Standard", gauge: 26, system: "Board and Batten", width: 20.5, multiplier: 2.69 },
+            { color: "Standard", gauge: 26, system: "R-panel", width: 41.625, multiplier: 3.61 },
+            { color: "Standard", gauge: 26, system: "Hi-Rib/PBR", width: 43, multiplier: 3.77 },
+
+            { color: "Premium", gauge: 26, system: "Board and Batten", width: 13.625, multiplier: 2.39 },
+            { color: "Premium", gauge: 26, system: "Standing Seam 15", width: 20.5, multiplier: 2.89 },
+            { color: "Premium", gauge: 26, system: "Standing Seam 175", width: 20.5, multiplier: 2.89 },
+            { color: "Premium", gauge: 26, system: "Standing Seam 2", width: 20.5, multiplier: 2.89 },
+            { color: "Premium", gauge: 26, system: "Board and Batten", width: 20.5, multiplier: 2.89 },
+            { color: "Premium", gauge: 26, system: "R-panel", width: 41.625, multiplier: 4.07 },
+            { color: "Premium", gauge: 26, system: "Hi-Rib/PBR", width: 43, multiplier: 4.25 },
+
+            { color: "Textured", gauge: 26, system: "Board and Batten", width: 13.625, multiplier: 2.52 },
+            { color: "Textured", gauge: 26, system: "Standing Seam 15", width: 20.5, multiplier: 3.095 },
+            { color: "Textured", gauge: 26, system: "Standing Seam 175", width: 20.5, multiplier: 3.095 },
+            { color: "Textured", gauge: 26, system: "Standing Seam 2", width: 20.5, multiplier: 3.095 },
+            { color: "Textured", gauge: 26, system: "Board and Batten", width: 20.5, multiplier: 3.095 },
+            { color: "Textured", gauge: 26, system: "R-panel", width: 41.625, multiplier: 4.36 },
+            { color: "Textured", gauge: 26, system: "Hi-Rib/PBR", width: 43, multiplier: 4.55 },
+
+            { color: "Metallic", gauge: 26, system: "Board and Batten", width: 13.625, multiplier: 2.75 },
+            { color: "Metallic", gauge: 26, system: "Standing Seam 15", width: 20.5, multiplier: 3.23 },
+            { color: "Metallic", gauge: 26, system: "Standing Seam 175", width: 20.5, multiplier: 3.23 },
+            { color: "Metallic", gauge: 26, system: "Standing Seam 2", width: 20.5, multiplier: 3.23 },
+            { color: "Metallic", gauge: 26, system: "Board and Batten", width: 20.5, multiplier: 3.23 },
+            { color: "Metallic", gauge: 26, system: "R-panel", width: 41.625, multiplier: 4.55 },
+            { color: "Metallic", gauge: 26, system: "Hi-Rib/PBR", width: 43, multiplier: 4.75 },
+
+            { color: "Woodgrain", gauge: 26, system: "Board and Batten", width: 13.625, multiplier: 2.85 },
+            { color: "Woodgrain", gauge: 26, system: "Standing Seam 15", width: 20.5, multiplier: 3.49 },
+            { color: "Woodgrain", gauge: 26, system: "Standing Seam 175", width: 20.5, multiplier: 3.49 },
+            { color: "Woodgrain", gauge: 26, system: "Standing Seam 2", width: 20.5, multiplier: 3.49 },
+            { color: "Woodgrain", gauge: 26, system: "Board and Batten", width: 20.5, multiplier: 3.49 },
+            { color: "Woodgrain", gauge: 26, system: "R-panel", width: 41.625, multiplier: 5.03 },
+            { color: "Woodgrain", gauge: 26, system: "Hi-Rib/PBR", width: 43, multiplier: 5.25 },
+
+            { color: "Embossed", gauge: 26, system: "Board and Batten", width: 13.625, multiplier: 2.95 },
+            { color: "Embossed", gauge: 26, system: "Standing Seam 15", width: 20.5, multiplier: 3.49 },
+            { color: "Embossed", gauge: 26, system: "Standing Seam 175", width: 20.5, multiplier: 3.49 },
+            { color: "Embossed", gauge: 26, system: "Standing Seam 2", width: 20.5, multiplier: 3.49 },
+            { color: "Embossed", gauge: 26, system: "Board and Batten", width: 20.5, multiplier: 3.49 },
+            { color: "Embossed", gauge: 26, system: "R-panel", width: 41.625, multiplier: 5.99 },
+            { color: "Embossed", gauge: 26, system: "Hi-Rib/PBR", width: 43, multiplier: 6.25 },
+
+            { color: "Bare", gauge: 24, system: "Standing Seam 15", width: 20, multiplier: 3.29 },
+            { color: "Bare", gauge: 24, system: "Standing Seam 175", width: 20, multiplier: 3.29 },
+            { color: "Bare", gauge: 24, system: "Standing Seam 2", width: 20, multiplier: 3.29 },
+            { color: "Bare", gauge: 24, system: "Board and Batten", width: 20, multiplier: 3.29 },
+            { color: "Bare", gauge: 22, system: "Standing Seam 15", width: 20, multiplier: 4.29 },
+            { color: "Bare", gauge: 22, system: "Standing Seam 175", width: 20, multiplier: 4.29 },
+            { color: "Bare", gauge: 22, system: "Standing Seam 2", width: 20, multiplier: 4.29 },
+            { color: "Bare", gauge: 22, system: "Board and Batten", width: 20, multiplier: 4.29 },
+
+            { color: "Acrylic", gauge: 24, system: "Standing Seam 15", width: 20, multiplier: 3.29 },
+            { color: "Acrylic", gauge: 24, system: "Standing Seam 175", width: 20, multiplier: 3.29 },
+            { color: "Acrylic", gauge: 24, system: "Standing Seam 2", width: 20, multiplier: 3.29 },
+            { color: "Acrylic", gauge: 24, system: "Board and Batten", width: 20, multiplier: 3.29 },
+            { color: "Acrylic", gauge: 22, system: "Standing Seam 15", width: 20, multiplier: 4.29 },
+            { color: "Acrylic", gauge: 22, system: "Standing Seam 175", width: 20, multiplier: 4.29 },
+            { color: "Acrylic", gauge: 22, system: "Standing Seam 2", width: 20, multiplier: 4.29 },
+            { color: "Acrylic", gauge: 22, system: "Board and Batten", width: 20, multiplier: 4.29 },
+
+            { color: "Standard", gauge: 24, system: "Standing Seam 15", width: 20, multiplier: 4.25 },
+            { color: "Standard", gauge: 24, system: "Standing Seam 175", width: 20, multiplier: 4.25 },
+            { color: "Standard", gauge: 24, system: "Standing Seam 2", width: 20, multiplier: 4.25 },
+            { color: "Standard", gauge: 24, system: "Board and Batten", width: 20, multiplier: 4.25 },
+            { color: "Standard", gauge: 22, system: "Standing Seam 15", width: 20, multiplier: 5.54 },
+            { color: "Standard", gauge: 22, system: "Standing Seam 175", width: 20, multiplier: 5.54 },
+            { color: "Standard", gauge: 22, system: "Standing Seam 2", width: 20, multiplier: 5.54 },
+            { color: "Standard", gauge: 22, system: "Board and Batten", width: 20, multiplier: 5.54 },
+
+            { color: "Premium", gauge: 24, system: "Standing Seam 15", width: 20, multiplier: 4.5 },
+            { color: "Premium", gauge: 24, system: "Standing Seam 175", width: 20, multiplier: 4.5 },
+            { color: "Premium", gauge: 24, system: "Standing Seam 2", width: 20, multiplier: 4.5 },
+            { color: "Premium", gauge: 24, system: "Board and Batten", width: 20, multiplier: 4.5 },
+            { color: "Premium", gauge: 22, system: "Standing Seam 15", width: 20, multiplier: 5.87 },
+            { color: "Premium", gauge: 22, system: "Standing Seam 175", width: 20, multiplier: 5.87 },
+            { color: "Premium", gauge: 22, system: "Standing Seam 2", width: 20, multiplier: 5.87 },
+            { color: "Premium", gauge: 22, system: "Board and Batten", width: 20, multiplier: 5.87 },
+
+            { color: "Textured", gauge: 24, system: "Standing Seam 15", width: 20, multiplier: 4.82 },
+            { color: "Textured", gauge: 24, system: "Standing Seam 175", width: 20, multiplier: 4.82 },
+            { color: "Textured", gauge: 24, system: "Standing Seam 2", width: 20, multiplier: 4.82 },
+            { color: "Textured", gauge: 24, system: "Board and Batten", width: 20, multiplier: 4.82 },
+            { color: "Textured", gauge: 22, system: "Standing Seam 15", width: 20, multiplier: 6.29 },
+            { color: "Textured", gauge: 22, system: "Standing Seam 175", width: 20, multiplier: 6.29 },
+            { color: "Textured", gauge: 22, system: "Standing Seam 2", width: 20, multiplier: 6.29 },
+            { color: "Textured", gauge: 22, system: "Board and Batten", width: 20, multiplier: 6.29 },
+
+            { color: "Metallic", gauge: 24, system: "Standing Seam 15", width: 20, multiplier: 5.03 },
+            { color: "Metallic", gauge: 24, system: "Standing Seam 175", width: 20, multiplier: 5.03 },
+            { color: "Metallic", gauge: 24, system: "Standing Seam 2", width: 20, multiplier: 5.03 },
+            { color: "Metallic", gauge: 24, system: "Board and Batten", width: 20, multiplier: 5.03 },
+            { color: "Metallic", gauge: 22, system: "Standing Seam 15", width: 20, multiplier: 6.56 },
+            { color: "Metallic", gauge: 22, system: "Standing Seam 175", width: 20, multiplier: 6.56 },
+            { color: "Metallic", gauge: 22, system: "Standing Seam 2", width: 20, multiplier: 6.56 },
+            { color: "Metallic", gauge: 22, system: "Board and Batten", width: 20, multiplier: 6.56 },
+
+            { color: "Woodgrain", gauge: 24, system: "Standing Seam 15", width: 20, multiplier: 5.43 },
+            { color: "Woodgrain", gauge: 24, system: "Standing Seam 175", width: 20, multiplier: 5.43 },
+            { color: "Woodgrain", gauge: 24, system: "Standing Seam 2", width: 20, multiplier: 5.56 },
+            { color: "Woodgrain", gauge: 24, system: "Board and Batten", width: 20, multiplier: 5.56 },
+            { color: "Woodgrain", gauge: 22, system: "Standing Seam 15", width: 20, multiplier: 7.08 },
+            { color: "Woodgrain", gauge: 22, system: "Standing Seam 175", width: 20, multiplier: 7.08 },
+            { color: "Woodgrain", gauge: 22, system: "Standing Seam 2", width: 20, multiplier: 7.25 },
+            { color: "Woodgrain", gauge: 22, system: "Board and Batten", width: 20, multiplier: 7.25 }
+        ];
+
+
+
         $('#select-profile, #select-color, #select-color-multiplier, #select-grade, #select-gauge, #select-category, #select-surface, #select-coating').on('change', filterTable);
 
         $('#text-srh').on('keyup', filterTable);
@@ -440,6 +603,50 @@ $picture_path = "images/product/product.jpg";
                 }
             });
         });
+
+        $(document).on("change", ".calculate", function () {
+            let selectedCategory = $('#product_category').val();
+            // Get the selected text for each field
+            let product_system = $('#product_system').find(":selected").text() || 0;
+            let width = $('#width').find(":selected").text() || 0;
+            let color = $('#color').find(":selected").text() || 0;
+            let gauge = $('#gauge').find(":selected").text() || 0;
+
+            // selectedCategory is declared globally
+            if (String(selectedCategory) == '3') { // category 3 = Panel
+
+                let multiplier = 0;
+                for (let i = 0; i < pricing_data.length; i++) {
+                    if (
+                        pricing_data[i].color === color &&
+                        pricing_data[i].gauge == gauge &&
+                        pricing_data[i].system === product_system &&
+                        pricing_data[i].width == width
+                    ) {
+                        multiplier = pricing_data[i].multiplier;
+                        break;
+                    }
+                }
+                $("#multiplier").val(multiplier.toFixed(3));
+            }
+        });
+
+        $(document).on('change', '#product_category', function() {
+            updateSearchCategory();
+        });
+
+        function updateSearchCategory() {
+            let selectedCategory = $('#product_category').val() || '';
+
+            $('.add-category option').each(function() {
+                let match = String($(this).data('category')) === String(selectedCategory);
+                $(this).toggle(match);
+            });
+
+            if (selectedCategory) {
+                $('#add-fields').removeClass('d-none');
+            }
+        }
 
         function filterTable() {
             var category = $('#select-category').val()?.toString() || '';
