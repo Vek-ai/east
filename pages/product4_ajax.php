@@ -1001,7 +1001,8 @@ if(isset($_REQUEST['action'])) {
                 'trim_multiplier',
                 'length',
                 'retail_cost',
-                'description'
+                'description',
+                'retail'
             ];
             $column_txt = implode(', ', $includedColumns);
         } else if($product_category == 16){ // SCREW

@@ -277,7 +277,7 @@ $picture_path = "images/product/product.jpg";
                                         data-gauge="<?= $row_prod_color['gauge'] ?>"
                                         >
                                         <td>
-                                            <?= getColorName($row_prod_color['color']) ?>
+                                            <?= $row_prod_color['color_name'] ?>
                                         </td>
                                         <td><?= getProductCategoryName($row_prod_color['product_category']) ?></td>
                                         <td><?= getProductColorMultName($row_prod_color['color_mult_id']) ?></td>
