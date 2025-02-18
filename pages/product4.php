@@ -938,35 +938,69 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
         function updateColorSelect() {
             let selectedCategory = $('#product_category').val();
-            let selectedGrade = $('#grade').val();
-            let selectedGauge = $('#gauge').val();
 
-            let allSelected = selectedCategory && selectedGrade && selectedGauge;
-            $('#color').toggleClass('d-none', !allSelected);
-            $('#color option').each(function () {
-                let $option = $(this);
+            if (String(selectedCategory) == '4') { 
+                let selectedGrade = $('#grade').val();
+                let selectedGauge = $('#gauge').val();
 
-                let optionCategory = String($option.data('category') || "");
-                let optionGrade = String($option.data('grade') || "");
-                let optionGauge = String($option.data('gauge') || "");
+                let allSelected = selectedCategory && selectedGrade && selectedGauge;
+                $('#color').toggleClass('d-none', !allSelected);
+                $('#color option').each(function () {
+                    let $option = $(this);
 
-                // Skip options where grade or gauge is empty or "0"
-                if (optionCategory === "" || optionCategory === "0") { $(this).toggle(false); return; }
-                if (optionGrade === "" || optionGrade === "0") { $(this).toggle(false); return; }
-                if (optionGauge === "" || optionGauge === "0") { $(this).toggle(false); return; }
+                    let optionCategory = String($option.data('category') || "");
+                    let optionGrade = String($option.data('grade') || "");
+                    let optionGauge = String($option.data('gauge') || "");
 
-                let categoryMatch = String(selectedCategory) == optionCategory;
-                let gradeMatch = String(selectedGrade) == optionGrade;
-                let gaugeMatch = String(selectedGauge) == optionGauge;
+                    // Skip options where grade or gauge is empty or "0"
+                    if (optionCategory === "" || optionCategory === "0") { $(this).toggle(false); return; }
+                    if (optionGrade === "" || optionGrade === "0") { $(this).toggle(false); return; }
+                    if (optionGauge === "" || optionGauge === "0") { $(this).toggle(false); return; }
 
-                let match = categoryMatch && gradeMatch && gaugeMatch;
-                if(match == true){
-                    $(this).toggle(true);
-                }else{
-                    $(this).toggle(false);
-                }
-                
-            });
+                    let categoryMatch = String(selectedCategory) == optionCategory;
+                    let gradeMatch = String(selectedGrade) == optionGrade;
+                    let gaugeMatch = String(selectedGauge) == optionGauge;
+
+                    let match = categoryMatch && gradeMatch && gaugeMatch;
+                    if(match == true){
+                        $(this).toggle(true);
+                    }else{
+                        $(this).toggle(false);
+                    }
+                    
+                });
+            }else if (String(selectedCategory) == '3') { 
+                let selectedSystem = $('#product_system').val();
+                let selectedGauge = $('#gauge').val();
+
+                let allSelected = selectedCategory && selectedSystem && selectedGauge;
+                $('#color').toggleClass('d-none', !allSelected);
+                $('#color option').each(function () {
+                    let $option = $(this);
+
+                    let optionCategory = String($option.data('category') || "");
+                    let optionSystem = String($option.data('system') || "");
+                    let optionGauge = String($option.data('gauge') || "");
+
+                    // Skip options where grade or gauge is empty or "0"
+                    if (optionCategory === "" || optionCategory === "0") { $(this).toggle(false); return; }
+                    if (optionSystem === "" || optionSystem === "0") { $(this).toggle(false); return; }
+                    if (optionGauge === "" || optionGauge === "0") { $(this).toggle(false); return; }
+
+                    let categoryMatch = String(selectedCategory) == optionCategory;
+                    let gradeMatch = String(selectedSystem) == optionSystem;
+                    let gaugeMatch = String(selectedGauge) == optionGauge;
+
+                    let match = categoryMatch && gradeMatch && gaugeMatch;
+                    if(match == true){
+                        $(this).toggle(true);
+                    }else{
+                        $(this).toggle(false);
+                    }
+                    
+                });
+            }
+            
         }
 
         $(document).on("change", "#gauge, #grade", function () {
@@ -1042,7 +1076,29 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 if (selectedType) descriptionParts.push($("#product_type option:selected").text().trim());
 
                 $("#description").val(descriptionParts.join(" - "));
+            }else if (String(selectedCategory) == '3') { //category 3 = PANEL
+                updateColorSelect();
+
+                let color_multi = parseFloat($("#color option:selected").attr("data-multiplier")) || 0;
+                let grade_multi = parseFloat($("#grade option:selected").attr("data-multiplier")) || 1;
+                let color_multiplier = grade_multi * color_multi;
+                $("#color_multiplier").val(color_multiplier.toFixed(3));
+
+                let stock_multi = parseFloat($("#stock_type option:selected").attr("data-multiplier")) || 0;
+                let cost = color_multiplier * stock_multi;
+                $("#cost").val(cost.toFixed(3));
+
+                let descriptionParts = [];
+
+                if (selectedSystem) descriptionParts.push($("#product_system option:selected").text().trim());
+                if (selectedGauge) descriptionParts.push(selectedGauge);
+
+                $("#description").val(descriptionParts.join(" - "));
             }
+        });
+        
+        $(document).on('change', '#product_category', function() {
+            updateSearchCategory();
         });
 
         function updateSearchCategory() {
@@ -1062,6 +1118,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
             if (selectedCategory == 3) {
                 $('.panel-fields').removeClass('d-none');
+                $('#color').addClass('d-none');
             } else if (selectedCategory == 4) {
                 $('.trim-field').removeClass('d-none');
                 $('#color').addClass('d-none');
@@ -1082,7 +1139,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 });
             });
         }
-
 
         function filterTable() {
             var system = $('#select-system').val()?.toString() || '';
@@ -1133,10 +1189,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             updateSelectedTags();
         }
 
-        $(document).on('change', '#product_category', function() {
-            updateSearchCategory();
-        });
-
         $(document).on('blur', '.table_data', function() {
             let newValue;
             let updatedData = {};
@@ -1174,7 +1226,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 }
             });
         });
-
 
         function updateSelectedTags() {
             const sections = [

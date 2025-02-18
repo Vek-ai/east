@@ -90,7 +90,7 @@ if(isset($_REQUEST['action'])) {
         <div class="modal-body">
             <div class="card">
                 <div class="card-body">
-                    <input type="hidden" id="product_id" name="product_id" class="form-control" value="<?= $row['product_category'] ?? ''?>" />
+                    <input type="hidden" id="product_id" name="product_id" class="form-control" value="<?= $row['product_id'] ?? ''?>" />
 
                     <div class="row">
                         <div class="col-md-12">
@@ -212,9 +212,9 @@ if(isset($_REQUEST['action'])) {
                             <div class="col-md-4 trim-field panel-fields">
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <label class="form-label mb-1">Grade</label>
+                                        <label class="form-label">Grade</label>
                                     </div>
-                                    <select id="grade" class="form-control calculate" name="grade">
+                                    <select id="grade" class="form-control calculate add-category" name="grade">
                                         <option value="" >Select Grade...</option>
                                         <?php
                                         $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
@@ -222,7 +222,7 @@ if(isset($_REQUEST['action'])) {
                                         while ($row_grade = mysqli_fetch_array($result_grade)) {
                                             $selected = (($row['grade'] ?? '') == $row_grade['product_grade']) ? 'selected' : '';
                                         ?>
-                                            <option value="<?= $row_grade['product_grade'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                            <option value="<?= $row_grade['product_grade'] ?>" data-category="<?= $row_grade['product_category'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
                                         <?php   
                                         }
                                         ?>
@@ -232,7 +232,7 @@ if(isset($_REQUEST['action'])) {
                             <div class="col-md-4 trim-field panel-fields">
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <label class="form-label mb-1">Gauge</label>
+                                        <label class="form-label">Gauge</label>
                                     </div>
                                     <select id="gauge" class="form-control calculate" name="gauge">
                                         <option value="" >Select Gauge...</option>
@@ -275,10 +275,11 @@ if(isset($_REQUEST['action'])) {
                                         ?>
                                             <option value="<?= $row_colors['id'] ?>" 
                                                     data-price="<?=$row_colors['price'] ?>" 
+                                                    data-system="<?=$row_colors['product_system'] ?>" 
                                                     data-grade="<?=$row_colors['grade'] ?>" 
                                                     data-gauge="<?=$row_colors['gauge'] ?>" 
                                                     data-category="<?=trim($row_colors['product_category']) ?>" 
-                                                    data-multiplier="<?= getProductColorMultValue($row_colors['color_mult_id']) ?>"
+                                                    data-multiplier="<?= $row_colors['multiplier'] ?>"
                                                     <?= $selected ?>
                                             >
                                                         <?= $row_colors['color_name'] ?>
@@ -326,12 +327,6 @@ if(isset($_REQUEST['action'])) {
                                 <div class="mb-3">
                                     <label class="form-label">Color Multiplier</label>
                                     <input type="text" id="color_multiplier" name="color_multiplier" class="form-control readonly" value="<?=$row['color_multiplier'] ?? ''?>"/>
-                                </div>
-                            </div>
-                            <div class="col-md-4 panel-fields">
-                                <div class="mb-3">
-                                    <label class="form-label">Cost</label>
-                                    <input type="text" id="cost" name="cost" class="form-control" value="<?=$row['cost'] ?? ''?>"/>
                                 </div>
                             </div>
 
@@ -402,7 +397,7 @@ if(isset($_REQUEST['action'])) {
                                 </div>
                             </div>
 
-                            <div class="col-md-4 screw-fields">
+                            <div class="col-md-4 screw-fields panel-fields">
                                 <div class="mb-3">
                                     <label class="form-label">Cost</label>
                                     <input type="text" id="cost" name="cost" class="form-control calculate" value="<?=$row['cost'] ?? ''?>"/>
@@ -1074,6 +1069,24 @@ if(isset($_REQUEST['action'])) {
                 'cost',
                 'price',
                 'retail',
+                'description'
+            ];
+            $column_txt = implode(', ', $includedColumns);
+        } else if($product_category == 3){ // PANELS
+            $includedColumns = [ 
+                'product_id',
+                'product_category',
+                'product_system',
+                'product_line',
+                'product_type',
+                'gauge',
+                'width',
+                'thickness',
+                'grade',
+                'color',
+                'color_multiplier',
+                'stock_type',
+                'cost',
                 'description'
             ];
             $column_txt = implode(', ', $includedColumns);
