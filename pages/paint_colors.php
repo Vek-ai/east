@@ -26,7 +26,7 @@ if(!empty($_REQUEST['color_id'])){
       $color_code = $row['color_code'];
       $color_group = $row['color_group'];
       $provider_id = $row['provider_id'];
-      $stock_availability = $row['stock_availability'];
+      $availability = $row['stock_availability'];
       $multiplier_category = $row['multiplier_category'];
       $ekm_color_code = $row['ekm_color_code'];
       $ekm_color_no = $row['ekm_color_no'];
