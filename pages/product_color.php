@@ -485,10 +485,6 @@ $picture_path = "images/product/product.jpg";
                         multiplier = pricing_data[i].multiplier;
                         break;
                     }
-
-                    
-
-                    
                 }
 
                 if (gauge == "29") {
