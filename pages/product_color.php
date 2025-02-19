@@ -45,14 +45,14 @@ $picture_path = "images/product/product.jpg";
     <div class="card-body px-0">
         <div class="d-flex justify-content-between align-items-center">
         <div><br>
-            <h4 class="font-weight-medium fs-14 mb-0"> Product Colors</h4>
+            <h4 class="font-weight-medium fs-14 mb-0"> Color Groups</h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
                 <a class="text-muted text-decoration-none" href="">Home
                 </a>
                 </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Product Colors</li>
+                <li class="breadcrumb-item text-muted" aria-current="page">Color Groups</li>
             </ol>
             </nav>
         </div>
@@ -97,14 +97,14 @@ $picture_path = "images/product/product.jpg";
                 <i class="ti ti-trash me-1 fs-5"></i> Delete All Row
             </a>
             </div>
-            <button type="button" id="addProductModalLabel" class="btn btn-primary d-flex align-items-center view_color_btn" data-title="Add" data-id="0">
-                <i class="ti ti-users text-white me-1 fs-5"></i> Add Product Color
+            <button type="button" id="addProductModalLabel" class="btn btn-primary d-flex align-items-center view_color_btn" data-title="Add" data-category="" data-id="0">
+                <i class="ti ti-users text-white me-1 fs-5"></i> Add Color Group
             </button>
         </div>
         </div>
     </div>
 
-    <div class="modal fade" id="updateProductModal" tabindex="-1" role="dialog" aria-labelledby="updateProductModal" aria-hidden="true">
+    <div class="modal fade" id="colorGroupModal" tabindex="-1" role="dialog" aria-labelledby="colorGroupModal" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
@@ -114,8 +114,43 @@ $picture_path = "images/product/product.jpg";
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="colorForm" method="POST" class="form-horizontal" enctype="multipart/form-data">
+                    <input type="hidden" id="id" name="id" class="form-control" />
                     <div id="color_details_sec" class="modal-body">
-                        
+                        <div class="card">
+                            <div class="card-body">
+                                <input type="hidden" id="id" name="id" class="form-control"  value="<?= $id ?>"/>
+
+                                <div class="row pt-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Product Category</label>
+                                        <div class="mb-3">
+                                            <select id="product_category" class="form-control" name="product_category">
+                                                <option value="">Select Category...</option>
+                                                <?php
+                                                $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                                                $result_roles = mysqli_query($conn, $query_roles);            
+                                                while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                                                ?>
+                                                    <option value="<?= $row_product_category['product_category_id'] ?>"
+                                                            data-category="<?= $row_product_category['product_category'] ?>"
+                                                            data-filename="<?= $row_product_category['color_group_filename'] ?>"
+                                                    ><?= $row_product_category['product_category'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="add-fields" class="row pt-3">
+                                    
+                                </div>
+
+                                
+
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <div class="form-actions">
@@ -156,10 +191,10 @@ $picture_path = "images/product/product.jpg";
         <div class="row">
             <div class="col-3">
                 <h3 class="card-title align-items-center mb-2">
-                    Filter Product Colors
+                    Filter Color Groups
                 </h3>
                 <div class="position-relative w-100 px-0 mr-0 mb-2">
-                    <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product Color">
+                    <input type="text" class="form-control search-chat py-2 ps-5 fs-3 " id="text-srh" placeholder="Search Color Group">
                     <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
                 <div class="align-items-center filter_container">
@@ -245,7 +280,7 @@ $picture_path = "images/product/product.jpg";
             </div>
             <div class="col-9">
                 <h3 class="card-title mb-2">
-                    Products Colors List 
+                    Color Group List 
                 </h3>
                 <div id="selected-tags" class="mb-2"></div>
                 <div class="datatables">
@@ -286,7 +321,7 @@ $picture_path = "images/product/product.jpg";
                                         <td><?= getGaugeName($row_prod_color['gauge']) ?></td>
                                         <td>
                                             <div class="action-btn text-center">
-                                                <a href="#" class="text-primary view_color_btn" data-title="Update" data-id="<?= $row_prod_color['id'] ?>">
+                                                <a href="#" class="text-primary view_color_btn" data-title="Update" data-category="<?= $row_prod_color['product_category'] ?>" data-id="<?= $row_prod_color['id'] ?>">
                                                     <i class="text-primary ti ti-eye fs-7"></i>
                                                 </a>
                                             </div>
@@ -358,7 +393,6 @@ $picture_path = "images/product/product.jpg";
                         });
                     } else {
                         $('.opt_field').show();
-                        console.log('No fields found for this category.');
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -368,33 +402,19 @@ $picture_path = "images/product/product.jpg";
         });
 
         $(document).on('click', '.view_color_btn', function(event) {
-            event.preventDefault(); 
-            var id = $(this).data('id');
+            event.preventDefault();
             var title = $(this).data('title');
             $('#modal_title').html(title +" Color");
-            $.ajax({
-                    url: 'pages/product_color_ajax.php',
-                    type: 'POST',
-                    data: {
-                        id: id,
-                        action: "fetch_edit_modal"
-                    },
-                    success: function(response) {
-                        console.log(response);
-                        $('#color_details_sec').html(response);
-                        $(".select2-edit").each(function () {
-                            $(this).select2({
-                                width: '100%',
-                                dropdownParent: $(this).parent()
-                            });
-                        });
 
-                        $('#updateProductModal').modal('show');
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
-            });
+            var id = $(this).data('id') || '';
+            $('#id').val(id);
+
+            var product_category = $(this).data('category') || '';
+            $('#product_category').val(product_category);
+
+            updateSearchCategory();
+
+            $('#colorGroupModal').modal('show');
         });
 
         $(document).on('submit', '#colorForm', function(event) {
@@ -410,10 +430,10 @@ $picture_path = "images/product/product.jpg";
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    $('#updateProductModal').modal('hide');
+                    $('#colorGroupModal').modal('hide');
                     if (response.trim() === "success_update") {
                         $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Product Color updated successfully.");
+                        $('#responseMsg').text("Color Group updated successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");
@@ -422,7 +442,7 @@ $picture_path = "images/product/product.jpg";
                         });
                     }else if (response.trim() === "success_add") {
                         $('#responseHeader').text("Success");
-                        $('#responseMsg').text("New Product Color added successfully.");
+                        $('#responseMsg').text("New Color Group added successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");
@@ -533,15 +553,36 @@ $picture_path = "images/product/product.jpg";
         });
 
         function updateSearchCategory() {
-            let selectedCategory = $('#product_category').val() || '';
+            var product_category = $('#product_category').val() || '';
+            var id = $('#id').val() || '';
+            var filename = $('#product_category option:selected').data('filename') || '';
 
-            $('.add-category option').each(function() {
-                let match = String($(this).data('category')) === String(selectedCategory);
-                $(this).toggle(match);
-            });
+            if(filename != ''){
+                
+                $.ajax({
+                    url: 'pages/' +filename,
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: "fetch_edit_modal"
+                    },
+                    success: function(response) {
+                        $('#add-fields').html(response);
 
-            if (selectedCategory) {
-                $('#add-fields').removeClass('d-none');
+                        let selectedCategory = $('#product_category').val() || '';
+                        //this hides select options that are not the selected category
+                        $('.add-category option').each(function() {
+                            let match = String($(this).data('category')) === String(product_category);
+                            $(this).toggle(match);
+                        });
+                        
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.log('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }else{
+                $('#add-fields').html('');
             }
         }
 
