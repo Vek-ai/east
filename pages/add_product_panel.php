@@ -147,6 +147,7 @@ if(isset($_REQUEST['action'])) {
                         ?>
                             <option value="<?= $row_colors['id'] ?>" 
                                     data-price="<?=$row_colors['price'] ?>" 
+                                    data-color="<?=$row_colors['color'] ?>" 
                                     data-system="<?=$row_colors['product_system'] ?>" 
                                     data-grade="<?=$row_colors['grade'] ?>" 
                                     data-gauge="<?=$row_colors['gauge'] ?>" 
