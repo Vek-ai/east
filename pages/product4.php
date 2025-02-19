@@ -152,7 +152,41 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="product_form" class="form-horizontal">
-                    
+                    <input type="hidden" id="product_id" name="product_id" class="form-control" />
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Product Category</label>
+                                        <div class="mb-3">
+                                        <select id="product_category" class="form-control" name="product_category">
+                                            <option value="" >Select One...</option>
+                                            <?php
+                                            $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                                            $result_roles = mysqli_query($conn, $query_roles);            
+                                            while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                                            ?>
+                                                <option value="<?= $row_product_category['product_category_id'] ?>" 
+                                                        data-category="<?= $row_product_category['product_category'] ?>"
+                                                        data-filename="<?= $row_product_category['product_filename'] ?>"
+                                                >
+                                                            <?= $row_product_category['product_category'] ?>
+                                                </option>
+                                            <?php   
+                                            }
+                                            ?>
+                                        </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="add-fields" class=""></div>
+                                
+                            </div>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
@@ -543,7 +577,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                                 <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
                                                     <i class="text-primary ti ti-eye fs-7"></i>
                                                 </a>
-                                                <a href="#" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>">
+                                                <a href="#" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>" data-category="<?= $row_product['product_category'] ?>">
                                                     <i class="text-warning ti ti-pencil fs-7"></i>
                                                 </a>
                                                 <a href="#" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $product_id ?>" data-status='<?= $db_status ?>'>
@@ -679,43 +713,71 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             });
         });
 
+        $(document).on('change', '#product_category', function() {
+            updateSearchCategory();
+        });
+
+       
+        function updateSearchCategory() {
+            var product_category = $('#product_category').val() || '';
+            var product_id = $('#product_id').val() || '';
+            var filename = $('#product_category option:selected').data('filename') || '';
+
+            if(filename != ''){
+                $.ajax({
+                    url: 'pages/' +filename,
+                    type: 'POST',
+                    data: {
+                        id: product_id,
+                        action: "fetch_product_modal"
+                    },
+                    success: function(response) {
+                        $('#add-fields').html(response);
+
+                        let selectedCategory = $('#product_category').val() || '';
+                        //this hides select options that are not the selected category
+                        $('.add-category option').each(function() {
+                            let match = String($(this).data('category')) === String(product_category);
+                            $(this).toggle(match);
+                        });
+                        
+                        $(".select2").each(function() {
+                            let $this = $(this);
+
+                            if ($this.hasClass("select2-hidden-accessible")) {
+                                $this.select2('destroy');
+                                $this.removeAttr('data-select2-id');
+                                $this.next('.select2-container').remove();
+                            }
+
+                            $this.select2({
+                                width: '100%',
+                                dropdownParent: $this.parent()
+                            });
+                        });
+                        
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.log('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }else{
+                $('#add-fields').html('');
+            }
+            
+        }
+
         $(document).on('click', '#addProductModalBtn, #edit_product_btn', function(event) {
             event.preventDefault();
             var id = $(this).data('id') || '';
+            $('#product_id').val(id);
 
-            console.log(id);
-            $.ajax({
-                url: 'pages/product4_ajax.php',
-                type: 'POST',
-                data: {
-                    id: id,
-                    action: "fetch_product_modal"
-                },
-                success: function(response) {
-                    $('#product_form').html(response);
+            var product_category = $(this).data('category') || '';
+            $('#product_category').val(product_category);
 
-                    updateSearchCategory();
-                    
-                    $(".select2").each(function() {
-                        let $this = $(this);
+            updateSearchCategory();
 
-                        if ($this.hasClass("select2-hidden-accessible")) {
-                            $this.select2('destroy');
-                            $this.removeAttr('data-select2-id');
-                            $this.next('.select2-container').remove();
-                        }
-
-                        $this.select2({
-                            width: '100%',
-                            dropdownParent: $this.parent()
-                        });
-                    });
-                    $('#addProductModal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
+            $('#addProductModal').modal('show');
         });
 
         $(document).on('click', '#downloadProductModalBtn', function(event) {
@@ -1097,48 +1159,9 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             }
         });
         
-        $(document).on('change', '#product_category', function() {
-            updateSearchCategory();
+        $(document).on('mousedown', '.readonly', function() {
+            e.preventDefault();
         });
-
-        function updateSearchCategory() {
-            let selectedCategory = $('#product_category').val() || '';
-
-            $('.add-category option').each(function() {
-                let match = String($(this).data('category')) === String(selectedCategory);
-                $(this).toggle(match);
-            });
-
-            $('.panel-fields, .trim-field, .screw-fields, #add-fields').addClass('d-none');
-            $('#color').removeClass('d-none');
-
-            if (selectedCategory) {
-                $('#add-fields').removeClass('d-none');
-            }
-
-            if (selectedCategory == 3) {
-                $('.panel-fields').removeClass('d-none');
-                $('#color').addClass('d-none');
-            } else if (selectedCategory == 4) {
-                $('.trim-field').removeClass('d-none');
-                $('#color').addClass('d-none');
-            } else if (selectedCategory == 16) {
-                $('.screw-fields').removeClass('d-none');
-            }
-
-            $(".select2").each(function () {
-                let $this = $(this);
-
-                if ($this.hasClass("select2-hidden-accessible")) {
-                    $this.select2('destroy');
-                }
-
-                $this.select2({
-                    width: '100%',
-                    dropdownParent: $this.parent()
-                });
-            });
-        }
 
         function filterTable() {
             var system = $('#select-system').val()?.toString() || '';
