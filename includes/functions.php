@@ -145,6 +145,15 @@ function getWarehouseName($WarehouseID){
     return  $WarehouseName;
 }
 
+function getColorGroupName($id){
+    global $conn;
+    $query = "SELECT color_group_name FROM color_group_name WHERE color_group_name_id = '$id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $color_group_name = $row['color_group_name'] ?? '';
+    return  $color_group_name;
+}
+
 function getWarehouseBinName($BinID){
     global $conn;
     $query = "SELECT BinCode FROM bins WHERE BinID = '$BinID'";

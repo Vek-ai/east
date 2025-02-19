@@ -1428,6 +1428,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "flat_sheet_width") {include 'pages/flat_sheet_width.php';}
 
             if ($_REQUEST['page'] == "product_availability") {include 'pages/product_availability.php';}
+            if ($_REQUEST['page'] == "color_group_names") {include 'pages/color_group_names.php';}
           ?>
         </div>
       </div>

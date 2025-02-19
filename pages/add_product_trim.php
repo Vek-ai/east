@@ -192,7 +192,7 @@ if(isset($_REQUEST['action'])) {
                                     data-multiplier="<?= $row_colors['multiplier'] ?>"
                                     <?= $selected ?>
                             >
-                                        <?= $row_colors['color_name'] ?>
+                                        <?= getColorGroupName($row_colors['color']) ?>
                             </option>
                         <?php   
                         }

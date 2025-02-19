@@ -114,11 +114,10 @@ $picture_path = "images/product/product.jpg";
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="colorForm" method="POST" class="form-horizontal" enctype="multipart/form-data">
-                    <input type="hidden" id="id" name="id" class="form-control" />
                     <div id="color_details_sec" class="modal-body">
                         <div class="card">
                             <div class="card-body">
-                                <input type="hidden" id="id" name="id" class="form-control"  value="<?= $id ?>"/>
+                                <input type="hidden" id="form_id" name="id" class="form-control"/>
 
                                 <div class="row pt-3">
                                     <div class="col-md-12">
@@ -312,7 +311,7 @@ $picture_path = "images/product/product.jpg";
                                         data-gauge="<?= $row_prod_color['gauge'] ?>"
                                         >
                                         <td>
-                                            <?= $row_prod_color['color_name'] ?>
+                                            <?= getColorGroupName($row_prod_color['color']) ?>
                                         </td>
                                         <td><?= getProductCategoryName($row_prod_color['product_category']) ?></td>
                                         <td><?= getProductColorMultName($row_prod_color['color_mult_id']) ?></td>
@@ -407,7 +406,9 @@ $picture_path = "images/product/product.jpg";
             $('#modal_title').html(title +" Color");
 
             var id = $(this).data('id') || '';
-            $('#id').val(id);
+            $('#form_id').val(id);
+
+            console.log($('#form_id').val())
 
             var product_category = $(this).data('category') || '';
             $('#product_category').val(product_category);
@@ -471,6 +472,8 @@ $picture_path = "images/product/product.jpg";
             let color = $('#color').find(":selected").text() || 0;
             let gauge = $('#gauge').find(":selected").text() || 0;
 
+            console.log(color)
+
             // selectedCategory is declared globally
             if (String(selectedCategory) == '3') { // category 3 = Panel
 
@@ -479,8 +482,7 @@ $picture_path = "images/product/product.jpg";
                     if (
                         pricing_data[i].color === color &&
                         pricing_data[i].gauge == gauge &&
-                        pricing_data[i].system === product_system &&
-                        pricing_data[i].width == width
+                        pricing_data[i].system === product_system
                     ) {
                         multiplier = pricing_data[i].multiplier;
                         break;
@@ -495,8 +497,7 @@ $picture_path = "images/product/product.jpg";
                             if (
                                 pricing_data[i].color === color &&
                                 pricing_data[i].gauge == gauge &&
-                                pricing_data[i].system === product_system && 
-                                pricing_data[i].width == width
+                                pricing_data[i].system === product_system
                             ) {
                                 selectedPricingData = pricing_data[i];
                                 break;
@@ -550,7 +551,7 @@ $picture_path = "images/product/product.jpg";
 
         function updateSearchCategory() {
             var product_category = $('#product_category').val() || '';
-            var id = $('#id').val() || '';
+            var id = $('#form_id').val() || '';
             var filename = $('#product_category option:selected').data('filename') || '';
 
             if(filename != ''){
