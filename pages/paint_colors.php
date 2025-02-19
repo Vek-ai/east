@@ -136,35 +136,45 @@ if(!empty($_REQUEST['result'])){
             <input type="text" id="color_name" name="color_name" class="form-control"  value="<?= $color_name ?>"/>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
           <div class="mb-3">
-            <label class="form-label">Color Code</label>
+            <label class="form-label">Hex Color</label>
             <input type="color" id="color_code" name="color_code" class="form-control" value="<?= $color_code ?>" />
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
           <div class="mb-3">
             <label class="form-label">EKM Color Code</label>
             <input type="text" id="ekm_color_code" name="ekm_color_code" class="form-control" value="<?= $ekm_color_code ?>" />
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
           <div class="mb-3">
             <label class="form-label">EKM Color No</label>
             <input type="text" id="ekm_color_no" name="ekm_color_no" class="form-control" value="<?= $ekm_color_no ?>" />
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="mb-3">
-            <label class="form-label">EKM Paint Code</label>
-            <input type="text" id="ekm_paint_code" name="ekm_paint_code" class="form-control" value="<?= $ekm_paint_code ?>" />
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="mb-3">
-            <label class="form-label">Color Group</label>
-            <input type="text" id="color_group" name="color_group" class="form-control" value="<?= $color_group ?>" />
-          </div>
+        <div class="col-md-3 trim-field screw-fields panel-fields">
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Color Group</label>
+                </div>
+                <select id="color_group" class="form-control" name="color_group">
+                    <option value="" >Select Color Group...</option>
+                    <?php
+                    $query_colors = "SELECT * FROM product_color";
+                    $result_colors = mysqli_query($conn, $query_colors);            
+                    while ($row_colors = mysqli_fetch_array($result_colors)) {
+                        $selected = ($color_group == $row_colors['id']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $row_colors['id'] ?>" <?= $selected ?>>
+                          <?= getColorGroupName($row_colors['color']) ?>
+                        </option>
+                    <?php   
+                    }
+                    ?>
+                </select>
+            </div>
         </div>
 
         <div class="col-md-3">
@@ -196,28 +206,14 @@ if(!empty($_REQUEST['result'])){
             <label class="form-label">Stock Availability</label>
             <div class="mb-3">
                 <select id="stock_availability_add" class="form-control select2-add" name="stock_availability">
-                    <option value="" >Select Stock Availability...</option>
-                    <option value="Stock" <?= $stock_availability == 'Stock' ? 'selected' : '' ?> >Stock</option>
-                    <option value="One-Time" <?= $stock_availability == 'One-Time' ? 'selected' : '' ?>>One-Time</option>
-                    <option value="Special Order" <?= $stock_availability == 'Special Order' ? 'selected' : '' ?>>Special Order</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-3 opt_field" data-id="5">
-            <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label mb-1">Multiplier Category</label>
-                <a href="?page=color_multiplier" class="mb-1" target="_blank">Edit</a>
-            </div>
-            <div class="mb-3" data-color-multiplier="<?= $multiplier_category ?>">
-                <select id="multiplier_category_add" class="form-control select2-add" name="multiplier_category">
-                    <option value="" >Select Multiplier Category...</option>
+                    <option value="" >Select Availability...</option>
                     <?php
-                    $query_mult = "SELECT * FROM color_multiplier";
-                    $result_mult = mysqli_query($conn, $query_mult);            
-                    while ($row_mult = mysqli_fetch_array($result_mult)) {
-                      $selected = ($row_mult['id'] == $multiplier_category) ? 'selected' : '';
+                    $query_availability = "SELECT * FROM product_availability";
+                    $result_availability = mysqli_query($conn, $query_availability);            
+                    while ($row_availability = mysqli_fetch_array($result_availability)) {
+                      $selected = ($row_availability['product_availability_id'] == $availability) ? 'selected' : '';
                     ?>
-                        <option value="<?= $row_mult['multiplier'] ?>" <?= $selected ?> ><?= $row_mult['color'] .'( x'.number_format($row_mult['multiplier'],2).' )' ?></option>
+                        <option value="<?= $row_availability['product_availability_id'] ?>" <?= $selected ?> ><?= $row_availability['product_availability'] ?></option>
                     <?php   
                     }
                     ?>
@@ -260,7 +256,7 @@ if(!empty($_REQUEST['result'])){
               <!-- start row -->
               <tr>
                 <th>Color Name</th>
-                <th>Color Code</th>
+                <th>Hex Color</th>
                 <th>Color Group</th>
                 <th>Provider</th>
                 <th>Details</th>
@@ -279,7 +275,7 @@ while ($row_paint_color = mysqli_fetch_array($result_paint_color)) {
     $color_id = $row_paint_color['color_id'];
     $color_name = $row_paint_color['color_name'];
     $color_code = $row_paint_color['color_code'];
-    $color_group = $row_paint_color['color_group'];
+    $color_group = empty(getColorGroupName($row_paint_color['color_group'])) ? $row_paint_color['color_group'] : getColorGroupName($row_paint_color['color_group']);
     $provider_id = $row_paint_color['provider_id'];
     $db_status = $row_paint_color['color_status'];
    // $last_edit = $row_paint_color['last_edit'];

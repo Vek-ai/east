@@ -16,10 +16,10 @@ if(isset($_REQUEST['action'])) {
         $provider_id = mysqli_real_escape_string($conn, $_POST['provider']);
         $ekm_color_code = mysqli_real_escape_string($conn, $_POST['ekm_color_code']);
         $ekm_color_no = mysqli_real_escape_string($conn, $_POST['ekm_color_no']);
-        $ekm_paint_code = mysqli_real_escape_string($conn, $_POST['ekm_paint_code']);
+        $ekm_paint_code = mysqli_real_escape_string($conn, $_POST['ekm_paint_code'] ?? '');
         $color_abbreviation = mysqli_real_escape_string($conn, $_POST['color_abbreviation']);
         $stock_availability = mysqli_real_escape_string($conn, $_POST['stock_availability']);
-        $multiplier_category = mysqli_real_escape_string($conn, $_POST['multiplier_category']);
+        $multiplier_category = mysqli_real_escape_string($conn, $_POST['multiplier_category'] ?? '');
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
@@ -44,14 +44,6 @@ if(isset($_REQUEST['action'])) {
                 }
             }
 
-            if ($color_code != $current_color_code) {
-                $checkColorCode = "SELECT * FROM paint_colors WHERE color_code = '$color_code'";
-                $resultColorCode = mysqli_query($conn, $checkColorCode);
-                if (mysqli_num_rows($resultColorCode) > 0) {
-                    $duplicates[] = "Color Code";
-                }
-            }
-
             if (!empty($duplicates)) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
@@ -71,12 +63,6 @@ if(isset($_REQUEST['action'])) {
             $resultColorName = mysqli_query($conn, $checkColorName);
             if (mysqli_num_rows($resultColorName) > 0) {
                 $duplicates[] = "Color Name";
-            }
-
-            $checkColorCode = "SELECT * FROM paint_colors WHERE color_code = '$color_code'";
-            $resultColorCode = mysqli_query($conn, $checkColorCode);
-            if (mysqli_num_rows($resultColorCode) > 0) {
-                $duplicates[] = "Color Code";
             }
 
             if(!empty($duplicates)){
