@@ -175,7 +175,7 @@ if(isset($_REQUEST['action'])) {
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Color Group</label>
                     </div>
-                    <select id="color" class="form-control add-category calculate" name="color">
+                    <select id="color" class="form-control add-category calculate d-none" name="color">
                         <option value="" >Select Color Group...</option>
                         <?php
                         $query_colors = "SELECT * FROM product_color";
@@ -205,7 +205,7 @@ if(isset($_REQUEST['action'])) {
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Color</label>
                     </div>
-                    <select id="color_paint" class="form-control calculate color-group-filter" name="color_paint">
+                    <select id="color_paint" class="form-control calculate color-group-filter d-none" name="color_paint">
                         <option value="" >Select Color...</option>
                         <?php
                         $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_group REGEXP '^[0-9]+$'";

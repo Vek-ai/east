@@ -725,6 +725,12 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 let match = String($(this).data('group')) === String(selectedGroup);
                 $(this).toggle(match);
             });
+
+            if(selectedGroup){
+                $('.color-group-filter').removeClass("d-none");
+            }else{
+                $('.color-group-filter').addClass("d-none");
+            }
         });
 
        
