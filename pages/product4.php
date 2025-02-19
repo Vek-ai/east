@@ -717,6 +717,16 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             updateSearchCategory();
         });
 
+        $(document).on('change', '#color', function() {
+            let selectedGroup = $('#color').val() || '';
+            console.log(selectedGroup)
+            //this hides select options that are not the selected category
+            $('.color-group-filter option').each(function() {
+                let match = String($(this).data('group')) === String(selectedGroup);
+                $(this).toggle(match);
+            });
+        });
+
        
         function updateSearchCategory() {
             var product_category = $('#product_category').val() || '';

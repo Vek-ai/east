@@ -173,10 +173,10 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-4 trim-field screw-fields panel-fields">
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <label class="form-label">Color</label>
+                        <label class="form-label">Color Group</label>
                     </div>
                     <select id="color" class="form-control add-category calculate" name="color">
-                        <option value="" >Select Color...</option>
+                        <option value="" >Select Color Group...</option>
                         <?php
                         $query_colors = "SELECT * FROM product_color";
                         $result_colors = mysqli_query($conn, $query_colors);            
@@ -195,6 +195,26 @@ if(isset($_REQUEST['action'])) {
                                         <?= getColorGroupName($row_colors['color']) ?>
                             </option>
                         <?php   
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4 trim-field screw-fields panel-fields">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label class="form-label">Color</label>
+                    </div>
+                    <select id="color_paint" class="form-control calculate color-group-filter" name="color_paint">
+                        <option value="" >Select Color...</option>
+                        <?php
+                        $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_group REGEXP '^[0-9]+$'";
+                        $result_color = mysqli_query($conn, $query_color);
+                        while ($row_color = mysqli_fetch_array($result_color)) {
+                            $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
+                        ?>
+                            <option value="<?= $row_color['color_id'] ?>" data-group="<?= $row_color['color_group'] ?>" <?= $selected ?>><?= $row_color['color_name'] ?></option>
+                        <?php
                         }
                         ?>
                     </select>
