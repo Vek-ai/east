@@ -201,7 +201,7 @@ if(!empty($_REQUEST['result'])){
           </div>
         </div>
         <div class="col-md-3 opt_field" data-id="5">
-            <label class="form-label">Stock Availability</label>
+            <label class="form-label">Availability</label>
             <div class="mb-3">
                 <select id="stock_availability_add" class="form-control select2-add" name="stock_availability">
                     <option value="" >Select Availability...</option>
