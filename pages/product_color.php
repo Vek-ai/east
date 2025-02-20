@@ -288,8 +288,8 @@ $picture_path = "images/product/product.jpg";
                             <thead class="header-item">
                             <th>Color</th>
                             <th>Product Category</th>
-                            <th>Color Mult.</th>
-                            <th>Availability</th>
+                            <th>System</th>
+                            <th>Multiplier</th>
                             <th>Grade</th>
                             <th>Gauge</th>
                             <th>Action</th>
@@ -314,10 +314,10 @@ $picture_path = "images/product/product.jpg";
                                             <?= getColorGroupName($row_prod_color['color']) ?>
                                         </td>
                                         <td><?= getProductCategoryName($row_prod_color['product_category']) ?></td>
-                                        <td><?= getProductColorMultName($row_prod_color['color_mult_id']) ?></td>
-                                        <td><?= $row_prod_color['availability'] ?></td>
+                                        <td><?= getProductSystemName($row_prod_color['product_system']) ?></td>
+                                        <td><?= $row_prod_color['multiplier'] ?></td>
                                         <td><?= $row_prod_color['grade'] ?></td>
-                                        <td><?= getGaugeName($row_prod_color['gauge']) ?></td>
+                                        <td><?= $row_prod_color['gauge'] ?></td>
                                         <td>
                                             <div class="action-btn text-center">
                                                 <a href="#" class="text-primary view_color_btn" data-title="Update" data-category="<?= $row_prod_color['product_category'] ?>" data-id="<?= $row_prod_color['id'] ?>">

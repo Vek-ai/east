@@ -718,7 +718,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         });
 
         $(document).on('change', '#color', function() {
-            let selectedGroup = $('#color').val() || '';
+            let selectedGroup = $('#color option:selected').data('color') || '';
             console.log(selectedGroup)
             //this hides select options that are not the selected category
             $('.color-group-filter option').each(function() {
