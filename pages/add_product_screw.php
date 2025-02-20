@@ -29,7 +29,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-4 trim-field screw-fields panel-fields">
                 <label class="form-label">Product Type</label>
                 <div class="mb-3">
-                <select id="product_type" class="form-control  calculate" name="product_type">
+                <select id="product_type" class="form-control add-category calculate" name="product_type">
                     <option value="" >Select Type...</option>
                     <?php
                     $query_roles = "SELECT * FROM product_type WHERE hidden = '0'";
@@ -49,7 +49,7 @@ if(isset($_REQUEST['action'])) {
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Color Group</label>
                     </div>
-                    <select id="color" class="form-control  calculate" name="color">
+                    <select id="color" class="form-control add-category calculate" name="color">
                         <option value="" >Select Color Group...</option>
                         <?php
                         $query_colors = "SELECT * FROM product_color";

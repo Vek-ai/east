@@ -721,17 +721,10 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             let selectedGroup = $('#color option:selected').data('color') || '';
             let product_category = $('#product_category').val() || '';
 
-            console.log("Selected Group:", selectedGroup);
-            console.log("Product Category:", product_category);
-
             $('.color-group-filter option').each(function() {
                 let groupMatch = String($(this).data('group')) === String(selectedGroup);
                 let categoryMatch = String($(this).data('category')) === String(product_category);
-                
                 let match = groupMatch && categoryMatch;
-
-                console.log("Option:", $(this).val(), "Group Match:", groupMatch, "Category Match:", categoryMatch, "Final Match:", match);
-
                 $(this).toggle(match);
             });
 
