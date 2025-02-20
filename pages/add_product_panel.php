@@ -175,8 +175,15 @@ if(isset($_REQUEST['action'])) {
                         $result_color = mysqli_query($conn, $query_color);
                         while ($row_color = mysqli_fetch_array($result_color)) {
                             $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
+                            $availability_details = getAvailabilityDetails($row_color['stock_availability']);
+                            $multiplier = floatval($availability_details['multiplier'] ?? 1);
                         ?>
-                            <option value="<?= $row_color['color_id'] ?>" data-group="<?= $row_color['color_group'] ?>" <?= $selected ?>><?= $row_color['color_name'] ?></option>
+                            <option value="<?= $row_color['color_id'] ?>" 
+                                    data-group="<?= $row_color['color_group'] ?>" 
+                                    data-stock-multiplier="<?= $multiplier ?>" 
+                                    <?= $selected ?>>
+                                        <?= $row_color['color_name'] ?>
+                            </option>
                         <?php
                         }
                         ?>
@@ -194,26 +201,6 @@ if(isset($_REQUEST['action'])) {
                 <div class="mb-3">
                     <label class="form-label">Thickness</label>
                     <input type="text" id="thickness" name="thickness" class="form-control" value="<?=$row['thickness'] ?? ''?>"/>
-                </div>
-            </div>
-            <div class="col-md-4 panel-fields">
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <label class="form-label">Stock Type</label>
-                    </div>
-                    <select id="stock_type" class="form-control calculate" name="stock_type">
-                        <option value="" >Select Stock Type...</option>
-                        <?php
-                        $query_availability = "SELECT * FROM product_availability WHERE hidden = '0'";
-                        $result_availability = mysqli_query($conn, $query_availability);            
-                        while ($row_availability = mysqli_fetch_array($result_availability)) {
-                            $selected = (($row['stock_type'] ?? '') == $row_availability['product_availability']) ? 'selected' : '';
-                        ?>
-                            <option value="<?= $row_availability['product_availability'] ?>" data-multiplier="<?= $row_availability['multiplier'] ?>" <?= $selected ?>><?= $row_availability['product_availability'] ?></option>
-                        <?php   
-                        }
-                        ?>
-                    </select>
                 </div>
             </div>
             <div class="col-md-4 panel-fields">

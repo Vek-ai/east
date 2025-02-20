@@ -87,8 +87,15 @@ if(isset($_REQUEST['action'])) {
                         $result_color = mysqli_query($conn, $query_color);
                         while ($row_color = mysqli_fetch_array($result_color)) {
                             $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
+                            $availability_details = getAvailabilityDetails($row_color['stock_availability']);
+                            $multiplier = floatval($availability_details['multiplier'] ?? 1);
                         ?>
-                            <option value="<?= $row_color['color_id'] ?>" data-group="<?= $row_color['color_group'] ?>" <?= $selected ?>><?= $row_color['color_name'] ?></option>
+                            <option value="<?= $row_color['color_id'] ?>" 
+                                    data-group="<?= $row_color['color_group'] ?>" 
+                                    data-stock-multiplier="<?= $multiplier ?>" 
+                                    <?= $selected ?>>
+                                        <?= $row_color['color_name'] ?>
+                            </option>
                         <?php
                         }
                         ?>

@@ -1162,7 +1162,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 let color_multiplier = grade_multi * color_multi;
                 $("#color_multiplier").val(color_multiplier.toFixed(3));
 
-                let stock_multi = parseFloat($("#stock_type option:selected").attr("data-multiplier")) || 0;
+                let stock_multi = parseFloat($("#color_paint option:selected").attr("data-stock-multiplier")) || 1;
                 let cost = color_multiplier * stock_multi;
                 $("#cost").val(cost.toFixed(3));
 

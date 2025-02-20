@@ -76,6 +76,18 @@ function getProductDetails($product_id) {
     return $product;
 }
 
+function getAvailabilityDetails($id) {
+    global $conn;
+    $id = mysqli_real_escape_string($conn, $id);
+    $query = "SELECT * FROM product_availability WHERE product_availability_id = '$id'";
+    $result = mysqli_query($conn, $query);
+    $product_availability = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $product_availability = $row;
+    }
+    return $product_availability;
+}
+
 function getCoilDetails($coil_id) {
     global $conn;
     $coil_id = mysqli_real_escape_string($conn, $coil_id);
