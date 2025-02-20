@@ -719,19 +719,25 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
         $(document).on('change', '#color', function() {
             let selectedGroup = $('#color option:selected').data('color') || '';
-            console.log(selectedGroup)
-            //this hides select options that are not the selected category
+            let product_category = $('#product_category').val() || '';
+
+            console.log("Selected Group:", selectedGroup);
+            console.log("Product Category:", product_category);
+
             $('.color-group-filter option').each(function() {
-                let match = String($(this).data('group')) === String(selectedGroup);
+                let groupMatch = String($(this).data('group')) === String(selectedGroup);
+                let categoryMatch = String($(this).data('category')) === String(product_category);
+                
+                let match = groupMatch && categoryMatch;
+
+                console.log("Option:", $(this).val(), "Group Match:", groupMatch, "Category Match:", categoryMatch, "Final Match:", match);
+
                 $(this).toggle(match);
             });
 
-            if(selectedGroup){
-                $('.color-group-filter').removeClass("d-none");
-            }else{
-                $('.color-group-filter').addClass("d-none");
-            }
+            $('.color-group-filter').toggleClass("d-none", !selectedGroup);
         });
+
 
        
         function updateSearchCategory() {

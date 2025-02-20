@@ -180,6 +180,7 @@ if(isset($_REQUEST['action'])) {
                         ?>
                             <option value="<?= $row_color['color_id'] ?>" 
                                     data-group="<?= $row_color['color_group'] ?>" 
+                                    data-category="<?= $row_color['product_category'] ?>" 
                                     data-stock-multiplier="<?= $multiplier ?>" 
                                     <?= $selected ?>>
                                         <?= $row_color['color_name'] ?>

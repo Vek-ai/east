@@ -10,6 +10,7 @@ $ekm_color_code = "";
 $ekm_color_no = "";
 $ekm_paint_code = "";
 $stock_availability = '';
+$product_category = '';
 $multiplier_category = '';
 $color_abbreviation = "";
 
@@ -27,6 +28,7 @@ if(!empty($_REQUEST['color_id'])){
       $color_group = $row['color_group'];
       $provider_id = $row['provider_id'];
       $availability = $row['stock_availability'];
+      $product_category = $row['product_category'];
       $multiplier_category = $row['multiplier_category'];
       $ekm_color_code = $row['ekm_color_code'];
       $ekm_color_no = $row['ekm_color_no'];
@@ -136,23 +138,41 @@ if(!empty($_REQUEST['result'])){
             <input type="text" id="color_name" name="color_name" class="form-control"  value="<?= $color_name ?>"/>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="mb-3">
             <label class="form-label">Hex Color</label>
             <input type="color" id="color_code" name="color_code" class="form-control" value="<?= $color_code ?>" />
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="mb-3">
             <label class="form-label">EKM Color Code</label>
             <input type="text" id="ekm_color_code" name="ekm_color_code" class="form-control" value="<?= $ekm_color_code ?>" />
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="mb-3">
             <label class="form-label">EKM Color No</label>
             <input type="text" id="ekm_color_no" name="ekm_color_no" class="form-control" value="<?= $ekm_color_no ?>" />
           </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label class="form-label">Product Category</label>
+                <select id="product_category" class="form-control" name="product_category">
+                    <option value="">Select One...</option>
+                    <?php
+                    $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                    $result_roles = mysqli_query($conn, $query_roles);            
+                    while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                        $selected = ($product_category == $row_product_category['product_category_id']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
+                    <?php   
+                    }
+                    ?>
+                </select>
+            </div>
         </div>
         <div class="col-md-3 trim-field screw-fields panel-fields">
             <div class="mb-3">
@@ -249,7 +269,7 @@ if(!empty($_REQUEST['result'])){
         
         <div class="table-responsive">
        
-          <table id="display_paint_colors" class="table table-striped table-bordered text-nowrap align-middle">
+          <table id="display_paint_colors" class="table table-striped table-bordered text-wrap align-middle">
             <thead>
               <!-- start row -->
               <tr>
@@ -257,6 +277,7 @@ if(!empty($_REQUEST['result'])){
                 <th>Hex Color</th>
                 <th>Color Group</th>
                 <th>Provider</th>
+                <th>Category</th>
                 <th>Details</th>
                 <th>Status</th>
               
@@ -275,6 +296,7 @@ while ($row_paint_color = mysqli_fetch_array($result_paint_color)) {
     $color_code = $row_paint_color['color_code'];
     $color_group = getColorGroupName($row_paint_color['color_group']);
     $provider_id = $row_paint_color['provider_id'];
+    $product_category = getProductCategoryName($row_paint_color['product_category']);
     $db_status = $row_paint_color['color_status'];
    // $last_edit = $row_paint_color['last_edit'];
     $date = new DateTime($row_paint_color['last_edit']);
@@ -303,7 +325,8 @@ while ($row_paint_color = mysqli_fetch_array($result_paint_color)) {
     <td><?= $color_code ?></td>
     <td><?= $color_group ?></td>
     <td><?= getPaintProviderName($provider_id) ?></td>
-    <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
+    <td><?= $product_category ?></td>
+    <td class="last-edit" style="width:20%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
     <td><?= $status ?></td>
     <td class="text-center" id="action-button-<?= $no ?>">
         <?php if ($row_paint_color['color_status'] == '0') { ?>
