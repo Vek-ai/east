@@ -80,7 +80,7 @@ if(isset($_REQUEST['action'])) {
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Color</label>
                     </div>
-                    <select id="color_paint" class="form-control calculate color-group-filter d-none" name="color_paint">
+                    <select id="color_paint" class="form-control calculate add-category color-group-filter d-none" name="color_paint">
                         <option value="" >Select Color...</option>
                         <?php
                         $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_group REGEXP '^[0-9]+$'";
@@ -92,6 +92,7 @@ if(isset($_REQUEST['action'])) {
                         ?>
                             <option value="<?= $row_color['color_id'] ?>" 
                                     data-group="<?= $row_color['color_group'] ?>" 
+                                    data-category="<?= $row_color['product_category'] ?>" 
                                     data-stock-multiplier="<?= $multiplier ?>" 
                                     <?= $selected ?>>
                                         <?= $row_color['color_name'] ?>
