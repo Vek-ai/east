@@ -1016,37 +1016,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         function updateColorSelect() {
             let selectedCategory = $('#product_category').val();
 
-            if (String(selectedCategory) == '4') { 
-                let selectedGrade = $('#grade').val();
-                let selectedGauge = $('#gauge').val();
-
-                let allSelected = selectedCategory && selectedGrade && selectedGauge;
-                $('#color').toggleClass('d-none', !allSelected);
-                $('#color option').each(function () {
-                    let $option = $(this);
-
-                    let optionCategory = String($option.data('category') || "");
-                    let optionGrade = String($option.data('grade') || "");
-                    let optionGauge = String($option.data('gauge') || "");
-
-                    // Skip options where grade or gauge is empty or "0"
-                    if (optionCategory === "" || optionCategory === "0") { $(this).toggle(false); return; }
-                    if (optionGrade === "" || optionGrade === "0") { $(this).toggle(false); return; }
-                    if (optionGauge === "" || optionGauge === "0") { $(this).toggle(false); return; }
-
-                    let categoryMatch = String(selectedCategory) == optionCategory;
-                    let gradeMatch = String(selectedGrade) == optionGrade;
-                    let gaugeMatch = String(selectedGauge) == optionGauge;
-
-                    let match = categoryMatch && gradeMatch && gaugeMatch;
-                    if(match == true){
-                        $(this).toggle(true);
-                    }else{
-                        $(this).toggle(false);
-                    }
-                    
-                });
-            }else if (String(selectedCategory) == '3') { 
+            if (String(selectedCategory) == '3') { 
                 let selectedSystem = $('#product_system').val();
                 let selectedGauge = $('#gauge').val();
 
@@ -1077,6 +1047,8 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                     
                 });
             }
+
+            $('#color').toggleClass('d-none', !selectedCategory);
             
         }
 
