@@ -174,22 +174,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         </div>
                         <div class="align-items-center">
                             <div class="position-relative w-100 py-2 px-1">
-                                <select class="form-control search-chat ps-5" id="select-profile" data-category="">
-                                    <option value="" data-category="">All Profile Types</option>
-                                    <optgroup label="Product Line">
-                                        <?php
-                                        $query_profile = "SELECT * FROM profile_type WHERE hidden = '0'";
-                                        $result_profile = mysqli_query($conn, $query_profile);
-                                        while ($row_profile = mysqli_fetch_array($result_profile)) {
-                                        ?>
-                                            <option value="<?= $row_profile['profile_type_id'] ?>" data-category="profile"><?= $row_profile['profile_type'] ?></option>
-                                        <?php
-                                        }
-                                        ?>
-                                    </optgroup>
-                                </select>
-                            </div>
-                            <div class="position-relative w-100 py-2 px-1">
                                 <select class="form-control search-chat ps-5" id="select-category" data-category="">
                                     <option value="" data-category="">All Categories</option>
                                     <optgroup label="Category">
@@ -198,77 +182,20 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                         $result_category = mysqli_query($conn, $query_category);
                                         while ($row_category = mysqli_fetch_array($result_category)) {
                                         ?>
-                                            <option value="<?= $row_category['product_category_id'] ?>" data-category="category"><?= $row_category['product_category'] ?></option>
+                                            <option value="<?= $row_category['product_category_id'] ?>"
+                                                    data-category="<?= $row_category['product_category'] ?>" >
+                                                        <?= $row_category['product_category'] ?>
+                                            </option>
                                         <?php
                                         }
                                         ?>
                                     </optgroup>
                                 </select>
                             </div>
-                            <div class="position-relative w-100 py-2 px-1">
-                                <select class="form-control search-chat ps-5" id="select-type" data-category="">
-                                    <option value="" data-category="">All Product Types</option>
-                                    <optgroup label="Product Type">
-                                        <?php
-                                        $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
-                                        $result_type = mysqli_query($conn, $query_type);
-                                        while ($row_type = mysqli_fetch_array($result_type)) {
-                                        ?>
-                                            <option value="<?= $row_type['product_type_id'] ?>" data-category="type"><?= $row_type['product_type'] ?></option>
-                                        <?php
-                                        }
-                                        ?>
-                                    </optgroup>
-                                </select>
+                            <div class="sub_search_cat">
+                                
                             </div>
-                            <div class="position-relative w-100 py-2 px-1">
-                                <select class="form-control search-chat ps-5" id="select-color" data-category="">
-                                    <option value="" data-category="">All Colors</option>
-                                    <optgroup label="Product Colors">
-                                        <?php
-                                        $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
-                                        $result_color = mysqli_query($conn, $query_color);
-                                        while ($row_color = mysqli_fetch_array($result_color)) {
-                                        ?>
-                                            <option value="<?= $row_color['color_id'] ?>" data-category="category"><?= $row_color['color_name'] ?></option>
-                                        <?php
-                                        }
-                                        ?>
-                                    </optgroup>
-                                </select>
-                            </div>
-                            <div class="position-relative w-100 py-2 px-1">
-                                <select class="form-control search-chat ps-5" id="select-grade" data-category="">
-                                    <option value="" data-category="">All Grades</option>
-                                    <optgroup label="Product Grades">
-                                        <?php
-                                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
-                                        $result_grade = mysqli_query($conn, $query_grade);
-                                        while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                        ?>
-                                            <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade"><?= $row_grade['product_grade'] ?></option>
-                                        <?php
-                                        }
-                                        ?>
-                                    </optgroup>
-                                </select>
-                            </div>
-                            <div class="position-relative w-100 py-2 px-1">
-                                <select class="form-control search-chat ps-5" id="select-gauge" data-category="">
-                                    <option value="" data-category="">All Gauges</option>
-                                    <optgroup label="Product Gauges">
-                                        <?php
-                                        $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
-                                        $result_gauge = mysqli_query($conn, $query_gauge);
-                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                                        ?>
-                                            <option value="<?= $row_gauge['product_gauge_id'] ?>" data-category="gauge"><?= $row_gauge['product_gauge'] ?></option>
-                                        <?php
-                                        }
-                                        ?>
-                                    </optgroup>
-                                </select>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>
@@ -1801,6 +1728,39 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         drawPlaceholderText();
     }
 
+    function updateSearchCategory(){
+        var product_category = $('#select-category').val() || '';
+
+        console.log(product_category);
+        $.ajax({
+            url: "pages/cashier_ajax.php",
+            type: "POST",
+            data: {
+                product_category: product_category,
+                filter_category: 'filter_category'
+            },
+            success: function(result) {
+                
+                $('.sub_search_cat').html(result);
+
+                $('.select2_filter').each(function () {
+                    $(this).select2({
+                        width: '100%',
+                        dropdownParent: $(this).parent(),
+                        dropdownPosition: 'below'
+                    });
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        }); 
+    }
+
     function formatOption(state) {
         if (!state.id) {
             return state.text;
@@ -2758,6 +2718,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         }
 
         $('#select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type').on('change', updateSelectedTags);
+
+        $('#select-category').on('change', updateSearchCategory);
 
         $('#select-color').select2({
             width: '100%',

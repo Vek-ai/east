@@ -1735,4 +1735,111 @@ if (isset($_POST['add_job_name'])) {
         }
     }
 }
+
+if (isset($_POST['filter_category'])) {
+    $product_category = isset($_REQUEST['product_category']) ? intval($_REQUEST['product_category']) : 0;
+    ?>
+    <div class="position-relative w-100 py-2 px-1">
+        <select class="form-control ps-5 select2_filter" id="select-profile" data-category="">
+            <option value="" data-category="">All Profile Types</option>
+            <optgroup label="Product Line">
+                <?php
+                $query_profile = "SELECT * FROM profile_type WHERE hidden = '0'";
+                $result_profile = mysqli_query($conn, $query_profile);
+                while ($row_profile = mysqli_fetch_array($result_profile)) {
+                ?>
+                    <option value="<?= $row_profile['profile_type_id'] ?>" 
+                            data-category="profile">
+                                <?= $row_profile['profile_type'] ?>
+                    </option>
+                <?php
+                }
+                ?>
+            </optgroup>
+        </select>
+    </div>
+    <div class="position-relative w-100 py-2 px-1">
+        <select class="form-control search-category ps-5 select2_filter" id="select-type" data-category="">
+            <option value="" data-category="">All Product Types</option>
+            <optgroup label="Product Type">
+                <?php
+                $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
+                if (!empty($product_category)) {
+                    $query_type .= " AND product_category = '$product_category'";
+                }
+                $result_type = mysqli_query($conn, $query_type);
+                while ($row_type = mysqli_fetch_array($result_type)) {
+                ?>
+                    <option value="<?= $row_type['product_type_id'] ?>" 
+                            data-category="<?= $row_type['product_category'] ?>">
+                                <?= $row_type['product_type'] ?>
+                    </option>
+                <?php
+                }
+                ?>
+            </optgroup>
+        </select>
+    </div>
+    <div class="position-relative w-100 py-2 px-1">
+        <select class="form-control search-category ps-5 select2_filter" id="select-color" data-category="">
+            <option value="" data-category="">All Colors</option>
+            <optgroup label="Product Colors">
+                <?php
+                $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                if (!empty($product_category)) {
+                    $query_color .= " AND product_category = '$product_category'";
+                }
+                $result_color = mysqli_query($conn, $query_color);
+                while ($row_color = mysqli_fetch_array($result_color)) {
+                ?>
+                    <option value="<?= $row_color['color_id'] ?>" 
+                            data-category="<?= $row_color['product_category'] ?>">
+                                <?= $row_color['color_name'] ?>
+                    </option>
+                <?php
+                }
+                ?>
+            </optgroup>
+        </select>
+    </div>
+    <div class="position-relative w-100 py-2 px-1">
+        <select class="form-control search-category ps-5 select2_filter" id="select-grade" data-category="">
+            <option value="" data-category="">All Grades</option>
+            <optgroup label="Product Grades">
+                <?php
+                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                if (!empty($product_category)) {
+                    $query_grade .= " AND product_category = '$product_category'";
+                }
+                $result_grade = mysqli_query($conn, $query_grade);
+                while ($row_grade = mysqli_fetch_array($result_grade)) {
+                ?>
+                    <option value="<?= $row_grade['product_grade_id'] ?>" 
+                            data-category="<?= $row_grade['product_category'] ?>">
+                                <?= $row_grade['product_grade'] ?>
+                    </option>
+                <?php
+                }
+                ?>
+            </optgroup>
+        </select>
+    </div>
+    <div class="position-relative w-100 py-2 px-1">
+        <select class="form-control ps-5 select2_filter" id="select-gauge" data-category="">
+            <option value="" data-category="">All Gauges</option>
+            <optgroup label="Product Gauges">
+                <?php
+                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                $result_gauge = mysqli_query($conn, $query_gauge);
+                while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                ?>
+                    <option value="<?= $row_gauge['product_gauge_id'] ?>" data-category="gauge"><?= $row_gauge['product_gauge'] ?></option>
+                <?php
+                }
+                ?>
+            </optgroup>
+        </select>
+    </div>
+    <?php
+}
 ?>
