@@ -1745,11 +1745,14 @@ if (isset($_POST['filter_category'])) {
             <optgroup label="Product Line">
                 <?php
                 $query_profile = "SELECT * FROM profile_type WHERE hidden = '0'";
+                if (!empty($product_category)) {
+                    $query_profile .= " AND product_category = '$product_category'";
+                }
                 $result_profile = mysqli_query($conn, $query_profile);
                 while ($row_profile = mysqli_fetch_array($result_profile)) {
                 ?>
                     <option value="<?= $row_profile['profile_type_id'] ?>" 
-                            data-category="profile">
+                            data-category="<?= $row_profile['product_category'] ?>">
                                 <?= $row_profile['profile_type'] ?>
                     </option>
                 <?php
