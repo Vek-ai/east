@@ -38,7 +38,7 @@ if(isset($_REQUEST['action'])) {
             </div>
             <div class="col-md-6 mb-3 panel-fields" data-id="7">
                 <label class="form-label">Color Multiplier Value</label>
-                <input type="text" class="form-control" name="coating" id="coating" value="<?=$row['coating'] ?? ''?>">
+                <input type="text" class="form-control" name="multiplier" id="multiplier" value="<?=$row['multiplier'] ?? ''?>">
             </div>
             <div class="col-md-6 panel-fields" data-id="7">
                 <label class="form-label">Coating</label>
