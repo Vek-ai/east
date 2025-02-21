@@ -43,8 +43,8 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-6 panel-fields" data-id="7">
                 <label class="form-label">Coating</label>
                 <div class="mb-3">
-                    <select id="color" class="form-control calculate" name="color">
-                        <option value="">Select Color...</option>
+                    <select id="coating" class="form-control calculate" name="coating">
+                        <option value="">Select Coating...</option>
                         <?php
                         $query_product_coating = "SELECT * FROM product_coating WHERE hidden = '0' ORDER BY product_coating";
                         $result_product_coating = mysqli_query($conn, $query_product_coating);
