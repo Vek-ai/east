@@ -88,7 +88,7 @@ if(isset($_REQUEST['action'])) {
             </div>
 
             <div class="col-md-6 panel-fields" data-id="7">
-                <label class="form-label">Color</label>
+                <label class="form-label">Color Group</label>
                 <div class="mb-3">
                     <select id="color" class="form-control calculate" name="color">
                         <option value="">Select Color...</option>

@@ -97,7 +97,7 @@ $picture_path = "images/product/product.jpg";
                 <i class="ti ti-trash me-1 fs-5"></i> Delete All Row
             </a>
             </div>
-            <button type="button" id="addProductModalLabel" class="btn btn-primary d-flex align-items-center view_color_btn" data-title="Add" data-category="" data-id="0">
+            <button type="button" id="addProductModalLabel" class="btn btn-primary d-flex align-items-center view_color_btn" data-title="Add Color Group Multiplier" data-category="" data-id="0">
                 <i class="ti ti-users text-white me-1 fs-5"></i> Add Color Group
             </button>
         </div>
@@ -320,7 +320,7 @@ $picture_path = "images/product/product.jpg";
                                         <td><?= $row_prod_color['gauge'] ?></td>
                                         <td>
                                             <div class="action-btn text-center">
-                                                <a href="#" class="text-primary view_color_btn" data-title="Update" data-category="<?= $row_prod_color['product_category'] ?>" data-id="<?= $row_prod_color['id'] ?>">
+                                                <a href="#" class="text-primary view_color_btn" data-title="Update Color Group Multiplier" data-category="<?= $row_prod_color['product_category'] ?>" data-id="<?= $row_prod_color['id'] ?>">
                                                     <i class="text-primary ti ti-eye fs-7"></i>
                                                 </a>
                                             </div>
