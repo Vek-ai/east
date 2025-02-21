@@ -1124,7 +1124,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 }
                 $("#cost_per_sq_in").val(cost_per_sq_in.toFixed(3));
 
-                let price = parseFloat($("#color option:selected").attr("data-price")) || 0;
+                let price = parseFloat($("#color option:selected").attr("data-multiplier")) || 0;
                 let trim_multiplier = price * current_retail_price;
                 $("#trim_multiplier").val(trim_multiplier.toFixed(3));
 
