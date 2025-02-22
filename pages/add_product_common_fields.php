@@ -30,7 +30,7 @@
                 while ($row_products = mysqli_fetch_array($result_products)) {
                     $selected = in_array($row_products['product_id'], $correlated_product_ids) ? 'selected' : '';
                 ?>
-                    <option value="<?= $row_products['product_id'] ?>" <?= $selected ?> ><?= $row_products['product_item'] ?></option>
+                    <option value="<?= $row_products['product_id'] ?>" <?= $selected ?> ><?= $row_products['description'] ?></option>
                 <?php   
                 }
                 ?>
