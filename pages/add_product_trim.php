@@ -261,7 +261,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-4 trim-field">
                 <div class="mb-3">
                     <label class="form-label">Retail Cost</label>
-                    <input type="text" id="retail_cost" name="retail_cost" class="form-control readonly" value="<?=$row['retail_cost']?>"/>
+                    <input type="text" id="cost" name="cost" class="form-control readonly" value="<?=$row['cost']?>"/>
                 </div>
             </div>
 

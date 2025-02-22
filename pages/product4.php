@@ -1127,8 +1127,8 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 $("#trim_multiplier").val(trim_multiplier.toFixed(3));
 
                 let length = $("#length").val().trim();
-                let retail_cost = trim_multiplier * price * length;
-                $("#retail_cost").val(retail_cost.toFixed(3));
+                let cost = trim_multiplier * price * length;
+                $("#cost").val(cost.toFixed(3));
 
                 let descriptionParts = [];
 
