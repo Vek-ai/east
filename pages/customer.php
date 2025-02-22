@@ -341,7 +341,10 @@ if (!empty($_REQUEST['result'])) {
               <div class="row pt-3">
                 <div class="col-md-6 opt_field_update">
                   <div class="mb-3">
-                    <label class="form-label">Tax Status</label>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label class="form-label">Tax Status</label>
+                        <a href="?page=customer_tax" target="_blank" class="text-decoration-none">Edit</a>
+                    </div>
                     <select id="tax_status" class="form-select form-control" name="tax_status">
                       <option value="">Select Tax Status...</option>
                       <?php
@@ -419,7 +422,10 @@ if (!empty($_REQUEST['result'])) {
                 </div>
 
                 <div class="col-6">
-                  <label class="form-label">Customer Pricing</label>
+                  <div class="d-flex justify-content-between align-items-center">
+                      <label class="form-label">Customer Pricing</label>
+                      <a href="?page=customer_pricing" target="_blank" class="text-decoration-none">Edit</a>
+                  </div>
                   <div class="mb-3" data-pricing="<?= $customer_pricing ?>">
                       <select id="customer_pricing" class="form-control" name="customer_pricing">
                           <option value="">Select One...</option>

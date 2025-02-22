@@ -126,9 +126,12 @@ if(!empty($_REQUEST['staff_id'])){
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="mb-3">
-                                            <label class="form-label">Role</label>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <label class="form-label">Role</label>
+                                                <a href="?page=employee_roles" target="_blank" class="text-decoration-none">Edit</a>
+                                            </div>
                                             <select id="role" class="form-control" name="role">
-                                                <option value="/" >Select One...</option>
+                                                <option value="" >Select One...</option>
                                                 <?php
                                                 $query_roles = "SELECT * FROM staff_roles WHERE hidden = '0'";
                                                 $result_roles = mysqli_query($conn, $query_roles);            
@@ -200,9 +203,12 @@ if(!empty($_REQUEST['staff_id'])){
                                 </div>
                             
                                 <div class="col-12 mb-9">
-                                    <label class="form-label">Warehouses</label>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="form-label">Warehouses</label>
+                                        <a href="?page=warehouses" target="_blank" class="text-decoration-none">Edit</a>
+                                    </div>
                                     <select id="warehouse" class="form-control" name="warehouse">
-                                        <option value="/" >Select One...</option>
+                                        <option value="" >Select One...</option>
                                         <?php
                                         $query_warehouses = "SELECT * FROM warehouses WHERE status = '1'";
                                         $result_warehouses = mysqli_query($conn, $query_warehouses);            

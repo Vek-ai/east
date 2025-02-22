@@ -4,34 +4,31 @@ session_start();
 include "../includes/dbconn.php";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $redirect = isset($_REQUEST['redirect']) ? $_REQUEST['redirect'] : 'index.php';
-    $username = $conn->real_escape_string($username);
+  $username = $_POST['username'];
+  $password = $_POST['password'];
+  $redirect = isset($_REQUEST['redirect']) ? $_REQUEST['redirect'] : 'index.php';
 
-    // SQL query to fetch user
-    $sql = "SELECT userid, password FROM users WHERE username = '$username'";
-    $result = $conn->query($sql);
+  $username = $conn->real_escape_string($username);
+  $sql = "SELECT staff_id, password, role FROM staff WHERE username = '$username'";
+  $result = $conn->query($sql);
 
-    if ($result->num_rows > 0) {
-        // Fetch the result
-        $row = $result->fetch_assoc();
-        $db_password = $row['password'];
-        $userid = $row['userid'];
+  if ($result->num_rows > 0) {
+      $row = $result->fetch_assoc();
+      $db_password = $row['password'];
+      $staff_id = $row['staff_id'];
 
-        // Verify the password
-        if ($db_password == $password) {
-            $_SESSION['userid'] = $userid;
-            setcookie("userid", $userid, time() + (86400 * 30), "/");
+      if ($db_password == $password) {
+          $_SESSION['userid'] = $staff_id;
+          setcookie("userid", $staff_id, time() + (86400 * 30), "/");
 
-            header("Location: $redirect");
-            exit();
-        } else {
-            $error = 'Invalid username or password.';
-        }
-    } else {
-        $error = 'Invalid username or password.';
-    }
+          header("Location: $redirect");
+          exit();
+      } else {
+          $error = 'Invalid password.';
+      }
+  } else {
+      $error = 'Invalid username or password.';
+  }
 }
 ?>
 

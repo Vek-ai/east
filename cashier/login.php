@@ -10,24 +10,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $conn->real_escape_string($username);
 
     // SQL query to fetch user
-    $sql = "SELECT userid, password FROM users WHERE username = '$username'";
+    $sql = "SELECT staff_id, password, role FROM staff WHERE username = '$username'";
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
         // Fetch the result
         $row = $result->fetch_assoc();
         $db_password = $row['password'];
-        $userid = $row['userid'];
+        $userid = $row['staff_id'];
 
         // Verify the password
         if ($db_password == $password) {
-            $_SESSION['userid'] = $userid;
-            setcookie("userid", $userid, time() + (86400 * 30), "/");
+            $_SESSION['userid'] = $staff_id;
+            setcookie("userid", $staff_id, time() + (86400 * 30), "/");
 
             header("Location: $redirect");
             exit();
         } else {
-            $error = 'Invalid username or password.';
+            $error = 'Invalid password.';
         }
     } else {
         $error = 'Invalid username or password.';

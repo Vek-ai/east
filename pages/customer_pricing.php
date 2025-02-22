@@ -117,13 +117,15 @@ if(!empty($_REQUEST['id'])){
           <div class="row">
             
             <div class="col-6 text-start">
-            
+              <a href="?page=pricing_category">
+                <button type="button" class="btn btn-primary" style="border-radius: 10%;">View Pricing Categories</button>
+              </a>
             </div>
-            <div class="col-6 text-end">
+            <div class="col-6 text-end gapt-3">
+              
               <button type="submit" class="btn btn-primary" style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
             </div>
           </div>
-          
         </div>
       </div>
 

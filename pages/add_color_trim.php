@@ -19,10 +19,13 @@ if(isset($_REQUEST['action'])) {
         }
         ?>
             <div class="col-md-6 panel-fields" data-id="7">
-                <label class="form-label">Color Group</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Color Group</label>
+                    <a href="?page=product_color" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                     <select id="color" class="form-control calculate" name="color">
-                        <option value="">Select Color...</option>
+                        <option value="">Select Color Group...</option>
                         <?php
                         $query_color_group = "SELECT * FROM color_group_name WHERE hidden = '0' ORDER BY color_group_name";
                         $result_color_group = mysqli_query($conn, $query_color_group);
@@ -41,7 +44,10 @@ if(isset($_REQUEST['action'])) {
                 <input type="text" class="form-control" name="multiplier" id="multiplier" value="<?=$row['multiplier'] ?? ''?>">
             </div>
             <div class="col-md-6 panel-fields" data-id="7">
-                <label class="form-label">Coating</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Coating</label>
+                    <a href="?page=product_coating" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                     <select id="coating" class="form-control calculate" name="coating">
                         <option value="">Select Coating...</option>

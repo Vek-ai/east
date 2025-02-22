@@ -1,37 +1,45 @@
 <?php
 include "includes/dbconn.php";
-
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $redirect = isset($_REQUEST['redirect']) ? $_REQUEST['redirect'] : 'index.php';
-    $username = $conn->real_escape_string($username);
 
-    // SQL query to fetch user
-    $sql = "SELECT userid, password FROM users WHERE username = '$username'";
-    $result = $conn->query($sql);
+  $username = $_POST['username'];
+  $password = $_POST['password'];
+  $redirect = isset($_REQUEST['redirect']) ? $_REQUEST['redirect'] : 'index.php';
 
-    if ($result->num_rows > 0) {
-        // Fetch the result
-        $row = $result->fetch_assoc();
-        $db_password = $row['password'];
-        $userid = $row['userid'];
+  $username = $conn->real_escape_string($username);
 
-        // Verify the password
-        if ($db_password == $password) {
-            $_SESSION['userid'] = $userid;
-            setcookie("userid", $userid, time() + (86400 * 30), "/");
+  $sql = "SELECT staff_id, password, role FROM staff WHERE username = '$username'";
+  $result = $conn->query($sql);
 
-            header("Location: $redirect");
-            exit();
-        } else {
-            $error = 'Invalid username or password.';
-        }
-    } else {
-        $error = 'Invalid username or password.';
-    }
+  if ($result->num_rows > 0) {
+      $row = $result->fetch_assoc();
+      $db_password = $row['password'];
+      $staff_id = $row['staff_id'];
+      $role = $row['role'];
+
+      if ($db_password == $password) {
+          if ($role != 6) {
+              $error = 'Your account does not have the necessary permissions to access this page.';
+          } else {
+              $_SESSION['userid'] = $staff_id;
+              $_SESSION['userrole'] = $role;
+
+              setcookie("userid", $staff_id, time() + (86400 * 30), "/");
+
+              header("Location: $redirect");
+              exit();
+          }
+      } else {
+          $error = 'Incorrect password. Please try again.';
+      }
+  } else {
+      $error = 'Incorrect username or password. Please try again.';
+  }
 }
 ?>
 

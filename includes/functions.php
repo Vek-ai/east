@@ -7,13 +7,13 @@ function get_userid(){
     }
 }
 
-function get_name($userid){
+function get_name($staff_id){
     global $conn;
-    $query = "SELECT fname, lname FROM users WHERE userid = '$userid'";
+    $query = "SELECT staff_fname, staff_lname FROM staff WHERE staff_id = '$staff_id'";
     $result = mysqli_query($conn,$query);
     $row = mysqli_fetch_array($result); 
-    $fname = $row['fname'] ?? '';
-    $lname = $row['lname'] ?? '';
+    $fname = $row['staff_fname'] ?? '';
+    $lname = $row['staff_lname'] ?? '';
     return  "$fname $lname";
 }
 

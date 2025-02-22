@@ -27,7 +27,10 @@ if(isset($_REQUEST['action'])) {
         
         <div class="row pt-3">
             <div class="col-md-4 trim-field panel-fields">
-                <label class="form-label">Product System</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Product System</label>
+                    <a href="?page=product_system" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                 <select id="product_system" class="form-control add-category calculate" name="product_system">
                     <option value="" >Select System...</option>
@@ -45,7 +48,10 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
             <div class="col-md-4 trim-field panel-fields">
-                <label class="form-label">Product Line</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Product Line</label>
+                    <a href="?page=product_line" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                 <select id="product_line" class="form-control add-category calculate" name="product_line">
                     <option value="" >Select Line...</option>
@@ -63,7 +69,10 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
             <div class="col-md-4 trim-field screw-fields panel-fields">
-                <label class="form-label">Product Type</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Product Type</label>
+                    <a href="?page=product_type" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                 <select id="product_type" class="form-control add-category calculate" name="product_type">
                     <option value="" >Select Type...</option>
@@ -81,7 +90,10 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
             <div class="col-md-4 trim-field">
-                <label class="form-label">Flat Sheet Width</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Flat Sheet Width</label>
+                    <a href="?page=flat_sheet_width" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                 <select id="flat_sheet_width" class="form-control readonly" name="flat_sheet_width">
                     <option value="">0</option>
@@ -123,6 +135,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Grade</label>
+                        <a href="?page=product_grade" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
                     <select id="grade" class="form-control calculate add-category" name="grade">
                         <option value="" >Select Grade...</option>
@@ -143,6 +156,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Gauge</label>
+                        <a href="?page=product_gauge" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
                     <select id="gauge" class="form-control calculate" name="gauge">
                         <option value="" >Select Gauge...</option>
@@ -174,6 +188,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Color Group</label>
+                        <a href="?page=product_color" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
                     <select id="color" class="form-control add-category calculate" name="color">
                         <option value="" >Select Color Group...</option>
@@ -205,6 +220,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Color</label>
+                        <a href="?page=paint_colors" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
                     <select id="color_paint" class="form-control calculate color-group-filter" name="color_paint">
                         <option value="" >Select Color...</option>
@@ -262,6 +278,10 @@ if(isset($_REQUEST['action'])) {
                     <input type="text" id="description" name="description" class="form-control" value="<?=$row['description']?>"/>
                 </div>
             </div>
+
+        <!--COMMON FIELDS-->
+        <?php include "add_product_common_fields.php"; ?>
+        <!--END COMMON FIELDS-->
         </div>
         <div class="modal-footer">
             <div class="form-actions">

@@ -27,7 +27,10 @@ if(isset($_REQUEST['action'])) {
         
         <div class="row pt-3">
             <div class="col-md-4 trim-field screw-fields panel-fields">
-                <label class="form-label">Product Type</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Product Type</label>
+                    <a href="?page=product_type" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                 <select id="product_type" class="form-control add-category calculate" name="product_type">
                     <option value="" >Select Type...</option>
@@ -48,6 +51,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Color Group</label>
+                        <a href="?page=product_color" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
                     <select id="color" class="form-control add-category calculate" name="color">
                         <option value="" >Select Color Group...</option>
@@ -79,6 +83,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Color</label>
+                        <a href="?page=paint_colors" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
                     <select id="color_paint" class="form-control calculate color-group-filter" name="color_paint">
                         <option value="" >Select Color...</option>
@@ -121,7 +126,10 @@ if(isset($_REQUEST['action'])) {
             </div>
 
             <div class="col-md-4 screw-fields">
-                <label class="form-label">Supplier</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Supplier</label>
+                    <a href="?page=product_supplier" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                     <select id="supplier_id" class="form-control select-2 inventory_supplier" name="supplier_id">
                         <option value="" >Select Supplier...</option>
@@ -144,6 +152,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-4 screw-fields">
                 <div class="d-flex justify-content-between align-items-center">
                     <label class="form-label">Pack</label>
+                    <a href="?page=supplier_pack" target="_blank" class="text-decoration-none">Edit</a>
                 </div>
                 <div class="mb-3">
                 <select id="pack" class="form-control select-2 pack_select calculate" name="pack">
@@ -179,6 +188,10 @@ if(isset($_REQUEST['action'])) {
                     <input type="text" id="description" name="description" class="form-control" value="<?=$row['description']?>"/>
                 </div>
             </div>
+
+        <!--COMMON FIELDS-->
+        <?php include "add_product_common_fields.php"; ?>
+        <!--END COMMON FIELDS-->
         </div>
         <div class="modal-footer">
             <div class="form-actions">

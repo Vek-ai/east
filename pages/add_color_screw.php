@@ -19,7 +19,10 @@ if(isset($_REQUEST['action'])) {
         }
         ?>
         <div class="col-md-6 panel-fields" data-id="7">
-            <label class="form-label">Color</label>
+            <div class="d-flex justify-content-between align-items-center">
+                <label class="form-label">Color Group</label>
+                <a href="?page=product_color" target="_blank" class="text-decoration-none">Edit</a>
+            </div>
             <div class="mb-3">
                 <select id="color" class="form-control calculate" name="color">
                     <option value="">Select Color...</option>

@@ -21,7 +21,10 @@ if(isset($_REQUEST['action'])) {
             
 
             <div class="col-md-6 panel-fields">
-                <label class="form-label">Product System</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Product System</label>
+                    <a href="?page=product_system" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                 <select id="product_system" class="form-control add-category calculate" name="product_system">
                     <option value="" >Select System...</option>
@@ -41,7 +44,8 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-6 panel-fields">
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <label class="form-label mb-1">Gauge</label>
+                        <label class="form-label">Gauge</label>
+                        <a href="?page=product_gauge" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
                     <select id="gauge" class="form-control calculate" name="gauge">
                         <option value="">Select Gauge...</option>
@@ -88,7 +92,10 @@ if(isset($_REQUEST['action'])) {
             </div>
 
             <div class="col-md-6 panel-fields" data-id="7">
-                <label class="form-label">Color Group</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Color Group</label>
+                    <a href="?page=product_color" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                     <select id="color" class="form-control calculate" name="color">
                         <option value="">Select Color...</option>

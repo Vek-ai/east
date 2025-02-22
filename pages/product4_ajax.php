@@ -24,8 +24,22 @@ if(isset($_REQUEST['action'])) {
         
         $fields = [];
         foreach ($_POST as $key => $value) {
+            if (is_array($value)) {
+                $value = json_encode($value);
+            }
+        
+            $escapedValue = mysqli_real_escape_string($conn, $value);
+        
             if ($key != 'product_id') {
-                $fields[$key] = mysqli_real_escape_string($conn, $value);
+                $fields[$key] = $escapedValue;
+            }
+        
+            if ($key == 'cost') {
+                $fields['unit_price'] = $escapedValue;
+            }
+
+            if ($key == 'retail_cost') {
+                $fields['retail_cost'] = $escapedValue;
             }
         }
         
@@ -69,11 +83,56 @@ if(isset($_REQUEST['action'])) {
             
             if (mysqli_query($conn, $insertQuery)) {
                 $product_id = $conn->insert_id;
+
+                $sql = "UPDATE product_duplicate2 SET main_image='images/product/product.jpg' WHERE product_id='$product_id'";
+                if (!$conn->query($sql)) {
+                    echo "Error updating record: " . $conn->error;
+                }
+
                 echo "success_add";
             } else {
                 echo "Error adding product: " . mysqli_error($conn);
             }
         }    
+
+        if (!empty($_FILES['picture_path']['name'][0])) {
+            if (is_array($_FILES['picture_path']['name']) && count($_FILES['picture_path']['name']) > 0) {
+                $uploadFileDir = '../images/product/';
+                
+                for ($i = 0; $i < count($_FILES['picture_path']['name']); $i++) {
+                    $fileTmpPath = $_FILES['picture_path']['tmp_name'][$i];
+                    $fileName = $_FILES['picture_path']['name'][$i];
+                    
+                    if (empty($fileName)) {
+                        continue;
+                    }
+        
+                    $fileNameCmps = explode(".", $fileName);
+                    $fileExtension = strtolower(end($fileNameCmps));
+                    
+                    $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
+                    $dest_path = $uploadFileDir . $newFileName;
+        
+                    if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                        $picture_path = mysqli_real_escape_string($conn, $dest_path);
+        
+                        if ($i == 0) {
+                            $sql = "UPDATE product_duplicate2 SET main_image='images/product/$newFileName' WHERE product_id='$product_id'";
+                            if (!$conn->query($sql)) {
+                                echo "Error updating record: " . $conn->error;
+                            }
+                        }
+        
+                        $sql = "INSERT INTO product_images (productid, image_url) VALUES ('$product_id', 'images/product/$newFileName')";
+                        if (!$conn->query($sql)) {
+                            echo "Error updating record: " . $conn->error;
+                        }
+                    } else {
+                        echo 'Error moving the file to the upload directory.';
+                    }
+                }
+            }
+        }
     }
 
     if ($action == "fetch_view_modal") {

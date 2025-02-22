@@ -26,8 +26,71 @@ if(isset($_REQUEST['action'])) {
         ?>
         
         <div class="row pt-3">
+            <div class="col-md-12">
+                <div class="card-body p-0">
+                    <h4 class="card-title text-center">Product Image</h4>
+                    <p action="#" id="myUpdateDropzone" class="dropzone">
+                        <div class="fallback">
+                        <input type="file" id="picture_path_update" name="picture_path[]" class="form-control" style="display: none" multiple/>
+                        </div>
+                    </p>
+                </div>
+            </div>
+
+            <?php
+            $query_img = "SELECT * FROM product_images WHERE productid = '$product_id'";
+            $result_img = mysqli_query($conn, $query_img);
+            if (mysqli_num_rows($result_img) > 0) { ?>
+                <div class="col-md-12">
+                    <h5>Current Images</h5>
+                    <div class="row pt-3">
+                        <?php while ($row_img = mysqli_fetch_array($result_img)) { 
+                            $image_id = $row_img['prodimgid'];
+                            ?>
+                            <div class="col-md-2 position-relative">
+                                <div class="mb-3">
+                                    <img src="<?= $row_img['image_url'] ?>" class="img-fluid" alt="Product Image" />
+                                    <button class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn" data-image-id="<?= $image_id ?>">X</button>
+                                </div>
+                            </div>
+                        <?php } ?>
+                    </div>
+                </div>
+            <?php } ?>
+
+            <script>
+                window.uploadedUpdateFiles = window.uploadedUpdateFiles || [];
+                $('#myUpdateDropzone').dropzone({
+                    addRemoveLinks: true,
+                    dictRemoveFile: "X",
+                    init: function() {
+                        this.on("addedfile", function(file) {
+                            uploadedUpdateFiles.push(file);
+                            updateFileInput2();
+                        });
+
+                        this.on("removedfile", function(file) {
+                            uploadedUpdateFiles = uploadedUpdateFiles.filter(f => f.name !== file.name);
+                            updateFileInput2();
+                        });
+                    }
+                });
+                function updateFileInput2() {
+                    const fileInput = document.getElementById('picture_path_update');
+                    const dataTransfer = new DataTransfer();
+                    uploadedUpdateFiles.forEach(file => {
+                        const fileBlob = new Blob([file], { type: file.type });
+                        dataTransfer.items.add(new File([fileBlob], file.name, { type: file.type }));
+                    });
+                    fileInput.files = dataTransfer.files;
+                }
+            </script>
+
             <div class="col-md-4 trim-field panel-fields">
-                <label class="form-label">Product System</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Product System</label>
+                    <a href="?page=product_system" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                 <select id="product_system" class="form-control add-category calculate" name="product_system">
                     <option value="" >Select System...</option>
@@ -45,7 +108,10 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
             <div class="col-md-4 trim-field panel-fields">
-                <label class="form-label">Product Line</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Product Line</label>
+                    <a href="?page=product_line" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                 <select id="product_line" class="form-control add-category calculate" name="product_line">
                     <option value="" >Select Line...</option>
@@ -63,7 +129,10 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
             <div class="col-md-4 trim-field screw-fields panel-fields">
-                <label class="form-label">Product Type</label>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Product Type</label>
+                    <a href="?page=product_type" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
                 <div class="mb-3">
                 <select id="product_type" class="form-control add-category calculate" name="product_type">
                     <option value="" >Select Type...</option>
@@ -85,6 +154,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Grade</label>
+                        <a href="?page=product_grade" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
                     <select id="grade" class="form-control calculate add-category" name="grade">
                         <option value="" >Select Grade...</option>
@@ -104,7 +174,8 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-4 trim-field panel-fields">
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <label class="form-label">Gauge</label>
+                        <label class="form-label">Product Gauge</label>
+                        <a href="?page=product_gauge" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
                     <select id="gauge" class="form-control calculate" name="gauge">
                         <option value="" >Select Gauge...</option>
@@ -136,6 +207,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Color Group</label>
+                        <a href="?page=product_color" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
                     <select id="color" class="form-control add-category calculate" name="color">
                         <option value="" >Select Color Group...</option>
@@ -167,6 +239,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Color</label>
+                        <a href="?page=paint_colors" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
                     <select id="color_paint" class="form-control calculate color-group-filter" name="color_paint">
                         <option value="" >Select Color...</option>
@@ -224,6 +297,10 @@ if(isset($_REQUEST['action'])) {
                     <input type="text" id="description" name="description" class="form-control" value="<?=$row['description']?>"/>
                 </div>
             </div>
+
+        <!--COMMON FIELDS-->
+        <?php include "add_product_common_fields.php"; ?>
+        <!--END COMMON FIELDS-->
         </div>
         <div class="modal-footer">
             <div class="form-actions">
@@ -231,7 +308,6 @@ if(isset($_REQUEST['action'])) {
                 <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
-
         <?php
     }
 
