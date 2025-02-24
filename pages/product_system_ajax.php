@@ -23,67 +23,18 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            // Record exists, fetch current values
-            $row = mysqli_fetch_assoc($result);
-            $current_product_system = $row['product_system'];
-            $current_system_abreviations = $row['system_abbreviations'];
-
-            $duplicates = array();
-
-            // Check for duplicates only if the new values are different from the current values
-            if ($product_system != $current_product_system) {
-                $checkSystem = "SELECT * FROM product_system WHERE product_system = '$product_system'";
-                $resultSystem = mysqli_query($conn, $checkSystem);
-                if (mysqli_num_rows($resultSystem) > 0) {
-                    $duplicates[] = "Product System";
-                }
-            }
-
-            if ($system_abbreviations != $current_system_abreviations) {
-                $checkAbreviations = "SELECT * FROM product_system WHERE system_abbreviations = '$system_abbreviations'";
-                $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-                if (mysqli_num_rows($resultAbreviations) > 0) {
-                    $duplicates[] = "System Abbreviations";
-                }
-            }
-
-            if (!empty($duplicates)) {
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            $updateQuery = "UPDATE product_system SET product_system = '$product_system', system_abbreviations = '$system_abbreviations', product_category = '$product_category', notes = '$notes', multiplier = '$multiplier', last_edit = NOW(), edited_by = '$userid'  WHERE product_system_id = '$product_system_id'";
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "success_update";
             } else {
-                // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_system SET product_system = '$product_system', system_abbreviations = '$system_abbreviations', product_category = '$product_category', notes = '$notes', multiplier = '$multiplier', last_edit = NOW(), edited_by = '$userid'  WHERE product_system_id = '$product_system_id'";
-                if (mysqli_query($conn, $updateQuery)) {
-                    echo "success_update";
-                } else {
-                    echo "Error updating product systems: " . mysqli_error($conn);
-                }
+                echo "Error updating product systems: " . mysqli_error($conn);
             }
         } else {
-            // Record does not exist, perform duplicate checks before inserting
-            $duplicates = array();
-            $checkSystem = "SELECT * FROM product_system WHERE product_system = '$product_system'";
-            $resultSystem = mysqli_query($conn, $checkSystem);
-            if (mysqli_num_rows($resultSystem) > 0) {
-                $duplicates[] = "Product System";
-            }
-
-            $checkAbreviations = "SELECT * FROM product_system WHERE system_abbreviations = '$system_abbreviations'";
-            $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-            if (mysqli_num_rows($resultAbreviations) > 0) {
-                $duplicates[] = "System Abbreviations";
-            }
-
-            if(!empty($duplicates)){
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            $insertQuery = "INSERT INTO product_system (product_system, system_abbreviations, product_category, notes, multiplier, added_date, added_by) VALUES ('$product_system', '$system_abbreviations', '$product_category', '$notes', '$multiplier', NOW(), '$userid')";
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "success_add";
             } else {
-                $insertQuery = "INSERT INTO product_system (product_system, system_abbreviations, product_category, notes, multiplier, added_date, added_by) VALUES ('$product_system', '$system_abbreviations', '$product_category', '$notes', '$multiplier', NOW(), '$userid')";
-                if (mysqli_query($conn, $insertQuery)) {
-                    echo "success_add";
-                } else {
-                    echo "Error adding product system: " . mysqli_error($conn);
-                }
+                echo "Error adding product system: " . mysqli_error($conn);
             }
         }
     } 

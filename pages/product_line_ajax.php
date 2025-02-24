@@ -23,67 +23,18 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            // Record exists, fetch current values
-            $row = mysqli_fetch_assoc($result);
-            $current_product_line = $row['product_line'];
-            $current_line_abreviations = $row['line_abreviations'];
-
-            $duplicates = array();
-
-            // Check for duplicates only if the new values are different from the current values
-            if ($product_line != $current_product_line) {
-                $checkProductLine = "SELECT * FROM product_line WHERE product_line = '$product_line'";
-                $resultProductLine = mysqli_query($conn, $checkProductLine);
-                if (mysqli_num_rows($resultProductLine) > 0) {
-                    $duplicates[] = "Product line";
-                }
-            }
-
-            if ($line_abreviations != $current_line_abreviations) {
-                $checkAbreviations = "SELECT * FROM product_line WHERE line_abreviations = '$line_abreviations'";
-                $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-                if (mysqli_num_rows($resultAbreviations) > 0) {
-                    $duplicates[] = "Line Abbreviations";
-                }
-            }
-
-            if (!empty($duplicates)) {
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            $updateQuery = "UPDATE product_line SET product_line = '$product_line', line_abreviations = '$line_abreviations', product_category = '$product_category', notes = '$notes', multiplier = '$multiplier', last_edit = NOW(), edited_by = '$userid'  WHERE product_line_id = '$product_line_id'";
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "Product line updated successfully.";
             } else {
-                // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_line SET product_line = '$product_line', line_abreviations = '$line_abreviations', product_category = '$product_category', notes = '$notes', multiplier = '$multiplier', last_edit = NOW(), edited_by = '$userid'  WHERE product_line_id = '$product_line_id'";
-                if (mysqli_query($conn, $updateQuery)) {
-                    echo "Product line updated successfully.";
-                } else {
-                    echo "Error updating product line: " . mysqli_error($conn);
-                }
+                echo "Error updating product line: " . mysqli_error($conn);
             }
         } else {
-            // Record does not exist, perform duplicate checks before inserting
-            $duplicates = array();
-            $checkProductLine = "SELECT * FROM product_line WHERE product_line = '$product_line'";
-            $resultProductLine = mysqli_query($conn, $checkProductLine);
-            if (mysqli_num_rows($resultProductLine) > 0) {
-                $duplicates[] = "Product Line";
-            }
-
-            $checkAbreviations = "SELECT * FROM product_line WHERE line_abreviations = '$line_abreviations'";
-            $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-            if (mysqli_num_rows($resultAbreviations) > 0) {
-                $duplicates[] = "Line Abbreviations";
-            }
-
-            if(!empty($duplicates)){
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            $insertQuery = "INSERT INTO product_line (product_line, line_abreviations, product_category, notes, multiplier, added_date, added_by) VALUES ('$product_line', '$line_abreviations', '$product_category', '$notes', '$multiplier', NOW(), '$userid')";
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "New product line added successfully.";
             } else {
-                $insertQuery = "INSERT INTO product_line (product_line, line_abreviations, product_category, notes, multiplier, added_date, added_by) VALUES ('$product_line', '$line_abreviations', '$product_category', '$notes', '$multiplier', NOW(), '$userid')";
-                if (mysqli_query($conn, $insertQuery)) {
-                    echo "New product line added successfully.";
-                } else {
-                    echo "Error adding product line: " . mysqli_error($conn);
-                }
+                echo "Error adding product line: " . mysqli_error($conn);
             }
         }
     } 

@@ -23,67 +23,18 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            // Record exists, fetch current values
-            $row = mysqli_fetch_assoc($result);
-            $current_product_type = $row['product_type'];
-            $current_type_abreviations = $row['type_abreviations'];
-
-            $duplicates = array();
-
-            // Check for duplicates only if the new values are different from the current values
-            if ($product_type != $current_product_type) {
-                $checkProductType = "SELECT * FROM product_type WHERE product_type = '$product_type'";
-                $resultProductType = mysqli_query($conn, $checkProductType);
-                if (mysqli_num_rows($resultProductType) > 0) {
-                    $duplicates[] = "Product type";
-                }
-            }
-
-            if ($type_abreviations != $current_type_abreviations) {
-                $checkAbreviations = "SELECT * FROM product_type WHERE type_abreviations = '$type_abreviations'";
-                $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-                if (mysqli_num_rows($resultAbreviations) > 0) {
-                    $duplicates[] = "Type Abbreviations";
-                }
-            }
-
-            if (!empty($duplicates)) {
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            $updateQuery = "UPDATE product_type SET product_type = '$product_type', type_abreviations = '$type_abreviations', product_category = '$product_category', notes = '$notes', multiplier = '$multiplier', special = '$special', last_edit = NOW(), edited_by = '$userid'  WHERE product_type_id = '$product_type_id'";
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "Product type updated successfully.";
             } else {
-                // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_type SET product_type = '$product_type', type_abreviations = '$type_abreviations', product_category = '$product_category', notes = '$notes', multiplier = '$multiplier', special = '$special', last_edit = NOW(), edited_by = '$userid'  WHERE product_type_id = '$product_type_id'";
-                if (mysqli_query($conn, $updateQuery)) {
-                    echo "Product type updated successfully.";
-                } else {
-                    echo "Error updating product type: " . mysqli_error($conn);
-                }
+                echo "Error updating product type: " . mysqli_error($conn);
             }
         } else {
-            // Record does not exist, perform duplicate checks before inserting
-            $duplicates = array();
-            $checkProductType = "SELECT * FROM product_type WHERE product_type = '$product_type'";
-            $resultProductType = mysqli_query($conn, $checkProductType);
-            if (mysqli_num_rows($resultProductType) > 0) {
-                $duplicates[] = "Product Type";
-            }
-
-            $checkAbreviations = "SELECT * FROM product_type WHERE type_abreviations = '$type_abreviations'";
-            $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-            if (mysqli_num_rows($resultAbreviations) > 0) {
-                $duplicates[] = "Type Abbreviations";
-            }
-
-            if(!empty($duplicates)){
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            $insertQuery = "INSERT INTO product_type (product_type, type_abreviations, product_category, notes, multiplier, special, added_date, added_by) VALUES ('$product_type', '$type_abreviations', '$product_category', '$notes', '$multiplier', '$special', NOW(), '$userid')";
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "New product type added successfully.";
             } else {
-                $insertQuery = "INSERT INTO product_type (product_type, type_abreviations, product_category, notes, multiplier, special, added_date, added_by) VALUES ('$product_type', '$type_abreviations', '$product_category', '$notes', '$multiplier', '$special', NOW(), '$userid')";
-                if (mysqli_query($conn, $insertQuery)) {
-                    echo "New product type added successfully.";
-                } else {
-                    echo "Error adding product type: " . mysqli_error($conn);
-                }
+                echo "Error adding product type: " . mysqli_error($conn);
             }
         }
     } 
