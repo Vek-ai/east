@@ -175,6 +175,14 @@ if(isset($_REQUEST['action'])) {
                     <input type="text" id="description" name="description" class="form-control" value="<?=$row['description']?>"/>
                 </div>
             </div>
+
+            <?php include "add_product_common_fields.php"; ?>
+        </div>
+        <div class="modal-footer">
+            <div class="form-actions">
+                <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
         <?php
     }
