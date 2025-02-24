@@ -132,26 +132,6 @@
     </select>
     </div>
 </div>
-<div class="col-md-12 d-flex justify-content-center align-items-center gap-3">
-    <div class="mb-1 d-flex justify-content-center">
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" id="sold_by_feet" name="sold_by_feet" value="1" <?= $row['sold_by_feet'] == 1 ? 'checked' : '' ?>>
-            <label class="form-check-label" for="sold_by_feet">Sold by feet</label>
-        </div>
-    </div>
-    <div class="mb-1 d-flex justify-content-center">
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" id="standing_seam" name="standing_seam" value="1" <?= $row['standing_seam'] == 1 ? 'checked' : '' ?>>
-            <label class="form-check-label" for="standing_seam">Standing Seam Panel</label>
-        </div>
-    </div>
-    <div class="mb-1 d-flex justify-content-center">
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" id="board_batten" name="board_batten" value="1" <?= $row['board_batten'] == 1 ? 'checked' : '' ?>>
-            <label class="form-check-label" for="board_batten">Board & Batten Panel</label>
-        </div>
-    </div>
-</div>
 
 <div class="col-md-12">
     <div class="mb-3 opt_field_update" data-id="16">

@@ -162,6 +162,19 @@ if(isset($_REQUEST['action'])) {
                     </select>
                 </div>
             </div>
+            <div class="col-md-4 trim-field">
+                <div class="mb-3">
+                    <label class="form-label">Cost</label>
+                    <input type="text" id="cost" name="cost" class="form-control readonly" value="<?=$row['cost']?>"/>
+                </div>
+            </div>
+
+            <div class="col-md-12 trim-field screw-fields panel-fields">
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <input type="text" id="description" name="description" class="form-control" value="<?=$row['description']?>"/>
+                </div>
+            </div>
         </div>
         <?php
     }
