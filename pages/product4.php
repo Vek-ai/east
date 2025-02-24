@@ -1268,8 +1268,8 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
                 let descriptionParts = [];
 
-                if (selectedSystem) descriptionParts.push($("#product_system option:selected").text().trim());
-                if (selectedGauge) descriptionParts.push(selectedGauge);
+                if (selectedType) descriptionParts.push($("#product_type option:selected").text().trim());
+                if (selectedLine) descriptionParts.push($("#product_line option:selected").text().trim());
 
                 $("#description").val(descriptionParts.join(" - "));
                 $("#product_item").val(descriptionParts.join(" - "));
