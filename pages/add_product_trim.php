@@ -16,7 +16,7 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "fetch_product_modal") {
         $product_id = mysqli_real_escape_string($conn, $_POST['id']);
-        $checkQuery = "SELECT * FROM product_duplicate2 WHERE product_id = '$product_id'";
+        $checkQuery = "SELECT * FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {

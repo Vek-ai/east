@@ -72,7 +72,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         
             $item_array = array(
                 'product_id' => $row['product_id'],
-                'product_item' => $row['product_item'],
+                'product_item' => getProductName($row['product_id']),
                 'unit_price' => $unitPrice,
                 'line' => $newLine,
                 'quantity_ttl' => $totalStock,
@@ -127,7 +127,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
 
             $item_array = array(
                 'product_id' => $row['product_id'],
-                'product_item' => $row['product_item'],
+                'product_item' => getProductName($row['product_id']),
                 'unit_price' => $unitPrice,
                 'line' => 1,
                 'quantity_ttl' => $totalStock,
@@ -308,7 +308,7 @@ if (isset($_REQUEST['query'])) {
                         <div class="d-flex align-items-center" >
                             <img src="'.$picture_path.'" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                             <div class="ms-3">
-                                <h6 class="fw-semibold mb-0 fs-4">'. $row_product['product_item'] .' ' .$dimensions .'</h6>
+                                <h6 class="fw-semibold mb-0 fs-4">'. getProductName($row_product['product_id']) .' ' .$dimensions .'</h6>
                             </div>
                         </div>
                     </a>
@@ -695,7 +695,7 @@ if (isset($_POST['load_estimate'])) {
                 $cart[] = [
                     'line' => $line,
                     'product_id' => $row['product_id'],
-                    'product_item' => $product_details['product_item'],
+                    'product_item' => getProductName($product_details['product_id']),
                     'quantity_cart' => $row['quantity'],
                     'quantity_ttl' => $totalStock,
                     'quantity_in_stock' => $quantityInStock,
@@ -1331,7 +1331,7 @@ if(isset($_POST['fetch_change_price_modal'])){
                     <?php
                         foreach ($_SESSION["cart"] as $keys => $values) {
                             ?>
-                                <option value="<?= $values['product_id'] ?>"><?= $values['product_item'] ?></option>
+                                <option value="<?= $values['product_id'] ?>"><?= getProductName($values['product_id']) ?></option>
                             <?php
                         }
                     ?>
@@ -1625,7 +1625,7 @@ if (isset($_POST['add_to_cart'])) {
                 $weight = floatval($row['weight']);
                 $item_array = array(
                     'product_id' => $row['product_id'],
-                    'product_item' => $row['product_item'],
+                    'product_item' => getProductName($row['product_id']),
                     'unit_price' => $unit_price,
                     'line' => 1,
                     'quantity_ttl' => $totalStock,
@@ -1656,7 +1656,7 @@ if (isset($_POST['add_to_cart'])) {
     
                     $item_array = array(
                         'product_id' => $backer_rod_details['product_id'],
-                        'product_item' => $backer_rod_details['product_item'],
+                        'product_item' => getProductName($backer_rod_details['product_id']),
                         'unit_price' => $backer_rod_details['unit_price'],
                         'line' => 1,
                         'quantity_ttl' => $totalStock,
@@ -1678,7 +1678,7 @@ if (isset($_POST['add_to_cart'])) {
     
                     $item_array = array(
                         'product_id' => $backer_rod_details['product_id'],
-                        'product_item' => $backer_rod_details['product_item'],
+                        'product_item' => getProductName($backer_rod_details['product_id']),
                         'unit_price' => $backer_rod_details['unit_price'],
                         'line' => 1,
                         'quantity_ttl' => $totalStock,

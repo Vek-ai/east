@@ -38,10 +38,10 @@ function get_role_name($emp_role_id){
 
 function getProductName($product_id){
     global $conn;
-    $query = "SELECT product_item FROM product WHERE product_id = '$product_id'";
+    $query = "SELECT product_item, description FROM product WHERE product_id = '$product_id'";
     $result = mysqli_query($conn,$query);
     $row = mysqli_fetch_array($result); 
-    $product_item = $row['product_item'] ?? '';
+    $product_item = !empty($row['product_item']) ? $row['product_item'] : $row['description'];
     return  $product_item;
 }
 

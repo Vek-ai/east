@@ -283,9 +283,20 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         </div>
     </div>
 
-    
+    <div class="modal fade" id="updateProductModal" tabindex="-1" role="dialog" aria-labelledby="updateProductModal" aria-hidden="true"></div>
 
-    <div class="modal fade" id="updateProductModal" tabindex="-1" role="dialog" aria-labelledby="updateProductModal" aria-hidden="true">
+    <div class="modal fade" id="addInventoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header align-items-center modal-colored-header">
+                    <h4 class="m-0">Add Product to Inventory</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="inventory-body">
+                    
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
@@ -488,7 +499,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                         p.*,
                                         COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
                                     FROM 
-                                        product_duplicate2 AS p
+                                        product AS p
                                     LEFT JOIN 
                                         inventory AS i ON p.product_id = i.product_id
                                     WHERE 
@@ -579,6 +590,9 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                                 </a>
                                                 <a href="#" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>" data-category="<?= $row_product['product_category'] ?>">
                                                     <i class="text-warning ti ti-pencil fs-7"></i>
+                                                </a>
+                                                <a href="#" id="add_inventory_btn" class="text-info edit d-none" data-id="<?= $row_product['product_id'] ?>">
+                                                    <i class="text-info ti ti-plus fs-6"></i>
                                                 </a>
                                                 <a href="#" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $product_id ?>" data-status='<?= $db_status ?>'>
                                                     
@@ -1039,6 +1053,47 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             });
         });
 
+        $(document).on('submit', '#add_inventory', function(event) {
+            event.preventDefault(); 
+
+            var formData = new FormData(this);
+            formData.append('action', 'add_update');
+              
+            $.ajax({
+                url: 'pages/inventory_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#addInventoryModal').modal('hide');
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("New inventory added successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+
+                    
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
         function updateColorSelect() {
             let selectedCategory = $('#product_category').val();
 
@@ -1077,6 +1132,35 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             $('#color').toggleClass('d-none', !selectedCategory);
             
         }
+
+        $(document).on('click', '#add_inventory_btn', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/product4_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: "fetch_add_inventory"
+                    },
+                    success: function(response) {
+                        $('#inventory-body').html(response);
+                        $(".select2-inventory").each(function () {
+                            $(this).select2({
+                                width: '100%',
+                                allowClear: true,
+                                placeholder: "Select an option",
+                                dropdownParent: $(this).parent()
+                            });
+                        });
+
+                        $('#addInventoryModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
 
         $(document).on("change", "#gauge, #grade", function () {
             $('#color').val(null).trigger('change');
@@ -1137,6 +1221,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 if (flat_sheet_width) descriptionParts.push($("#flat_sheet_width option:selected").text().trim());
 
                 $("#description").val(descriptionParts.join(" - "));
+                $("#product_item").val(descriptionParts.join(" - "));
             }else if (String(selectedCategory) == '16') { //category 16 = SCREWS
 
                 let descriptionParts = [];
@@ -1151,6 +1236,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 if (selectedType) descriptionParts.push($("#product_type option:selected").text().trim());
 
                 $("#description").val(descriptionParts.join(" - "));
+                $("#product_item").val(descriptionParts.join(" - "));
             }else if (String(selectedCategory) == '3') { //category 3 = PANEL
                 updateColorSelect();
 
@@ -1169,6 +1255,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 if (selectedGauge) descriptionParts.push(selectedGauge);
 
                 $("#description").val(descriptionParts.join(" - "));
+                $("#product_item").val(descriptionParts.join(" - "));
             }
         });
         

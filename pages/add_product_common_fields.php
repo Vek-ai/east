@@ -25,7 +25,7 @@
                     $correlated_product_ids[] = $row_correlated['correlated_id'];
                 }
                 
-                $query_products = "SELECT * FROM product_duplicate2";
+                $query_products = "SELECT * FROM product";
                 $result_products = mysqli_query($conn, $query_products);            
                 while ($row_products = mysqli_fetch_array($result_products)) {
                     $selected = in_array($row_products['product_id'], $correlated_product_ids) ? 'selected' : '';
@@ -119,7 +119,7 @@
 <div class="col-md-6">
     <div class="mb-3">
     <label class="form-label">UPC</label>
-    <input type="text" id="upc" name="upc" class="form-control" value="<?= $row['upc']?>" />
+    <input type="text" id="upc" name="upc" class="form-control" value="<?= !empty($row['upc']) ? $row['upc'] : generateRandomUPC(); ?>" />
     </div>
 </div>
 <div class="col-md-6" data-id="15">

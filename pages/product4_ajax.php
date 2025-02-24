@@ -43,14 +43,14 @@ if(isset($_REQUEST['action'])) {
             }
         }
         
-        $checkQuery = "SELECT * FROM product_duplicate2 WHERE product_id = '$product_id'";
+        $checkQuery = "SELECT * FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $checkQuery);
         
         if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE product_duplicate2 SET ";
+            $updateQuery = "UPDATE product SET ";
             
             foreach ($fields as $column => $value) {
-                $columnExists = mysqli_query($conn, "SHOW COLUMNS FROM product_duplicate2 LIKE '$column'");
+                $columnExists = mysqli_query($conn, "SHOW COLUMNS FROM product LIKE '$column'");
                 if (mysqli_num_rows($columnExists) > 0) {
                     $updateQuery .= "$column = '$value', ";
                 }
@@ -69,7 +69,7 @@ if(isset($_REQUEST['action'])) {
             $values = [];
             
             foreach ($fields as $column => $value) {
-                $columnExists = mysqli_query($conn, "SHOW COLUMNS FROM product_duplicate2 LIKE '$column'");
+                $columnExists = mysqli_query($conn, "SHOW COLUMNS FROM product LIKE '$column'");
                 if (mysqli_num_rows($columnExists) > 0) {
                     $columns[] = $column;
                     $values[] = "'$value'";
@@ -79,12 +79,12 @@ if(isset($_REQUEST['action'])) {
             $columnsStr = implode(", ", $columns);
             $valuesStr = implode(", ", $values);
             
-            $insertQuery = "INSERT INTO product_duplicate2 (product_id, $columnsStr) VALUES ('$product_id', $valuesStr)";
+            $insertQuery = "INSERT INTO product (product_id, $columnsStr) VALUES ('$product_id', $valuesStr)";
             
             if (mysqli_query($conn, $insertQuery)) {
                 $product_id = $conn->insert_id;
 
-                $sql = "UPDATE product_duplicate2 SET main_image='images/product/product.jpg' WHERE product_id='$product_id'";
+                $sql = "UPDATE product SET main_image='images/product/product.jpg' WHERE product_id='$product_id'";
                 if (!$conn->query($sql)) {
                     echo "Error updating record: " . $conn->error;
                 }
@@ -117,7 +117,7 @@ if(isset($_REQUEST['action'])) {
                         $picture_path = mysqli_real_escape_string($conn, $dest_path);
         
                         if ($i == 0) {
-                            $sql = "UPDATE product_duplicate2 SET main_image='images/product/$newFileName' WHERE product_id='$product_id'";
+                            $sql = "UPDATE product SET main_image='images/product/$newFileName' WHERE product_id='$product_id'";
                             if (!$conn->query($sql)) {
                                 echo "Error updating record: " . $conn->error;
                             }
@@ -139,7 +139,7 @@ if(isset($_REQUEST['action'])) {
         $product_id = mysqli_real_escape_string($conn, $_POST['id']);
 
         // SQL query to check if the record exists
-        $checkQuery = "SELECT * FROM product_duplicate2 WHERE product_id = '$product_id'";
+        $checkQuery = "SELECT * FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
@@ -495,7 +495,7 @@ if(isset($_REQUEST['action'])) {
         $status = mysqli_real_escape_string($conn, $_POST['status']);
         $new_status = ($status == '0') ? '1' : '0';
 
-        $statusQuery = "UPDATE product_duplicate2 SET status = '$new_status' WHERE product_id = '$product_id'";
+        $statusQuery = "UPDATE product SET status = '$new_status' WHERE product_id = '$product_id'";
         if (mysqli_query($conn, $statusQuery)) {
             echo "success";
         } else {
@@ -505,7 +505,7 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == 'hide_category') {
         $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
-        $query = "UPDATE product_duplicate2 SET hidden='1' WHERE product_id='$product_id'";
+        $query = "UPDATE product SET hidden='1' WHERE product_id='$product_id'";
         if (mysqli_query($conn, $query)) {
             echo 'success';
         } else {
@@ -692,7 +692,7 @@ if(isset($_REQUEST['action'])) {
     }    
     
     if ($action == "save_table") {
-        $table = "product_duplicate2";
+        $table = "product";
     
         $columnsSql = "SHOW COLUMNS FROM test";
         $columnsResult = $conn->query($columnsSql);
@@ -782,7 +782,7 @@ if(isset($_REQUEST['action'])) {
             $column_txt = implode(', ', $includedColumns);
         }
     
-        $sql = "SELECT " . $column_txt . " FROM product_duplicate2";
+        $sql = "SELECT " . $column_txt . " FROM product";
         if (!empty($product_category)) {
             $sql .= " WHERE product_category = '$product_category'";
         }
@@ -848,6 +848,163 @@ if(isset($_REQUEST['action'])) {
         } else {
             echo 'Error updating record: ' . $conn->error;
         }
+    }
+
+    if ($action == "fetch_add_inventory") {
+        $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+        $prouct_details = getProductDetails($product_id);
+        $supplier_id = $prouct_details['supplier_id'];
+        ?>
+        
+        <form id="add_inventory" class="form-horizontal" action="#">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h4 class="fw-bold"><?= getProductName($product_id)?></h4>
+                    <input type="hidden" id="product_id_filter" class="form-control select2-add" name="Product_id" value="<?= $product_id ?>" />
+                    <input type="hidden" id="operation" name="operation" value="add" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Color</label>
+                            <div class="mb-3">
+                                <select id="color<?= $no ?>" class="form-control color-cart select2-inventory" name="color_id">
+                                    <option value="" >Select Color...</option>
+                                    <?php
+                                    $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                    $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+                                    while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                    ?>
+                                        <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>"><?= $row_paint_colors['color_name'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6"></div>
+                        <div class="col-md-6">
+                            <label class="form-label">Supplier</label>
+                            <div class="mb-3">
+                                <p><?= !empty($supplier_id) ? getSupplierName($supplier_id) : 'No Supplier Set for Product' ?></p>
+                                <input type="hidden" id="supplier_id_update" name="supplier_id" value="<?= $supplier_id ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Warehouse</label>
+                            <div class="mb-3">
+                            <select id="Warehouse_id" class="form-control select2-inventory" name="Warehouse_id">
+                                <option value="" >Select Warehouse...</option>
+                                <optgroup label="Warehouse">
+                                    <?php
+                                    $query_warehouse = "SELECT * FROM warehouses WHERE status = '1'";
+                                    $result_warehouse = mysqli_query($conn, $query_warehouse);            
+                                    while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
+                                    ?>
+                                        <option value="<?= $row_warehouse['WarehouseID'] ?>" ><?= $row_warehouse['WarehouseName'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </optgroup>
+                                
+                            </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Shelf</label>
+                            <div class="mb-3">
+                            <select id="Shelves_id" class="form-control select2-inventory" name="Shelves_id">
+                                <option value="" >Select Shelf...</option>
+                                <optgroup label="Shelf">
+                                    <?php
+                                    $query_shelf = "SELECT * FROM shelves";
+                                    $result_shelf = mysqli_query($conn, $query_shelf);            
+                                    while ($row_shelf = mysqli_fetch_array($result_shelf)) {
+                                    ?>
+                                        <option value="<?= $row_shelf['ShelfID'] ?>" ><?= $row_shelf['ShelfCode'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Bin</label>
+                            <div class="mb-3">
+                            <select id="Bin_id" class="form-control select2-inventory" name="Bin_id">
+                                <option value="" >Select Bin...</option>
+                                <optgroup label="Bin">
+                                    <?php
+                                    $query_bin = "SELECT * FROM bins";
+                                    $result_bin = mysqli_query($conn, $query_bin);            
+                                    while ($row_bin = mysqli_fetch_array($result_bin)) {
+                                    ?>
+                                        <option value="<?= $row_bin['BinID'] ?>" ><?= $row_bin['BinCode'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Row</label>
+                            <div class="mb-3">
+                            <select id="Row_id" class="form-control select2-inventory" name="Row_id">
+                                <option value="" >Select Row...</option>
+                                <optgroup label="Row">
+                                    <?php
+                                    $query_rows = "SELECT * FROM warehouse_rows";
+                                    $result_rows = mysqli_query($conn, $query_rows);            
+                                    while ($row_rows = mysqli_fetch_array($result_rows)) {
+                                    ?>
+                                        <option value="<?= $row_rows['WarehouseRowID'] ?>" ><?= $row_rows['WarehouseRowID'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Quantity</label>
+                            <input type="text" id="quantity_add" name="quantity" class="form-control"  />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Pack</label>
+                            <div class="mb-3">
+                            <select id="pack_add" class="form-control select2-inventory pack_select" name="pack">
+                                <option value="" >Select Pack...</option>
+                                <optgroup label="Supplier Packs">
+                                    <?php
+                                    $query_packs = "SELECT * FROM supplier_pack WHERE supplierid = '$supplier_id'";
+                                    $result_packs = mysqli_query($conn, $query_packs);            
+                                    while ($row_packs = mysqli_fetch_array($result_packs)) {
+                                    ?>
+                                        <option value="<?= $row_packs['id'] ?>" data-count="<?= $row_packs['pack_count'] ?>" ><?= $row_packs['pack'] ?> ( <?= $row_packs['pack_count'] ?> )</option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Total Quantity</label>
+                            <input type="text" id="quantity_ttl_add" name="quantity_ttl" class="form-control"  />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date</label>
+                            <input type="date" id="Date" name="Date" class="form-control"  />
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="form-buttons text-right">
+                <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+            </div>
+        </form>
+        <?php
     }
     
     mysqli_close($conn);
