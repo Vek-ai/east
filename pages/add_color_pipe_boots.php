@@ -18,7 +18,31 @@ if(isset($_REQUEST['action'])) {
             $row = mysqli_fetch_assoc($result);
         }
         ?>
-
+            <div class="col-md-6 panel-fields" data-id="7">
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Color Group</label>
+                    <a href="?page=product_color" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
+                <div class="mb-3">
+                    <select id="color" class="form-control calculate" name="color">
+                        <option value="">Select Color Group...</option>
+                        <?php
+                        $query_color_group = "SELECT * FROM color_group_name WHERE hidden = '0' ORDER BY color_group_name";
+                        $result_color_group = mysqli_query($conn, $query_color_group);
+                        while ($row_color_group = mysqli_fetch_array($result_color_group)) {
+                            $selected = (($row['color'] ?? '') == $row_color_group['color_group_name_id']) ? 'selected' : '';
+                        ?>
+                            <option value="<?= $row_color_group['color_group_name_id'] ?>" <?= $selected ?>><?= $row_color_group['color_group_name'] ?></option>
+                        <?php
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3 panel-fields" data-id="7">
+                <label class="form-label">Color Multiplier Value</label>
+                <input type="text" class="form-control" name="multiplier" id="multiplier" value="<?=$row['multiplier'] ?? ''?>">
+            </div>
         <?php
         
     } 
