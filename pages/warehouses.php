@@ -202,18 +202,19 @@ require 'includes/functions.php';
                     <!-- start row -->
                     <tr class="search-items">
                         <td>
-                            <a href="?page=warehouse_details&warehouse_id=<?= $row_warehouse['WarehouseID'] ?>">
-                                <?= $row_warehouse['WarehouseName'] ?>
-                            </a>
+                            <?= $row_warehouse['WarehouseName'] ?>
                         </td>
                         <td><?= $row_warehouse['Location'] ?></td>
                         <td><?= $row_warehouse['contact_person'] ?></td>
                         <td><?= $row_warehouse['contact_phone'] ?></td>
                         <td><?= $status ?></td>
                         <td>
-                            <div class="action-btn">
+                            <div class="action-btn d-flex justify-content-center gap-2">
                                 <a href="#" id="view_warehouse_btn" class="text-primary edit" data-id="<?= $row_warehouse['WarehouseID'] ?>">
-                                    <i class="ti ti-eye fs-5"></i>
+                                    <i class="fa fa-eye fs-6"></i>
+                                </a>
+                                <a href="?page=warehouse_details&warehouse_id=<?= $row_warehouse['WarehouseID'] ?>">
+                                    <i class="fa fa-pencil text-warning fs-6"></i>
                                 </a>
                                 <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_warehouse['WarehouseID'] ?>">
                                     <i class="ti ti-trash fs-5"></i>

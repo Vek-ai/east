@@ -126,7 +126,7 @@ $picture_path = "images/product/product.jpg";
                                             <select id="product_category" class="form-control" name="product_category">
                                                 <option value="">Select Category...</option>
                                                 <?php
-                                                $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                                                $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1'";
                                                 $result_roles = mysqli_query($conn, $query_roles);            
                                                 while ($row_product_category = mysqli_fetch_array($result_roles)) {
                                                 ?>
@@ -202,7 +202,7 @@ $picture_path = "images/product/product.jpg";
                             <option value="">All Categories</option>
                             <optgroup label="Category">
                                 <?php
-                                $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+                                $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1'";
                                 $result_category = mysqli_query($conn, $query_category);
                                 while ($row_category = mysqli_fetch_array($result_category)) {
                                 ?>
@@ -218,7 +218,7 @@ $picture_path = "images/product/product.jpg";
                             <option value="">All Color Multipliers</option>
                             <optgroup label="Product Color Multipliers">
                                 <?php
-                                $query_color_mult = "SELECT * FROM color_multiplier WHERE hidden = '0'";
+                                $query_color_mult = "SELECT * FROM color_multiplier WHERE hidden = '0' AND status = '1'";
                                 $result_color_mult = mysqli_query($conn, $query_color_mult);
                                 while ($row_color_mult = mysqli_fetch_array($result_color_mult)) {
                                 ?>
@@ -230,11 +230,11 @@ $picture_path = "images/product/product.jpg";
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2-filter" id="select-grade" title="Color Multipliers">
+                        <select class="form-control search-chat py-0 ps-5 select2-filter" id="select-grade" title="Grade">
                             <option value="">All Grades</option>
                             <optgroup label="Product Grades">
                                 <option value="1">1</option>
-                                <option value="1">1</option>
+                                <option value="2">2</option>
                             </optgroup>
                         </select>
                     </div>
@@ -243,7 +243,7 @@ $picture_path = "images/product/product.jpg";
                             <option value="">All Gauges</option>
                             <optgroup label="Product Gauges">
                                 <?php
-                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1'";
                                 $result_gauge = mysqli_query($conn, $query_gauge);
                                 while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                                 ?>

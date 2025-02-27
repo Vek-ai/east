@@ -29,7 +29,7 @@ if(isset($_REQUEST['action'])) {
                 <select id="product_system" class="form-control add-category calculate" name="product_system">
                     <option value="" >Select System...</option>
                     <?php
-                    $query_system = "SELECT * FROM product_system WHERE hidden = '0' ORDER BY product_system";
+                    $query_system = "SELECT * FROM product_system WHERE hidden = '0' AND status = '1' ORDER BY product_system";
                     $result_system = mysqli_query($conn, $query_system);
                     while ($row_system = mysqli_fetch_array($result_system)) {
                         $selected = (($row['product_system'] ?? '') == $row_system['product_system_id']) ? 'selected' : '';
@@ -50,7 +50,7 @@ if(isset($_REQUEST['action'])) {
                     <select id="gauge" class="form-control calculate" name="gauge">
                         <option value="">Select Gauge...</option>
                         <?php
-                        $query_gauge = "SELECT DISTINCT product_gauge, multiplier FROM product_gauge WHERE hidden = '0'";
+                        $query_gauge = "SELECT DISTINCT product_gauge, multiplier FROM product_gauge WHERE hidden = '0' AND status = '1'";
                         $result_gauge = mysqli_query($conn, $query_gauge);
 
                         $existing_gauges = [];
@@ -100,7 +100,7 @@ if(isset($_REQUEST['action'])) {
                     <select id="color" class="form-control calculate" name="color">
                         <option value="">Select Color...</option>
                         <?php
-                        $query_color_group = "SELECT * FROM color_group_name WHERE hidden = '0' ORDER BY color_group_name";
+                        $query_color_group = "SELECT * FROM color_group_name WHERE hidden = '0' AND status = '1' ORDER BY color_group_name";
                         $result_color_group = mysqli_query($conn, $query_color_group);
                         while ($row_color_group = mysqli_fetch_array($result_color_group)) {
                             $selected = (($row['color'] ?? '') == $row_color_group['color_group_name_id']) ? 'selected' : '';

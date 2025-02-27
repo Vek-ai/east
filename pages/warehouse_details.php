@@ -73,7 +73,7 @@ if(!empty($_REQUEST['warehouse_id'])){
                     <div class="row">
                         <div class="col-12">
                             <h4 class="card-title d-flex justify-content-between align-items-center py-0 m-0">  
-                                <a href="/?page=warehouses" class="btn btn-primary" style="border-radius: 10%; ">Back</a>
+                                <a href="?page=warehouses" class="btn btn-primary" style="border-radius: 10%; ">Back</a>
                             </h4>
                         </div>
                         <div class="col">
@@ -106,141 +106,190 @@ if(!empty($_REQUEST['warehouse_id'])){
                                     </div>
                                 </div>
 
+                                <div class="datatables col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title d-flex justify-content-between align-items-center">List of Rows  
+                                                <a href="#" class="btn btn-primary addEditRowBtn" style="border-radius: 10%;" data-id="" data-warehouse-id="<?=$WarehouseID?>">Add New</a>
+                                            </h4>
+                                            
+                                            <div class="table-responsive">
+                                        
+                                                <table id="row_wh_rows" class="table table-striped table-bordered text-nowrap align-middle">
+                                                    <thead>
+                                                    <!-- start row -->
+                                                    <tr>
+                                                        <th>RowCode</th>
+                                                        <th>Description</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                    <!-- end row -->
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php
+                                                        $query_wh_rows = "SELECT * FROM warehouse_rows WHERE WarehouseID = '$WarehouseID' AND hidden = '0'";
+                                                        $result_wh_rows = mysqli_query($conn, $query_wh_rows);   
+                                                        while ($row_wh_rows = mysqli_fetch_array($result_wh_rows)) {
+                                                        ?>
+                                                            <tr>
+                                                                <td>
+                                                                    <?= $row_wh_rows['RowCode'] ?></td>
+                                                                <td><?= $row_wh_rows['Description'] ?></td>
+                                                                <td>
+                                                                    <div class="action-btn text-center">
+                                                                        <a href="#" id="row-item" data-id="<?= $row_wh_rows['WarehouseRowID'] ?>">
+                                                                            <i class="text-primary ti ti-eye fs-7"></i>
+                                                                        </a>
+                                                                        <a href="#" id="row-edit" 
+                                                                                    class="text-primary addEditRowBtn" 
+                                                                                    data-id="<?= $row_wh_rows['WarehouseRowID'] ?>"
+                                                                                    data-warehouse-id="<?= $WarehouseID ?>">
+                                                                            <i class="text-warning ti ti-pencil fs-7"></i>
+                                                                        </a>
+                                                                        <a href="#" id="row-delete" class="text-danger" data-id="<?= $row_wh_rows['WarehouseRowID'] ?>">
+                                                                            <i class="text-danger ti ti-trash fs-7"></i>
+                                                                        </a>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        <?php
+                                                        }
+                                                        ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="datatables col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title d-flex justify-content-between align-items-center">List of Shelves  
+                                                <a href="#" class="btn btn-primary addEditShelfBtn" style="border-radius: 10%;" data-id="" data-warehouse-id="<?=$WarehouseID?>">Add New</a>
+                                            </h4>
+                                            
+                                            <div class="table-responsive">
+                                        
+                                                <table id="row_wh_shelves" class="table table-striped table-bordered text-nowrap align-middle">
+                                                    <thead>
+                                                    <!-- start row -->
+                                                    <tr>
+                                                        <th>Shelf Code</th>
+                                                        <th>Row Code</th>
+                                                        <th>Description</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                    <!-- end row -->
+                                                    </thead>
+                                                    <tbody>
+                                                    <?php
+                                                        $query_wh_shelves = "
+                                                            SELECT s.* 
+                                                            FROM shelves s
+                                                            INNER JOIN warehouse_rows wr ON s.WarehouseRowID = wr.WarehouseRowID
+                                                            WHERE wr.WarehouseID = '$WarehouseID' AND s.hidden = '0'
+                                                        ";
+                                                        $result_wh_shelves = mysqli_query($conn, $query_wh_shelves);
+
+                                                        if ($result_wh_shelves) {
+                                                            while ($row_wh_shelves = mysqli_fetch_array($result_wh_shelves)) {
+                                                                ?>
+                                                                <tr>
+                                                                    <td>
+                                                                        <?= $row_wh_shelves['ShelfCode'] ?></td>  
+                                                                    <td><?= getWarehouseRowName($row_wh_shelves['WarehouseRowID']) ?></td>
+                                                                    <td><?= $row_wh_shelves['Description'] ?></td>
+                                                                    <td>
+                                                                        <div class="action-btn text-center">
+                                                                            <a href="#" id="shelf-item" data-id="<?= $row_wh_shelves['ShelfID'] ?>">
+                                                                                <i class="text-primary ti ti-eye fs-7"></i>
+                                                                            </a>
+                                                                            <a href="#" id="shelf-edit" 
+                                                                                        class="text-primary addEditShelfBtn" 
+                                                                                        data-id="<?= $row_wh_shelves['ShelfID'] ?>"
+                                                                                        data-warehouse-id="<?= $WarehouseID ?>">
+                                                                                <i class="text-warning ti ti-pencil fs-7"></i>
+                                                                            </a>
+                                                                            <a href="#" id="shelf-delete" class="text-danger" data-id="<?= $row_wh_shelves['ShelfID'] ?>">
+                                                                                <i class="text-danger ti ti-trash fs-7"></i>
+                                                                            </a>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                <?php
+                                                            }
+                                                        }
+                                                        ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="datatables col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title d-flex justify-content-between align-items-center">List of Bins  
+                                                <a href="#" class="btn btn-primary addEditBinBtn" style="border-radius: 10%;" data-id="" data-warehouse-id="<?=$WarehouseID?>">Add New</a>
+                                            </h4>
+                                            
+                                            <div class="table-responsive">
+                                        
+                                                <table id="row_wh_bins" class="table table-striped table-bordered text-nowrap align-middle">
+                                                    <thead>
+                                                    <!-- start row -->
+                                                    <tr>
+                                                        <th>Bin Code</th>
+                                                        <th>Description</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                    <!-- end row -->
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php
+                                                        $query_wh_bins = "SELECT * FROM bins WHERE WarehouseID = '$WarehouseID' AND hidden = '0'";
+                                                        $result_wh_bins = mysqli_query($conn, $query_wh_bins);            
+                                                        while ($row_wh_bins = mysqli_fetch_array($result_wh_bins)) {
+                                                        ?>
+                                                            <tr>
+                                                                <td>
+                                                                    <?= $row_wh_bins['BinCode'] ?>
+                                                                </td>
+                                                                <td><?= $row_wh_bins['Description'] ?></td>
+                                                                <td>
+                                                                    <div class="action-btn text-center">
+                                                                        <a href="#" id="bin-item" data-id="<?= $row_wh_bins['BinID'] ?>">
+                                                                            <i class="text-primary ti ti-eye fs-7"></i>
+                                                                        </a>
+                                                                        <a href="#" id="bin-edit" 
+                                                                                    class="text-primary addEditBinBtn" 
+                                                                                    data-id="<?= $row_wh_bins['BinID'] ?>"
+                                                                                    data-warehouse-id="<?= $WarehouseID ?>">
+                                                                            <i class="text-warning ti ti-pencil fs-7"></i>
+                                                                        </a>
+                                                                        <a href="#" id="bin-delete" class="text-danger" data-id="<?= $row_wh_bins['BinID'] ?>">
+                                                                            <i class="text-danger ti ti-trash fs-7"></i>
+                                                                        </a>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        <?php
+                                                        }
+                                                        ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Tables -->
                                 <div class="row">
-                                    <div class="datatables col-12">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <h4 class="card-title d-flex justify-content-between align-items-center">List of Bins  
-                                                    <a href="#" class="btn btn-primary" style="border-radius: 10%; " data-bs-toggle="modal" data-bs-target="#addBinModal">Add New</a>
-                                                </h4>
-                                                
-                                                <div class="table-responsive">
-                                            
-                                                    <table id="row_wh_bins" class="table table-striped table-bordered text-nowrap align-middle">
-                                                        <thead>
-                                                        <!-- start row -->
-                                                        <tr>
-                                                            <th>Bin Code</th>
-                                                            <th>Description</th>
-                                                        </tr>
-                                                        <!-- end row -->
-                                                        </thead>
-                                                        <tbody>
-                                                            <?php
-                                                            $query_wh_bins = "SELECT * FROM bins WHERE WarehouseID = '$WarehouseID'";
-                                                            $result_wh_bins = mysqli_query($conn, $query_wh_bins);            
-                                                            while ($row_wh_bins = mysqli_fetch_array($result_wh_bins)) {
-                                                            ?>
-                                                                <tr>
-                                                                    <td>
-                                                                        <a href="#" id="bin-item" data-id="<?= $row_wh_bins['BinID'] ?>">
-                                                                            <?= $row_wh_bins['BinCode'] ?>
-                                                                        </a>
-                                                                    </td>
-                                                                    <td><?= $row_wh_bins['Description'] ?></td>
-                                                                </tr>
-                                                            <?php
-                                                            }
-                                                            ?>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    
 
-                                    <div class="datatables col-6">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <h4 class="card-title d-flex justify-content-between align-items-center">List of Rows  
-                                                    <a href="#" class="btn btn-primary" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#addRowModal">Add New</a>
-                                                </h4>
-                                                
-                                                <div class="table-responsive">
-                                            
-                                                    <table id="row_wh_rows" class="table table-striped table-bordered text-nowrap align-middle">
-                                                        <thead>
-                                                        <!-- start row -->
-                                                        <tr>
-                                                            <th>RowCode</th>
-                                                            <th>Description</th>
-                                                        </tr>
-                                                        <!-- end row -->
-                                                        </thead>
-                                                        <tbody>
-                                                            <?php
-                                                            $query_wh_rows = "SELECT * FROM warehouse_rows WHERE WarehouseID = '$WarehouseID'";
-                                                            $result_wh_rows = mysqli_query($conn, $query_wh_rows);   
-                                                            while ($row_wh_rows = mysqli_fetch_array($result_wh_rows)) {
-                                                            ?>
-                                                                <tr>
-                                                                    <td>
-                                                                        <a href="#" id="row-item" data-id="<?= $row_wh_rows['WarehouseRowID'] ?>">
-                                                                            <?= $row_wh_rows['RowCode'] ?></td>
-                                                                        </a>
-                                                                    <td><?= $row_wh_rows['Description'] ?></td>
-                                                                </tr>
-                                                            <?php
-                                                            }
-                                                            ?>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="datatables col-6">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <h4 class="card-title d-flex justify-content-between align-items-center">List of Shelves  
-                                                    <a href="#" class="btn btn-primary" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#addShelfModal">Add New</a>
-                                                </h4>
-                                                
-                                                <div class="table-responsive">
-                                            
-                                                    <table id="row_wh_shelves" class="table table-striped table-bordered text-nowrap align-middle">
-                                                        <thead>
-                                                        <!-- start row -->
-                                                        <tr>
-                                                            <th>Shelf Code</th>
-                                                            <th>Row Code</th>
-                                                            <th>Description</th>
-                                                        </tr>
-                                                        <!-- end row -->
-                                                        </thead>
-                                                        <tbody>
-                                                        <?php
-                                                            $query_wh_shelves = "
-                                                                SELECT s.* 
-                                                                FROM shelves s
-                                                                INNER JOIN warehouse_rows wr ON s.WarehouseRowID = wr.WarehouseRowID
-                                                                WHERE wr.WarehouseID = '$WarehouseID'
-                                                            ";
-                                                            $result_wh_shelves = mysqli_query($conn, $query_wh_shelves);
-
-                                                            if ($result_wh_shelves) {
-                                                                while ($row_wh_shelves = mysqli_fetch_array($result_wh_shelves)) {
-                                                                    ?>
-                                                                    <tr>
-                                                                        <td>
-                                                                            <a href="#" id="shelf-item" data-id="<?= $row_wh_shelves['ShelfID'] ?>">
-                                                                                <?= $row_wh_shelves['ShelfCode'] ?></td>
-                                                                            </a>    
-                                                                        <td><?= getWarehouseRowName($row_wh_shelves['WarehouseRowID']) ?></td>
-                                                                        <td><?= $row_wh_shelves['Description'] ?></td>
-                                                                    </tr>
-                                                                    <?php
-                                                                }
-                                                            }
-                                                            ?>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    
 
                                     <div class="modal fade" id="addBinModal" tabindex="-1" aria-labelledby="addBinModalLabel" aria-hidden="true">
                                         <div class="modal-dialog modal-lg">
@@ -250,32 +299,8 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <form id="add_bin" class="form-horizontal">
-                                                    <div class="modal-body">
-                                                        <div class="card">
-                                                            <div class="card-body">
-                                                                <input type="hidden" id="BinID" name="BinID" class="form-control"/>
-                                                                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $WarehouseID ?>" />
-
-                                                                <div class="row pt-3">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Bin Code</label>
-                                                                            <input type="text" id="BinCode" name="BinCode" class="form-control" />
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row pt-3">
-                                                                    <div class="col-md-12">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Description</label>
-                                                                            <textarea class="form-control" id="Description" name="Description" rows="5"></textarea>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-                                                        </div>
+                                                    <div id="bin-section" class="modal-body">
+                                                        
                                                     </div>
 
                                                     <div class="modal-footer">
@@ -303,32 +328,8 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <form id="add_row" class="form-horizontal">
-                                                    <div class="modal-body">
-                                                        <div class="card">
-                                                            <div class="card-body">
-                                                                <input type="hidden" id="WarehouseRowID" name="WarehouseRowID" class="form-control" />
-                                                                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $WarehouseID ?>"/>
-
-                                                                <div class="row pt-3">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Row Code</label>
-                                                                            <input type="text" id="RowCode" name="RowCode" class="form-control" />
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row pt-3">
-                                                                    <div class="col-md-12">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Description</label>
-                                                                            <textarea class="form-control" id="Description" name="Description" rows="5"></textarea>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-                                                        </div>
+                                                    <div id="row-section" class="modal-body">
+                                                        
                                                     </div>
 
                                                     <div class="modal-footer">
@@ -356,50 +357,8 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <form id="add_shelf" class="form-horizontal">
-                                                    <div class="modal-body">
-                                                        <div class="card">
-                                                            <div class="card-body">
-                                                                <input type="hidden" id="ShelfID" name="ShelfID" class="form-control"/>
-                                                                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $WarehouseID ?>"/>
-
-                                                                <div class="row pt-3">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Shelf Code</label>
-                                                                            <input type="text" id="ShelfCode" name="ShelfCode" class="form-control" required/>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Row Code</label>
-                                                                            <select id="WarehouseRowID" class="form-control" name="WarehouseRowID" required>
-                                                                                <option value="/" >Select One...</option>
-                                                                                <?php
-                                                                                $query_rows = "SELECT * FROM warehouse_rows WHERE WarehouseID = '" .$WarehouseID ."'";
-
-                                                                                $result_rows = mysqli_query($conn, $query_rows);            
-                                                                                while ($row_rows = mysqli_fetch_array($result_rows)) {
-                                                                                ?>
-                                                                                    <option value="<?= $row_rows['WarehouseRowID'] ?>" ><?= $row_rows['RowCode'] ?></option>
-                                                                                <?php   
-                                                                                }
-                                                                                ?>
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row pt-3">
-                                                                    <div class="col-md-12">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Description</label>
-                                                                            <textarea class="form-control" id="Description" name="Description" rows="5"></textarea>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-                                                        </div>
+                                                    <div id="shelf-section" class="modal-body">
+                                                        
                                                     </div>
 
                                                     <div class="modal-footer">
@@ -546,6 +505,78 @@ if(!empty($_REQUEST['warehouse_id'])){
             });
         });
 
+        $(document).on('click', '.addEditRowBtn', function(event) {
+            event.preventDefault(); 
+
+            var row_id = $(this).data('id');
+            var warehouse_id = $(this).data('warehouse-id');
+
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: {
+                    row_id: row_id,
+                    warehouse_id: warehouse_id,
+                    action: 'add_edit_row'
+                },
+                success: function(response) {
+                    $('#row-section').html(response);
+                    $('#addRowModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '.addEditShelfBtn', function(event) {
+            event.preventDefault(); 
+
+            var shelf_id = $(this).data('id');
+            var warehouse_id = $(this).data('warehouse-id');
+
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: {
+                    shelf_id: shelf_id,
+                    warehouse_id: warehouse_id,
+                    action: 'add_edit_shelf'
+                },
+                success: function(response) {
+                    $('#shelf-section').html(response);
+                    $('#addShelfModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '.addEditBinBtn', function(event) {
+            event.preventDefault(); 
+
+            var bin_id = $(this).data('id');
+            var warehouse_id = $(this).data('warehouse-id');
+
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: {
+                    bin_id: bin_id,
+                    warehouse_id: warehouse_id,
+                    action: 'add_edit_bin'
+                },
+                success: function(response) {
+                    $('#bin-section').html(response);
+                    $('#addBinModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
         $(document).on('submit', '#add_bin', function(event) {
             event.preventDefault(); 
 
@@ -668,6 +699,127 @@ if(!empty($_REQUEST['warehouse_id'])){
                 }
             });
         });
+
+        $(document).on('click', '#row-delete', function(event) {
+            event.preventDefault();
+            var row_id = $(this).data('id');
+            var confirmDelete = confirm("Are you sure you want to delete this row?");
+            
+            if (confirmDelete) {
+                $.ajax({
+                    url: 'pages/warehouse_ajax_details.php',
+                    type: 'POST',
+                    data: {
+                        row_id: row_id,
+                        action: 'row_delete'
+                    },
+                    success: function(response) {
+                        if (response.trim() === "success") {
+                            $('#responseHeader').text("Success");
+                            $('#responseMsg').text("Successfully Deleted Row.");
+                            $('#responseHeaderContainer').removeClass("bg-danger");
+                            $('#responseHeaderContainer').addClass("bg-success");
+                            $('#response-modal').modal("show");
+
+                            $('#response-modal').on('hide.bs.modal', function () {
+                                location.reload();
+                            });
+                        } else {
+                            $('#responseHeader').text("Failed");
+                            $('#responseMsg').text(response);
+
+                            $('#responseHeaderContainer').removeClass("bg-success");
+                            $('#responseHeaderContainer').addClass("bg-danger");
+                            $('#response-modal').modal("show");
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', '#shelf-delete', function(event) {
+            event.preventDefault();
+            var shelf_id = $(this).data('id');
+            var confirmDelete = confirm("Are you sure you want to delete this shelf?");
+            
+            if (confirmDelete) {
+                $.ajax({
+                    url: 'pages/warehouse_ajax_details.php',
+                    type: 'POST',
+                    data: {
+                        shelf_id: shelf_id,
+                        action: 'shelf_delete'
+                    },
+                    success: function(response) {
+                        if (response.trim() === "success") {
+                            $('#responseHeader').text("Success");
+                            $('#responseMsg').text("Successfully Deleted Shelf.");
+                            $('#responseHeaderContainer').removeClass("bg-danger");
+                            $('#responseHeaderContainer').addClass("bg-success");
+                            $('#response-modal').modal("show");
+
+                            $('#response-modal').on('hide.bs.modal', function () {
+                                location.reload();
+                            });
+                        } else {
+                            $('#responseHeader').text("Failed");
+                            $('#responseMsg').text(response);
+
+                            $('#responseHeaderContainer').removeClass("bg-success");
+                            $('#responseHeaderContainer').addClass("bg-danger");
+                            $('#response-modal').modal("show");
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', '#bin-delete', function(event) {
+            event.preventDefault();
+            var bin_id = $(this).data('id');
+            var confirmDelete = confirm("Are you sure you want to delete this bin?");
+            
+            if (confirmDelete) {
+                $.ajax({
+                    url: 'pages/warehouse_ajax_details.php',
+                    type: 'POST',
+                    data: {
+                        bin_id: bin_id,
+                        action: 'bin_delete'
+                    },
+                    success: function(response) {
+                        if (response.trim() === "success") {
+                            $('#responseHeader').text("Success");
+                            $('#responseMsg').text("Successfully Deleted Bin.");
+                            $('#responseHeaderContainer').removeClass("bg-danger");
+                            $('#responseHeaderContainer').addClass("bg-success");
+                            $('#response-modal').modal("show");
+
+                            $('#response-modal').on('hide.bs.modal', function () {
+                                location.reload();
+                            });
+                        } else {
+                            $('#responseHeader').text("Failed");
+                            $('#responseMsg').text(response);
+
+                            $('#responseHeaderContainer').removeClass("bg-success");
+                            $('#responseHeaderContainer').addClass("bg-danger");
+                            $('#response-modal').modal("show");
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }
+        });
+
 
         $(document).on('click', '#bin-item', function(event) {
             event.preventDefault(); 

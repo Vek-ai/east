@@ -67,50 +67,6 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
-    if ($action == "add_update_row") {
-        $WarehouseRowID = mysqli_real_escape_string($conn, $_POST['WarehouseRowID']);
-        $WarehouseID = mysqli_real_escape_string($conn, $_POST['WarehouseID']);
-        $RowCode = mysqli_real_escape_string($conn, $_POST['RowCode']);
-        $Description = mysqli_real_escape_string($conn, $_POST['Description']);
-    
-        $checkQuery = "SELECT * FROM warehouse_rows WHERE RowCode = '$WarehouseRowID'";
-        $result = mysqli_query($conn, $checkQuery);
-    
-        if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "
-                UPDATE warehouse_rows 
-                SET 
-                    RowCode = '$RowCode', 
-                    Description = '$Description'
-                WHERE WarehouseRowID = '$WarehouseRowID'
-            ";
-    
-            if (mysqli_query($conn, $updateQuery)) {
-                echo "success";
-            } else {
-                echo "Error updating warehouse: " . mysqli_error($conn);
-            }
-        } else {
-            $insertQuery = "
-                INSERT INTO warehouse_rows (
-                    RowCode,
-                    WarehouseID,
-                    Description
-                ) VALUES (
-                    '$RowCode', 
-                    '$WarehouseID', 
-                    '$Description'
-                )
-            ";
-    
-            if (mysqli_query($conn, $insertQuery)) {
-                echo "success";
-            } else {
-                echo "Error adding warehouse: " . mysqli_error($conn);
-            }
-        }
-    }
-
     if ($action == "add_update_shelf") {
         $ShelfID = mysqli_real_escape_string($conn, $_POST['ShelfID']);
         $WarehouseRowID = mysqli_real_escape_string($conn, $_POST['WarehouseRowID']);
@@ -154,6 +110,210 @@ if(isset($_REQUEST['action'])) {
                 echo "Error adding warehouse: " . mysqli_error($conn);
             }
         }
+    }
+
+    if ($action == "row_delete") {
+        $row_id = mysqli_real_escape_string($conn, $_POST['row_id']);
+        $updateQuery = "UPDATE warehouse_rows SET hidden = '1' WHERE WarehouseRowID = '$row_id'";
+        if (mysqli_query($conn, $updateQuery)) {
+            echo "success";
+        } else {
+            echo "Error updating warehouse: " . mysqli_error($conn);
+        }
+    }
+    if ($action == "shelf_delete") {
+        $shelf_id = mysqli_real_escape_string($conn, $_POST['shelf_id']);
+        $updateQuery = "UPDATE shelves SET hidden = '1' WHERE ShelfID  = '$shelf_id'";
+        if (mysqli_query($conn, $updateQuery)) {
+            echo "success";
+        } else {
+            echo "Error updating warehouse: " . mysqli_error($conn);
+        }
+    }
+    if ($action == "bin_delete") {
+        $bin_id = mysqli_real_escape_string($conn, $_POST['bin_id']);
+        $updateQuery = "UPDATE bins SET hidden = '1' WHERE BinID  = '$bin_id'";
+        if (mysqli_query($conn, $updateQuery)) {
+            echo "success";
+        } else {
+            echo "Error updating warehouse: " . mysqli_error($conn);
+        }
+    }
+
+    if ($action == "add_update_row") {
+        $WarehouseRowID = mysqli_real_escape_string($conn, $_POST['WarehouseRowID']);
+        $WarehouseID = mysqli_real_escape_string($conn, $_POST['WarehouseID']);
+        $RowCode = mysqli_real_escape_string($conn, $_POST['RowCode']);
+        $Description = mysqli_real_escape_string($conn, $_POST['Description']);
+    
+        $checkQuery = "SELECT * FROM warehouse_rows WHERE WarehouseRowID = '$WarehouseRowID'";
+        $result = mysqli_query($conn, $checkQuery);
+    
+        if (mysqli_num_rows($result) > 0) {
+            $updateQuery = "
+                UPDATE warehouse_rows 
+                SET 
+                    RowCode = '$RowCode', 
+                    Description = '$Description'
+                WHERE WarehouseRowID = '$WarehouseRowID'
+            ";
+    
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "success";
+            } else {
+                echo "Error updating warehouse: " . mysqli_error($conn);
+            }
+        } else {
+            $insertQuery = "
+                INSERT INTO warehouse_rows (
+                    RowCode,
+                    WarehouseID,
+                    Description
+                ) VALUES (
+                    '$RowCode', 
+                    '$WarehouseID', 
+                    '$Description'
+                )
+            ";
+    
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "success";
+            } else {
+                echo "Error adding warehouse: " . mysqli_error($conn);
+            }
+        }
+    }
+
+    if ($action == "add_edit_row") {
+        $row_id = mysqli_real_escape_string($conn, $_POST['row_id']);
+        $warehouse_id = mysqli_real_escape_string($conn, $_POST['warehouse_id']);
+
+        $checkQuery = "SELECT * FROM warehouse_rows WHERE WarehouseRowID = '$row_id'";
+        $result = mysqli_query($conn, $checkQuery);
+    
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+        }
+        ?>
+        <div class="card">
+            <div class="card-body">
+                <input type="hidden" id="WarehouseRowID" name="WarehouseRowID" class="form-control" value="<?= $row['WarehouseRowID'] ?? $row_id ?>"/>
+                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $row['WarehouseID'] ?? $warehouse_id ?>"/>
+
+                <div class="row pt-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Row Code</label>
+                            <input type="text" id="RowCode" name="RowCode" class="form-control" value="<?= $row['RowCode'] ?? '' ?>"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row pt-3">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="Description" name="Description" rows="5"><?= $row['Description'] ?? '' ?></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <?php
+    }
+
+    if ($action == "add_edit_shelf") {
+        $shelf_id = mysqli_real_escape_string($conn, $_POST['shelf_id']);
+        $warehouse_id = mysqli_real_escape_string($conn, $_POST['warehouse_id']);
+
+        $checkQuery = "SELECT * FROM shelves WHERE ShelfID = '$shelf_id'";
+        $result = mysqli_query($conn, $checkQuery);
+    
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+        }
+        ?>
+        <div class="card">
+            <div class="card-body">
+                <input type="hidden" id="ShelfID" name="ShelfID" class="form-control" value="<?= $row['ShelfID'] ?? $shelf_id ?>"/>
+                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $row['WarehouseID'] ?? $warehouse_id ?>"/>
+
+                <div class="row pt-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Shelf Code</label>
+                            <input type="text" id="ShelfCode" name="ShelfCode" class="form-control" value="<?= $row['ShelfCode'] ?? '' ?>" required/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Row Code</label>
+                            <select id="WarehouseRowID" class="form-control" name="WarehouseRowID" required>
+                                <option value="" >Select One...</option>
+                                <?php
+                                $query_rows = "SELECT * FROM warehouse_rows WHERE WarehouseID = '" .$warehouse_id ."'";
+                                $result_rows = mysqli_query($conn, $query_rows);            
+                                while ($row_rows = mysqli_fetch_array($result_rows)) {
+                                    $selected = (($row['WarehouseRowID'] ?? '') == $row_rows['WarehouseRowID']) ? 'selected' : '';
+                                    
+                                ?>
+                                    <option value="<?= $row_rows['WarehouseRowID'] ?>" <?= $selected ?>><?= $row_rows['RowCode'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="Description" name="Description" rows="5"><?= $row['Description'] ?? '' ?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    if ($action == "add_edit_bin") {
+        $bin_id = mysqli_real_escape_string($conn, $_POST['bin_id']);
+        $warehouse_id = mysqli_real_escape_string($conn, $_POST['warehouse_id']);
+
+        $checkQuery = "SELECT * FROM bins WHERE BinID = '$bin_id'";
+        $result = mysqli_query($conn, $checkQuery);
+    
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+        }
+        ?>
+        <div class="card">
+            <div class="card-body">
+                <input type="hidden" id="BinID" name="BinID" class="form-control" value="<?= $row['BinID'] ?? $bin_id ?>"/>
+                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $row['WarehouseID'] ?? $warehouse_id ?>"/>
+
+                <div class="row pt-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Row Code</label>
+                            <input type="text" id="BinCode" name="BinCode" class="form-control" value="<?= $row['BinCode'] ?? '' ?>"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row pt-3">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="Description" name="Description" rows="5"><?= $row['Description'] ?? '' ?></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <?php
     }
 
     if ($action == "fetch_modal_bin") {

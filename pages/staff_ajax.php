@@ -266,11 +266,14 @@ if(isset($_REQUEST['action'])) {
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="mb-3">
-                                                <label class="form-label">Role</label>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <label class="form-label">Role</label>
+                                                    <a href="?page=employee_roles" target="_blank" class="text-decoration-none">Edit</a>
+                                                </div>
                                                 <select id="role" class="form-control" name="role">
-                                                    <option value="/">Select One...</option>
+                                                    <option value="">Select One...</option>
                                                     <?php
-                                                    $query_roles = "SELECT * FROM staff_roles WHERE hidden = '0'";
+                                                    $query_roles = "SELECT * FROM staff_roles WHERE hidden = '0' AND status = '1'";
                                                     $result_roles = mysqli_query($conn, $query_roles);            
                                                     while ($row_staff = mysqli_fetch_array($result_roles)) {
                                                         $selected = ($row_staff['emp_role_id'] == $row['role']) ? 'selected' : '';

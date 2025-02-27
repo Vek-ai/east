@@ -112,7 +112,7 @@ if (mysqli_num_rows($result_img) > 0) { ?>
         <select id="warranty_type" class="form-control" name="warranty_type">
             <option value="" >Select Warranty Type...</option>
             <?php
-            $query_product_warranty_type = "SELECT * FROM product_warranty_type WHERE hidden = '0'";
+            $query_product_warranty_type = "SELECT * FROM product_warranty_type WHERE hidden = '0' AND status = '1'";
             $result_product_warranty_type = mysqli_query($conn, $query_product_warranty_type);            
             while ($row_product_warranty_type = mysqli_fetch_array($result_product_warranty_type)) {
                 $selected = ($row['warranty_type'] == $row_product_warranty_type['product_warranty_type_id']) ? 'selected' : '';
@@ -133,7 +133,7 @@ if (mysqli_num_rows($result_img) > 0) { ?>
         <select id="profile" class="form-control add-category" name="profile">
             <option value="" >Select Profile...</option>
             <?php
-            $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0'";
+            $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1'";
             $result_profile_type = mysqli_query($conn, $query_profile_type);            
             while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
                 $selected = ($row['profile'] == $row_profile_type['profile_type_id']) ? 'selected' : '';
