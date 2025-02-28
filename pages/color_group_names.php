@@ -208,9 +208,13 @@ if(!empty($_REQUEST['color_group_name_id'])){
                         <td><?= $status ?></td>
                         <td class="text-center" id="action-button-<?= $no ?>">
                             <?php if ($row_color_group_name['status'] == '0') { ?>
-                                <a href="#" class="btn btn-light py-1 text-dark hideColorGroupName" data-id="<?= $color_group_name_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
+                                <a href="#" class="py-1 text-dark hideColorGroupName text-decoration-none" data-id="<?= $color_group_name_id ?>" data-row="<?= $no ?>">
+                                    <i class="text-danger ti ti-trash fs-7"></i>
+                                </a>
                             <?php } else { ?>
-                                <a href="?page=color_group_name&color_group_name_id=<?= $color_group_name_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                                <a href="?page=color_group_name&color_group_name_id=<?= $color_group_name_id ?>" class="py-1 text-decoration-none">
+                                    <i class="text-warning ti ti-pencil fs-7"></i>
+                                </a>
                             <?php } ?>
                         </td>
                     </tr>
@@ -241,13 +245,13 @@ if(!empty($_REQUEST['color_group_name_id'])){
                                         $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
                                         $(".changeStatus[data-no='" + no + "']").data('status', "0");
                                         $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                        $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideColorGroupName" data-id="' + color_group_name_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
+                                        $('#action-button-' + no).html('<a href="#" class="text-decoration-none py-1 text-dark hideColorGroupName" data-id="' + color_group_name_id + '" data-row="' + no + '"><i class="text-danger ti ti-trash fs-7"></i></a>');
                                         $('#toggleActive').trigger('change');
                                     } else {
                                         $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                                         $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                         $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                        $('#action-button-' + no).html('<a href="?page=color_group_name&color_group_name_id=' + color_group_name_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                                        $('#action-button-' + no).html('<a href="?page=color_group_name&color_group_name_id=' + color_group_name_id + '" class="text-decoration-none py-1"><i class="text-warning ti ti-pencil fs-7"></i></a>');
                                         $('#toggleActive').trigger('change');
                                     }
                                 } else {

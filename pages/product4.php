@@ -503,7 +503,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                     LEFT JOIN 
                                         inventory AS i ON p.product_id = i.product_id
                                     WHERE 
-                                        p.hidden = '0' AND p.status = '1'
+                                        p.hidden = '0'
                                 ";
 
                                 if (!empty($color_id)) {
@@ -543,10 +543,10 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
                                     if ($db_status == '0') {
                                         $status_icon = "text-danger ti ti-trash";
-                                        $status = "<a href='#'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+                                        $status = "<a href='#'><div id='status-alert$no' class='changeStatus alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='$db_status' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
                                     } else {
                                         $status_icon = "text-warning ti ti-reload";
-                                        $status = "<a href='#'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+                                        $status = "<a href='#'><div id='status-alert$no' class='changeStatus alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='$db_status' style='border-radius: 5%;' role='alert'>Active</div></a>";
                                     }
 
                                     if(!empty($row_product['main_image'])){

@@ -103,7 +103,7 @@
           </a>
         </li>-->
         <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=product">
+          <a class="sidebar-link" href="?page=product4">
             <iconify-icon icon="solar:clipboard-list-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Product List</span>
           </a>
