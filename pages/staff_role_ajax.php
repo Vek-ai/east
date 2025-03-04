@@ -21,51 +21,18 @@ if(isset($_REQUEST['action'])) {
 
         if (mysqli_num_rows($result) > 0) {
             // Record exists, fetch current values
-            $row = mysqli_fetch_assoc($result);
-            $current_emp_role = $row['emp_role'];
-
-            $duplicates = array();
-
-            // Check for duplicates only if the new values are different from the current values
-            if ($emp_role != $current_emp_role) {
-                $checkCategory = "SELECT * FROM staff_roles WHERE emp_role = '$current_emp_role'";
-                $resultCategory = mysqli_query($conn, $checkCategory);
-                if (mysqli_num_rows($resultCategory) > 0) {
-                    $duplicates[] = "Employee Role";
-                }
-            }
-
-            if (!empty($duplicates)) {
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            $updateQuery = "UPDATE staff_roles SET emp_role = '$emp_role', role_desc = '$role_desc', last_edit = NOW(), edited_by = '$userid'  WHERE emp_role_id = '$emp_role_id'";
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "Employee role updated successfully.";
             } else {
-                // No duplicates, proceed with update
-                $updateQuery = "UPDATE staff_roles SET emp_role = '$emp_role', role_desc = '$role_desc', last_edit = NOW(), edited_by = '$userid'  WHERE emp_role_id = '$emp_role_id'";
-                if (mysqli_query($conn, $updateQuery)) {
-                    echo "Employee role updated successfully.";
-                } else {
-                    echo "Error updating employee role: " . mysqli_error($conn);
-                }
+                echo "Error updating employee role: " . mysqli_error($conn);
             }
         } else {
-            // Record does not exist, perform duplicate checks before inserting
-            $duplicates = array();
-            $checkCategory = "SELECT * FROM staff_roles WHERE emp_role = '$emp_role'";
-            $resultCategory = mysqli_query($conn, $checkCategory);
-            if (mysqli_num_rows($resultCategory) > 0) {
-                $duplicates[] = "Employee Role";
-            }
-
-            if(!empty($duplicates)){
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            $insertQuery = "INSERT INTO staff_roles (emp_role, role_desc, added_date, added_by) VALUES ('$emp_role', '$role_desc', NOW(), '$userid')";
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "New employee role added successfully.";
             } else {
-                $insertQuery = "INSERT INTO staff_roles (emp_role, role_desc, added_date, added_by) VALUES ('$emp_role', '$role_desc', NOW(), '$userid')";
-                if (mysqli_query($conn, $insertQuery)) {
-                    echo "New employee role added successfully.";
-                } else {
-                    echo "Error adding employee role: " . mysqli_error($conn);
-                }
+                echo "Error adding employee role: " . mysqli_error($conn);
             }
         }
     } 
