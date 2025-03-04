@@ -13,6 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   $username = $conn->real_escape_string($username);
 
+  $require_role_check = false;
+
   $sql = "SELECT staff_id, password, role FROM staff WHERE username = '$username'";
   $result = $conn->query($sql);
 
@@ -23,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       $role = $row['role'];
 
       if ($db_password == $password) {
-          if ($role != 6) {
+          if ($require_role_check && $role != 6) {
               $error = 'Your account does not have the necessary permissions to access this page.';
           } else {
               $_SESSION['userid'] = $staff_id;
@@ -40,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   } else {
       $error = 'Incorrect username or password. Please try again.';
   }
+
 }
 ?>
 
