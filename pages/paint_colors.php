@@ -180,14 +180,23 @@ if(!empty($_REQUEST['result'])){
                     <label class="form-label">Color Group</label>
                 </div>
                 <select id="color_group" class="form-control" name="color_group">
-                    <option value="" >Select Color Group...</option>
+                    <option value="">Select Color Group...</option>
                     <?php
-                    $query_color_group = "SELECT * FROM color_group_name WHERE hidden = '0' ORDER BY color_group_name";
+                    $query_color_group = "
+                        SELECT DISTINCT cgn.color_group_name_id, cgn.color_group_name 
+                        FROM color_group_name cgn
+                        INNER JOIN product_color pc ON cgn.color_group_name_id = pc.color
+                        WHERE cgn.hidden = '0'
+                        ORDER BY cgn.color_group_name
+                    ";
+
                     $result_color_group = mysqli_query($conn, $query_color_group);
                     while ($row_color_group = mysqli_fetch_array($result_color_group)) {
                         $selected = ($color_group == $row_color_group['color_group_name_id']) ? 'selected' : '';
                     ?>
-                        <option value="<?= $row_color_group['color_group_name_id'] ?>" <?= $selected ?>><?= $row_color_group['color_group_name'] ?></option>
+                        <option value="<?= $row_color_group['color_group_name_id'] ?>" <?= $selected ?>>
+                            <?= $row_color_group['color_group_name'] ?>
+                        </option>
                     <?php
                     }
                     ?>

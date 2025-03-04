@@ -2,6 +2,10 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 if(!empty($_REQUEST['warehouse_id'])){
     $WarehouseID = $_REQUEST['warehouse_id'];
     $query = "SELECT * FROM warehouses WHERE WarehouseID = '$WarehouseID'";
@@ -101,6 +105,80 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                         <p id="contact_email"><?= $contact_email ?></p>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="datatables col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title d-flex justify-content-between align-items-center">List of Sections
+                                                <a href="#" class="btn btn-primary addEditSectionBtn" style="border-radius: 10%;" data-id="" data-warehouse-id="<?=$WarehouseID?>">Add New</a>
+                                            </h4>
+                                            
+                                            <div class="table-responsive">
+                                        
+                                                <table id="row_wh_sections" class="table table-striped table-bordered text-nowrap align-middle">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Section Name</th>
+                                                            <th>Row Code</th>
+                                                            <th>Shelf Code</th>
+                                                            <th>Bin Code</th>
+                                                            <th>Description</th>
+                                                            <th>Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php
+                                                        $query_wh_section ="SELECT 
+                                                                                ws.*, 
+                                                                                wr.RowCode, 
+                                                                                s.ShelfCode, 
+                                                                                b.BinCode 
+                                                                            FROM warehouse_section ws
+                                                                            LEFT JOIN warehouse_rows wr ON ws.WarehouseRowID = wr.WarehouseRowID
+                                                                            LEFT JOIN shelves s ON ws.ShelfID = s.ShelfID
+                                                                            LEFT JOIN bins b ON ws.BinID = b.BinID
+                                                                            WHERE 
+                                                                                ws.WarehouseID = '$WarehouseID' AND ws.hidden = '0'";
+                                                        $result_wh_section = mysqli_query($conn, $query_wh_section);   
+                                                        while ($row_wh_section = mysqli_fetch_array($result_wh_section)) {
+                                                        ?>
+                                                            <tr>
+                                                                <td>
+                                                                    <?= $row_wh_section['section_name'] ?>
+                                                                </td>
+                                                                <td>
+                                                                    <?= $row_wh_section['RowCode'] ?>
+                                                                </td>
+                                                                <td>
+                                                                    <?= $row_wh_section['ShelfCode'] ?>
+                                                                </td>
+                                                                <td>
+                                                                    <?= $row_wh_section['BinCode'] ?>
+                                                                </td>
+                                                                <td><?= $row_wh_section['Description'] ?></td>
+                                                                <td>
+                                                                    <div class="action-btn text-center">
+                                                                        <a href="#" id="section-edit" 
+                                                                                    class="text-primary addEditSectionBtn" 
+                                                                                    data-id="<?= $row_wh_section['id'] ?>"
+                                                                                    data-warehouse-id="<?= $WarehouseID ?>">
+                                                                            <i class="text-warning ti ti-pencil fs-7"></i>
+                                                                        </a>
+                                                                        <a href="#" id="section-delete" class="text-danger" data-id="<?= $row_wh_section['id'] ?>">
+                                                                            <i class="text-danger ti ti-trash fs-7"></i>
+                                                                        </a>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        <?php
+                                                        }
+                                                        ?>
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     </div>
@@ -289,7 +367,34 @@ if(!empty($_REQUEST['warehouse_id'])){
                                 <div class="row">
                                     
 
-                                    
+                                    <div class="modal fade" id="addSectionModal" tabindex="-1" aria-labelledby="addSectionModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header d-flex align-items-center">
+                                                    <h4 class="modal-title" id="myLargeModalLabel">Add Section</h4>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form id="add_section" class="form-horizontal">
+                                                    <div id="section-div" class="modal-body">
+                                                        
+                                                    </div>
+
+                                                    <div class="modal-footer">
+                                                        <div class="form-actions">
+                                                            <div class="card-body">
+                                                                <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+                                                                <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Close</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <!-- /.modal-content -->
+                                        </div>
+                                        <!-- /.modal-dialog -->
+                                    </div>
+
+                                    <div class="modal fade" id="updateSectionModal" tabindex="-1" aria-labelledby="updateSectionModalLabel" aria-hidden="true"></div>
 
                                     <div class="modal fade" id="addBinModal" tabindex="-1" aria-labelledby="addBinModalLabel" aria-hidden="true">
                                         <div class="modal-dialog modal-lg">
@@ -459,6 +564,7 @@ if(!empty($_REQUEST['warehouse_id'])){
             });
         });
 
+        $('#row_wh_sections').DataTable();
         $('#row_wh_bins').DataTable();
         $('#row_wh_rows').DataTable();
         $('#row_wh_shelves').DataTable();
@@ -498,6 +604,30 @@ if(!empty($_REQUEST['warehouse_id'])){
                     }
 
                     
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '.addEditSectionBtn', function(event) {
+            event.preventDefault(); 
+
+            var id = $(this).data('id');
+            var warehouse_id = $(this).data('warehouse-id');
+
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    warehouse_id: warehouse_id,
+                    action: 'add_edit_section'
+                },
+                success: function(response) {
+                    $('#section-div').html(response);
+                    $('#addSectionModal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -577,6 +707,52 @@ if(!empty($_REQUEST['warehouse_id'])){
             });
         });
 
+        $(document).on('submit', '#add_section', function(event) {
+            event.preventDefault(); 
+
+            var formData = new FormData(this);
+            formData.append('action', 'add_update_section');
+
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#addRowModal').modal('hide');
+                    if (response.trim() === "success_add") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("New section added successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    }else if (response.trim() === "success_update") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Section updated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
         $(document).on('submit', '#add_bin', function(event) {
             event.preventDefault(); 
 
@@ -591,26 +767,31 @@ if(!empty($_REQUEST['warehouse_id'])){
                 contentType: false,
                 success: function(response) {
                     $('#addBinModal').modal('hide');
-                    if (response.trim() === "success") {
+                    if (response.trim() === "success_add") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("New bin added successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");
-
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    }else if (response.trim() === "success_update") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Bin updated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
                         $('#response-modal').on('hide.bs.modal', function () {
                             location.reload();
                         });
                     } else {
                         $('#responseHeader').text("Failed");
                         $('#responseMsg').text(response);
-
                         $('#responseHeaderContainer').removeClass("bg-success");
                         $('#responseHeaderContainer').addClass("bg-danger");
                         $('#response-modal').modal("show");
                     }
-
-                    
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -632,26 +813,31 @@ if(!empty($_REQUEST['warehouse_id'])){
                 contentType: false,
                 success: function(response) {
                     $('#addRowModal').modal('hide');
-                    if (response.trim() === "success") {
+                    if (response.trim() === "success_add") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("New row added successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");
-
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    }else if (response.trim() === "success_update") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Row updated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
                         $('#response-modal').on('hide.bs.modal', function () {
                             location.reload();
                         });
                     } else {
                         $('#responseHeader').text("Failed");
                         $('#responseMsg').text(response);
-
                         $('#responseHeaderContainer').removeClass("bg-success");
                         $('#responseHeaderContainer').addClass("bg-danger");
                         $('#response-modal').modal("show");
                     }
-
-                    
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -673,31 +859,76 @@ if(!empty($_REQUEST['warehouse_id'])){
                 contentType: false,
                 success: function(response) {
                     $('#addShelfModal').modal('hide');
-                    if (response.trim() === "success") {
+                    if (response.trim() === "success_add") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("New shelf added successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");
-
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    }else if (response.trim() === "success_update") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Shelf updated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
                         $('#response-modal').on('hide.bs.modal', function () {
                             location.reload();
                         });
                     } else {
                         $('#responseHeader').text("Failed");
                         $('#responseMsg').text(response);
-
                         $('#responseHeaderContainer').removeClass("bg-success");
                         $('#responseHeaderContainer').addClass("bg-danger");
                         $('#response-modal').modal("show");
                     }
-
-                    
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
+        });
+
+        $(document).on('click', '#section-delete', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id');
+            var confirmDelete = confirm("Are you sure you want to delete this section?");
+            
+            if (confirmDelete) {
+                $.ajax({
+                    url: 'pages/warehouse_ajax_details.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: 'section_delete'
+                    },
+                    success: function(response) {
+                        if (response.trim() === "success") {
+                            $('#responseHeader').text("Success");
+                            $('#responseMsg').text("Successfully Deleted Section.");
+                            $('#responseHeaderContainer').removeClass("bg-danger");
+                            $('#responseHeaderContainer').addClass("bg-success");
+                            $('#response-modal').modal("show");
+
+                            $('#response-modal').on('hide.bs.modal', function () {
+                                location.reload();
+                            });
+                        } else {
+                            $('#responseHeader').text("Failed");
+                            $('#responseMsg').text(response);
+
+                            $('#responseHeaderContainer').removeClass("bg-success");
+                            $('#responseHeaderContainer').addClass("bg-danger");
+                            $('#response-modal').modal("show");
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }
         });
 
         $(document).on('click', '#row-delete', function(event) {
