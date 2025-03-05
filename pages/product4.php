@@ -1225,7 +1225,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
                 let descriptionParts = [];
 
-                let pieces = $("#pack option:selected").data('count');
+                let pieces = $("#pack option:selected").data('count') || 0;
                 let cost = $("#cost").val() || 0;
                 let price = pieces * cost;
                 $("#price").val(price.toFixed(3));
@@ -1258,7 +1258,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             }else if (String(selectedCategory) == '1') { //category 1 = LUMBER
                 updateColorSelect();
 
-                let color_multi = parseFloat($("#color option:selected").attr("data-multiplier")) || 0;
+                let color_multi = parseFloat($("#color option:selected").attr("data-multiplier")) || 1;
                 let color_multiplier = color_multi;
 
                 let stock_multi = parseFloat($("#color_paint option:selected").attr("data-stock-multiplier")) || 1;
@@ -1306,10 +1306,10 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
                 $("#description").val(descriptionParts.join(" - "));
                 $("#product_item").val(descriptionParts.join(" - "));
-            }else if (String(selectedCategory) == '19') { //category 19 = NAILS BOLTS AND RIVETS
+            } else { 
                 let descriptionParts = [];
 
-                let pieces = $("#pack option:selected").data('count');
+                let pieces = $("#pack option:selected").data('count') || 0;
                 let cost = $("#cost").val() || 0;
                 let price = pieces * cost;
                 $("#price").val(price.toFixed(3));
