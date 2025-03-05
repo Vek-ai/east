@@ -206,7 +206,7 @@ if(!empty($_REQUEST['id'])){
                         <option value="">All Product Category</option>
                         <optgroup label="Product Category">
                           <?php
-                            $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1'";
+                            $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                             $result_category = mysqli_query($conn, $query_category);            
                             while ($row_product_category = mysqli_fetch_array($result_category)) {
                             ?>

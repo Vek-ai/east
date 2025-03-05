@@ -164,7 +164,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                         <select id="product_category" class="form-control" name="product_category">
                                             <option value="" >Select One...</option>
                                             <?php
-                                            $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1'";
+                                            $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                                             $result_roles = mysqli_query($conn, $query_roles);            
                                             while ($row_product_category = mysqli_fetch_array($result_roles)) {
                                             ?>
@@ -209,7 +209,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                 <option value="">All Categories</option>
                                 <optgroup label="Category">
                                     <?php
-                                    $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1'";
+                                    $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                                     $result_category = mysqli_query($conn, $query_category);
                                     while ($row_category = mysqli_fetch_array($result_category)) {
                                     ?>
@@ -336,7 +336,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             <option value="" data-category="">All Categories</option>
                             <optgroup label="Category">
                                 <?php
-                                $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1'";
+                                $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                                 $result_category = mysqli_query($conn, $query_category);
                                 while ($row_category = mysqli_fetch_array($result_category)) {
                                     $selected = ($category_id == $row_category['product_category_id']) ? 'selected' : '';

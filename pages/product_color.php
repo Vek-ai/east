@@ -126,7 +126,7 @@ $picture_path = "images/product/product.jpg";
                                             <select id="product_category" class="form-control" name="product_category">
                                                 <option value="">Select Category...</option>
                                                 <?php
-                                                $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1'";
+                                                $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                                                 $result_roles = mysqli_query($conn, $query_roles);            
                                                 while ($row_product_category = mysqli_fetch_array($result_roles)) {
                                                 ?>
@@ -202,7 +202,7 @@ $picture_path = "images/product/product.jpg";
                             <option value="">All Categories</option>
                             <optgroup label="Category">
                                 <?php
-                                $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1'";
+                                $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                                 $result_category = mysqli_query($conn, $query_category);
                                 while ($row_category = mysqli_fetch_array($result_category)) {
                                 ?>
