@@ -1306,7 +1306,21 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
                 $("#description").val(descriptionParts.join(" - "));
                 $("#product_item").val(descriptionParts.join(" - "));
-            }
+            }else if (String(selectedCategory) == '19') { //category 19 = NAILS BOLTS AND RIVETS
+                let descriptionParts = [];
+
+                let pieces = $("#pack option:selected").data('count');
+                let cost = $("#cost").val() || 0;
+                let price = pieces * cost;
+                $("#price").val(price.toFixed(3));
+
+                let size = parseFloat($("#size").val()) || 0; 
+                if (size) descriptionParts.push(size);
+                if (selectedType) descriptionParts.push($("#product_type option:selected").text().trim());
+
+                $("#description").val(descriptionParts.join(" - "));
+                $("#product_item").val(descriptionParts.join(" - "));
+                }
         });
         
         $(document).on('mousedown', '.readonly', function() {
