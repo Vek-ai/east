@@ -106,7 +106,7 @@ if(!empty($_REQUEST['id'])){
           <select id="product_category" class="form-control" name="product_category">
               <option value="">Select One...</option>
               <?php
-              $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+              $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
               $result_category = mysqli_query($conn, $query_category);            
               while ($row_category = mysqli_fetch_array($result_category)) {
                   $selected = ($product_category_id == $row_category['product_category_id']) ? 'selected' : '';

@@ -383,7 +383,7 @@ if(isset($_POST['fetch_order'])){
                                                 <select id="usage<?= $no ?>" class="form-control usage-order" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
                                                     <option value="">Select Usage...</option>
                                                     <?php
-                                                    $query_key = "SELECT * FROM key_components";
+                                                    $query_key = "SELECT * FROM key_components ORDER BY component_name ASC";
                                                     $result_key = mysqli_query($conn, $query_key);
 
                                                     while ($row_key = mysqli_fetch_array($result_key)) {
@@ -391,7 +391,7 @@ if(isset($_POST['fetch_order'])){
                                                         ?>
                                                         <optgroup label="<?= strtoupper($row_key['component_name']); ?>">
                                                             <?php 
-                                                            $query_usage = "SELECT * FROM component_usage WHERE componentid = '$componentid'";
+                                                            $query_usage = "SELECT * FROM component_usage WHERE componentid = '$componentid' ORDER BY `usage_name` ASC";
                                                             $result_usage = mysqli_query($conn, $query_usage);
 
                                                             while ($row_usage = mysqli_fetch_array($result_usage)) {

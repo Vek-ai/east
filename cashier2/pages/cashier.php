@@ -178,7 +178,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                     <option value="" data-category="">All Categories</option>
                                     <optgroup label="Category">
                                         <?php
-                                        $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+                                        $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                                         $result_category = mysqli_query($conn, $query_category);
                                         while ($row_category = mysqli_fetch_array($result_category)) {
                                         ?>

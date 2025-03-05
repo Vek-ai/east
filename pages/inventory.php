@@ -113,7 +113,7 @@ require 'includes/functions.php';
                                     <select id="color<?= $no ?>" class="form-control color-cart select2-add" name="color_id">
                                         <option value="" >Select Color...</option>
                                         <?php
-                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                         $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                         while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                         ?>
@@ -133,7 +133,7 @@ require 'includes/functions.php';
                                     <option value="" >Select Supplier...</option>
                                     <optgroup label="Supplier">
                                         <?php
-                                        $query_supplier = "SELECT * FROM supplier";
+                                        $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
                                         $result_supplier = mysqli_query($conn, $query_supplier);            
                                         while ($row_supplier = mysqli_fetch_array($result_supplier)) {
                                         ?>
@@ -310,7 +310,7 @@ require 'includes/functions.php';
                         <select id="color_filter" class="form-control color-cart select2-filter" name="color_id">
                             <option value="" >All Colors...</option>
                             <?php
-                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                             $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                             while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                             ?>
@@ -325,7 +325,7 @@ require 'includes/functions.php';
                             <option value="" >All Suppliers...</option>
                             <optgroup label="Supplier">
                                 <?php
-                                $query_supplier = "SELECT * FROM supplier";
+                                $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
                                 $result_supplier = mysqli_query($conn, $query_supplier);            
                                 while ($row_supplier = mysqli_fetch_array($result_supplier)) {
                                 ?>

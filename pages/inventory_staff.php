@@ -128,7 +128,7 @@ while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
                                     <option value="" >Select Supplier...</option>
                                     <optgroup label="Supplier">
                                         <?php
-                                        $query_supplier = "SELECT * FROM supplier";
+                                        $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
                                         $result_supplier = mysqli_query($conn, $query_supplier);            
                                         while ($row_supplier = mysqli_fetch_array($result_supplier)) {
                                         ?>

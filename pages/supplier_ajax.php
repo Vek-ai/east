@@ -237,9 +237,9 @@ if(isset($_REQUEST['action'])) {
                                 <div class="mb-3">
                                 <label class="form-label">Supplier Type</label>
                                 <select id="supplier_type" class="form-control" name="supplier_type">
-                                    <option value="/">Select One...</option>
+                                    <option value="">Select One...</option>
                                     <?php
-                                    $query_roles = "SELECT * FROM supplier_type WHERE hidden = '0'";
+                                    $query_roles = "SELECT * FROM supplier_type WHERE hidden = '0' ORDER BY `supplier_type` ASC";
                                     $result_roles = mysqli_query($conn, $query_roles);            
                                     while ($row_supplier = mysqli_fetch_array($result_roles)) {
                                         $selected = ($row_supplier['supplier_type_id'] == $row['supplier_type']) ? 'selected' : '';
@@ -263,7 +263,7 @@ if(isset($_REQUEST['action'])) {
                                     <div id="color_upd">
                                         <select id="supplier_color_update" class="form-control supplier_color" name="supplier_color[]" multiple>
                                             <?php
-                                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                             $result_color = mysqli_query($conn, $query_color);            
                                             while ($row_color = mysqli_fetch_array($result_color)) {
                                                 $selected = (in_array($row_color['color_name'], $supplier_colors)) ? 'selected' : '';

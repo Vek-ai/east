@@ -688,9 +688,9 @@ if(isset($_REQUEST['action'])) {
                                             <div class="mb-3">
                                                 <label class="form-label">Product Category</label>
                                                 <select id="product_category_update" class="form-control" name="product_category">
-                                                    <option value="/">Select One...</option>
+                                                    <option value="">Select One...</option>
                                                     <?php
-                                                    $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                                                    $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                                                     $result_roles = mysqli_query($conn, $query_roles);            
                                                     while ($row_product_category = mysqli_fetch_array($result_roles)) {
                                                         $selected = ($row['product_category'] == $row_product_category['product_id']) ? 'selected' : '';
@@ -708,7 +708,7 @@ if(isset($_REQUEST['action'])) {
                                                 <select id="product_line" class="form-control" name="product_line">
                                                     <option value="/">Select One...</option>
                                                     <?php
-                                                    $query_roles = "SELECT * FROM product_line WHERE hidden = '0'";
+                                                    $query_roles = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
                                                     $result_roles = mysqli_query($conn, $query_roles);            
                                                     while ($row_product_line = mysqli_fetch_array($result_roles)) {
                                                         $selected = ($row['product_line'] == $row_product_line['product_line_id']) ? 'selected' : '';
@@ -726,7 +726,7 @@ if(isset($_REQUEST['action'])) {
                                                 <select id="product_type" class="form-control" name="product_type">
                                                     <option value="/">Select One...</option>
                                                     <?php
-                                                    $query_roles = "SELECT * FROM product_type WHERE hidden = '0'";
+                                                    $query_roles = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
                                                     $result_roles = mysqli_query($conn, $query_roles);            
                                                     while ($row_product_type = mysqli_fetch_array($result_roles)) {
                                                         $selected = ($row['product_type'] == $row_product_type['product_type_id']) ? 'selected' : '';
@@ -823,9 +823,9 @@ if(isset($_REQUEST['action'])) {
                                         <div class="mb-3">
                                         <label class="form-label">Gauge</label>
                                         <select id="gauge" class="form-control" name="gauge">
-                                            <option value="/" >Select Gauge...</option>
+                                            <option value="" >Select Gauge...</option>
                                             <?php
-                                            $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                                            $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
                                             $result_gauge = mysqli_query($conn, $query_gauge);            
                                             while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                                                 $selected = ($row['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
@@ -843,7 +843,7 @@ if(isset($_REQUEST['action'])) {
                                         <select id="grade" class="form-control" name="grade">
                                             <option value="/" >Select Grade...</option>
                                             <?php
-                                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                                             $result_grade = mysqli_query($conn, $query_grade);            
                                             while ($row_grade = mysqli_fetch_array($result_grade)) {
                                                 $selected = ($row['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
@@ -864,7 +864,7 @@ if(isset($_REQUEST['action'])) {
                                         <select id="color" class="form-control" name="color">
                                             <option value="/" >Select Color...</option>
                                             <?php
-                                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                             $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                             while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                                 $selected = ($row['color'] == $row_paint_colors['color_id']) ? 'selected' : '';

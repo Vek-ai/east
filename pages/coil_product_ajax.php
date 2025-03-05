@@ -255,7 +255,7 @@ if(isset($_REQUEST['action'])) {
                                                 <select id="warehouse_edit" class="form-control select2-edit" name="warehouse">
                                                     <option value="" >Select One...</option>
                                                     <?php
-                                                    $query_warehouses = "SELECT * FROM warehouses";
+                                                    $query_warehouses = "SELECT * FROM warehouses WHERE status = 1 ORDER BY `WarehouseName` ASC";
                                                     $result_warehouses = mysqli_query($conn, $query_warehouses);            
                                                     while ($row_warehouses = mysqli_fetch_array($result_warehouses)) {
                                                         $selected = ($row['warehouse'] == $row_warehouses['WarehouseID']) ? 'selected' : '';
@@ -279,7 +279,7 @@ if(isset($_REQUEST['action'])) {
                                                         <select id="color_close_edit" class="form-control select2-edit colors-edit" name="color_close">
                                                             <option value="" >Select Color...</option>
                                                             <?php
-                                                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                                             $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                                             while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                                                 $selected = ($row['color_close'] == $row_paint_colors['color_id']) ? 'selected' : '';
@@ -297,7 +297,7 @@ if(isset($_REQUEST['action'])) {
                                                         <select id="actual_color_edit" class="form-control select2-edit colors-edit" name="actual_color">
                                                             <option value="" >Select Color...</option>
                                                             <?php
-                                                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                            $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                                             $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                                             while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                                                 $selected = ($row['actual_color'] == $row_paint_colors['color_id']) ? 'selected' : '';
@@ -393,7 +393,7 @@ if(isset($_REQUEST['action'])) {
                                                 <select id="color_sold_as_edit" class="form-control select2-edit" name="color_sold_as">
                                                     <option value="" >Select Color...</option>
                                                     <?php
-                                                    $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                    $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                                     $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                                     while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                                         $selected = ($row['color_sold_as'] == $row_paint_colors['color_id']) ? 'selected' : '';
@@ -481,7 +481,7 @@ if(isset($_REQUEST['action'])) {
                                                 <select id="grade_edit" class="form-control select2-edit" name="grade">
                                                     <option value="" >Select Grade...</option>
                                                     <?php
-                                                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                                                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                                                     $result_grade = mysqli_query($conn, $query_grade);            
                                                     while ($row_grade = mysqli_fetch_array($result_grade)) {
                                                         $selected = ($row['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';

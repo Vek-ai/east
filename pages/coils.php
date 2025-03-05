@@ -160,7 +160,7 @@ if(!empty($_REQUEST['result'])){
                     <option value="">Select Supplier...</option>
                     <optgroup label="Supplier">
                         <?php
-                        $query_supplier = "SELECT * FROM supplier";
+                        $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
                         $result_supplier = mysqli_query($conn, $query_supplier);
                         while ($row_supplier = mysqli_fetch_array($result_supplier)) {
                         ?>
@@ -179,7 +179,7 @@ if(!empty($_REQUEST['result'])){
                 <select id="color" class="form-control" name="color">
                     <option value="">Select Color...</option>
                     <?php
-                    $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                    $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                     $result_paint_colors = mysqli_query($conn, $query_paint_colors);
                     while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                         $selected = ($color == $row_paint_colors['color_id']) ? 'selected' : '';
@@ -195,7 +195,7 @@ if(!empty($_REQUEST['result'])){
                 <select id="gauge" class="form-control" name="gauge">
                     <option value="">Select Gauge...</option>
                     <?php
-                    $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                    $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
                     $result_gauge = mysqli_query($conn, $query_gauge);
                     while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                         $selected = ($gauge == $row_gauge['product_gauge_id']) ? 'selected' : '';
@@ -211,7 +211,7 @@ if(!empty($_REQUEST['result'])){
                 <select id="grade" class="form-control" name="grade">
                     <option value="">Select Grade...</option>
                     <?php
-                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                     $result_grade = mysqli_query($conn, $query_grade);
                     while ($row_grade = mysqli_fetch_array($result_grade)) {
                         $selected = ($grade == $row_grade['product_grade_id']) ? 'selected' : '';

@@ -674,7 +674,7 @@ if(isset($_POST['fetch_edit_details'])){
                                     <select id="color" class="form-control select2" name="color">
                                         <option value="" >Select Color...</option>
                                         <?php
-                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                         $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                         while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                             $selected = ($custom_color == $row_paint_colors['color_id']) ? 'selected' : '';

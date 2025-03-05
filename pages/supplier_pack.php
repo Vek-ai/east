@@ -115,7 +115,7 @@ if(!empty($_REQUEST['id'])){
             <select id="supplierid" class="form-control" name="supplierid" <?= !empty($_REQUEST['supplier_id']) ? 'disabled' : '' ?>>
                 <option value="" >Select Supplier...</option>
                 <?php
-                $query_supplier = "SELECT * FROM supplier";
+                $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
                 $result_supplier = mysqli_query($conn, $query_supplier);            
                 while ($row_supplier = mysqli_fetch_array($result_supplier)) {
                     $selected = (!empty($supplierid) && $supplierid == $row_supplier['supplier_id']) ? 'selected' : '';

@@ -85,7 +85,7 @@ require 'includes/functions.php';
                     <option value="" data-category="">All Systems</option>
                     <optgroup label="Product Systems">
                         <?php
-                        $query_systems = "SELECT * FROM product_system WHERE hidden = '0'";
+                        $query_systems = "SELECT * FROM product_system WHERE hidden = '0' AND status = '1' ORDER BY `product_system` ASC";
                         $result_systems = mysqli_query($conn, $query_systems);
                         while ($row_systems = mysqli_fetch_array($result_systems)) {
                         ?>
@@ -104,7 +104,7 @@ require 'includes/functions.php';
                     <option value="" data-category="">All Categories</option>
                     <optgroup label="Product Category">
                         <?php
-                        $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+                        $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                         $result_category = mysqli_query($conn, $query_category);
                         while ($row_category = mysqli_fetch_array($result_category)) {
                         ?>
@@ -123,7 +123,7 @@ require 'includes/functions.php';
                     <option value="" data-category="">All Lines</option>
                     <optgroup label="Product Lines">
                         <?php
-                        $query_line = "SELECT * FROM product_line WHERE hidden = '0'";
+                        $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
                         $result_line = mysqli_query($conn, $query_line);
                         while ($row_line = mysqli_fetch_array($result_line)) {
                         ?>
@@ -142,7 +142,7 @@ require 'includes/functions.php';
                     <option value="" data-category="">All Types</option>
                     <optgroup label="Product Types">
                         <?php
-                        $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
+                        $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
                         $result_type = mysqli_query($conn, $query_type);
                         while ($row_type = mysqli_fetch_array($result_type)) {
                         ?>

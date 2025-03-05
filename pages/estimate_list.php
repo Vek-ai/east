@@ -204,7 +204,7 @@ if($_REQUEST['customer_id']){
                                         <option value="" data-category="">All Colors</option>
                                         <optgroup label="Product Colors">
                                             <?php
-                                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                             $result_color = mysqli_query($conn, $query_color);
                                             while ($row_color = mysqli_fetch_array($result_color)) {
                                             ?>
@@ -220,7 +220,7 @@ if($_REQUEST['customer_id']){
                                         <option value="" data-category="">All Categories</option>
                                         <optgroup label="Category">
                                             <?php
-                                            $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+                                            $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                                             $result_category = mysqli_query($conn, $query_category);
                                             while ($row_category = mysqli_fetch_array($result_category)) {
                                             ?>
@@ -236,7 +236,7 @@ if($_REQUEST['customer_id']){
                                         <option value="" data-category="">All Product Lines</option>
                                         <optgroup label="Product Line">
                                             <?php
-                                            $query_line = "SELECT * FROM product_line WHERE hidden = '0'";
+                                            $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
                                             $result_line = mysqli_query($conn, $query_line);
                                             while ($row_line = mysqli_fetch_array($result_line)) {
                                             ?>
@@ -252,7 +252,7 @@ if($_REQUEST['customer_id']){
                                         <option value="" data-category="">All Product Types</option>
                                         <optgroup label="Product Type">
                                             <?php
-                                            $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
+                                            $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
                                             $result_type = mysqli_query($conn, $query_type);
                                             while ($row_type = mysqli_fetch_array($result_type)) {
                                             ?>

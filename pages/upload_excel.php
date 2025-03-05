@@ -159,7 +159,7 @@ if ($result->num_rows > 0) { ?>
                                   <select id="product_category" class="form-control" name="product_category">
                                       <option value="" >Select One...</option>
                                       <?php
-                                      $query_roles = "SELECT * FROM product_category WHERE hidden = '0'";
+                                      $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                                       $result_roles = mysqli_query($conn, $query_roles);            
                                       while ($row_product_category = mysqli_fetch_array($result_roles)) {
                                           $selected = ($value == $row_product_category['product_category_id']) ? 'selected' : '';
@@ -175,7 +175,7 @@ if ($result->num_rows > 0) { ?>
                                   <select id="product_system" class="form-control" name="product_system">
                                       <option value="" >Select One...</option>
                                       <?php
-                                      $query_roles = "SELECT * FROM product_system WHERE hidden = '0'";
+                                      $query_roles = "SELECT * FROM product_system WHERE hidden = '0' AND status = '1' ORDER BY `product_system` ASC";
                                       $result_roles = mysqli_query($conn, $query_roles);            
                                       while ($row_product_system = mysqli_fetch_array($result_roles)) {
                                           $selected = ($value == $row_product_system['product_system_id']) ? 'selected' : '';
@@ -191,7 +191,7 @@ if ($result->num_rows > 0) { ?>
                                   <select id="product_type" class="form-control" name="product_type">
                                       <option value="" >Select One...</option>
                                       <?php
-                                      $query_roles = "SELECT * FROM product_type WHERE hidden = '0'";
+                                      $query_roles = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
                                       $result_roles = mysqli_query($conn, $query_roles);            
                                       while ($row_product_type = mysqli_fetch_array($result_roles)) {
                                           $selected = ($value == $row_product_type['product_type_id']) ? 'selected' : '';
@@ -207,7 +207,7 @@ if ($result->num_rows > 0) { ?>
                                   <select id="product_line" class="form-control" name="product_line">
                                       <option value="" >Select One...</option>
                                       <?php
-                                      $query_roles = "SELECT * FROM product_line WHERE hidden = '0'";
+                                      $query_roles = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
                                       $result_roles = mysqli_query($conn, $query_roles);            
                                       while ($row_product_line = mysqli_fetch_array($result_roles)) {
                                           $selected = ($value == $row_product_line['product_line_id']) ? 'selected' : '';
@@ -224,7 +224,7 @@ if ($result->num_rows > 0) { ?>
                                   <select id="color" class="form-control" name="color">
                                       <option value="" >Select One...</option>
                                       <?php
-                                      $query_color = "SELECT * FROM product_color";
+                                      $query_color = "SELECT pc.*, cgn.color_group_name AS color_name FROM product_color AS pc LEFT JOIN color_group_name AS cgn ON pc.color = cgn.color_group_name_id ORDER BY cgn.color_group_name ASC";
                                       $result_color = mysqli_query($conn, $query_color);            
                                       while ($row_color = mysqli_fetch_array($result_color)) {
                                           $selected = ($value == $row_color['id']) ? 'selected' : '';

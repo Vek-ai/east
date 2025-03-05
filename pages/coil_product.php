@@ -148,7 +148,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                             <select id="warehouse_add" class="form-control select2-add" name="warehouse">
                                                 <option value="" >Select One...</option>
                                                 <?php
-                                                $query_warehouses = "SELECT * FROM warehouses";
+                                                $query_warehouses = "SELECT * FROM warehouses WHERE status = 1 ORDER BY `WarehouseName` ASC";
                                                 $result_warehouses = mysqli_query($conn, $query_warehouses);            
                                                 while ($row_warehouses = mysqli_fetch_array($result_warehouses)) {
                                                 ?>
@@ -171,7 +171,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                                     <select id="color_close_edit" class="form-control select2-add colors-add" name="color_close">
                                                         <option value="" >Select Color...</option>
                                                         <?php
-                                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                                         $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                                         while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                                             $selected = ($row['color_close'] == $row_paint_colors['color_id']) ? 'selected' : '';
@@ -189,7 +189,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                                     <select id="actual_color_edit" class="form-control select2-add colors-add" name="actual_color">
                                                         <option value="" >Select Color...</option>
                                                         <?php
-                                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                                         $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                                         while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                                             $selected = ($row['actual_color'] == $row_paint_colors['color_id']) ? 'selected' : '';
@@ -284,7 +284,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                             <select id="color_sold_as_add" class="form-control select2-add" name="color_sold_as">
                                                 <option value="" >Select Color...</option>
                                                 <?php
-                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                                 $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                                 while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                                 ?>
@@ -370,7 +370,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                             <select id="grade_add" class="form-control select2-add" name="grade">
                                                 <option value="" >Select Grade...</option>
                                                 <?php
-                                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                                                 $result_grade = mysqli_query($conn, $query_grade);            
                                                 while ($row_grade = mysqli_fetch_array($result_grade)) {
                                                 ?>
@@ -515,7 +515,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                         <option value="" data-category="">All Colors</option>
                         <optgroup label="Coil Colors">
                             <?php
-                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                             $result_color = mysqli_query($conn, $query_color);
                             while ($row_color = mysqli_fetch_array($result_color)) {
                                 $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
@@ -532,7 +532,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                         <option value="" data-category="">All Grades</option>
                         <optgroup label="Coil Grades">
                             <?php
-                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                             $result_grade = mysqli_query($conn, $query_grade);
                             while ($row_grade = mysqli_fetch_array($result_grade)) {
                                 $selected = ($grade_id == $row_grade['product_grade_id']) ? 'selected' : '';

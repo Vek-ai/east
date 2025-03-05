@@ -243,7 +243,7 @@ $picture_path = "images/product/product.jpg";
                             <option value="">All Gauges</option>
                             <optgroup label="Product Gauges">
                                 <?php
-                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1'";
+                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
                                 $result_gauge = mysqli_query($conn, $query_gauge);
                                 while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                                 ?>
@@ -297,7 +297,7 @@ $picture_path = "images/product/product.jpg";
                             <tbody>
                             <?php
                                 $no = 1;
-                                $query_prod_color = "SELECT * FROM product_color";
+                                $query_prod_color = "SELECT pc.*, cgn.color_group_name AS color_name FROM product_color AS pc LEFT JOIN color_group_name AS cgn ON pc.color = cgn.color_group_name_id ORDER BY cgn.color_group_name ASC";
                                 $result_prod_color = mysqli_query($conn, $query_prod_color);            
                                 while ($row_prod_color = mysqli_fetch_array($result_prod_color)) {
                                 ?>

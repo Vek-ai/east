@@ -1766,7 +1766,7 @@ if (isset($_POST['filter_category'])) {
             <option value="" data-category="">All Product Types</option>
             <optgroup label="Product Type">
                 <?php
-                $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
+                $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
                 if (!empty($product_category)) {
                     $query_type .= " AND product_category = '$product_category'";
                 }
@@ -1788,7 +1788,7 @@ if (isset($_POST['filter_category'])) {
             <option value="" data-category="">All Colors</option>
             <optgroup label="Product Colors">
                 <?php
-                $query_color = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                 if (!empty($product_category)) {
                     $query_color .= " AND product_category = '$product_category'";
                 }
@@ -1810,7 +1810,7 @@ if (isset($_POST['filter_category'])) {
             <option value="" data-category="">All Grades</option>
             <optgroup label="Product Grades">
                 <?php
-                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                 if (!empty($product_category)) {
                     $query_grade .= " AND product_category = '$product_category'";
                 }
@@ -1832,7 +1832,7 @@ if (isset($_POST['filter_category'])) {
             <option value="" data-category="">All Gauges</option>
             <optgroup label="Product Gauges">
                 <?php
-                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
                 $result_gauge = mysqli_query($conn, $query_gauge);
                 while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                 ?>

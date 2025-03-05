@@ -35,7 +35,7 @@ if(isset($_REQUEST['action'])) {
                 <select id="product_type" class="form-control add-category calculate" name="product_type">
                     <option value="" >Select Type...</option>
                     <?php
-                    $query_roles = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1'";
+                    $query_roles = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
                     $result_roles = mysqli_query($conn, $query_roles);            
                     while ($row_product_type = mysqli_fetch_array($result_roles)) {
                         $selected = (($row['product_type'] ?? '') == $row_product_type['product_type_id']) ? 'selected' : '';
@@ -56,7 +56,7 @@ if(isset($_REQUEST['action'])) {
                     <select id="color" class="form-control add-category calculate" name="color">
                         <option value="" >Select Color Group...</option>
                         <?php
-                        $query_colors = "SELECT * FROM product_color";
+                        $query_colors = "SELECT pc.*, cgn.color_group_name AS color_name FROM product_color AS pc LEFT JOIN color_group_name AS cgn ON pc.color = cgn.color_group_name_id ORDER BY cgn.color_group_name ASC";
                         $result_colors = mysqli_query($conn, $query_colors);            
                         while ($row_colors = mysqli_fetch_array($result_colors)) {
                             $selected = (($row['color'] ?? '') == $row_colors['id']) ? 'selected' : '';
@@ -88,7 +88,7 @@ if(isset($_REQUEST['action'])) {
                     <select id="color_paint" class="form-control calculate color-group-filter" name="color_paint">
                         <option value="" >Select Color...</option>
                         <?php
-                        $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' AND color_group REGEXP '^[0-9]+$'";
+                        $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' AND color_group REGEXP '^[0-9]+$' ORDER BY `color_name` ASC";
                         $result_color = mysqli_query($conn, $query_color);
                         while ($row_color = mysqli_fetch_array($result_color)) {
                             $selected = ($row['color_paint'] == $row_color['color_id']) ? 'selected' : '';
@@ -135,7 +135,7 @@ if(isset($_REQUEST['action'])) {
                         <option value="" >Select Supplier...</option>
                         <optgroup label="Supplier">
                             <?php
-                            $query_supplier = "SELECT * FROM supplier";
+                            $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
                             $result_supplier = mysqli_query($conn, $query_supplier);            
                             while ($row_supplier = mysqli_fetch_array($result_supplier)) {
                                 $selected = (($row['supplier_id'] ?? '') == $row_supplier['supplier_id']) ? 'selected' : '';

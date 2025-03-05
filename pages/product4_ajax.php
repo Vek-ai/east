@@ -869,7 +869,7 @@ if(isset($_REQUEST['action'])) {
                                 <select id="color<?= $no ?>" class="form-control color-cart select2-inventory" name="color_id">
                                     <option value="" >Select Color...</option>
                                     <?php
-                                    $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1'";
+                                    $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                     $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                     while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                     ?>

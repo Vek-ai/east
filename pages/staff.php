@@ -133,7 +133,7 @@ if(!empty($_REQUEST['staff_id'])){
                                             <select id="role" class="form-control" name="role">
                                                 <option value="" >Select One...</option>
                                                 <?php
-                                                $query_roles = "SELECT * FROM staff_roles WHERE hidden = '0' AND status = '1'";
+                                                $query_roles = "SELECT * FROM staff_roles WHERE hidden = '0' AND status = '1' ORDER BY `emp_role` ASC";
                                                 $result_roles = mysqli_query($conn, $query_roles);            
                                                 while ($row_staff = mysqli_fetch_array($result_roles)) {
                                                 ?>

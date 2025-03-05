@@ -353,7 +353,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             <option value="" data-category="">All Product Systems</option>
                             <optgroup label="Product Type">
                                 <?php
-                                $query_system = "SELECT * FROM product_system WHERE hidden = '0' AND status = '1'";
+                                $query_system = "SELECT * FROM product_system WHERE hidden = '0' AND status = '1' ORDER BY `product_system` ASC";
                                 $result_system = mysqli_query($conn, $query_system);
                                 while ($row_system = mysqli_fetch_array($result_system)) {
                                     $selected = ($product_system == $row_system['product_system_id']) ? 'selected' : '';
@@ -370,7 +370,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             <option value="" data-category="">All Product Lines</option>
                             <optgroup label="Product Type">
                                 <?php
-                                $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1'";
+                                $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
                                 $result_line = mysqli_query($conn, $query_line);
                                 while ($row_line = mysqli_fetch_array($result_line)) {
                                     $selected = ($type_id == $row_line['product_line_id']) ? 'selected' : '';
@@ -387,7 +387,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             <option value="" data-category="">All Product Types</option>
                             <optgroup label="Product Type">
                                 <?php
-                                $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1'";
+                                $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
                                 $result_type = mysqli_query($conn, $query_type);
                                 while ($row_type = mysqli_fetch_array($result_type)) {
                                     $selected = ($type_id == $row_type['product_type_id']) ? 'selected' : '';
@@ -404,7 +404,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             <option value="" data-category="">All Profile Types</option>
                             <optgroup label="Product Line">
                                 <?php
-                                $query_profile = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1'";
+                                $query_profile = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1' ORDER BY `profile_type` ASC";
                                 $result_profile = mysqli_query($conn, $query_profile);
                                 while ($row_profile = mysqli_fetch_array($result_profile)) {
                                     $selected = ($profile_id == $row_profile['profile_type_id']) ? 'selected' : '';
@@ -421,7 +421,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             <option value="" data-category="">All Colors</option>
                             <optgroup label="Product Colors">
                                 <?php
-                                $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1'";
+                                $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                 $result_color = mysqli_query($conn, $query_color);
                                 while ($row_color = mysqli_fetch_array($result_color)) {
                                     $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
@@ -438,7 +438,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             <option value="" data-category="">All Grades</option>
                             <optgroup label="Product Grades">
                                 <?php
-                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1'";
+                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                                 $result_grade = mysqli_query($conn, $query_grade);
                                 while ($row_grade = mysqli_fetch_array($result_grade)) {
                                     $selected = ($grade_id == $row_grade['product_grade_id']) ? 'selected' : '';
@@ -455,7 +455,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             <option value="" data-category="">All Gauges</option>
                             <optgroup label="Product Gauges">
                                 <?php
-                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1'";
+                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
                                 $result_gauge = mysqli_query($conn, $query_gauge);
                                 while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                                     $selected = ($gauge_id == $row_gauge['product_gauge_id']) ? 'selected' : '';

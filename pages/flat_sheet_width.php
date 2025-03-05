@@ -111,7 +111,7 @@ if(!empty($_REQUEST['id'])){
                     <option value="">All Categories</option>
                     <optgroup label="Category">
                         <?php
-                        $query_category = "SELECT * FROM product_category WHERE hidden = '0'";
+                        $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                         $result_category = mysqli_query($conn, $query_category);
                         while ($row_category = mysqli_fetch_array($result_category)) {
                             $selected = ($product_category == $row_category['product_category_id']) ? 'selected' : '';
@@ -154,7 +154,7 @@ if(!empty($_REQUEST['id'])){
                     <option value="" >All Product Lines</option>
                     <optgroup label="Product Type">
                         <?php
-                        $query_line = "SELECT * FROM product_line WHERE hidden = '0'";
+                        $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
                         $result_line = mysqli_query($conn, $query_line);
                         while ($row_line = mysqli_fetch_array($result_line)) {
                             $selected = ($product_line == $row_line['product_line_id']) ? 'selected' : '';
@@ -174,7 +174,7 @@ if(!empty($_REQUEST['id'])){
                     <option value="" >All Product Types</option>
                     <optgroup label="Product Type">
                         <?php
-                        $query_type = "SELECT * FROM product_type WHERE hidden = '0'";
+                        $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
                         $result_type = mysqli_query($conn, $query_type);
                         while ($row_type = mysqli_fetch_array($result_type)) {
                             $selected = ($product_type == $row_type['product_type_id']) ? 'selected' : '';
@@ -249,7 +249,7 @@ if(!empty($_REQUEST['id'])){
                       <option value="">All Product Systems</option>
                       <optgroup label="Product Type">
                           <?php
-                          $query_system = "SELECT * FROM product_system WHERE hidden = '0' AND status = '1'";
+                          $query_system = "SELECT * FROM product_system WHERE hidden = '0' AND status = '1' ORDER BY `product_system` ASC";
                           $result_system = mysqli_query($conn, $query_system);
                           while ($row_system = mysqli_fetch_array($result_system)) {
                               $selected = ($product_system == $row_system['product_system_id']) ? 'selected' : '';
@@ -266,7 +266,7 @@ if(!empty($_REQUEST['id'])){
                       <option value="">All Product Lines</option>
                       <optgroup label="Product Type">
                           <?php
-                          $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1'";
+                          $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
                           $result_line = mysqli_query($conn, $query_line);
                           while ($row_line = mysqli_fetch_array($result_line)) {
                               $selected = ($type_id == $row_line['product_line_id']) ? 'selected' : '';
@@ -283,7 +283,7 @@ if(!empty($_REQUEST['id'])){
                       <option value="">All Product Types</option>
                       <optgroup label="Product Type">
                           <?php
-                          $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1'";
+                          $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
                           $result_type = mysqli_query($conn, $query_type);
                           while ($row_type = mysqli_fetch_array($result_type)) {
                               $selected = ($type_id == $row_type['product_type_id']) ? 'selected' : '';

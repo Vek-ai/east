@@ -214,7 +214,7 @@ if(!empty($_REQUEST['id'])){
                 <select id="gauge_systems" class="form-control select2" name="gauge_systems[]" multiple>
                     <option value="">Select Gauge...</option>
                     <?php
-                    $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0'";
+                    $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
                     $result_gauge = mysqli_query($conn, $query_gauge);
                     
                     $selected_gauges = [];

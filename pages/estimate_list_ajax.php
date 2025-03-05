@@ -312,7 +312,7 @@ if(isset($_REQUEST['action'])) {
                                                     <select id="color" class="colorAdd form-control" name="color[]">
                                                         <option value="" >Select Color...</option>
                                                         <?php
-                                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                                         $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                                         while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                                             $selected = ($row['color'] == $row_paint_colors['color_id']) ? 'selected' : '';
@@ -327,7 +327,7 @@ if(isset($_REQUEST['action'])) {
                                                     <select id="grade" class="gradeAdd form-control" name="grade[]">
                                                         <option value="" >Select Grade...</option>
                                                         <?php
-                                                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0'";
+                                                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                                                         $result_grade = mysqli_query($conn, $query_grade);            
                                                         while ($row_grade = mysqli_fetch_array($result_grade)) {
                                                             $selected = ($row['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
@@ -630,7 +630,7 @@ if(isset($_REQUEST['action'])) {
                                             <select id="color<?= $no ?>" class="form-control select2-color text-start" name="color" onchange="updateColor(this)" data-id="<?= $row_est_prod['id']; ?>">
                                                 <option value="" >Select Color...</option>
                                                 <?php
-                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                                 $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                                                 while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                                                     $selected = ($color_id == $row_paint_colors['color_id']) ? 'selected' : '';
@@ -667,7 +667,7 @@ if(isset($_REQUEST['action'])) {
                                                 <select id="usage<?= $no ?>" class="form-control select2-est" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $row_est_prod['id']; ?>">
                                                     <option value="">Select Usage...</option>
                                                     <?php
-                                                    $query_key = "SELECT * FROM key_components";
+                                                    $query_key = "SELECT * FROM key_components ORDER BY component_name ASC";
                                                     $result_key = mysqli_query($conn, $query_key);
 
                                                     while ($row_key = mysqli_fetch_array($result_key)) {
@@ -675,7 +675,7 @@ if(isset($_REQUEST['action'])) {
                                                         ?>
                                                         <optgroup label="<?= strtoupper($row_key['component_name']); ?>">
                                                             <?php 
-                                                            $query_usage = "SELECT * FROM component_usage WHERE componentid = '$componentid'";
+                                                            $query_usage = "SELECT * FROM component_usage WHERE componentid = '$componentid' ORDER BY `usage_name` ASC";
                                                             $result_usage = mysqli_query($conn, $query_usage);
 
                                                             while ($row_usage = mysqli_fetch_array($result_usage)) {

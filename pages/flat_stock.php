@@ -63,9 +63,9 @@ $panel_id = 46;
           <label class="form-label">Color</label>
           <div class="mb-3">
             <select id="color" class="form-control select2-add" name="color">
-                <option value="/" >Select Color...</option>
+                <option value="" >Select Color...</option>
                 <?php
-                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0'";
+                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                 $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
                 while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                 ?>
