@@ -1309,7 +1309,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             } else { 
                 let descriptionParts = [];
 
-                let pieces = $("#pack option:selected").data('count') || 0;
+                let pieces = $("#pack option:selected").data('count') || 1;
                 let cost = $("#cost").val() || 0;
                 let price = pieces * cost;
                 $("#price").val(price.toFixed(3));
