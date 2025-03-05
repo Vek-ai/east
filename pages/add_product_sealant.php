@@ -151,6 +151,13 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
 
+            <div class="col-md-4 trim-field screw-fields">
+                <div class="mb-3">
+                    <label class="form-label">Retail Price</label>
+                    <input type="text" id="retail" name="retail" class="form-control" value="<?=$row['retail'] ?? ''?>"/>
+                </div>
+            </div>
+
             <div class="col-md-12 trim-field screw-fields panel-fields">
                 <div class="mb-3">
                     <label class="form-label">Description</label>
