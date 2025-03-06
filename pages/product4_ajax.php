@@ -902,7 +902,7 @@ if(isset($_REQUEST['action'])) {
             }
         }
     
-        $filename = "classifications.xlsx";
+        $filename = "$classification.xlsx";
         $filePath = $filename;
         $writer = new Xlsx($spreadsheet);
         $writer->save($filePath);
