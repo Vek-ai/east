@@ -891,7 +891,6 @@ if(isset($_REQUEST['action'])) {
             } else {
                 $columnLetter = chr(65 + $index);
             }
-            echo $columnLetter;
             $headers[$columnLetter] = $header;
             $sheet->setCellValue($columnLetter . $row, $header);
         }
