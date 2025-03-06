@@ -872,6 +872,78 @@ if(isset($_REQUEST['action'])) {
     
         $headers = [];
         $row = 1;
+
+        function indexToColumnLetter($index) {
+            $letter = '';
+            
+            while ($index >= 0) {
+                $letter = chr($index % 26 + 65) . $letter;
+                $index = floor($index / 26) - 1;
+            }
+            
+            return $letter;
+        }
+        
+        foreach ($includedColumns as $index => $column) {
+            $header = ucwords(str_replace('_', ' ', $column));
+            if ($index >= 26) {
+                $columnLetter = indexToColumnLetter($index);
+            } else {
+                $columnLetter = chr(65 + $index);
+            }
+            echo $columnLetter;
+            $headers[$columnLetter] = $header;
+            $sheet->setCellValue($columnLetter . $row, $header);
+        }
+    
+        $row = 2;
+        while ($data = $result->fetch_assoc()) {
+            foreach ($includedColumns as $index => $column) {
+                if ($index >= 26) {
+                    $columnLetter = indexToColumnLetter($index);
+                } else {
+                    $columnLetter = chr(65 + $index);
+                }
+                $sheet->setCellValue($columnLetter . $row, $data[$column] ?? '');
+            }
+            $row++;
+        }
+    
+        $filename = "$category_name.xlsx";
+        $filePath = $filename;
+    
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filePath);
+    
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: max-age=0');
+    
+        readfile($filePath);
+    
+        unlink($filePath);
+        exit;
+    }
+
+    if ($action == "download_supplier") {
+        
+        $includedColumns = array();
+        $column_txt = '*';
+
+        $includedColumns = [ 
+            'supplier_id',
+            'supplier_name'
+        ];
+    
+        $sql = "SELECT * FROM supplier WHERE status = '1'";
+        $result = $conn->query($sql);
+    
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+    
+        $headers = [];
+        $row = 1;
         
         foreach ($includedColumns as $index => $column) {
             $header = ucwords(str_replace('_', ' ', $column));
@@ -889,7 +961,7 @@ if(isset($_REQUEST['action'])) {
             $row++;
         }
     
-        $filename = "$category_name.xlsx";
+        $filename = "supplier.xlsx";
         $filePath = $filename;
     
         $writer = new Xlsx($spreadsheet);
