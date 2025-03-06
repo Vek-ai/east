@@ -98,6 +98,9 @@ $supplier_colors = array();
                 <i class="ti ti-trash me-1 fs-5"></i> Delete All Row
             </a>
             </div>
+            <button type="button" id="downloadSupplierBtn" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-download text-white me-1 fs-5"></i> Download Suppliers
+            </button>
             <button type="button" id="addSupplierModalLabel" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
                 <i class="ti ti-users text-white me-1 fs-5"></i> Add Supplier
             </button>
@@ -515,6 +518,10 @@ $supplier_colors = array();
             dropdownParent: $('#color_add'),
             templateResult: formatOption,
             templateSelection: formatOption
+        });
+
+        $(document).on('click', '#downloadSupplierBtn', function(event) {
+            window.location.href = "pages/supplier_ajax.php?action=download_supplier";
         });
 
         $(document).on('click', '.changeStatus', function(event) {

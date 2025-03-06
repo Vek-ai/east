@@ -925,58 +925,7 @@ if(isset($_REQUEST['action'])) {
         exit;
     }
 
-    if ($action == "download_supplier") {
-        
-        $includedColumns = array();
-        $column_txt = '*';
-
-        $includedColumns = [ 
-            'supplier_id',
-            'supplier_name'
-        ];
     
-        $sql = "SELECT * FROM supplier WHERE status = '1'";
-        $result = $conn->query($sql);
-    
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-    
-        $headers = [];
-        $row = 1;
-        
-        foreach ($includedColumns as $index => $column) {
-            $header = ucwords(str_replace('_', ' ', $column));
-            $columnLetter = chr(65 + $index);
-            $headers[$columnLetter] = $header;
-            $sheet->setCellValue($columnLetter . $row, $header);
-        }
-    
-        $row = 2;
-        while ($data = $result->fetch_assoc()) {
-            foreach ($includedColumns as $index => $column) {
-                $columnLetter = chr(65 + $index);
-                $sheet->setCellValue($columnLetter . $row, $data[$column] ?? '');
-            }
-            $row++;
-        }
-    
-        $filename = "supplier.xlsx";
-        $filePath = $filename;
-    
-        $writer = new Xlsx($spreadsheet);
-        $writer->save($filePath);
-    
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Content-Length: ' . filesize($filePath));
-        header('Cache-Control: max-age=0');
-    
-        readfile($filePath);
-    
-        unlink($filePath);
-        exit;
-    }
-
     if ($action == "download_classifications") {
         $classification = mysqli_real_escape_string($conn, $_REQUEST['class'] ?? '');
     

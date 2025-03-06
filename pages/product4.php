@@ -129,9 +129,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             </form> -->
         </div>
         <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
-            <button type="button" id="downloadSupplierBtn" class="btn btn-primary d-flex align-items-center">
-                <i class="ti ti-download text-white me-1 fs-5"></i> Download Suppliers
-            </button>
             <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
                 <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
             </button>
@@ -888,24 +885,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         $(document).on('click', '#uploadProductModalBtn', function(event) {
             $('#uploadProductModal').modal('show');
         });
-
-        $(document).on('click', '#downloadSupplierBtn', function(event) {
-            $.ajax({
-                url: "pages/product4_ajax.php",
-                type: "POST",
-                data: {},
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    window.location.href = "pages/product4_ajax.php?action=download_supplier";
-                },
-                error: function (xhr, status, error) {
-                    alert("Error downloading file: " + error);
-                }
-            });
-        });
-
-        
 
         $(document).on('click', '#readUploadProductBtn', function(event) {
             $.ajax({
