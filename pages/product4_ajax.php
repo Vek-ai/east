@@ -742,6 +742,8 @@ if(isset($_REQUEST['action'])) {
                 'color',
                 'trim_multiplier',
                 'length',
+                'hems',
+                'bends',
                 'retail_cost',
                 'retail',
                 'description'
@@ -891,7 +893,13 @@ if(isset($_REQUEST['action'])) {
             } else {
                 $columnLetter = chr(65 + $index);
             }
-            $headers[$columnLetter] = $header;
+
+            if($column == 'cost_per_sq_in'){
+                $headers[$columnLetter] = "$ Per square inch";
+            }else{
+                $headers[$columnLetter] = $header;
+            }
+            
             $sheet->setCellValue($columnLetter . $row, $header);
         }
     

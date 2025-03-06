@@ -226,6 +226,19 @@ if(isset($_REQUEST['action'])) {
 
             <div class="col-md-4 screw-fields panel-fields">
                 <div class="mb-3">
+                    <label class="form-label"># of Hems</label>
+                    <input type="text" id="hems" name="hems" class="form-control calculate" value="<?=$row['hems'] ?? ''?>"/>
+                </div>
+            </div>
+            <div class="col-md-4 screw-fields panel-fields">
+                <div class="mb-3">
+                    <label class="form-label"># of Bends</label>
+                    <input type="text" id="bends" name="bends" class="form-control calculate" value="<?=$row['bends'] ?? ''?>"/>
+                </div>
+            </div>
+
+            <div class="col-md-4 screw-fields panel-fields">
+                <div class="mb-3">
                     <label class="form-label">Cost</label>
                     <input type="text" id="cost" name="cost" class="form-control calculate" value="<?=$row['cost'] ?? ''?>"/>
                 </div>
