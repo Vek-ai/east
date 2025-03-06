@@ -746,7 +746,6 @@ if(isset($_REQUEST['action'])) {
                 'retail',
                 'description'
             ];
-            $column_txt = implode(', ', $includedColumns);
         } else if($product_category == 16){ // SCREW
             $includedColumns = [ 
                 'product_id',
@@ -761,7 +760,6 @@ if(isset($_REQUEST['action'])) {
                 'retail',
                 'description'
             ];
-            $column_txt = implode(', ', $includedColumns);
         } else if($product_category == 3){ // PANELS
             $includedColumns = [ 
                 'product_id',
@@ -780,7 +778,6 @@ if(isset($_REQUEST['action'])) {
                 'retail',
                 'description'
             ];
-            $column_txt = implode(', ', $includedColumns);
         } else if($product_category == 1){ // LUMBER
             $includedColumns = [ 
                 'product_id',
@@ -797,7 +794,6 @@ if(isset($_REQUEST['action'])) {
                 'retail',
                 'description'
             ];
-            $column_txt = implode(', ', $includedColumns);
         } else if($product_category == 18){ // PIPE BOOTS
             $includedColumns = [ 
                 'product_id',
@@ -814,7 +810,6 @@ if(isset($_REQUEST['action'])) {
                 'retail',
                 'description'
             ];
-            $column_txt = implode(', ', $includedColumns);
         } else if($product_category == 17){ // CAULK SEALANT
             $includedColumns = [ 
                 'product_id',
@@ -831,7 +826,6 @@ if(isset($_REQUEST['action'])) {
                 'retail',
                 'description'
             ];
-            $column_txt = implode(', ', $includedColumns);
         } else { // OTHERS
             $includedColumns = [ 
                 'product_id',
@@ -846,7 +840,6 @@ if(isset($_REQUEST['action'])) {
                 'retail',
                 'description'
             ];
-            $column_txt = implode(', ', $includedColumns);
         }
 
         $includedColumns[] = [ 
@@ -864,6 +857,8 @@ if(isset($_REQUEST['action'])) {
             'upc',
             'comment'
         ];
+
+        $column_txt = implode(', ', $includedColumns);
     
         $sql = "SELECT " . $column_txt . " FROM product";
         if (!empty($product_category)) {
