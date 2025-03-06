@@ -257,6 +257,8 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                     <option value="type">Product Type</option> 
                                     <option value="grade">Product Grade</option> 
                                     <option value="color">Color</option> 
+                                    <option value="profile">Profile</option> 
+                                    <option value="flat_sheet_width">Flat Sheet Width</option> 
                                 </optgroup>
                             </select>
                         </div>

@@ -925,7 +925,7 @@ if(isset($_REQUEST['action'])) {
         exit;
     }
 
-    
+
     if ($action == "download_classifications") {
         $classification = mysqli_real_escape_string($conn, $_REQUEST['class'] ?? '');
     
@@ -959,6 +959,16 @@ if(isset($_REQUEST['action'])) {
                 'columns' => ['color_id', 'product_category', 'color_name'],
                 'table' => 'paint_colors',
                 'where' => "color_status = '1'"
+            ],
+            'profile' => [
+                'columns' => ['profile_type_id', 'profile_type'],
+                'table' => 'profile_type',
+                'where' => "status = '1'"
+            ],
+            'flat_sheet_width' => [
+                'columns' => ['id', 'product_system', 'product_category', 'product_line', 'product_type', 'width'],
+                'table' => 'flat_sheet_width',
+                'where' => "status = '1'"
             ]
         ];
     
@@ -992,9 +1002,29 @@ if(isset($_REQUEST['action'])) {
             while ($data = $result->fetch_assoc()) {
                 foreach ($includedColumns as $index => $column) {
                     $columnLetter = chr(65 + $index);
+
+                    $value = $data[$column] ?? '';
     
-                    $value = ($column == 'product_category' && $class == 'color') ? getProductCategoryName($data[$column] ?? '') : ($data[$column] ?? '');
-    
+                    if ($column == 'product_category' && $class == 'color') {
+                        $value = getProductCategoryName($data[$column] ?? '');
+                    }
+
+                    if ($column == 'product_system' && $class == 'flat_sheet_width') {
+                        $value = getProductSystemName($data[$column] ?? '');
+                    }
+
+                    if ($column == 'product_category' && $class == 'flat_sheet_width') {
+                        $value = getProductCategoryName($data[$column] ?? '');
+                    }
+
+                    if ($column == 'product_line' && $class == 'flat_sheet_width') {
+                        $value = getProductLineName($data[$column] ?? '');
+                    }
+
+                    if ($column == 'product_type' && $class == 'flat_sheet_width') {
+                        $value = getProductTypeName($data[$column] ?? '');
+                    }
+                        
                     $sheet->setCellValue($columnLetter . $row, $value);
                 }
                 $row++;
