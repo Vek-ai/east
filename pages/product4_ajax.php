@@ -900,12 +900,10 @@ if(isset($_REQUEST['action'])) {
             }
         
             if ($column == 'cost_per_sq_in') {
-                $headers[$columnLetter] = "$ Per square inch";
-            } else {
-                $headers[$columnLetter] = $header;
+                $header = "$ Per square inch";
             }
             
-            $sheet->setCellValue($columnLetter . $row, $headers[$columnLetter]);
+            $sheet->setCellValue($columnLetter . $row, $header);
         }
         
     
