@@ -892,20 +892,22 @@ if(isset($_REQUEST['action'])) {
         
         foreach ($includedColumns as $index => $column) {
             $header = ucwords(str_replace('_', ' ', $column));
+            
             if ($index >= 26) {
                 $columnLetter = indexToColumnLetter($index);
             } else {
                 $columnLetter = chr(65 + $index);
             }
-
-            if($column == 'cost_per_sq_in'){
+        
+            if ($column == 'cost_per_sq_in') {
                 $headers[$columnLetter] = "$ Per square inch";
-            }else{
+            } else {
                 $headers[$columnLetter] = $header;
             }
             
-            $sheet->setCellValue($columnLetter . $row, $header);
+            $sheet->setCellValue($columnLetter . $row, $headers[$columnLetter]);
         }
+        
     
         $row = 2;
         while ($data = $result->fetch_assoc()) {
