@@ -743,8 +743,8 @@ if(isset($_REQUEST['action'])) {
                 'trim_multiplier',
                 'length',
                 'retail_cost',
-                'description',
-                'retail'
+                'retail',
+                'description'
             ];
             $column_txt = implode(', ', $includedColumns);
         } else if($product_category == 16){ // SCREW
@@ -777,10 +777,93 @@ if(isset($_REQUEST['action'])) {
                 'color_multiplier',
                 'stock_type',
                 'cost',
+                'retail',
+                'description'
+            ];
+            $column_txt = implode(', ', $includedColumns);
+        } else if($product_category == 1){ // LUMBER
+            $includedColumns = [ 
+                'product_id',
+                'product_category',
+                'product_system',
+                'product_line',
+                'product_type',
+                'width',
+                'length',
+                'thickness',
+                'color',
+                'color_paint',
+                'cost',
+                'retail',
+                'description'
+            ];
+            $column_txt = implode(', ', $includedColumns);
+        } else if($product_category == 18){ // PIPE BOOTS
+            $includedColumns = [ 
+                'product_id',
+                'product_category',
+                'product_system',
+                'product_line',
+                'product_type',
+                'width',
+                'length',
+                'thickness',
+                'color',
+                'color_paint',
+                'cost',
+                'retail',
+                'description'
+            ];
+            $column_txt = implode(', ', $includedColumns);
+        } else if($product_category == 17){ // CAULK SEALANT
+            $includedColumns = [ 
+                'product_id',
+                'product_category',
+                'product_system',
+                'product_line',
+                'product_type',
+                'width',
+                'length',
+                'thickness',
+                'color',
+                'color_paint',
+                'cost',
+                'retail',
+                'description'
+            ];
+            $column_txt = implode(', ', $includedColumns);
+        } else { // OTHERS
+            $includedColumns = [ 
+                'product_id',
+                'product_category',
+                'product_type',
+                'color',
+                'size',
+                'supplier_id',
+                'pack',
+                'cost',
+                'price',
+                'retail',
                 'description'
             ];
             $column_txt = implode(', ', $includedColumns);
         }
+
+        $includedColumns[] = [ 
+            'product_item',
+            'product_sku',
+            'inv_id',
+            'coil_part_no',
+            'unit_of_measure',
+            'product_origin',
+            'material',
+            'warranty_type',
+            'profile',
+            'weight',
+            'product_usage',
+            'upc',
+            'comment'
+        ];
     
         $sql = "SELECT " . $column_txt . " FROM product";
         if (!empty($product_category)) {

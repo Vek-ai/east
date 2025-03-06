@@ -69,6 +69,43 @@ if (mysqli_num_rows($result_img) > 0) { ?>
         <input type="text" id="product_sku" name="product_sku" class="form-control" value="<?= $row['product_sku']?>" />
     </div>
 </div>
+
+<div class="col-md-6">
+    <div class="mb-3">
+        <label class="form-label">InvID</label>
+        <input type="text" id="inv_id" name="inv_id" class="form-control" value="<?= $row['inv_id']?>" />
+    </div>
+</div>
+
+<div class="col-md-6">
+    <div class="mb-3">
+        <label class="form-label">Coil/Part No.</label>
+        <input type="text" id="coil_part_no" name="coil_part_no" class="form-control" value="<?= $row['coil_part_no']?>" />
+    </div>
+</div>
+
+<div class="col-md-6">
+    <div class="mb-3">
+        <label class="form-label">Unit of Measure</label>
+        <select id="unit_of_measure" class="form-control" name="unit_of_measure">
+            <option value="" <?= empty($row['unit_of_measure']) ? 'selected' : '' ?>>Select Unit...</option>
+            <option value="ft" <?= $row['unit_of_measure'] == 'ft' ? 'selected' : '' ?>>Ft</option>
+            <option value="each" <?= $row['unit_of_measure'] == 'each' ? 'selected' : '' ?>>Each</option>
+        </select>
+    </div>
+</div>
+
+<div class="col-md-6">
+    <div class="mb-3">
+    <label class="form-label">Manufactured or Purchased</label>
+    <select id="product_origin" class="form-control" name="product_origin">
+        <option value="" <?= empty($row['product_origin']) ? 'selected' : '' ?>>Select One...</option>
+        <option value="1" <?= $row['product_origin'] == '1' ? 'selected' : '' ?>>Purchased</option>
+        <option value="2" <?= $row['product_origin'] == '2' ? 'selected' : '' ?>>Manufactured</option>
+    </select>
+    </div>
+</div>
+
 <div class="col-md-12 mb-3">
     <label class="form-label">Correlated products</label>
     <div class="mb-3">
@@ -153,12 +190,6 @@ if (mysqli_num_rows($result_img) > 0) { ?>
 </div>
 <div class="col-md-6">
     <div class="mb-3">
-    <label class="form-label">Unit of Measure</label>
-    <input type="text" id="unit_of_measure" name="unit_of_measure" class="form-control" value="<?= $row['unit_of_measure']?>" />
-    </div>
-</div>
-<div class="col-md-6">
-    <div class="mb-3">
         <label class="form-label">Usage</label>
         <select id="product_usage" class="form-control" name="product_usage">
             <option value="" >Select Product Usage...</option>
@@ -179,16 +210,6 @@ if (mysqli_num_rows($result_img) > 0) { ?>
     <div class="mb-3">
     <label class="form-label">UPC</label>
     <input type="text" id="upc" name="upc" class="form-control" value="<?= !empty($row['upc']) ? $row['upc'] : generateRandomUPC(); ?>" />
-    </div>
-</div>
-<div class="col-md-6" data-id="15">
-    <div class="mb-3">
-    <label class="form-label">Product Origin</label>
-    <select id="product_origin" class="form-control" name="product_origin">
-        <option value="" <?= empty($row['product_origin']) ? 'selected' : '' ?>>Select Origin...</option>
-        <option value="1" <?= $row['product_origin'] == '1' ? 'selected' : '' ?>>Source</option>
-        <option value="2" <?= $row['product_origin'] == '2' ? 'selected' : '' ?>>Manufactured</option>
-    </select>
     </div>
 </div>
 
