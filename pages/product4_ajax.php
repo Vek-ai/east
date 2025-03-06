@@ -826,7 +826,99 @@ if(isset($_REQUEST['action'])) {
         unlink($filePath);
         exit;
     }
+
+    if ($action == "download_classifications") {
+        $classification = mysqli_real_escape_string($conn, $_REQUEST['class'] ?? '');
     
+        $classifications = [
+            'category' => [
+                'columns' => ['product_category_id', 'product_category'],
+                'table' => 'product_category',
+                'where' => "status = '1'"
+            ],
+            'system' => [
+                'columns' => ['product_system_id', 'product_system'],
+                'table' => 'product_system',
+                'where' => "status = '1'"
+            ],
+            'line' => [
+                'columns' => ['product_line_id', 'product_line'],
+                'table' => 'product_line',
+                'where' => "status = '1'"
+            ],
+            'type' => [
+                'columns' => ['product_type_id', 'product_type'],
+                'table' => 'product_type',
+                'where' => "status = '1'"
+            ],
+            'grade' => [
+                'columns' => ['product_grade_id', 'product_grade'],
+                'table' => 'product_grade',
+                'where' => "status = '1'"
+            ],
+            'color' => [
+                'columns' => ['color_id', 'product_category', 'color_name'],
+                'table' => 'paint_colors',
+                'where' => "color_status = '1'"
+            ]
+        ];
+    
+        $spreadsheet = new Spreadsheet();
+        $selectedClassifications = empty($classification) ? array_keys($classifications) : [$classification];
+    
+        foreach ($selectedClassifications as $class) {
+            if (!isset($classifications[$class])) {
+                continue;
+            }
+    
+            $includedColumns = $classifications[$class]['columns'];
+            $table = $classifications[$class]['table'];
+            $where = $classifications[$class]['where'];
+            $column_txt = implode(', ', $includedColumns);
+            $sql = "SELECT $column_txt FROM $table WHERE $where";
+            $result = $conn->query($sql);
+    
+            $sheet = $spreadsheet->createSheet();
+            $sheet->setTitle(ucwords($class));
+    
+            $row = 1;
+            foreach ($includedColumns as $index => $column) {
+                $header = ucwords(str_replace('_', ' ', $column));
+                $columnLetter = chr(65 + $index);
+                $sheet->setCellValue($columnLetter . $row, $header);
+            }
+    
+            $row = 2;
+            while ($data = $result->fetch_assoc()) {
+                foreach ($includedColumns as $index => $column) {
+                    $columnLetter = chr(65 + $index);
+    
+                    $value = ($column == 'product_category' && $class == 'color') ? getProductCategoryName($data[$column] ?? '') : ($data[$column] ?? '');
+    
+                    $sheet->setCellValue($columnLetter . $row, $value);
+                }
+                $row++;
+            }
+        }
+    
+        if (count($selectedClassifications) > 1) {
+            $spreadsheet->removeSheetByIndex(0);
+        }
+    
+        $filename = "classifications.xlsx";
+        $filePath = $filename;
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filePath);
+    
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: max-age=0');
+    
+        readfile($filePath);
+        unlink($filePath);
+        exit;
+    }    
 
     if ($action == "update_product_data") {
         $column_name = $_POST['header_name'];

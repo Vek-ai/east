@@ -129,14 +129,17 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             </form> -->
         </div>
         <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+            <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
+            </button>
             <button type="button" id="addProductModalBtn" class="btn btn-primary d-flex align-items-center" data-id="">
                 <i class="ti ti-plus text-white me-1 fs-5"></i> Add Product
             </button>
             <button type="button" id="downloadProductModalBtn" class="btn btn-primary d-flex align-items-center">
-                <i class="ti ti-download text-white me-1 fs-5"></i> Download Product
+                <i class="ti ti-download text-white me-1 fs-5"></i> Download Products
             </button>
             <button type="button" id="uploadProductModalBtn" class="btn btn-primary d-flex align-items-center">
-                <i class="ti ti-upload text-white me-1 fs-5"></i> Upload Product
+                <i class="ti ti-upload text-white me-1 fs-5"></i> Upload Products
             </button>
         </div>
         </div>
@@ -224,6 +227,43 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary fw-semibold">
                                 <i class="fas fa-download me-2"></i> Download Excel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="downloadClassModal" tabindex="-1" aria-labelledby="downloadClassModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Download Classification
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="download_class_form" class="form-horizontal">
+                        <label for="select-category" class="form-label fw-semibold">Select Classification</label>
+                        <div class="mb-3">
+                            <select class="form-select select2" id="select-download-class" name="category">
+                                <option value="">All Classifications</option>
+                                <optgroup label="Classifications">
+                                    <option value="category">Category</option>
+                                    <option value="system">Product System</option>
+                                    <option value="line">Product Line</option> 
+                                    <option value="type">Product Type</option> 
+                                    <option value="grade">Product Grade</option> 
+                                    <option value="color">Color</option> 
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary fw-semibold">
+                                <i class="fas fa-download me-2"></i> Download Classification
                             </button>
                         </div>
                     </form>
@@ -838,6 +878,10 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             $('#downloadProductModal').modal('show');
         });
 
+        $(document).on('click', '#downloadClassModalBtn', function(event) {
+            $('#downloadClassModal').modal('show');
+        });
+
         $(document).on('click', '#uploadProductModalBtn', function(event) {
             $('#uploadProductModal').modal('show');
         });
@@ -873,6 +917,27 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 processData: false,
                 success: function (response) {
                     window.location.href = "pages/product4_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
+                },
+                error: function (xhr, status, error) {
+                    alert("Error downloading file: " + error);
+                }
+            });
+        });
+
+        $("#download_class_form").submit(function (e) {
+            e.preventDefault();
+
+            let formData = new FormData(this);
+            formData.append("action", "download_classifications");
+
+            $.ajax({
+                url: "pages/product4_ajax.php",
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    window.location.href = "pages/product4_ajax.php?action=download_classifications&class=" + encodeURIComponent($("#select-download-class").val());
                 },
                 error: function (xhr, status, error) {
                     alert("Error downloading file: " + error);
