@@ -652,7 +652,11 @@ if(isset($_REQUEST['action'])) {
             $columnMapping = [];
     
             foreach ($columns as $col) {
-                $dbColumn = strtolower(str_replace(' ', '_', $col));
+                if($col == '$ Per square inch'){
+                    $dbColumn = 'cost_per_sq_in';
+                }else{
+                    $dbColumn = strtolower(str_replace(' ', '_', $col));
+                }
                 $dbColumns[] = $dbColumn;
                 $columnMapping[$dbColumn] = $col;
             }
