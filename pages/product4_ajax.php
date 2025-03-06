@@ -864,6 +864,7 @@ if(isset($_REQUEST['action'])) {
         ];
     
         $spreadsheet = new Spreadsheet();
+        $spreadsheet->removeSheetByIndex(0);
         $selectedClassifications = empty($classification) ? array_keys($classifications) : [$classification];
     
         foreach ($selectedClassifications as $class) {
@@ -899,10 +900,6 @@ if(isset($_REQUEST['action'])) {
                 }
                 $row++;
             }
-        }
-    
-        if (count($selectedClassifications) > 1) {
-            $spreadsheet->removeSheetByIndex(0);
         }
     
         $filename = "classifications.xlsx";
