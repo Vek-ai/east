@@ -901,6 +901,12 @@ if(isset($_REQUEST['action'])) {
                 $row++;
             }
         }
+
+        if(empty($classification)){
+            $classification = 'Classifications';
+        }else{
+            $classification = ucwords($classification);
+        }
     
         $filename = "$classification.xlsx";
         $filePath = $filename;
