@@ -742,8 +742,6 @@ if(isset($_REQUEST['action'])) {
                 'color',
                 'trim_multiplier',
                 'length',
-                'hems',
-                'bends',
                 'retail_cost',
                 'retail',
                 'description'
@@ -771,6 +769,8 @@ if(isset($_REQUEST['action'])) {
                 'product_type',
                 'gauge',
                 'width',
+                'hems',
+                'bends',
                 'thickness',
                 'grade',
                 'color',
