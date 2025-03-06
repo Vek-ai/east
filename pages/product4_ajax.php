@@ -842,7 +842,7 @@ if(isset($_REQUEST['action'])) {
             ];
         }
 
-        $includedColumns[] = [ 
+        $additionalColumns = [ 
             'product_item',
             'product_sku',
             'inv_id',
@@ -858,6 +858,7 @@ if(isset($_REQUEST['action'])) {
             'comment'
         ];
 
+        array_push($includedColumns, ...$additionalColumns);
         $column_txt = implode(', ', $includedColumns);
     
         $sql = "SELECT " . $column_txt . " FROM product";
