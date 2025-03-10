@@ -185,7 +185,7 @@ if (isset($_REQUEST['query'])) {
         LEFT JOIN 
             inventory AS i ON p.product_id = i.product_id
         WHERE 
-            p.hidden = '0'
+            p.hidden = '0' and p.status = '1'
     ";
 
     if (!empty($searchQuery)) {
@@ -1644,57 +1644,6 @@ if (isset($_POST['add_to_cart'])) {
                 );
     
                 $_SESSION["cart"][] = $item_array;
-    
-                // will add backer rods if stiffening rib type
-                $backer_rod_3_8 = 45;
-                $backer_rod_1_2 = 46;
-                $stiffening_rib_id = 7;
-    
-                if($row['product_category'] == $stiffening_rib_id && $stiff_board_batten == '1'){
-                    $backer_rod_details = getProductDetails($backer_rod_3_8);
-                    $backer_rod_quantity = getProductStockInStock($backer_rod_3_8);
-    
-                    $item_array = array(
-                        'product_id' => $backer_rod_details['product_id'],
-                        'product_item' => getProductName($backer_rod_details['product_id']),
-                        'unit_price' => $backer_rod_details['unit_price'],
-                        'line' => 1,
-                        'quantity_ttl' => $totalStock,
-                        'quantity_in_stock' => $backer_rod_quantity,
-                        'quantity_cart' => 1,
-                        'estimate_width' => $backer_rod_details['width'],
-                        'estimate_length' => 0,
-                        'estimate_length_inch' => 0,
-                        'usage' => 0,
-                        'custom_color' => $backer_rod_details['color'],
-                        'panel_type' => '',
-                        'weight' => floatval($backer_rod_details['weight']),
-                        'custom_grade' => floatval($backer_rod_details['custom_grade'])
-                    );
-                    $_SESSION["cart"][] = $item_array;
-                } else if($row['product_category'] == $stiffening_rib_id && $stiff_stand_seam == '2'){
-                    $backer_rod_details = getProductDetails($backer_rod_1_2);
-                    $backer_rod_quantity = getProductStockInStock($backer_rod_1_2);
-    
-                    $item_array = array(
-                        'product_id' => $backer_rod_details['product_id'],
-                        'product_item' => getProductName($backer_rod_details['product_id']),
-                        'unit_price' => $backer_rod_details['unit_price'],
-                        'line' => 1,
-                        'quantity_ttl' => $totalStock,
-                        'quantity_in_stock' => $backer_rod_quantity,
-                        'quantity_cart' => 1,
-                        'estimate_width' => $backer_rod_details['width'],
-                        'estimate_length' => 0,
-                        'estimate_length_inch' => 0,
-                        'usage' => 0,
-                        'custom_color' => $backer_rod_details['color'],
-                        'panel_type' => '',
-                        'weight' => floatval($backer_rod_details['weight']),
-                        'custom_grade' => floatval($backer_rod_details['custom_grade'])
-                    );
-                    $_SESSION["cart"][] = $item_array;
-                }
             }
         }
         $line++;

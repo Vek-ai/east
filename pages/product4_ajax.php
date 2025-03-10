@@ -543,7 +543,7 @@ if(isset($_REQUEST['action'])) {
             $columnsWithData = [];
             while ($row = $result->fetch_assoc()) {
                 foreach ($columns as $column) {
-                    if (!empty($row[$column])) {
+                    if (isset($row[$column]) && trim($row[$column]) !== '') {
                         $columnsWithData[$column] = true;
                     }
                 }
@@ -697,22 +697,35 @@ if(isset($_REQUEST['action'])) {
     
     if ($action == "save_table") {
         $table = "product";
+        
+        $selectSql = "SELECT * FROM test";
+        $result = $conn->query($selectSql);
     
-        $columnsSql = "SHOW COLUMNS FROM test";
-        $columnsResult = $conn->query($columnsSql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $product_id = $row['product_id'];
     
-        $columns = [];
-        while ($row = $columnsResult->fetch_assoc()) {
-            if ($row['Field'] !== 'product_id') {
-                $columns[] = $row['Field'];
+                $checkSql = "SELECT COUNT(*) as count FROM $table WHERE product_id = '$product_id'";
+                $checkResult = $conn->query($checkSql);
+                $exists = $checkResult->fetch_assoc()['count'] > 0;
+    
+                if ($exists) {
+                    $updateFields = [];
+                    foreach ($row as $column => $value) {
+                        if ($column !== 'product_id') {
+                            $updateFields[] = "$column = '$value'";
+                        }
+                    }
+                    $updateSql = "UPDATE $table SET " . implode(", ", $updateFields) . " WHERE product_id = '$product_id'";
+                    $conn->query($updateSql);
+                } else {
+                    $columns = implode(", ", array_keys($row));
+                    $values = implode("', '", array_values($row));
+                    $insertSql = "INSERT INTO $table ($columns) VALUES ('$values')";
+                    $conn->query($insertSql);
+                }
             }
-        }
     
-        $columnsList = implode(", ", $columns);
-    
-        $sql = "INSERT INTO $table ($columnsList) SELECT $columnsList FROM test";
-    
-        if ($conn->query($sql) === TRUE) {
             echo "Data has been successfully saved";
     
             $truncateSql = "TRUNCATE TABLE test";
@@ -720,9 +733,9 @@ if(isset($_REQUEST['action'])) {
                 echo " but failed to clear test table: " . $conn->error;
             }
         } else {
-            echo "Error: " . $conn->error;
+            echo "No data found in test table.";
         }
-    }
+    }    
 
     if ($action == "download_excel") {
         $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
@@ -782,6 +795,9 @@ if(isset($_REQUEST['action'])) {
                 'stock_type',
                 'cost',
                 'retail',
+                'sold_by_feet',
+                'standing_seam',
+                'board_batten',
                 'description'
             ];
         } else if($product_category == 1){ // LUMBER
@@ -867,9 +883,9 @@ if(isset($_REQUEST['action'])) {
         array_push($includedColumns, ...$additionalColumns);
         $column_txt = implode(', ', $includedColumns);
     
-        $sql = "SELECT " . $column_txt . " FROM product";
+        $sql = "SELECT " . $column_txt . " FROM product WHERE hidden = '0' AND status = '1'";
         if (!empty($product_category)) {
-            $sql .= " WHERE product_category = '$product_category'";
+            $sql .= " AND product_category = '$product_category'";
         }
         $result = $conn->query($sql);
     
