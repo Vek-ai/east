@@ -630,8 +630,6 @@ if(isset($_REQUEST['action'])) {
             echo "<p>No data found in the table.</p>";
         }
     }
-    
-    
 
     if ($action == "upload_excel") {
         if (isset($_FILES['excel_file'])) {
@@ -745,8 +743,6 @@ if(isset($_REQUEST['action'])) {
             echo "No data found in test table.";
         }
     }
-    
-    
 
     if ($action == "download_excel") {
         $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
@@ -963,7 +959,6 @@ if(isset($_REQUEST['action'])) {
         unlink($filePath);
         exit;
     }
-
 
     if ($action == "download_classifications") {
         $classification = mysqli_real_escape_string($conn, $_REQUEST['class'] ?? '');
