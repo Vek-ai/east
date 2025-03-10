@@ -540,6 +540,9 @@ if(isset($_REQUEST['action'])) {
             $columns = array_keys($row);
             $result->data_seek(0);
     
+            // removed id to prevent editing of primary key
+            $columns = array_filter($columns, fn($col) => $col !== 'id');
+    
             $columnsWithData = [];
             while ($row = $result->fetch_assoc()) {
                 foreach ($columns as $column) {
@@ -628,6 +631,7 @@ if(isset($_REQUEST['action'])) {
         }
     }
     
+    
 
     if ($action == "upload_excel") {
         if (isset($_FILES['excel_file'])) {
@@ -703,27 +707,32 @@ if(isset($_REQUEST['action'])) {
     
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                $product_id = $row['product_id'];
+                $product_id = trim($row['product_id'] ?? ''); 
     
-                $checkSql = "SELECT COUNT(*) as count FROM $table WHERE product_id = '$product_id'";
-                $checkResult = $conn->query($checkSql);
-                $exists = $checkResult->fetch_assoc()['count'] > 0;
+                unset($row['id']);
     
-                if ($exists) {
-                    $updateFields = [];
-                    foreach ($row as $column => $value) {
-                        if ($column !== 'product_id') {
-                            $updateFields[] = "$column = '$value'";
+                if (!empty($product_id)) {
+                    $checkSql = "SELECT COUNT(*) as count FROM $table WHERE product_id = '$product_id'";
+                    $checkResult = $conn->query($checkSql);
+                    $exists = $checkResult->fetch_assoc()['count'] > 0;
+    
+                    if ($exists) {
+                        $updateFields = [];
+                        foreach ($row as $column => $value) {
+                            if ($column !== 'product_id') {
+                                $updateFields[] = "$column = '$value'";
+                            }
                         }
+                        $updateSql = "UPDATE $table SET " . implode(", ", $updateFields) . " WHERE product_id = '$product_id'";
+                        $conn->query($updateSql);
+                        continue;
                     }
-                    $updateSql = "UPDATE $table SET " . implode(", ", $updateFields) . " WHERE product_id = '$product_id'";
-                    $conn->query($updateSql);
-                } else {
-                    $columns = implode(", ", array_keys($row));
-                    $values = implode("', '", array_values($row));
-                    $insertSql = "INSERT INTO $table ($columns) VALUES ('$values')";
-                    $conn->query($insertSql);
                 }
+    
+                $columns = implode(", ", array_keys($row));
+                $values = implode("', '", array_values($row));
+                $insertSql = "INSERT INTO $table ($columns) VALUES ('$values')";
+                $conn->query($insertSql);
             }
     
             echo "Data has been successfully saved";
@@ -735,7 +744,9 @@ if(isset($_REQUEST['action'])) {
         } else {
             echo "No data found in test table.";
         }
-    }    
+    }
+    
+    
 
     if ($action == "download_excel") {
         $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
