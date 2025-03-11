@@ -6,6 +6,8 @@ $product_grade = "";
 $grade_abbreviations = "";
 $product_category = "";
 $multiplier = 1;
+$defect_code = "";
+$defect_description = "";
 $notes = "";
 
 $saveBtnTxt = "Add";
@@ -22,6 +24,8 @@ if(!empty($_REQUEST['product_grade_id'])){
       $grade_abbreviations = $row['grade_abbreviations'];
       $multiplier = $row['multiplier'];
       $notes = $row['notes'];
+      $defect_code = $row['defect_code'];
+      $defect_description = $row['defect_description'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -161,12 +165,28 @@ if(!empty($_REQUEST['result'])){
             <input type="text" id="multiplier" name="multiplier" class="form-control" value="<?= $multiplier ?>" />
           </div>
         </div>
+        <div class="col-md-12">
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" id="notes" name="notes" rows="5"><?= $notes ?></textarea>
+          </div>
+        </div>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label">Notes</label>
-        <textarea class="form-control" id="notes" name="notes" rows="5"><?= $notes ?></textarea>
-      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="mb-3">
+            <label class="form-label">Defect Code</label>
+            <input type="text" id="defect_code" name="defect_code" class="form-control" value="<?= $defect_code ?>" />
+          </div>
+        </div>
+        <div class="col-md-12">
+          <div class="mb-3">
+            <label class="form-label">Defect Description</label>
+            <textarea class="form-control" id="defect_description" name="defect_description" rows="5"><?= $defect_description ?></textarea>
+          </div>
+        </div>
+      </div>   
 
       <div class="form-actions">
         <div class="card-body border-top ">
