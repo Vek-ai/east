@@ -23,67 +23,18 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            // Record exists, fetch current values
-            $row = mysqli_fetch_assoc($result);
-            $current_product_grade = $row['product_grade'];
-            $current_grade_abbreviations = $row['grade_abbreviations'];
-
-            $duplicates = array();
-
-            // Check for duplicates only if the new values are different from the current values
-            if ($product_grade != $current_product_grade) {
-                $checkProductGrade = "SELECT * FROM product_grade WHERE product_grade = '$product_grade'";
-                $resultProductGrade = mysqli_query($conn, $checkProductGrade);
-                if (mysqli_num_rows($resultProductGrade) > 0) {
-                    $duplicates[] = "Product grade";
-                }
-            }
-
-            if ($grade_abbreviations != $current_grade_abbreviations) {
-                $checkAbreviations = "SELECT * FROM product_grade WHERE grade_abbreviations = '$grade_abbreviations'";
-                $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-                if (mysqli_num_rows($resultAbreviations) > 0) {
-                    $duplicates[] = "Grade Abbreviations";
-                }
-            }
-
-            if (!empty($duplicates)) {
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            $updateQuery = "UPDATE product_grade SET product_grade = '$product_grade', grade_abbreviations = '$grade_abbreviations', product_category = '$product_category', multiplier = '$multiplier', notes = '$notes', last_edit = NOW(), edited_by = '$userid'  WHERE product_grade_id = '$product_grade_id'";
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "update-success";
             } else {
-                // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_grade SET product_grade = '$product_grade', grade_abbreviations = '$grade_abbreviations', product_category = '$product_category', multiplier = '$multiplier', notes = '$notes', last_edit = NOW(), edited_by = '$userid'  WHERE product_grade_id = '$product_grade_id'";
-                if (mysqli_query($conn, $updateQuery)) {
-                    echo "update-success";
-                } else {
-                    echo "Error updating product grade: " . mysqli_error($conn);
-                }
+                echo "Error updating product grade: " . mysqli_error($conn);
             }
         } else {
-            // Record does not exist, perform duplicate checks before inserting
-            $duplicates = array();
-            $checkProductGrade = "SELECT * FROM product_grade WHERE product_grade = '$product_grade'";
-            $resultProductGrade = mysqli_query($conn, $checkProductGrade);
-            if (mysqli_num_rows($resultProductGrade) > 0) {
-                $duplicates[] = "Product Grade";
-            }
-
-            $checkAbreviations = "SELECT * FROM product_grade WHERE grade_abbreviations = '$grade_abbreviations'";
-            $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-            if (mysqli_num_rows($resultAbreviations) > 0) {
-                $duplicates[] = "Grade Abbreviations";
-            }
-
-            if(!empty($duplicates)){
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            $insertQuery = "INSERT INTO product_grade (product_grade, grade_abbreviations, product_category, multiplier, notes, added_date, added_by) VALUES ('$product_grade', '$grade_abbreviations', '$product_category', '$multiplier', '$notes', NOW(), '$userid')";
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "add-success";
             } else {
-                $insertQuery = "INSERT INTO product_grade (product_grade, grade_abbreviations, product_category, multiplier, notes, added_date, added_by) VALUES ('$product_grade', '$grade_abbreviations', '$product_category', '$multiplier', '$notes', NOW(), '$userid')";
-                if (mysqli_query($conn, $insertQuery)) {
-                    echo "add-success";
-                } else {
-                    echo "Error adding product grade: " . mysqli_error($conn);
-                }
+                echo "Error adding product grade: " . mysqli_error($conn);
             }
         }
     } 
