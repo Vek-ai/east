@@ -154,7 +154,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-4 trim-field screw-fields">
                 <div class="mb-3">
                     <label class="form-label">Retail Price</label>
-                    <input type="text" id="retail" name="retail" class="form-control" value="<?=$row['retail'] ?? ''?>"/>
+                    <input type="text" id="retail" name="unit_price" class="form-control" value="<?=$row['unit_price'] ?? ''?>"/>
                 </div>
             </div>
 

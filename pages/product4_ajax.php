@@ -34,12 +34,8 @@ if(isset($_REQUEST['action'])) {
                 $fields[$key] = $escapedValue;
             }
         
-            if ($key == 'cost') {
+            if ($key == 'retail') {
                 $fields['unit_price'] = $escapedValue;
-            }
-
-            if ($key == 'retail_cost') {
-                $fields['retail_cost'] = $escapedValue;
             }
         }
         
