@@ -699,26 +699,39 @@ if(isset($_REQUEST['action'])) {
     
     if ($action == "save_table") {
         $table = "product";
-        
+    
         $selectSql = "SELECT * FROM test";
         $result = $conn->query($selectSql);
     
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                $product_id = trim($row['product_id'] ?? ''); 
-    
                 unset($row['id']);
     
-                if (!empty($product_id)) {
-                    $checkSql = "SELECT COUNT(*) as count FROM $table WHERE product_id = '$product_id'";
-                    $checkResult = $conn->query($checkSql);
-                    $exists = $checkResult->fetch_assoc()['count'] > 0;
+                $product_id = trim($row['product_id'] ?? '');
     
-                    if ($exists) {
+                $conditions = [];
+                foreach ($row as $column => $value) {
+                    $conditions[] = "$column = '" . $conn->real_escape_string($value) . "'";
+                }
+    
+                $checkSql = "SELECT COUNT(*) as count FROM $table WHERE " . implode(" AND ", $conditions);
+                $checkResult = $conn->query($checkSql);
+                $exists = $checkResult->fetch_assoc()['count'] > 0;
+    
+                if ($exists) {
+                    continue;
+                }
+    
+                if (!empty($product_id)) {
+                    $idCheckSql = "SELECT COUNT(*) as count FROM $table WHERE product_id = '$product_id'";
+                    $idCheckResult = $conn->query($idCheckSql);
+                    $idExists = $idCheckResult->fetch_assoc()['count'] > 0;
+    
+                    if ($idExists) {
                         $updateFields = [];
                         foreach ($row as $column => $value) {
                             if ($column !== 'product_id') {
-                                $updateFields[] = "$column = '$value'";
+                                $updateFields[] = "$column = '" . $conn->real_escape_string($value) . "'";
                             }
                         }
                         $updateSql = "UPDATE $table SET " . implode(", ", $updateFields) . " WHERE product_id = '$product_id'";
@@ -728,8 +741,8 @@ if(isset($_REQUEST['action'])) {
                 }
     
                 $columns = implode(", ", array_keys($row));
-                $values = implode("', '", array_values($row));
-                $insertSql = "INSERT INTO $table ($columns) VALUES ('$values')";
+                $values = "'" . implode("', '", array_map([$conn, 'real_escape_string'], array_values($row))) . "'";
+                $insertSql = "INSERT INTO $table ($columns) VALUES ($values)";
                 $conn->query($insertSql);
             }
     
@@ -742,7 +755,7 @@ if(isset($_REQUEST['action'])) {
         } else {
             echo "No data found in test table.";
         }
-    }
+    }    
 
     if ($action == "download_excel") {
         $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
