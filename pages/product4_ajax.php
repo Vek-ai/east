@@ -1273,6 +1273,38 @@ if(isset($_REQUEST['action'])) {
         </form>
         <?php
     }
+
+    if ($action == "duplicate_product") {
+        $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+    
+        $check_sql = "SELECT * FROM product WHERE product_id = '$product_id'";
+        $result = $conn->query($check_sql);
+    
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $new_product_name = "Copy - " . $row['product_item'] . " ";
+    
+            $columns = [];
+            $columns_sql = $conn->query("SHOW COLUMNS FROM product");
+            while ($col = $columns_sql->fetch_assoc()) {
+                if ($col['Field'] !== 'product_id') {
+                    $columns[] = $col['Field'];
+                }
+            }
+    
+            $columns_list = implode(", ", $columns);
+            $columns_select = implode(", ", array_map(function ($col) use ($row, $conn, $new_product_name) {
+                return $col === 'product_item' ? "'" . mysqli_real_escape_string($conn, $new_product_name) . "'" : "product.$col";
+            }, $columns));
+    
+            $duplicate_sql = "INSERT INTO product ($columns_list) 
+                              SELECT $columns_select FROM product WHERE product_id = '$product_id'";
+    
+            echo $conn->query($duplicate_sql) ? "success" : "Error duplicating product: " . $conn->error;
+        } else {
+            echo "Product not found.";
+        }
+    }     
     
     mysqli_close($conn);
 }

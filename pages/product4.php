@@ -616,7 +616,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                                 <div class="d-flex align-items-center">
                                                     <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                                                     <div class="ms-3">
-                                                        <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['description'] ?></h6>
+                                                        <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['product_item'] ?></h6>
                                                     </div>
                                                 </div>
                                             </a>
@@ -632,6 +632,9 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                                 </a>
                                                 <a href="#" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>" data-category="<?= $row_product['product_category'] ?>">
                                                     <i class="text-warning ti ti-pencil fs-7"></i>
+                                                </a>
+                                                <a href="#" id="duplicate_product_btn" class="text-info edit" data-id="<?= $row_product['product_id'] ?>" data-category="<?= $row_product['product_category'] ?>">
+                                                    <i class="text-info ti ti-copy fs-7"></i>
                                                 </a>
                                                 <a href="#" id="add_inventory_btn" class="text-info edit d-none" data-id="<?= $row_product['product_id'] ?>">
                                                     <i class="text-info ti ti-plus fs-6"></i>
@@ -874,6 +877,45 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             updateSearchCategory();
 
             $('#addProductModal').modal('show');
+        });
+
+        $(document).on('click', '#duplicate_product_btn', function(event) {
+            event.preventDefault();
+            if (!confirm("Are you sure you want to duplicate this product?")) {
+                return;
+            }
+            var id = $(this).data('id') || '';
+            $.ajax({
+                url: 'pages/product4_ajax.php',
+                type: 'POST',
+                data: {
+                    product_id: id,
+                    action: "duplicate_product"
+                },
+                success: function(response) {
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Product Duplicated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
         });
 
         $(document).on('click', '#downloadProductModalBtn', function(event) {
