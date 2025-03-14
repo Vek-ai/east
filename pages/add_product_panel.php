@@ -211,6 +211,12 @@ if(isset($_REQUEST['action'])) {
                     <input type="text" id="width" name="width" class="form-control" value="<?=$row['width'] ?? ''?>"/>
                 </div>
             </div>
+            <div class="col-md-4 trim-field">
+                <div class="mb-3">
+                    <label class="form-label">Length (Feet)</label>
+                    <input type="text" id="length" name="length" class="form-control calculate" value="<?=$row['length']?>"/>
+                </div>
+            </div>
             <div class="col-md-4 panel-fields">
                 <div class="mb-3">
                     <label class="form-label">Thickness</label>

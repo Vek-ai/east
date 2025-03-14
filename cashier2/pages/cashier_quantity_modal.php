@@ -158,7 +158,15 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 const bends = parseInt($('#bend_product').val()) || 0;
                 const hems = parseInt($('#hem_product').val()) || 0;
                 const soldByFeet = <?= $sold_by_feet; ?>;
-                const basePrice = <?= $product_details["unit_price"]; ?>;
+
+                <?php 
+                $basePrice = floatval($product_details['unit_price'] ?? 0);
+                if($product_details['product_category'] == '3'){
+                    $basePrice = $basePrice / floatval($product_details['length'] ?? 1);
+                }
+                ?>
+
+                const basePrice = <?= $basePrice; ?>;
 
                 $.ajax({
                     url: 'pages/cashier_quantity_modal.php',
