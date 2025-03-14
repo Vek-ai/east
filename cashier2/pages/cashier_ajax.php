@@ -55,8 +55,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         
             $weight = floatval($row['weight']);
             $basePrice = floatval($row['unit_price']);
-            //panels category
-            if($row['product_category'] == '3'){
+            if($row['sold_by_feet'] == '1'){
                 $basePrice = $basePrice / floatval($row['length'] ?? 1);
             }
 
@@ -123,7 +122,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
 
             $weight = floatval($row['weight']);
             $basePrice = floatval($row['unit_price']);
-            if($row['product_category'] == '3'){
+            if($row['sold_by_feet'] == '1'){
                 $basePrice = $basePrice / floatval($row['length'] ?? 1);
             }
             $panelType = '';
@@ -1623,7 +1622,7 @@ if (isset($_POST['add_to_cart'])) {
                 $item_quantity = $qty;
 
                 $basePrice = floatval($row['unit_price']);
-                if($row['product_category'] == '3'){
+                if($row['sold_by_feet'] == '1'){
                     $basePrice = $basePrice / floatval($row['length'] ?? 1);
                 }
 

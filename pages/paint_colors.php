@@ -13,6 +13,7 @@ $stock_availability = '';
 $product_category = '';
 $multiplier_category = '';
 $color_abbreviation = "";
+$ranking = '';
 
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
@@ -34,6 +35,7 @@ if(!empty($_REQUEST['color_id'])){
       $ekm_color_no = $row['ekm_color_no'];
       $ekm_paint_code = $row['ekm_paint_code'];
       $color_abbreviation = $row['color_abbreviation'];
+      $ranking = $row['ranking'];
   }
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
@@ -134,29 +136,35 @@ if(!empty($_REQUEST['result'])){
       <div class="row pt-0">
         <div class="col-md-12">
           <div class="mb-3">
-            <label class="form-label">Color Name</label>
+            <label class="form-label">EKM Color Name</label>
             <input type="text" id="color_name" name="color_name" class="form-control"  value="<?= $color_name ?>"/>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
           <div class="mb-3">
-            <label class="form-label">Hex Color</label>
+            <label class="form-label">Hex Color Code</label>
             <input type="color" id="color_code" name="color_code" class="form-control" value="<?= $color_code ?>" />
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
           <div class="mb-3">
             <label class="form-label">EKM Color Code</label>
             <input type="text" id="ekm_color_code" name="ekm_color_code" class="form-control" value="<?= $ekm_color_code ?>" />
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
           <div class="mb-3">
             <label class="form-label">EKM Color No</label>
             <input type="text" id="ekm_color_no" name="ekm_color_no" class="form-control" value="<?= $ekm_color_no ?>" />
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label class="form-label">Internal Color Scale Ranking</label>
+            <input type="text" id="ranking" name="ranking" class="form-control" value="<?= $ranking ?>" />
+          </div>
+        </div>
+        <div class="col-md-4">
             <div class="mb-3">
                 <label class="form-label">Product Category</label>
                 <select id="product_category" class="form-control" name="product_category">
@@ -174,7 +182,7 @@ if(!empty($_REQUEST['result'])){
                 </select>
             </div>
         </div>
-        <div class="col-md-3 trim-field screw-fields panel-fields">
+        <div class="col-md-4 trim-field screw-fields panel-fields">
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <label class="form-label">Color Group</label>
@@ -204,7 +212,7 @@ if(!empty($_REQUEST['result'])){
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
           <div class="mb-3">
             <label class="form-label">Provider</label>
             <select id="provider" class="form-control" name="provider" required>
@@ -223,13 +231,13 @@ if(!empty($_REQUEST['result'])){
           </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
           <div class="mb-3">
             <label class="form-label">Color Abbreviation</label>
             <input type="text" id="color_abbreviation" name="color_abbreviation" class="form-control" value="<?= $color_abbreviation ?>" />
           </div>
         </div>
-        <div class="col-md-3 opt_field" data-id="5">
+        <div class="col-md-4 opt_field" data-id="5">
             <label class="form-label">Availability</label>
             <div class="mb-3">
                 <select id="stock_availability_add" class="form-control select2-add" name="stock_availability">
@@ -308,11 +316,12 @@ if(!empty($_REQUEST['result'])){
             <thead>
               <!-- start row -->
               <tr>
-                <th>Color Name</th>
-                <th>Hex Color</th>
+                <th>EKM Color Name</th>
+                <th>Hex Color Code</th>
                 <th>Color Group</th>
                 <th>Provider</th>
                 <th>Category</th>
+                <th>Availability</th>
                 <th>Details</th>
                 <th>Status</th>
               
@@ -332,8 +341,10 @@ if(!empty($_REQUEST['result'])){
                 $color_group = getColorGroupName($row_paint_color['color_group']);
                 $provider_id = $row_paint_color['provider_id'];
                 $product_category = getProductCategoryName($row_paint_color['product_category']);
+                $availability_details = getAvailabilityDetails($row_paint_color['stock_availability']);
+                $availability = $availability_details['product_availability'];
                 $db_status = $row_paint_color['color_status'];
-              // $last_edit = $row_paint_color['last_edit'];
+                // $last_edit = $row_paint_color['last_edit'];
                 $date = new DateTime($row_paint_color['last_edit']);
                 $last_edit = $date->format('m-d-Y');
 
@@ -361,13 +372,14 @@ if(!empty($_REQUEST['result'])){
                 <td><?= $color_group ?></td>
                 <td><?= getPaintProviderName($provider_id) ?></td>
                 <td><?= $product_category ?></td>
+                <td><?= $availability ?></td>
                 <td class="last-edit" style="width:20%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                 <td><?= $status ?></td>
                 <td class="text-center" id="action-button-<?= $no ?>">
                     <?php if ($row_paint_color['color_status'] == '0') { ?>
                         <a href="#" class="btn btn-light py-1 text-dark hideProductLine" data-id="<?= $color_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
                     <?php } else { ?>
-                        <a href="?page=paint_colors&color_id=<?= $color_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                        <a href="#" id="edit_color_btn" data-id="<?= $color_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
                     <?php } ?>
                 </td>
             </tr>
@@ -466,6 +478,37 @@ if(!empty($_REQUEST['result'])){
         </button>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addColorModal" tabindex="-1" aria-labelledby="addColorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+          <div class="modal-header d-flex align-items-center">
+              <h4 class="modal-title" id="myLargeModalLabel">
+                  Update Color
+              </h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="card-body">
+              <form id="color_form" class="form-horizontal">
+                <div id="color_form_body">
+                </div>
+                <div class="form-actions modal-footer">
+                  <div class="card-body border-top ">
+                      <div class="row pt-2">
+                        <div class="col-6 text-start"></div>
+                        <div class="col-6 text-end">
+                          <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+      </div>
   </div>
 </div>
 
@@ -597,7 +640,9 @@ if(!empty($_REQUEST['result'])){
 
 <script>
   $(document).ready(function() {
-    var table = $('#display_paint_colors').DataTable();
+    var table = $('#display_paint_colors').DataTable({
+        pageLength: 100
+    });
     
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -626,7 +671,28 @@ if(!empty($_REQUEST['result'])){
         return null;
     }
 
-    $('#paintColorForm').on('submit', function(event) {
+    $(document).on('click', '#edit_color_btn', function(event) {
+        event.preventDefault(); 
+        var id = $(this).data('id');
+        console.log(id);
+        $.ajax({
+          url: 'pages/paint_colors_ajax.php',
+          type: 'POST',
+          data: {
+              id: id,
+              action: "fetch_update_modal"
+          },
+          success: function(response) {
+              $('#color_form_body').html(response);
+              $('#addColorModal').modal('show');
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+              alert('Error: ' + textStatus + ' - ' + errorThrown);
+          }
+        });
+    });
+
+    $('#color_form').on('submit', function(event) {
         event.preventDefault(); 
 
         var userid = getCookie('userid');
@@ -635,7 +701,10 @@ if(!empty($_REQUEST['result'])){
         formData.append('action', 'add_update');
         formData.append('userid', userid);
 
-        var appendResult = "";
+        console.log("Form Data Before Sending:");
+        for (let [key, value] of formData.entries()) {
+            console.log(key + ": " + value);
+        }
 
         $.ajax({
             url: 'pages/paint_colors_ajax.php',
@@ -644,7 +713,7 @@ if(!empty($_REQUEST['result'])){
             processData: false,
             contentType: false,
             success: function(response) {
-              
+              $('.modal').modal('hide');
               if (response.trim() === "Paint color updated successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text("Paint color updated successfully.");
@@ -668,7 +737,59 @@ if(!empty($_REQUEST['result'])){
               } else {
                   $('#responseHeader').text("Failed");
                   $('#responseMsg').text(response);
+                  $('#responseHeaderContainer').removeClass("bg-success");
+                  $('#responseHeaderContainer').addClass("bg-danger");
+                  $('#response-modal').modal("show");
+              }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
 
+    $('#paintColorForm').on('submit', function(event) {
+        event.preventDefault(); 
+
+        var userid = getCookie('userid');
+
+        var formData = new FormData(this);
+        formData.append('action', 'add_update');
+        formData.append('userid', userid);
+
+        var appendResult = "";
+
+        $.ajax({
+            url: 'pages/paint_colors_ajax.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+              $('.modal').modal('hide');
+              if (response.trim() === "Paint color updated successfully.") {
+                  $('#responseHeader').text("Success");
+                  $('#responseMsg').text("Paint color updated successfully.");
+                  $('#responseHeaderContainer').removeClass("bg-danger");
+                  $('#responseHeaderContainer').addClass("bg-success");
+                  $('#response-modal').modal("show");
+
+                  $('#response-modal').on('hide.bs.modal', function () {
+                    window.location.href = "?page=paint_colors";
+                  });
+              } else if (response.trim() === "New paint color added successfully.") {
+                  $('#responseHeader').text("Success");
+                  $('#responseMsg').text(response);
+                  $('#responseHeaderContainer').removeClass("bg-danger");
+                  $('#responseHeaderContainer').addClass("bg-success");
+                  $('#response-modal').modal("show");
+
+                  $('#response-modal').on('hide.bs.modal', function () {
+                      location.reload();
+                  });
+              } else {
+                  $('#responseHeader').text("Failed");
+                  $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-success");
                   $('#responseHeaderContainer').addClass("bg-danger");
                   $('#response-modal').modal("show");
@@ -764,6 +885,7 @@ if(!empty($_REQUEST['result'])){
             contentType: false,
             processData: false,
             success: function (response) {
+                $('.modal').modal('hide');
                 response = response.trim();
                 if (response.trim() === "success") {
                     $('#responseHeader').text("Success");
@@ -844,6 +966,7 @@ if(!empty($_REQUEST['result'])){
                 processData: false,
                 contentType: false,
                 success: function (response) {
+                    $('.modal').modal('hide');
                     response = response.trim();
                     $('#responseHeader').text("Success");
                     $('#responseMsg').text(response);

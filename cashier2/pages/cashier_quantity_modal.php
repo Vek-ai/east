@@ -161,7 +161,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
                 <?php 
                 $basePrice = floatval($product_details['unit_price'] ?? 0);
-                if($product_details['product_category'] == '3'){
+                if($product_details['sold_by_feet'] == '1'){
                     $basePrice = $basePrice / floatval($product_details['length'] ?? 1);
                 }
                 ?>
