@@ -50,6 +50,10 @@ if(!empty($_REQUEST['category_id'])){
     .inactive-row {
         display: none;
     }
+
+    table th, table td {
+        color: #ffffff !important;
+    }
 </style>
 <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
   <div class="card-body px-0">
@@ -68,94 +72,23 @@ if(!empty($_REQUEST['category_id'])){
       </div>
       <div>
         <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
-          <div class="d-flex gap-2">
-            <div class="">
-              <small>This Month</small>
-              <h4 class="text-primary mb-0 ">$58,256</h4>
-            </div>
-            <div class="">
-              <div class="breadbar"></div>
-            </div>
-          </div>
-          <div class="d-flex gap-2">
-            <div class="">
-              <small>Last Month</small>
-              <h4 class="text-secondary mb-0 ">$58,256</h4>
-            </div>
-            <div class="">
-              <div class="breadbar2"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="col-12">
-  <!-- start Default Form Elements -->
-  <div class="card card-body">
-    <div class="row">
-      <div class="col-3">
-        <h4 class="card-title"><?= $addHeaderTxt ?> Category</h4>
-      </div>
-    </div>
-    <form id="categoryForm" class="form-horizontal">
-      <div class="row pt-3">
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="form-label">Product Category</label>
-            <input type="text" id="product_category" name="product_category" class="form-control"  value="<?= $product_category ?>"/>
-          </div>
-        </div>
-      </div>
-
-      <div class="row pt-3">
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="form-label">Category Abreviations</label>
-            <input type="text" id="category_abreviations" name="category_abreviations" class="form-control" value="<?= $category_abreviations ?>" />
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="form-label">Multiplier</label>
-            <input type="number" id="multiplier" name="multiplier" class="form-control" value="<?= $multiplier ?>" />
-          </div>
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Notes</label>
-        <textarea class="form-control" id="notes" name="notes" rows="5"><?= $notes ?></textarea>
-      </div>
-
-      <div class="form-actions">
-        <div class="card-body border-top ">
-          <input type="hidden" id="product_category_id" name="product_category_id" class="form-control"  value="<?= $product_category_id ?>"/>
-          <div class="row">
-            
-            <div class="col-6 text-start">
-            
-            </div>
-            <div class="col-6 text-end">
-              <button type="submit" class="btn btn-primary" style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
-            </div>
-          </div>
           
         </div>
       </div>
-
-    </form>
+    </div>
   </div>
-  <!-- end Default Form Elements -->
 </div>
 <div class="col-12">
   <div class="datatables">
     <div class="card">
       <div class="card-body">
-          <h4 class="card-title d-flex justify-content-between align-items-center">Category List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['category_id'])){ ?>
-            <a href="/?page=category" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
-            <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
+          <h4 class="card-title d-flex justify-content-between align-items-center">Category List  &nbsp;&nbsp; 
+          <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
+              <i class="ti ti-plus text-white me-1 fs-5"></i> Add Category
+          </button>
+          <div> 
+            <input type="checkbox" id="toggleActive" checked> Show Active Only
+          </div>
           </h4>
         
         <div class="table-responsive">
@@ -220,7 +153,9 @@ if(!empty($_REQUEST['category_id'])){
                       <?php if ($row_product_category['status'] == '0') { ?>
                           <a href="#" class="btn btn-light py-1 text-dark hideCategory" data-id="<?= $product_category_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
                       <?php } else { ?>
-                          <a href="/?page=category&category_id=<?= $product_category_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
+                          <a href="#" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $product_category_id ?>" data-type="edit">
+                            <i class="ti ti-pencil fs-7"></i>
+                          </a>
                       <?php } ?>
                   </td>
               </tr>
@@ -322,9 +257,43 @@ if(!empty($_REQUEST['category_id'])){
   </div>
 </div>
 
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="add-header">
+                    Add
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="categoryForm" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                          <div id="add-fields" class=""></div>
+                          <div class="form-actions">
+                              <div class="border-top">
+                                  <div class="row mt-2">
+                                      <div class="col-6 text-start"></div>
+                                      <div class="col-6 text-end ">
+                                          <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
   $(document).ready(function() {
-    var table = $('#display_category').DataTable();
+    var table = $('#display_category').DataTable({
+        pageLength: 100
+    });
 
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -371,7 +340,7 @@ if(!empty($_REQUEST['category_id'])){
             processData: false,
             contentType: false,
             success: function(response) {
-              
+              $('.modal').modal('hide');
               if (response === "Category updated successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
@@ -403,6 +372,40 @@ if(!empty($_REQUEST['category_id'])){
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $(document).on('click', '#addModalBtn', function(event) {
+        event.preventDefault();
+        var id = $(this).data('id') || '';
+        var type = $(this).data('type') || '';
+
+        if(type == 'edit'){
+          $('#add-header').html('Update Category');
+        }else{
+          $('#add-header').html('Add Category');
+        }
+
+        $.ajax({
+            url: 'pages/category_ajax.php',
+            type: 'POST',
+            data: {
+              id : id,
+              action: 'fetch_modal_content'
+            },
+            success: function (response) {
+                $('#add-fields').html(response);
+                $('#addModal').modal('show');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('AJAX Error:', textStatus, errorThrown);
+                console.error('Response:', jqXHR.responseText);
+
+                $('#responseHeader').text("Error");
+                $('#responseMsg').text("An error occurred while processing your request.");
+                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                $('#response-modal').modal("show");
             }
         });
     });
