@@ -60,6 +60,71 @@ if(isset($_REQUEST['action'])) {
             echo 'error';
         }
     }
+
+    if ($action == 'fetch_modal_content') {
+        $product_line_id = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM product_line WHERE product_line_id = '$product_line_id'";
+        $result = mysqli_query($conn, $query);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
+        }
+
+        ?>
+        <div class="row pt-3">
+            <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Product line</label>
+                <input type="text" id="product_line" name="product_line" class="form-control"  value="<?= $row['product_line'] ?? '' ?>"/>
+            </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Product Category</label>
+                    <select id="product_category" class="form-control" name="product_category">
+                        <option value="">Select One...</option>
+                        <?php
+                        $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                        $result_roles = mysqli_query($conn, $query_roles);            
+
+                        while ($row_product_category = mysqli_fetch_assoc($result_roles)) {
+                            $selected = (($row['product_category'] ?? '') == $row_product_category['product_category_id']) ? 'selected' : '';
+                        ?>
+                            <option value="<?= htmlspecialchars($row_product_category['product_category_id']) ?>" <?= $selected ?>>
+                                <?= htmlspecialchars($row_product_category['product_category']) ?>
+                            </option>
+                        <?php   
+                        }
+                        ?>
+                    </select>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="row pt-3">
+            <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Line Abreviations</label>
+                <input type="text" id="line_abreviations" name="line_abreviations" class="form-control" value="<?= $row['line_abreviations'] ?? '' ?>" />
+            </div>
+            </div>
+            <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Multiplier</label>
+                <input type="text" id="multiplier" name="multiplier" class="form-control" value="<?= $row['multiplier'] ?? '' ?>" />
+            </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" id="notes" name="notes" rows="5"><?= $row['notes'] ?? '' ?></textarea>
+        </div>
+
+            <input type="hidden" id="product_line_id" name="product_line_id" class="form-control"  value="<?= $product_line_id ?>"/>
+        <?php
+    }
+
     mysqli_close($conn);
 }
 ?>
