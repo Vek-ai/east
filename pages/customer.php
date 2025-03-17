@@ -77,11 +77,20 @@ if (!empty($_REQUEST['customer_id'])) {
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
 
+  $type = $_REQUEST['t'] ?? '';
+
   echo '<script>
-              $(document).ready(function() {
-                  $("#customerModal").modal("show");
-              });
-          </script>';
+      $(document).ready(function() { 
+          $("#customerModal").modal("show");
+          if ("' . $type . '" === "v") {
+              toggleFormEditable("lineForm", false, true);
+              console.log(123);
+          } else {
+              toggleFormEditable("lineForm", true, false);
+              console.log(456);
+          }
+      });
+  </script>';
 }
 
 $message = "";
@@ -156,24 +165,7 @@ if (!empty($_REQUEST['result'])) {
       </div>
       <div>
         <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
-          <div class="d-flex gap-2">
-            <div class="">
-              <small>This Month</small>
-              <h4 class="text-primary mb-0 ">$58,256</h4>
-            </div>
-            <div class="">
-              <div class="breadbar"></div>
-            </div>
-          </div>
-          <div class="d-flex gap-2">
-            <div class="">
-              <small>Last Month</small>
-              <h4 class="text-secondary mb-0 ">$58,256</h4>
-            </div>
-            <div class="">
-              <div class="breadbar2"></div>
-            </div>
-          </div>
+          
         </div>
       </div>
     </div>
@@ -254,8 +246,6 @@ if (!empty($_REQUEST['result'])) {
                 </div>
               </div>
 
-              <!-- CustomerTypeID -->
-
               <div class="row pt-3">
                 <div class="col-md-12">
                 <label class="form-label">Address</label>
@@ -264,7 +254,7 @@ if (!empty($_REQUEST['result'])) {
                         <div class="d-flex w-100">
                             <input type="text" id="address" name="address" class="form-control" value="<?= $address ?>" list="address-data-list"/>
                             <datalist id="address-data-list"></datalist>
-                            <button type="button" class="btn btn-primary py-1 ms-2" id="showMapsBtn" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#map1Modal">Change</button>
+                            <button type="button" class="btn btn-primary py-1 ms-2 toggleElements" id="showMapsBtn" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#map1Modal">Change</button>
                         </div>
                     </div>
                 </div>
@@ -343,7 +333,7 @@ if (!empty($_REQUEST['result'])) {
                   <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Tax Status</label>
-                        <a href="?page=customer_tax" target="_blank" class="text-decoration-none">Edit</a>
+                        <a href="?page=customer_tax" target="_blank" class="text-decoration-none toggleElements">Edit</a>
                     </div>
                     <select id="tax_status" class="form-select form-control" name="tax_status">
                       <option value="">Select Tax Status...</option>
@@ -416,7 +406,7 @@ if (!empty($_REQUEST['result'])) {
                   </div>
                 <?php } ?>
 
-                <div class="col-6">
+                <div class="col-6 mb-3">
                   <label class="form-label">Credit Limit</label>
                   <input class="form-control" type="text" id="credit_limit" name="credit_limit" value="<?= $credit_limit ?>">
                 </div>
@@ -424,7 +414,7 @@ if (!empty($_REQUEST['result'])) {
                 <div class="col-6">
                   <div class="d-flex justify-content-between align-items-center">
                       <label class="form-label">Customer Pricing</label>
-                      <a href="?page=customer_pricing" target="_blank" class="text-decoration-none">Edit</a>
+                      <a href="?page=customer_pricing" target="_blank" class="text-decoration-none toggleElements">Edit</a>
                   </div>
                   <div class="mb-3" data-pricing="<?= $customer_pricing ?>">
                       <select id="customer_pricing" class="form-control" name="customer_pricing">
@@ -458,7 +448,7 @@ if (!empty($_REQUEST['result'])) {
                   </div>
               </div>
 
-              <div class="form-actions">
+              <div class="form-actions toggleElements">
                 <div class="card-body border-top ">
                   <input type="hidden" id="customer_id" name="customer_id" class="form-control"
                     value="<?= $customer_id ?>" />
@@ -492,7 +482,7 @@ if (!empty($_REQUEST['result'])) {
                 Filter Customers 
             </h3>
             <div class="position-relative w-100 px-0 mr-0 mb-2">
-                <input type="text" class="form-control py-2 ps-5" data-filter-name="Customer Name" id="text-srh" placeholder="Search Product">
+                <input type="text" class="form-control py-2 ps-5" data-filter-name="Customer Name" id="text-srh" placeholder="Search">
                 <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
             </div>
             <div class="align-items-center">
@@ -573,13 +563,13 @@ if (!empty($_REQUEST['result'])) {
                   </h4>
 
                   <div class="table-responsive">
-                    <table id="display_customer" class="table align-middle table-hover mb-0 text-md-nowrap">
+                    <table id="display_customer" class="table table-bordered align-middle table-hover mb-0 text-md-nowrap">
                       <thead>
                         <!-- start row -->
                         <tr>
                           <th>Name</th>
                           <th>Business Name</th>
-                          <th>Loyalty</th>
+                          <th>Phone Number</th>
                           <th>Status</th>
                           <th>Action</th>
                         </tr>
@@ -639,31 +629,33 @@ if (!empty($_REQUEST['result'])) {
                               data-pricing="<?= $row_customer['customer_pricing'] ?>"
                           >
                             <td>
-                              <span class="customer<?= $no ?><?php if ($row_customer['status'] == '0' || $row_customer['status'] == '3') {echo 'emphasize-strike';} ?>">
-                                <?php 
-                                if($row_customer['status'] == '3'){
-                                  $merge_details = getCustomerDetails($customer_id);
-                                  $merge_id = $merge_details['merge_from'];
-                                  $current_details = getCustomerDetails($merge_id);
-                                  echo "$name - Merge to " .$current_details['customer_first_name'] . " " . $current_details['customer_last_name'];
-                                }else{
-                                  echo $name;
-                                }
-                                ?>
-                              </span>
+                              <a href="?page=customer&customer_id=<?= $customer_id ?>&t=v" id="showCustomerDetails" class="text-decoration-none">
+                                <span class="customer<?= $no ?><?php if ($row_customer['status'] == '0' || $row_customer['status'] == '3') {echo 'emphasize-strike';} ?>">
+                                  <?php 
+                                  if($row_customer['status'] == '3'){
+                                    $merge_details = getCustomerDetails($customer_id);
+                                    $merge_id = $merge_details['merge_from'];
+                                    $current_details = getCustomerDetails($merge_id);
+                                    echo "$name - Merge to " .$current_details['customer_first_name'] . " " . $current_details['customer_last_name'];
+                                  }else{
+                                    echo $name;
+                                  }
+                                  ?>
+                                </span>
+                              </a>
                             </td>
                             <td><?= $business_name ?></td>
-                            <td><?= $loyalty ?></td>
+                            <td><?= $phone ?></td>
                             <td><?= $status ?></td>
                             <td class="text-center fs-5" id="action-button-<?= $no ?>">
                               <?php if ($row_customer['status'] == '0') { ?>
-                                <a href="#" class="py-1 text-dark hideCustomer" data-id="<?= $customer_id ?>" data-row="<?= $no ?>"
+                                <a href="?page=customer&customer_id=<?= $customer_id ?>&t=e" class="py-1 text-dark hideCustomer" data-id="<?= $customer_id ?>" data-row="<?= $no ?>"
                                   style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Archive"><i
                                     class="fa fa-box-archive text-danger"></i></a>
                               <?php } else { ?>
                                 <a href="?page=customer&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
-                                  data-toggle="tooltip" data-placement="top" title="View">
-                                  <i class="fa fa-eye text-light"></i>
+                                  data-toggle="tooltip" data-placement="top" title="Edit">
+                                  <i class="fa fa-pencil text-light"></i>
                                 </a>
                                 <a href="?page=customer-dashboard&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
                                   data-toggle="tooltip" data-placement="top" title="Dashboard"><i
@@ -673,7 +665,6 @@ if (!empty($_REQUEST['result'])) {
                                   data-toggle="tooltip" data-placement="top" title="Username and Password">
                                   <i class="fa-solid fa-lock text-info"></i>
                                 </a>
-                                
                                 <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
                                   style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i
                                     class="fa fa-calculator text-primary"></i>
@@ -964,7 +955,35 @@ if (!empty($_REQUEST['result'])) {
 
   window.onload = loadGoogleMapsAPI;
 
-  
+  function toggleFormEditable(formId, enable = true, hideBorders = false, hideControls = false) {
+      let form = document.getElementById(formId);
+      if (!form) return;
+
+      form.querySelectorAll("input, select, textarea").forEach(element => {
+          if (enable) {
+              element.removeAttribute("readonly");
+              element.removeAttribute("disabled");
+              element.style.border = hideBorders ? "none" : "";
+              element.style.backgroundColor = "";
+              if (element.tagName === "SELECT") {
+                  element.classList.remove("hide-dropdown");
+              }
+          } else {
+              element.setAttribute("readonly", "true");
+              element.setAttribute("disabled", "true");
+              element.style.border = hideBorders ? "none" : "1px solid #ccc";
+              element.style.backgroundColor = "#f8f9fa";
+              if (element.tagName === "SELECT") {
+                  element.classList.add("hide-dropdown"); // Hide dropdown arrow
+              }
+          }
+      });
+
+      document.querySelectorAll(".toggleElements").forEach(element => {
+          element.classList.toggle("d-none", !enable);
+      });
+  }
+
 
   $(document).ready(function () {
     $('#map1Modal').on('shown.bs.modal', function () {
@@ -977,15 +996,17 @@ if (!empty($_REQUEST['result'])) {
         $('#customerModal').modal('show');
     });
 
-    var table = $('#display_customer').DataTable({
-      
-    });
-
     // Filter based on dropdown selection
     $('#customerTypeFilter').on('change', function () {
       var selectedValue = $(this).val();
       table.search(selectedValue).draw();  // Apply global search based on dropdown value
     });
+
+    var table = $('#display_customer').DataTable({
+        pageLength: 100
+    });
+
+    $('#display_customer_filter').hide();
 
     $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
       var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
