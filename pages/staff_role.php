@@ -22,22 +22,21 @@ if(!empty($_REQUEST['emp_role_id'])){
 }
 ?>
 <style>
-        /* Ensure that the text within the notes column wraps properly */
-        td.notes,  td.last-edit{
-            white-space: normal;
-            word-wrap: break-word;
-        }
-        .emphasize-strike {
-            text-decoration: line-through;
-            font-weight: bold;
-            color: #9a841c; /* You can choose any color you like for emphasis */
-        }
-      .dataTables_filter input {
-    width: 100%; /* Adjust the width as needed */
-    height: 50px; /* Adjust the height as needed */
-    font-size: 16px; /* Adjust the font size as needed */
-    padding: 10px; /* Adjust the padding as needed */
-    border-radius: 5px; /* Adjust the border-radius as needed */
+td.notes,  td.last-edit{
+    white-space: normal;
+    word-wrap: break-word;
+}
+.emphasize-strike {
+    text-decoration: line-through;
+    font-weight: bold;
+    color: #9a841c;
+}
+.dataTables_filter input {
+    width: 100%;
+    height: 50px;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 5px;
 }
 .dataTables_filter {  width: 100%;}
 #toggleActive {
@@ -49,242 +48,176 @@ if(!empty($_REQUEST['emp_role_id'])){
 }
     </style>
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
-            <div class="card-body px-0">
-              <div class="d-flex justify-content-between align-items-center">
-                <div><br>
-                  <h4 class="font-weight-medium fs-14 mb-0">Employee Roles</h4>
-                  <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">s
-                      <li class="breadcrumb-item">
-                        <a class="text-muted text-decoration-none" href="">Product Properties
-                        </a>
-                      </li>
-                      <li class="breadcrumb-item text-muted" aria-current="page">Categories</li>
-                    </ol>
-                  </nav>
-                </div>
-                <div>
-                  <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
-                    <div class="d-flex gap-2">
-                      <div class="">
-                        <small>This Month</small>
-                        <h4 class="text-primary mb-0 ">$58,256</h4>
-                      </div>
-                      <div class="">
-                        <div class="breadbar"></div>
-                      </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                      <div class="">
-                        <small>Last Month</small>
-                        <h4 class="text-secondary mb-0 ">$58,256</h4>
-                      </div>
-                      <div class="">
-                        <div class="breadbar2"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+      <div class="card-body px-0">
+        <div class="d-flex justify-content-between align-items-center">
+          <div><br>
+            <h4 class="font-weight-medium fs-14 mb-0">Employee Roles</h4>
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">s
+                <li class="breadcrumb-item">
+                  <a class="text-muted text-decoration-none" href="">Product Properties
+                  </a>
+                </li>
+                <li class="breadcrumb-item text-muted" aria-current="page">Categories</li>
+              </ol>
+            </nav>
+          </div>
+          <div>
+            <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
+              
             </div>
           </div>
-<div class="col-12">
-  <!-- start Default Form Elements -->
-  <div class="card card-body">
-    <div class="row">
-      <div class="col-3">
-        <h4 class="card-title"><?= $addHeaderTxt ?> Employee Role</h4>
-      </div>
-      <div class="col-9">
-        <h4 class="card-title <?= $textColor ?>"><?= $message ?></h4>
+        </div>
       </div>
     </div>
-    
 
-    <form id="employeeRoleForm" class="form-horizontal">
-      <div class="row pt-3">
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="form-label">Employee Role</label>
-            <input type="text" id="emp_role" name="emp_role" class="form-control"  value="<?= $emp_role ?>"/>
-          </div>
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Role Description</label>
-        <textarea class="form-control" id="role_desc" name="role_desc" rows="5"><?= $role_desc ?></textarea>
-      </div>
-
-      <div class="form-actions">
-        <div class="card-body border-top ">
-          <input type="hidden" id="emp_role_id" name="emp_role_id" class="form-control"  value="<?= $emp_role_id ?>"/>
-          <div class="row">
-            
-            <div class="col-6 text-start">
-            
-            </div>
-            <div class="col-6 text-end">
-              <button type="submit" class="btn btn-primary" style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
-            </div>
-          </div>
-          
-        </div>
-      </div>
-
-    </form>
-  </div>
-  <!-- end Default Form Elements -->
-</div>
 <div class="col-12">
   <div class="datatables">
     <div class="card">
       <div class="card-body">
-          <h4 class="card-title d-flex justify-content-between align-items-center">Employee Roles List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['emp_role_id'])){ ?>
-            <a href="?page=employee_roles" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
-            <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
+          <h4 class="card-title d-flex justify-content-between align-items-center">Employee Roles List  &nbsp;&nbsp; 
+          <button type="button" id="addRoleModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
+              <i class="ti ti-plus text-white me-1 fs-5"></i> Add Role
+          </button>
+          <div> 
+            <input type="checkbox" id="toggleActive" checked> Show Active Only
+          </div>
           </h4>
         
         <div class="table-responsive">
        
           <table id="display_employee_roles" class="table table-striped table-bordered text-nowrap align-middle">
             <thead>
-              <!-- start row -->
               <tr>
                 <th>Employee Role</th>
                 <th>Role Description</th>
                 <th>Details</th>
                 <th>Status</th>
-              
                 <th>Action</th>
               </tr>
-              <!-- end row -->
             </thead>
             <tbody>
-<?php
-$no = 1;
-$query_employee_roles = "SELECT * FROM staff_roles WHERE hidden = 0";
-$result_employee_roles = mysqli_query($conn, $query_employee_roles);            
-while ($row_employee_roles = mysqli_fetch_array($result_employee_roles)) {
-    $emp_role_id = $row_employee_roles['emp_role_id'];
-    $emp_role = $row_employee_roles['emp_role'];
-    $role_desc = $row_employee_roles['role_desc'];
-    $db_status = $row_employee_roles['status'];
+              <?php
+              $no = 1;
+              $query_employee_roles = "SELECT * FROM staff_roles WHERE hidden = 0";
+              $result_employee_roles = mysqli_query($conn, $query_employee_roles);            
+              while ($row_employee_roles = mysqli_fetch_array($result_employee_roles)) {
+                  $emp_role_id = $row_employee_roles['emp_role_id'];
+                  $emp_role = $row_employee_roles['emp_role'];
+                  $role_desc = $row_employee_roles['role_desc'];
+                  $db_status = $row_employee_roles['status'];
 
-    $date = new DateTime($row_employee_roles['last_edit']);
-    $last_edit = $date->format('m-d-Y');
+                  $date = new DateTime($row_employee_roles['last_edit']);
+                  $last_edit = $date->format('m-d-Y');
 
-    $added_by = $row_employee_roles['added_by'];
-    $edited_by = $row_employee_roles['edited_by'];
+                  $added_by = $row_employee_roles['added_by'];
+                  $edited_by = $row_employee_roles['edited_by'];
 
-    
-    if($edited_by != "0"){
-      $last_user_name = get_name($edited_by);
-    }else if($added_by != "0"){
-      $last_user_name = get_name($added_by);
-    }else{
-      $last_user_name = "";
-    }
+                  
+                  if($edited_by != "0"){
+                    $last_user_name = get_name($edited_by);
+                  }else if($added_by != "0"){
+                    $last_user_name = get_name($added_by);
+                  }else{
+                    $last_user_name = "";
+                  }
 
-    if ($row_employee_roles['status'] == '0') {
-        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$emp_role_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-    } else {
-        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$emp_role_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-    }
-?>
-<tr id="product-row-<?= $no ?>">
-    <td>
-        <a href="#" id="view_emp_list" data-id="<?= $emp_role_id ?>">
-          <span class="product<?= $no ?> <?php if ($row_employee_roles['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $emp_role ?></span>
-        </a>
-    </td>
-    <td class="notes" style="width:30%;"><?= $role_desc ?></td>
-    <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
-    <td><?= $status ?></td>
-    <td class="text-center" id="action-button-<?= $no ?>">
-        <?php if ($row_employee_roles['status'] == '0') { ?>
-            <a href="#" class="btn btn-light py-1 text-dark hideCategory" data-id="<?= $emp_role_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
-        <?php } else { ?>
-            <a href="?page=employee_roles&emp_role_id=<?= $emp_role_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
-        <?php } ?>
-    </td>
-</tr>
-<?php
-$no++;
-}
-?>
-</tbody>
-<script>
-$(document).ready(function() {
-    // Use event delegation for dynamically generated elements
-    $(document).on('click', '.changeStatus', function(event) {
-        event.preventDefault(); 
-        var emp_role_id = $(this).data('id');
-        var status = $(this).data('status');
-        var no = $(this).data('no');
-        $.ajax({
-            url: 'pages/staff_role_ajax.php',
-            type: 'POST',
-            data: {
-                emp_role_id: emp_role_id,
-                status: status,
-                action: 'change_status'
-            },
-            success: function(response) {
-                if (response == 'success') {
-                    if (status == 1) {
-                        $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
-                        $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                        $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                        $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideCategory" data-id="' + emp_role_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
-                        $('#toggleActive').trigger('change');
-                      } else {
-                        $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                        $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                        $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                        $('#action-button-' + no).html('<a href="?page=employee_roles&emp_role_id=' + emp_role_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
-                        $('#toggleActive').trigger('change');
-                      }
-                } else {
-                    alert('Failed to change status.');
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    });
+                  if ($row_employee_roles['status'] == '0') {
+                      $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$emp_role_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+                  } else {
+                      $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$emp_role_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+                  }
+              ?>
+              <tr id="product-row-<?= $no ?>">
+                  <td>
+                      <a href="#" id="view_emp_list" data-id="<?= $emp_role_id ?>">
+                        <span class="product<?= $no ?> <?php if ($row_employee_roles['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $emp_role ?></span>
+                      </a>
+                  </td>
+                  <td class="notes" style="width:30%;"><?= $role_desc ?></td>
+                  <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
+                  <td><?= $status ?></td>
+                  <td class="text-center" id="action-button-<?= $no ?>">
+                      <?php if ($row_employee_roles['status'] == '0') { ?>
+                          <a href="#" class="btn btn-light py-1 text-dark hideCategory" data-id="<?= $emp_role_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
+                      <?php } else { ?>
+                          <a href="#" id="addRoleModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $emp_role_id ?>" data-type="edit">
+                            <i class="ti ti-pencil fs-7"></i>
+                          </button>
+                      <?php } ?>
+                  </td>
+              </tr>
+              <?php
+              $no++;
+              }
+              ?>
+            </tbody>
+            <script>
+            $(document).ready(function() {
+                // Use event delegation for dynamically generated elements
+                $(document).on('click', '.changeStatus', function(event) {
+                    event.preventDefault(); 
+                    var emp_role_id = $(this).data('id');
+                    var status = $(this).data('status');
+                    var no = $(this).data('no');
+                    $.ajax({
+                        url: 'pages/staff_role_ajax.php',
+                        type: 'POST',
+                        data: {
+                            emp_role_id: emp_role_id,
+                            status: status,
+                            action: 'change_status'
+                        },
+                        success: function(response) {
+                            if (response == 'success') {
+                                if (status == 1) {
+                                    $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
+                                    $(".changeStatus[data-no='" + no + "']").data('status', "0");
+                                    $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
+                                    $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideCategory" data-id="' + emp_role_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
+                                    $('#toggleActive').trigger('change');
+                                  } else {
+                                    $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
+                                    $(".changeStatus[data-no='" + no + "']").data('status', "1");
+                                    $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
+                                    $('#action-button-' + no).html('<a href="?page=employee_roles&emp_role_id=' + emp_role_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                                    $('#toggleActive').trigger('change');
+                                  }
+                            } else {
+                                alert('Failed to change status.');
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            alert('Error: ' + textStatus + ' - ' + errorThrown);
+                        }
+                    });
+                });
 
-    $(document).on('click', '.hideCategory', function(event) {
-        event.preventDefault();
-        var emp_role_id = $(this).data('id');
-        var rowId = $(this).data('row');
-        $.ajax({
-            url: 'pages/staff_role_ajax.php',
-            type: 'POST',
-            data: {
-                emp_role_id: emp_role_id,
-                action: 'hide_employee_role'
-            },
-            success: function(response) {
-                if (response == 'success') {
-                    $('#product-row-' + rowId).remove(); // Remove the row from the DOM
-                } else {
-                    alert('Failed to hide employee role.');
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    });
-});
-</script>
-
-
-
-
-            
+                $(document).on('click', '.hideCategory', function(event) {
+                    event.preventDefault();
+                    var emp_role_id = $(this).data('id');
+                    var rowId = $(this).data('row');
+                    $.ajax({
+                        url: 'pages/staff_role_ajax.php',
+                        type: 'POST',
+                        data: {
+                            emp_role_id: emp_role_id,
+                            action: 'hide_employee_role'
+                        },
+                        success: function(response) {
+                            if (response == 'success') {
+                                $('#product-row-' + rowId).remove(); // Remove the row from the DOM
+                            } else {
+                                alert('Failed to hide employee role.');
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            alert('Error: ' + textStatus + ' - ' + errorThrown);
+                        }
+                    });
+                });
+            });
+            </script>
           </table>
         </div>
       </div>
@@ -330,9 +263,45 @@ $(document).ready(function() {
   </div>
 </div>
 
+<div class="modal fade" id="addRoleModal" tabindex="-1" aria-labelledby="addRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="add-role-header">
+                    Add
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="employeeRoleForm" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                          <div id="add-fields" class=""></div>
+                          <div class="form-actions">
+                              <div class="border-top">
+                                  <div class="row mt-2">
+                                      <div class="col-6 text-start"></div>
+                                      <div class="col-6 text-end ">
+                                          <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
   $(document).ready(function() {
-    var table = $('#display_employee_roles').DataTable();
+    var table = $('#display_employee_roles').DataTable({
+        pageLength: 100
+    });
 
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -382,6 +351,43 @@ $(document).ready(function() {
         });
     });
 
+    $(document).on('click', '#addRoleModalBtn', function(event) {
+        event.preventDefault();
+        var id = $(this).data('id') || '';
+        var type = $(this).data('type') || '';
+        $('#role_id').val(id);
+
+        if(type == 'edit'){
+          $('#add-role-header').html('Update Employee Role');
+        }else{
+          $('#add-role-header').html('Add Employee Role');
+        }
+
+        $.ajax({
+            url: 'pages/staff_role_ajax.php',
+            type: 'POST',
+            data: {
+              id : id,
+              action: 'fetch_modal_content'
+            },
+            success: function (response) {
+                $('#add-fields').html(response);
+                $('#addRoleModal').modal('show');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('AJAX Error:', textStatus, errorThrown);
+                console.error('Response:', jqXHR.responseText);
+
+                $('#responseHeader').text("Error");
+                $('#responseMsg').text("An error occurred while processing your request.");
+                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                $('#response-modal').modal("show");
+            }
+        });
+
+        $('#addRoleModal').modal('show');
+    });
+
     $('#employeeRoleForm').on('submit', function(event) {
         event.preventDefault(); 
 
@@ -400,7 +406,7 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
-              
+              $('.modal').modal("hide");
               if (response === "Employee role updated successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);

@@ -86,6 +86,34 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
+    if ($action == 'fetch_modal_content') {
+        $emp_role_id = mysqli_real_escape_string($conn, $_POST['id'] ?? '');
+        
+        $query = "SELECT * FROM staff_roles WHERE emp_role_id = '$emp_role_id'";
+        $result = mysqli_query($conn, $query);
+    
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
+        }
+
+        ?>
+        <div class="row pt-3">
+            <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Employee Role</label>
+                <input type="text" id="emp_role" name="emp_role" class="form-control"  value="<?= $row['emp_role'] ?? '' ?>"/>
+            </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Role Description</label>
+            <textarea class="form-control" id="role_desc" name="role_desc" rows="5"><?= $row['role_desc'] ?? '' ?></textarea>
+        </div>
+
+        <input type="hidden" id="emp_role_id" name="emp_role_id" class="form-control"  value="<?= $emp_role_id ?>"/>
+        <?php
+    }
     
     mysqli_close($conn);
 }
