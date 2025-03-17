@@ -60,6 +60,74 @@ if(isset($_REQUEST['action'])) {
             echo 'error';
         }
     }
+
+    if ($action == 'fetch_modal_content') {
+        $product_type_id = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM product_type WHERE product_type_id = '$product_type_id'";
+        $result = mysqli_query($conn, $query);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
+        }
+
+        ?>
+            <div class="row pt-3">
+                <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Product type</label>
+                    <input type="text" id="product_type" name="product_type" class="form-control"  value="<?= $row['product_type'] ?? '' ?>"/>
+                </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Product Category</label>
+                        <select id="product_category" class="form-control" name="product_category">
+                            <option value="">Select One...</option>
+                            <?php
+                            $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                            $result_roles = mysqli_query($conn, $query_roles);            
+                            while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                                $selected = (($row['product_category'] ?? '') == $row_product_category['product_category_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
+                            <?php   
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row pt-3">
+                <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Type Abreviations</label>
+                    <input type="text" id="type_abreviations" name="type_abreviations" class="form-control" value="<?= $row['type_abreviations'] ?? '' ?>" />
+                </div>
+                </div>
+                <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Multiplier</label>
+                    <input type="text" id="multiplier" name="multiplier" class="form-control" value="<?= $row['multiplier'] ?? '' ?>" />
+                </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Notes</label>
+                <textarea class="form-control" id="notes" name="notes" rows="5"><?= $row['notes'] ?? '' ?></textarea>
+            </div>
+
+            <div class="mb-3 d-flex justify-content-end">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="special" name="special" value="1" <?= ($row['special'] ?? '') == 1 ? 'checked' : '' ?>>
+                    <label class="form-check-label" for="special">Special Product Type?</label>
+                </div>
+            </div>
+
+            <input type="hidden" id="product_type_id" name="product_type_id" class="form-control"  value="<?= $product_type_id ?>"/>
+        <?php
+    }
+
     mysqli_close($conn);
 }
 ?>
