@@ -170,16 +170,17 @@ if(isset($_REQUEST['action'])) {
     }
     
 
-    if ($action == "fetch_modal") {
+    if ($action == "fetch_modal_content") {
         $supplier_id = mysqli_real_escape_string($conn, $_POST['id']);
 
         $checkQuery = "SELECT * FROM supplier WHERE supplier_id = '$supplier_id'";
         $result = mysqli_query($conn, $checkQuery);
 
+        $supplier_colors = array();
+
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
   
-            $supplier_colors = array();
             $check_supplier_colors = "SELECT * FROM supplier_color WHERE supplierid = '$supplier_id'";
             $result_supplier_colors = mysqli_query($conn, $check_supplier_colors);
 
@@ -188,273 +189,268 @@ if(isset($_REQUEST['action'])) {
                     $supplier_colors[] = $row_supplier_colors['color'];
                 }
             }
+        }
             ?>
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header d-flex align-items-center">
-                        <h4 class="modal-title" id="myLargeModalLabel">
-                            Update Supplier
-                        </h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-body">
+                <input type="hidden" id="supplier_id" name="supplier_id" class="form-control" value="<?= $row['supplier_id'] ?? "" ?>" />
+
+                <div class="row">
+                    <div class="card-body p-0">
+                        <h4 class="card-title text-center">Supplier Logo</h4>
+                        <div class="text-center">
+                            <?php 
+                            if(!empty($row['logo_path'])){
+                                $logo_path = $row['logo_path'];
+                            }else{
+                                $logo_path = "images/supplier/logo.jpg";
+                            }
+                            ?>
+                            <img src="<?= $logo_path ?>" id="logo_img" alt="logo-picture" class="img-fluid rounded-circle" width="120" height="120">
+                            <div class="d-flex align-items-center justify-content-center my-4 gap-6">
+                            <button id="upload_logo" type="button" class="btn btn-primary">Upload</button>
+                            <button id="reset_logo" type="button" class="btn bg-danger-subtle text-danger">Reset</button>
+                            </div>
+                            <input type="file" id="logo_path" name="logo_path" class="form-control" style="display: none;"/>
+                        </div>
                     </div>
-                    <form id="update_supplier" class="form-horizontal">
-                        <div class="modal-body">
-                            <input type="hidden" id="supplier_id" name="supplier_id" class="form-control" value="<?= $row['supplier_id'] ?? "" ?>" />
-
-                            <div class="row">
-                                <div class="card-body p-0">
-                                    <h4 class="card-title text-center">Supplier Logo</h4>
-                                    <div class="text-center">
-                                        <?php 
-                                        if(!empty($row['logo_path'])){
-                                            $logo_path = $row['logo_path'];
-                                        }else{
-                                            $logo_path = "images/supplier/logo.jpg";
-                                        }
-                                        ?>
-                                        <img src="<?= $logo_path ?>" id="logo_img" alt="logo-picture" class="img-fluid rounded-circle" width="120" height="120">
-                                        <div class="d-flex align-items-center justify-content-center my-4 gap-6">
-                                        <button id="upload_logo" type="button" class="btn btn-primary">Upload</button>
-                                        <button id="reset_logo" type="button" class="btn bg-danger-subtle text-danger">Reset</button>
-                                        </div>
-                                        <input type="file" id="logo_path" name="logo_path" class="form-control" style="display: none;"/>
-                                    </div>
-                                </div>
-                            </div>
-                        
-                            <div class="row pt-3">
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                <label class="form-label">Supplier Name</label>
-                                <input type="text" id="supplier_name" name="supplier_name" class="form-control"  value="<?= $row['supplier_name'] ?? "" ?>"/>
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="row pt-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Supplier Website</label>
-                                <input type="text" id="supplier_website" name="supplier_website" class="form-control" value="<?= $row['supplier_website'] ?? "" ?>" />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Supplier Type</label>
-                                <select id="supplier_type" class="form-control" name="supplier_type">
-                                    <option value="">Select One...</option>
-                                    <?php
-                                    $query_roles = "SELECT * FROM supplier_type WHERE hidden = '0' ORDER BY `supplier_type` ASC";
-                                    $result_roles = mysqli_query($conn, $query_roles);            
-                                    while ($row_supplier = mysqli_fetch_array($result_roles)) {
-                                        $selected = ($row_supplier['supplier_type_id'] == $row['supplier_type']) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_supplier['supplier_type_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_type'] ?></option>
-                                    <?php   
-                                    }
-                                    ?>
-                                </select>
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="row pt-3">
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <div class="col-md-12 d-flex justify-content-between align-items-center">
-                                        <label class="form-label">Supplier Color</label>
-                                        <a href="?page=supplier_color&supplier_id=<?=$supplier_id?>" target="_blank" class="text-decoration-none">Edit Colors</a>
-                                    </div>
-                                    <div id="color_upd">
-                                        <select id="supplier_color_update" class="form-control supplier_color" name="supplier_color[]" multiple>
-                                            <?php
-                                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
-                                            $result_color = mysqli_query($conn, $query_color);            
-                                            while ($row_color = mysqli_fetch_array($result_color)) {
-                                                $selected = (in_array($row_color['color_name'], $supplier_colors)) ? 'selected' : '';
-                                            ?>
-                                                <option value="<?= $row_color['color_name'] . '|' . $row_color['color_code'] ?>" <?= $selected ?> data-color="<?= $row_color['color_code'] ?>"><?= $row_color['color_name'] ?></option>
-                                            <?php   
-                                            }
-                                            ?>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <div class="col-md-12 d-flex justify-content-between align-items-center">
-                                        <label class="form-label">Supplier Packs</label>
-                                        <a href="?page=supplier_pack&supplier_id=<?=$supplier_id?>" target="_blank" class="text-decoration-none">Edit Packs</a>
-                                    </div>
-                                    <div id="pack_upd" class="bg-light p-3 rounded">
-                                        
-                                        <?php
-                                        $query_pack = "SELECT * FROM supplier_pack WHERE supplierid = '$supplier_id' AND hidden = '0'";
-                                        $result_pack = mysqli_query($conn, $query_pack);            
-                                        if (mysqli_num_rows($result_pack) > 0) {
-                                            while ($row_pack = mysqli_fetch_array($result_pack)) {
-                                        ?>
-                                            <span class="badge bg-primary me-1"><?= $row_pack['pack'] ?>(<?=$row_pack['pack_count']?>)</span>
-                                        <?php   
-                                            }
-                                        } else {
-                                        ?>
-                                            <span>No packs found</span>
-                                        <?php
-                                        }
-                                        ?>
-                                        
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <div class="col-md-12 d-flex justify-content-between align-items-center">
-                                        <label class="form-label">Supplier Cases</label>
-                                        <a href="?page=supplier_case&supplier_id=<?=$supplier_id?>" target="_blank" class="text-decoration-none">Edit Cases</a>
-                                    </div>
-                                    <div id="case_upd" class="bg-light p-3 rounded">
-                                        
-                                        <?php
-                                        $query_case = "SELECT * FROM supplier_case WHERE supplierid = '$supplier_id' AND hidden = '0'";
-                                        $result_case = mysqli_query($conn, $query_case);            
-                                        if (mysqli_num_rows($result_case) > 0) {
-                                            while ($row_case = mysqli_fetch_array($result_case)) {
-                                        ?>
-                                            <span class="badge bg-primary me-1"><?= $row_case['case'] ?>(<?=$row_case['case_count']?>)</span>
-                                        <?php   
-                                            }
-                                        } else {
-                                        ?>
-                                            <span>No cases found</span>
-                                        <?php
-                                        }
-                                        ?>
-                                        
-                                    </div>
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="row pt-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Supplier Code</label>
-                                <input type="text" id="supplier_code" name="supplier_code" class="form-control" value="<?= $row['supplier_code'] ?? "" ?>" />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Supplier Paint ID</label>
-                                <input type="text" id="supplier_paint_id" name="supplier_paint_id" class="form-control"  />
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="row pt-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Contact Name</label>
-                                <input type="text" id="contact_name" name="contact_name" class="form-control"  value="<?= $row['contact_name'] ?? "" ?>"/>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Contact Email</label>
-                                <input type="text" id="contact_email" name="contact_email" class="form-control" value="<?= $row['contact_email'] ?? "" ?>" />
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="row pt-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Contact Phone</label>
-                                <input type="text" id="contact_phone" name="contact_phone" class="form-control phone-inputmask" value="<?= $row['contact_phone'] ?? "" ?>" />
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Contact Fax</label>
-                                <input type="text" id="contact_fax" name="contact_fax" class="form-control phone-inputmask" value="<?= $row['contact_fax'] ?? "" ?>" />
-                                </div>
-                            </div>
-                            </div>
-
-
-                            <div class="mb-3">
-                            <label class="form-label">Secondary Name</label>
-                            <input type="text" id="secondary_name" name="secondary_name" class="form-control" value="<?= $row['secondary_name'] ?? "" ?>" />
-                            </div>
-
-                            <div class="row pt-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Secondary Phone</label>
-                                <input type="text" id="secondary_phone" name="secondary_phone" class="form-control phone-inputmask" value="<?= $row['secondary_phone'] ?? "" ?>" />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                <label class="form-label">Secondary Email</label>
-                                <input type="text" id="secondary_email" name="secondary_email" class="form-control" value="<?= $row['secondary_email'] ?? "" ?>" />
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="mb-3">
-                            <label class="form-label">Address</label>
-                            <input type="text" id="address" name="address" class="form-control" value="<?= $row['address'] ?? "" ?>" />
-                            </div>
-
-                            <div class="row pt-3">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                <label class="form-label">Last Ordered Date</label>
-                                <input type="date" id="last_ordered_date" name="last_ordered_date" class="form-control" value="<?= $row['last_ordered_date'] ?? "" ?>" />
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                <label class="form-label">FreightRate</label>
-                                <input type="text" id="freight_rate" name="freight_rate" class="form-control" value="<?= $row['freight_rate'] ?? "" ?>" />
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                <label class="form-label">PaymentTerms</label>
-                                <input type="text" id="payment_terms" name="payment_terms" class="form-control" value="<?= $row['payment_terms'] ?? "" ?>" />
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="mb-3">
-                            <label class="form-label">Comment</label>
-                            <textarea class="form-control" id="comment" name="comment" rows="5"><?= trim($row['comment'] ?? "") ?></textarea>
-                            </div>
-
-                            
-
-                            
-                        </div>
-                        <div class="modal-footer">
-                            <div class="form-actions">
-                                <div class="card-body">
-                                    <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
-                                    <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
                 </div>
+            
+                <div class="row pt-3">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                    <label class="form-label">Supplier Name</label>
+                    <input type="text" id="supplier_name" name="supplier_name" class="form-control"  value="<?= $row['supplier_name'] ?? "" ?>"/>
+                    </div>
+                </div>
+                </div>
+
+                <div class="row pt-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                    <label class="form-label">Supplier Website</label>
+                    <input type="text" id="supplier_website" name="supplier_website" class="form-control" value="<?= $row['supplier_website'] ?? "" ?>" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                    <label class="form-label">Supplier Type</label>
+                    <select id="supplier_type" class="form-control" name="supplier_type">
+                        <option value="">Select One...</option>
+                        <?php
+                        $query_roles = "SELECT * FROM supplier_type WHERE hidden = '0' ORDER BY `supplier_type` ASC";
+                        $result_roles = mysqli_query($conn, $query_roles);            
+                        while ($row_supplier = mysqli_fetch_array($result_roles)) {
+                            $selected = ($row_supplier['supplier_type_id'] == $row['supplier_type']) ? 'selected' : '';
+                        ?>
+                            <option value="<?= $row_supplier['supplier_type_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_type'] ?></option>
+                        <?php   
+                        }
+                        ?>
+                    </select>
+                    </div>
+                </div>
+                </div>
+
+                <div class="row pt-3">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <div class="col-md-12 d-flex justify-content-between align-items-center">
+                            <label class="form-label">Supplier Color</label>
+                            <a href="?page=supplier_color&supplier_id=<?=$supplier_id?>" target="_blank" class="text-decoration-none toggleElements">Edit Colors</a>
+                        </div>
+                        <div id="color_upd">
+                            <select id="supplier_color_update" class="form-control supplier_color select2" name="supplier_color[]" multiple>
+                                <?php
+                                $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
+                                $result_color = mysqli_query($conn, $query_color);            
+                                while ($row_color = mysqli_fetch_array($result_color)) {
+                                    $selected = (in_array($row_color['color_name'], $supplier_colors)) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_color['color_name'] . '|' . $row_color['color_code'] ?>" <?= $selected ?> data-color="<?= $row_color['color_code'] ?>"><?= $row_color['color_name'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <div class="col-md-12 d-flex justify-content-between align-items-center">
+                            <label class="form-label">Supplier Packs</label>
+                            <a href="?page=supplier_pack&supplier_id=<?=$supplier_id?>" target="_blank" class="text-decoration-none toggleElements">Edit Packs</a>
+                        </div>
+                        <div id="pack_upd" class="bg-light p-3 rounded">
+                            
+                            <?php
+                            $query_pack = "SELECT * FROM supplier_pack WHERE supplierid = '$supplier_id' AND hidden = '0'";
+                            $result_pack = mysqli_query($conn, $query_pack);            
+                            if (mysqli_num_rows($result_pack) > 0) {
+                                while ($row_pack = mysqli_fetch_array($result_pack)) {
+                            ?>
+                                <span class="badge bg-primary me-1"><?= $row_pack['pack'] ?>(<?=$row_pack['pack_count']?>)</span>
+                            <?php   
+                                }
+                            } else {
+                            ?>
+                                <span>No packs found</span>
+                            <?php
+                            }
+                            ?>
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <div class="col-md-12 d-flex justify-content-between align-items-center">
+                            <label class="form-label">Supplier Cases</label>
+                            <a href="?page=supplier_case&supplier_id=<?=$supplier_id?>" target="_blank" class="text-decoration-none toggleElements">Edit Cases</a>
+                        </div>
+                        <div id="case_upd" class="bg-light p-3 rounded">
+                            
+                            <?php
+                            $query_case = "SELECT * FROM supplier_case WHERE supplierid = '$supplier_id' AND hidden = '0'";
+                            $result_case = mysqli_query($conn, $query_case);            
+                            if (mysqli_num_rows($result_case) > 0) {
+                                while ($row_case = mysqli_fetch_array($result_case)) {
+                            ?>
+                                <span class="badge bg-primary me-1"><?= $row_case['case'] ?>(<?=$row_case['case_count']?>)</span>
+                            <?php   
+                                }
+                            } else {
+                            ?>
+                                <span>No cases found</span>
+                            <?php
+                            }
+                            ?>
+                            
+                        </div>
+                    </div>
+                </div>
+                </div>
+
+                <div class="row pt-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                    <label class="form-label">Supplier Code</label>
+                    <input type="text" id="supplier_code" name="supplier_code" class="form-control" value="<?= $row['supplier_code'] ?? "" ?>" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                    <label class="form-label">Supplier Paint ID</label>
+                    <input type="text" id="supplier_paint_id" name="supplier_paint_id" class="form-control"  />
+                    </div>
+                </div>
+                </div>
+
+                <div class="row pt-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                    <label class="form-label">Contact Name</label>
+                    <input type="text" id="contact_name" name="contact_name" class="form-control"  value="<?= $row['contact_name'] ?? "" ?>"/>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                    <label class="form-label">Contact Email</label>
+                    <input type="text" id="contact_email" name="contact_email" class="form-control" value="<?= $row['contact_email'] ?? "" ?>" />
+                    </div>
+                </div>
+                </div>
+
+                <div class="row pt-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                    <label class="form-label">Contact Phone</label>
+                    <input type="text" id="contact_phone" name="contact_phone" class="form-control phone-inputmask" value="<?= $row['contact_phone'] ?? "" ?>" />
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                    <label class="form-label">Contact Fax</label>
+                    <input type="text" id="contact_fax" name="contact_fax" class="form-control phone-inputmask" value="<?= $row['contact_fax'] ?? "" ?>" />
+                    </div>
+                </div>
+                </div>
+
+
+                <div class="mb-3">
+                <label class="form-label">Secondary Name</label>
+                <input type="text" id="secondary_name" name="secondary_name" class="form-control" value="<?= $row['secondary_name'] ?? "" ?>" />
+                </div>
+
+                <div class="row pt-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                    <label class="form-label">Secondary Phone</label>
+                    <input type="text" id="secondary_phone" name="secondary_phone" class="form-control phone-inputmask" value="<?= $row['secondary_phone'] ?? "" ?>" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                    <label class="form-label">Secondary Email</label>
+                    <input type="text" id="secondary_email" name="secondary_email" class="form-control" value="<?= $row['secondary_email'] ?? "" ?>" />
+                    </div>
+                </div>
+                </div>
+
+                <div class="mb-3">
+                <label class="form-label">Address</label>
+                <input type="text" id="address" name="address" class="form-control" value="<?= $row['address'] ?? "" ?>" />
+                </div>
+
+                <div class="row pt-3">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                    <label class="form-label">Last Ordered Date</label>
+                    <input type="date" id="last_ordered_date" name="last_ordered_date" class="form-control" value="<?= $row['last_ordered_date'] ?? "" ?>" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                    <label class="form-label">FreightRate</label>
+                    <input type="text" id="freight_rate" name="freight_rate" class="form-control" value="<?= $row['freight_rate'] ?? "" ?>" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                    <label class="form-label">PaymentTerms</label>
+                    <input type="text" id="payment_terms" name="payment_terms" class="form-control" value="<?= $row['payment_terms'] ?? "" ?>" />
+                    </div>
+                </div>
+                </div>
+
+                <div class="mb-3">
+                <label class="form-label">Comment</label>
+                <textarea class="form-control" id="comment" name="comment" rows="5"><?= trim($row['comment'] ?? "") ?></textarea>
+                </div>
+
+                
+
+                
             </div>
             <script>
-                $(".phone-inputmask").inputmask("(999) 999-9999");
+                $(document).ready(function () {
+                    $(".phone-inputmask").inputmask("(999) 999-9999");
+
+                    $(".select2").each(function () {
+                        let parentContainer = $(this).parent(); // Get the parent container
+                        $(this).select2({
+                            dropdownParent: parentContainer,
+                            templateResult: formatOption, 
+                            templateSelection: formatSelected,
+                            escapeMarkup: function (markup) {
+                                return markup;
+                            }
+                        });
+                    });
+                });
             </script>
             <?php
-        }
+        
     } 
 
     if ($action == "fetch_product") {

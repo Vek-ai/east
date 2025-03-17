@@ -1430,6 +1430,8 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "product_availability") {include 'pages/product_availability.php';}
             if ($_REQUEST['page'] == "color_group_name") {include 'pages/color_group_names.php';}
             if ($_REQUEST['page'] == "product_coating") {include 'pages/product_coating.php';}
+
+            if ($_REQUEST['page'] == "supplier_dashboard") {include 'pages/supplier_dashboard.php';}
           ?>
         </div>
       </div>
