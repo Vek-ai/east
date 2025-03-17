@@ -40,6 +40,8 @@ if (isset($_REQUEST['query'])) {
             ? $row_product['main_image'] 
             : $default_image;
 
+            $logoPath = ltrim($picture_path, '../');
+
             $tableHTML .= '
                 <tr>
                     <td>

@@ -65,7 +65,7 @@ if(isset($_REQUEST['action'])) {
                 // No duplicates, proceed with update
                 $updateQuery = "UPDATE supplier SET supplier_name = '$supplier_name', supplier_website = '$supplier_website', supplier_type = '$supplier_type', contact_name = '$contact_name', contact_email = '$contact_email', contact_phone = '$contact_phone', contact_fax = '$contact_fax', secondary_name = '$secondary_name', secondary_phone = '$secondary_phone', secondary_email = '$secondary_email', address = '$address', last_ordered_date = '$last_ordered_date', freight_rate = '$freight_rate', payment_terms = '$payment_terms', comment = '$comment', last_edit = NOW(), edited_by = '$userid', supplier_code = '$supplier_code', supplier_paint_id = '$supplier_paint_id' WHERE supplier_id = '$supplier_id'";
                 if (mysqli_query($conn, $updateQuery)) {
-                    echo "Supplier updated successfully.";
+                    echo "success_update";
                 } else {
                     echo "Error updating supplier: " . mysqli_error($conn);
                 }
@@ -96,7 +96,7 @@ if(isset($_REQUEST['action'])) {
                 $insertQuery = "INSERT INTO supplier (supplier_name, supplier_website, supplier_type, contact_name, contact_email, contact_phone, contact_fax, secondary_name, secondary_phone, secondary_email, address, last_ordered_date, freight_rate, payment_terms, comment, added_date, added_by, supplier_code, supplier_paint_id) VALUES ('$supplier_name', '$supplier_website', '$supplier_type', '$contact_name', '$contact_email', '$contact_phone', '$contact_fax', '$secondary_name', '$secondary_phone', '$secondary_email', '$address', '$last_ordered_date', '$freight_rate', '$payment_terms', '$comment', NOW(), '$userid', '$supplier_code', '$supplier_paint_id')";
                 if (mysqli_query($conn, $insertQuery)) {
                     $supplier_id = $conn->insert_id;
-                    echo "New supplier added successfully.";
+                    echo "success_add";
                 } else {
                     echo "Error adding supplier: " . mysqli_error($conn);
                 }
@@ -129,7 +129,7 @@ if(isset($_REQUEST['action'])) {
             $fileNameCmps = explode(".", $fileName);
             $fileExtension = strtolower(end($fileNameCmps));
             $uploadFileDir = '../images/supplier/';
-            $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
+            $newFileName = ($fileName) . '.' . $fileExtension;
             $dest_path = $uploadFileDir . $newFileName;
 
             $allowedfileExtensions = array('jpg', 'gif', 'png', 'jpeg');

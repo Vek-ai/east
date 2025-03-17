@@ -542,7 +542,7 @@ $supplier_colors = array();
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    $('#updateContactModal').modal('hide');
+                    $('.modal').modal('hide');
                     if (response === "success_update") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text('Supplier updated successfully.');
@@ -592,7 +592,6 @@ $supplier_colors = array();
                 },
                 success: function (response) {
                     $('#add-fields').html(response);
-
                     if(type == 'edit'){
                         $('#add-header').html('Update Supplier');
                         toggleFormEditable("supplierForm", true);

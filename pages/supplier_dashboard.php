@@ -72,10 +72,11 @@ if(isset($_REQUEST['id'])){
 
                 if (!empty($supplier_details['logo_path']) && file_exists($supplier_details['logo_path'])) {
                     $logoPath = $supplier_details['logo_path'];
+                    $logoPath = ltrim($logoPath, '../');
                 }
                 ?>
 
-                <img src="<?= $logoPath ?>" alt="user" class="rounded-circle shadow-sm" width="112" />
+                <img src="<?= $logoPath ?>" alt="user" class="rounded-circle shadow-sm" width="112" data-path="<?= $supplier_details['logo_path'] ?>" />
             </div>
             <h3 class="mb-1 fs-14"><?= $supplier_details['supplier_name'] ?></h3>
             <p class="fs-4 mb-0"><?= $supplier_details['contact_email'] ?></p>
