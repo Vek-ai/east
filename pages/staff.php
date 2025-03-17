@@ -14,6 +14,13 @@ if(!empty($_REQUEST['staff_id'])){
   }
 
 ?>
+
+<style>
+.tw {
+    color: #ffffff !important;
+}
+</style>
+
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
     <div class="card-body px-0">
@@ -32,24 +39,7 @@ if(!empty($_REQUEST['staff_id'])){
         </div>
         <div>
             <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
-            <div class="d-flex gap-2">
-                <div class="">
-                <small>This Month</small>
-                <h4 class="text-primary mb-0 ">$58,256</h4>
-                </div>
-                <div class="">
-                <div class="breadbar"></div>
-                </div>
-            </div>
-            <div class="d-flex gap-2">
-                <div class="">
-                <small>Last Month</small>
-                <h4 class="text-secondary mb-0 ">$58,256</h4>
-                </div>
-                <div class="">
-                <div class="breadbar2"></div>
-                </div>
-            </div>
+            
             </div>
         </div>
         </div>
@@ -263,71 +253,97 @@ if(!empty($_REQUEST['staff_id'])){
         </div>
     </div>
 
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Add Product
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="staff_form" class="form-horizontal">
+                    <input type="hidden" id="staff_id" name="staff_id" class="form-control" />
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+
+                                <div id="staff-fields" class=""></div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     
     <div class="card card-body">
-        <div class="table-responsive">
-        <table id="staffList" class="table search-table align-middle text-nowrap">
-            <thead class="header-item">
-            <th>Staff Name</th>
-            <th>Role</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Details</th>
-            <th>Action</th>
-            </thead>
-            <tbody>
-            <?php
-                $no = 1;
-                $query_staff = "SELECT * FROM staff";
-                $result_staff = mysqli_query($conn, $query_staff);            
-                while ($row_staff = mysqli_fetch_array($result_staff)) {
-                    $staff_id = $row_staff['staff_id'];
-                    $db_status = $row_staff['status'];
+        <div class="datatables">
+            <div class="table-responsive">
+            <table id="staffList" class="table search-table align-middle text-nowrap">
+                <thead class="header-item">
+                <th style="color: #ffffff !important">Staff Name</th>
+                <th style="color: #ffffff !important">Role</th>
+                <th style="color: #ffffff !important">Email</th>
+                <th style="color: #ffffff !important">Phone</th>
+                <th style="color: #ffffff !important">Details</th>
+                <th style="color: #ffffff !important">Action</th>
+                </thead>
+                <tbody>
+                <?php
+                    $no = 1;
+                    $query_staff = "SELECT * FROM staff";
+                    $result_staff = mysqli_query($conn, $query_staff);            
+                    while ($row_staff = mysqli_fetch_array($result_staff)) {
+                        $staff_id = $row_staff['staff_id'];
+                        $db_status = $row_staff['status'];
 
-                    if ($row_staff['status'] == '0') {
-                        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$staff_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                    } else {
-                        $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$staff_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                    }
+                        if ($row_staff['status'] == '0') {
+                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$staff_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+                        } else {
+                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$staff_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+                        }
 
-                    if(!empty($row_staff['profile_path'])){
-                        $profile_path = $row_staff['profile_path'];
-                    }else{
-                        $profile_path = "images/staff/user.jpg";
-                    }
-                ?>
-                    <!-- start row -->
-                    <tr class="search-items">
-                        <td>
-                        <a href="#" id="view_details_btn" data-id="<?= $row_staff['staff_id'] ?>">
-                            <div class="d-flex align-items-center gap-3">
-                                <img src="<?= $profile_path ?>" alt="user4" width="60" height="60" class="rounded-circle">
-                                <div>
-                                    <?= $row_staff['staff_fname'] ." " .$row_staff['staff_lname'] ?>
+                        if(!empty($row_staff['profile_path'])){
+                            $profile_path = $row_staff['profile_path'];
+                        }else{
+                            $profile_path = "images/staff/user.jpg";
+                        }
+                    ?>
+                        <!-- start row -->
+                        <tr class="search-items">
+                            <td style="color: #ffffff !important">
+                            <a href="#" id="view_details_btn" data-id="<?= $row_staff['staff_id'] ?>">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="<?= $profile_path ?>" alt="user4" width="60" height="60" class="rounded-circle">
+                                    <div>
+                                        <?= $row_staff['staff_fname'] ." " .$row_staff['staff_lname'] ?>
+                                    </div>
                                 </div>
-                            </div>
-                        </a>
-                        </td>
-                        <td><?= get_role_name($row_staff['role']) ?></td>
-                        <td><?= $row_staff['email'] ?></td>
-                        <td><?= $row_staff['phone'] ?></td>
-                        <td><?= $status ?></td>
-                        <td>
-                            <div class="action-btn">
-                                <a href="#" id="view_staff_btn" class="text-primary edit" data-id="<?= $row_staff['staff_id'] ?>">
-                                    <i class="ti ti-eye fs-5"></i>
-                                </a>
-                                <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_staff['staff_id'] ?>">
-                                    <i class="ti ti-trash fs-5"></i>
-                                </a> -->
-                            </div>
-                        </td>
-                    </tr>
-                <?php 
-                $no++;
-                } ?>
-            </tbody>
-        </table>
+                            </a>
+                            </td>
+                            <td style="color: #ffffff !important"><?= get_role_name($row_staff['role']) ?></td>
+                            <td style="color: #ffffff !important"><?= $row_staff['email'] ?></td>
+                            <td style="color: #ffffff !important"><?= $row_staff['phone'] ?></td>
+                            <td style="color: #ffffff !important"><?= $status ?></td>
+                            <td>
+                                <div class="action-btn text-center">
+                                    <a href="#" id="view_staff_btn" class="text-primary edit" data-id="<?= $row_staff['staff_id'] ?>">
+                                        <i class="ti ti-pencil fs-5"></i>
+                                    </a>
+                                    <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_staff['staff_id'] ?>">
+                                        <i class="ti ti-trash fs-5"></i>
+                                    </a> -->
+                                </div>
+                            </td>
+                        </tr>
+                    <?php 
+                    $no++;
+                    } ?>
+                </tbody>
+            </table>
+            </div>
         </div>
     </div>
     </div>
@@ -337,7 +353,8 @@ if(!empty($_REQUEST['staff_id'])){
     $(document).ready(function() {
 
         $('#staffList').DataTable({
-            "order": [[0, "asc"]] // Column index is 0-based, so column 2 is index 1
+            "order": [[0, "asc"]],
+            pageLength: 100
         });
 
         $(document).on('click', '#upload_profile_add', function(event) {
