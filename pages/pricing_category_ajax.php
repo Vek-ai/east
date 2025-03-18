@@ -61,6 +61,100 @@ if(isset($_REQUEST['action'])) {
             echo 'error';
         }
     }
+
+    if ($action == 'fetch_modal_content') {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM pricing_category WHERE id = '$id'";
+        $result = mysqli_query($conn, $query);
+        $row = ($result && mysqli_num_rows($result) > 0) ? mysqli_fetch_array($result) : [];
+    
+        ?>
+        <div class="row pt-3">
+            <div class="col-md-6">
+                <label class="form-label">Product Category</label>
+                <div class="mb-3">
+                    <select id="product_category" class="form-control select2" name="product_category">
+                        <option value="">Select One...</option>
+                        <?php
+                        $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                        $result_category = mysqli_query($conn, $query_category);
+                        while ($row_category = mysqli_fetch_array($result_category)) {
+                            $selected = ($row['product_category_id'] ?? '') == $row_category['product_category_id'] ? 'selected' : '';
+                            ?>
+                            <option value="<?= $row_category['product_category_id'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
+                            <?php
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Customer Pricing</label>
+                <div class="mb-3">
+                    <select id="customer_pricing" class="form-control select2" name="customer_pricing">
+                        <option value="">Select One...</option>
+                        <?php
+                        $query_pricing = "SELECT * FROM customer_pricing WHERE hidden = '0' ORDER BY `pricing_name` ASC";
+                        $result_pricing = mysqli_query($conn, $query_pricing);
+                        while ($row_pricing = mysqli_fetch_array($result_pricing)) {
+                            $selected = ($row['customer_pricing_id'] ?? '') == $row_pricing['id'] ? 'selected' : '';
+                            ?>
+                            <option value="<?= $row_pricing['id'] ?>" <?= $selected ?>><?= $row_pricing['pricing_name'] ?></option>
+                            <?php
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
+        </div>
+    
+        <div class="row pt-3">
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <label class="form-label">Percentage</label>
+                    <input type="number" id="percentage" name="percentage" class="form-control" value="<?= $row['percentage'] ?? '' ?>" />
+                </div>
+            </div>
+        </div>
+    
+        <div class="row pt-3">
+            <div class="col-md-12">
+                <label class="form-label">Product Item</label>
+                <div class="mb-3">
+                    <select id="product_items" name="product_items[]" class="select2 form-control" multiple="multiple">
+                        <optgroup label="Products">
+                            <?php
+                            $product_items_array = array_filter(explode(',', $row['product_items'] ?? ''));
+                            $query_products = "SELECT * FROM product WHERE status = '1' AND hidden = '0' ORDER BY `product_item` ASC";
+                            $result_products = mysqli_query($conn, $query_products);
+                            while ($row_products = mysqli_fetch_array($result_products)) {
+                                $selected = in_array($row_products['product_id'], $product_items_array) ? 'selected' : '';
+                                ?>
+                                <option value="<?= $row_products['product_id'] ?>" <?= $selected ?>><?= !empty($row_products['product_item']) ? $row_products['product_item'] : $row_products['description'] ?></option>
+                                <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+        </div>
+    
+        <input type="hidden" id="id" name="id" class="form-control" value="<?= $id ?>"/>
+
+        <script>
+            $(document).ready(function () {
+                $(".select2").each(function () {
+                    let parentContainer = $(this).parent();
+                    $(this).select2({
+                        dropdownParent: parentContainer
+                    });
+                });
+            });
+        </script>
+        <?php
+    }    
+
     mysqli_close($conn);
 }
 ?>

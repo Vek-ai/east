@@ -68,126 +68,11 @@ if(!empty($_REQUEST['id'])){
       </div>
       <div>
         <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
-          <div class="d-flex gap-2">
-            <div class="">
-              <small>This Month</small>
-              <h4 class="text-primary mb-0 ">$58,256</h4>
-            </div>
-            <div class="">
-              <div class="breadbar"></div>
-            </div>
-          </div>
-          <div class="d-flex gap-2">
-            <div class="">
-              <small>Last Month</small>
-              <h4 class="text-secondary mb-0 ">$58,256</h4>
-            </div>
-            <div class="">
-              <div class="breadbar2"></div>
-            </div>
-          </div>
+          
         </div>
       </div>
     </div>
   </div>
-</div>
-
-<div class="card card-body">
-  <div class="row">
-    <div class="col-3">
-      <h4 class="card-title"><?= $addHeaderTxt ?> Pricing Category</h4>
-    </div>
-  </div>
-  <form id="pricingCategoryForm" class="form-horizontal">
-    <div class="row pt-3">
-      <div class="col-md-6">
-      <label class="form-label">Product Category</label>
-        <div class="mb-3">
-          <select id="product_category" class="form-control" name="product_category">
-              <option value="">Select One...</option>
-              <?php
-              $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-              $result_category = mysqli_query($conn, $query_category);            
-              while ($row_category = mysqli_fetch_array($result_category)) {
-                  $selected = ($product_category_id == $row_category['product_category_id']) ? 'selected' : '';
-              ?>
-                  <option value="<?= $row_category['product_category_id'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
-              <?php   
-              }
-              ?>
-          </select>
-        </div>
-      </div>
-      <div class="col-md-6">
-          <label class="form-label">Customer Pricing</label>
-          <div class="mb-3">
-              <select id="customer_pricing" class="form-control" name="customer_pricing">
-                  <option value="">Select One...</option>
-                  <?php
-                  $query_pricing = "SELECT * FROM customer_pricing WHERE hidden = '0'";
-                  $result_pricing = mysqli_query($conn, $query_pricing);            
-                  while ($row_pricing = mysqli_fetch_array($result_pricing)) {
-                      $selected = ($customer_pricing_id == $row_pricing['id']) ? 'selected' : '';
-                  ?>
-                      <option value="<?= $row_pricing['id'] ?>" <?= $selected ?>><?= $row_pricing['pricing_name'] ?></option>
-                  <?php   
-                  }
-                  ?>
-              </select>
-          </div>
-      </div>
-    </div>
-
-    <div class="row pt-3">
-      <div class="col-md-12">
-        <div class="mb-3">
-          <label class="form-label">Percentage</label>
-          <input type="number" id="percentage" name="percentage" class="form-control" value="<?= $percentage ?>" />
-        </div>
-      </div>
-    </div>
-
-    <div class="row pt-3">
-      <div class="col-md-12">
-        <label class="form-label">Product Item</label>
-        <div class="mb-3">
-          <select id="product_items" name="product_items[]" class="select2 form-control" multiple="multiple">
-            <optgroup label="Select Correlated Products">
-                <?php
-                $product_items_array = explode(',', $product_items);
-                
-                $query_products = "SELECT * FROM product WHERE status = '1' AND hidden = '0'";
-                $result_products = mysqli_query($conn, $query_products);            
-                while ($row_products = mysqli_fetch_array($result_products)) {
-                    $selected = in_array($row_products['product_id'], $product_items_array) ? 'selected' : '';
-                ?>
-                    <option value="<?= $row_products['product_id'] ?>" <?= $selected ?> ><?= $row_products['description'] ?></option>
-                <?php   
-                }
-                ?>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-actions">
-      <div class="card-body border-top ">
-        <input type="hidden" id="id" name="id" class="form-control"  value="<?= $id ?>"/>
-        <div class="row">
-          
-          <div class="col-6 text-start">
-          
-          </div>
-          <div class="col-6 text-end">
-            <button type="submit" class="btn btn-primary" style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
-          </div>
-        </div>
-        
-      </div>
-    </div>
-
-  </form>
 </div>
 
 <div class="card card-body">
@@ -247,9 +132,10 @@ if(!empty($_REQUEST['id'])){
             <div class="datatables">
               <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title d-flex justify-content-between align-items-center">Pricing Category List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['id'])){ ?>
-                      <a href="?page=pricing_category" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
-                      <?php } ?>
+                    <h4 class="card-title d-flex justify-content-between align-items-center">Pricing Category List  &nbsp;&nbsp; 
+                    <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
+                        <i class="ti ti-plus text-white me-1 fs-5"></i> Add Pricing Category
+                    </button>
                     </h4>
                   
                   <div class="table-responsive">
@@ -307,12 +193,18 @@ if(!empty($_REQUEST['id'])){
                             <td><span class="product<?= $no ?> <?php if ($row_pricing_category['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= getProductCategoryName($product_category_id) ?></span></td>
                             <td><?= $percentage ?></td>
                             <td><?= $status ?></td>
-                            <td class="text-center" id="action-button-<?= $no ?>">
-                                <?php if ($row_pricing_category['status'] == '0') { ?>
-                                    <a href="#" class="btn btn-light py-1 text-dark hidePricingCategory" data-id="<?= $id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
-                                <?php } else { ?>
-                                    <a href="?page=pricing_category&id=<?= $id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
-                                <?php } ?>
+                            <td class="text-center " id="action-button-<?= $no ?>">
+                              <div class="d-flex align-items-center justify-content-center">
+                                  <?php if ($row_pricing_category['status'] == '0') { ?>
+                                      <a href="#" class="py-1 text-dark hidePricingCategory text-decoration-none" data-id="<?= $id ?>" data-row="<?= $no ?>">
+                                        <i class="ti ti-trash text-danger fs-7"></i>
+                                      </a>
+                                  <?php } else { ?>
+                                      <a href="#" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $id ?>" data-type="edit">
+                                        <i class="ti ti-pencil fs-7"></i>
+                                      </a>
+                                  <?php } ?>
+                              </div>
                             </td>
                         </tr>
                         <?php
@@ -415,9 +307,47 @@ if(!empty($_REQUEST['id'])){
   </div>
 </div>
 
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="add-header">
+                    Add
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="pricingCategoryForm" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                          <div id="add-fields" class=""></div>
+                          <div class="form-actions">
+                              <div class="border-top">
+                                  <div class="row mt-2">
+                                      <div class="col-6 text-start"></div>
+                                      <div class="col-6 text-end ">
+                                          <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
   $(document).ready(function() {
-    var table = $('#display_pricing_category').DataTable();
+    document.title = "Pricing Category";
+
+    var table = $('#display_pricing_category').DataTable({
+        pageLength: 100
+    });
+
+    $('#display_pricing_category_filter').hide();
 
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -588,6 +518,40 @@ if(!empty($_REQUEST['id'])){
             $(this).parent().remove();
         });
     }
+
+    $(document).on('click', '#addModalBtn', function(event) {
+        event.preventDefault();
+        var id = $(this).data('id') || '';
+        var type = $(this).data('type') || '';
+
+        if(type == 'edit'){
+          $('#add-header').html('Update Pricing Category');
+        }else{
+          $('#add-header').html('Add Pricing Category');
+        }
+
+        $.ajax({
+            url: 'pages/pricing_category_ajax.php',
+            type: 'POST',
+            data: {
+              id : id,
+              action: 'fetch_modal_content'
+            },
+            success: function (response) {
+                $('#add-fields').html(response);
+                $('#addModal').modal('show');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('AJAX Error:', textStatus, errorThrown);
+                console.error('Response:', jqXHR.responseText);
+
+                $('#responseHeader').text("Error");
+                $('#responseMsg').text("An error occurred while processing your request.");
+                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                $('#response-modal').modal("show");
+            }
+        });
+    });
     
 });
 </script>
