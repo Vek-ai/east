@@ -76,6 +76,35 @@ if(isset($_REQUEST['action'])) {
           echo "Error deleting customer tax: " . mysqli_error($conn);
       }
     }
+
+    if ($action == 'fetch_modal_content') {
+        $taxid = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM customer_tax WHERE taxid = '$taxid'";
+        $result = mysqli_query($conn, $query);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
+        }
+
+        ?>
+            <div class="row pt-3">
+                <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Tax Status Description</label>
+                    <input type="text" id="tax_status_desc" name="tax_status_desc" class="form-control" value="<?= $row['tax_status_desc'] ?? '' ?>" />
+                </div>
+                </div>
+                <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Percentage</label>
+                    <input type="text" id="percentage" name="percentage" class="form-control" value="<?= $row['percentage'] ?? '' ?>" />
+                </div>
+                </div>
+            </div>
+
+            <input type="hidden" id="taxid" name="taxid" class="form-control" value="<?= $taxid ?>" />
+        <?php
+    }
+
     mysqli_close($conn);
 }
 ?>
