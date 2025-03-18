@@ -24,67 +24,18 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            // Record exists, fetch current values
-            $row = mysqli_fetch_assoc($result);
-            $current_product_gauge = $row['product_gauge'];
-            $current_gauge_abbreviations = $row['gauge_abbreviations'];
-
-            $duplicates = array();
-
-            // Check for duplicates only if the new values are different from the current values
-            if ($product_gauge != $current_product_gauge) {
-                $checkProductGauge = "SELECT * FROM product_gauge WHERE product_gauge = '$product_gauge'";
-                $resultProductGauge = mysqli_query($conn, $checkProductGauge);
-                if (mysqli_num_rows($resultProductGauge) > 0) {
-                    $duplicates[] = "Product gauge";
-                }
-            }
-
-            if ($gauge_abbreviations != $current_gauge_abbreviations) {
-                $checkAbreviations = "SELECT * FROM product_gauge WHERE gauge_abbreviations = '$gauge_abbreviations'";
-                $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-                if (mysqli_num_rows($resultAbreviations) > 0) {
-                    $duplicates[] = "Gauge Abbreviations";
-                }
-            }
-
-            if (!empty($duplicates)) {
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            $updateQuery = "UPDATE product_gauge SET product_gauge = '$product_gauge', gauge_abbreviations = '$gauge_abbreviations', notes = '$notes', thickness = '$thickness', no_per_sqft = '$no_per_sqft', no_per_sqin = '$no_per_sqin', last_edit = NOW(), edited_by = '$userid'  WHERE product_gauge_id = '$product_gauge_id'";
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "update-success";
             } else {
-                // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_gauge SET product_gauge = '$product_gauge', gauge_abbreviations = '$gauge_abbreviations', notes = '$notes', thickness = '$thickness', no_per_sqft = '$no_per_sqft', no_per_sqin = '$no_per_sqin', last_edit = NOW(), edited_by = '$userid'  WHERE product_gauge_id = '$product_gauge_id'";
-                if (mysqli_query($conn, $updateQuery)) {
-                    echo "update-success";
-                } else {
-                    echo "Error updating product gauge: " . mysqli_error($conn);
-                }
+                echo "Error updating product gauge: " . mysqli_error($conn);
             }
         } else {
-            // Record does not exist, perform duplicate checks before inserting
-            $duplicates = array();
-            $checkProductGauge = "SELECT * FROM product_gauge WHERE product_gauge = '$product_gauge'";
-            $resultProductGauge = mysqli_query($conn, $checkProductGauge);
-            if (mysqli_num_rows($resultProductGauge) > 0) {
-                $duplicates[] = "Product Gauge";
-            }
-
-            $checkAbreviations = "SELECT * FROM product_gauge WHERE gauge_abbreviations = '$gauge_abbreviations'";
-            $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-            if (mysqli_num_rows($resultAbreviations) > 0) {
-                $duplicates[] = "Gauge Abbreviations";
-            }
-
-            if(!empty($duplicates)){
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            $insertQuery = "INSERT INTO product_gauge (product_gauge, gauge_abbreviations, notes, thickness, no_per_sqft, no_per_sqin, added_date, added_by) VALUES ('$product_gauge', '$gauge_abbreviations', '$thickness', '$no_per_sqft', '$no_per_sqin', '$notes', NOW(), '$userid')";
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "add-success";
             } else {
-                $insertQuery = "INSERT INTO product_gauge (product_gauge, gauge_abbreviations, notes, thickness, no_per_sqft, no_per_sqin, added_date, added_by) VALUES ('$product_gauge', '$gauge_abbreviations', '$thickness', '$no_per_sqft', '$no_per_sqin', '$notes', NOW(), '$userid')";
-                if (mysqli_query($conn, $insertQuery)) {
-                    echo "add-success";
-                } else {
-                    echo "Error adding product gauge: " . mysqli_error($conn);
-                }
+                echo "Error adding product gauge: " . mysqli_error($conn);
             }
         }
     } 
@@ -110,6 +61,73 @@ if(isset($_REQUEST['action'])) {
             echo 'error';
         }
     }
+
+    if ($action == 'fetch_modal_content') {
+        $product_gauge_id = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM product_gauge WHERE product_gauge_id = '$product_gauge_id'";
+        $result = mysqli_query($conn, $query);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
+        }
+
+        ?>
+            <div class="row pt-3">
+                <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Product gauge</label>
+                    <input type="text" id="product_gauge" name="product_gauge" class="form-control"  value="<?= $row['product_gauge'] ?? '' ?>"/>
+                </div>
+                </div>
+                <div class="col-md-6">
+                
+                </div>
+            </div>
+
+            <div class="row pt-3">
+                <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Gauge Abreviations</label>
+                    <input type="text" id="gauge_abbreviations" name="gauge_abbreviations" class="form-control" value="<?= $row['gauge_abbreviations'] ?? '' ?>" />
+                </div>
+                </div>
+                <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Multiplier</label>
+                    <input type="text" id="multiplier" name="multiplier" class="form-control" value="<?= $row['multiplier'] ?? '' ?>" />
+                </div>
+                </div>
+            </div>
+
+            <div class="row pt-3">
+                <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Thickness</label>
+                    <input type="number" id="thickness" name="thickness" class="form-control"  value="<?= $row['thickness'] ?? '' ?>"/>
+                </div>
+                </div>
+                <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">#/SQFT</label>
+                    <input type="text" id="no_per_sqft" name="no_per_sqft" class="form-control" value="<?= $row['no_per_sqft'] ?? '' ?>" />
+                </div>
+                </div>
+                <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">#/SQFT</label>
+                    <input type="text" id="no_per_sqin" name="no_per_sqin" class="form-control" value="<?= $row['no_per_sqin'] ?? '' ?>" />
+                </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Notes</label>
+                <textarea class="form-control" id="notes" name="notes" rows="5"><?= $row['notes'] ?? '' ?></textarea>
+            </div>
+
+            <input type="hidden" id="product_gauge_id" name="product_gauge_id" class="form-control"  value="<?= $product_gauge_id ?>"/>
+        <?php
+    }
+
     mysqli_close($conn);
 }
 ?>
