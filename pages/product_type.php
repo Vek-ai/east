@@ -313,6 +313,8 @@ if(!empty($_REQUEST['product_type_id'])){
 
 <script>
   $(document).ready(function() {
+    document.title = "Pricing Type";
+
     var table = $('#display_product_type').DataTable({
         pageLength: 100
     });
