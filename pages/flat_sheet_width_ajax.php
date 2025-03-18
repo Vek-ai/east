@@ -69,6 +69,128 @@ if(isset($_REQUEST['action'])) {
             echo 'error';
         }
     }
+    if ($action == 'fetch_modal_content') {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM flat_sheet_width WHERE id = '$id'";
+        $result = mysqli_query($conn, $query);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
+        }
+
+        ?>
+        <div class="row pt-3">
+            <div class="col-md-4">
+                <label class="form-label">Product Category</label>
+                <div class="mb-3">
+                    <select class="form-control select2" id="select-category" name="product_category">
+                        <option value="">All Categories</option>
+                        <optgroup label="Category">
+                            <?php
+                            $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                            $result_category = mysqli_query($conn, $query_category);
+                            while ($row_category = mysqli_fetch_array($result_category)) {
+                                $selected = (($row['product_category'] ?? '') == $row_category['product_category_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category_id'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="row pt-3 category_selection d-none">
+            <div class="col-md-4">
+                <label class="form-label">Product System</label>
+                <div class="mb-3">
+                    <select class="form-control select2" id="select-system" name="product_system">
+                        <option value="">All Product Systems</option>
+                        <optgroup label="Product Type">
+                            <?php
+                            $query_system = "SELECT * FROM product_system WHERE hidden = '0'";
+                            $result_system = mysqli_query($conn, $query_system);
+                            while ($row_system = mysqli_fetch_array($result_system)) {
+                                $selected = (($row['product_system'] ?? '') == $row_system['product_system_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row_system['product_system_id'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Product Line</label>
+                <div class="mb-3">
+                    <select class="form-control select2" id="select-line" name="product_line">
+                        <option value="" >All Product Lines</option>
+                        <optgroup label="Product Type">
+                            <?php
+                            $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
+                            $result_line = mysqli_query($conn, $query_line);
+                            while ($row_line = mysqli_fetch_array($result_line)) {
+                                $selected = (($row['product_line'] ?? '') == $row_line['product_line_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row_line['product_line_id'] ?>" data-category="<?= $row_line['product_category'] ?>" <?= $selected ?>><?= $row_line['product_line'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Product Type</label>
+                <div class="mb-3">
+                    <select class="form-control select2" id="select-type" name="product_type">
+                        <option value="" >All Product Types</option>
+                        <optgroup label="Product Type">
+                            <?php
+                            $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
+                            $result_type = mysqli_query($conn, $query_type);
+                            while ($row_type = mysqli_fetch_array($result_type)) {
+                                $selected = (($row['product_type'] ?? '') == $row_type['product_type_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row_type['product_type_id'] ?>" data-category="<?= $row_type['product_category'] ?>" <?= $selected ?>><?= $row_type['product_type'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-12 pt-3">
+                <label class="form-label">Width</label>
+                <div class="mb-3">
+                    <input type="number" id="width" name="width" class="form-control" value="<?= $row['width'] ?? '' ?>"/>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" id="id" name="id" class="form-control"  value="<?= $id ?>"/>
+
+        <script>
+            $(document).ready(function () {
+                $(".select2").each(function () {
+                    if ($(this).hasClass("select2-hidden-accessible")) {
+                        $(this).select2("destroy");
+                    }
+
+                    let parentContainer = $(this).parent();
+                    $(this).select2({
+                        dropdownParent: parentContainer
+                    });
+                });
+
+                updateSearchCategory();
+            });
+
+        </script>
+        <?php
+    }
     mysqli_close($conn);
 }
 ?>

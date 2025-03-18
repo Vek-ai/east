@@ -94,127 +94,6 @@ if(!empty($_REQUEST['id'])){
     </div>
   </div>
 </div>
-<div class="col-12">
-  <!-- start Default Form Elements -->
-  <div class="card card-body">
-    <div class="row">
-      <div class="col-3">
-        <h4 class="card-title"><?= $addHeaderTxt ?> Flat Sheet Width</h4>
-      </div>
-    </div>
-    <form id="flatSheetWidthForm" class="form-horizontal">
-      <div class="row pt-3">
-        <div class="col-md-4">
-            <label class="form-label">Product Category</label>
-            <div class="mb-3">
-                <select class="form-control select2" id="select-category" name="product_category">
-                    <option value="">All Categories</option>
-                    <optgroup label="Category">
-                        <?php
-                        $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                        $result_category = mysqli_query($conn, $query_category);
-                        while ($row_category = mysqli_fetch_array($result_category)) {
-                            $selected = ($product_category == $row_category['product_category_id']) ? 'selected' : '';
-                        ?>
-                            <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category_id'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
-                        <?php
-                        }
-                        ?>
-                    </optgroup>
-                </select>
-            </div>
-        </div>
-      </div>
-
-      <div class="row pt-3 category_selection ">
-        <div class="col-md-4">
-            <label class="form-label">Product System</label>
-            <div class="mb-3">
-                <select class="form-control search-category select2" id="select-system" name="product_system">
-                    <option value="">All Product Systems</option>
-                    <optgroup label="Product Type">
-                        <?php
-                        $query_system = "SELECT * FROM product_system WHERE hidden = '0'";
-                        $result_system = mysqli_query($conn, $query_system);
-                        while ($row_system = mysqli_fetch_array($result_system)) {
-                            $selected = ($product_system == $row_system['product_system_id']) ? 'selected' : '';
-                        ?>
-                            <option value="<?= $row_system['product_system_id'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
-                        <?php
-                        }
-                        ?>
-                    </optgroup>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Product Line</label>
-            <div class="mb-3">
-                <select class="form-control search-category select2" id="select-line" name="product_line">
-                    <option value="" >All Product Lines</option>
-                    <optgroup label="Product Type">
-                        <?php
-                        $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
-                        $result_line = mysqli_query($conn, $query_line);
-                        while ($row_line = mysqli_fetch_array($result_line)) {
-                            $selected = ($product_line == $row_line['product_line_id']) ? 'selected' : '';
-                        ?>
-                            <option value="<?= $row_line['product_line_id'] ?>" data-category="<?= $row_line['product_category'] ?>" <?= $selected ?>><?= $row_line['product_line'] ?></option>
-                        <?php
-                        }
-                        ?>
-                    </optgroup>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Product Type</label>
-            <div class="mb-3">
-                <select class="form-control search-category select2" id="select-type" name="product_type">
-                    <option value="" >All Product Types</option>
-                    <optgroup label="Product Type">
-                        <?php
-                        $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
-                        $result_type = mysqli_query($conn, $query_type);
-                        while ($row_type = mysqli_fetch_array($result_type)) {
-                            $selected = ($product_type == $row_type['product_type_id']) ? 'selected' : '';
-                        ?>
-                            <option value="<?= $row_type['product_type_id'] ?>" data-category="<?= $row_type['product_category'] ?>" <?= $selected ?>><?= $row_type['product_type'] ?></option>
-                        <?php
-                        }
-                        ?>
-                    </optgroup>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-12 pt-3">
-            <label class="form-label">Width</label>
-            <div class="mb-3">
-                <input type="number" id="width" name="width" class="form-control" value="<?= $width ?>"/>
-            </div>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <div class="card-body border-top ">
-          <input type="hidden" id="id" name="id" class="form-control"  value="<?= $id ?>"/>
-          <div class="row">
-            
-            <div class="col-6 text-start">
-            
-            </div>
-            <div class="col-6 text-end">
-              <button type="submit" class="btn btn-primary" style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
-            </div>
-          </div>
-          
-        </div>
-      </div>
-
-    </form>
-  </div>
-  <!-- end Default Form Elements -->
-</div>
 
 <div class="card card-body">
   <div class="row">
@@ -305,10 +184,11 @@ if(!empty($_REQUEST['id'])){
           <div class="datatables">
             <div class="card">
               <div class="card-body">
-                  <h4 class="card-title d-flex justify-content-between align-items-center">Flat Sheet Widths List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['id'])){ ?>
-                    <a href="?page=flat_sheet_width" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
-                    <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
-                  </h4>
+                <h4 class="card-title d-flex justify-content-between align-items-center">Flat Sheet Widths List  &nbsp;&nbsp; 
+                <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
+                    <i class="ti ti-plus text-white me-1 fs-5"></i> Add Product Type
+                </button>
+                </h4>
                 
                 <div class="table-responsive">
               
@@ -374,15 +254,15 @@ if(!empty($_REQUEST['id'])){
                           <td><?= getProductTypeName($product_type) ?></td>
                           <td><?= $status ?></td>
                           <td class="text-center" id="action-button-<?= $no ?>">
-                              <?php if ($row_fs_width['status'] == '0') { ?>
-                                  <a href="#" class="text-decoration-none py-1 text-dark hideFSWidth" data-id="<?= $id ?>" data-row="<?= $no ?>">
-                                    <i class="text-danger ti ti-trash fs-7"></i>
-                                  </a>
-                              <?php } else { ?>
-                                  <a href="?page=flat_sheet_width&id=<?= $id ?>" class="text-decoration-none py-1">
-                                    <i class="text-warning ti ti-pencil fs-7"></i>
-                                  </a>
-                              <?php } ?>
+                            <?php if ($row_fs_width['status'] == '0') { ?>
+                                <a href="#" class="text-decoration-none py-1 text-dark hideFSWidth" data-id="<?= $id ?>" data-row="<?= $no ?>">
+                                <i class="text-danger ti ti-trash fs-7"></i>
+                                </a>
+                            <?php } else { ?>
+                                <a href="#" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $id ?>" data-type="edit">
+                                    <i class="ti ti-pencil fs-7"></i>
+                                </a>
+                            <?php } ?>
                           </td>
                       </tr>
                       <?php
@@ -485,6 +365,38 @@ if(!empty($_REQUEST['id'])){
   </div>
 </div>
 
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="add-header">
+                    Add
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="flatSheetWidthForm" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                          <div id="add-fields" class=""></div>
+                          <div class="form-actions">
+                              <div class="border-top">
+                                  <div class="row mt-2">
+                                      <div class="col-6 text-start"></div>
+                                      <div class="col-6 text-end ">
+                                          <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     function updateSearchCategory() {
         let selectedCategory = $('#select-category option:selected').data('category');
@@ -504,11 +416,7 @@ if(!empty($_REQUEST['id'])){
             if (hasCategory) {
                 allOptions.each(function () {
                     let optionCategory = $(this).data('category');
-                    let match = String(optionCategory) === String(selectedCategory);
-
-                    console.log("Checking option:", $(this).text(), "Category:", optionCategory, "Match:", match);
-
-                    if (match) {
+                    if (String(optionCategory) === String(selectedCategory)) {
                         $select2Element.append($(this).clone(true));
                     }
                 });
@@ -518,20 +426,26 @@ if(!empty($_REQUEST['id'])){
                 });
             }
 
-            $select2Element.select2('destroy').select2({
+            $select2Element.select2('destroy');
+
+            let parentContainer = $select2Element.parent();
+            $select2Element.select2({
                 width: '100%',
+                dropdownParent: parentContainer
             });
         });
 
         $('.category_selection').toggleClass('d-none', !hasCategory);
     }
 
-
-
-
-
   $(document).ready(function() {
-    var table = $('#display_flat_sheet_width').DataTable();
+    document.title = "Flat Sheet Width";
+
+    var table = $('#display_flat_sheet_width').DataTable({
+        pageLength: 100
+    });
+
+    $('#display_flat_sheet_width_filter').hide();
 
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -571,8 +485,6 @@ if(!empty($_REQUEST['id'])){
         });
     });
 
-    updateSearchCategory();
-
     $('#flatSheetWidthForm').on('submit', function(event) {
         event.preventDefault(); 
 
@@ -589,6 +501,7 @@ if(!empty($_REQUEST['id'])){
             contentType: false,
             success: function(response) {
                 $('#supplierid').prop('disabled', true);
+                $('.modal').modal("hide");
                 if (response.trim() === "success_update") {
                     $('#responseHeader').text("Success");
                     $('#responseMsg').text('Flat Sheet Width updated successfully.');
@@ -698,6 +611,40 @@ if(!empty($_REQUEST['id'])){
             $(this).parent().remove();
         });
     }
+
+    $(document).on('click', '#addModalBtn', function(event) {
+        event.preventDefault();
+        var id = $(this).data('id') || '';
+        var type = $(this).data('type') || '';
+
+        if(type == 'edit'){
+          $('#add-header').html('Update Flat Sheet Width');
+        }else{
+          $('#add-header').html('Add Flat Sheet Width');
+        }
+
+        $.ajax({
+            url: 'pages/flat_sheet_width_ajax.php',
+            type: 'POST',
+            data: {
+              id : id,
+              action: 'fetch_modal_content'
+            },
+            success: function (response) {
+                $('#add-fields').html(response);
+                $('#addModal').modal('show');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('AJAX Error:', textStatus, errorThrown);
+                console.error('Response:', jqXHR.responseText);
+
+                $('#responseHeader').text("Error");
+                $('#responseMsg').text("An error occurred while processing your request.");
+                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                $('#response-modal').modal("show");
+            }
+        });
+    });
     
 });
 </script>
