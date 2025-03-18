@@ -66,87 +66,24 @@ if(!empty($_REQUEST['color_group_name_id'])){
             </div>
             <div>
                 <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
-                <div class="d-flex gap-2">
-                    <div class="">
-                    <small>This Month</small>
-                    <h4 class="text-primary mb-0 ">$58,256</h4>
-                    </div>
-                    <div class="">
-                    <div class="breadbar"></div>
-                    </div>
-                </div>
-                <div class="d-flex gap-2">
-                    <div class="">
-                    <small>Last Month</small>
-                    <h4 class="text-secondary mb-0 ">$58,256</h4>
-                    </div>
-                    <div class="">
-                    <div class="breadbar2"></div>
-                    </div>
-                </div>
-                </div>
-            </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12">
-    <!-- start Default Form Elements -->
-    <div class="card card-body">
-        <div class="row">
-        <div class="col-12">
-            <h4 class="card-title"><?= $addHeaderTxt ?> Color Group Name</h4>
-        </div>
-        </div>
-        
-
-        <form id="groupNameForm" class="form-horizontal">
-        <div class="row pt-3">
-            <div class="col-md-6">
-            <div class="mb-3">
-                <label class="form-label">Color Group Name</label>
-                <input type="text" id="color_group_name" name="color_group_name" class="form-control"  value="<?= $color_group_name ?>"/>
-            </div>
-            </div>
-            <div class="col-md-6">
-            <div class="mb-3">
-                <label class="form-label">Group Name Abreviations</label>
-                <input type="text" id="group_abbreviations" name="group_abbreviations" class="form-control" value="<?= $group_abbreviations ?>" />
-            </div>
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Notes</label>
-            <textarea class="form-control" id="notes" name="notes" rows="5"><?= $notes ?></textarea>
-        </div>
-
-        <div class="form-actions">
-            <div class="card-body border-top ">
-            <input type="hidden" id="color_group_name_id" name="color_group_name_id" class="form-control"  value="<?= $color_group_name_id ?>"/>
-            <div class="row">
-                
-                <div class="col-6 text-start">
                 
                 </div>
-                <div class="col-6 text-end">
-                <button type="submit" class="btn btn-primary" style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
-                </div>
             </div>
-            
             </div>
         </div>
+    </div>
 
-        </form>
-    </div>
-    <!-- end Default Form Elements -->
-    </div>
     <div class="col-12">
     <div class="datatables">
         <div class="card">
         <div class="card-body">
-            <h4 class="card-title d-flex justify-content-between align-items-center">Color Group Name List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['color_group_name_id'])){ ?>
-                <a href="?page=color_group_name" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
-                <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
+            <h4 class="card-title d-flex justify-content-between align-items-center">Color Group Name List  &nbsp;&nbsp; 
+                <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
+                    <i class="ti ti-plus text-white me-1 fs-5"></i> Add Color Group Name
+                </button>
+                <div> 
+                    <input type="checkbox" id="toggleActive" checked> Show Active Only
+                </div>
             </h4>
             
             <div class="table-responsive">
@@ -212,8 +149,8 @@ if(!empty($_REQUEST['color_group_name_id'])){
                                     <i class="text-danger ti ti-trash fs-7"></i>
                                 </a>
                             <?php } else { ?>
-                                <a href="?page=color_group_name&color_group_name_id=<?= $color_group_name_id ?>" class="py-1 text-decoration-none">
-                                    <i class="text-warning ti ti-pencil fs-7"></i>
+                                <a href="#" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $color_group_name_id ?>" data-type="edit">
+                                    <i class="ti ti-pencil fs-7"></i>
                                 </a>
                             <?php } ?>
                         </td>
@@ -317,9 +254,45 @@ if(!empty($_REQUEST['color_group_name_id'])){
   </div>
 </div>
 
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="add-header">
+                    Add
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="groupNameForm" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                          <div id="add-fields" class=""></div>
+                          <div class="form-actions">
+                              <div class="border-top">
+                                  <div class="row mt-2">
+                                      <div class="col-6 text-start"></div>
+                                      <div class="col-6 text-end ">
+                                          <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
   $(document).ready(function() {
-    var table = $('#display_color_group_name').DataTable();
+    document.title = "Color Group Names";
+
+    var table = $('#display_color_group_name').DataTable({
+        pageLength: 100
+    });
     
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -366,7 +339,7 @@ if(!empty($_REQUEST['color_group_name_id'])){
             processData: false,
             contentType: false,
             success: function(response) {
-              
+                $('.modal').modal("hide");
               if (response === "update-success") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text("Color Group Name updated successfully.");
@@ -398,6 +371,40 @@ if(!empty($_REQUEST['color_group_name_id'])){
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $(document).on('click', '#addModalBtn', function(event) {
+        event.preventDefault();
+        var id = $(this).data('id') || '';
+        var type = $(this).data('type') || '';
+
+        if(type == 'edit'){
+          $('#add-header').html('Update Product Type');
+        }else{
+          $('#add-header').html('Add Product Type');
+        }
+
+        $.ajax({
+            url: 'pages/color_group_names_ajax.php',
+            type: 'POST',
+            data: {
+              id : id,
+              action: 'fetch_modal_content'
+            },
+            success: function (response) {
+                $('#add-fields').html(response);
+                $('#addModal').modal('show');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('AJAX Error:', textStatus, errorThrown);
+                console.error('Response:', jqXHR.responseText);
+
+                $('#responseHeader').text("Error");
+                $('#responseMsg').text("An error occurred while processing your request.");
+                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                $('#response-modal').modal("show");
             }
         });
     });

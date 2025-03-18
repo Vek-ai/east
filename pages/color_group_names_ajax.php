@@ -93,6 +93,40 @@ if(isset($_REQUEST['action'])) {
             echo 'error';
         }
     }
+
+    if ($action == 'fetch_modal_content') {
+        $color_group_name_id = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM color_group_name WHERE color_group_name_id = '$color_group_name_id'";
+        $result = mysqli_query($conn, $query);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
+        }
+
+        ?>
+        <div class="row pt-3">
+            <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Color Group Name</label>
+                <input type="text" id="color_group_name" name="color_group_name" class="form-control"  value="<?= $row['color_group_name'] ?? '' ?>"/>
+            </div>
+            </div>
+            <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Group Name Abreviations</label>
+                <input type="text" id="group_abbreviations" name="group_abbreviations" class="form-control" value="<?= $row['group_abbreviations'] ?? '' ?>" />
+            </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" id="notes" name="notes" rows="5"><?= $row['notes'] ?? '' ?></textarea>
+        </div>
+
+        <input type="hidden" id="color_group_name_id" name="color_group_name_id" class="form-control"  value="<?= $color_group_name_id ?>"/>
+        <?php
+    }
+
     mysqli_close($conn);
 }
 ?>
