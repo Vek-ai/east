@@ -241,19 +241,23 @@ if(!empty($_REQUEST['id'])){
                               $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
                           }
                       ?>
-                      <tr id="product-row-<?= $no ?>"
-                          data-category="<?=$row_fs_width['product_category']?>"
-                          data-system="<?=$row_fs_width['product_system']?>"
-                          data-line="<?=$row_fs_width['product_line']?>"
-                          data-type="<?=$row_fs_width['product_type']?>"
-                      >
-                          <td><?= number_format(floatval($width),2) ?></td>
-                          <td><?= getProductSystemName($product_system) ?></td>
-                          <td><?= getProductCategoryName($product_category) ?></td>
-                          <td><?= getProductLineName($product_line) ?></td>
-                          <td><?= getProductTypeName($product_type) ?></td>
-                          <td><?= $status ?></td>
-                          <td class="text-center" id="action-button-<?= $no ?>">
+                        <tr id="product-row-<?= $no ?>"
+                            data-category="<?=$row_fs_width['product_category']?>"
+                            data-system="<?=$row_fs_width['product_system']?>"
+                            data-line="<?=$row_fs_width['product_line']?>"
+                            data-type="<?=$row_fs_width['product_type']?>"
+                        >
+                            <td><?= number_format(floatval($width),2) ?></td>
+                            <td><?= getProductSystemName($product_system) ?></td>
+                            <td><?= getProductCategoryName($product_category) ?></td>
+                            <td><?= getProductLineName($product_line) ?></td>
+                            <td>
+                                <a href="#" id="viewModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $id ?>" data-type="<?= $product_type ?>">
+                                    <?= getProductTypeName($product_type) ?>
+                                </a>
+                            </td>
+                            <td><?= $status ?></td>
+                            <td class="text-center" id="action-button-<?= $no ?>">
                             <?php if ($row_fs_width['status'] == '0') { ?>
                                 <a href="#" class="text-decoration-none py-1 text-dark hideFSWidth" data-id="<?= $id ?>" data-row="<?= $no ?>">
                                 <i class="text-danger ti ti-trash fs-7"></i>
@@ -263,8 +267,8 @@ if(!empty($_REQUEST['id'])){
                                     <i class="ti ti-pencil fs-7"></i>
                                 </a>
                             <?php } ?>
-                          </td>
-                      </tr>
+                            </td>
+                        </tr>
                       <?php
                       $no++;
                       }
@@ -393,6 +397,26 @@ if(!empty($_REQUEST['id'])){
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="add-header">
+                    Trim Profiles
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="view-fields" class=""></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -645,6 +669,36 @@ if(!empty($_REQUEST['id'])){
             }
         });
     });
+
+    $(document).on('click', '#viewModalBtn', function(event) {
+        event.preventDefault();
+        var id = $(this).data('id') || '';
+        var type = $(this).data('type') || '';
+
+        $.ajax({
+            url: 'pages/flat_sheet_width_ajax.php',
+            type: 'POST',
+            data: {
+              id : id,
+              type: type,
+              action: 'fetch_view_content'
+            },
+            success: function (response) {
+                $('#view-fields').html(response);
+                $('#viewModal').modal('show');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('AJAX Error:', textStatus, errorThrown);
+                console.error('Response:', jqXHR.responseText);
+
+                $('#responseHeader').text("Error");
+                $('#responseMsg').text("An error occurred while processing your request.");
+                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                $('#response-modal').modal("show");
+            }
+        });
+    });
+    
     
 });
 </script>

@@ -191,6 +191,15 @@ if(isset($_REQUEST['action'])) {
         </script>
         <?php
     }
+
+    
+    if ($action == 'fetch_view_content') {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $type = mysqli_real_escape_string($conn, $_POST['type']);
+        ?>
+            <h4 class="card-title d-flex justify-content-center align-items-center">Trim profile details here.</h4>
+        <?php
+    }
     mysqli_close($conn);
 }
 ?>
