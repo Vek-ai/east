@@ -24,8 +24,6 @@ if (isset($_POST['modifyquantity'])) {
 
     $key = mysqli_real_escape_string($conn, $_POST['key'] ?? '');
 
-    $quantityInStock = getProductStockInStock($product_id);
-
     if (!isset($_SESSION["order_cart"])) {
         $_SESSION["order_cart"] = array();
     }
@@ -465,6 +463,150 @@ if (isset($_POST['save_order'])) {
     } else {
         echo json_encode(['error' => "Error inserting temp order: " . $conn->error]);
     }
+}
+
+if(isset($_POST['fetch_order_saved'])){
+    ?>
+        <div class="card-body datatables">
+            <div class="product-details table-responsive text-nowrap">
+                <table id="order_list_tbl" class="table table-hover mb-0 text-md-nowrap">
+                    <thead>
+                        <tr>
+                            <th>Supplier</th>
+                            <th>Staff</th>
+                            <th>Total Price</th>
+                            <th>Order Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+
+                        $query = "SELECT * FROM supplier_temp_orders";
+                        $result = mysqli_query($conn, $query);
+                    
+                        if ($result && mysqli_num_rows($result) > 0) {
+                            $response = array();
+                            while ($row = mysqli_fetch_assoc($result)) {
+                            ?>
+                            <tr>
+                                <td>
+                                    <?php echo getSupplierName($row["supplier_id"]) ?>
+                                </td>
+                                <td>
+                                    <?= get_staff_name($row["cashier"]) ?>
+                                </td>
+                                <td>
+                                    $ <?php echo getSupplierOrderTotals($row["supplier_temp_order_id"]) ?>
+                                </td>
+                                <td>
+                                    <?php echo date("F d, Y", strtotime($row["order_date"])); ?>
+                                </td>
+                                
+                                <td>
+                                    <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="view_order_details" data-id="<?php echo $row["supplier_temp_order_id"]; ?>" data-toggle="tooltip" data-placement="top" title="View"><i class="fa fa-eye"></i></a>
+                                </td>
+                            </tr>
+                            <?php
+                            }
+                        } else {
+                        ?>
+                        <tr>
+                            <td colspan="6" class="text-center">No Orders found.</td>
+                        </tr>
+                        <?php
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <script>
+        $(document).ready(function() {
+            $('#order_list_tbl').DataTable({
+                language: {
+                    emptyTable: "Saved Supplier Orders not found"
+                },
+                autoWidth: false,
+                responsive: true
+            });
+        });
+    </script>
+    <?php
+}
+
+if(isset($_POST['fetch_order_details'])){
+    $supplier_temp_order_id = mysqli_real_escape_string($conn, $_POST['orderid']);
+    ?>
+    <style>
+        .tooltip-inner {
+            background-color: white !important;
+            color: black !important;
+            font-size: calc(0.875rem + 2px) !important;
+        }
+    </style>
+    <div class="card-body datatables">
+        <div class="product-details table-responsive text-nowrap">
+            <table id="order_dtls_tbl" class="table table-hover mb-0 text-md-nowrap">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Color</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-end">Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                    $no = 0;
+                    $query = "SELECT * FROM supplier_temp_prod_orders WHERE supplier_temp_order_id='$supplier_temp_order_id'";
+                    $result = mysqli_query($conn, $query);
+                    $totalquantity = $total_price = 0;
+                    if ($result && mysqli_num_rows($result) > 0) {
+                        $response = array();
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            $product_id = $row['product_id'];
+                            $price = number_format(floatval($row['price']) * floatval($row['quantity']),2);
+                            ?>
+                            <tr>
+                                <td class="text-wrap"> 
+                                    <?php echo getProductName($product_id) ?>
+                                </td>
+                                <td>
+                                <div class="d-flex mb-0 gap-8">
+                                    <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromColorID($row['color'])?>"></a>
+                                    <?= getColorName($row['color']); ?>
+                                </div>
+                                </td>
+                                <td class="text-center"><?= floatval($row['quantity']) ?></td>
+                                <td class="text-end">$ <?= $price ?></td>
+                            </tr>
+
+                            <?php
+                            $totalquantity += $row['quantity'] ;
+                            $total_price += $price;
+                            
+                        }
+                    }
+                    ?>
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td colspan="2" class="text-end">Total</td>
+                        <td class="text-center"><?= $totalquantity ?></td>
+                        <td class="text-end">$ <?= number_format($total_price,2) ?></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>   
+    <script>
+        $(document).ready(function() {
+            $('[data-toggle="tooltip"]').tooltip(); 
+        });
+    </script>
+    <?php
 }
 
 mysqli_close($conn);

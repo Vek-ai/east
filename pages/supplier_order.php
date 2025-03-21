@@ -133,14 +133,20 @@ require 'includes/functions.php';
                 <a href="?page=product_supplier" target="_blank" class="text-decoration-none d-none">Edit</a>
             </div>
             <div class="mb-3">
+                
                 <select id="supplier_id" class="form-control select2" name="supplier_id">
                     <option value="" >Select Supplier...</option>
                     <optgroup label="Supplier">
                         <?php
+                        $supplier_id = '';
+                        if(!empty($_SESSION["order_supplier_id"])){
+                            $supplier_id = $_SESSION["order_supplier_id"];
+                            $supplier_details = getSupplierDetails($supplier_id);
+                        }
                         $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
                         $result_supplier = mysqli_query($conn, $query_supplier);            
                         while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                            $selected = (($row['supplier_id'] ?? '') == $row_supplier['supplier_id']) ? 'selected' : '';
+                            $selected = ($supplier_id == $row_supplier['supplier_id']) ? 'selected' : '';
                         ?>
                             <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
                         <?php   
@@ -150,7 +156,10 @@ require 'includes/functions.php';
                 </select>
             </div>
         </div>
-        <div class="col-md-12 col-xl-8 mt-3 text-end text-start mt-md-0 d-flex align-items-center justify-content-end gap-3">
+        <div class="col-md-12 col-xl-8 mt-3 text-end text-start mt-md-0 d-flex align-items-center justify-content-end gap-4">
+            <a href="#" id="view_order_list" class="cart-icon text-decoration-none position-relative d-inline-flex">
+                <iconify-icon icon="ic:round-list-alt" class="cart-icon fs-9"></iconify-icon>
+            </a>
             <a href="#" id="view_order" class="cart-icon text-decoration-none position-relative d-inline-flex">
                 <iconify-icon icon="ic:round-shopping-cart" class="cart-icon fs-8"></iconify-icon>
                 <span id="cartCounter" class="cart-badge">0</span>
@@ -205,6 +214,46 @@ require 'includes/functions.php';
                         style="background-color: #DC3545; border-color: #C82333;">
                         <i class="fas fa-times" style="color: #F8D7DA;"></i> Close
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="view_order_list_modal">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title">Saved Orders List</h6>
+                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="orders-saved-tbl">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="view_order_details_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title">Order Details</h6>
+                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="order-details">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
                 </div>
             </div>
         </div>
@@ -438,7 +487,7 @@ require 'includes/functions.php';
                                         </td>
                                         <td><?= getProductCategoryName($row_product['product_category']) ?></td>
                                         <td>
-                                            <select class="form-control search-chat py-0 ps-5 select2" id="select_color_<?= $row_product['product_id'] ?>" data-id="<?= $row_product['product_id'] ?>">
+                                            <select class="form-control search-chat py-0 ps-5 select2_color" id="select_color_<?= $row_product['product_id'] ?>" data-id="<?= $row_product['product_id'] ?>">
                                                 <option value="" data-category="">All Colors</option>
                                                 <optgroup label="Product Colors">
                                                     <?php
@@ -447,7 +496,7 @@ require 'includes/functions.php';
                                                     while ($row_color = mysqli_fetch_array($result_color)) {
                                                         $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
                                                     ?>
-                                                        <option value="<?= $row_color['color_id'] ?>" data-category="category" <?= $selected ?>><?= $row_color['color_name'] ?></option>
+                                                        <option value="<?= $row_color['color_id'] ?>" data-color="<?= $row_color['color_code'] ?>" <?= $selected ?>><?= $row_color['color_name'] ?></option>
                                                     <?php
                                                     }
                                                     ?>
@@ -513,6 +562,8 @@ require 'includes/functions.php';
             success: function(response) {
                 $('#order-tbl').html('');
                 $('#order-tbl').html(response);
+
+                updateCartCounter();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -669,9 +720,40 @@ require 'includes/functions.php';
         });
     }
 
-    $(document).ready(function() {
-        
+    function loadOrderList(){
+        $.ajax({
+            url: 'pages/supplier_order_ajax.php',
+            type: 'POST',
+            data: {
+                fetch_order_saved: "fetch_order_saved"
+            },
+            success: function(response) {
+                $('#orders-saved-tbl').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
 
+    function loadOrderDetails(orderid){
+        $.ajax({
+            url: 'pages/supplier_order_ajax.php',
+            type: 'POST',
+            data: {
+                orderid: orderid,
+                fetch_order_details: "fetch_order_details"
+            },
+            success: function(response) {
+                $('#order-details').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    $(document).ready(function() {
         var selectedCategory = '';
 
         var table = $('#productList').DataTable({
@@ -695,6 +777,15 @@ require 'includes/functions.php';
         $(".select2").each(function() {
             $(this).select2({
                 dropdownParent: $(this).parent()
+            });
+        });
+
+        $(".select2_color").each(function() {
+            $(this).select2({
+                dropdownParent: $(this).parent(),
+                templateResult: formatOption,
+                templateSelection: formatOption,
+                escapeMarkup: function(markup) { return markup; }
             });
         });
 
@@ -774,6 +865,17 @@ require 'includes/functions.php';
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
+        });
+
+        $(document).on('click', '#view_order_list', function(event) {
+            loadOrderList();
+            $('#view_order_list_modal').modal('show');
+        });
+
+        $(document).on('click', '#view_order_details', function(event) {
+            let orderId = $(this).data('id');
+            loadOrderDetails(orderId);
+            $('#view_order_details_modal').modal('show');
         });
 
         $(document).on('click', '.btn-minus', function () {

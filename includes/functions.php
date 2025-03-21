@@ -628,9 +628,28 @@ function getProductTypeDetails($product_type_id) {
     return $product_type;
 }
 
+function getSupplierOrderTotals($supplier_temp_order_id) {
+    global $conn;
+    $total_price = 0;
+
+    $query = "
+        SELECT 
+            SUM(price * quantity) AS total_price
+        FROM 
+            supplier_temp_prod_orders
+        WHERE 
+            supplier_temp_order_id = '$supplier_temp_order_id'";
+
+    $result = mysqli_query($conn, $query);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $total_price = floatval($row['total_price']);
+    }
+    return number_format($total_price, 2);
+}
+
 function getOrderTotals($orderid) {
     global $conn;
-
     $query = "
         SELECT 
             SUM(actual_price * quantity) AS total_actual_price
@@ -646,7 +665,6 @@ function getOrderTotals($orderid) {
         $row = mysqli_fetch_assoc($result);
         $total_actual_price = floatval($row['total_actual_price']);
     }
-
     return number_format($total_actual_price, 2);
 }
 
