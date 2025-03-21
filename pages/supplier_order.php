@@ -151,7 +151,7 @@ require 'includes/functions.php';
             </div>
         </div>
         <div class="col-md-12 col-xl-8 mt-3 text-end text-start mt-md-0 d-flex align-items-center justify-content-end gap-3">
-            <a href="cart.php" id="viewCart" class="cart-icon text-decoration-none position-relative d-inline-flex">
+            <a href="#" id="view_order" class="cart-icon text-decoration-none position-relative d-inline-flex">
                 <iconify-icon icon="ic:round-shopping-cart" class="cart-icon fs-8"></iconify-icon>
                 <span id="cartCounter" class="cart-badge">0</span>
             </a>
@@ -176,6 +176,36 @@ require 'includes/functions.php';
                 Close
                 </button>
             </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="order_modal">
+        <div class="modal-dialog modal-fullscreen" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title">Save Order</h6>
+                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="order-tbl"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn ripple fw-bold text-white" type="button" id="save_order" 
+                        style="background-color: #17A2B8; border-color: #138496;">
+                        <i class="fas fa-save" style="color: #E3F2FD;"></i> Save Order
+                    </button>
+                    <button class="btn ripple fw-bold text-white" type="button" id="order_products" 
+                        style="background-color: #28A745; border-color: #218838;">
+                        <i class="fas fa-shopping-cart" style="color: #D4EDDA;"></i> Place Order
+                    </button>
+                    <button class="btn ripple fw-bold text-white" data-bs-dismiss="modal" type="button" 
+                        style="background-color: #DC3545; border-color: #C82333;">
+                        <i class="fas fa-times" style="color: #F8D7DA;"></i> Close
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -344,8 +374,7 @@ require 'includes/functions.php';
                             <thead class="header-item">
                             <th>Description</th>
                             <th>Category</th>
-                            <th>Line</th>
-                            <th>Type</th>
+                            <th>Color</th>
                             <th>Quantity</th>
                             <th>Action</th>
                             </thead>
@@ -361,7 +390,7 @@ require 'includes/functions.php';
                                     LEFT JOIN 
                                         inventory AS i ON p.product_id = i.product_id
                                     WHERE 
-                                        p.hidden = '0'
+                                        p.hidden = '0' AND p.product_origin = '1'
                                     GROUP BY p.product_id
                                 ";
                                 $result_product = mysqli_query($conn, $query_product);            
@@ -408,8 +437,23 @@ require 'includes/functions.php';
                                             </a>
                                         </td>
                                         <td><?= getProductCategoryName($row_product['product_category']) ?></td>
-                                        <td><?= getProductLineName($row_product['product_line']) ?></td>
-                                        <td><?= getProductTypeName($row_product['product_type']) ?></td>
+                                        <td>
+                                            <select class="form-control search-chat py-0 ps-5 select2" id="select_color_<?= $row_product['product_id'] ?>" data-id="<?= $row_product['product_id'] ?>">
+                                                <option value="" data-category="">All Colors</option>
+                                                <optgroup label="Product Colors">
+                                                    <?php
+                                                    $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
+                                                    $result_color = mysqli_query($conn, $query_color);
+                                                    while ($row_color = mysqli_fetch_array($result_color)) {
+                                                        $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
+                                                    ?>
+                                                        <option value="<?= $row_color['color_id'] ?>" data-category="category" <?= $selected ?>><?= $row_color['color_name'] ?></option>
+                                                    <?php
+                                                    }
+                                                    ?>
+                                                </optgroup>
+                                            </select>
+                                        </td>
                                         <td>
                                             <div class="input-group input-group-sm">
                                                 <button class="btn btn-outline-primary btn-minus" type="button" data-id="<?= $row_product['product_id'] ?>">-</button>
@@ -459,7 +503,175 @@ require 'includes/functions.php';
         });
     }
 
+    function loadOrderContents(){
+        $.ajax({
+            url: 'pages/supplier_order_ajax.php',
+            type: 'POST',
+            data: {
+                fetch_order: "fetch_order"
+            },
+            success: function(response) {
+                $('#order-tbl').html('');
+                $('#order-tbl').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function formatOption(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        var color = $(state.element).data('color');
+        var $state = $(
+            '<span class="d-flex align-items-center small">' +
+                '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
+                state.text + 
+            '</span>'
+        );
+        return $state;
+    }
+
+    function formatSelected(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        var color = $(state.element).data('color');
+        var $state = $( 
+            '<span class="d-flex align-items-center justify-content-center">' + 
+                '<span class="rounded-circle d-block p-1" style="background-color:' + color + '; width: 25px; height: 25px;"></span>' +
+                '&nbsp;' +
+            '</span>'
+        );
+        return $state;
+    }
+
+    function updatequantity(element) {
+        var product_id = $(element).data('id');
+        var key = $(element).data('key');
+        var qty = $(element).val();
+        $.ajax({
+            url: "pages/supplier_order_ajax.php",
+            type: "POST",
+            data: {
+                product_id: product_id,
+                key: key,
+                qty: qty,
+                modifyquantity: 'modifyquantity',
+                setquantity: 'setquantity'
+            },
+            success: function(data) {
+                loadOrderContents();
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
+    function addquantity(element) {
+        var product_id = $(element).data('id');
+        var key = $(element).data('key');
+        var input_quantity = $('input[data-id="' + product_id + '"]');
+        var quantity = Number(input_quantity.val());
+        $.ajax({
+            url: "pages/supplier_order_ajax.php",
+            type: "POST",
+            data: {
+                product_id: product_id,
+                key: key,
+                quantity: quantity,
+                modifyquantity: 'modifyquantity',
+                addquantity: 'addquantity'
+            },
+            success: function(data) {
+                loadOrderContents();
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
+    function deductquantity(element) {
+        var product_id = $(element).data('id');
+        var key = $(element).data('key');
+        var input_quantity = $('input[data-id="' + product_id + '"]');
+        var quantity = Number(input_quantity.val());
+        $.ajax({
+            url: "pages/supplier_order_ajax.php",
+            type: "POST",
+            data: {
+                product_id: product_id,
+                key: key,
+                quantity: quantity,
+                modifyquantity: 'modifyquantity',
+                deductquantity: 'deductquantity'
+            },
+            success: function(data) {
+                loadOrderContents();
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
+    function delete_item(element) {
+        var key = $(element).data('key');
+        $.ajax({
+            url: "pages/supplier_order_ajax.php",
+            data: {
+                key: key,
+                deleteitem: 'deleteitem'
+            },
+            type: "POST",
+            success: function(data) {
+                loadOrderContents();
+            },
+            error: function() {}
+        });
+    }
+
+    function updateColor(element){
+        var color = $(element).val();
+        var id = $(element).data('id');
+        var key = $(element).data('key');
+        $.ajax({
+            url: 'pages/supplier_order_ajax.php',
+            type: 'POST',
+            data: {
+                color_id: color,
+                key: key,
+                id: id,
+                set_color: "set_color"
+            },
+            success: function(response) {
+                loadOrderContents();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
     $(document).ready(function() {
+        
+
         var selectedCategory = '';
 
         var table = $('#productList').DataTable({
@@ -490,6 +702,80 @@ require 'includes/functions.php';
             updateSearchCategory();
         });
 
+        $(document).on('change', '#supplier_id, #order_supplier_id', function() {
+            var supplier_id = $(this).val();
+            $.ajax({
+                url: 'pages/supplier_order_ajax.php',
+                type: 'POST',
+                data: {
+                    supplier_id: supplier_id,
+                    change_supplier: "change_supplier"
+                },
+                success: function(response) {
+
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#view_order', function(event) {
+            $('.modal').modal('hide');
+            loadOrderContents();
+            $('#order_modal').modal('show');
+        });
+
+        $(document).on('click', '#save_order', function(event) {
+            if (!confirm("Save this Order for future use?")) {
+                return;
+            }
+            $.ajax({
+                url: 'pages/supplier_order_ajax.php',
+                type: 'POST',
+                data: {
+                    save_order: 'save_order'
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response.success) {
+                        alert("Order successfully saved.");
+                    } else if (response.error) {
+                        alert("Error: " + response.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#order_products', function(event) {
+            if (!confirm("Order the products in cart?")) {
+                return;
+            }
+            $.ajax({
+                url: 'pages/supplier_order_ajax.php',
+                type: 'POST',
+                data: {
+                    order_supplier_products: 'order_supplier_products'
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response.success) {
+                        alert("Order to Supplier successfully submitted.");
+                    } else if (response.error) {
+                        alert("Error: " + response.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
         $(document).on('click', '.btn-minus', function () {
             var product_id = $(this).data('id');
             var input = $('#qty' + product_id);
@@ -510,6 +796,7 @@ require 'includes/functions.php';
         $(document).on('click', '#add-to-cart-btn', function() {
             var product_id = $(this).data('id');
             var qty = parseInt($('#qty' + product_id).val(), 10) || 0;
+            var color = parseInt($('#select_color_' + product_id).val(), 10) || 0;
 
             $.ajax({
                 url: "pages/supplier_order_ajax.php",
@@ -517,6 +804,7 @@ require 'includes/functions.php';
                 data: {
                     product_id: product_id,
                     qty: qty,
+                    color: color,
                     addquantity: 'addquantity',
                     modifyquantity: 'modifyquantity'
                 },
