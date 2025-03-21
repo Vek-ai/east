@@ -465,6 +465,50 @@ if (isset($_POST['save_order'])) {
     }
 }
 
+if (isset($_POST['load_saved_order'])) {
+    header('Content-Type: application/json');
+
+    if (empty($_POST['orderid'])) {
+        echo json_encode(['error' => "No Order ID provided."]);
+        exit;
+    }
+
+    $supplier_temp_order_id = intval($_POST['orderid']);
+    
+    $query_supplier = "SELECT supplier_id FROM supplier_temp_orders WHERE supplier_temp_order_id = '$supplier_temp_order_id' LIMIT 1";
+    $result_supplier = $conn->query($query_supplier);
+
+    if ($result_supplier->num_rows > 0) {
+        $row_supplier = $result_supplier->fetch_assoc();
+        $_SESSION['order_supplier_id'] = $row_supplier['supplier_id'];
+    } else {
+        echo json_encode(['error' => "Order not found."]);
+        exit;
+    }
+
+    $query_products = "SELECT product_id, quantity, price, color FROM supplier_temp_prod_orders WHERE supplier_temp_order_id = '$supplier_temp_order_id'";
+    $result_products = $conn->query($query_products);
+
+    if ($result_products->num_rows > 0) {
+        $_SESSION['order_cart'] = [];
+
+        while ($row = $result_products->fetch_assoc()) {
+            $_SESSION['order_cart'][] = [
+                'product_id' => $row['product_id'],
+                'product_item' => getProductName($row['product_id']),
+                'quantity_cart' => $row['quantity'],
+                'unit_price' => $row['price'],
+                'custom_color' => $row['color']
+            ];
+        }
+
+        echo json_encode(['success' => true, 'message' => "Order loaded successfully."]);
+    } else {
+        echo json_encode(['error' => "No products found for this order."]);
+    }
+}
+
+
 if(isset($_POST['fetch_order_saved'])){
     ?>
         <div class="card-body datatables">
@@ -601,6 +645,14 @@ if(isset($_POST['fetch_order_details'])){
             </table>
         </div>
     </div>   
+    <div class="modal-footer">
+        <button class="btn btn-warning ripple btn-secondary" id="edit_saved_order" data-id="<?= $supplier_temp_order_id ?>" type="button">
+            <i class="fas fa-pencil-alt me-2"></i> Edit
+        </button>
+        <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">
+            <i class="fas fa-times me-2"></i> Close
+        </button>
+    </div>
     <script>
         $(document).ready(function() {
             $('[data-toggle="tooltip"]').tooltip(); 

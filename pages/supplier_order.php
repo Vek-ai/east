@@ -252,9 +252,6 @@ require 'includes/functions.php';
                     <div id="order-details">
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-                </div>
             </div>
         </div>
     </div>
@@ -831,6 +828,35 @@ require 'includes/functions.php';
                     console.log(response);
                     if (response.success) {
                         alert("Order successfully saved.");
+                    } else if (response.error) {
+                        alert("Error: " + response.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#edit_saved_order', function(event) {
+            if (!confirm("Load and edit this saved order?")) {
+                return;
+            }
+
+            var orderid = $(this).data('id');
+            $.ajax({
+                url: 'pages/supplier_order_ajax.php',
+                type: 'POST',
+                data: {
+                    orderid: orderid,
+                    load_saved_order: 'load_saved_order'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert("Order successfully loaded.");
+                        $('.modal').modal('hide');
+                        updateCartCounter();
                     } else if (response.error) {
                         alert("Error: " + response.error);
                     }
