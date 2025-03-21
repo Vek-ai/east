@@ -519,7 +519,7 @@ if(isset($_POST['fetch_order_saved'])){
                             <th>Supplier</th>
                             <th>Staff</th>
                             <th>Total Price</th>
-                            <th>Order Date</th>
+                            <th>Date</th>
                             <th>Action</th>
                         </tr>
                     </thead>
