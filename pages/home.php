@@ -1,6 +1,13 @@
-<!-- -------------------------------------------------------------- -->
-<!-- Breadcrumb -->
-<!-- -------------------------------------------------------------- -->
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
+
+require 'includes/dbconn.php';
+require 'includes/functions.php';
+
+$reorder_level = 1;
+?>
 <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
   <div class="card-body px-0">
     <div class="d-flex justify-content-between align-items-center">
@@ -103,6 +110,172 @@
             <h3 class="mb-1 fs-6">$687</h3>
             <span class="text-muted">Ad. Expense</span>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center flex-wrap mb-9">
+          <div class="w-100">
+            <h3 class="card-title">Product Reorder Level <?= $reorder_level ?></h3>
+            <div class="ms-auto align-self-center">
+              <div class="datatables">
+                <div class="table-responsive">
+                  <table id="productList" class="table search-table table-sm align-middle text-wrap text-center">
+                      <thead class="header-item">
+                        <th class="text-center">Description</th>
+                        <th class="text-center">Category</th>
+                        <th class="text-center">Inventory</th>
+                      </thead>
+                      <tbody>
+                      <?php
+                          $query_product = "
+                              SELECT 
+                                  p.*,
+                                  COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
+                              FROM 
+                                  product AS p
+                              LEFT JOIN 
+                                  inventory AS i ON p.product_id = i.product_id
+                              WHERE 
+                                  p.hidden = '0' 
+                                  AND p.status = '1' 
+                                  AND CAST(COALESCE(p.reorder_level, 0) AS DECIMAL(10,2)) <= $reorder_level
+                              GROUP BY 
+                                  p.product_id
+                          ";
+
+                          $result_product = mysqli_query($conn, $query_product);            
+                          while ($row_product = mysqli_fetch_array($result_product)) {
+                              $product_id = $row_product['product_id'];
+
+                              if (!empty($row_product['main_image'])) {
+                                  $image_path = ltrim($row_product['main_image'], '../');
+                                  
+                                  if (file_exists($image_path)) {
+                                      $picture_path = $image_path;
+                                  } else {
+                                      $picture_path = "images/product/product.jpg";
+                                  }
+                              } else {
+                                  $picture_path = "images/product/product.jpg";
+                              }
+
+                          ?>
+                              <!-- start row -->
+                              <tr class="search-items" 
+                                  >
+                                  <td>
+                                      <a href="?page=product_details&product_id=<?= $row_product['product_id'] ?>">
+                                          <div class="d-flex align-items-center">
+                                              <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
+                                              <div class="ms-3">
+                                                  <h6 class="fw-semibold mb-0 fs-4 text-start"><?= $row_product['product_item'] ?></h6>
+                                              </div>
+                                          </div>
+                                      </a>
+                                  </td>
+                                  <td><?= getProductCategoryName($row_product['product_category']) ?></td>
+                                  <td><?= number_format(floatval($row_product['total_quantity'])) ?></td>
+                              </tr>
+                          <?php 
+                          } ?>
+                      </tbody>
+                      
+                  </table>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center flex-wrap mb-9">
+          <div class="w-100">
+            <h3 class="card-title">Most Ordered Products</h3>
+            <div class="ms-auto align-self-center">
+              <div class="datatables">
+                <div class="table-responsive">
+                  <table id="productMostOrderedList" class="table search-table table-sm align-middle text-wrap text-center">
+                      <thead class="header-item">
+                        <th class="text-center">Description</th>
+                        <th class="text-center">Category</th>
+                        <th class="text-center">Qty Ordered</th>
+                      </thead>
+                      <tbody>
+                      <?php
+                          $query_product = "
+                              SELECT 
+                                  op.productid, 
+                                  p.product_item,
+                                  p.product_category,
+                                  p.main_image,
+                                  SUM(op.quantity) AS total_quantity_purchased
+                              FROM 
+                                  order_product AS op
+                              LEFT JOIN 
+                                  product AS p ON op.productid = p.product_id
+                              GROUP BY 
+                                  op.productid
+                              ORDER BY 
+                                  total_quantity_purchased DESC
+                              LIMIT 10
+                          ";
+
+                          $result_product = mysqli_query($conn, $query_product);            
+                          while ($row_product = mysqli_fetch_array($result_product)) {
+                              $product_id = $row_product['product_id'];
+
+                              if (!empty($row_product['main_image'])) {
+                                  $image_path = ltrim($row_product['main_image'], '../');
+                                  
+                                  if (file_exists($image_path)) {
+                                      $picture_path = $image_path;
+                                  } else {
+                                      $picture_path = "images/product/product.jpg";
+                                  }
+                              } else {
+                                  $picture_path = "images/product/product.jpg";
+                              }
+
+                          ?>
+                              <!-- start row -->
+                              <tr class="search-items" 
+                                  >
+                                  <td>
+                                      <a href="?page=product_details&product_id=<?= $row_product['product_id'] ?>">
+                                          <div class="d-flex align-items-center">
+                                              <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
+                                              <div class="ms-3">
+                                                  <h6 class="fw-semibold mb-0 fs-4 text-start"><?= $row_product['product_item'] ?></h6>
+                                              </div>
+                                          </div>
+                                      </a>
+                                  </td>
+                                  <td><?= getProductCategoryName($row_product['product_category']) ?></td>
+                                  <td><?= number_format(floatval($row_product['total_quantity_purchased'])) ?></td>
+                              </tr>
+                          <?php 
+                          } ?>
+                      </tbody>
+                      
+                  </table>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          
         </div>
       </div>
     </div>
@@ -738,3 +911,28 @@
 <script src="assets/js/breadcrumb/breadcrumbChart.js"></script>
 <script src="assets/js/theme/sidebarmenu.js"></script>
 <script src="assets/js/dashboards/dashboard2.js"></script>
+
+<script>
+$(document).ready(function() {
+    var table = $('#productList').DataTable({
+        "order": [[1, "asc"]],
+        "pageLength": 5,
+        "lengthMenu": [
+            [10, 25, 50, 100],
+            [10, 25, 50, 100]
+        ],
+        "dom": 'lftp',
+    });
+
+    var table = $('#productMostOrderedList').DataTable({
+        "order": [[2, "desc"]],
+        "pageLength": 5,
+        "lengthMenu": [
+            [10, 25, 50, 100],
+            [10, 25, 50, 100]
+        ],
+        "dom": 'lftp',
+    });
+
+});
+</script>

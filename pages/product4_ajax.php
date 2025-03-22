@@ -288,22 +288,16 @@ if(isset($_REQUEST['action'])) {
                                     </div>
 
                                     <div class="row pt-3">
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Color:</label>
                                                 <p><?= getColorName($row['color']) ?></p>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label class="form-label">Paint Provider:</label>
-                                                <p><?= getPaintProviderName($row['paint_provider']) ?></p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="mb-3">
-                                                <label class="form-label">Coating:</label>
-                                                <p><?= $row['coating'] ?></p>
+                                                <label class="form-label">Usage:</label>
+                                                <p><?= getUsageName($row['product_usage']) ?></p>
                                             </div>
                                         </div>
                                     </div>
@@ -354,40 +348,35 @@ if(isset($_REQUEST['action'])) {
                                     </div>
 
                                     <div class="row pt-3">
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label class="form-label">Unit Price:</label>
+                                                <label class="form-label">Retail Price:</label>
                                                 <p><?= $row['unit_price'] ?></p>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label class="form-label">Unit Cost:</label>
-                                                <p><?= $row['unit_cost'] ?></p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="mb-3">
-                                                <label class="form-label">Unit Gross Margin:</label>
-                                                <p><?= $row['unit_gross_margin'] ?></p>
+                                                <label class="form-label">Cost:</label>
+                                                <p><?= $row['cost'] ?></p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="row pt-3">
-                                        <div class="col-md-4">
-                                            <div class="mb-3">
-                                                <label class="form-label">Usage:</label>
-                                                <p><?= $row['product_usage'] ?></p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
+                                        
+                                        <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">UPC:</label>
                                                 <p><?= $row['upc'] ?></p>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Reorder Level:</label>
+                                                <p><?= $row['reorder_level'] ?></p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 d-flex align-items-center justify-content-between">
                                             <div class="mb-1">
                                                 <label class="form-label">Sold By Feet:</label>
                                                 <p><?= $row['sold_by_feet'] == 1 ? 'Yes' : 'No' ?></p>
@@ -893,6 +882,7 @@ if(isset($_REQUEST['action'])) {
             'weight',
             'product_usage',
             'upc',
+            'reorder_level',
             'comment'
         ];
 

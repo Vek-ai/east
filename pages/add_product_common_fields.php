@@ -213,6 +213,13 @@ if (mysqli_num_rows($result_img) > 0) { ?>
     </div>
 </div>
 
+<div class="col-md-6">
+    <div class="mb-3">
+    <label class="form-label">Reorder Level</label>
+    <input type="text" id="reorder_level" name="reorder_level" class="form-control" value="<?= $row['reorder_level']?>" />
+    </div>
+</div>
+
 <div class="col-md-12">
     <div class="mb-3 opt_field_update" data-id="16">
         <label class="form-label">Comment</label>
