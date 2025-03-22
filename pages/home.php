@@ -120,7 +120,7 @@ $reorder_level = 1;
       <div class="card-body">
         <div class="d-flex align-items-center flex-wrap mb-9">
           <div class="w-100">
-            <h3 class="card-title">Product Reorder Level <?= $reorder_level ?></h3>
+            <h3 class="card-title">Products Need to Reorder</h3>
             <div class="ms-auto align-self-center">
               <div class="datatables">
                 <div class="table-responsive">
@@ -134,7 +134,7 @@ $reorder_level = 1;
                       <?php
                           $query_product = "
                               SELECT 
-                                  p.*,
+                                  p.*, 
                                   COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
                               FROM 
                                   product AS p
@@ -143,9 +143,10 @@ $reorder_level = 1;
                               WHERE 
                                   p.hidden = '0' 
                                   AND p.status = '1' 
-                                  AND CAST(COALESCE(p.reorder_level, 0) AS DECIMAL(10,2)) <= $reorder_level
                               GROUP BY 
                                   p.product_id
+                              HAVING 
+                                  total_quantity <= CAST(COALESCE(p.reorder_level, 0) AS DECIMAL(10,2))
                           ";
 
                           $result_product = mysqli_query($conn, $query_product);            
