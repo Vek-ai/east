@@ -281,6 +281,83 @@ $reorder_level = 1;
     </div>
   </div>
 
+  <div class="col-lg-4 col-md-12">
+    <!-- Column -->
+    <div class="card earning-widget">
+      <div class="card-body py-3 d-flex align-items-center">
+        <h4 class="card-title mb-0">Top 10 Customers</h4>
+        <div class="card-actions hstack gap-2 ms-auto">
+          <a href="javascript:void(0)" class="text-muted fs-5 d-flex" data-action="collapse">
+            <i class="ti ti-minus"></i>
+          </a>
+        </div>
+      </div>
+      <div class="card-body border-top collapse show table-responsive no-wrap p-0">
+        <div class="message-box py-7 contact-box position-relative">
+          <div class="message-widget vstack gap-7 contact-widget position-relative">
+            <?php
+              $query_order_total = "
+                  WITH customer_totals AS (
+                      SELECT 
+                          customerid, 
+                          SUM(discounted_price) AS order_total
+                      FROM orders
+                      WHERE YEAR(order_date) = YEAR(CURDATE())
+                      GROUP BY customerid
+                  )
+                  SELECT 
+                      ct.customerid, 
+                      ct.order_total,
+                      (SELECT COUNT(*) FROM customer_totals WHERE order_total > ct.order_total) + 1 AS customer_rank
+                  FROM customer_totals ct
+                  ORDER BY customer_rank ASC
+                  LIMIT 10;
+              ";
+              
+              $result_order_total = mysqli_query($conn, $query_order_total);
+              if ($result_order_total) {
+                  $row_order_total = mysqli_fetch_array($result_order_total, MYSQLI_ASSOC);
+                  
+                  if ($row_order_total) {
+                      $customer_order_total = $row_order_total['order_total'];
+                      $customer_rank = $row_order_total['customer_rank'];
+                      $customer_details = getCustomerDetails($row_order_total['customerid']);
+                      ?>
+                        <!-- contact -->
+                        <a href="javascript:void(0)" class="hstack px-7 gap-3">
+                          <div class="user-img position-relative d-inline-block">
+                            <img src="../assets/images/profile/user-2.jpg" alt="user" class="rounded-circle w-100" />
+                            <span class="
+                                profile-status
+                                pull-right
+                                d-inline-block
+                                position-absolute
+                                text-bg-secondary
+                                rounded-circle
+                              "></span>
+                          </div>
+                          <div class="v-middle d-md-flex align-items-center w-100">
+                            <div class="text-truncate">
+                              <h5 class="mb-1">
+                                <?= $customer_details['customer_first_name'] . ' ' .$customer_details['customer_last_name'] ?>
+                              </h5>
+                              <span class="text-muted fs-3"><?= $customer_details['customer_business_name'] ?></span>
+                            </div>
+                            <div class="ms-auto">
+                              <span class="badge px-2 py-1 bg-primary-subtle text-primary">$ <?= number_format(floatval($customer_order_total),2) ?></span>
+                            </div>
+                          </div>
+                        </a>
+                      <?php
+                  }
+              }
+            ?>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Bandwidth cards -->
   <div class="col-lg-4">
     <div class="card overflow-hidden">
