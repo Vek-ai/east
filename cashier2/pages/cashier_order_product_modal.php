@@ -85,7 +85,7 @@ if(isset($_POST['fetch_order_supplier'])){
 
                                 $default_image = 'images/product/product.jpg';
                                 $picture_path = !empty($product['main_image'])
-                                ?  $product['main_image']
+                                ? '../' . $product['main_image']
                                 : $default_image;
 
                                 $product_price = ($values["quantity_cart"] * ($values["unit_price"]));
