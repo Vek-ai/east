@@ -51,4 +51,83 @@ if(isset($_REQUEST['search_customer'])){
         <?php
     }
 }
+
+if(isset($_POST['fetch_order_product_details'])){
+    $supplier_temp_order_id = mysqli_real_escape_string($conn, $_POST['orderid']);
+    ?>
+    <style>
+        .tooltip-inner {
+            background-color: white !important;
+            color: black !important;
+            font-size: calc(0.875rem + 2px) !important;
+        }
+    </style>
+    <div class="card-body datatables">
+        <div class="product-details table-responsive text-nowrap">
+            <table id="order_dtls_tbl" class="table table-hover mb-0 text-md-nowrap">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Color</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-end">Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                    $no = 0;
+                    $query = "SELECT * FROM supplier_temp_prod_orders WHERE supplier_temp_order_id='$supplier_temp_order_id'";
+                    $result = mysqli_query($conn, $query);
+                    $totalquantity = $total_price = 0;
+                    if ($result && mysqli_num_rows($result) > 0) {
+                        $response = array();
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            $product_id = $row['product_id'];
+                            $price = number_format(floatval($row['price']) * floatval($row['quantity']),2);
+                            ?>
+                            <tr>
+                                <td class="text-wrap"> 
+                                    <?php echo getProductName($product_id) ?>
+                                </td>
+                                <td>
+                                <div class="d-flex mb-0 gap-8">
+                                    <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromColorID($row['color'])?>"></a>
+                                    <?= getColorName($row['color']); ?>
+                                </div>
+                                </td>
+                                <td class="text-center"><?= floatval($row['quantity']) ?></td>
+                                <td class="text-end">$ <?= $price ?></td>
+                            </tr>
+
+                            <?php
+                            $totalquantity += $row['quantity'] ;
+                            $total_price += $price;
+                            
+                        }
+                    }
+                    ?>
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td colspan="2" class="text-end">Total</td>
+                        <td class="text-center"><?= $totalquantity ?></td>
+                        <td class="text-end">$ <?= number_format($total_price,2) ?></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>   
+    <div class="modal-footer">
+        <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">
+            <i class="fas fa-times me-2"></i> Close
+        </button>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('[data-toggle="tooltip"]').tooltip(); 
+        });
+    </script>
+    <?php
+}
 ?>
