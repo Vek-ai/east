@@ -109,51 +109,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
 </style>
 <div class="product-list pt-4">
-    <!-- <div class="row row-xs pr-3">
-        <div class="col-md-9"></div>
-        <?php 
-        $discount = 0;
-        $tax = 0;
-        $totalQuantity = 0;
-        if(isset($_SESSION['customer_id'])){
-            $customer_id = $_SESSION['customer_id'];
-            $customer_details = getCustomerDetails($customer_id);
-            $discount = floatval(getCustomerDiscount($customer_id)) / 100;
-            $tax = floatval(getCustomerTax($customer_id)) / 100;
-        }
-        $delivery_price = getDeliveryCost();
-        
-        if (!empty($_SESSION["cart"])) {
-            foreach ($_SESSION["cart"] as $item) {
-                $totalQuantity += $item["quantity_cart"];
-            }
-        }
-        ?>
-        <div class="col-md-3 bg-primary rounded" style="padding: 1rem;">
-            <div id="thegrandtotal" style="background: transparent; color: #fff; font-size: 16px;">
-                <table style="width: 100%; margin: 0; border-spacing: 0;">
-                    <tbody>
-                        <tr style="height: 30px;">
-                            <td style="text-align: left; width: 70%;">Total:</td>
-                            <td style="text-align: right; width: 30%;"><?= "$" . number_format($_SESSION["grandtotal"] ?? 0, 2); ?></td>
-                        </tr>
-                        <tr style="height: 30px;">
-                            <td style="text-align: left; width: 70%;">Total items:</td>
-                            <td style="text-align: right; width: 30%;"><?= $totalQuantity ?></td>
-                        </tr>
-                        <tr style="height: 30px;">
-                            <td style="text-align: left; width: 70%;">Discount:</td>
-                            <td style="text-align: right; width: 30%;"><?= $discount * 100 ?>%</td>
-                        </tr>
-                        <tr style="height: 30px;">
-                            <td style="text-align: left; width: 70%;">Delivery Amount:</td>
-                            <td style="text-align: right; width: 30%;"><?= "$" . number_format($delivery_price, 2); ?></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div> -->
     <div class="card">
         <div class="card-body p-3">
             <div class="row">
@@ -709,6 +664,69 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     </div>
 </div>
 
+<div class="modal fade" id="order_product_modal" tabindex="-1" data-bs-backdrop="static" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-fullscreen" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Products to Order</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body mt-0" id="order_product_container">
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple fw-bold text-white me-auto" type="button" id="view_order_product_list" 
+                    style="background-color: rgb(108, 111, 114); border-color:rgb(108, 111, 114);">
+                    <i class="fas fa-list" style="color: #E3F2FD;"></i> View Saved Orders
+                </button>
+                <button class="btn ripple fw-bold text-white" type="button" id="save_order_supplier" 
+                    style="background-color: #17A2B8; border-color: #138496;">
+                    <i class="fas fa-save" style="color: #E3F2FD;"></i> Save Order
+                </button>
+                <button class="btn btn-danger ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="view_order_product_list_modal" tabindex="-1" data-bs-backdrop="static" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Saved Orders List</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="orders-saved-tbl">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="view_order_product_details_modal" tabindex="-1" data-bs-backdrop="static" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Saved Order Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="order-saved-details">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     let map1;
     let marker1;
@@ -1217,6 +1235,39 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
     }
 
+    function loadOrderSupplierList(){
+        $.ajax({
+            url: 'pages/cashier_order_product_modal.php',
+            type: 'POST',
+            data: {
+                fetch_order_saved: "fetch_order_saved"
+            },
+            success: function(response) {
+                $('#orders-saved-tbl').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function loadOrderSupplierDetails(orderid){
+        $.ajax({
+            url: 'pages/cashier_order_product_modal.php',
+            type: 'POST',
+            data: {
+                orderid: orderid,
+                fetch_order_product_details: "fetch_order_product_details"
+            },
+            success: function(response) {
+                $('#order-saved-details').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
     function loadOrderDetails(orderid){
         $.ajax({
             url: 'pages/cashier_order_details_modal.php',
@@ -1245,6 +1296,23 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 $('#cart-tbl').html(''); 
                 $('#cart-tbl').html(response); 
                 loadCartItemsHeader();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function loadOrderProductCart(){      
+        $.ajax({
+            url: 'pages/cashier_order_product_modal.php',
+            type: 'POST',
+            data: {
+                fetch_order_supplier: "fetch_order_supplier"
+            },
+            success: function(response) {
+                $('#order_product_container').html(''); 
+                $('#order_product_container').html(response); 
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1314,6 +1382,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
+                loadOrderProductCart();
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1343,6 +1412,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
+                loadOrderProductCart();
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1373,6 +1443,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
+                loadOrderProductCart();
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1403,6 +1474,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
+                loadOrderProductCart();
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1429,6 +1501,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
+                loadOrderProductCart();
             },
             error: function() {}
         });
@@ -1450,6 +1523,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 loadCart();
                 loadOrderContents();
                 loadEstimateContents();
+                loadOrderProductCart();
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -2438,6 +2512,78 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         $(document).on('click', '#view_cart', function(event) {
             loadCart();
             $('#view_cart_modal').modal('show');
+        });
+
+        $(document).on('click', '#order_product', function(event) {
+            loadOrderProductCart();
+            $('#order_product_modal').modal('show');
+        });
+
+        $(document).on('click', '#view_order_product_list', function(event) {
+            loadOrderSupplierList();
+            $('#view_order_product_list_modal').modal('show');
+        });
+
+        $(document).on('click', '#view_order_product_details', function(event) {
+            let orderId = $(this).data('id');
+            loadOrderSupplierDetails(orderId);
+            $('#view_order_product_details_modal').modal('show');
+        });
+
+        $(document).on('click', '#save_order_supplier', function(event) {
+            if (!confirm("Save this Order for future use?")) {
+                return;
+            }
+            $.ajax({
+                url: 'pages/cashier_order_product_modal.php',
+                type: 'POST',
+                data: {
+                    save_order_supplier: 'save_order_supplier'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert("Order successfully saved.");
+                    } else if (response.error) {
+                        alert("Error: " + response.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#edit_saved_order', function(event) {
+            if (!confirm("Load and edit this saved order?")) {
+                return;
+            }
+
+            var orderid = $(this).data('id');
+            $.ajax({
+                url: 'pages/cashier_order_product_modal.php',
+                type: 'POST',
+                data: {
+                    orderid: orderid,
+                    load_saved_order: 'load_saved_order'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert("Order successfully loaded.");
+
+                        loadOrderProductCart();
+                        $('#view_order_product_details_modal').modal('hide');
+                        $('#view_order_product_list_modal').modal('hide');
+
+                    } else if (response.error) {
+                        alert("Error: " + response.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
         });
 
         $(document).on('click', '#view_est_list', function(event) {

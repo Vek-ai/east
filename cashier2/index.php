@@ -543,8 +543,13 @@ if (!isset($_SESSION['userid'])) {
                   </li>
 
                   <li class="nav-item nav-icon-hover-bg d-lg-block rounded-circle">
-                    <a class="nav-link nav-icon-hover d-none d-md-flex waves-effect waves-dark" href="?page=approved_list">
-                      <i class="fa fa-check" aria-hidden="true"></i>
+                    <a class="nav-link nav-icon-hover d-none d-md-flex waves-effect waves-dark" 
+                        href="?page=approved_list"
+                        data-bs-toggle="tooltip" 
+                        data-bs-placement="bottom" 
+                        data-bs-html="true"
+                        title="<h6 style='color: #ffffff;' class='mb-0'>Approved List</h6>">
+                        <i class="fa fa-check" aria-hidden="true"></i>
                     </a>
                   </li>
 
@@ -566,6 +571,18 @@ if (!isset($_SESSION['userid'])) {
                       </div>
                       <div id="customer-search-list"></div>
                     </div>
+                  </li>
+
+                  <li class="nav-item nav-icon-hover-bg d-lg-block rounded-circle">
+                    <a class="nav-link nav-icon-hover d-none d-md-flex waves-effect waves-dark order-icon" 
+                        id="order_product" 
+                        href="#" 
+                        data-bs-toggle="tooltip" 
+                        data-bs-placement="bottom" 
+                        data-bs-html="true"
+                        title="<h6 style='color: #ffffff;' class='mb-0'>Order Products from Supplier</h6>">
+                      <i class="fas fa-boxes-stacked"></i>
+                    </a>
                   </li>
 
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
