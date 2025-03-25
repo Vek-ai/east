@@ -176,7 +176,7 @@ require '../includes/functions.php';
                         style="background-color: #17A2B8; border-color: #138496;">
                         <i class="fas fa-save" style="color: #E3F2FD;"></i> Save Order
                     </button>
-                    <button class="btn ripple fw-bold text-white" type="button" id="order_products" 
+                    <button class="btn ripple fw-bold text-white d-none" type="button" id="order_products" 
                         style="background-color: #28A745; border-color: #218838;">
                         <i class="fas fa-shopping-cart" style="color: #D4EDDA;"></i> Place Order
                     </button>
