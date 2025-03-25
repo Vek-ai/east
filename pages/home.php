@@ -293,51 +293,44 @@ $reorder_level = 1;
                 <div class="table-responsive">
                   <table id="order_supplier_list_tbl" class="table search-table table-sm align-middle text-wrap text-center">
                       <thead class="header-item">
-                        <th class="text-center">Staff</th>
+                        <th class="text-center">Supplier</th>
                         <th class="text-center">Amount</th>
-                        <th class="text-center">Status</th>
                         <th></th>
                       </thead>
                       <tbody>
-                          <?php 
+                        <?php 
+                        $query = "SELECT supplier_id, 
+                                        SUM(price * quantity) AS total_amount, 
+                                        MAX(supplier_temp_order_id) AS supplier_temp_order_id
+                                  FROM supplier_temp_prod_orders 
+                                  WHERE supplier_id != 0
+                                  GROUP BY supplier_id";
+                        $result = mysqli_query($conn, $query);
 
-                          $query = "SELECT * FROM supplier_temp_orders";
-                          $result = mysqli_query($conn, $query);
-                      
-                          if ($result && mysqli_num_rows($result) > 0) {
-                              $response = array();
-                              while ($row = mysqli_fetch_assoc($result)) {
-                              ?>
-                              <tr>
-                                  <td>
-                                      <?= get_staff_name($row["cashier"]) ?>
-                                  </td>
-                                  <td>
-                                      $ <?= getSupplierOrderTotals($row["supplier_temp_order_id"]) ?>
-                                  </td>
-                                  <td>
-                                      <?php 
-                                      if ($row["status"] == 1) { 
-                                          echo '<h5 class="badge bg-success" style="color: #000000 !important">Approved</h5>';
-                                      } else { 
-                                          echo '<h5 class="badge bg-warning" style="color: #000000 !important">Pending</h5>';
-                                      } 
-                                      ?>
-                                  </td>
-                                  <td class="text-center">
-                                      <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="view_order_product_details" data-id="<?= $row["supplier_temp_order_id"]; ?>" title="View"><i class="fa fa-eye"></i></a>
-                                  </td>
-                              </tr>
-                              <?php
-                              }
-                          } else {
-                          ?>
-                          <tr>
-                              <td colspan="6" class="text-center">No Orders found.</td>
-                          </tr>
-                          <?php
-                          }
-                          ?>
+                        if ($result && mysqli_num_rows($result) > 0) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                ?>
+                                <tr>
+                                    <td>
+                                        <?= getSupplierName($row["supplier_id"]) ?>
+                                    </td>
+                                    <td>
+                                        $ <?= number_format($row["total_amount"], 2) ?>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="?page=supplier_order_list&id=<?= $row["supplier_id"] ?>" class="py-1 pe-1 fs-5" title="View"><i class="fa fa-eye"></i></a>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                        } else {
+                        ?>
+                        <tr>
+                            <td colspan="6" class="text-center">No Orders found.</td>
+                        </tr>
+                        <?php
+                        }
+                        ?>
                       </tbody> 
                   </table>
                 </div>
@@ -348,22 +341,6 @@ $reorder_level = 1;
           
         </div>
       </div>
-    </div>
-    <div class="modal fade" id="view_order_product_details_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-            <div class="modal-content modal-content-demo">
-                <div class="modal-header">
-                    <h6 class="modal-title">Saved Order Details</h6>
-                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="order-saved-details">
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
   </div>
 

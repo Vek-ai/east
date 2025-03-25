@@ -628,6 +628,18 @@ function getProductTypeDetails($product_type_id) {
     return $product_type;
 }
 
+function getSupplierTempOrderDetails($supplier_temp_order_id) {
+    global $conn;
+    $supplier_temp_order_id = mysqli_real_escape_string($conn, $supplier_temp_order_id);
+    $query = "SELECT * FROM supplier_temp_orders WHERE supplier_temp_order_id = '$supplier_temp_order_id'";
+    $result = mysqli_query($conn, $query);
+    $product_type = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $supplier_temp_order = $row;
+    }
+    return $supplier_temp_order;
+}
+
 function getSupplierOrderTotals($supplier_temp_order_id) {
     global $conn;
     $total_price = 0;
