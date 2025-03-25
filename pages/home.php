@@ -326,7 +326,7 @@ $reorder_level = 1;
                         } else {
                         ?>
                         <tr>
-                            <td colspan="6" class="text-center">No Orders found.</td>
+                            <td colspan="3" class="text-center">No Orders found.</td>
                         </tr>
                         <?php
                         }

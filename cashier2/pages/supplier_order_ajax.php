@@ -66,6 +66,7 @@ if (isset($_POST['modifyquantity'])) {
             $item_array = array(
                 'product_id' => $row['product_id'],
                 'product_item' => getProductName($row['product_id']),
+                'supplier_id' => $row['supplier_id'],
                 'unit_price' => $basePrice,
                 'quantity_cart' => $qty,
                 'custom_color' => $color
