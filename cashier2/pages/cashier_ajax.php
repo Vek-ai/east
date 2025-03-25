@@ -77,6 +77,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $item_array = array(
                 'product_id' => $row['product_id'],
                 'product_item' => getProductName($row['product_id']),
+                'supplier_id' => $row['supplier_id'],
                 'unit_price' => $unitPrice,
                 'line' => $newLine,
                 'quantity_ttl' => $totalStock,
@@ -146,6 +147,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'usage' => 0,
                 'custom_color' => $row['color'],
                 'weight' => $weight,
+                'supplier_id' => $row['supplier_id'],
                 'custom_grade' => intval($row['grade'])
             );
 
@@ -1639,6 +1641,7 @@ if (isset($_POST['add_to_cart'])) {
                 $item_array = array(
                     'product_id' => $row['product_id'],
                     'product_item' => getProductName($row['product_id']),
+                    'supplier_id' => $row['supplier_id'],
                     'unit_price' => $unit_price,
                     'line' => 1,
                     'quantity_ttl' => $totalStock,

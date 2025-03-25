@@ -78,26 +78,41 @@ if(isset($_POST['fetch_order_supplier'])){
                         $no = $timestamp . 1;
                         $total_weight = 0;
                         if (!empty($_SESSION["cart"])) {
+                            $suppliers = [];
+                            $result_supplier = mysqli_query($conn, "SELECT supplier_id, supplier_name FROM supplier");
+                            while ($row = mysqli_fetch_assoc($result_supplier)) {
+                                $suppliers[$row['supplier_id']] = $row['supplier_name'];
+                            }
+                        
+                            $processed_suppliers = [];
+                        
+                            usort($_SESSION["cart"], function ($a, $b) {
+                                return (empty($a["supplier_id"]) ? 1 : 0) <=> (empty($b["supplier_id"]) ? 1 : 0);
+                            });
+                        
+                            echo "<script>console.log(" . json_encode($_SESSION["cart"]) . ");</script>";
+                        
                             foreach ($_SESSION["cart"] as $keys => $values) {
                                 $data_id = $values["product_id"];
-                                $product = getProductDetails($data_id);
-                                $category_id = $product["product_category"];
-
-                                $default_image = 'images/product/product.jpg';
-                                $picture_path = !empty($product['main_image'])
-                                ? '../' . $product['main_image']
-                                : $default_image;
-
-                                $product_price = ($values["quantity_cart"] * ($values["unit_price"]));
-
+                                $supplier_id = $values["supplier_id"];
+                                $line = $values["line"];
                                 $color_id = $values["custom_color"];
-
-                                $line= $values["line"];
-                            ?>
-                                <tr class="border-bottom border-3 border-white">
+                                $default_image = 'images/product/product.jpg';
+                                $picture_path = !empty($values['main_image']) ? '../' . $values['main_image'] : $default_image;
+                                $product_price = $values["quantity_cart"] * $values["unit_price"];
+                        
+                                if (!empty($supplier_id) && !in_array($supplier_id, $processed_suppliers)) {
+                                    echo '<tr><td colspan="6" class="fw-bold text-start pt-2 pb-0"><h4>' . ($suppliers[$supplier_id] ?? 'Unknown Supplier') . '</h4></td></tr>';
+                                    $processed_suppliers[] = $supplier_id;
+                                } elseif (empty($supplier_id) && !in_array('no_supplier', $processed_suppliers)) {
+                                    echo '<tr><td colspan="6" class="fw-bold text-start pt-2 pb-0"><h4>No Supplier</h4></td></tr>';
+                                    $processed_suppliers[] = 'no_supplier';
+                                }
+                                ?>
+                                <tr class="border-bottom border-3 border-white" data-supplier="<?= getSupplierName($supplier_id) ?>">
                                     <td>
                                         <div class="align-items-center text-center w-100">
-                                            <img src="<?= $picture_path ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
+                                            <img src="<?= $picture_path ?>" class="rounded-circle" alt="product-img" width="56" height="56">
                                         </div>
                                     </td>
                                     <td>
@@ -110,14 +125,10 @@ if(isset($_POST['fetch_order_supplier'])){
                                             if (!empty($color_id)) {
                                                 echo '<option value="' . $color_id . '" selected data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
                                             }
-
-                                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
-                                            $result_color = mysqli_query($conn, $query_color);
-                                            while ($row_color = mysqli_fetch_array($result_color)) {
+                                            $result_color = mysqli_query($conn, "SELECT color_id, color_name, color_code FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY color_name ASC");
+                                            while ($row_color = mysqli_fetch_assoc($result_color)) {
                                                 $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
-                                            ?>
-                                                <option value="<?= $row_color['color_id'] ?>" data-color="<?= $row_color['color_code'] ?>" <?= $selected ?>><?= $row_color['color_name'] ?></option>
-                                            <?php
+                                                echo '<option value="' . $row_color['color_id'] . '" data-color="' . $row_color['color_code'] . '" ' . $selected . '>' . $row_color['color_name'] . '</option>';
                                             }
                                             ?>
                                         </select>
@@ -125,37 +136,36 @@ if(isset($_POST['fetch_order_supplier'])){
                                     <td>
                                         <div class="input-group">
                                             <span class="input-group-btn">
-                                                <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-line="<?= $line ?>" data-key="<?= $keys ?>" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)">
+                                                <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-line="<?= $line ?>" data-key="<?= $keys ?>" data-id="<?= $data_id; ?>" onClick="deductquantity(this)">
                                                     <i class="fa fa-minus"></i>
                                                 </button>
-                                            </span> 
-                                            <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-line="<?= $line ?>" data-key="<?= $keys ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
+                                            </span>
+                                            <input class="form-control" type="text" size="5" value="<?= $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-line="<?= $line ?>" data-key="<?= $keys ?>" data-id="<?= $data_id; ?>" id="item_quantity<?= $data_id; ?>">
                                             <span class="input-group-btn">
-                                                <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-line="<?= $line ?>" data-key="<?= $keys ?>" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)">
+                                                <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-line="<?= $line ?>" data-key="<?= $keys ?>" data-id="<?= $data_id; ?>" onClick="addquantity(this)">
                                                     <i class="fa fa-plus"></i>
                                                 </button>
                                             </span>
                                         </div>
                                     </td>
                                     <td class="text-end pl-3" style="width: 10%;">$
-                                        <?php
-                                        $subtotal = $product_price;
-                                        echo number_format($subtotal, 2);
-                                        ?>
+                                        <?= number_format($product_price, 2); ?>
                                     </td>
-                                    
                                     <td class="text-center" style="width: 5%;">
-                                        <button class="btn btn-danger-gradient btn-sm" type="button" data-id="<?=$data_id; ?>" data-line="<?= $line ?>" data-key="<?= $keys ?>" onClick="delete_item(this)"><i class="fa fa-trash text-danger fs-6"></i></button>
-                                        <button class="btn btn-danger-gradient btn-sm" type="button" data-id="<?=$data_id; ?>" data-line="<?= $line ?>" data-key="<?= $keys ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
+                                        <button class="btn btn-danger-gradient btn-sm" type="button" data-id="<?= $data_id; ?>" data-line="<?= $line ?>" data-key="<?= $keys ?>" onClick="delete_item(this)">
+                                            <i class="fa fa-trash text-danger fs-6"></i>
+                                        </button>
+                                        <button class="btn btn-danger-gradient btn-sm" type="button" data-id="<?= $data_id; ?>" data-line="<?= $line ?>" data-key="<?= $keys ?>" onClick="duplicate_item(this)">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
                                     </td>
                                 </tr>
-                        <?php
+                                <?php
                                 $totalquantity += $values["quantity_cart"];
-                                $total += $subtotal;
-                                $total_customer_price += $customer_price;
+                                $total += $product_price;
                                 $no++;
                             }
-                        }
+                        }                        
                         ?>
                     </tbody>
 
@@ -175,34 +185,7 @@ if(isset($_POST['fetch_order_supplier'])){
 
     <script>
         $(document).ready(function() {
-            $(".select2_order").each(function() {
-                let $this = $(this);
-
-                if ($this.hasClass("select2-hidden-accessible")) {
-                    $this.select2('destroy');
-                    $this.removeAttr('data-select2-id');
-                    $this.next('.select2-container').remove();
-                }
-
-                $this.select2({
-                    width: '100%',
-                    dropdownParent: $this.parent()
-                });
-            });
-
-            $(".color-order-supplier").each(function() {
-                if ($(this).data('select2')) {
-                    $(this).select2('destroy');
-                }
-                $(this).select2({
-                    width: '300px',
-                    placeholder: "Select...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('#orderSupplierTable'),
-                    templateResult: formatOption,
-                    templateSelection: formatOption
-                });
-            });
+            
         });
     </script>
 
@@ -224,15 +207,14 @@ if (isset($_POST['save_order_supplier'])) {
     } 
 
     $cashierid = intval($_SESSION['userid']);
-    $supplier_id = $_SESSION['order_supplier_id'] ?? 0;
     $cart = $_SESSION['cart'];
 
     $total_price = array_reduce($cart, function ($sum, $item) {
         return $sum + (floatval($item['unit_price']) * intval($item['quantity_cart']));
     }, 0);
 
-    $query = "INSERT INTO supplier_temp_orders (supplier_id, cashier, total_price, order_date) 
-              VALUES ('$supplier_id', '$cashierid', '$total_price', NOW())";
+    $query = "INSERT INTO supplier_temp_orders (cashier, total_price, order_date) 
+              VALUES ('$cashierid', '$total_price', NOW())";
 
     if ($conn->query($query)) {
         $supplier_temp_order_id = $conn->insert_id;
@@ -240,16 +222,17 @@ if (isset($_POST['save_order_supplier'])) {
 
         foreach ($cart as $item) {
             $values[] = sprintf(
-                "('%d', '%d', '%d', '%.2f', '%s')",
+                "('%d', '%d','%d', '%d', '%.2f', '%s')",
                 $supplier_temp_order_id,
                 intval($item['product_id']),
+                intval($item['supplier_id']),
                 intval($item['quantity_cart']),
                 floatval($item['unit_price']),
                 $conn->real_escape_string($item['custom_color'])
             );
         }
 
-        $query = "INSERT INTO supplier_temp_prod_orders (supplier_temp_order_id, product_id, quantity, price, color) VALUES " . implode(', ', $values);
+        $query = "INSERT INTO supplier_temp_prod_orders (supplier_temp_order_id, product_id,supplier_id, quantity, price, color) VALUES " . implode(', ', $values);
         if ($conn->query($query)) {
             unset($_SESSION['cart']);
             echo json_encode(['success' => true, 'temp_order_id' => $supplier_temp_order_id]);
@@ -337,6 +320,7 @@ if(isset($_POST['fetch_order_product_details'])){
                     <tr>
                         <th>Description</th>
                         <th>Color</th>
+                        <th class="text-center">Supplier</th>
                         <th class="text-center">Quantity</th>
                         <th class="text-end">Price</th>
                     </tr>
@@ -351,6 +335,7 @@ if(isset($_POST['fetch_order_product_details'])){
                         $response = array();
                         while ($row = mysqli_fetch_assoc($result)) {
                             $product_id = $row['product_id'];
+                            $supplier = getSupplierName($row['supplier_id']);
                             $price = number_format(floatval($row['price']) * floatval($row['quantity']),2);
                             ?>
                             <tr>
@@ -363,6 +348,7 @@ if(isset($_POST['fetch_order_product_details'])){
                                     <?= getColorName($row['color']); ?>
                                 </div>
                                 </td>
+                                <td class="text-center"><?= $supplier ?></td>
                                 <td class="text-center"><?= floatval($row['quantity']) ?></td>
                                 <td class="text-end">$ <?= $price ?></td>
                             </tr>
@@ -423,7 +409,7 @@ if (isset($_POST['load_saved_order'])) {
         exit;
     }
 
-    $query_products = "SELECT product_id, quantity, price, color FROM supplier_temp_prod_orders WHERE supplier_temp_order_id = '$supplier_temp_order_id'";
+    $query_products = "SELECT * FROM supplier_temp_prod_orders WHERE supplier_temp_order_id = '$supplier_temp_order_id'";
     $result_products = $conn->query($query_products);
 
     if ($result_products->num_rows > 0) {
@@ -433,6 +419,7 @@ if (isset($_POST['load_saved_order'])) {
             $_SESSION['cart'][] = [
                 'product_id' => $row['product_id'],
                 'product_item' => getProductName($row['product_id']),
+                'supplier_id' => $row['supplier_id'],
                 'quantity_cart' => $row['quantity'],
                 'unit_price' => $row['price'],
                 'custom_color' => $row['color']
