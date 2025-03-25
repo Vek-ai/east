@@ -573,7 +573,7 @@ if (!isset($_SESSION['userid'])) {
                     </div>
                   </li>
 
-                  <li class="nav-item nav-icon-hover-bg d-lg-block rounded-circle">
+                  <li class="nav-item nav-icon-hover-bg d-lg-block rounded-circle d-none">
                     <a class="nav-link nav-icon-hover d-none d-md-flex waves-effect waves-dark order-icon" 
                         id="order_product" 
                         href="#" 
