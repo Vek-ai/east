@@ -423,9 +423,9 @@ require '../includes/functions.php';
                                     }
 
                                     if(!empty($row_product['main_image'])){
-                                        $picture_path = $row_product['main_image'];
+                                        $picture_path = '../'.$row_product['main_image'];
                                     }else{
-                                        $picture_path = "images/product/product.jpg";
+                                        $picture_path = "../images/product/product.jpg";
                                     }
                 
                                 ?>
