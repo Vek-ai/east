@@ -318,7 +318,7 @@ $reorder_level = 1;
                                         $ <?= number_format($row["total_amount"], 2) ?>
                                     </td>
                                     <td class="text-center">
-                                        <a href="?page=supplier_order_list&id=<?= $row["supplier_id"] ?>" class="py-1 pe-1 fs-5" title="View"><i class="fa fa-eye"></i></a>
+                                        <a href="?page=supplier_order_list&id=<?= $row["supplier_id"] ?>" target="_blank" class="py-1 pe-1 fs-5" title="View"><i class="fa fa-eye"></i></a>
                                     </td>
                                 </tr>
                                 <?php
