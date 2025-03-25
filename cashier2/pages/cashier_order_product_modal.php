@@ -94,11 +94,12 @@ if(isset($_POST['fetch_order_supplier'])){
                         
                             foreach ($_SESSION["cart"] as $keys => $values) {
                                 $data_id = $values["product_id"];
+                                $product_details = getProductDetails($data_id);
                                 $supplier_id = $values["supplier_id"];
                                 $line = $values["line"];
                                 $color_id = $values["custom_color"];
-                                $default_image = 'images/product/product.jpg';
-                                $picture_path = !empty($values['main_image']) ? '../' . $values['main_image'] : $default_image;
+                                $default_image = '../images/product/product.jpg';
+                                $picture_path = !empty($product_details['main_image']) ? '../' . $product_details['main_image'] : $default_image;
                                 $product_price = $values["quantity_cart"] * $values["unit_price"];
                         
                                 if (!empty($supplier_id) && !in_array($supplier_id, $processed_suppliers)) {
