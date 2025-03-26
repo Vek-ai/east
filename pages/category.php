@@ -82,6 +82,9 @@ if(!empty($_REQUEST['category_id'])){
 <div class="card card-body">
     <div class="row">
       <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+          <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
+              <i class="ti ti-plus text-white me-1 fs-5"></i> Add Category
+          </button>
           <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
               <i class="ti ti-download text-white me-1 fs-5"></i> Download Categories
           </button>
@@ -111,11 +114,7 @@ if(!empty($_REQUEST['category_id'])){
         <div class="datatables">
           <div class="card">
             <div class="card-body">
-                <h4 class="card-title d-flex justify-content-between align-items-center">Category List  &nbsp;&nbsp; 
-                  <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
-                      <i class="ti ti-plus text-white me-1 fs-5"></i> Add Category
-                  </button>
-                </h4>
+                <h4 class="card-title d-flex justify-content-between align-items-center">Category List</h4>
                 <div class="table-responsive">
                   <table id="display_category" class="table table-striped table-bordered text-nowrap align-middle">
                     <thead>
