@@ -318,58 +318,58 @@ if(isset($_REQUEST['action'])) {
     if ($action == "save_table") {
         $main_primary = getPrimaryKey($table);
         $test_primary = getPrimaryKey($test_table);
-    
+        
         $selectSql = "SELECT * FROM $test_table";
         $result = $conn->query($selectSql);
     
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                if (!isset($row[$test_primary]) || empty(trim($row[$test_primary]))) {
-                    continue;
-                }
+                $main_primary_id = trim($row[$main_primary] ?? ''); 
     
-                $primaryValue = trim($row[$test_primary]);
                 unset($row[$test_primary]);
     
-                $checkSql = "SELECT COUNT(*) as count FROM $table WHERE $main_primary = '$primaryValue'";
-                $checkResult = $conn->query($checkSql);
-                $exists = $checkResult->fetch_assoc()['count'] > 0;
+                if (!empty($main_primary_id)) {
+                    $checkSql = "SELECT COUNT(*) as count FROM $table WHERE $main_primary = '$main_primary_id'";
+                    $checkResult = $conn->query($checkSql);
+                    $exists = $checkResult->fetch_assoc()['count'] > 0;
     
-                if ($exists) {
-                    $updateFields = [];
-                    foreach ($row as $column => $value) {
-                        if ($column !== $main_primary && $column !== $test_primary && !empty(trim($value))) {
-                            $updateFields[] = "$column = '$value'";
+                    if ($exists) {
+                        $updateFields = [];
+                        foreach ($row as $column => $value) {
+                            if ($column !== $main_primary && $value !== null && $value !== '') {
+                                $updateFields[] = "$column = '$value'";
+                            }
                         }
-                    }
-                    if (!empty($updateFields)) {
-                        $updateSql = "UPDATE $table SET " . implode(", ", $updateFields) . " WHERE $main_primary = '$primaryValue'";
-                        $conn->query($updateSql);
-                    }
-                } else {
-                    $filteredColumns = [];
-                    $filteredValues = [];
-    
-                    foreach ($row as $column => $value) {
-                        if (!empty(trim($value))) {
-                            $filteredColumns[] = $column;
-                            $filteredValues[] = "'$value'";
+                        if (!empty($updateFields)) {
+                            $updateSql = "UPDATE $table SET " . implode(", ", $updateFields) . " WHERE $main_primary = '$main_primary_id'";
+                            $conn->query($updateSql);
                         }
+                        continue;
                     }
+                }
     
-                    if (!empty($filteredColumns)) {
-                        $columns = implode(", ", $filteredColumns);
-                        $values = implode(", ", $filteredValues);
-                        $insertSql = "INSERT INTO $table ($main_primary, $columns) VALUES ('$primaryValue', $values)";
-                        $conn->query($insertSql);
+                $columns = [];
+                $values = [];
+                foreach ($row as $column => $value) {
+                    if ($value !== null && $value !== '') {
+                        $columns[] = $column;
+                        $values[] = "'$value'";
                     }
+                }
+                if (!empty($columns)) {
+                    $insertSql = "INSERT INTO $table (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ")";
+                    $conn->query($insertSql);
                 }
             }
     
             echo "Data has been successfully saved";
-            $conn->query("TRUNCATE TABLE $test_table");
+    
+            $truncateSql = "TRUNCATE TABLE $test_table";
+            if ($conn->query($truncateSql) !== TRUE) {
+                echo " but failed to clear test color table: " . $conn->error;
+            }
         } else {
-            echo "No data found in $test_table.";
+            echo "No data found in test color table.";
         }
     }    
 
