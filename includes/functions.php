@@ -1024,4 +1024,19 @@ function getProductStockTotal($product_id) {
     $row = mysqli_fetch_assoc($result);
     return $row['total_quantity'];
 }
+
+function getPrimaryKey($table) {
+    global $conn;
+
+    $sql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '$table' AND COLUMN_KEY = 'PRI' 
+            LIMIT 1";
+    $result = $conn->query($sql);
+
+    if ($row = $result->fetch_assoc()) {
+        return $row['COLUMN_NAME'];
+    }
+
+    return null;
+}
 ?>

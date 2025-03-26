@@ -4,6 +4,15 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require '../includes/dbconn.php';
+require '../includes/functions.php';
+require '../includes/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+$table = 'product_category';
+$test_table = 'test_category';
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -85,7 +94,6 @@ if(isset($_REQUEST['action'])) {
             }
         }
     } 
-    
     if ($action == "change_status") {
         $product_category_id = mysqli_real_escape_string($conn, $_POST['product_category_id']);
         $status = mysqli_real_escape_string($conn, $_POST['status']);
@@ -107,7 +115,6 @@ if(isset($_REQUEST['action'])) {
             echo 'error';
         }
     }
-
     if ($action == 'fetch_modal_content') {
         $product_category_id = mysqli_real_escape_string($conn, $_POST['id']);
         $query = "SELECT * FROM product_category WHERE product_category_id = '$product_category_id'";
@@ -150,6 +157,298 @@ if(isset($_REQUEST['action'])) {
         <?php
     }
 
+    if ($action == "download_excel") {
+        $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
+        $category_name = strtoupper(getProductCategoryName($product_category));
+
+        $includedColumns = array();
+        $column_txt = '*';
+
+        $includedColumns = [ 
+            'product_category_id',
+            'product_category',
+            'category_abreviations',
+            'notes',
+            'multiplier'
+        ];
+
+        $column_txt = implode(', ', $includedColumns);
+
+        $sql = "SELECT " . $column_txt . " FROM $table WHERE hidden = '0' AND status = '1'";
+        if (!empty($product_category)) {
+            $sql .= " AND product_category = '$product_category'";
+        }
+        $result = $conn->query($sql);
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $headers = [];
+        $row = 1;
+        
+        foreach ($includedColumns as $index => $column) {
+            $header = ucwords(str_replace('_', ' ', $column));
+        
+            if ($index >= 26) {
+                $columnLetter = indexToColumnLetter($index);
+            } else {
+                $columnLetter = chr(65 + $index);
+            }
+        
+            $sheet->setCellValue($columnLetter . $row, $header);
+        }        
+
+        $row = 2;
+        while ($data = $result->fetch_assoc()) {
+            foreach ($includedColumns as $index => $column) {
+                if ($index >= 26) {
+                    $columnLetter = indexToColumnLetter($index);
+                } else {
+                    $columnLetter = chr(65 + $index);
+                }
+                $sheet->setCellValue($columnLetter . $row, $data[$column] ?? '');
+            }
+            $row++;
+        }
+
+        $name = strtoupper(str_replace('_', ' ', $table));
+
+        $filename = "$category_name $name.xlsx";
+        $filePath = $filename;
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filePath);
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: max-age=0');
+
+        readfile($filePath);
+
+        unlink($filePath);
+        exit;
+    }
+
+    if ($action == "upload_excel") {
+        if (isset($_FILES['excel_file'])) {
+            $fileTmpPath = $_FILES['excel_file']['tmp_name'];
+            $fileName = $_FILES['excel_file']['name'];
+            $fileNameCmps = explode(".", $fileName);
+            $fileExtension = strtolower(end($fileNameCmps));
+
+            if ($fileExtension != "xlsx" && $fileExtension != "xls") {
+                echo "Please upload a valid Excel file.";
+                exit;
+            }
+
+            $spreadsheet = IOFactory::load($fileTmpPath);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+
+            $columns = $rows[0];
+            $dbColumns = [];
+            $columnMapping = [];
+
+            foreach ($columns as $col) {
+                $dbColumn = strtolower(str_replace(' ', '_', $col));
+
+                $dbColumns[] = $dbColumn;
+                $columnMapping[$dbColumn] = $col;
+            }
+
+            $truncateSql = "TRUNCATE TABLE $test_table";
+            $truncateResult = $conn->query($truncateSql);
+
+            if (!$truncateResult) {
+                echo "Error truncating table: " . $conn->error;
+                exit;
+            }
+
+            foreach ($rows as $index => $row) {
+                if ($index == 0) {
+                    continue;
+                }
+
+                $data = array_combine($dbColumns, $row);
+
+                $columnNames = implode(", ", array_keys($data));
+                $columnValues = implode("', '", array_map(function($value) { return $value ?? ''; }, array_values($data)));
+
+                $sql = "INSERT INTO $test_table ($columnNames) VALUES ('$columnValues')";
+                $result = $conn->query($sql);
+
+                if (!$result) {
+                    echo "Error inserting data: " . $conn->error;
+                    exit;
+                }
+            }
+
+            echo "success";
+        } else {
+            echo "No file uploaded.";
+            exit;
+        }
+    }   
+    
+    if ($action == "update_test_data") {
+        $column_name = $_POST['header_name'];
+        $new_value = $_POST['new_value'];
+        $id = $_POST['id'];
+        
+        if (empty($column_name) || empty($id)) {
+            exit;
+        }
+
+        $test_primary = getPrimaryKey($test_table);
+        
+        $column_name = mysqli_real_escape_string($conn, $column_name);
+        $new_value = mysqli_real_escape_string($conn, $new_value);
+        $id = mysqli_real_escape_string($conn, $id);
+        
+        $sql = "UPDATE $test_table SET `$column_name` = '$new_value' WHERE $test_primary = '$id'";
+
+        if ($conn->query($sql) === TRUE) {
+            echo $sql;
+        } else {
+            echo 'Error updating record: ' . $conn->error;
+        }
+    }
+
+    if ($action == "save_table") {
+        $main_primary = getPrimaryKey($table);
+        $test_primary = getPrimaryKey($test_table);
+    
+        $selectSql = "SELECT * FROM $test_table";
+        $result = $conn->query($selectSql);
+    
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                if (!isset($row[$test_primary]) || empty(trim($row[$test_primary]))) {
+                    continue;
+                }
+    
+                $primaryValue = trim($row[$test_primary]);
+                unset($row[$test_primary]);
+    
+                $checkSql = "SELECT COUNT(*) as count FROM $table WHERE $main_primary = '$primaryValue'";
+                $checkResult = $conn->query($checkSql);
+                $exists = $checkResult->fetch_assoc()['count'] > 0;
+    
+                if ($exists) {
+                    $updateFields = [];
+                    foreach ($row as $column => $value) {
+                        if ($column !== $main_primary && $column !== $test_primary && !empty(trim($value))) {
+                            $updateFields[] = "$column = '$value'";
+                        }
+                    }
+                    if (!empty($updateFields)) {
+                        $updateSql = "UPDATE $table SET " . implode(", ", $updateFields) . " WHERE $main_primary = '$primaryValue'";
+                        $conn->query($updateSql);
+                    }
+                } else {
+                    $filteredColumns = [];
+                    $filteredValues = [];
+    
+                    foreach ($row as $column => $value) {
+                        if (!empty(trim($value))) {
+                            $filteredColumns[] = $column;
+                            $filteredValues[] = "'$value'";
+                        }
+                    }
+    
+                    if (!empty($filteredColumns)) {
+                        $columns = implode(", ", $filteredColumns);
+                        $values = implode(", ", $filteredValues);
+                        $insertSql = "INSERT INTO $table ($main_primary, $columns) VALUES ('$primaryValue', $values)";
+                        $conn->query($insertSql);
+                    }
+                }
+            }
+    
+            echo "Data has been successfully saved";
+            $conn->query("TRUNCATE TABLE $test_table");
+        } else {
+            echo "No data found in $test_table.";
+        }
+    }    
+
+    if ($action == "fetch_uploaded_modal") {
+        $test_primary = getPrimaryKey($test_table);
+        
+        $sql = "SELECT * FROM $test_table";
+        $result = $conn->query($sql);
+    
+        if ($result->num_rows > 0) {
+            $columns = array_keys($result->fetch_assoc());
+            $result->data_seek(0);
+    
+            $includedColumns = [ 
+                'product_category_id',
+                'product_category',
+                'category_abreviations',
+                'notes',
+                'multiplier'
+            ];
+    
+            $columns = array_filter($columns, fn($col) => in_array($col, $includedColumns));
+    
+            $columnsWithData = [];
+            while ($row = $result->fetch_assoc()) {
+                foreach ($columns as $column) {
+                    if (!empty(trim($row[$column] ?? ''))) {
+                        $columnsWithData[$column] = true;
+                    }
+                }
+            }
+    
+            $result->data_seek(0);
+            ?>
+    
+            <div class="card card-body shadow" data-table="<?=$table?>">
+                <form id="tableForm">
+                    <div style="overflow-x: auto; overflow-y: auto; max-height: 80vh; max-width: 100%;">
+                        <table class="table table-bordered table-striped text-center">
+                            <thead>
+                                <tr>
+                                    <?php
+                                    foreach ($columns as $column) {
+                                        if (isset($columnsWithData[$column])) {
+                                            $formattedColumn = $column === 'color_code' ? 'Hex Color Code' : ucwords(str_replace('_', ' ', $column));
+                                            echo "<th class='fs-4'>$formattedColumn</th>";
+                                        }
+                                    }
+                                    ?>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php
+                                while ($row = $result->fetch_assoc()) {
+                                    $primaryValue = $row[$test_primary] ?? '';
+                                    echo '<tr>';
+                                    foreach ($columns as $column) {
+                                        if (isset($columnsWithData[$column])) {
+                                            $value = htmlspecialchars($row[$column] ?? '', ENT_QUOTES, 'UTF-8');
+                                            echo "<td contenteditable='true' class='table_data' data-header-name='$column' data-id='$primaryValue'>$value</td>";
+                                        }
+                                    }
+                                    echo '</tr>';
+                                }
+                            ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="button" id="saveTable" class="btn btn-primary mt-3">Save</button>
+                    </div>
+                </form>
+            </div>
+            <?php
+        } else {
+            echo "<p>No data found in the table.</p>";
+        }
+    }
+    
     mysqli_close($conn);
 }
 ?>
