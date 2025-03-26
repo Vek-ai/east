@@ -833,22 +833,7 @@ if(!empty($_REQUEST['result'])){
     $("#download_color_form").submit(function (e) {
         e.preventDefault();
 
-        let formData = new FormData(this);
-        formData.append("action", "download_excel");
-
-        $.ajax({
-            url: "pages/paint_colors_ajax.php",
-            type: "POST",
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function (response) {
-                window.location.href = "pages/paint_colors_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
-            },
-            error: function (xhr, status, error) {
-                alert("Error downloading file: " + error);
-            }
-        });
+        window.location.href = "pages/paint_colors_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
     });
 
     $("#download_class_form").submit(function (e) {

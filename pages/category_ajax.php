@@ -12,7 +12,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 $table = 'product_category';
-$test_table = 'test_category';
+$test_table = 'product_category_excel';
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];

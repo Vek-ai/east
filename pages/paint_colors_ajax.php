@@ -234,7 +234,7 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == "fetch_uploaded_modal") {
-        $table = "test_color";
+        $table = "paint_colors_excel";
         
         $sql = "SELECT * FROM $table";
         $result = $conn->query($sql);
@@ -326,7 +326,7 @@ if(isset($_REQUEST['action'])) {
             $fileNameCmps = explode(".", $fileName);
             $fileExtension = strtolower(end($fileNameCmps));
 
-            $table_test = 'test_color';
+            $table_test = 'paint_colors_excel';
 
             if ($fileExtension != "xlsx" && $fileExtension != "xls") {
                 echo "Please upload a valid Excel file.";
@@ -388,7 +388,7 @@ if(isset($_REQUEST['action'])) {
     if ($action == "save_table") {
         $table = "paint_colors";
         
-        $selectSql = "SELECT * FROM test_color";
+        $selectSql = "SELECT * FROM paint_colors_excel";
         $result = $conn->query($selectSql);
 
         if ($result->num_rows > 0) {
@@ -423,7 +423,7 @@ if(isset($_REQUEST['action'])) {
 
             echo "Data has been successfully saved";
 
-            $truncateSql = "TRUNCATE TABLE test_color";
+            $truncateSql = "TRUNCATE TABLE paint_colors_excel";
             if ($conn->query($truncateSql) !== TRUE) {
                 echo " but failed to clear test color table: " . $conn->error;
             }
@@ -612,7 +612,7 @@ if(isset($_REQUEST['action'])) {
         $new_value = mysqli_real_escape_string($conn, $new_value);
         $color_id = mysqli_real_escape_string($conn, $color_id);
         
-        $sql = "UPDATE test_color SET `$column_name` = '$new_value' WHERE color_id = '$color_id'";
+        $sql = "UPDATE paint_colors_excel SET `$column_name` = '$new_value' WHERE color_id = '$color_id'";
 
         if ($conn->query($sql) === TRUE) {
             echo 'Success';
