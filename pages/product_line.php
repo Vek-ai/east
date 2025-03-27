@@ -561,40 +561,6 @@ if(!empty($_REQUEST['product_line_id'])){
         });
     });
 
-    $(document).on('click', '#addModalBtn', function(event) {
-        event.preventDefault();
-        var id = $(this).data('id') || '';
-        var type = $(this).data('type') || '';
-
-        if(type == 'edit'){
-          $('#add-header').html('Update Product Line');
-        }else{
-          $('#add-header').html('Add Product Line');
-        }
-
-        $.ajax({
-            url: 'pages/product_line_ajax.php',
-            type: 'POST',
-            data: {
-              id : id,
-              action: 'fetch_modal_content'
-            },
-            success: function (response) {
-                $('#add-fields').html(response);
-                $('#addModal').modal('show');
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.error('AJAX Error:', textStatus, errorThrown);
-                console.error('Response:', jqXHR.responseText);
-
-                $('#responseHeader').text("Error");
-                $('#responseMsg').text("An error occurred while processing your request.");
-                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
-                $('#response-modal').modal("show");
-            }
-        });
-    });
-
     $("#download_excel_form").submit(function (e) {
         e.preventDefault();
         window.location.href = "pages/product_line_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
@@ -744,9 +710,9 @@ if(!empty($_REQUEST['product_line_id'])){
         var type = $(this).data('type') || '';
 
         if(type == 'edit'){
-          $('#add-header').html('Update Category');
+          $('#add-header').html('Update Product Line');
         }else{
-          $('#add-header').html('Add Category');
+          $('#add-header').html('Add Product Line');
         }
 
         $.ajax({

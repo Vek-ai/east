@@ -432,7 +432,6 @@ if(isset($_REQUEST['action'])) {
         }
     }
     
-
     if ($action == "download_classifications") {
         $classification = mysqli_real_escape_string($conn, $_REQUEST['class'] ?? '');
 
