@@ -1434,6 +1434,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "supplier_dashboard") {include 'pages/supplier_dashboard.php';}
             if ($_REQUEST['page'] == "supplier_order") {include 'pages/supplier_order.php';}
             if ($_REQUEST['page'] == "supplier_order_list") {include 'pages/supplier_order_list.php';}
+            if ($_REQUEST['page'] == "supplier_order_list_all") {include 'pages/supplier_order_list_all.php';}
           ?>
         </div>
       </div>

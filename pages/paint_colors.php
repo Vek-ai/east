@@ -343,6 +343,7 @@ if(!empty($_REQUEST['result'])){
                                     action: 'change_status'
                                 },
                                 success: function(response) {
+                                  console.log(response);
                                     if (response == 'success') {
                                         if (status == 1) {
                                             $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');

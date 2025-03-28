@@ -640,6 +640,26 @@ function getSupplierTempOrderDetails($supplier_temp_order_id) {
     return $supplier_temp_order;
 }
 
+function getSupplierOrderedTotals($supplier_order_id) {
+    global $conn;
+    $total_price = 0;
+
+    $query = "
+        SELECT 
+            SUM(price * quantity) AS total_price
+        FROM 
+            supplier_orders_prod
+        WHERE 
+            supplier_order_id = '$supplier_order_id'";
+
+    $result = mysqli_query($conn, $query);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $total_price = floatval($row['total_price']);
+    }
+    return number_format($total_price, 2);
+}
+
 function getSupplierOrderTotals($supplier_temp_order_id) {
     global $conn;
     $total_price = 0;

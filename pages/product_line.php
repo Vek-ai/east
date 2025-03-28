@@ -243,7 +243,7 @@ if(!empty($_REQUEST['product_line_id'])){
                                           $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                                           $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                           $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                          $('#action-button-' + no).html('<a href="/?page=product_line&product_line_id=' + product_line_id + '" class="text-decoration-none py-1" style="border-radius: 10%;"><i class="text-warning ti ti-pencil fs-7"></i></a>');
+                                          $('#action-button-' + no).html('<a href="/?page=product_line&product_line_id=' + product_line_id + '" class="text-decoration-none py-1" style="border-radius: 10%;"><i class="ti ti-pencil fs-7"></i></a>');
                                           $('#toggleActive').trigger('change');
                                         }
                                   } else {
@@ -465,7 +465,7 @@ if(!empty($_REQUEST['product_line_id'])){
 
 <script>
   $(document).ready(function() {
-    document.title = "Product Line";
+    document.title = "Product Lines";
 
     var table = $('#display_product_line').DataTable({
         pageLength: 100

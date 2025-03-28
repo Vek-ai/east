@@ -8,87 +8,8 @@ require '../includes/dbconn.php';
 require '../includes/functions.php';
 require '../includes/vendor/autoload.php';
 
-function findCartKey($cart, $product_id, $color) {
-    foreach ($cart as $key => $item) {
-        if ($item['product_id'] == $product_id && $item['custom_color'] == $color) {
-            return $key;
-        }
-    }
-    return false;
-}
-
-if (isset($_POST['modifyquantity'])) {
-    $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
-    $qty = isset($_POST['qty']) ? (int)$_POST['qty'] : 1;
-    $color = isset($_POST['qty']) ? (int)$_POST['color'] : 0;
-
-    $key = mysqli_real_escape_string($conn, $_POST['key'] ?? '');
-
-    if (!isset($_SESSION["order_cart"])) {
-        $_SESSION["order_cart"] = array();
-    }
-
-    if($key == ''){
-        $key = findCartKey($_SESSION["order_cart"], $product_id, $color);
-    }
-
-    if ($key !== false) {
-        if (isset($_POST['setquantity'])) {
-            $requestedQuantity = max($qty, 1);
-            $_SESSION["order_cart"][$key]['quantity_cart'] = $requestedQuantity;
-            echo $_SESSION["order_cart"][$key]['quantity_cart'];
-        } elseif (isset($_POST['addquantity'])) {
-            $newQuantity = $_SESSION["order_cart"][$key]['quantity_cart'] + $qty;
-            $_SESSION["order_cart"][$key]['quantity_cart'] = $newQuantity;
-            echo $_SESSION["order_cart"][$key]['quantity_cart'];
-        } elseif (isset($_POST['deductquantity'])) {
-            $currentQuantity = $_SESSION["order_cart"][$key]['quantity_cart'];
-            if ($currentQuantity <= 1) {
-                array_splice($_SESSION["order_cart"], $key, 1);
-                echo 'removed';
-            } else {
-                $_SESSION["order_cart"][$key]['quantity_cart'] = $currentQuantity - 1;
-                echo $_SESSION["order_cart"][$key]['quantity_cart'];
-            }
-        }
-    } else {
-        $query = "SELECT * FROM product WHERE product_id = '$product_id'";
-        $result = mysqli_query($conn, $query);
-
-        if (mysqli_num_rows($result) > 0) {
-            $row = mysqli_fetch_assoc($result);
-
-            $basePrice = floatval($row['unit_price']);
-            if($row['sold_by_feet'] == '1'){
-                $basePrice = $basePrice / floatval($row['length'] ?? 1);
-            }
-
-            $item_array = array(
-                'product_id' => $row['product_id'],
-                'product_item' => getProductName($row['product_id']),
-                'supplier_id' => $row['supplier_id'],
-                'unit_price' => $basePrice,
-                'quantity_cart' => $qty,
-                'custom_color' => $color
-            );
-
-            $_SESSION["order_cart"][] = $item_array;
-        }
-
-    }
-}
-
-if (isset($_POST['fetch_cart_count'])) {
-    $cart_count = 0;
-    if (isset($_SESSION['order_cart']) && is_array($_SESSION['order_cart'])) {
-        foreach ($_SESSION['order_cart'] as $item) {
-            $cart_count += isset($item['quantity_cart']) ? intval($item['quantity_cart']) : 0;
-        }
-    }
-    echo $cart_count;
-}
-
-if(isset($_POST['fetch_order'])){
+if(isset($_POST['fetch_edit_modal'])){
+    $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
     ?>
     <style>
         .high-zindex-select2 + .select2-container--open {
@@ -138,34 +59,8 @@ if(isset($_POST['fetch_order'])){
     </style>
     <div class="card-body datatables">
         <form id="msform">
-            <div id="supplier_order_section">
-                <?php 
-                $supplier_id = '';
-                if(!empty($_SESSION["order_supplier_id"])){
-                    $supplier_id = $_SESSION["order_supplier_id"];
-                    $supplier_details = getSupplierDetails($supplier_id);
-                }
-                ?>
-                <div class="form-group row align-items-center text-start">
-                    <label>Supplier:</label>
-                    <div class="col-6"> 
-                        <select id="order_supplier_id" class="form-control select2_order" name="supplier_id">
-                            <option value="" >Select Supplier...</option>
-                            <optgroup label="Supplier">
-                                <?php
-                                $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
-                                $result_supplier = mysqli_query($conn, $query_supplier);            
-                                while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                                    $selected = ($supplier_id == $row_supplier['supplier_id']) ? 'selected' : '';
-                                ?>
-                                    <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
-                                <?php   
-                                }
-                                ?>
-                            </optgroup>
-                        </select>
-                    </div>
-                </div>
+            <div class="d-flex align-items-center justify-content-start mb-3">
+                
             </div>
             <div id="product_details" class="product-details table-responsive text-nowrap">
                 <table id="orderTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
@@ -181,26 +76,29 @@ if(isset($_POST['fetch_order'])){
                     </thead>
                     <tbody>
                         <?php 
+                        $query = "SELECT * FROM supplier_temp_prod_orders WHERE supplier_id = '$supplier_id'";
+                        $result = mysqli_query($conn, $query);
+                
+                        
                         $total = 0;
                         $total_customer_price = 0;
                         $totalquantity = 0;
                         $timestamp = time();
                         $no = $timestamp . 1;
                         $total_weight = 0;
-                        if (!empty($_SESSION["order_cart"])) {
-                            foreach ($_SESSION["order_cart"] as $keys => $values) {
-                                $data_id = $values["product_id"];
+                        if (mysqli_num_rows($result) > 0) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $data_id = $row["product_id"];
+                                $row_id = $row["id"];
                                 $product = getProductDetails($data_id);
                                 $category_id = $product["product_category"];
-
                                 $default_image = 'images/product/product.jpg';
                                 $picture_path = !empty($product['main_image'])
-                                ?  $product['main_image']
+                                ? $product['main_image']
                                 : $default_image;
 
-                                $product_price = ($values["quantity_cart"] * ($values["unit_price"]));
-
-                                $color_id = $values["custom_color"];
+                                $product_price = ($row["quantity"] * ($row["price"]));
+                                $color_id = $row["color"];
                             ?>
                                 <tr class="border-bottom border-3 border-white">
                                     <td>
@@ -209,10 +107,10 @@ if(isset($_POST['fetch_order'])){
                                         </div>
                                     </td>
                                     <td>
-                                        <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
+                                        <h6 class="fw-semibold mb-0 fs-4"><?= $product["product_item"] ?></h6>
                                     </td>
                                     <td>
-                                        <select id="color_order<?= $no ?>" class="form-control color-order text-start" name="color" onchange="updateColor(this)" data-key="<?= $keys ?>" data-id="<?= $data_id; ?>">
+                                        <select id="color_order<?= $no ?>" class="form-control color-order text-start" name="color" onchange="updateColor(this)" data-key="<?= $row_id ?>" data-id="<?= $data_id; ?>">
                                             <option value="">Select Color...</option>
                                             <?php
                                             if (!empty($color_id)) {
@@ -233,13 +131,13 @@ if(isset($_POST['fetch_order'])){
                                     <td>
                                         <div class="input-group">
                                             <span class="input-group-btn">
-                                                <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-key="<?= $keys ?>" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)">
+                                                <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-key="<?= $row_id ?>" data-id="<?= $data_id; ?>" onClick="deductquantity(this)">
                                                     <i class="fa fa-minus"></i>
                                                 </button>
                                             </span> 
-                                            <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-key="<?= $keys ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
+                                            <input class="form-control" type="text" size="5" value="<?php echo $row["quantity"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-key="<?= $row_id ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $key;?>">
                                             <span class="input-group-btn">
-                                                <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-key="<?= $keys ?>" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)">
+                                                <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-key="<?= $row_id ?>" data-id="<?= $data_id; ?>" onClick="addquantity(this)">
                                                     <i class="fa fa-plus"></i>
                                                 </button>
                                             </span>
@@ -253,11 +151,11 @@ if(isset($_POST['fetch_order'])){
                                     </td>
                                     
                                     <td class="text-center" style="width: 5%;">
-                                        <button class="btn btn-danger-gradient btn-sm" type="button" data-id="<?=$data_id; ?>" data-key="<?= $keys ?>" onClick="delete_item(this)"><i class="fa fa-trash text-danger fs-6"></i></button>
+                                        <button class="btn btn-danger-gradient btn-sm" type="button" data-key="<?= $row_id ?>" data-id="<?= $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash text-danger fs-6"></i></button>
                                     </td>
                                 </tr>
                         <?php
-                                $totalquantity += $values["quantity_cart"];
+                                $totalquantity += $values["quantity"];
                                 $total += $subtotal;
                                 $total_customer_price += $customer_price;
                                 $no++;
@@ -268,7 +166,12 @@ if(isset($_POST['fetch_order'])){
 
                     <tfoot>
                         <tr>
-                            <td colspan="2" class="text-end">Total Quantity:</td>
+                            <td colspan="1" class="text-center">
+                                <a href="#" class="btn btn-sm" id="addProductModalBtn" style="background-color:rgb(1, 145, 189); color: #fff; border: none;" data-id="<?= $supplier_temp_order_id ?>">
+                                    <i class="fas fa-plus"></i> Add Products
+                                </a>
+                            </td>
+                            <td colspan="1" class="text-end">Total Quantity:</td>
                             <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
                             <td colspan="1" class="text-end">Amount Due:</td>
                             <td colspan="1" class="text-end"><span id="ammount_due"><?= number_format($total,2) ?> $</span></td>
@@ -279,104 +182,146 @@ if(isset($_POST['fetch_order'])){
             </div>
         </form>
     </div>
-
-    <script>
-        $(document).ready(function() {
-            $(".select2_order").each(function() {
-                let $this = $(this);
-
-                if ($this.hasClass("select2-hidden-accessible")) {
-                    $this.select2('destroy');
-                    $this.removeAttr('data-select2-id');
-                    $this.next('.select2-container').remove();
-                }
-
-                $this.select2({
-                    width: '100%',
-                    dropdownParent: $this.parent()
-                });
-            });
-
-            $(".color-order").each(function() {
-                if ($(this).data('select2')) {
-                    $(this).select2('destroy');
-                }
-                $(this).select2({
-                    width: '300px',
-                    placeholder: "Select...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('#orderTable'),
-                    templateResult: formatOption,
-                    templateSelection: formatOption
-                });
-            });
-        });
-    </script>
-
     <?php
 }
 
-if (isset($_POST['set_color'])) {
-    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
-    $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
+if (isset($_POST['modifyquantity'])) {
     $key = mysqli_real_escape_string($conn, $_POST['key']);
+    $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
 
-    if ($key !== false && isset($_SESSION["order_cart"][$key])) {
-        $_SESSION["order_cart"][$key]['custom_color'] = !empty($color_id) ? $color_id : "";
-
-        echo "Color id: $color_id, Prod id: $product_id, Line: $line, Key: $key";
+    if (isset($_POST['setquantity'])) {
+        $query = "UPDATE supplier_temp_prod_orders SET quantity = '$quantity' WHERE id = '$key'";
+    } elseif (isset($_POST['addquantity'])) {
+        $query = "UPDATE supplier_temp_prod_orders SET quantity = quantity + '1' WHERE id = '$key'";
+    } elseif (isset($_POST['deductquantity'])) {
+        $query = "UPDATE supplier_temp_prod_orders SET quantity = GREATEST(quantity - '1', 0) WHERE id = '$key'";
     }
-    
+
+    if (isset($query)) {
+        echo $quantity;
+        mysqli_query($conn, $query);
+    }
 }
 
 if (isset($_POST['deleteitem'])) {
     $key = mysqli_real_escape_string($conn, $_POST['key']);
-    
-    $key = (int) $key; 
-    
-    if (isset($_SESSION["order_cart"][$key])) {
-        array_splice($_SESSION["order_cart"], $key, 1);
-    } else {
-        echo "Item not found in cart.";
-    }
+    $query = "DELETE FROM supplier_temp_prod_orders WHERE id = '$key'";
+    mysqli_query($conn, $query);
 }
 
-if (isset($_POST['change_supplier'])) {
-    if (isset($_POST['supplier_id'])) {
-        $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
-        $_SESSION['order_supplier_id'] = $supplier_id;
-        echo 'success';
+if (isset($_POST['set_color'])) {
+    $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
+    $key = mysqli_real_escape_string($conn, $_POST['key']);
+    $query = "UPDATE supplier_temp_prod_orders SET color = '$color_id' WHERE id = '$key'";
+    mysqli_query($conn, $query);
+}
+
+if (isset($_POST['addToCart'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+    $product_details = getProductDetails($product_id);
+    $supplier_id = $product_details['supplier_id'];
+    $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
+    $price = $product_details['unit_price'];
+    $color = mysqli_real_escape_string($conn, $_POST['color']);
+
+    $check_query = "SELECT id, quantity FROM supplier_temp_prod_orders 
+                    WHERE product_id = '$product_id' 
+                    AND color = '$color'";
+
+    $result = mysqli_query($conn, $check_query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $new_quantity = $row['quantity'] + $quantity;
+
+        $update_query = "UPDATE supplier_temp_prod_orders 
+                         SET quantity = '$new_quantity' 
+                         WHERE id = '{$row['id']}'";
+
+        if (mysqli_query($conn, $update_query)) {
+            echo "updated";
+        } else {
+            echo "Error: " . mysqli_error($conn);
+        }
     } else {
-        echo 'Error: Customer ID not provided.';
+        $insert_query = "INSERT INTO supplier_temp_prod_orders (supplier_temp_order_id, product_id, supplier_id, quantity, price, color) 
+                         VALUES ('$supplier_temp_order_id', '$product_id', '$supplier_id', '$quantity', '$price', '$color')";
+
+        if (mysqli_query($conn, $insert_query)) {
+            echo "success";
+        } else {
+            echo "Error: " . mysqli_error($conn);
+        }
     }
+    exit();
+}
+
+if (isset($_POST['fetch_products'])) {
+    $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
+    $query_product = "
+        SELECT 
+            p.*,
+            COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
+        FROM 
+            product AS p
+        LEFT JOIN 
+            inventory AS i ON p.product_id = i.product_id
+        WHERE 
+            p.hidden = '0' AND 
+            p.product_origin = '1' AND
+            p.supplier_id = '$supplier_id'
+        GROUP BY p.product_id
+    ";
+    $result_product = mysqli_query($conn, $query_product);
+
+    $products = [];
+    while ($row_product = mysqli_fetch_assoc($result_product)) {
+        $row_product['main_image'] = !empty($row_product['main_image']) ? $row_product['main_image'] : "images/product/product.jpg";
+        $row_product['product_category'] = !empty($row_product['product_category']) ? getProductCategoryName($row_product['product_category']) : "";
+        $products[] = $row_product;
+    }
+
+    echo json_encode($products);
 }
 
 if (isset($_POST['order_supplier_products'])) {
     header('Content-Type: application/json');
-    $response = [];
-
-    if (empty($_SESSION['order_supplier_id'])) {
-        echo json_encode(['error' => "Supplier is not set."]);
-        exit;
-    }
 
     if (empty($_SESSION['userid'])) {
         echo json_encode(['error' => "Staff not logged in."]);
         exit;
     }
 
-    if (!isset($_SESSION['order_cart']) || empty($_SESSION['order_cart'])) {
-        echo json_encode(['error' => "Order List is empty or does not exist."]);
-        exit;
-    } 
-    
     $cashierid = intval($_SESSION['userid']);
-    $supplier_id = $_SESSION['order_supplier_id'];
-    $cart = $_SESSION['order_cart'];
+    $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
 
-    $total_price = array_reduce($cart, function ($sum, $item) {
-        return $sum + (floatval($item['unit_price']) * intval($item['quantity_cart']));
-    }, 0);
+    $query = "SELECT * FROM supplier_temp_prod_orders WHERE supplier_id = '$supplier_id'";
+    $result = mysqli_query($conn, $query);
+
+    if (!$result || mysqli_num_rows($result) == 0) {
+        echo json_encode(['error' => "No products found for this supplier."]);
+        exit;
+    }
+
+    $total_price = 0;
+    $products = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $product_id = $row['product_id'];
+        $product_details = getProductDetails($product_id);
+        $price = floatval($product_details['unit_price']);
+        $quantity = intval($row['quantity']);
+        $color = intval($row['color']);
+
+        $total_price += ($price * $quantity);
+
+        $products[] = [
+            'product_id' => $product_id,
+            'quantity' => $quantity,
+            'price' => $price,
+            'color' => $color
+        ];
+    }
 
     $query = "INSERT INTO supplier_orders (cashier, total_price, order_date, supplier_id) 
               VALUES ('$cashierid', '$total_price', NOW(), '$supplier_id')";
@@ -385,22 +330,24 @@ if (isset($_POST['order_supplier_products'])) {
         $supplier_order_id = $conn->insert_id;
         $values = [];
 
-        foreach ($cart as $item) {
+        foreach ($products as $item) {
             $values[] = sprintf(
-                "('%d', '%d', '%d', '%.2f', '%s')",
+                "('%d', '%d', '%d', '%.2f', '%d')",
                 $supplier_order_id,
-                intval($item['product_id']),
-                intval($item['quantity_cart']),
-                floatval($item['unit_price']),
-                $conn->real_escape_string($item['custom_color'])
+                $item['product_id'],
+                $item['quantity'],
+                $item['price'],
+                $item['color']
             );
         }
 
         $query = "INSERT INTO supplier_orders_prod (supplier_order_id, product_id, quantity, price, color) VALUES " . implode(', ', $values);
 
         if ($conn->query($query)) {
-            unset($_SESSION['order_cart']);
-            echo json_encode(['success' => true, 'order_id' => $supplier_order_id]);
+            $delete_query = "DELETE FROM supplier_temp_prod_orders WHERE supplier_id = '$supplier_id'";
+            $conn->query($delete_query);
+
+            echo json_encode(['success' => true, 'supplier_order_id' => $supplier_order_id]);
         } else {
             echo json_encode(['error' => "Error inserting order products: " . $conn->error]);
         }
@@ -409,258 +356,6 @@ if (isset($_POST['order_supplier_products'])) {
     }
 }
 
-if (isset($_POST['save_order'])) {
-    header('Content-Type: application/json');
-    $response = [];
-
-    if (empty($_SESSION['order_supplier_id'])) {
-        echo json_encode(['error' => "Supplier is not set."]);
-        exit;
-    }
-
-    if (empty($_SESSION['userid'])) {
-        echo json_encode(['error' => "Staff not logged in."]);
-        exit;
-    }
-
-    if (!isset($_SESSION['order_cart']) || empty($_SESSION['order_cart'])) {
-        echo json_encode(['error' => "Order List is empty or does not exist."]);
-        exit;
-    } 
-
-    $cashierid = intval($_SESSION['userid']);
-    $supplier_id = $_SESSION['order_supplier_id'];
-    $cart = $_SESSION['order_cart'];
-
-    $total_price = array_reduce($cart, function ($sum, $item) {
-        return $sum + (floatval($item['unit_price']) * intval($item['quantity_cart']));
-    }, 0);
-
-    $query = "INSERT INTO supplier_temp_orders (supplier_id, cashier, total_price, order_date) 
-              VALUES ('$supplier_id', '$cashierid', '$total_price', NOW())";
-
-    if ($conn->query($query)) {
-        $supplier_temp_order_id = $conn->insert_id;
-        $values = [];
-
-        foreach ($cart as $item) {
-            $values[] = sprintf(
-                "('%d', '%d', '%d', '%.2f', '%s')",
-                $supplier_temp_order_id,
-                intval($item['product_id']),
-                intval($item['quantity_cart']),
-                floatval($item['unit_price']),
-                $conn->real_escape_string($item['custom_color'])
-            );
-        }
-
-        $query = "INSERT INTO supplier_temp_prod_orders (supplier_temp_order_id, product_id, quantity, price, color) VALUES " . implode(', ', $values);
-        if ($conn->query($query)) {
-            unset($_SESSION['order_cart']);
-            echo json_encode(['success' => true, 'temp_order_id' => $supplier_temp_order_id]);
-        } else {
-            echo json_encode(['error' => "Error inserting temp order products: " . $conn->error]);
-        }
-    } else {
-        echo json_encode(['error' => "Error inserting temp order: " . $conn->error]);
-    }
-}
-
-if (isset($_POST['load_saved_order'])) {
-    header('Content-Type: application/json');
-
-    if (empty($_POST['orderid'])) {
-        echo json_encode(['error' => "No Order ID provided."]);
-        exit;
-    }
-
-    $supplier_temp_order_id = intval($_POST['orderid']);
-    
-    $query_supplier = "SELECT supplier_id FROM supplier_temp_orders WHERE supplier_temp_order_id = '$supplier_temp_order_id' LIMIT 1";
-    $result_supplier = $conn->query($query_supplier);
-
-    if ($result_supplier->num_rows > 0) {
-        $row_supplier = $result_supplier->fetch_assoc();
-        $_SESSION['order_supplier_id'] = $row_supplier['supplier_id'];
-    } else {
-        echo json_encode(['error' => "Order not found."]);
-        exit;
-    }
-
-    $query_products = "SELECT product_id, quantity, price, color FROM supplier_temp_prod_orders WHERE supplier_temp_order_id = '$supplier_temp_order_id'";
-    $result_products = $conn->query($query_products);
-
-    if ($result_products->num_rows > 0) {
-        $_SESSION['order_cart'] = [];
-
-        while ($row = $result_products->fetch_assoc()) {
-            $_SESSION['order_cart'][] = [
-                'product_id' => $row['product_id'],
-                'product_item' => getProductName($row['product_id']),
-                'quantity_cart' => $row['quantity'],
-                'unit_price' => $row['price'],
-                'custom_color' => $row['color']
-            ];
-        }
-
-        echo json_encode(['success' => true, 'message' => "Order loaded successfully."]);
-    } else {
-        echo json_encode(['error' => "No products found for this order."]);
-    }
-}
-
-
-if(isset($_POST['fetch_order_saved'])){
-    ?>
-        <div class="card-body datatables">
-            <div class="product-details table-responsive text-nowrap">
-                <table id="order_list_tbl" class="table table-hover mb-0 text-md-nowrap">
-                    <thead>
-                        <tr>
-                            <th>Supplier</th>
-                            <th>Staff</th>
-                            <th>Total Price</th>
-                            <th>Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php 
-
-                        $query = "SELECT * FROM supplier_temp_orders";
-                        $result = mysqli_query($conn, $query);
-                    
-                        if ($result && mysqli_num_rows($result) > 0) {
-                            $response = array();
-                            while ($row = mysqli_fetch_assoc($result)) {
-                            ?>
-                            <tr>
-                                <td>
-                                    <?php echo getSupplierName($row["supplier_id"]) ?>
-                                </td>
-                                <td>
-                                    <?= get_staff_name($row["cashier"]) ?>
-                                </td>
-                                <td>
-                                    $ <?php echo getSupplierOrderTotals($row["supplier_temp_order_id"]) ?>
-                                </td>
-                                <td>
-                                    <?php echo date("F d, Y", strtotime($row["order_date"])); ?>
-                                </td>
-                                
-                                <td>
-                                    <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="view_order_details" data-id="<?php echo $row["supplier_temp_order_id"]; ?>" data-toggle="tooltip" data-placement="top" title="View"><i class="fa fa-eye"></i></a>
-                                </td>
-                            </tr>
-                            <?php
-                            }
-                        } else {
-                        ?>
-                        <tr>
-                            <td colspan="6" class="text-center">No Orders found.</td>
-                        </tr>
-                        <?php
-                        }
-                        ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <script>
-        $(document).ready(function() {
-            $('#order_list_tbl').DataTable({
-                language: {
-                    emptyTable: "Saved Supplier Orders not found"
-                },
-                autoWidth: false,
-                responsive: true
-            });
-        });
-    </script>
-    <?php
-}
-
-if(isset($_POST['fetch_order_details'])){
-    $supplier_temp_order_id = mysqli_real_escape_string($conn, $_POST['orderid']);
-    ?>
-    <style>
-        .tooltip-inner {
-            background-color: white !important;
-            color: black !important;
-            font-size: calc(0.875rem + 2px) !important;
-        }
-    </style>
-    <div class="card-body datatables">
-        <div class="product-details table-responsive text-nowrap">
-            <table id="order_dtls_tbl" class="table table-hover mb-0 text-md-nowrap">
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Color</th>
-                        <th class="text-center">Quantity</th>
-                        <th class="text-end">Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php 
-                    $no = 0;
-                    $query = "SELECT * FROM supplier_temp_prod_orders WHERE supplier_temp_order_id='$supplier_temp_order_id'";
-                    $result = mysqli_query($conn, $query);
-                    $totalquantity = $total_price = 0;
-                    if ($result && mysqli_num_rows($result) > 0) {
-                        $response = array();
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $product_id = $row['product_id'];
-                            $price = number_format(floatval($row['price']) * floatval($row['quantity']),2);
-                            ?>
-                            <tr>
-                                <td class="text-wrap"> 
-                                    <?php echo getProductName($product_id) ?>
-                                </td>
-                                <td>
-                                <div class="d-flex mb-0 gap-8">
-                                    <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromColorID($row['color'])?>"></a>
-                                    <?= getColorName($row['color']); ?>
-                                </div>
-                                </td>
-                                <td class="text-center"><?= floatval($row['quantity']) ?></td>
-                                <td class="text-end">$ <?= $price ?></td>
-                            </tr>
-
-                            <?php
-                            $totalquantity += $row['quantity'] ;
-                            $total_price += $price;
-                            
-                        }
-                    }
-                    ?>
-                </tbody>
-
-                <tfoot>
-                    <tr>
-                        <td colspan="2" class="text-end">Total</td>
-                        <td class="text-center"><?= $totalquantity ?></td>
-                        <td class="text-end">$ <?= number_format($total_price,2) ?></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    </div>   
-    <div class="modal-footer">
-        <button class="btn btn-warning ripple btn-secondary" id="edit_saved_order" data-id="<?= $supplier_temp_order_id ?>" type="button">
-            <i class="fas fa-pencil-alt me-2"></i> Edit
-        </button>
-        <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">
-            <i class="fas fa-times me-2"></i> Close
-        </button>
-    </div>
-    <script>
-        $(document).ready(function() {
-            $('[data-toggle="tooltip"]').tooltip(); 
-        });
-    </script>
-    <?php
-}
 
 mysqli_close($conn);
 ?>
