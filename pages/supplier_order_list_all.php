@@ -117,6 +117,7 @@ if($_REQUEST['supplier_id']){
                             <th>Amount</th>
                             <th>Time</th>
                             <th>Date</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -153,6 +154,19 @@ if($_REQUEST['supplier_id']){
                                             echo '';
                                         }
                                     ?>
+                                </td>
+                                <td>
+                                    <?php
+                                    $status_labels = [
+                                        1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
+                                        2 => ['label' => 'Processing', 'class' => 'badge bg-warning text-dark'],
+                                        3 => ['label' => 'Delivered', 'class' => 'badge bg-success']
+                                    ];
+
+                                    $status = intval($row["status"]);
+                                    $status_info = $status_labels[$status] ?? ['label' => 'Unknown', 'class' => 'badge bg-secondary'];
+                                    ?>
+                                    <span class="<?= $status_info['class'] ?>"><?= $status_info['label'] ?></span>
                                 </td>
                                 <td>
                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["supplier_order_id"]; ?>"><i class="text-white fa fa-eye fs-5"></i></button>
