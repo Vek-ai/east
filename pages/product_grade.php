@@ -105,7 +105,7 @@ if(!empty($_REQUEST['product_grade_id'])){
   <div class="row">
       <div class="col-3">
           <h3 class="card-title align-items-center mb-2">
-              Filter Types
+              Filter Grades
           </h3>
           <div class="position-relative w-100 px-0 mr-0 mb-2">
               <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search">

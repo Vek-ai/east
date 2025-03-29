@@ -97,9 +97,9 @@ td.notes,  td.last-edit{
 
 <div class="card card-body">
   <div class="row">
-      <div class="col" id="filterPanel">
+      <div class="col-3" id="filterPanel">
           <h3 class="card-title align-items-center mb-2">
-              Filter Types
+              Filter Gauges
           </h3>
           <div class="position-relative w-100 px-0 mr-0 mb-2">
               <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search">
@@ -109,7 +109,7 @@ td.notes,  td.last-edit{
               <input type="checkbox" id="toggleActive" checked> Show Active Only
           </div>
       </div>
-      <div class="col">
+      <div class="col-9">
         <div id="selected-tags" class="mb-2"></div>
         <div class="datatables">
           <div class="card">
