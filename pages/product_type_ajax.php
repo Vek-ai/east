@@ -290,7 +290,7 @@ if(isset($_REQUEST['action'])) {
         $sql = "UPDATE $test_table SET `$column_name` = '$new_value' WHERE $test_primary = '$id'";
 
         if ($conn->query($sql) === TRUE) {
-            echo $sql;
+            echo 'success';
         } else {
             echo 'Error updating record: ' . $conn->error;
         }
