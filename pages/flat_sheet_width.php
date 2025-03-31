@@ -72,27 +72,34 @@ if(!empty($_REQUEST['id'])){
       <div>
         <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
           <div class="d-flex gap-2">
-            <div class="">
-              <small>This Month</small>
-              <h4 class="text-primary mb-0 ">$58,256</h4>
-            </div>
-            <div class="">
-              <div class="breadbar"></div>
-            </div>
+            
           </div>
           <div class="d-flex gap-2">
-            <div class="">
-              <small>Last Month</small>
-              <h4 class="text-secondary mb-0 ">$58,256</h4>
-            </div>
-            <div class="">
-              <div class="breadbar2"></div>
-            </div>
+            
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
+
+<div class="card card-body">
+    <div class="row">
+      <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+          <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
+              <i class="ti ti-plus text-white me-1 fs-5"></i> Add Flat Sheet Width
+          </button>
+          <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
+              <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
+          </button>
+          <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
+              <i class="ti ti-download text-white me-1 fs-5"></i> Download Flat Sheet Width
+          </button>
+          <button type="button" id="uploadBtn" class="btn btn-primary d-flex align-items-center">
+              <i class="ti ti-upload text-white me-1 fs-5"></i> Upload Flat Sheet Width
+          </button>
+      </div>
+    </div>
 </div>
 
 <div class="card card-body">
@@ -184,15 +191,11 @@ if(!empty($_REQUEST['id'])){
           <div class="datatables">
             <div class="card">
               <div class="card-body">
-                <h4 class="card-title d-flex justify-content-between align-items-center">Flat Sheet Widths List  &nbsp;&nbsp; 
-                <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
-                    <i class="ti ti-plus text-white me-1 fs-5"></i> Add Product Type
-                </button>
-                </h4>
+                <h4 class="card-title d-flex justify-content-between align-items-center">Flat Sheet Widths List</h4>
                 
                 <div class="table-responsive">
               
-                  <table id="display_flat_sheet_width" class="table table-striped table-bordered text-nowrap align-middle text-center">
+                  <table id="display_flat_sheet_width" class="table table-striped table-bordered align-middle text-center">
                     <thead>
                       <!-- start row -->
                       <tr>
@@ -226,7 +229,6 @@ if(!empty($_REQUEST['id'])){
                           $added_by = $row_fs_width['added_by'];
                           $edited_by = $row_fs_width['edited_by'];
 
-                          
                           if($edited_by != "0"){
                             $last_user_name = get_name($edited_by);
                           }else if($added_by != "0"){
@@ -276,7 +278,6 @@ if(!empty($_REQUEST['id'])){
                       </tbody>
                       <script>
                       $(document).ready(function() {
-                          // Use event delegation for dynamically generated elements
                           $(document).on('click', '.changeStatus', function(event) {
                               event.preventDefault(); 
                               var id = $(this).data('id');
@@ -419,6 +420,130 @@ if(!empty($_REQUEST['id'])){
             </div>
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+      <div class="modal-content">
+          <div class="modal-header d-flex align-items-center">
+              <h4 class="modal-title" id="myLargeModalLabel">
+                  Upload Flat Sheet Width
+              </h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <div class="card">
+                  <div class="card-body">
+                      <form id="upload_excel_form" action="#" method="post" enctype="multipart/form-data">
+                          <div class="mb-3">
+                              <label for="excel_file" class="form-label fw-semibold">Select Excel File</label>
+                              <input type="file" class="form-control" name="excel_file" accept=".xls,.xlsx" required>
+                          </div>
+                          <div class="text-center">
+                              <button type="submit" class="btn btn-primary">Upload & Read</button>
+                          </div>
+                      </form>
+                  </div>
+              </div>
+              <div class="card mb-0 mt-2">
+                  <div class="card-body d-flex justify-content-center align-items-center">
+                      <button type="button" id="readUploadBtn" class="btn btn-primary fw-semibold">
+                          <i class="fas fa-eye me-2"></i> View Uploaded File
+                      </button>
+                  </div>
+              </div>    
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="readUploadModal" tabindex="-1" aria-labelledby="readUploadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+      <div class="modal-content">
+          <div class="modal-header d-flex align-items-center">
+              <h4 class="modal-title" id="myLargeModalLabel">
+                  Uploaded Excel
+              </h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div id="uploaded_excel" class="modal-body"></div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="downloadClassModal" tabindex="-1" aria-labelledby="downloadClassModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="myLargeModalLabel">
+                    Download Classification
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="download_class_form" class="form-horizontal">
+                    <label for="select-category" class="form-label fw-semibold">Select Classification</label>
+                    <div class="mb-3">
+                        <select class="form-select select2" id="select-download-class" name="category">
+                            <option value="">All Classifications</option>
+                            <optgroup label="Classifications">
+                                <option value="category">Category</option>
+                                <option value="system">Product System</option>
+                                <option value="line">Product Line</option> 
+                                <option value="type">Product Type</option> 
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="fas fa-download me-2"></i> Download Classification
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+      <div class="modal-content">
+          <div class="modal-header d-flex align-items-center">
+              <h4 class="modal-title" id="myLargeModalLabel">
+                  Download Flat Sheet Widths
+              </h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <form id="download_excel_form" class="form-horizontal">
+                  <label for="select-category" class="form-label fw-semibold">Select Category</label>
+                  <div class="mb-3">
+                      <select class="form-select select2" id="select-download-category" name="category">
+                          <option value="">All Categories</option>
+                          <optgroup label="Category">
+                              <?php
+                              $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                              $result_category = mysqli_query($conn, $query_category);
+                              while ($row_category = mysqli_fetch_array($result_category)) {
+                              ?>
+                                  <option value="<?= $row_category['product_category_id'] ?>"><?= $row_category['product_category'] ?></option>
+                              <?php
+                              }
+                              ?>
+                          </optgroup>
+                      </select>
+                  </div>
+
+                  <div class="d-grid">
+                      <button type="submit" class="btn btn-primary fw-semibold">
+                          <i class="fas fa-download me-2"></i> Download Excel
+                      </button>
+                  </div>
+              </form>
+          </div>
+      </div>
+  </div>
 </div>
 
 <script>
@@ -699,6 +824,147 @@ if(!empty($_REQUEST['id'])){
         });
     });
     
-    
+    $("#download_excel_form").submit(function (e) {
+        e.preventDefault();
+        window.location.href = "pages/flat_sheet_width_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
+    });
+
+    $("#download_class_form").submit(function (e) {
+        e.preventDefault();
+        window.location.href = "pages/flat_sheet_width_ajax.php?action=download_classifications&class=" + encodeURIComponent($("#select-download-class").val());
+    });
+
+    $(document).on('click', '#uploadBtn', function(event) {
+        $('#uploadModal').modal('show');
+    });
+
+    $(document).on('click', '#downloadClassModalBtn', function(event) {
+        $('#downloadClassModal').modal('show');
+    });
+
+    $(document).on('click', '#downloadBtn', function(event) {
+        $('#downloadModal').modal('show');
+    });
+
+    $(document).on('click', '#readUploadBtn', function(event) {
+        $.ajax({
+            url: 'pages/flat_sheet_width_ajax.php',
+            type: 'POST',
+            data: {
+                action: "fetch_uploaded_modal"
+            },
+            success: function(response) {
+                $('#uploaded_excel').html(response);
+                $('#readUploadModal').modal('show');
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $('#upload_excel_form').on('submit', function (e) {
+        e.preventDefault();
+        
+        var formData = new FormData(this);
+        formData.append('action', 'upload_excel');
+
+        $.ajax({
+            url: 'pages/flat_sheet_width_ajax.php',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                $('.modal').modal('hide');
+                response = response.trim();
+                if (response.trim() === "success") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("Data Uploaded successfully.");
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
+                    $('#response-modal').on('hide.bs.modal', function () {
+                        location.reload();
+                    });
+                } else {
+                    $('#responseHeader').text("Failed");
+                    $('#responseMsg').text(response);
+                    $('#responseHeaderContainer').removeClass("bg-success");
+                    $('#responseHeaderContainer').addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }  
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('AJAX Error:', textStatus, errorThrown);
+                console.error('Response:', jqXHR.responseText);
+
+                $('#responseHeader').text("Error");
+                $('#responseMsg').text("An error occurred while processing your request.");
+                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                $('#response-modal').modal("show");
+            }
+        });
+    });
+
+    $(document).on('blur', '.table_data', function() {
+        let newValue;
+        let updatedData = {};
+        
+        if ($(this)[0].tagName.toLowerCase() === 'select') {
+            const selectedValue = $(this).val();
+            const selectedText = $(this).find('option:selected').text();
+            newValue = selectedValue ? selectedValue : selectedText;
+        } 
+        else if ($(this).is('td')) {
+            newValue = $(this).text();
+        }
+        
+        const headerName = $(this).data('header-name');
+        const id = $(this).data('id');
+
+        updatedData = {
+            action: 'update_test_data',
+            id: id,
+            header_name: headerName,
+            new_value: newValue,
+        };
+
+        $.ajax({
+            url: 'pages/flat_sheet_width_ajax.php',
+            type: 'POST',
+            data: updatedData,
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(xhr, status, error) {
+                console.log('Error: ' + error);
+                alert('Error updating data');
+            }
+        });
+    });
+
+    $(document).on('click', '#saveTable', function(event) {
+        if (confirm("Are you sure you want to save this Excel data to the flat sheet widths data?")) {
+            var formData = new FormData();
+            formData.append("action", "save_table");
+
+            $.ajax({
+                url: "pages/flat_sheet_width_ajax.php",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    $('.modal').modal('hide');
+                    response = response.trim();
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text(response);
+                    $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                    $('#response-modal').modal("show");
+                }
+            });
+        }
+    });
 });
 </script>
