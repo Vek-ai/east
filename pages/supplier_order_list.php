@@ -658,14 +658,18 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    showResponseModal("Success", "Order to Supplier successfully submitted.", "success");
+                    let orderLink = `supplier/index.php?id=${response.supplier_order_id}&key=${response.key}`;
+                    let message = `Order to Supplier successfully submitted.<br> 
+                                LINK: <a href="${orderLink}" target="_blank">CLICK HERE TO ACCESS THE SUPPLIER LINK SENT TO EMAIL</a>`;
 
-                    $("#response-modal").on("hidden.bs.modal", function() {
-                        window.open("print_supplier_order.php?id=" + response.supplier_order_id, "_blank");
+                    $("#responseHeader").text("Success");
+                    $("#responseMsg").html(message);
+                    $("#response-modal").modal("show");
 
+                    $("#response-modal").off("hidden.bs.modal").on("hidden.bs.modal", function() {
+                        window.open(`print_supplier_order.php?id=${response.supplier_order_id}`, "_blank");
                         location.reload();
                     });
-
                 } else if (response.error) {
                     showResponseModal("Error", "Error: " + response.error, "error");
                 }

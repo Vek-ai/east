@@ -323,8 +323,10 @@ if (isset($_POST['order_supplier_products'])) {
         ];
     }
 
-    $query = "INSERT INTO supplier_orders (cashier, total_price, order_date, supplier_id) 
-              VALUES ('$cashierid', '$total_price', NOW(), '$supplier_id')";
+    $order_key = 'ORD' . substr(hash('sha256', uniqid()), 0, 10);
+
+    $query = "INSERT INTO supplier_orders (cashier, total_price, order_date, supplier_id, order_key) 
+              VALUES ('$cashierid', '$total_price', NOW(), '$supplier_id', '$order_key')";
 
     if ($conn->query($query)) {
         $supplier_order_id = $conn->insert_id;
@@ -347,7 +349,7 @@ if (isset($_POST['order_supplier_products'])) {
             $delete_query = "DELETE FROM supplier_temp_prod_orders WHERE supplier_id = '$supplier_id'";
             $conn->query($delete_query);
 
-            echo json_encode(['success' => true, 'supplier_order_id' => $supplier_order_id]);
+            echo json_encode(['success' => true, 'supplier_order_id' => $supplier_order_id, 'key' => $order_key]);
         } else {
             echo json_encode(['error' => "Error inserting order products: " . $conn->error]);
         }

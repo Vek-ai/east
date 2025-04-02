@@ -159,9 +159,13 @@ if($_REQUEST['supplier_id']){
                                     <?php
                                     $status_labels = [
                                         1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
-                                        2 => ['label' => 'Processing', 'class' => 'badge bg-warning text-dark'],
-                                        3 => ['label' => 'Delivered', 'class' => 'badge bg-success']
-                                    ];
+                                        2 => ['label' => 'Pending EKM Approval', 'class' => 'badge bg-warning text-dark'],
+                                        3 => ['label' => 'Pending Supplier Approval', 'class' => 'badge bg-warning text-dark'],
+                                        4 => ['label' => 'Approved, Waiting to Process', 'class' => 'badge bg-secondary'],
+                                        5 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+                                        6 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
+                                        7 => ['label' => 'Delivered', 'class' => 'badge bg-success']
+                                    ];                             
 
                                     $status = intval($row["status"]);
                                     $status_info = $status_labels[$status] ?? ['label' => 'Unknown', 'class' => 'badge bg-secondary'];
@@ -211,6 +215,43 @@ if($_REQUEST['supplier_id']){
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
                     }
             });
+        });
+
+        $(document).on("click", "#returnBtn, #finalizeBtn, #markDelivered", function () {
+            var dataId = $(this).data("id");
+            var action = $(this).data("action");
+
+            var confirmMessage = action.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+
+            if (confirm("Are you sure you want to " + confirmMessage + "?")) {
+                $.ajax({
+                    url: 'pages/supplier_order_list_all_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: dataId,
+                        method: action,
+                        action: 'update_status'
+                    },
+                    success: function (response) {
+                        console.log(response);
+                        try {
+                            var jsonResponse = JSON.parse(response);  
+                        } catch (e) {
+                            var jsonResponse = response;
+                        }
+
+                        if (jsonResponse.success) {
+                            alert("Status updated successfully!");
+                            location.reload();
+                        } else {
+                            alert("Error updating product.");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error:", xhr.responseText);
+                    }
+                });
+            }
         });
     });
 </script>

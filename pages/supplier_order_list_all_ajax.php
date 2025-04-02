@@ -88,6 +88,42 @@ if(isset($_REQUEST['action'])) {
                             </div>
                         </div>
                     </div>
+                    <?php
+                            $query = "SELECT * FROM supplier_orders WHERE supplier_order_id = '$supplier_order_id'";
+                            $result = mysqli_query($conn, $query);
+                            
+                            if ($result && mysqli_num_rows($result) > 0) {
+                                $row = mysqli_fetch_assoc($result);
+                            
+                                $status_code = $row['status'];
+
+                                $status_labels = [
+                                    1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
+                                    2 => ['label' => 'Pending EKM Approval', 'class' => 'badge bg-warning text-dark'],
+                                    3 => ['label' => 'Pending Supplier Approval', 'class' => 'badge bg-warning text-dark'],
+                                    4 => ['label' => 'Approved, Waiting to Process', 'class' => 'badge bg-secondary'],
+                                    5 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+                                    6 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
+                                    7 => ['label' => 'Delivered', 'class' => 'badge bg-success']
+                                ];
+                            
+                                $status = $status_labels[$status_code];
+                                ?>
+                                <div class="d-flex justify-content-end align-items-center gap-3 p-3">
+                                    <?php if ($status_code == 1): ?>
+                                    <?php elseif ($status_code == 2): ?>
+                                        <button type="button" id="returnBtn" class="btn btn-warning" data-id="<?=$supplier_order_id?>" data-action="return_for_approval">Return for Approval</button>
+                                        <button type="button" id="finalizeBtn" class="btn btn-success" data-id="<?=$supplier_order_id?>" data-action="finalize_order">Finalize</button>
+                                    <?php elseif ($status_code == 3): ?>
+                                    <?php elseif ($status_code == 4): ?>
+                                    <?php elseif ($status_code == 5): ?>
+                                    <?php elseif ($status_code == 6): ?>
+                                        <button type="button" id="markDelivered" class="btn btn-success" data-id="<?=$supplier_order_id?>" data-action="order_delivered">Mark as Delivered</button>
+                                    <?php endif; ?>
+                                </div>
+                            <?php 
+                            } 
+                            ?>
                 </div>
             </div>
             <script>
@@ -107,7 +143,35 @@ if(isset($_REQUEST['action'])) {
         }
     } 
 
-
+    if ($action == "update_status") {
+        $orderId = mysqli_real_escape_string($conn, $_POST['id']);
+        $method = mysqli_real_escape_string($conn, $_POST['method']); 
+    
+        $response = ['success' => false, 'message' => 'Unknown error'];
+    
+        if ($method == "return_for_approval") {
+            $newStatus = 3;
+        } elseif ($method == "finalize_order") {
+            $newStatus = 4;
+        } elseif ($method == "order_delivered") {
+            $newStatus = 7;
+        } else {
+            $response['message'] = 'Invalid action';
+            echo json_encode($response);
+            exit();
+        }
+        
+        $sql = "UPDATE supplier_orders SET status = $newStatus WHERE supplier_order_id = $orderId";
+        
+        if (mysqli_query($conn, $sql)) {
+            $response['success'] = true;
+            $response['message'] = 'Order status updated successfully!';
+        } else {
+            $response['message'] = 'Error updating order status.';
+        }
+    
+        echo json_encode($response);
+    }
     
     mysqli_close($conn);
 }
