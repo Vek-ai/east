@@ -84,6 +84,16 @@ if(isset($_REQUEST['action'])) {
         $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
         $price = mysqli_real_escape_string($conn, $_POST['price']);
         $color = mysqli_real_escape_string($conn, $_POST['color']);
+
+        $orderId = 0;
+        $query = "SELECT * FROM supplier_orders_prod WHERE id = '$id'";
+        $result = mysqli_query($conn, $query);
+        while ($row = mysqli_fetch_assoc($result)) {
+            $orderId = $row['supplier_order_id'];
+        }
+
+        $sql = "UPDATE supplier_orders SET is_edited = '1' WHERE supplier_order_id = $orderId";
+        mysqli_query($conn, $sql);
     
         $query = "UPDATE supplier_orders_prod 
                   SET quantity = '$quantity', price = '$price', color = '$color' 
@@ -100,6 +110,8 @@ if(isset($_REQUEST['action'])) {
         $orderId = mysqli_real_escape_string($conn, $_POST['id']);
         $method = mysqli_real_escape_string($conn, $_POST['method']); 
 
+        $is_edited = '0';
+
         $query = "SELECT * FROM supplier_orders WHERE supplier_order_id = '$orderId'";
         $result = mysqli_query($conn, $query);
         while ($row = mysqli_fetch_assoc($result)) {
@@ -112,19 +124,15 @@ if(isset($_REQUEST['action'])) {
         
             if ($method == "submit_for_approval") {
                 $newStatus = 2;
-
                 $subject = "$supplier_name requested for approval";
             } elseif ($method == "accept_order") {
                 $newStatus = 2;
-
                 $subject = "$supplier_name requested for approval";
             } elseif ($method == "process_order") {
                 $newStatus = 5;
-
                 $subject = "$supplier_name has started to process order";
             } elseif ($method == "ship_order") {
                 $newStatus = 6;
-
                 $subject = "$supplier_name has shipped the order";
             } else {
                 $response['message'] = 'Invalid action';
@@ -132,7 +140,7 @@ if(isset($_REQUEST['action'])) {
                 exit();
             }
             
-            $sql = "UPDATE supplier_orders SET status = $newStatus WHERE supplier_order_id = $orderId";
+            $sql = "UPDATE supplier_orders SET status = $newStatus, is_edited = '0' WHERE supplier_order_id = $orderId";
             
             if (mysqli_query($conn, $sql)) {
                 $response['success'] = true;

@@ -672,6 +672,7 @@ $(document).ready(function() {
                     });
                 } else if (response.error) {
                     showResponseModal("Error", "Error: " + response.error, "error");
+                    location.reload();
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {

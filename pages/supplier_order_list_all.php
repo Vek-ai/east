@@ -292,9 +292,10 @@ if($_REQUEST['supplier_id']){
                     if (response.success) {
                         alert("Product updated successfully!");
                         $("#editProductModal").modal("hide");
-                        loadOrderProducts(order_id);
+                        location.reload();
                     } else {
                         alert("Error updating product.");
+                        location.reload();
                     }
                 },
                 error: function(xhr, status, error) {

@@ -30,6 +30,8 @@ if(isset($_REQUEST['action'])) {
             $supplier_id = $row['supplier_id'];
             $status_code = $row['status'];
 
+            $is_edited = $row['is_edited'];
+
             $status_labels = [
                 1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
                 2 => ['label' => 'Pending EKM Approval', 'class' => 'badge bg-warning text-dark'],
@@ -153,7 +155,7 @@ if(isset($_REQUEST['action'])) {
                         <div class="d-flex justify-content-end align-items-center gap-3 p-3">
                             <?php if ($status_code == 1): ?>
                             <?php elseif ($status_code == 2): ?>
-                                <button type="button" id="returnBtn" class="btn btn-warning" data-id="<?=$supplier_order_id?>" data-action="return_for_approval">Return for Approval</button>
+                                <button type="button" id="returnBtn" class="btn btn-warning <?= $is_edited != 1 ? 'd-none' : '' ?>" data-id="<?=$supplier_order_id?>" data-action="return_for_approval">Return for Approval</button>
                                 <button type="button" id="finalizeBtn" class="btn btn-success" data-id="<?=$supplier_order_id?>" data-action="finalize_order">Finalize</button>
                             <?php elseif ($status_code == 3): ?>
                             <?php elseif ($status_code == 4): ?>
@@ -235,25 +237,26 @@ if(isset($_REQUEST['action'])) {
     if ($action == "update_status") {
         $orderId = mysqli_real_escape_string($conn, $_POST['id']);
         $method = mysqli_real_escape_string($conn, $_POST['method']); 
-    
+
+        $is_edited = '0';
+
         $query = "SELECT * FROM supplier_orders WHERE supplier_order_id = '$orderId'";
         $result = mysqli_query($conn, $query);
-        
         while ($row = mysqli_fetch_assoc($result)) {
             $supplier_id = $row['supplier_id'];
             $supplier_details = getSupplierDetails($supplier_id);
             $supplier_name = $supplier_details['supplier_name'];
             $supplier_email = $supplier_details['contact_email'];
             $key = $row['order_key'];
-    
+        
             $response = ['success' => false, 'message' => 'Unknown error'];
-    
+        
             if ($method == "return_for_approval") {
                 $newStatus = 3;
                 $subject = "EKM has made adjustments and requests for approval";
             } elseif ($method == "finalize_order") {
                 $newStatus = 4;
-                $subject = "EKM has finalized the order and awaiting processing";
+                $subject = "EKM has finalized the order and awaiting for processing";
             } elseif ($method == "order_delivered") {
                 $newStatus = 7;
                 $subject = "EKM has received the order";
@@ -263,7 +266,7 @@ if(isset($_REQUEST['action'])) {
                 exit();
             }
             
-            $sql = "UPDATE supplier_orders SET status = $newStatus WHERE supplier_order_id = $orderId";
+            $sql = "UPDATE supplier_orders SET status = $newStatus, is_edited = '0' WHERE supplier_order_id = $orderId";
             
             if (mysqli_query($conn, $sql)) {
                 $mail = new PHPMailer(true);
@@ -303,18 +306,10 @@ if(isset($_REQUEST['action'])) {
                         </div>
                     </body>
                     </html>
-                ";
-    
-                $mail->SMTPOptions = [
-                    'ssl' => [
-                        'verify_peer' => false,
-                        'verify_peer_name' => false,
-                        'allow_self_signed' => true
-                    ]
-                ];
-    
+                    ";
+
                 try {
-                    $mail->SMTPDebug = 0;
+                    $mail->SMTPDebug = 2;
                     $mail->isSMTP();
                     $mail->Host       = 'smtp.sendgrid.net';
                     $mail->SMTPAuth   = true;
@@ -322,15 +317,18 @@ if(isset($_REQUEST['action'])) {
                     $mail->Password   = $api_pass;
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
                     $mail->Port       = 465;
+                
+
                     $mail->setFrom('vekka@adiqted.com', 'East Kentucky Metal');
                     $mail->addAddress($supplier_email, $supplier_name);
+
                     $mail->isHTML(true);
                     $mail->Subject = $subject;
                     $mail->Body    = $message;
-                    $mail->AltBody = strip_tags($message);
-    
+                    $mail->AltBody = $message;
+                
                     $mail->send();
-    
+                
                     $response['success'] = true;
                     $response['message'] = 'Email sent and status updated successfully!';
                 } catch (Exception $e) {
@@ -339,27 +337,38 @@ if(isset($_REQUEST['action'])) {
             } else {
                 $response['message'] = 'Error updating order status.';
             }
-    
+        
             echo json_encode($response);
+
         }
-    }    
+    }
 
     if ($action == "update_product") {
         $id = mysqli_real_escape_string($conn, $_POST['id']);
         $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
         $price = mysqli_real_escape_string($conn, $_POST['price']);
         $color = mysqli_real_escape_string($conn, $_POST['color']);
+
+        $orderId = 0;
+        $query = "SELECT * FROM supplier_orders_prod WHERE id = '$id'";
+        $result = mysqli_query($conn, $query);
+        while ($row = mysqli_fetch_assoc($result)) {
+            $orderId = $row['supplier_order_id'];
+        }
+
+        $sql = "UPDATE supplier_orders SET is_edited = '1' WHERE supplier_order_id = $orderId";
+        mysqli_query($conn, $sql);
     
         $query = "UPDATE supplier_orders_prod 
                   SET quantity = '$quantity', price = '$price', color = '$color' 
                   WHERE id = '$id'";
     
         if (mysqli_query($conn, $query)) {
-            echo json_encode(["success" => true]);
+            echo json_encode(["success" => true, "sql" => $query]);
         } else {
             echo json_encode(["success" => false, "error" => mysqli_error($conn)]);
         }
-    }   
+    }    
     
     mysqli_close($conn);
 }

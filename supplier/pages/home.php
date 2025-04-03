@@ -13,6 +13,7 @@ if(!empty($_REQUEST['id']) && !empty($_REQUEST['key'])){
   $supplier_details = getSupplierDetails($supplier_id);
   $supplier_name = $supplier_details['supplier_name'];
   $status_code = $row['status'];
+  $is_edited = $row['is_edited'];
 
   $status_labels = [
       1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
@@ -81,12 +82,12 @@ if(!empty($supplier_order_id)){
       </div>
       <div class="d-flex justify-content-end align-items-center gap-3 p-3">
           <?php if ($status_code == 1): ?>
-              <button type="button" id="resendBtn" class="btn btn-warning" data-id="<?=$supplier_order_id?>" data-action="submit_for_approval">Submit for Approval</button>
+              <button type="button" id="resendBtn" class="btn btn-warning <?= $is_edited != 1 ? 'd-none' : '' ?>" data-id="<?=$supplier_order_id?>" data-action="submit_for_approval">Submit for Approval</button>
               <button type="button" id="AcceptBtn" class="btn btn-success" data-id="<?=$supplier_order_id?>" data-action="accept_order">Accept</button>
           <?php elseif ($status_code == 2): ?>
               
           <?php elseif ($status_code == 3): ?>
-              <button type="button" id="resendBtn" class="btn btn-warning" data-id="<?=$supplier_order_id?>" data-action="submit_for_approval">Submit for Approval</button>
+              <button type="button" id="resendBtn" class="btn btn-warning <?= $is_edited != 1 ? 'd-none' : '' ?>" data-id="<?=$supplier_order_id?>" data-action="submit_for_approval">Submit for Approval</button>
               <button type="button" id="AcceptBtn" class="btn btn-success" data-id="<?=$supplier_order_id?>" data-action="accept_order">Accept</button>
           <?php elseif ($status_code == 4): ?>
               <button type="button" id="processOrderBtn" class="btn btn-info" data-id="<?=$supplier_order_id?>" data-action="process_order">Process Order</button>
@@ -382,6 +383,9 @@ $(document).ready(function () {
 
                     if (jsonResponse.success) {
                         alert("Status updated successfully!");
+
+                        localStorage.setItem('isorderedited', 'true');
+                        
                         location.reload();
                     } else {
                         alert("Error updating product.");
