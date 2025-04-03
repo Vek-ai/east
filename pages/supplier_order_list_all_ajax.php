@@ -5,6 +5,16 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require '../includes/dbconn.php';
 require '../includes/functions.php';
+require '../includes/phpmailer/vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+$admin_email = "metaleastkentucky@gmail.com";
+
+$api_user = 'apikey';
+$api_pass = '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';
+$subject = '';
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -225,31 +235,111 @@ if(isset($_REQUEST['action'])) {
     if ($action == "update_status") {
         $orderId = mysqli_real_escape_string($conn, $_POST['id']);
         $method = mysqli_real_escape_string($conn, $_POST['method']); 
-    
-        $response = ['success' => false, 'message' => 'Unknown error'];
-    
-        if ($method == "return_for_approval") {
-            $newStatus = 3;
-        } elseif ($method == "finalize_order") {
-            $newStatus = 4;
-        } elseif ($method == "order_delivered") {
-            $newStatus = 7;
-        } else {
-            $response['message'] = 'Invalid action';
+
+        $query = "SELECT * FROM supplier_orders WHERE supplier_order_id = '$orderId'";
+        $result = mysqli_query($conn, $query);
+        while ($row = mysqli_fetch_assoc($result)) {
+            $supplier_id = $row['supplier_id'];
+            $supplier_details = getSupplierDetails($supplier_id);
+            $supplier_name = $supplier_details['supplier_name'];
+            $supplier_email = $supplier_details['contact_email'];
+            $key = $row['order_key'];
+        
+            $response = ['success' => false, 'message' => 'Unknown error'];
+        
+            if ($method == "return_for_approval") {
+                $newStatus = 3;
+
+                $subject = "EKM has made adjustments and requests for approval";
+            } elseif ($method == "finalize_order") {
+                $newStatus = 4;
+
+                $subject = "EKM has finalized the order and awaiting for processing";
+            } elseif ($method == "order_delivered") {
+                $newStatus = 7;
+
+                $subject = "EKM has received the order";
+            } else {
+                $response['message'] = 'Invalid action';
+                echo json_encode($response);
+                exit();
+            }
+            
+            $sql = "UPDATE supplier_orders SET status = $newStatus WHERE supplier_order_id = $orderId";
+            
+            if (mysqli_query($conn, $sql)) {
+                $mail = new PHPMailer(true);
+                $message = "
+                    <html>
+                    <head>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                            }
+                            .container {
+                                padding: 20px;
+                                border: 1px solid #e0e0e0;
+                                background-color: #f9f9f9;
+                                width: 80%;
+                                margin: 0 auto;
+                                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                            }
+                            h2 {
+                                color: #0056b3;
+                                margin-bottom: 20px;
+                            }
+                            p {
+                                margin: 5px 0;
+                            }
+                            .link {
+                                font-weight: bold;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='container'>
+                            <h2>$subject</h2>
+                            <a href='https://metal.ilearnwebtech.com/supplier/index.php?id=$orderId&key=$key' class='link' target='_blank'>To view order details, click this link</a>
+                        </div>
+                    </body>
+                    </html>
+                    ";
+
+                try {
+                    $mail->SMTPDebug = 0;
+                    $mail->isSMTP();
+                    $mail->Host       = 'smtp.sendgrid.net';
+                    $mail->SMTPAuth   = true;
+                    $mail->Username   = $api_user;
+                    $mail->Password   = $api_pass;
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                    $mail->Port       = 465;
+                
+
+                    $mail->setFrom('vekka@adiqted.com', 'East Kentucky Metal');
+                    $mail->addAddress($supplier_email, $supplier_name);
+
+                    $mail->isHTML(true);
+                    $mail->Subject = $subject;
+                    $mail->Body    = $message;
+                    $mail->AltBody = $message;
+                
+                    $mail->send();
+                
+                    $response['success'] = true;
+                    $response['message'] = 'Email sent and status updated successfully!';
+                } catch (Exception $e) {
+                    $response['message'] = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+                }
+            } else {
+                $response['message'] = 'Error updating order status.';
+            }
+        
             echo json_encode($response);
-            exit();
+
         }
-        
-        $sql = "UPDATE supplier_orders SET status = $newStatus WHERE supplier_order_id = $orderId";
-        
-        if (mysqli_query($conn, $sql)) {
-            $response['success'] = true;
-            $response['message'] = 'Order status updated successfully!';
-        } else {
-            $response['message'] = 'Error updating order status.';
-        }
-    
-        echo json_encode($response);
     }
 
     if ($action == "update_product") {

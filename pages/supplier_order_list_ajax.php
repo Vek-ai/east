@@ -7,6 +7,16 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 require '../includes/vendor/autoload.php';
+require '../includes/phpmailer/vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+$admin_email = "metaleastkentucky@gmail.com";
+
+$api_user = 'apikey';
+$api_pass = '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';
+$subject = '';
 
 if(isset($_POST['fetch_edit_modal'])){
     $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
@@ -295,6 +305,10 @@ if (isset($_POST['order_supplier_products'])) {
     $cashierid = intval($_SESSION['userid']);
     $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
 
+    $supplier_details = getSupplierDetails($supplier_id);
+    $supplier_name = $supplier_details['supplier_name'];
+    $supplier_email = $supplier_details['contact_email'];
+
     $query = "SELECT * FROM supplier_temp_prod_orders WHERE supplier_id = '$supplier_id'";
     $result = mysqli_query($conn, $query);
 
@@ -327,6 +341,7 @@ if (isset($_POST['order_supplier_products'])) {
 
     $query = "INSERT INTO supplier_orders (cashier, total_price, order_date, supplier_id, order_key) 
               VALUES ('$cashierid', '$total_price', NOW(), '$supplier_id', '$order_key')";
+              
 
     if ($conn->query($query)) {
         $supplier_order_id = $conn->insert_id;
@@ -348,6 +363,73 @@ if (isset($_POST['order_supplier_products'])) {
         if ($conn->query($query)) {
             $delete_query = "DELETE FROM supplier_temp_prod_orders WHERE supplier_id = '$supplier_id'";
             $conn->query($delete_query);
+
+            $subject = "EKM has requested an Order";
+            $mail = new PHPMailer(true);
+            $message = "
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                        }
+                        .container {
+                            padding: 20px;
+                            border: 1px solid #e0e0e0;
+                            background-color: #f9f9f9;
+                            width: 80%;
+                            margin: 0 auto;
+                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        }
+                        h2 {
+                            color: #0056b3;
+                            margin-bottom: 20px;
+                        }
+                        p {
+                            margin: 5px 0;
+                        }
+                        .link {
+                            font-weight: bold;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <h2>$subject</h2>
+                        <a href='https://metal.ilearnwebtech.com/supplier/index.php?id=$supplier_order_id&key=$order_key' class='link' target='_blank'>To view order details, click this link</a>
+                    </div>
+                </body>
+                </html>
+                ";
+
+            try {
+                $mail->SMTPDebug = 0;
+                $mail->isSMTP();
+                $mail->Host       = 'smtp.sendgrid.net';
+                $mail->SMTPAuth   = true;
+                $mail->Username   = $api_user;
+                $mail->Password   = $api_pass;
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                $mail->Port       = 465;
+
+                $mail->setFrom('vekka@adiqted.com', 'East Kentucky Metal');
+                $mail->addAddress($supplier_email, $supplier_name);
+
+                $mail->isHTML(true);
+                $mail->Subject = $subject;
+                $mail->Body    = $message;
+                $mail->AltBody = $message;
+            
+                $mail->send();
+            
+                $response['success'] = true;
+                $response['message'] = "Successfully sent email to $supplier_name for confirmation on orders.";
+            } catch (Exception $e) {
+                $response['message'] = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            }
+
 
             echo json_encode(['success' => true, 'supplier_order_id' => $supplier_order_id, 'key' => $order_key]);
         } else {
