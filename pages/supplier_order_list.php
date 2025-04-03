@@ -671,13 +671,15 @@ $(document).ready(function() {
                         location.reload();
                     });
                 } else if (response.error) {
-                    showResponseModal("Error", "Error: " + response.error, "error");
+                    showResponseModal("Error", '', "error");
+                    console.log("Error: " + response.error);
                     location.reload();
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.log('Response Text: ' + jqXHR.responseText);
-                showResponseModal("Error", "Error: " + textStatus + " - " + errorThrown, "bg-danger-subtle text-danger");
+                showResponseModal("Error", '', "bg-danger-subtle text-danger");
+                console.log("Error: " + textStatus + " - " + errorThrown);
             }
         });
     });
