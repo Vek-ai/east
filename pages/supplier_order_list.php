@@ -659,7 +659,7 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     let orderLink = `supplier/index.php?id=${response.supplier_order_id}&key=${response.key}`;
-                    let message = `Order to Supplier successfully submitted.<br> 
+                    let message = `${response.message}.<br> 
                                 LINK: <a href="${orderLink}" target="_blank">CLICK HERE TO ACCESS THE SUPPLIER LINK SENT TO EMAIL</a>`;
 
                     $("#responseHeader").text("Success");
