@@ -165,7 +165,7 @@ if($_REQUEST['supplier_id']){
                                         5 => ['label' => 'Processing', 'class' => 'badge bg-success'],
                                         6 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
                                         7 => ['label' => 'Delivered', 'class' => 'badge bg-success']
-                                    ];                             
+                                    ];
 
                                     $status = intval($row["status"]);
                                     $status_info = $status_labels[$status] ?? ['label' => 'Unknown', 'class' => 'badge bg-secondary'];
@@ -194,27 +194,33 @@ if($_REQUEST['supplier_id']){
 </div>
 
 <script>
+    function loadOrderProducts(id){
+        $.ajax({
+            url: 'pages/supplier_order_list_all_ajax.php',
+            type: 'POST',
+            data: {
+                id: id,
+                action: "fetch_view_modal"
+            },
+            success: function(response) {
+                $('#supplier_order_details_section').html(response);
+                $('#viewSupplierOrderModal').modal('show');
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
     $(document).ready(function() {
         var table = $('#est_list_tbl').DataTable();
+        var order_id = 0;
 
         $(document).on('click', '#view_order_btn', function(event) {
             event.preventDefault(); 
-            var id = $(this).data('id');
-            $.ajax({
-                    url: 'pages/supplier_order_list_all_ajax.php',
-                    type: 'POST',
-                    data: {
-                        id: id,
-                        action: "fetch_view_modal"
-                    },
-                    success: function(response) {
-                        $('#supplier_order_details_section').html(response);
-                        $('#viewSupplierOrderModal').modal('show');
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
-            });
+            order_id = $(this).data('id');
+            loadOrderProducts(order_id);
+            $('#viewSupplierOrderModal').modal('show');
         });
 
         $(document).on("click", "#returnBtn, #finalizeBtn, #markDelivered", function () {
@@ -252,6 +258,49 @@ if($_REQUEST['supplier_id']){
                     }
                 });
             }
+        });
+
+        $(document).on("click", ".btn-edit", function () {
+            let Id = $(this).data("id");
+            let productName = $(this).data("name");
+            let productQuantity = $(this).data("quantity");
+            let productPrice = $(this).data("price");
+            let productColor = $(this).data("color");
+
+            $("#editId").val(Id);
+            $("#editProductName").val(productName);
+            $("#editProductQuantity").val(productQuantity);
+            $("#editProductPrice").val(productPrice);
+            $("#editProductColor").val(productColor).trigger("change");
+            $("#editProductModal").modal("show");
+        });
+
+        $(document).on("submit", "#editProductForm", function (e) { 
+            e.preventDefault();
+            let formData = new FormData(this);
+            formData.append("action", "update_product");
+
+            $.ajax({
+                url: 'pages/supplier_order_list_all_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function (response) {
+                    console.log(response);
+                    if (response.success) {
+                        alert("Product updated successfully!");
+                        $("#editProductModal").modal("hide");
+                        loadOrderProducts(order_id);
+                    } else {
+                        alert("Error updating product.");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log("AJAX Error:", xhr.responseText);
+                }
+            });
         });
     });
 </script>
