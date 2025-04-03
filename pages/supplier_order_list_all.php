@@ -250,7 +250,7 @@ if($_REQUEST['supplier_id']){
                             alert(jsonResponse.message);
                             location.reload();
                         } else {
-                            alert("Error updating product.");
+                            alert("Update Success, but email failed to send");
                         }
                     },
                     error: function(xhr, status, error) {

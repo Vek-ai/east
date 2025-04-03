@@ -383,12 +383,10 @@ $(document).ready(function () {
 
                     if (jsonResponse.success) {
                         alert("Status updated successfully!");
-
-                        localStorage.setItem('isorderedited', 'true');
-                        
                         location.reload();
                     } else {
-                        alert("Error updating product.");
+                        alert("Update Success, but email failed to send");
+                        location.reload();
                     }
                 },
                 error: function(xhr, status, error) {
