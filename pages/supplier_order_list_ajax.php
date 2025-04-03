@@ -12,7 +12,7 @@ require '../includes/phpmailer/vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-$admin_email = "metaleastkentucky@gmail.com";
+$admin_email = "kentuckymetaleast@gmail.com";
 
 $api_user = 'apikey';
 $api_pass = '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';
