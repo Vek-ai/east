@@ -425,13 +425,13 @@ if (isset($_POST['order_supplier_products'])) {
                 $mail->send();
             
                 $response['success'] = true;
-                $response['message'] = "Successfully sent email to $supplier_name for confirmation on orders.";
+                $msg = "Successfully sent email to $supplier_name for confirmation on orders.";
             } catch (Exception $e) {
-                $response['message'] = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+                $msg = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
             }
 
 
-            echo json_encode(['success' => true, 'supplier_order_id' => $supplier_order_id, 'key' => $order_key]);
+            echo json_encode(['success' => true, 'message' => $msg, 'supplier_order_id' => $supplier_order_id, 'key' => $order_key]);
         } else {
             echo json_encode(['error' => "Error inserting order products: " . $conn->error]);
         }

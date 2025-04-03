@@ -247,7 +247,7 @@ if($_REQUEST['supplier_id']){
                         }
 
                         if (jsonResponse.success) {
-                            alert("Status updated successfully!");
+                            alert(jsonResponse.message);
                             location.reload();
                         } else {
                             alert("Error updating product.");
