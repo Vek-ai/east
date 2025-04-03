@@ -235,29 +235,27 @@ if(isset($_REQUEST['action'])) {
     if ($action == "update_status") {
         $orderId = mysqli_real_escape_string($conn, $_POST['id']);
         $method = mysqli_real_escape_string($conn, $_POST['method']); 
-
+    
         $query = "SELECT * FROM supplier_orders WHERE supplier_order_id = '$orderId'";
         $result = mysqli_query($conn, $query);
+        
         while ($row = mysqli_fetch_assoc($result)) {
             $supplier_id = $row['supplier_id'];
             $supplier_details = getSupplierDetails($supplier_id);
             $supplier_name = $supplier_details['supplier_name'];
             $supplier_email = $supplier_details['contact_email'];
             $key = $row['order_key'];
-        
+    
             $response = ['success' => false, 'message' => 'Unknown error'];
-        
+    
             if ($method == "return_for_approval") {
                 $newStatus = 3;
-
                 $subject = "EKM has made adjustments and requests for approval";
             } elseif ($method == "finalize_order") {
                 $newStatus = 4;
-
-                $subject = "EKM has finalized the order and awaiting for processing";
+                $subject = "EKM has finalized the order and awaiting processing";
             } elseif ($method == "order_delivered") {
                 $newStatus = 7;
-
                 $subject = "EKM has received the order";
             } else {
                 $response['message'] = 'Invalid action';
@@ -305,8 +303,16 @@ if(isset($_REQUEST['action'])) {
                         </div>
                     </body>
                     </html>
-                    ";
-
+                ";
+    
+                $mail->SMTPOptions = [
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                        'allow_self_signed' => true
+                    ]
+                ];
+    
                 try {
                     $mail->SMTPDebug = 0;
                     $mail->isSMTP();
@@ -316,18 +322,15 @@ if(isset($_REQUEST['action'])) {
                     $mail->Password   = $api_pass;
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
                     $mail->Port       = 465;
-                
-
                     $mail->setFrom('vekka@adiqted.com', 'East Kentucky Metal');
                     $mail->addAddress($supplier_email, $supplier_name);
-
                     $mail->isHTML(true);
                     $mail->Subject = $subject;
                     $mail->Body    = $message;
-                    $mail->AltBody = $message;
-                
+                    $mail->AltBody = strip_tags($message);
+    
                     $mail->send();
-                
+    
                     $response['success'] = true;
                     $response['message'] = 'Email sent and status updated successfully!';
                 } catch (Exception $e) {
@@ -336,11 +339,10 @@ if(isset($_REQUEST['action'])) {
             } else {
                 $response['message'] = 'Error updating order status.';
             }
-        
+    
             echo json_encode($response);
-
         }
-    }
+    }    
 
     if ($action == "update_product") {
         $id = mysqli_real_escape_string($conn, $_POST['id']);

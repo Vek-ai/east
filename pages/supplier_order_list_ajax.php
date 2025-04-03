@@ -344,9 +344,26 @@ if (isset($_POST['order_supplier_products'])) {
               
 
     if ($conn->query($query)) {
+    $supplier_order_id = $conn->insert_id;
+    $values = [];
+
+    foreach ($products as $item) {
+        $values[] = sprintf(
+            "('%d', '%d', '%d', '%.2f', '%d')",
+            $supplier_order_id,
+            $item['product_id'],
+            $item['quantity'],
+            $item['price'],
+            $item['color']
+        );
+    }
+
+    $query = "INSERT INTO supplier_orders_prod (supplier_order_id, product_id, quantity, price, color) VALUES " . implode(', ', $values);
+
+    if ($conn->query($query)) {
         $supplier_order_id = $conn->insert_id;
         $values = [];
-
+    
         foreach ($products as $item) {
             $values[] = sprintf(
                 "('%d', '%d', '%d', '%.2f', '%d')",
@@ -357,13 +374,13 @@ if (isset($_POST['order_supplier_products'])) {
                 $item['color']
             );
         }
-
+    
         $query = "INSERT INTO supplier_orders_prod (supplier_order_id, product_id, quantity, price, color) VALUES " . implode(', ', $values);
-
+    
         if ($conn->query($query)) {
             $delete_query = "DELETE FROM supplier_temp_prod_orders WHERE supplier_id = '$supplier_id'";
             $conn->query($delete_query);
-
+    
             $subject = "EKM has requested an Order";
             $mail = new PHPMailer(true);
             $message = "
@@ -402,8 +419,16 @@ if (isset($_POST['order_supplier_products'])) {
                     </div>
                 </body>
                 </html>
-                ";
-
+            ";
+    
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                ]
+            ];
+    
             try {
                 $mail->SMTPDebug = 0;
                 $mail->isSMTP();
@@ -413,29 +438,27 @@ if (isset($_POST['order_supplier_products'])) {
                 $mail->Password   = $api_pass;
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
                 $mail->Port       = 465;
-
+    
                 $mail->setFrom('vekka@adiqted.com', 'East Kentucky Metal');
                 $mail->addAddress($supplier_email, $supplier_name);
-
+    
                 $mail->isHTML(true);
                 $mail->Subject = $subject;
                 $mail->Body    = $message;
-                $mail->AltBody = $message;
-            
+                $mail->AltBody = strip_tags($message);
+    
                 $mail->send();
-            
-                $response['success'] = true;
-                $msg = "Successfully sent email to $supplier_name for confirmation on orders.";
+    
+                echo json_encode(['success' => true, 'message' => "Successfully sent email to $supplier_name for confirmation on orders.", 'supplier_order_id' => $supplier_order_id, 'key' => $order_key]);
             } catch (Exception $e) {
-                $msg = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+                echo json_encode(['success' => false, 'message' => "Message could not be sent. Mailer Error: {$mail->ErrorInfo}"]);
             }
-
-
-            echo json_encode(['success' => true, 'message' => $msg, 'supplier_order_id' => $supplier_order_id, 'key' => $order_key]);
         } else {
-            echo json_encode(['error' => "Error inserting order products: " . $conn->error]);
+            echo json_encode(['success' => false, 'message' => "Error inserting order products: " . $conn->error]);
         }
-    } else {
+    }
+    
+} else {
         echo json_encode(['error' => "Error inserting order: " . $conn->error]);
     }
 }
