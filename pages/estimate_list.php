@@ -762,6 +762,7 @@ if($_REQUEST['customer_id']){
                             location.reload();
                         } else {
                             alert("Update Success, but email failed to send");
+                            location.reload();
                         }
                     },
                     error: function(xhr, status, error) {

@@ -365,8 +365,10 @@ $(document).ready(function () {
                     alert("Estimate updated successfully!");
                     $("#editEstimateModal").modal("hide");
                     loadEstimates();
+                    location.reload();
                 } else {
                     alert("Error updating product.");
+                    location.reload();
                 }
             },
             error: function(xhr, status, error) {
