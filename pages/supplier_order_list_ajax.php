@@ -7,16 +7,7 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 require '../includes/vendor/autoload.php';
-require '../includes/phpmailer/vendor/autoload.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-$admin_email = "kentuckymetaleast@gmail.com";
-
-$api_user = 'apikey';
-$api_pass = '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';
-$subject = '';
+require '../includes/send_email.php';
 
 if(isset($_POST['fetch_edit_modal'])){
     $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
@@ -365,7 +356,6 @@ if (isset($_POST['order_supplier_products'])) {
             $conn->query($delete_query);
 
             $subject = "EKM has requested an Order";
-            $mail = new PHPMailer(true);
             $message = "
                 <html>
                 <head>
@@ -404,23 +394,8 @@ if (isset($_POST['order_supplier_products'])) {
                 </html>
                 ";
 
-            try {
-                $mail->SMTPDebug = 0;
-                $mail->isSMTP();
-                $mail->Host       = 'smtp.sendgrid.net';
-                $mail->SMTPAuth   = true;
-                $mail->Username   = $api_user;
-                $mail->Password   = $api_pass;
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-                $mail->Port       = 465;
-                $mail->setFrom('vekka@adiqted.com', 'East Kentucky Metal');
-                $mail->addAddress($supplier_email, $supplier_name);
-                $mail->isHTML(true);
-                $mail->Subject = $subject;
-                $mail->Body    = $message;
-                $mail->AltBody = strip_tags($message);
-                $mail->send();
-                
+            $response = sendEmail($supplier_email, $supplier_name, $subject, $message);
+            if ($response['success'] == true) {
                 echo json_encode([
                     'success' => true,
                     'email_success' => true,
@@ -428,16 +403,17 @@ if (isset($_POST['order_supplier_products'])) {
                     'supplier_order_id' => $supplier_order_id,
                     'key' => $order_key
                 ]);
-            } catch (Exception $e) {
+            } else {
                 echo json_encode([
                     'success' => true,
                     'email_success' => false,
                     'message' => "Successfully saved, but email could not be sent to $supplier_name.",
-                    'error' => htmlspecialchars($mail->ErrorInfo, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                    'error' => $response['error'],
                     'supplier_order_id' => $supplier_order_id,
                     'key' => $order_key
                 ]);
-            } 
+            }
+
         } else {
             echo json_encode(['error' => "Error inserting order products: " . $conn->error]);
         }

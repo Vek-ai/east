@@ -5,16 +5,7 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require '../includes/dbconn.php';
 require '../includes/functions.php';
-require '../includes/phpmailer/vendor/autoload.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-$admin_email = "kentuckymetaleast@gmail.com";
-
-$api_user = 'apikey';
-$api_pass = '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';
-$subject = '';
+require '../includes/send_email.php';
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -249,8 +240,6 @@ if(isset($_REQUEST['action'])) {
             $supplier_email = $supplier_details['contact_email'];
             $key = $row['order_key'];
         
-            $response = ['success' => false, 'message' => 'Unknown error'];
-        
             if ($method == "return_for_approval") {
                 $newStatus = 3;
                 $subject = "EKM has made adjustments and requests for approval";
@@ -261,15 +250,18 @@ if(isset($_REQUEST['action'])) {
                 $newStatus = 7;
                 $subject = "EKM has received the order";
             } else {
-                $response['message'] = 'Invalid action';
-                echo json_encode($response);
+                echo json_encode([
+                    'success' => false,
+                    'email_success' => false,
+                    'message' => "Invalid action",
+                    'error' => "Invalid action"
+                ]);
                 exit();
             }
             
             $sql = "UPDATE supplier_orders SET status = $newStatus, is_edited = '0' WHERE supplier_order_id = $orderId";
             
             if (mysqli_query($conn, $sql)) {
-                $mail = new PHPMailer(true);
                 $message = "
                     <html>
                     <head>
@@ -308,38 +300,30 @@ if(isset($_REQUEST['action'])) {
                     </html>
                     ";
 
-                try {
-                    $mail->SMTPDebug = 0;
-                    $mail->isSMTP();
-                    $mail->Host       = 'smtp.sendgrid.net';
-                    $mail->SMTPAuth   = true;
-                    $mail->Username   = $api_user;
-                    $mail->Password   = $api_pass;
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-                    $mail->Port       = 465;
-                
-
-                    $mail->setFrom('vekka@adiqted.com', 'East Kentucky Metal');
-                    $mail->addAddress($supplier_email, $supplier_name);
-
-                    $mail->isHTML(true);
-                    $mail->Subject = $subject;
-                    $mail->Body    = $message;
-                    $mail->AltBody = $message;
-                
-                    $mail->send();
-                
-                    $response['success'] = true;
-                    $response['message'] = 'Email sent and status updated successfully!';
-                } catch (Exception $e) {
-                    $response['message'] = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+                $response_email = sendEmail($supplier_email, $supplier_name, $subject, $message);
+                if ($response_email['success'] == true) {
+                    echo json_encode([
+                        'success' => true,
+                        'email_success' => true,
+                        'message' => "Successfully sent email to $supplier_name for confirmation on orders."
+                    ]);
+                } else {
+                    echo json_encode([
+                        'success' => true,
+                        'email_success' => false,
+                        'message' => "Successfully saved, but email could not be sent to $supplier_name.",
+                        'error' => addslashes($response_email['error'])
+                    ]);
                 }
-            } else {
-                $response['message'] = 'Error updating order status.';
-            }
-        
-            echo json_encode($response);
 
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'email_success' => false,
+                    'message' => "Error updating order status.",
+                    'error' => "Error updating order status."
+                ]);
+            }
         }
     }
 
