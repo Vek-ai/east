@@ -2,8 +2,8 @@
 session_start();
 if (!isset($_SESSION['customer_id'])) {
     $redirect_url = urlencode($_SERVER['REQUEST_URI']);
-    header("Location: login.php?redirect=$redirect_url");
-    exit();
+    /* header("Location: login.php?redirect=$redirect_url");
+    exit(); */
 }
 include_once '../includes/dbconn.php';
 include_once '../includes/functions.php';
@@ -1302,6 +1302,7 @@ $customer_details = getCustomerDetails($customer_id);
             if (empty($_REQUEST['page'])) {include 'pages/customer-dash.php';}
             if ($_REQUEST['page'] == "customer-profile") {include 'pages/customer-profile.php';}
             if ($_REQUEST['page'] == "product") {include 'pages/product.php';}
+            if ($_REQUEST['page'] == "estimate") {include 'pages/estimate.php';}
           ?>
         </div>
       </div>

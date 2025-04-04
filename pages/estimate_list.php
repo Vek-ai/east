@@ -338,13 +338,14 @@ if($_REQUEST['customer_id']){
                             <th>Discounted Price</th>
                             <th>Estimate Date</th>
                             <th>Order Date</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php 
 
-                        $query = "SELECT * FROM estimates WHERE status = '1'";
+                        $query = "SELECT * FROM estimates WHERE 1";
 
                         if (isset($customer_id) && !empty($customer_id)) {
                             $query .= " AND customerid = '$customer_id'";
@@ -355,6 +356,19 @@ if($_REQUEST['customer_id']){
                         if ($result && mysqli_num_rows($result) > 0) {
                             $response = array();
                             while ($row = mysqli_fetch_assoc($result)) {
+                                $status_code = $row['status'];
+
+                                $status_labels = [
+                                    1 => ['label' => 'New Estimate', 'class' => 'badge bg-primary'],
+                                    2 => ['label' => 'Sent to Customer', 'class' => 'badge bg-success text-dark'],
+                                    3 => ['label' => 'Modified by Customer', 'class' => 'badge bg-warning text-dark'],
+                                    4 => ['label' => 'Approved', 'class' => 'badge bg-secondary'],
+                                    5 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+                                    6 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
+                                    7 => ['label' => 'Delivered', 'class' => 'badge bg-success']
+                                ];
+                              
+                                $status = $status_labels[$status_code];
                             ?>
                             <tr>
                                 <td>
@@ -378,13 +392,18 @@ if($_REQUEST['customer_id']){
                                         }
                                     ?>
                                 </td>
+                                <td class="text-center">
+                                    <span class="<?= $status['class']; ?> fw-bond"><?= $status['label']; ?></span>
+                                </td>
                                 <td>
                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="edit_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-warning fa fa-pencil fs-5"></i></button>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1 email_estimate_btn" data-customer="<?php echo $row["customerid"]; ?>" id="email_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-info fa fa-envelope fs-5"></i></button>
                                     <a href="print_estimate_product.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
                                     <a href="print_estimate_total.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-info fa fa-clock-rotate-left fs-5"></i></button>
                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="delete_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-danger fa fa-trash fs-5"></i></button>
+                                    <a href="customer/index.php?page=estimate&id=<?=$row["estimateid"]?>&key=<?=$row["est_key"]?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-info fa fa-sign-in-alt fs-5"></i></a>
                                 </td>
                             </tr>
                             <?php
@@ -715,6 +734,43 @@ if($_REQUEST['customer_id']){
             });
         });
 
+        $(document).on("click", "#resendBtn, #AcceptBtn, #processOrderBtn , #shipOrderBtn", function () {
+            var dataId = $(this).data("id");
+            var action = $(this).data("action");
+
+            var confirmMessage = action.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+
+            if (confirm("Are you sure you want to " + confirmMessage + "?")) {
+                $.ajax({
+                    url: 'pages/estimate_list_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: dataId,
+                        method: action,
+                        action: 'update_status'
+                    },
+                    success: function (response) {
+                        console.log(response);
+                        try {
+                            var jsonResponse = JSON.parse(response);  
+                        } catch (e) {
+                            var jsonResponse = response;
+                        }
+
+                        if (jsonResponse.success) {
+                            alert(jsonResponse.message);
+                            location.reload();
+                        } else {
+                            alert("Update Success, but email failed to send");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error:", xhr.responseText);
+                    }
+                });
+            }
+        });
+
         $(document).on('click', '#view_changes_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
@@ -796,6 +852,49 @@ if($_REQUEST['customer_id']){
                     }
 
                     
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '.email_estimate_btn', function(event) {
+            event.preventDefault(); 
+
+            if (!confirm("Are you sure you want to send this estimate email?")) {
+                return;
+            }
+
+            var id = $(this).data("id");
+            var customerid = $(this).data("customer");
+
+            console.log(customerid);
+
+            $.ajax({
+                url: 'pages/estimate_list_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    customerid: customerid,
+                    action: 'send_email'
+                },
+                success: function(response) {
+                    $('.modal').modal('hide');
+                    console.log(response);
+                    try {
+                        var jsonResponse = (typeof response === "string") ? JSON.parse(response) : response;
+                    } catch (e) {
+                        var jsonResponse = { success: false, message: "Invalid JSON response" };
+                    }
+
+                    if (jsonResponse?.success === true) {
+                        alert(jsonResponse?.message);
+                        location.reload();
+                    } else {
+                        alert(jsonResponse?.message || "An unknown error occurred.");
+                        location.reload();
+                    }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);

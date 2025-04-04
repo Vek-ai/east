@@ -5,6 +5,7 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require '../includes/dbconn.php';
 require '../includes/functions.php';
+require '../includes/send_email.php';
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -15,6 +16,8 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $query);
         
         if ($result && mysqli_num_rows($result) > 0) {
+            $estimate_details = getEstimateDetails($estimateid);
+            $status_code = $estimate_details['status'];
             $totalquantity = $total_actual_price = $total_disc_price = 0;
             $response = array();
             ?>
@@ -115,6 +118,22 @@ if(isset($_REQUEST['action'])) {
                                             </tfoot>
                                         </table>
                                     </div>
+                                </div>
+                                <div class="d-flex justify-content-end align-items-center gap-3 p-3">
+                                    <?php if ($status_code == 1): ?>
+                                        <button type="button" id="email_estimate_btn" class="btn btn-primary email_estimate_btn" data-customer="<?= $estimate_details["customerid"]; ?>" data-id="<?= $estimate_details["estimateid"]; ?>"><i class="fa fa-envelope fs-5"></i> Send Email</button>
+                                    <?php elseif ($status_code == 2): ?>
+                                        
+                                    <?php elseif ($status_code == 3): ?>
+                                        <button type="button" id="resendBtn" class="btn btn-warning <?= $is_edited != 1 ? 'd-none' : '' ?>" data-id="<?=$estimateid?>" data-action="submit_for_approval">Return for Approval</button>
+                                        <button type="button" id="AcceptBtn" class="btn btn-success" data-id="<?=$estimateid?>" data-action="accept_estimate">Accept</button>
+                                    <?php elseif ($status_code == 4): ?>
+                                        <button type="button" id="processOrderBtn" class="btn btn-info" data-id="<?=$estimateid?>" data-action="process_order">Process Order</button>
+                                    <?php elseif ($status_code == 5): ?>
+                                        <button type="button" id="shipOrderBtn" class="btn btn-primary" data-id="<?=$estimateid?>" data-action="ship_order">Ship Order</button>
+                                    <?php elseif ($status_code == 6): ?>
+                                        
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -1161,6 +1180,215 @@ if(isset($_REQUEST['action'])) {
             echo 'success';
         } else {
             echo 'error';
+        }
+    }
+
+    if ($action == "send_email") {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $customerid = mysqli_real_escape_string($conn, $_POST['customerid']);
+        $customer_details= getCustomerDetails($customerid);
+        $customer_name = $customer_details['customer_first_name'] .' ' .$customer_details['customer_first_name'];
+        $customer_email = $customer_details['contact_email'];
+
+        $est_key = 'EST' . substr(hash('sha256', uniqid()), 0, 10);
+
+        $sql = "UPDATE estimates SET est_key = '$est_key', status = '2' WHERE estimateid = $id";
+
+        if (!mysqli_query($conn, $sql)) {
+            echo json_encode([
+                'success' => false,
+                'email_success' => false,
+                'message' => "Query Failed.",
+                "error" => mysqli_error($conn)
+            ]);
+        }
+
+        $subject = "EKM has sent an Estimate List for Approval";
+        $message = "
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                        }
+                        .container {
+                            padding: 20px;
+                            border: 1px solid #e0e0e0;
+                            background-color: #f9f9f9;
+                            width: 80%;
+                            margin: 0 auto;
+                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        }
+                        h2 {
+                            color: #0056b3;
+                            margin-bottom: 20px;
+                        }
+                        p {
+                            margin: 5px 0;
+                        }
+                        .link {
+                            font-weight: bold;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <h2>$subject</h2>
+                        <a href='https://metal.ilearnwebtech.com/customer/index.php?page=estimate&id=$id&key=$est_key' class='link' target='_blank'>To estimate order details, click this link</a>
+                    </div>
+                </body>
+                </html>
+                ";
+
+            if(!empty($customer_email)){
+                $response = sendEmail($customer_email, $customer_name, $subject, $message);
+                if ($response['success'] == true) {
+                    echo json_encode([
+                        'success' => true,
+                        'email_success' => true,
+                        'message' => "Successfully sent email to $customer_name for confirmation on orders.",
+                        'id' => $id,
+                        'key' => $est_key
+                    ]);
+                } else {
+                    echo json_encode([
+                        'success' => true,
+                        'email_success' => false,
+                        'message' => "Successfully saved, but email could not be sent to $customer_name.",
+                        'error' => $response['error'],
+                        'id' => $id,
+                        'key' => $est_key
+                    ]);
+                }
+
+            }else {
+                echo json_encode([
+                    'success' => true,
+                    'email_success' => false,
+                    'message' => "Successfully saved, but email could not be sent to $customer_name.",
+                    'error' => $response['error'],
+                    'id' => $id,
+                    'key' => $est_key
+                ]);
+            }
+    }
+
+    if ($action == "update_status") {
+        $estimateid = mysqli_real_escape_string($conn, $_POST['id']);
+        $method = mysqli_real_escape_string($conn, $_POST['method']); 
+
+        $is_edited = '0';
+
+        $query = "SELECT * FROM estimates WHERE estimateid = '$estimateid'";
+        $result = mysqli_query($conn, $query);
+        while ($row = mysqli_fetch_assoc($result)) {
+            $supplier_id = $row['supplier_id'];
+            $supplier_details = getSupplierDetails($supplier_id);
+            $supplier_name = $supplier_details['supplier_name'];
+            $key = $row['order_key'];
+        
+            $response = ['success' => false, 'message' => 'Unknown error'];
+        
+            if ($method == "submit_for_approval") {
+                $newStatus = 3;
+                $subject = "EKM requested for Estimate approval";
+            } elseif ($method == "accept_estimate") {
+                $newStatus = 4;
+                $subject = "EKM has accepted the estimate";
+            } elseif ($method == "process_order") {
+                $newStatus = 5;
+                $subject = "EKM has started to process order";
+            } elseif ($method == "ship_order") {
+                $newStatus = 6;
+                $subject = "EKM has shipped the order";
+            } else {
+                $response['message'] = 'Invalid action';
+                echo json_encode($response);
+                exit();
+            }
+            
+            $sql = "UPDATE estimates SET status = $newStatus, is_edited = '0' WHERE estimateid = $estimateid";
+            
+            if (mysqli_query($conn, $sql)) {
+                $message = "
+                        <html>
+                        <head>
+                            <style>
+                                body {
+                                    font-family: Arial, sans-serif;
+                                    line-height: 1.6;
+                                    color: #333;
+                                }
+                                .container {
+                                    padding: 20px;
+                                    border: 1px solid #e0e0e0;
+                                    background-color: #f9f9f9;
+                                    width: 80%;
+                                    margin: 0 auto;
+                                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                                }
+                                h2 {
+                                    color: #0056b3;
+                                    margin-bottom: 20px;
+                                }
+                                p {
+                                    margin: 5px 0;
+                                }
+                                .link {
+                                    font-weight: bold;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='container'>
+                                <h2>$subject</h2>
+                                <a href='https://metal.ilearnwebtech.com/customer/index.php?page=estimate&id=$id&key=$est_key' class='link' target='_blank'>To estimate order details, click this link</a>
+                            </div>
+                        </body>
+                        </html>
+                        ";
+
+                    if(!empty($customer_email)){
+                        $response = sendEmail($customer_email, $customer_name, $subject, $message);
+                        if ($response['success'] == true) {
+                            echo json_encode([
+                                'success' => true,
+                                'email_success' => true,
+                                'message' => "Successfully sent email to $customer_name for confirmation on orders.",
+                                'id' => $id,
+                                'key' => $est_key
+                            ]);
+                        } else {
+                            echo json_encode([
+                                'success' => true,
+                                'email_success' => false,
+                                'message' => "Successfully saved, but email could not be sent to $customer_name.",
+                                'error' => $response['error'],
+                                'id' => $id,
+                                'key' => $est_key
+                            ]);
+                        }
+
+                    }else {
+                        echo json_encode([
+                            'success' => true,
+                            'email_success' => false,
+                            'message' => "Successfully saved, but email could not be sent to $customer_name.",
+                            'error' => $response['error'],
+                            'id' => $id,
+                            'key' => $est_key
+                        ]);
+                    }
+
+                $response['success'] = true;
+                $response['message'] = 'Email sent and status updated successfully!';
+            } else {
+                $response['message'] = 'Error updating order status.';
+            }
+        
+            echo json_encode($response);
         }
     }
     
