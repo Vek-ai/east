@@ -658,18 +658,32 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    let orderLink = `supplier/index.php?id=${response.supplier_order_id}&key=${response.key}`;
-                    let message = `${response.message}.<br> 
-                                LINK: <a href="${orderLink}" target="_blank">CLICK HERE TO ACCESS THE SUPPLIER LINK SENT TO EMAIL</a>`;
+                    if (response.email_success) {
+                        let orderLink = `supplier/index.php?id=${response.supplier_order_id}&key=${response.key}`;
+                        let message = `${response.message}.<br> 
+                                    LINK: <a href="${orderLink}" target="_blank">CLICK HERE TO ACCESS THE SUPPLIER LINK SENT TO EMAIL</a>`;
 
-                    $("#responseHeader").text("Success");
-                    $("#responseMsg").html(message);
-                    $("#response-modal").modal("show");
+                        $("#responseHeader").text("Success");
+                        $("#responseMsg").html(message);
+                        $("#response-modal").modal("show");
 
-                    $("#response-modal").off("hidden.bs.modal").on("hidden.bs.modal", function() {
-                        window.open(`print_supplier_order.php?id=${response.supplier_order_id}`, "_blank");
-                        location.reload();
-                    });
+                        $("#response-modal").off("hidden.bs.modal").on("hidden.bs.modal", function() {
+                            window.open(`print_supplier_order.php?id=${response.supplier_order_id}`, "_blank");
+                            location.reload();
+                        });
+                    }else{
+                        $("#responseHeader").text("Success");
+                        $("#responseMsg").html(response.message);
+                        $("#response-modal").modal("show");
+
+                        console.log(response.error);
+
+                        $("#response-modal").off("hidden.bs.modal").on("hidden.bs.modal", function() {
+                            window.open(`print_supplier_order.php?id=${response.supplier_order_id}`, "_blank");
+                            location.reload();
+                        });
+                    }
+                    
                 } else if (response.error) {
                     showResponseModal("Error", '', "error");
                     console.log("Error: " + response.error);

@@ -403,7 +403,7 @@ if (isset($_POST['order_supplier_products'])) {
                 ";
 
             try {
-                $mail->SMTPDebug = 2;
+                $mail->SMTPDebug = 0;
                 $mail->isSMTP();
                 $mail->Host       = 'smtp.sendgrid.net';
                 $mail->SMTPAuth   = true;
@@ -411,24 +411,33 @@ if (isset($_POST['order_supplier_products'])) {
                 $mail->Password   = $api_pass;
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
                 $mail->Port       = 465;
-
+            
                 $mail->setFrom('vekka@adiqted.com', 'East Kentucky Metal');
                 $mail->addAddress($supplier_email, $supplier_name);
-
                 $mail->isHTML(true);
                 $mail->Subject = $subject;
                 $mail->Body    = $message;
-                $mail->AltBody = $message;
+                $mail->AltBody = strip_tags($message);
             
                 $mail->send();
             
-                $response['success'] = true;
-                $msg = "Successfully sent email to $supplier_name for confirmation on orders.";
+                echo json_encode([
+                    'success' => true,
+                    'email_success' => true,
+                    'message' => "Successfully sent email to $supplier_name for confirmation on orders.",
+                    'supplier_order_id' => $supplier_order_id,
+                    'key' => $order_key
+                ]);
             } catch (Exception $e) {
-                $msg = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+                echo json_encode([
+                    'success' => true,
+                    'email_success' => false,
+                    'message' => "Successfully saved, but email could not be sent to $supplier_name.",
+                    'error' => htmlspecialchars($mail->ErrorInfo, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                    'supplier_order_id' => $supplier_order_id,
+                    'key' => $order_key
+                ]);
             }
-
-            echo json_encode(['success' => true, 'message' => $msg, 'supplier_order_id' => $supplier_order_id, 'key' => $order_key]);
         } else {
             echo json_encode(['error' => "Error inserting order products: " . $conn->error]);
         }
