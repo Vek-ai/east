@@ -152,7 +152,7 @@ if(isset($_REQUEST['action'])) {
                             <?php elseif ($status_code == 4): ?>
                             <?php elseif ($status_code == 5): ?>
                             <?php elseif ($status_code == 6): ?>
-                                <button type="button" id="markDelivered" class="btn btn-success" data-id="<?=$supplier_order_id?>" data-action="order_delivered">Mark as Delivered</button>
+                                <button type="button" id="markDelivered" class="btn btn-success" data-id="<?=$supplier_order_id?>" data-action="order_delivered">Mark as Received</button>
                             <?php endif; ?>
                         </div>
 
