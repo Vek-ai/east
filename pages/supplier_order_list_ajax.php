@@ -14,7 +14,9 @@ use PHPMailer\PHPMailer\Exception;
 
 $admin_email = "kentuckymetaleast@gmail.com";
 
-
+$api_user = 'apikey';
+$api_pass = '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';
+$subject = '';
 
 if(isset($_POST['fetch_edit_modal'])){
     $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
@@ -411,16 +413,14 @@ if (isset($_POST['order_supplier_products'])) {
                 $mail->Password   = $api_pass;
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
                 $mail->Port       = 465;
-            
                 $mail->setFrom('vekka@adiqted.com', 'East Kentucky Metal');
                 $mail->addAddress($supplier_email, $supplier_name);
                 $mail->isHTML(true);
                 $mail->Subject = $subject;
                 $mail->Body    = $message;
                 $mail->AltBody = strip_tags($message);
-            
                 $mail->send();
-            
+                
                 echo json_encode([
                     'success' => true,
                     'email_success' => true,
@@ -437,7 +437,7 @@ if (isset($_POST['order_supplier_products'])) {
                     'supplier_order_id' => $supplier_order_id,
                     'key' => $order_key
                 ]);
-            }
+            } 
         } else {
             echo json_encode(['error' => "Error inserting order products: " . $conn->error]);
         }
