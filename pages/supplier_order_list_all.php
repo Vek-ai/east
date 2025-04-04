@@ -98,7 +98,7 @@ if($_REQUEST['supplier_id']){
                 <p id="responseMsg"></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-primary waves-effect text-start" data-bs-dismiss="modal">
                 Close
                 </button>
             </div>

@@ -309,7 +309,7 @@ if(isset($_REQUEST['action'])) {
                     ";
 
                 try {
-                    $mail->SMTPDebug = 2;
+                    $mail->SMTPDebug = 0;
                     $mail->isSMTP();
                     $mail->Host       = 'smtp.sendgrid.net';
                     $mail->SMTPAuth   = true;

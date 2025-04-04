@@ -133,25 +133,6 @@ if(!empty($_REQUEST['id'])){
 
     <div class="widget-content searchable-container list" id="pageBody">
 
-    <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-            <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
-                <h4 id="responseHeader" class="m-0"></h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="responseMsg"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
-                Close
-                </button>
-            </div>
-            </div>
-        </div>
-    </div>
-
     <?php
     $sql_products = "SELECT * FROM supplier_temp_prod_orders WHERE supplier_id = '$supplier_id'";
     $result_products = $conn->query($sql_products);
@@ -290,7 +271,7 @@ if(!empty($_REQUEST['id'])){
             <p id="responseMsg"></p>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+            <button type="button" class="btn btn-primary waves-effect text-start" data-bs-dismiss="modal">
             Close
             </button>
         </div>
