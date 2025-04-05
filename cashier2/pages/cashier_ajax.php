@@ -520,7 +520,7 @@ if (isset($_POST['save_estimate'])) {
         $product_id = intval($item['product_id']);
         $product_details = getProductDetails($product_id);
         $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
-        $unit_price = floatval($customer_pricing * $item['unit_price']);
+        $unit_price = floatval($item['unit_price']);
         $quantity_cart = intval($item['quantity_cart']);
         $product_details = getProductDetails($item['product_id']);
         $estimate_length = floatval($item['estimate_length']);
@@ -528,7 +528,7 @@ if (isset($_POST['save_estimate'])) {
         $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
         $actual_price = $unit_price * $quantity_cart;
-        $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
+        $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
 
         $total_actual_price += $actual_price;
         $total_discounted_price += $discounted_price;
@@ -554,7 +554,7 @@ if (isset($_POST['save_estimate'])) {
 
             $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
 
-            $unit_price = $customer_pricing * floatval($item['unit_price']);
+            $unit_price = floatval($item['unit_price']);
             $estimate_width = !empty($item['estimate_width']) ? floatval($item['estimate_width']) : $product_details['width'];
             $estimate_bend = floatval($item['estimate_bend']);
             $estimate_hem = floatval($item['estimate_hem']);
@@ -565,7 +565,7 @@ if (isset($_POST['save_estimate'])) {
             $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
             $actual_price = $unit_price;
-            $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
+            $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
 
             $curr_discount = intval(getCustomerDiscountProfile($customerid));
             $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
@@ -799,13 +799,13 @@ if (isset($_POST['save_order'])) {
         $product_details = getProductDetails($product_id);
         $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
         $quantity_cart = intval($item['quantity_cart']);
-        $unit_price = $customer_pricing * floatval($item['unit_price']);
+        $unit_price = floatval($item['unit_price']);
         $estimate_length = floatval($item['estimate_length']);
         $estimate_length_inch = floatval($item['estimate_length_inch']);
         $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
         $actual_price = $unit_price * $quantity_cart;
-        $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
+        $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
 
         $total_price += $actual_price;
         $total_discounted_price += $discounted_price;
@@ -830,7 +830,7 @@ if (isset($_POST['save_order'])) {
             $product_details = getProductDetails($product_id);
             $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
             $quantity_cart = intval($item['quantity_cart']);
-            $unit_price = $customer_pricing * floatval($item['unit_price']);
+            $unit_price = floatval($item['unit_price']);
             $estimate_width = !empty($item['estimate_width']) ? floatval($item['estimate_width']) : floatval($product_details['width']);
             $estimate_bend = floatval($item['estimate_bend']);
             $estimate_hem = floatval($item['estimate_hem']);
@@ -842,7 +842,7 @@ if (isset($_POST['save_order'])) {
             $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
             $actual_price = $unit_price;
-            $discounted_price = ($actual_price * (1 - $discount)) - $amount_discount;
+            $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
             $product_category = intval($product_details['product_category']);
 
             $curr_discount = intval(getCustomerDiscountProfile($customerid));

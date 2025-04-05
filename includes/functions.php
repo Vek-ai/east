@@ -909,7 +909,7 @@ function getPricingCategory($product_category_id, $customer_pricing_id) {
     $result = mysqli_query($conn, $query);
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
-        $percentage = floatval($row['percentage']) ?? 100;
+        $percentage = floatval($row['percentage']) ?? 0;
     }
 
     return $percentage;

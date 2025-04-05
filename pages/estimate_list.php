@@ -772,6 +772,50 @@ if($_REQUEST['customer_id']){
             }
         });
 
+        $(document).on("click", ".btn-edit", function () {
+            let Id = $(this).data("id");
+            let productName = $(this).data("name");
+            let productQuantity = $(this).data("quantity");
+            let productPrice = $(this).data("price");
+            let productColor = $(this).data("color");
+
+            $("#editId").val(Id);
+            $("#editProductName").val(productName);
+            $("#editProductQuantity").val(productQuantity);
+            $("#editProductPrice").val(productPrice);
+            $("#editProductColor").val(productColor).trigger("change");
+            $("#editProductModal").modal("show");
+        });
+
+        $(document).on("submit", "#editProductForm", function (e) { 
+            e.preventDefault();
+            let formData = new FormData(this);
+            formData.append("action", "update_product");
+
+            $.ajax({
+                url: 'pages/estimate_list_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function (response) {
+                    console.log(response);
+                    if (response.success) {
+                        alert("Product updated successfully!");
+                        $("#editProductModal").modal("hide");
+                        location.reload();
+                    } else {
+                        alert("Error updating product.");
+                        location.reload();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log("AJAX Error:", xhr.responseText);
+                }
+            });
+        });
+
         $(document).on('click', '#view_changes_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');

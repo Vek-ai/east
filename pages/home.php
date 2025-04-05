@@ -428,6 +428,87 @@ $reorder_level = 1;
     </div>
   </div>
 
+  <div class="col-lg-6">
+    <div class="card my-5">
+      <div class="card-body mt-3">
+        <div class="d-flex align-items-center flex-wrap mb-9">
+          <div class="w-100">
+            <h3 class="card-title">New Customer Estimates</h3>
+            <div class="ms-auto align-self-center">
+              <div class="datatables">
+                <div class="table-responsive">
+                <table id="estimate_customer_table" class="table table-hover mb-0 text-md-nowrap">
+                  <thead>
+                      <tr>
+                          <th>Customer</th>
+                          <th>Amount</th>
+                          <th> </th>
+                      </tr>
+                  </thead>
+                  <tbody>     
+                  <?php
+                  $query = "
+                    SELECT 
+                      e.*, 
+                      CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name
+                    FROM estimates AS e
+                    LEFT JOIN customer AS c ON c.customer_id = e.customerid
+                    WHERE e.status = 1
+                    ";
+                  $total_amount = 0;
+                  $total_count = 0;
+                  $result = mysqli_query($conn, $query);
+                  while ($row = mysqli_fetch_assoc($result)) {
+                      $total_amount += $row['discounted_price'];
+                      $total_count += 1;
+
+                      $submitted_date = $row['submitted_date'];
+                      $customer_name = $row['customer_name'];
+                  
+                      ?>
+                      <tr>
+                          <td>
+                              <?= htmlspecialchars($customer_name) ?>
+                          </td>
+                          <td class="text-end">
+                              $ <?= number_format($row['discounted_price'], 2) ?>
+                          </td>
+                          <td>
+                              <a href="?page=estimate_list&id=<?= $row["approval_id"] ?>" target="_blank" class="py-1 pe-1 fs-5" data-id="<?php echo $row["estimateid"]; ?>" data-toggle="tooltip" data-placement="top" title="View"><i class="fa fa-eye"></i></a>
+                          </td>
+                      </tr>
+                      <?php
+                  }
+                  ?>
+                  </tbody>
+              </table>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="view_order_product_details_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title">Saved Order Details</h6>
+                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="order-saved-details">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
   <div class="col-lg-6 col-md-12">
     <!-- Column -->
     <div class="card earning-widget my-5">
@@ -1186,6 +1267,16 @@ $(document).ready(function() {
     });
 
     var approval_customer_table = $('#approval_customer_table').DataTable({
+        "order": [[1, "asc"]],
+        "pageLength": 5,
+        "lengthMenu": [
+            [10, 25, 50, 100],
+            [10, 25, 50, 100]
+        ],
+        "dom": 'lftp',
+    });
+
+    var estimate_customer_table = $('#estimate_customer_table').DataTable({
         "order": [[1, "asc"]],
         "pageLength": 5,
         "lengthMenu": [

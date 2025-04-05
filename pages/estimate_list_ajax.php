@@ -18,7 +18,7 @@ if(isset($_REQUEST['action'])) {
         if ($result && mysqli_num_rows($result) > 0) {
             $estimate_details = getEstimateDetails($estimateid);
             $status_code = $estimate_details['status'];
-            $totalquantity = $total_actual_price = $total_disc_price = 0;
+            $totalquantity = $total_actual_price = $total_disc_price = $total_amount = 0;
             $response = array();
             ?>
             <style>
@@ -52,9 +52,16 @@ if(isset($_REQUEST['action'])) {
                                                     <th>Grade</th>
                                                     <th>Profile</th>
                                                     <th class="text-center">Quantity</th>
-                                                    <th class="text-center">Dimensions</th>
-                                                    <th class="text-center">Price</th>
-                                                    <th class="text-center">Customer Price</th>
+                                                    <th class="text-end">Actual Price</th>
+                                                    <th class="text-end">Disc Price</th>
+                                                    <th class="text-end">Total</th>
+                                                    <?php
+                                                    if($status_code == 3){
+                                                    ?>
+                                                        <th class="text-center">Action</th>
+                                                    <?php
+                                                    }
+                                                    ?>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -69,8 +76,8 @@ if(isset($_REQUEST['action'])) {
                                                             </td>
                                                             <td>
                                                             <div class="d-flex mb-0 gap-8">
-                                                                <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_details['color'])?>"></a>
-                                                                <?= getColorFromID($product_details['color']); ?>
+                                                                <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($row['custom_color'])?>"></a>
+                                                                <?= getColorFromID($row['custom_color']); ?>
                                                             </div>
                                                             </td>
                                                             <td>
@@ -80,27 +87,31 @@ if(isset($_REQUEST['action'])) {
                                                                 <?php echo getProfileTypeName($product_details['profile']); ?>
                                                             </td>
                                                             <td><?= $row['quantity'] ?></td>
-                                                            <td>
-                                                                <?php 
-                                                                $width = $row['custom_width'];
-                                                                $height = $row['custom_height'];
-                                                                
-                                                                if (!empty($width) && !empty($height)) {
-                                                                    echo htmlspecialchars($width) . " X " . htmlspecialchars($height);
-                                                                } elseif (!empty($width)) {
-                                                                    echo "Width: " . htmlspecialchars($width);
-                                                                } elseif (!empty($height)) {
-                                                                    echo "Height: " . htmlspecialchars($height);
-                                                                }
-                                                                ?>
-                                                            </td>
-                                                            <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
-                                                            <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
+                                                            <td class="text-end">$ <?= number_format(floatval($row['actual_price']),2) ?></td>
+                                                            <td class="text-end">$ <?= number_format(floatval($row['discounted_price']),2) ?></td>
+                                                            <td class="text-end">$ <?= number_format(floatval($row['discounted_price'] * $row['quantity']),2) ?></td>
+                                                            <?php
+                                                            if($status_code == 3){
+                                                            ?>
+                                                                <td class="text-center">
+                                                                    <a class="fs-6 text-muted btn-edit" href="javascript:void(0)" 
+                                                                    data-id="<?= $row['id'] ?>" 
+                                                                    data-name="<?= getProductName($row['product_id']) ?>" 
+                                                                    data-quantity="<?= $row['quantity'] ?>"
+                                                                    data-price="<?= $row['discounted_price'] ?>" 
+                                                                    data-color="<?= $row['custom_color'] ?>">
+                                                                        <i class="ti ti-edit"></i>
+                                                                    </a>
+                                                                </td>
+                                                            <?php
+                                                            }
+                                                            ?>
                                                         </tr>
                                                 <?php
                                                         $totalquantity += $row['quantity'] ;
-                                                        $total_actual_price += $row['actual_price'];
-                                                        $total_disc_price += $row['discounted_price'];
+                                                        $total_actual_price += floatval($row['actual_price']);
+                                                        $total_disc_price += floatval($row['discounted_price']);
+                                                        $total_amount += floatval($row['discounted_price']) * $row['quantity'];
                                                     }
                                                 
                                                 ?>
@@ -108,12 +119,18 @@ if(isset($_REQUEST['action'])) {
 
                                             <tfoot>
                                                 <tr>
-                                                    <td colspan="6"></td>
-                                                    <td colspan="2" class="text-end">
-                                                        <p class="m-1">Total Quantity: <?= $totalquantity ?></p>
-                                                        <p class="m-1">Actual Price: <?= $total_actual_price ?></p>
-                                                        <p class="m-1">Discounted Price: <?= $total_disc_price ?></p>
-                                                    </td>
+                                                    <td colspan="4" class="text-end">Total</td>
+                                                    <td><?= $totalquantity ?></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td class="text-end">$ <?= number_format($total_amount,2) ?></td>
+                                                    <?php
+                                                    if($status_code == 3){
+                                                    ?>
+                                                        <td></td>
+                                                    <?php
+                                                    }
+                                                    ?>
                                                 </tr>
                                             </tfoot>
                                         </table>
@@ -140,6 +157,63 @@ if(isset($_REQUEST['action'])) {
                     </div>
                 </div>
             </div>
+            <div class="modal fade" id="editProductModal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+                <div class="modal-dialog modal-md">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editProductModalLabel">Edit Order</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form id="editProductForm">
+                            <div class="modal-body">
+                                <input type="hidden" id="editId" name="id">
+
+                                <h4 class="fw-bold" id="editProductName"></h4>
+
+                                <div class="mb-3">
+                                    <label for="editProductQuantity" class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" id="editProductQuantity" name="quantity" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="editProductPrice" class="form-label">Unit Price</label>
+                                    <input type="text" class="form-control" id="editProductPrice" name="price" required>
+                                </div>
+
+                                <div>
+                                <label for="editProductColor" class="form-label">Color</label>
+                                <div class="mb-3">
+                                    <select class="form-select select2" id="editProductColor" name="color">
+                                        <option value="">Select Color...</option>
+                                        <?php
+                                        $query_paint_colors = "SELECT * FROM paint_colors 
+                                                            WHERE hidden = '0' AND color_status = '1' 
+                                                            GROUP BY color_name 
+                                                            ORDER BY color_name ASC";
+
+                                        $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
+
+                                        while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
+                                        ?>
+                                            <option value="<?= $row_paint_colors['color_id'] ?>" 
+                                                    data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>">
+                                                <?= $row_paint_colors['color_name'] ?>
+                                            </option>
+                                        <?php   
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                </div>
+                                
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
             <script>
                 $(document).ready(function() {
                     $('#est_dtls_tbl').DataTable({
@@ -162,115 +236,112 @@ if(isset($_REQUEST['action'])) {
     } 
 
     if ($action == "fetch_changes_modal") {
-        
-            ?>
-            <style>
-                #est_dtls_tbl {
-                    width: 100% !important;
-                }
+        ?>
+        <style>
+            #est_dtls_tbl {
+                width: 100% !important;
+            }
 
-                #est_dtls_tbl td, #est_dtls_tbl th {
-                    white-space: normal !important;
-                    word-wrap: break-word;
-                }
-            </style>
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header d-flex align-items-center">
-                        <h4 class="modal-title" id="myLargeModalLabel">
-                            View Estimate Changes
-                        </h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div id="update_product" class="form-horizontal">
-                        <div class="modal-body">
-                            <div class="card">
-                                <div class="card-body datatables">
-                                    <div class="estimate-details table-responsive text-nowrap">
-                                        <table id="est_changes_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
-                                            <thead>
-                                                <tr>
-                                                    <th>Product</th>
-                                                    <th>Action</th>
-                                                    <th>User</th>
-                                                    <th>Date</th>
-                                                    <th>Time</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php 
-                                                $estimateid = mysqli_real_escape_string($conn, $_POST['id']);
-                                                $query = "SELECT * FROM estimate_changes WHERE estimate_id = '$estimateid'";
-                                                $result = mysqli_query($conn, $query);
-                                                
-                                                if ($result && mysqli_num_rows($result) > 0) {
-                                                    $response = array();
-                                                    while ($row = mysqli_fetch_assoc($result)) {
-                                                        $estimateid = $row['estimateid'];
-                                                        $product_details = getProductDetails($row['product_id']);
-                                                    ?> 
-                                                        <tr> 
-                                                            <td>
-                                                                <?php echo getProductName($row['product_id']) ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo $row['action'] ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo get_staff_name($row['user']) ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php 
-                                                                    if (isset($row["date_changed"]) && !empty($row["date_changed"]) && $row["date_changed"] !== '0000-00-00 00:00:00') {
-                                                                        echo date("m/d/Y", strtotime($row["date_changed"]));
-                                                                    } else {
-                                                                        echo '';
-                                                                    }
-                                                                ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php 
-                                                                    if (isset($row["date_changed"]) && !empty($row["date_changed"]) && $row["date_changed"] !== '0000-00-00 00:00:00') {
-                                                                        echo date("h:i A", strtotime($row["date_changed"]));
-                                                                    } else {
-                                                                        echo '';
-                                                                    }
-                                                                ?>
-                                                            </td>
-                                                            
-                                                        </tr>
-                                                <?php
-                                                    }
+            #est_dtls_tbl td, #est_dtls_tbl th {
+                white-space: normal !important;
+                word-wrap: break-word;
+            }
+        </style>
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        View Estimate Changes
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="update_product" class="form-horizontal">
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body datatables">
+                                <div class="estimate-details table-responsive text-nowrap">
+                                    <table id="est_changes_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Action</th>
+                                                <th>User</th>
+                                                <th>Date</th>
+                                                <th>Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php 
+                                            $estimateid = mysqli_real_escape_string($conn, $_POST['id']);
+                                            $query = "SELECT * FROM estimate_changes WHERE estimate_id = '$estimateid'";
+                                            $result = mysqli_query($conn, $query);
+                                            
+                                            if ($result && mysqli_num_rows($result) > 0) {
+                                                $response = array();
+                                                while ($row = mysqli_fetch_assoc($result)) {
+                                                    $estimateid = $row['estimateid'];
+                                                    $product_details = getProductDetails($row['product_id']);
+                                                ?> 
+                                                    <tr> 
+                                                        <td>
+                                                            <?php echo getProductName($row['product_id']) ?>
+                                                        </td>
+                                                        <td>
+                                                            <?php echo $row['action'] ?>
+                                                        </td>
+                                                        <td>
+                                                            <?php echo get_staff_name($row['user']) ?>
+                                                        </td>
+                                                        <td>
+                                                            <?php 
+                                                                if (isset($row["date_changed"]) && !empty($row["date_changed"]) && $row["date_changed"] !== '0000-00-00 00:00:00') {
+                                                                    echo date("m/d/Y", strtotime($row["date_changed"]));
+                                                                } else {
+                                                                    echo '';
+                                                                }
+                                                            ?>
+                                                        </td>
+                                                        <td>
+                                                            <?php 
+                                                                if (isset($row["date_changed"]) && !empty($row["date_changed"]) && $row["date_changed"] !== '0000-00-00 00:00:00') {
+                                                                    echo date("h:i A", strtotime($row["date_changed"]));
+                                                                } else {
+                                                                    echo '';
+                                                                }
+                                                            ?>
+                                                        </td>
+                                                        
+                                                    </tr>
+                                            <?php
                                                 }
-                                                ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            }
+                                            ?>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <script>
-                $(document).ready(function() {
-                    $('#est_changes_tbl').DataTable({
-                        language: {
-                            emptyTable: "Estimate details unchanged"
-                        },
-                        autoWidth: false,
-                        responsive: true,
-                        lengthChange: false
-                    });
-
-                    $('#viewChangesModal').on('shown.bs.modal', function () {
-                        $('#est_changes_tbl').DataTable().columns.adjust().responsive.recalc();
-                    });
+        </div>
+        <script>
+            $(document).ready(function() {
+                $('#est_changes_tbl').DataTable({
+                    language: {
+                        emptyTable: "Estimate details unchanged"
+                    },
+                    autoWidth: false,
+                    responsive: true,
+                    lengthChange: false
                 });
-            </script>
 
-            <?php
-        
+                $('#viewChangesModal').on('shown.bs.modal', function () {
+                    $('#est_changes_tbl').DataTable().columns.adjust().responsive.recalc();
+                });
+            });
+        </script>
+        <?php
     } 
 
     if ($action == "fetch_add_modal") {
@@ -1389,6 +1460,33 @@ if(isset($_REQUEST['action'])) {
             }
         
             echo json_encode($response);
+        }
+    }
+
+    if ($action == "update_product") {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
+        $discounted_price = mysqli_real_escape_string($conn, $_POST['price']);
+        $custom_color = mysqli_real_escape_string($conn, $_POST['color']);
+
+        $estimateid = 0;
+        $query = "SELECT * FROM estimate_prod WHERE id = '$id'";
+        $result = mysqli_query($conn, $query);
+        while ($row = mysqli_fetch_assoc($result)) {
+            $estimateid = $row['estimateid'];
+        }
+
+        $sql = "UPDATE estimates SET is_edited = '1' WHERE estimateid = $estimateid";
+        mysqli_query($conn, $sql);
+    
+        $query = "UPDATE estimate_prod 
+                  SET quantity = '$quantity', discounted_price = '$discounted_price', custom_color = '$custom_color' 
+                  WHERE id = '$id'";
+    
+        if (mysqli_query($conn, $query)) {
+            echo json_encode(["success" => true, "sql" => $query]);
+        } else {
+            echo json_encode(["success" => false, "error" => mysqli_error($conn)]);
         }
     }
     
