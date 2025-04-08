@@ -99,7 +99,7 @@ if (isset($_POST['search_estimates'])) {
                     <th class="border-0">Status</th>
                     <th class="border-0">No. of changes</th>
                     <th class="border-0 text-end">Total Amount</th>
-                    <th class="border-0"></th>
+                    <th class="border-0 text-end"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -127,12 +127,20 @@ if (isset($_POST['search_estimates'])) {
                                 $total_changes = $row_est_changes['total_changes'];
                             }
 
-                            $status_html = "";
-                            if(intval($row['status']) == 1){
-                                $status_html = '<span class="badge bg-primary text-light">Not Ordered</span>';
-                            }else if(intval($row['estimateid']) == 2){
-                                $status_html = '<span class="badge bg-success text-light">Ordered</span>';
-                            }
+                            $status_code = $row['status'];
+
+                            $status_labels = [
+                                1 => ['label' => 'New Estimate', 'class' => 'badge bg-primary'],
+                                2 => ['label' => 'Sent to Customer', 'class' => 'badge bg-success text-dark'],
+                                3 => ['label' => 'Modified by Customer', 'class' => 'badge bg-warning text-dark'],
+                                4 => ['label' => 'Approved', 'class' => 'badge bg-secondary'],
+                                5 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+                                6 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
+                                7 => ['label' => 'Delivered', 'class' => 'badge bg-success']
+                            ];
+
+                            $status = $status_labels[$status_code];
+                            $status_html = '<span class="' . $status['class'] . ' ">' . $status['label'] . '</span>';
                         ?>
                         <tr>
                             <td class="ps-0">
@@ -147,7 +155,14 @@ if (isset($_POST['search_estimates'])) {
                             <td class="text-end">
                                 <p class="mb-0 fs-3">$<?= number_format(getEstimateTotalsDiscounted($row['estimateid']),2) ?></p>
                             </td>
-                            <td>
+                            <td class="text-end">
+                                <?php
+                                if($status_code != 1){
+                                   ?>
+                                   <a href="index.php?page=estimate&id=<?=$row["estimateid"]?>&key=<?=$row["est_key"]?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-warning fa fa-sign-in-alt fs-5"></i></a>
+                                   <?php 
+                                }
+                                ?>
                                 <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
                                 <a href="/print_estimate_product.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
                                 <a href="/print_estimate_total.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>

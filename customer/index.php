@@ -2,8 +2,8 @@
 session_start();
 if (!isset($_SESSION['customer_id'])) {
     $redirect_url = urlencode($_SERVER['REQUEST_URI']);
-    /* header("Location: login.php?redirect=$redirect_url");
-    exit(); */
+    header("Location: login.php?redirect=$redirect_url");
+    exit();
 }
 include_once '../includes/dbconn.php';
 include_once '../includes/functions.php';
