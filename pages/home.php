@@ -335,10 +335,8 @@ $reorder_level = 1;
                   </table>
                 </div>
               </div>
-              
             </div>
           </div>
-          
         </div>
       </div>
     </div>
@@ -585,6 +583,58 @@ $reorder_level = 1;
       </div>
     </div>
   </div>
+
+  <div class="col-lg-6 col-md-12">
+    <div class="card earning-widget my-5">
+      <div class="card-body py-3 d-flex align-items-center justify-content-between">
+        <h4 class="card-title mb-0">New Customers for Approval</h4>
+      </div>
+      <div class="card-body border-top collapse show table-responsive no-wrap p-0">
+        <div class="message-box py-4 contact-box position-relative">
+          <div id="approval_customer" class="message-widget vstack gap-4 contact-widget position-relative">
+            <?php
+            $query_customer = "SELECT * FROM customer WHERE is_approved = 0 AND status = 0 AND hidden = 0 LIMIT 10";
+            $result_customer = mysqli_query($conn, $query_customer);
+            if ($result_customer && mysqli_num_rows($result_customer) > 0) {
+                while ($row_customer = mysqli_fetch_array($result_customer, MYSQLI_ASSOC)) {
+                    $customer_name = $row_customer['customer_first_name'] . ' ' . $row_customer['customer_last_name'];
+                    $customer_email = $row_customer['contact_email'];
+                    $customer_id = $row_customer['customer_id'];
+                    ?>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center px-3 gap-3">
+                      <div class="d-flex align-items-center gap-3 w-100">
+                        <div class="user-img position-relative">
+                          <img src="../assets/images/profile/user-2.jpg" alt="user" class="rounded-circle" width="45" height="45" />
+                          <span class="profile-status position-absolute text-bg-secondary rounded-circle" style="width:10px; height:10px; bottom:0; right:0;"></span>
+                        </div>
+                        <div class="text-truncate">
+                          <h5 class="mb-1"><?= ucwords($customer_name) ?></h5>
+                          <span class="text-muted"><?= $customer_email ?></span>
+                        </div>
+                      </div>
+                      <div class="d-flex justify-content-center gap-3">
+                        <a href="javascript:void(0)" data-id="<?= $customer_id ?>" id="approve_customer" title="Approve">
+                          <i class="fa-solid text-success fa-check fs-7"></i>
+                        </a>
+                        <a href="javascript:void(0)" data-id="<?= $customer_id ?>" id="reject_customer" title="Reject">
+                          <i class="fa-solid text-danger fa-xmark fs-7"></i>
+                        </a>
+                      </div>
+                    </div>
+                    <?php
+                }
+            }else{
+              ?>
+              <h4 class="d-flex justify-content-center align-items-center">No approval requests.</h4>
+              <?php
+            }
+            ?>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <!-- Bandwidth cards -->
   <div class="col-lg-4">
@@ -1290,6 +1340,56 @@ $(document).ready(function() {
         let orderId = $(this).data('id');
         loadOrderSupplierDetails(orderId);
         $('#view_order_product_details_modal').modal('show');
+    });
+
+    $(document).on('click', '#approve_customer', function(event) {
+        let customer_id = $(this).data('id');
+
+        if (!confirm("Are you sure you want to approve this customer?")) return;
+
+        $.ajax({
+            url: 'pages/index_ajax.php',
+            type: 'POST',
+            data: {
+                customer_id: customer_id,
+                approve_customer: "approve_customer"
+            },
+            success: function(response) {
+                console.log(response);
+                if(response == 'success'){
+                  alert('Customer Approved Successfully');
+                }
+                $('#approval_customer').load(location.href + ' #approval_customer');
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $(document).on('click', '#reject_customer', function(event) {
+        let customer_id = $(this).data('id');
+
+        if (!confirm("Are you sure you want to reject this customer?")) return;
+
+        $.ajax({
+            url: 'pages/index_ajax.php',
+            type: 'POST',
+            data: {
+                customer_id: customer_id,
+                reject_customer: "reject_customer"
+            },
+            success: function(response) {
+                console.log(response);
+                if(response == 'success'){
+                  alert('Customer Rejected Successfully');
+                }
+                $('#approval_customer').load(location.href + ' #approval_customer');
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
     });
 });
 </script>

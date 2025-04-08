@@ -130,4 +130,38 @@ if(isset($_POST['fetch_order_product_details'])){
     </script>
     <?php
 }
+
+if (isset($_POST['approve_customer'])) {
+    $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
+    $query = "SELECT * FROM customer WHERE customer_id='$customer_id'";
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $query = "UPDATE customer SET is_approved = 1, status = 1 WHERE customer_id='$customer_id'";
+        $result = mysqli_query($conn, $query);
+
+        if ($result) {
+            echo "success";
+        } else {
+            echo "MySQL error: " . mysqli_error($conn);
+        }
+    }
+}
+
+if (isset($_POST['reject_customer'])) {
+    $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
+    $query = "SELECT * FROM customer WHERE customer_id='$customer_id'";
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $query = "UPDATE customer SET is_approved = 0, status = 0, hidden = 1 WHERE customer_id='$customer_id'";
+        $result = mysqli_query($conn, $query);
+
+        if ($result) {
+            echo "success";
+        } else {
+            echo "MySQL error: " . mysqli_error($conn);
+        }
+    }
+}
 ?>
