@@ -3,7 +3,6 @@
     "type": "library",
     "require": {
         "phpoffice/phpspreadsheet": "^4.0",
-        "google/apiclient": "2.0",
         "psr/http-message": "^1.0"
     },
     "minimum-stability": "stable",
