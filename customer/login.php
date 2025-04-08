@@ -8,23 +8,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   $password = $_POST['password'];
   $redirect = (!empty($_REQUEST['redirect']) && $_REQUEST['redirect'] !== 'login.php') ? $_REQUEST['redirect'] : 'index.php';
 
-  $sql = "SELECT customer_id, password FROM customer WHERE username = '$username'";
+  $sql = "SELECT customer_id, password, is_approved FROM customer WHERE username = '$username'";
   $result = $conn->query($sql);
 
   if ($result && $result->num_rows > 0) {
       $row = $result->fetch_assoc();
       $db_password = $row['password'];
       $customer_id = $row['customer_id'];
+      $is_approved = $row['is_approved'];
 
-      if (password_verify($password, $db_password)) {
-          $_SESSION['customer_id'] = $customer_id;
-          setcookie("userid", $customer_id, time() + (86400 * 30), "/");
+      if($is_approved == 1){
+        if (password_verify($password, $db_password)) {
+            $_SESSION['customer_id'] = $customer_id;
+            setcookie("userid", $customer_id, time() + (86400 * 30), "/");
 
-          header("Location: $redirect");
-          exit();
-      } else {
-          $error = 'Invalid username or password.';
+            header("Location: $redirect");
+            exit();
+        } else {
+            $error = 'Account not yet approved. Please wait for admin to approve your application.';
+        }
+      }else{
+        $error = 'Invalid username or password.';
       }
+
+      
   } else {
       $error = 'Invalid username or password.';
   }
@@ -66,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   </b>
                 </a>
                 <?php if (isset($error)): ?>
-                    <div class="alert alert-danger" role="alert">
+                    <div class="alert alert-danger text-center" role="alert">
                         <?php echo $error; ?>
                     </div>
                 <?php endif; ?>
