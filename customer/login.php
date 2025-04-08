@@ -25,10 +25,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header("Location: $redirect");
             exit();
         } else {
-            $error = 'Account not yet approved. Please wait for admin to approve your application.';
+            $error = 'Invalid username or password.';
         }
       }else{
-        $error = 'Invalid username or password.';
+        $error = 'Account not yet approved. Please wait for admin to approve your application.';
       }
 
       
@@ -53,6 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <!-- Core Css -->
   <link rel="stylesheet" href="../../assets/css/styles.css" />
   <title>East Kentucky Metal</title>
+
+  <script src="https://accounts.google.com/gsi/client" defer></script> 
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
   <!-- Preloader -->
@@ -77,6 +80,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <?php echo $error; ?>
                     </div>
                 <?php endif; ?>
+                <div class="row text-center">
+                    <div class="col-12 mb-2 mb-sm-0">
+                        <a id="googleBtn" class="d-flex justify-content-center" href="javascript:void(0)"></a>
+                    </div>
+                </div>
+                <div class="position-relative text-center my-4">
+                  <p class="mb-0 fs-4 px-3 d-inline-block bg-white z-index-5 position-relative">or sign Up with</p>
+                  <span class="border-top w-100 position-absolute top-50 start-50 translate-middle"></span>
+                </div>
                 <form action="" method="post">
                   <input type="hidden" name="redirect" value="<?php echo isset($_GET['redirect']) ? htmlspecialchars($_GET['redirect']) : ''; ?>">
                   <div class="mb-3">
@@ -96,7 +108,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                     <a class="text-primary fw-medium" href="#">Forgot Password</a>
                   </div>
-                  <button type="submit" class="btn btn-primary w-100 py-8 mb-4">Sign In</button>
+                  <button type="submit" class="btn btn-primary w-100 py-8 mb-4">Log in</button>
+                  <div class="position-relative text-center my-4">
+                    <p class="mb-0 fs-4 px-3 d-inline-block bg-white z-index-5 position-relative">Dont have an account yet?</p>
+                    <span class="border-top w-100 position-absolute top-50 start-50 translate-middle"></span>
+                  </div>
+                  <div class="d-flex align-items-center justify-content-center mb-2">
+                    <a class="text-primary fw-medium" href="register.php">Register</a>
+                  </div>
                 </form>
               </div>
             </div>
@@ -220,6 +239,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
   </div>
   <div class="dark-transparent sidebartoggler"></div>
+
+<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+      <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+          <h4 id="responseHeader" class="m-0"></h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+          
+          <p id="responseMsg"></p>
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+          Close
+          </button>
+      </div>
+      </div>
+  </div>
+</div>
   <!-- Import Js Files -->
   <script src="../../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../../assets/libs/simplebar/dist/simplebar.min.js"></script>
@@ -229,5 +268,52 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <script src="../../assets/js/theme/feather.min.js"></script>
   <!-- solar icons -->
   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
+
+  <script>
+    window.onload = function () {
+        if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+            google.accounts.id.initialize({
+                client_id: '<?=$google_auth_client_id?>',
+                callback: handleGoogleLogin,
+                ux_mode: 'popup'
+            });
+
+            google.accounts.id.renderButton(
+                document.getElementById("googleBtn"),
+                { 
+                    theme: "standard",
+                    size: "large",
+                    shape: "pill",
+                    width: 200
+                }
+            );
+        }
+
+        function handleGoogleLogin(response) {
+            $.ajax({
+                url: 'pages/login_ajax.php',
+                method: 'POST',
+                data: {
+                    token: response.credential,
+                    action: 'google_login'
+                },
+                success: function (data) {
+                    if (data.trim() === 'success') {
+                        window.location.href = 'index.php';
+                    } else {
+                        $('#responseHeader').text("Customer Application Success!");
+                        $('#responseMsg').text(data);
+                        $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                },
+                error: function (xhr) {
+                    console.error('Login error:', xhr.responseText);
+                    alert('Google Sign-In failed.');
+                }
+            });
+        }
+    };
+  </script>
 </body>
 </html>

@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <link rel="stylesheet" href="../../assets/css/styles.css" />
   <title>Register</title>
 
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" defer></script> 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
@@ -70,12 +70,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div id="errorAlert" class="alert alert-danger d-none" role="alert">
                     <h5 id="errorMsg"></h5>
                 </div>
-                <div class="row">
+                <div class="row text-center">
                     <div class="col-12 mb-2 mb-sm-0">
-                        <a id="googleBtn" class="btn btn-link border d-flex align-items-center justify-content-center rounded-2 py-8 text-decoration-none" href="javascript:void(0)" role="button">
-                            <img src="../assets/images/svgs/google-icon.svg" alt="" class="img-fluid me-2" width="18" height="18">
-                            <span class="flex-shrink-0">Google</span>
-                        </a>
+                        <a id="googleBtn" class="d-flex justify-content-center" href="javascript:void(0)"></a>
                     </div>
                 </div>
                 <div class="position-relative text-center my-4">
@@ -105,7 +102,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <label for="exampleInputPassword1" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" name="password" required>
                     </div>
-                  <button type="submit" class="btn btn-primary w-100 py-8 mb-4">Sign Up</button>
+                  <button type="submit" class="btn btn-primary w-100 py-8 mb-4">Register</button>
+                  <div class="position-relative text-center my-4">
+                    <p class="mb-0 fs-4 px-3 d-inline-block bg-white z-index-5 position-relative">Existing Account?</p>
+                    <span class="border-top w-100 position-absolute top-50 start-50 translate-middle"></span>
+                  </div>
+                  <div class="d-flex align-items-center justify-content-center mb-2">
+                    <a class="text-primary fw-medium" href="login.php">Log in</a>
+                  </div>
                 </form>
               </div>
             </div>
@@ -145,36 +149,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
 
 <script>
-function handleGoogleLogin(response) {
-    $.ajax({
-        url: 'register_ajax.php',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            token: response.credential,
-            action: 'google_login'
-        }),
-        success: function (data) {
-        console.log('Success:', data);
-            window.location.href = 'dashboard.php';
-        },
-        error: function (xhr) {
-        console.error('Error:', xhr.responseText);
-        alert('Google Sign-In failed.');
-        }
-    });
-}
-
 $(document).ready(function () {
     window.onload = function () {
-        google.accounts.id.initialize({
-            client_id: '1036649042415-rikd0a70bflr3l1h2jsjsvd4np4aigae.apps.googleusercontent.com',
-            callback: handleGoogleLogin
-        });
+        if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+            google.accounts.id.initialize({
+                client_id: '<?=$google_auth_client_id?>',
+                callback: handleGoogleLogin,
+                ux_mode: 'popup'
+            });
 
-        $('#googleBtn').on('click', function () {
-            google.accounts.id.prompt();
-        });
+            google.accounts.id.renderButton(
+                document.getElementById("googleBtn"),
+                { 
+                    theme: "standard",
+                    size: "large",
+                    shape: "pill",
+                    width: 200
+                }
+            );
+        }
+
+        function handleGoogleLogin(response) {
+            $.ajax({
+                url: 'pages/register_ajax.php',
+                method: 'POST',
+                data: {
+                    token: response.credential,
+                    action: 'google_login'
+                },
+                success: function (data) {
+                    if (data.trim() === 'success') {
+                        $('#responseHeader').text("Customer Application Success!");
+                        $('#responseMsg').text("Please wait for admin to approve your application.");
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            window.location.href = 'login.php';
+                        });
+                    } else {
+                        $('#errorMsg').text(data);
+                        $('#errorAlert').removeClass('d-none');
+                    }
+                },
+                error: function (xhr) {
+                    console.error('Login error:', xhr.responseText);
+                    alert('Google Sign-In failed.');
+                }
+            });
+        }
     };
 
     $('#signupForm').on('submit', function (e) {
@@ -190,16 +213,18 @@ $(document).ready(function () {
             processData: false,
             contentType: false,
             success: function (response) {
-                if(response.trim() == 'success'){
+                if (response.trim() === 'success') {
                     $('#responseHeader').text("Customer Application Success!");
                     $('#responseMsg').text("Please wait for admin to approve your application.");
-                    $('#responseHeaderContainer').removeClass("bg-danger");
-                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
                     $('#response-modal').modal("show");
 
                     $('#response-modal').on('hide.bs.modal', function () {
                         window.location.href = 'login.php';
                     });
+                } else {
+                    $('#errorMsg').text(response);
+                    $('#errorAlert').removeClass('d-none');
                 }
             },
             error: function (xhr) {
@@ -211,7 +236,6 @@ $(document).ready(function () {
     });
 });
 </script>
-
 
 </body>
 </html>
