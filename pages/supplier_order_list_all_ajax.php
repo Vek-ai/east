@@ -245,7 +245,7 @@ if(isset($_REQUEST['action'])) {
                 $subject = "EKM has made adjustments and requests for approval";
             } elseif ($method == "finalize_order") {
                 $newStatus = 4;
-                $subject = "EKM has finalized the order and awaiting for processing";
+                $subject = "EKM has confirmed the order and awaiting for processing";
             } elseif ($method == "order_delivered") {
                 $newStatus = 7;
                 $subject = "EKM has received the order";

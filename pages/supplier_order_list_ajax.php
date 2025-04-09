@@ -355,7 +355,7 @@ if (isset($_POST['order_supplier_products'])) {
             $delete_query = "DELETE FROM supplier_temp_prod_orders WHERE supplier_id = '$supplier_id'";
             $conn->query($delete_query);
 
-            $subject = "EKM has requested an Order";
+            $subject = "EKM has placed a New Order";
             $message = "
                 <html>
                 <head>

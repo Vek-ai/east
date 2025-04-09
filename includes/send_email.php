@@ -44,9 +44,9 @@ function sendEmail($email, $name, $subject, $message) {
             ];
     } */
 
-    $headers  = "MIME-Version: 1.0" . "\r\n";
+    $headers = "MIME-Version: 1.0" . "\r\n";
     $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
-    $headers .= "From: vekka@ilearnsda.com" . "\r\n";
+    $headers .= "From: East Kentucky Metal <vekka@ilearnsda.com>" . "\r\n"; 
 
     if (mail($email, $subject, $message, $headers)) {
         return [
