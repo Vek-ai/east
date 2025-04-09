@@ -1283,6 +1283,8 @@ if(isset($_REQUEST['action'])) {
         $customer_details= getCustomerDetails($customerid);
         $customer_name = $customer_details['customer_first_name'] .' ' .$customer_details['customer_first_name'];
         $customer_email = $customer_details['contact_email'];
+        $customer_phone = $customer_details['contact_phone'];
+        $primary_contact = $customer_details['primary_contact'];
 
         $est_key = 'EST' . substr(hash('sha256', uniqid()), 0, 10);
 
@@ -1336,17 +1338,60 @@ if(isset($_REQUEST['action'])) {
                 </html>
                 ";
 
-            if(!empty($customer_email)){
-                $response = sendEmail($customer_email, $customer_name, $subject, $message);
-                if ($response['success'] == true) {
+            if($primary_contact == 2){
+                if(!empty($customer_phone)){
+                    $response = sendPhoneMessage($customer_email, $customer_name, $subject, $message);
+                    if ($response['success'] == true) {
+                        echo json_encode([
+                            'success' => true,
+                            'msg_success' => true,
+                            'message' => "Successfully sent message to $customer_name for confirmation on orders.",
+                            'id' => $id,
+                            'key' => $est_key
+                        ]);
+                    } else {
+                        echo json_encode([
+                            'success' => true,
+                            'msg_success' => false,
+                            'message' => "Successfully saved, but message could not be sent to $customer_name.",
+                            'error' => $response['error'],
+                            'id' => $id,
+                            'key' => $est_key
+                        ]);
+                    }
+                } else {
                     echo json_encode([
                         'success' => true,
-                        'email_success' => true,
-                        'message' => "Successfully sent email to $customer_name for confirmation on orders.",
+                        'msg_success' => false,
+                        'message' => "Successfully saved, but message could not be sent to $customer_name.",
+                        'error' => $response['error'],
                         'id' => $id,
                         'key' => $est_key
                     ]);
-                } else {
+                }
+            }else{
+                if(!empty($customer_email)){
+                    $response = sendEmail($customer_email, $customer_name, $subject, $message);
+                    if ($response['success'] == true) {
+                        echo json_encode([
+                            'success' => true,
+                            'email_success' => true,
+                            'message' => "Successfully sent email to $customer_name for confirmation on orders.",
+                            'id' => $id,
+                            'key' => $est_key
+                        ]);
+                    } else {
+                        echo json_encode([
+                            'success' => true,
+                            'email_success' => false,
+                            'message' => "Successfully saved, but email could not be sent to $customer_name.",
+                            'error' => $response['error'],
+                            'id' => $id,
+                            'key' => $est_key
+                        ]);
+                    }
+    
+                }else {
                     echo json_encode([
                         'success' => true,
                         'email_success' => false,
@@ -1356,16 +1401,6 @@ if(isset($_REQUEST['action'])) {
                         'key' => $est_key
                     ]);
                 }
-
-            }else {
-                echo json_encode([
-                    'success' => true,
-                    'email_success' => false,
-                    'message' => "Successfully saved, but email could not be sent to $customer_name.",
-                    'error' => $response['error'],
-                    'id' => $id,
-                    'key' => $est_key
-                ]);
             }
     }
 
@@ -1381,6 +1416,9 @@ if(isset($_REQUEST['action'])) {
             $supplier_id = $row['supplier_id'];
             $supplier_details = getSupplierDetails($supplier_id);
             $supplier_name = $supplier_details['supplier_name'];
+            $customer_email = $customer_details['contact_email'];
+            $customer_phone = $customer_details['contact_phone'];
+            $primary_contact = $customer_details['primary_contact'];
             $key = $row['order_key'];
         
             $response = ['success' => false, 'message' => 'Unknown error'];
@@ -1437,54 +1475,97 @@ if(isset($_REQUEST['action'])) {
             
             if (mysqli_query($conn, $sql)) {
                 $message = "
-                        <html>
-                        <head>
-                            <style>
-                                body {
-                                    font-family: Arial, sans-serif;
-                                    line-height: 1.6;
-                                    color: #333;
-                                }
-                                .container {
-                                    padding: 20px;
-                                    border: 1px solid #e0e0e0;
-                                    background-color: #f9f9f9;
-                                    width: 80%;
-                                    margin: 0 auto;
-                                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                                }
-                                h2 {
-                                    color: #0056b3;
-                                    margin-bottom: 20px;
-                                }
-                                p {
-                                    margin: 5px 0;
-                                }
-                                .link {
-                                    font-weight: bold;
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <div class='container'>
-                                <h2>$subject</h2>
-                                <a href='https://metal.ilearnwebtech.com/customer/index.php?page=estimate&id=$id&key=$est_key' class='link' target='_blank'>To estimate order details, click this link</a>
-                            </div>
-                        </body>
-                        </html>
-                        ";
+                    <html>
+                    <head>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                            }
+                            .container {
+                                padding: 20px;
+                                border: 1px solid #e0e0e0;
+                                background-color: #f9f9f9;
+                                width: 80%;
+                                margin: 0 auto;
+                                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                            }
+                            h2 {
+                                color: #0056b3;
+                                margin-bottom: 20px;
+                            }
+                            p {
+                                margin: 5px 0;
+                            }
+                            .link {
+                                font-weight: bold;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='container'>
+                            <h2>$subject</h2>
+                            <a href='https://metal.ilearnwebtech.com/customer/index.php?page=estimate&id=$id&key=$est_key' class='link' target='_blank'>To estimate order details, click this link</a>
+                        </div>
+                    </body>
+                    </html>
+                    ";
 
-                    if(!empty($customer_email)){
-                        $response = sendEmail($customer_email, $customer_name, $subject, $message);
-                        if ($response['success'] == true) {
+                    if($primary_contact == 2){
+                        if(!empty($customer_phone)){
+                            $response = sendPhoneMessage($customer_email, $customer_name, $subject, $message);
+                            if ($response['success'] == true) {
+                                echo json_encode([
+                                    'success' => true,
+                                    'msg_success' => true,
+                                    'message' => "Successfully sent message to $customer_name for confirmation on orders.",
+                                    'id' => $id,
+                                    'key' => $est_key
+                                ]);
+                            } else {
+                                echo json_encode([
+                                    'success' => true,
+                                    'msg_success' => false,
+                                    'message' => "Successfully saved, but message could not be sent to $customer_name.",
+                                    'error' => $response['error'],
+                                    'id' => $id,
+                                    'key' => $est_key
+                                ]);
+                            }
+                        } else {
                             echo json_encode([
                                 'success' => true,
-                                'email_success' => true,
-                                'message' => "Successfully sent email to $customer_name for confirmation on orders.",
+                                'msg_success' => false,
+                                'message' => "Successfully saved, but message could not be sent to $customer_name.",
+                                'error' => $response['error'],
                                 'id' => $id,
                                 'key' => $est_key
                             ]);
-                        } else {
+                        }
+                    }else{
+                        if(!empty($customer_email)){
+                            $response = sendEmail($customer_email, $customer_name, $subject, $message);
+                            if ($response['success'] == true) {
+                                echo json_encode([
+                                    'success' => true,
+                                    'email_success' => true,
+                                    'message' => "Successfully sent email to $customer_name for confirmation on orders.",
+                                    'id' => $id,
+                                    'key' => $est_key
+                                ]);
+                            } else {
+                                echo json_encode([
+                                    'success' => true,
+                                    'email_success' => false,
+                                    'message' => "Successfully saved, but email could not be sent to $customer_name.",
+                                    'error' => $response['error'],
+                                    'id' => $id,
+                                    'key' => $est_key
+                                ]);
+                            }
+            
+                        }else {
                             echo json_encode([
                                 'success' => true,
                                 'email_success' => false,
@@ -1494,25 +1575,17 @@ if(isset($_REQUEST['action'])) {
                                 'key' => $est_key
                             ]);
                         }
-
-                    }else {
-                        echo json_encode([
-                            'success' => true,
-                            'email_success' => false,
-                            'message' => "Successfully saved, but email could not be sent to $customer_name.",
-                            'error' => $response['error'],
-                            'id' => $id,
-                            'key' => $est_key
-                        ]);
                     }
-
-                $response['success'] = true;
-                $response['message'] = 'Email sent and status updated successfully!';
             } else {
-                $response['message'] = 'Error updating order status.';
+                echo json_encode([
+                    'success' => true,
+                    'email_success' => false,
+                    'message' => "Failed to save",
+                    'error' => mysqli_error($conn),
+                    'id' => $id,
+                    'key' => $est_key
+                ]);
             }
-        
-            echo json_encode($response);
         }
     }
 

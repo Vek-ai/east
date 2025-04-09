@@ -63,4 +63,20 @@ function sendEmail($email, $name, $subject, $message) {
     }
 
 }
+
+function sendPhoneMessage($phone, $name, $subject, $message) {
+    $is_success = false;
+    if ($is_success) {
+        return [
+            'success' => true,
+            'message' => "Successfully sent message to $name."
+        ];
+    } else {
+        return [
+            'success' => false,
+            'message' => "Message could not be sent to $name.",
+            'error' => 'error'
+        ];
+    }
+}
 ?>

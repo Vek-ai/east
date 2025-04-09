@@ -27,6 +27,7 @@ $customer_pricing = 0;
 $credit_limit = 0;
 $lat = 0;
 $lng = 0;
+$primary_contact = 1;
 
 $customer_name = $customer_first_name . " " . $customer_last_name;
 
@@ -45,6 +46,7 @@ if (!empty($_REQUEST['customer_id'])) {
     $old_customer_type_id = $row['customer_type_id'];
     $contact_email = $row['contact_email'];
     $contact_phone = $row['contact_phone'];
+    $primary_contact = $row['primary_contact'];
     $contact_fax = $row['contact_fax'];
     $address = $row['address'];
     $city = $row['city'];
@@ -213,26 +215,39 @@ if (!empty($_REQUEST['result'])) {
               </div>
 
               <div class="row pt-3">
-                <div class="col-md-4">
+                <div class="col-md-6">
                   <div class="mb-3">
                     <label class="form-label">Customer Email</label>
                     <input type="text" id="contact_email" name="contact_email" class="form-control"
                       value="<?= $contact_email ?>" />
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                   <div class="mb-3">
                     <label class="form-label">Customer Phone</label>
                     <input type="text" id="contact_phone" name="contact_phone" class="form-control"
                       value="<?= $contact_phone ?>" />
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                   <div class="mb-3">
                     <label class="form-label">Customer Fax</label>
                     <input type="text" id="contact_fax" name="contact_fax" class="form-control"
                       value="<?= $contact_fax ?>" />
                   </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Primary Contact</label>
+                    <div class="mb-3">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="primary_contact" id="contact_email_radio" value="email" <?= ($primary_contact != '2' ? 'checked' : '') ?>>
+                            <label class="form-check-label" for="contact_email_radio">Email</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="primary_contact" id="contact_phone_radio" value="phone" <?= ($primary_contact == '2' ? 'checked' : '') ?>>
+                            <label class="form-check-label" for="contact_phone_radio">Phone</label>
+                        </div>
+                    </div>
                 </div>
               </div>
 

@@ -15,6 +15,7 @@ if(isset($_REQUEST['action'])) {
         $customer_business_name = mysqli_real_escape_string($conn, $_POST['customer_business_name']);
         $contact_email = mysqli_real_escape_string($conn, $_POST['contact_email']);
         $contact_phone = mysqli_real_escape_string($conn, $_POST['contact_phone']);
+        $primary_contact = mysqli_real_escape_string($conn, $_POST['primary_contact']);
         $contact_fax = mysqli_real_escape_string($conn, $_POST['contact_fax']);
         $address = mysqli_real_escape_string($conn, $_POST['address']);
         $city = mysqli_real_escape_string($conn, $_POST['city']);
@@ -76,6 +77,7 @@ if(isset($_REQUEST['action'])) {
                         customer_business_name = '$customer_business_name', 
                         contact_email = '$contact_email', 
                         contact_phone = '$contact_phone', 
+                        primary_contact = '$primary_contact', 
                         contact_fax = '$contact_fax', 
                         address = '$address', 
                         city = '$city', 
@@ -162,6 +164,7 @@ if(isset($_REQUEST['action'])) {
                     customer_business_name, 
                     contact_email,
                     contact_phone,
+                    primary_contact,
                     contact_fax,
                     address,
                     city,
@@ -188,6 +191,7 @@ if(isset($_REQUEST['action'])) {
                     '$customer_business_name',
                     '$contact_email',
                     '$contact_phone',
+                    '$primary_contact',
                     '$contact_fax',
                     '$address',
                     '$city',
