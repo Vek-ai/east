@@ -1281,7 +1281,7 @@ if(isset($_REQUEST['action'])) {
         $id = mysqli_real_escape_string($conn, $_POST['id']);
         $customerid = mysqli_real_escape_string($conn, $_POST['customerid']);
         $customer_details= getCustomerDetails($customerid);
-        $customer_name = $customer_details['customer_first_name'] .' ' .$customer_details['customer_first_name'];
+        $customer_name = $customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'];
         $customer_email = $customer_details['contact_email'];
         $customer_phone = $customer_details['contact_phone'];
         $primary_contact = $customer_details['primary_contact'];
@@ -1415,7 +1415,7 @@ if(isset($_REQUEST['action'])) {
         while ($row = mysqli_fetch_assoc($result)) {
             $customerid = mysqli_real_escape_string($conn, $_POST['customerid']);
             $customer_details= getCustomerDetails($customerid);
-            $customer_name = $customer_details['customer_first_name'] .' ' .$customer_details['customer_first_name'];
+            $customer_name = $customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'];
             $customer_email = $customer_details['contact_email'];
             $customer_phone = $customer_details['contact_phone'];
             $primary_contact = $customer_details['primary_contact'];
