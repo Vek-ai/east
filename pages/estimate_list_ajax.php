@@ -1413,7 +1413,7 @@ if(isset($_REQUEST['action'])) {
         $query = "SELECT * FROM estimates WHERE estimateid = '$estimateid'";
         $result = mysqli_query($conn, $query);
         while ($row = mysqli_fetch_assoc($result)) {
-            $customerid = mysqli_real_escape_string($conn, $_POST['customerid']);
+            $customerid = $row['customerid'];
             $customer_details= getCustomerDetails($customerid);
             $customer_name = $customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'];
             $customer_email = $customer_details['contact_email'];
