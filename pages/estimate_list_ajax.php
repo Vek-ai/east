@@ -1413,12 +1413,13 @@ if(isset($_REQUEST['action'])) {
         $query = "SELECT * FROM estimates WHERE estimateid = '$estimateid'";
         $result = mysqli_query($conn, $query);
         while ($row = mysqli_fetch_assoc($result)) {
-            $supplier_id = $row['supplier_id'];
-            $supplier_details = getSupplierDetails($supplier_id);
-            $supplier_name = $supplier_details['supplier_name'];
+            $customerid = mysqli_real_escape_string($conn, $_POST['customerid']);
+            $customer_details= getCustomerDetails($customerid);
+            $customer_name = $customer_details['customer_first_name'] .' ' .$customer_details['customer_first_name'];
             $customer_email = $customer_details['contact_email'];
             $customer_phone = $customer_details['contact_phone'];
             $primary_contact = $customer_details['primary_contact'];
+            
             $key = $row['order_key'];
         
             $response = ['success' => false, 'message' => 'Unknown error'];
