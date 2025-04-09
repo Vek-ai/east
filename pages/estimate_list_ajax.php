@@ -1551,7 +1551,7 @@ if(isset($_REQUEST['action'])) {
                                 echo json_encode([
                                     'success' => true,
                                     'email_success' => true,
-                                    'message' => "Successfully sent email to $customer_name for confirmation on orders.",
+                                    'message' => "Successfully updated status and sent email confirmation to $customer_name",
                                     'id' => $id,
                                     'key' => $est_key
                                 ]);
@@ -1559,7 +1559,7 @@ if(isset($_REQUEST['action'])) {
                                 echo json_encode([
                                     'success' => true,
                                     'email_success' => false,
-                                    'message' => "Successfully saved, but email could not be sent to $customer_name.",
+                                    'message' => "Successfully updated status, but email could not be sent to $customer_name.",
                                     'error' => $response['error'],
                                     'id' => $id,
                                     'key' => $est_key
@@ -1570,7 +1570,7 @@ if(isset($_REQUEST['action'])) {
                             echo json_encode([
                                 'success' => true,
                                 'email_success' => false,
-                                'message' => "Successfully saved, but email could not be sent to $customer_name.",
+                                'message' => "Successfully updated status, but email could not be sent to $customer_name.",
                                 'error' => $response['error'],
                                 'id' => $id,
                                 'key' => $est_key
@@ -1581,7 +1581,7 @@ if(isset($_REQUEST['action'])) {
                 echo json_encode([
                     'success' => true,
                     'email_success' => false,
-                    'message' => "Failed to save",
+                    'message' => "Failed to save!",
                     'error' => mysqli_error($conn),
                     'id' => $id,
                     'key' => $est_key
