@@ -31,7 +31,7 @@ if(isset($_REQUEST['action'])) {
                     word-wrap: break-word;
                 }
             </style>
-            <div class="modal-dialog modal-xl">
+            <div class="modal-dialog modal-xl" style="width:90% !important">
                 <div class="modal-content">
                     <div class="modal-header d-flex align-items-center">
                         <h4 class="modal-title" id="myLargeModalLabel">
@@ -47,79 +47,88 @@ if(isset($_REQUEST['action'])) {
                                         <table id="est_dtls_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
                                             <thead>
                                                 <tr>
+                                                    <th><input type="checkbox" id="select_all"></th>
                                                     <th>Description</th>
                                                     <th>Color</th>
                                                     <th>Grade</th>
                                                     <th>Profile</th>
                                                     <th class="text-center">Quantity</th>
+                                                    <th class="text-center">Status</th>
                                                     <th class="text-end">Actual Price</th>
                                                     <th class="text-end">Disc Price</th>
                                                     <th class="text-end">Total</th>
-                                                    <?php
-                                                    if($status_code == 3){
-                                                    ?>
+                                                    <?php if($status_code == 3){ ?>
                                                         <th class="text-center">Action</th>
-                                                    <?php
-                                                    }
-                                                    ?>
+                                                    <?php } ?>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <?php 
+                                                    $is_processing = false;
                                                     while ($row = mysqli_fetch_assoc($result)) {
                                                         $estimateid = $row['estimateid'];
                                                         $product_details = getProductDetails($row['product_id']);
-                                                    ?> 
-                                                        <tr> 
-                                                            <td>
-                                                                <?php echo getProductName($row['product_id']) ?>
-                                                            </td>
-                                                            <td>
-                                                            <div class="d-flex mb-0 gap-8">
-                                                                <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($row['custom_color'])?>"></a>
-                                                                <?= getColorFromID($row['custom_color']); ?>
-                                                            </div>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo getGradeName($product_details['grade']); ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo getProfileTypeName($product_details['profile']); ?>
-                                                            </td>
-                                                            <td><?= $row['quantity'] ?></td>
-                                                            <td class="text-end">$ <?= number_format(floatval($row['actual_price']),2) ?></td>
-                                                            <td class="text-end">$ <?= number_format(floatval($row['discounted_price']),2) ?></td>
-                                                            <td class="text-end">$ <?= number_format(floatval($row['discounted_price'] * $row['quantity']),2) ?></td>
-                                                            <?php
-                                                            if($status_code == 3){
-                                                            ?>
-                                                                <td class="text-center">
-                                                                    <a class="fs-6 text-muted btn-edit" href="javascript:void(0)" 
-                                                                    data-id="<?= $row['id'] ?>" 
-                                                                    data-name="<?= getProductName($row['product_id']) ?>" 
-                                                                    data-quantity="<?= $row['quantity'] ?>"
-                                                                    data-price="<?= $row['discounted_price'] ?>" 
-                                                                    data-color="<?= $row['custom_color'] ?>">
-                                                                        <i class="ti ti-edit"></i>
-                                                                    </a>
-                                                                </td>
-                                                            <?php
-                                                            }
-                                                            ?>
-                                                        </tr>
+
+                                                        $status_prod_db = $row['status'];
+
+                                                        if($status_prod_db == '1'){
+                                                            $is_processing = true;
+                                                        }
+
+                                                        $status_prod_labels = [
+                                                            0 => ['label' => 'New', 'class' => 'badge bg-primary'],
+                                                            1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+                                                            2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
+                                                            3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
+                                                            4 => ['label' => 'Delivered', 'class' => 'badge bg-success']
+                                                        ];
+
+                                                        $status_prod = $status_prod_labels[$status_prod_db];
+                                                ?> 
+                                                <tr> 
+                                                    <td class="text-center">
+                                                        <input type="checkbox" class="row-checkbox" value="<?= $row['id'] ?>" data-status="">
+                                                    </td>
+                                                    <td><?= getProductName($row['product_id']) ?></td>
+                                                    <td>
+                                                        <div class="d-flex mb-0 gap-8">
+                                                            <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($row['custom_color'])?>"></a>
+                                                            <?= getColorFromID($row['custom_color']); ?>
+                                                        </div>
+                                                    </td>
+                                                    <td><?= getGradeName($product_details['grade']); ?></td>
+                                                    <td><?= getProfileTypeName($product_details['profile']); ?></td>
+                                                    <td><?= $row['quantity'] ?></td>
+                                                    <td>
+                                                        <span class="<?= $status_prod['class']; ?> fw-bond"><?= $status_prod['label']; ?></span>
+                                                    </td>
+                                                    <td class="text-end">$ <?= number_format(floatval($row['actual_price']),2) ?></td>
+                                                    <td class="text-end">$ <?= number_format(floatval($row['discounted_price']),2) ?></td>
+                                                    <td class="text-end">$ <?= number_format(floatval($row['discounted_price'] * $row['quantity']),2) ?></td>
+                                                    <?php if($status_code == 3){ ?>
+                                                        <td class="text-center">
+                                                            <a class="fs-6 text-muted btn-edit" href="javascript:void(0)" 
+                                                            data-id="<?= $row['id'] ?>" 
+                                                            data-name="<?= getProductName($row['product_id']) ?>" 
+                                                            data-quantity="<?= $row['quantity'] ?>"
+                                                            data-price="<?= $row['discounted_price'] ?>" 
+                                                            data-color="<?= $row['custom_color'] ?>">
+                                                                <i class="ti ti-edit"></i>
+                                                            </a>
+                                                        </td>
+                                                    <?php } ?>
+                                                </tr>
                                                 <?php
                                                         $totalquantity += $row['quantity'] ;
                                                         $total_actual_price += floatval($row['actual_price']);
                                                         $total_disc_price += floatval($row['discounted_price']);
                                                         $total_amount += floatval($row['discounted_price']) * $row['quantity'];
                                                     }
-                                                
                                                 ?>
                                             </tbody>
-
                                             <tfoot>
                                                 <tr>
-                                                    <td colspan="4" class="text-end">Total</td>
+                                                    <td colspan="6" class="text-end">Total</td>
                                                     <td><?= $totalquantity ?></td>
                                                     <td></td>
                                                     <td></td>
@@ -136,21 +145,21 @@ if(isset($_REQUEST['action'])) {
                                         </table>
                                     </div>
                                 </div>
-                                <div class="d-flex justify-content-end align-items-center gap-3 p-3">
-                                    <?php if ($status_code == 1): ?>
-                                        <button type="button" id="email_estimate_btn" class="btn btn-primary email_estimate_btn" data-customer="<?= $estimate_details["customerid"]; ?>" data-id="<?= $estimate_details["estimateid"]; ?>"><i class="fa fa-envelope fs-5"></i> Send Email</button>
-                                    <?php elseif ($status_code == 2): ?>
-                                        
-                                    <?php elseif ($status_code == 3): ?>
-                                        <button type="button" id="resendBtn" class="btn btn-warning <?= $is_edited != 1 ? 'd-none' : '' ?>" data-id="<?=$estimateid?>" data-action="submit_for_approval">Return for Approval</button>
-                                        <button type="button" id="AcceptBtn" class="btn btn-success" data-id="<?=$estimateid?>" data-action="accept_estimate">Accept</button>
-                                    <?php elseif ($status_code == 4): ?>
-                                        <button type="button" id="processOrderBtn" class="btn btn-info" data-id="<?=$estimateid?>" data-action="process_order">Process Order</button>
-                                    <?php elseif ($status_code == 5): ?>
-                                        <button type="button" id="shipOrderBtn" class="btn btn-primary" data-id="<?=$estimateid?>" data-action="ship_order">Ship Order</button>
-                                    <?php elseif ($status_code == 6): ?>
-                                        
-                                    <?php endif; ?>
+                                <div class="d-flex justify-content-end align-items-center gap-3 p-3 flex-wrap">
+                                    <div class="d-flex justify-content-end align-items-center gap-3">
+                                        <?php if ($status_code == 1): ?>
+                                            <button type="button" id="email_estimate_btn" class="btn btn-primary email_estimate_btn" data-customer="<?= $estimate_details["customerid"]; ?>" data-id="<?= $estimate_details["estimateid"]; ?>">
+                                                <i class="fa fa-envelope fs-5"></i> Send Email
+                                            </button>
+                                        <?php elseif ($status_code == 3): ?>
+                                            <button type="button" id="resendBtn" class="btn btn-warning <?= $is_edited != 1 ? 'd-none' : '' ?>" data-id="<?=$estimateid?>" data-action="submit_for_approval">Return for Approval</button>
+                                            <button type="button" id="AcceptBtn" class="btn btn-success" data-id="<?=$estimateid?>" data-action="accept_estimate">Accept</button>
+                                        <?php elseif ($status_code == 4): ?>
+                                            <button type="button" id="processOrderBtn" class="btn btn-info" data-id="<?=$estimateid?>" data-action="process_order">Process Order</button>
+                                        <?php elseif ($status_code == 5 || $is_processing): ?>
+                                            <button type="button" id="shipOrderBtn" class="btn btn-primary" data-id="<?=$estimateid?>" data-action="ship_order">Ship Order</button>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -225,9 +234,23 @@ if(isset($_REQUEST['action'])) {
                         lengthChange: false
                     });
 
-                    $('#viewEstimateModal').on('shown.bs.modal', function () {
-                        $('#est_dtls_tbl').DataTable().columns.adjust().responsive.recalc();
+                    $('#select_all').on('change', function () {
+                        $('.row-checkbox').prop('checked', this.checked);
                     });
+
+                    $(document).on('change', '.row-checkbox', function () {
+                        const allChecked = $('.row-checkbox').length === $('.row-checkbox:checked').length;
+                        $('#select_all').prop('checked', allChecked);
+                    });
+
+                    window.getSelectedIDs = function () {
+                        let ids = [];
+                        $('.row-checkbox:checked').each(function () {
+                            ids.push($(this).val());
+                        });
+                        console.log("Selected IDs:", ids);
+                        return ids;
+                    };
                 });
             </script>
 
@@ -1349,7 +1372,7 @@ if(isset($_REQUEST['action'])) {
     if ($action == "update_status") {
         $estimateid = mysqli_real_escape_string($conn, $_POST['id']);
         $method = mysqli_real_escape_string($conn, $_POST['method']); 
-
+        
         $is_edited = '0';
 
         $query = "SELECT * FROM estimates WHERE estimateid = '$estimateid'";
@@ -1371,9 +1394,39 @@ if(isset($_REQUEST['action'])) {
             } elseif ($method == "process_order") {
                 $newStatus = 5;
                 $subject = "EKM has started to process order";
+
+                $sql = "UPDATE estimate_prod SET status = 1 WHERE estimateid = $estimateid";
+                if (!mysqli_query($conn, $sql)) {
+                    $response['message'] = 'Error updating order status.';
+                }
+
             } elseif ($method == "ship_order") {
-                $newStatus = 6;
                 $subject = "EKM has shipped the order";
+
+                $selectedProds = $_POST['selected_prods'] ?? [];
+                $selectedProds = is_string($selectedProds) ? json_decode($selectedProds, true) : $selectedProds;
+                $selectedProds = is_array($selectedProds) ? $selectedProds : [];
+                $cleanedProds = array_map('intval', $selectedProds);
+
+                if (!empty($cleanedProds)) {
+                    $idList = implode(',', $cleanedProds);
+                    
+                    $sql = "UPDATE estimate_prod SET status = 3 WHERE id IN ($idList)";
+                    if (!mysqli_query($conn, $sql)) {
+                        $response['message'] = 'Error updating product status.';
+                    }
+                
+                    $sql = "SELECT COUNT(*) AS count FROM estimate_prod WHERE status = 1 AND estimateid = '$estimateid'";
+                    $result = mysqli_query($conn, $sql);
+                
+                    if ($row = mysqli_fetch_assoc($result)) {
+                        $newStatus = ($row['count'] > 0) ? 5 : 6;
+                    } else {
+                        $newStatus = 5;
+                    }
+                } else {
+                    $newStatus = 6;
+                }                
             } else {
                 $response['message'] = 'Invalid action';
                 echo json_encode($response);

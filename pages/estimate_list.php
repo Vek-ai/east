@@ -2,10 +2,9 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$generate_rend_upc = generateRandomUPC();
 $picture_path = "images/product/product.jpg";
 
-if($_REQUEST['customer_id']){
+if(isset($_REQUEST['customer_id'])){
     $customer_id = $_REQUEST['customer_id'];
     $customer_details = getCustomerDetails($customer_id);
 }
@@ -734,9 +733,10 @@ if($_REQUEST['customer_id']){
             });
         });
 
-        $(document).on("click", "#resendBtn, #AcceptBtn, #processOrderBtn , #shipOrderBtn", function () {
+        $(document).on("click", "#resendBtn, #AcceptBtn, #processOrderBtn", function () {
             var dataId = $(this).data("id");
             var action = $(this).data("action");
+            var selected_prods = getSelectedIDs();
 
             var confirmMessage = action.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
 
@@ -747,6 +747,52 @@ if($_REQUEST['customer_id']){
                     data: {
                         id: dataId,
                         method: action,
+                        selected_prods: selected_prods,
+                        action: 'update_status'
+                    },
+                    success: function (response) {
+                        console.log(response);
+                        try {
+                            var jsonResponse = JSON.parse(response);  
+                        } catch (e) {
+                            var jsonResponse = response;
+                        }
+
+                        if (jsonResponse.success) {
+                            alert(jsonResponse.message);
+                            location.reload();
+                        } else {
+                            alert("Update Success, but email failed to send");
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error:", xhr.responseText);
+                    }
+                });
+            }
+        });
+
+        $(document).on("click", "#shipOrderBtn", function () {
+            var dataId = $(this).data("id");
+            var action = $(this).data("action");
+            var selected_prods = getSelectedIDs();
+
+            if (!Array.isArray(selected_prods) || selected_prods.length === 0) {
+                alert("Select at least 1 product to deliver.");
+                return;
+            }
+
+            var confirmMessage = action.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+
+            if (confirm("Are you sure you want to " + confirmMessage + "?")) {
+                $.ajax({
+                    url: 'pages/estimate_list_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: dataId,
+                        method: action,
+                        selected_prods: selected_prods,
                         action: 'update_status'
                     },
                     success: function (response) {
