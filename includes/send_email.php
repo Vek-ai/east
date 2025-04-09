@@ -5,7 +5,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 function sendEmail($email, $name, $subject, $message) {
-    $mail_host = 'smtp.sendgrid.net';
+    /* $mail_host = 'smtp.sendgrid.net';
     $api_user = 'apikey';
     $api_pass = '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';
 
@@ -42,6 +42,22 @@ function sendEmail($email, $name, $subject, $message) {
                 'message' => "Email could not be sent to $name.",
                 'error' => addslashes($mail->ErrorInfo)
             ];
+    } */
+
+    $headers = "From: vekka@ilearnsda.com";
+
+    if (mail($email, $subject, $message, $headers)) {
+        return [
+            'success' => true,
+            'message' => "Successfully sent email to $name."
+        ];
+    } else {
+        $error = error_get_last();
+        return [
+            'success' => false,
+            'message' => "Email could not be sent to $name.",
+            'error' => isset($error['message']) ? addslashes($error['message']) : 'Unknown error'
+        ];
     }
 }
 ?>
