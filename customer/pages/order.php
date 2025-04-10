@@ -177,6 +177,7 @@ $(document).ready(function () {
                                 <td colspan="2" class="text-end">Total:</td>
                                 <td><h6 class="mb-0 fs-4">${totalQuantity}</h6></td>
                                 <td></td>
+                                <td></td>
                                 <td class="text-right"><h6 class="mb-0 fs-4">$ ${totalDiscAmount.toFixed(2)}</h6></td>
                             </tr>
                         </tfoot>
