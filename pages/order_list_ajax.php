@@ -341,7 +341,7 @@ if(isset($_REQUEST['action'])) {
             $customer_phone = $customer_details['contact_phone'];
             $primary_contact = $customer_details['primary_contact'];
             
-            $key = $row['order_key'];
+            $order_key = $row['order_key'];
         
             $response = ['success' => false, 'message' => 'Unknown error'];
         
