@@ -63,6 +63,7 @@ if(!empty($estimateid) && !empty($_REQUEST['key'])){
                       <th scope="col">Products</th>
                       <th scope="col">Color</th>
                       <th scope="col">Quantity</th>
+                      <th scope="col">Status</th>
                       <th scope="col" class="text-right">Unit Price</th>
                       <th scope="col" class="text-right">Disc Price</th>
                       <th scope="col" class="text-center">Actions</th>
@@ -210,6 +211,16 @@ $(document).ready(function () {
 
                         var prodDiscTtlAmt = quantity * discountedPrice;
 
+                        const statusProdLabels = {
+                            0: { label: 'New', class: 'badge bg-primary' },
+                            1: { label: 'Processing', class: 'badge bg-success' },
+                            2: { label: 'Waiting for Dispatch', class: 'badge bg-warning' },
+                            3: { label: 'In Transit', class: 'badge bg-secondary' },
+                            4: { label: 'Delivered', class: 'badge bg-success' }
+                        };
+
+                        const status = statusProdLabels[item.status] || { label: 'Unknown', class: 'badge bg-dark' };
+
                         tbody.append(`
                             <tr>
                                 <td>
@@ -230,6 +241,7 @@ $(document).ready(function () {
                                     </span>
                                 </td>
                                 <td><h6 class="mb-0 fs-4">${item.quantity}</h6></td>
+                                <td><span class="${status.class} fw-bold">${status.label}</span></td>
                                 <td class="text-right"><h6 class="mb-0 fs-4">$ ${parseFloat(item.discounted_price).toFixed(2)}</h6></td>
                                 <td class="text-right"><h6 class="mb-0 fs-4">$ ${parseFloat(prodDiscTtlAmt).toFixed(2)}</h6></td>
                                 <td class="text-center">

@@ -1303,6 +1303,7 @@ $customer_details = getCustomerDetails($customer_id);
             if ($_REQUEST['page'] == "customer-profile") {include 'pages/customer-profile.php';}
             if ($_REQUEST['page'] == "product") {include 'pages/product.php';}
             if ($_REQUEST['page'] == "estimate") {include 'pages/estimate.php';}
+            if ($_REQUEST['page'] == "order") {include 'pages/order.php';}
           ?>
         </div>
       </div>

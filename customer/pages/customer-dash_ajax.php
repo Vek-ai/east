@@ -19,6 +19,7 @@ if (isset($_POST['search_orders'])) {
                 <tr>
                     <th class="border-0 ps-0">Sales Person</th>
                     <th class="border-0">Date</th>
+                    <th class="border-0">Status</th>
                     <th class="border-0 text-end">Total Amount</th>
                     <th class="border-0 text-end">Discount</th>
                     <th class="border-0"></th>
@@ -40,6 +41,18 @@ if (isset($_POST['search_orders'])) {
                     $result = mysqli_query($conn, $query);
                     if ($result && mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) {
+                            $status_code = $row['status'];
+
+                            $status_labels = [
+                                1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
+                                2 => ['label' => 'Processing', 'class' => 'badge bg-warning'],
+                                3 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
+                                4 => ['label' => 'Delivered', 'class' => 'badge bg-success']
+                            ];
+
+                            $status = $status_labels[$status_code];
+                            $status_html = '<span class="' . $status['class'] . ' ">' . $status['label'] . '</span>';
+
                             ?>
                             <tr>
                                 <td class="ps-0">
@@ -55,6 +68,9 @@ if (isset($_POST['search_orders'])) {
                                 <td>
                                     <p class="mb-0"><?= date("F d, Y", strtotime($row['order_date'])) ?></p>
                                 </td>
+                                <td>
+                                    <?= $status_html ?>
+                                </td>
                                 <td class="text-end">
                                     <p class="mb-0">$<?= number_format(getOrderTotals($row['orderid']),2) ?></p>
                                 </td>
@@ -62,6 +78,13 @@ if (isset($_POST['search_orders'])) {
                                     <p class="mb-0">$<?= number_format(getOrderTotalsDiscounted($row['orderid']),2) ?></p>
                                 </td>
                                 <td>
+                                    <?php
+                                    if($status_code != null){
+                                    ?>
+                                    <a href="index.php?page=order&id=<?=$row["orderid"]?>&key=<?=$row["order_key"]?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button"><i class="text-warning fa fa-sign-in-alt fs-5"></i></a>
+                                    <?php 
+                                    }
+                                    ?>
                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
                                     <a href="/print_order_product.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
                                     <a href="/print_order_total.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
