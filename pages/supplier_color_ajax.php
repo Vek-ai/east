@@ -519,7 +519,7 @@ if(isset($_REQUEST['action'])) {
         readfile($filePath);
         unlink($filePath);
         exit;
-    }  
+    }
 
     mysqli_close($conn);
 }

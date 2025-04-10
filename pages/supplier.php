@@ -4,6 +4,8 @@ require 'includes/functions.php';
 
 $supplier_colors = array();
 
+$page_title = "Supplier";
+
 ?>
 <style>
     td.last-edit{
@@ -67,83 +69,23 @@ $supplier_colors = array();
     </div>
 
     <div class="widget-content searchable-container list">
+
     <div class="card card-body">
         <div class="row">
-        <div class="col-md-4 col-xl-3">
-            <!-- <form class="position-relative">
-            <input type="text" class="form-control product-search ps-5" id="input-search" placeholder="Search Contacts..." />
-            <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
-            </form> -->
-        </div>
-        <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
-            <div class="action-btn show-btn">
-            <a href="javascript:void(0)" class="delete-multiple bg-danger-subtle btn me-2 text-danger d-flex align-items-center ">
-                <i class="ti ti-trash me-1 fs-5"></i> Delete All Row
-            </a>
-            </div>
-            <button type="button" id="downloadSupplierBtn" class="btn btn-primary d-flex align-items-center me-2">
-                <i class="ti ti-download text-white me-1 fs-5"></i> Download Suppliers
-            </button>
+        <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
             <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
-                <i class="ti ti-plus text-white me-1 fs-5"></i> Add Supplier
+                <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title ?>
+            </button>
+            <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
+            </button>
+            <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-download text-white me-1 fs-5"></i> Download <?= $page_title ?>
+            </button>
+            <button type="button" id="uploadBtn" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-upload text-white me-1 fs-5"></i> Upload <?= $page_title ?>
             </button>
         </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="viewProductModal" tabindex="-1" role="dialog" aria-labelledby="viewProductModal" aria-hidden="true"></div>
-
-    <div class="modal fade" id="updateContactModal" tabindex="-1" role="dialog" aria-labelledby="updateContactModal" aria-hidden="true"></div>
-
-    <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-            <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
-                <h4 id="responseHeader" class="m-0"></h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                
-                <p id="responseMsg"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
-                Close
-                </button>
-            </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header d-flex align-items-center">
-                    <h4 class="modal-title" id="add-header">
-                        Add
-                    </h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="supplierForm" class="form-horizontal">
-                    <div class="modal-body">
-                        <div class="card">
-                            <div class="card-body">
-                            <div id="add-fields" class=""></div>
-                            <div class="form-actions toggleElements">
-                                <div class="border-top">
-                                    <div class="row mt-2">
-                                        <div class="col-6 text-start"></div>
-                                        <div class="col-6 text-end ">
-                                            <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
         </div>
     </div>
 
@@ -151,7 +93,7 @@ $supplier_colors = array();
         <div class="row">
         <div class="col-3">
             <h3 class="card-title align-items-center mb-2">
-                Filter Suppliers 
+                Filter <?= $page_title ?>
             </h3>
             <div class="position-relative w-100 px-1 mr-0 mb-2">
                 <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search">
@@ -275,6 +217,183 @@ $supplier_colors = array();
     </div>
 </div>
 
+<div class="modal fade" id="viewProductModal" tabindex="-1" role="dialog" aria-labelledby="viewProductModal" aria-hidden="true"></div>
+
+<div class="modal fade" id="updateContactModal" tabindex="-1" role="dialog" aria-labelledby="updateContactModal" aria-hidden="true"></div>
+
+<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+        <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+            <h4 id="responseHeader" class="m-0"></h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            
+            <p id="responseMsg"></p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+            Close
+            </button>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="add-header">
+                    Add <?= $page_title ?>
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="supplierForm" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                        <div id="add-fields" class=""></div>
+                        <div class="form-actions toggleElements">
+                            <div class="border-top">
+                                <div class="row mt-2">
+                                    <div class="col-6 text-start"></div>
+                                    <div class="col-6 text-end ">
+                                        <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="myLargeModalLabel">
+                    Upload <?= $page_title ?>
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <div class="card-body">
+                        <form id="upload_excel_form" action="#" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="excel_file" class="form-label fw-semibold">Select Excel File</label>
+                                <input type="file" class="form-control" name="excel_file" accept=".xls,.xlsx" required>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary">Upload & Read</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card mb-0 mt-2">
+                    <div class="card-body d-flex justify-content-center align-items-center">
+                        <button type="button" id="readUploadBtn" class="btn btn-primary fw-semibold">
+                            <i class="fas fa-eye me-2"></i> View Uploaded File
+                        </button>
+                    </div>
+                </div>    
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="readUploadModal" tabindex="-1" aria-labelledby="readUploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="myLargeModalLabel">
+                    Uploaded Excel <?= $page_title ?>
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="uploaded_excel" class="modal-body"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="downloadClassModal" tabindex="-1" aria-labelledby="downloadClassModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="myLargeModalLabel">
+                    Download Classification
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="download_class_form" class="form-horizontal">
+                    <label for="select-category" class="form-label fw-semibold">Select Classification</label>
+                    <div class="mb-3">
+                        <select class="form-select select2" id="select-download-class" name="category">
+                            <option value="">All Classifications</option>
+                            <optgroup label="Classifications">
+                                <option value="supplier_type">Supplier Type</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="fas fa-download me-2"></i> Download Classification
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="myLargeModalLabel">
+                    Download <?= $page_title ?>
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="download_excel_form" class="form-horizontal">
+                    <label for="select-category" class="form-label fw-semibold">Select Supplier</label>
+                    <div class="mb-3">
+                        <select class="form-select select2" id="select-download-category" name="supplier_type">
+                            <option value="">All Supplier Types</option>
+                            <optgroup label="Suppliers">
+                                <?php
+                                $query_supplier_type = "SELECT * FROM supplier_type WHERE status = 1 ORDER BY `supplier_type` ASC";
+                                $result_supplier_type = mysqli_query($conn, $query_supplier_type);            
+                                while ($row_supplier_type = mysqli_fetch_array($result_supplier_type)) {
+                                ?>
+                                    <option value="<?= $row_supplier_type['supplier_type_id'] ?>"><?= $row_supplier_type['supplier_type'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary fw-semibold">
+                            <i class="fas fa-download me-2"></i> Download Excel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function formatOption(state) {
         if (!state.id) {
@@ -350,12 +469,21 @@ $supplier_colors = array();
 
 
     $(document).ready(function() {
+        document.title = "<?= $page_title ?>";
+
         var table = $('#supplierList').DataTable({
             "order": [[0, "asc"]],
             pageLength: 100
         });
 
         $('#supplierList_filter').hide();
+
+        $(".select2").each(function () {
+            $(this).select2({
+                width: '100%',
+                dropdownParent: $(this).parent()
+            });
+        });
 
         $(document).on('click', '#upload_logo_add', function(event) {
             event.preventDefault(); 
@@ -413,17 +541,6 @@ $supplier_colors = array();
             templateSelection: formatOption
         });
 
-        $(".select2").each(function () {
-            $(this).select2({
-                width: '100%',
-                dropdownParent: $(this).parent()
-            });
-        });
-
-        $(document).on('click', '#downloadSupplierBtn', function(event) {
-            window.location.href = "pages/supplier_ajax.php?action=download_supplier";
-        });
-
         $(document).on('click', '.changeStatus', function(event) {
             event.preventDefault(); 
             var supplier_id = $(this).data('id');
@@ -457,7 +574,6 @@ $supplier_colors = array();
             });
         });
 
-        // Show the View Supplier modal and log the supplier ID
         $(document).on('click', '#view_product_btn', function(event) {
             event.preventDefault(); 
             var supplier_id = $(this).data('id');
@@ -478,7 +594,6 @@ $supplier_colors = array();
             });
         });
 
-        // Show the View Supplier modal and log the supplier ID
         $(document).on('click', '#view_supplier_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
@@ -593,13 +708,13 @@ $supplier_colors = array();
                 success: function (response) {
                     $('#add-fields').html(response);
                     if(type == 'edit'){
-                        $('#add-header').html('Update Supplier');
+                        $('#add-header').html('Update <?= $page_title ?>');
                         toggleFormEditable("supplierForm", true);
                     }else if(type == 'view'){ 
-                        $('#add-header').html('View Supplier');
+                        $('#add-header').html('View <?= $page_title ?>');
                         toggleFormEditable("supplierForm", false);
                     }else{
-                        $('#add-header').html('Add Supplier');
+                        $('#add-header').html('Add <?= $page_title ?>');
                         toggleFormEditable("supplierForm", true);
                     }
 
@@ -615,6 +730,149 @@ $supplier_colors = array();
                     $('#response-modal').modal("show");
                 }
             });
+        });
+
+        $("#download_excel_form").submit(function (e) {
+            e.preventDefault();
+            window.location.href = "pages/supplier_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
+        });
+
+        $("#download_class_form").submit(function (e) {
+            e.preventDefault();
+            window.location.href = "pages/supplier_ajax.php?action=download_classifications&class=" + encodeURIComponent($("#select-download-class").val());
+        });
+
+        $(document).on('click', '#uploadBtn', function(event) {
+            $('#uploadModal').modal('show');
+        });
+
+        $(document).on('click', '#downloadClassModalBtn', function(event) {
+            $('#downloadClassModal').modal('show');
+        });
+
+        $(document).on('click', '#downloadBtn', function(event) {
+            $('#downloadModal').modal('show');
+        });
+
+        $(document).on('click', '#readUploadBtn', function(event) {
+            $.ajax({
+                url: 'pages/supplier_ajax.php',
+                type: 'POST',
+                data: {
+                    action: "fetch_uploaded_modal"
+                },
+                success: function(response) {
+                    $('#uploaded_excel').html(response);
+                    $('#readUploadModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $('#upload_excel_form').on('submit', function (e) {
+            e.preventDefault();
+            
+            var formData = new FormData(this);
+            formData.append('action', 'upload_excel');
+
+            $.ajax({
+                url: 'pages/supplier_ajax.php',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    $('.modal').modal('hide');
+                    response = response.trim();
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Data Uploaded successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }  
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX Error:', textStatus, errorThrown);
+                    console.error('Response:', jqXHR.responseText);
+
+                    $('#responseHeader').text("Error");
+                    $('#responseMsg').text("An error occurred while processing your request.");
+                    $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            });
+        });
+
+        $(document).on('blur', '.table_data', function() {
+            let newValue;
+            let updatedData = {};
+            
+            if ($(this)[0].tagName.toLowerCase() === 'select') {
+                const selectedValue = $(this).val();
+                const selectedText = $(this).find('option:selected').text();
+                newValue = selectedValue ? selectedValue : selectedText;
+            } 
+            else if ($(this).is('td')) {
+                newValue = $(this).text();
+            }
+            
+            const headerName = $(this).data('header-name');
+            const id = $(this).data('id');
+
+            updatedData = {
+                action: 'update_test_data',
+                id: id,
+                header_name: headerName,
+                new_value: newValue,
+            };
+
+            $.ajax({
+                url: 'pages/supplier_ajax.php',
+                type: 'POST',
+                data: updatedData,
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error: ' + error);
+                    alert('Error updating data');
+                }
+            });
+        });
+
+        $(document).on('click', '#saveTable', function(event) {
+            if (confirm("Are you sure you want to save this Excel data to the product lines data?")) {
+                var formData = new FormData();
+                formData.append("action", "save_table");
+
+                $.ajax({
+                    url: "pages/supplier_ajax.php",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        $('.modal').modal('hide');
+                        response = response.trim();
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                        $('#response-modal').modal("show");
+                    }
+                });
+            }
         });
 
         function filterTable() {

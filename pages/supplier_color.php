@@ -312,11 +312,6 @@ if(!empty($_REQUEST['id'])){
   </div>
 </div>
 
-
-<div class="col-12">
-  
-</div>
-
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -455,7 +450,7 @@ if(!empty($_REQUEST['id'])){
       <div class="modal-content">
           <div class="modal-header d-flex align-items-center">
               <h4 class="modal-title" id="myLargeModalLabel">
-                  Download Supplier Pack
+                  Download <?= $page_title ?>
               </h4>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
