@@ -418,7 +418,11 @@ td.notes,  td.last-edit{
 
 <script>
   $(document).ready(function() {
+    document.title = "<?= $page_title ?>";
+    
     var table = $('#display_supplier_type').DataTable();
+
+    $('#display_supplier_type_filter').hide();
 
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
