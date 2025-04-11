@@ -2,6 +2,8 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
+$page_title = "Customer";
+
 $customer_id = "";
 $customer_first_name = "";
 $customer_last_name = "";
@@ -33,82 +35,6 @@ $customer_name = $customer_first_name . " " . $customer_last_name;
 
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
-
-if (!empty($_REQUEST['customer_id'])) {
-  $product_line_id = $_REQUEST['customer_id'];
-  $query = "SELECT * FROM customer WHERE customer_id = '$product_line_id'";
-  $result = mysqli_query($conn, $query);
-  while ($row = mysqli_fetch_array($result)) {
-    $customer_id = $row['customer_id'];
-    $customer_first_name = $row['customer_first_name'];
-    $customer_last_name = $row['customer_last_name'];
-    $customer_business_name = $row['customer_business_name'];
-    $old_customer_type_id = $row['customer_type_id'];
-    $contact_email = $row['contact_email'];
-    $contact_phone = $row['contact_phone'];
-    $primary_contact = $row['primary_contact'];
-    $contact_fax = $row['contact_fax'];
-    $address = $row['address'];
-    $city = $row['city'];
-    $state = $row['state'];
-    $zip = $row['zip'];
-    $secondary_contact_name = $row['secondary_contact_name'];
-    $secondary_contact_phone = $row['secondary_contact_phone'];
-    $ap_contact_name = $row['ap_contact_name'];
-    $ap_contact_email = $row['ap_contact_email'];
-    $ap_contact_phone = $row['ap_contact_phone'];
-    $tax_status = $row['tax_status'];
-    $tax_exempt_number = $row['tax_exempt_number'];
-    $customer_notes = $row['customer_notes'];
-    $call_status = $row['call_status'];
-    $credit_limit = $row['credit_limit'] ?? 0;
-    $customer_pricing = $row['customer_pricing'] ?? 0;
-    $lat = !empty($row['lat']) ? $row['lat'] : 0;
-    $lng = !empty($row['lng']) ? $row['lng'] : 0;
-
-    $addressDetails = implode(', ', [
-      $address ?? '',
-      $city ?? '',
-      $state ?? '',
-      $zip ?? ''
-    ]);
-
-    $loyalty = $row['loyalty'];
-
-  }
-  $saveBtnTxt = "Update";
-  $addHeaderTxt = "Update";
-
-  $type = $_REQUEST['t'] ?? '';
-
-  echo '<script>
-      $(document).ready(function() { 
-          $("#customerModal").modal("show");
-          if ("' . $type . '" === "v") {
-              toggleFormEditable("lineForm", false, true);
-              console.log(123);
-          } else {
-              toggleFormEditable("lineForm", true, false);
-              console.log(456);
-          }
-      });
-  </script>';
-}
-
-$message = "";
-if (!empty($_REQUEST['result'])) {
-  if ($_REQUEST['result'] == '1') {
-    $message = "New customer added successfully.";
-    $textColor = "text-success";
-  } else if ($_REQUEST['result'] == '2') {
-    $message = "Customer updated successfully.";
-    $textColor = "text-success";
-  } else if ($_REQUEST['result'] == '0') {
-    $message = "Failed to Perform Operation";
-    $textColor = "text-danger";
-  }
-
-}
 ?>
 
 <style>
@@ -174,17 +100,351 @@ if (!empty($_REQUEST['result'])) {
   </div>
 </div>
 
-<div class="row pt-3">
-  <div class="col-md-12 text-end">
-    <!-- Trigger Modal Button -->
-    <button type="button" class="btn btn-primary me-10 mb-3 px-5" data-bs-toggle="modal"
-      data-bs-target="#customerModal">
-      Add
-    </button>
+<div class="card card-body">
+    <div class="row">
+      <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+          <button type="button" class="btn btn-primary d-flex align-items-center addModalBtn" data-id="" data-type="e">
+              <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title ?>
+          </button>
+          <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
+              <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
+          </button>
+          <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
+              <i class="ti ti-download text-white me-1 fs-5"></i> Download <?= $page_title ?>
+          </button>
+          <button type="button" id="uploadBtn" class="btn btn-primary d-flex align-items-center">
+              <i class="ti ti-upload text-white me-1 fs-5"></i> Upload <?= $page_title ?>
+          </button>
+      </div>
+    </div>
+</div>
+
+<div class="card card-body">
+    <div class="row">
+        <div class="col-3">
+            <h3 class="card-title align-items-center mb-2">
+                Filter Customers 
+            </h3>
+            <div class="position-relative w-100 px-0 mr-0 mb-2">
+                <input type="text" class="form-control py-2 ps-5" data-filter-name="Customer Name" id="text-srh" placeholder="Search">
+                <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
+            </div>
+            <div class="align-items-center">
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control py-0 ps-5 select2 filter-selection" data-filter="tax" data-filter-name="Tax" id="select-tax">
+                        <option value="">All Tax Status</option>
+                        <optgroup label="Tax Status">
+                          <?php
+                          $query_tax_status = "SELECT * FROM customer_tax";
+                          $result_tax_status = mysqli_query($conn, $query_tax_status);
+                          while ($row_tax_status = mysqli_fetch_array($result_tax_status)) {
+                            ?>
+                            <option value="<?= $row_tax_status['taxid'] ?>">
+                              (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?></option>
+                          <?php
+                          }
+                          ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="loyalty" data-filter-name="Loyalty" id="select-loyalty">
+                        <option value="">All Loyalty Options</option>
+                        <option value="1">ON</option>
+                        <option value="0">OFF</option>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="pricing" data-filter-name="Pricing Category" id="select-pricing">
+                        <option value="" data-category="">All Pricing Category</option>
+                        <optgroup label="Pricing Category">
+                            <?php
+                            $query_pricing = "SELECT * FROM customer_pricing WHERE hidden = '0' AND status = '1'";
+                            $result_pricing = mysqli_query($conn, $query_pricing);            
+                            while ($row_pricing = mysqli_fetch_array($result_pricing)) {
+                            ?>
+                                <option value="<?= $row_pricing['id'] ?>"><?= $row_pricing['pricing_name'] ?></option>
+                            <?php   
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="city" data-filter-name="City" id="select-city">
+                        <option value="">All Cities</option>
+                        <optgroup label="Cities">
+                            <?php
+                            $query_city = "SELECT DISTINCT LOWER(city) AS city_lower 
+                                              FROM customer 
+                                              WHERE city IS NOT NULL AND city <> '' AND status = '1' and hidden = '0'
+                                              ORDER BY city_lower;";
+                            $result_city = mysqli_query($conn, $query_city);            
+                            while ($row_city = mysqli_fetch_array($result_city)) {
+                            ?>
+                                <option value="<?= $row_city['city_lower'] ?>"><?= ucwords($row_city['city_lower']) ?></option>
+                            <?php   
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            <div class="px-3 mb-2"> 
+                <input type="checkbox" id="toggleActive" checked> Show Active Only
+            </div>
+        </div>
+        <div class="col-9">
+            <div id="selected-tags" class="mb-2"></div>
+            <div class="datatables">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title d-flex justify-content-between align-items-center">Customer List</h4>
+                  <div class="table-responsive">
+                    <table id="display_customer" class="table table-bordered align-middle table-hover mb-0 text-md-nowrap">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Business Name</th>
+                          <th>Phone Number</th>
+                          <th>Status</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <?php
+                        $no = 1;
+                        $query_customer = "
+                          SELECT c.*, ct.customer_type_name, 
+                          (SELECT COUNT(o.customerid) FROM orders o WHERE o.customerid = c.customer_id) AS order_count,
+                          lp.accumulated_total_orders, lp.loyalty_program_name
+                          FROM customer c
+                          LEFT JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id 
+                          LEFT JOIN loyalty_program lp ON c.loyalty = 1 AND 
+                          (SELECT COUNT(o.customerid) FROM orders o WHERE o.customerid = c.customer_id) >= lp.accumulated_total_orders
+                          WHERE c.hidden = 0";
+
+                        $result_customer = mysqli_query($conn, $query_customer);
+                        while ($row_customer = mysqli_fetch_array($result_customer)) {
+                          $customer_id = $row_customer['customer_id'];
+                          $name = $row_customer['customer_first_name'] . " " . $row_customer['customer_last_name'];
+                          $business_name = $row_customer['customer_business_name'];
+                          $email = $row_customer['contact_email'];
+                          $phone = $row_customer['contact_phone'];
+                          $fax = $row_customer['contact_fax'];
+                          $address = $row_customer['address'];
+                          $customer_type_name = $row_customer['customer_type_name'];
+                          $db_status = $row_customer['status'];
+                          $order_count = $row_customer['order_count'];
+                        
+                          // Check loyalty field and display accordingly
+                          if ($row_customer['loyalty'] == '1') {
+                            // Show loyalty program name if loyalty is 1
+                            if ($order_count >= $row_customer['accumulated_total_orders']) {
+                              $loyalty = $row_customer['loyalty_program_name'];
+                            } else {
+                              $loyalty = "No Loyalty Level";
+                            }
+                          } else {
+                            // Show "Off" if loyalty is not 1
+                            $loyalty = "Off";
+                          }
+
+                          // Display status
+                          if ($row_customer['status'] == '0' || $row_customer['status'] == '3') {
+                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+                          } else {
+                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+                          }
+                          ?>
+                          <tr id="product-row-<?= $no ?>"
+                              data-tax="<?= $row_customer['tax_status'] ?>"
+                              data-loyalty="<?= $row_customer['loyalty'] ?>"
+                              data-city="<?= strtolower($row_customer['city']) ?>"
+                              data-pricing="<?= $row_customer['customer_pricing'] ?>"
+                          >
+                            <td>
+                              <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="v" class="text-decoration-none addModalBtn">
+                                <span class="customer<?= $no ?><?php if ($row_customer['status'] == '0' || $row_customer['status'] == '3') {echo 'emphasize-strike';} ?>">
+                                  <?php 
+                                  if($row_customer['status'] == '3'){
+                                    $merge_details = getCustomerDetails($customer_id);
+                                    $merge_id = $merge_details['merge_from'];
+                                    $current_details = getCustomerDetails($merge_id);
+                                    echo "$name - Merge to " .$current_details['customer_first_name'] . " " . $current_details['customer_last_name'];
+                                  }else{
+                                    echo $name;
+                                  }
+                                  ?>
+                                </span>
+                              </a>
+                            </td>
+                            <td><?= $business_name ?></td>
+                            <td><?= $phone ?></td>
+                            <td><?= $status ?></td>
+                            <td class="text-center fs-5" id="action-button-<?= $no ?>">
+                              <?php if ($row_customer['status'] == '0') { ?>
+                                <a href="?page=customer&customer_id=<?= $customer_id ?>&t=e" class="py-1 text-dark hideCustomer" data-id="<?= $customer_id ?>" data-row="<?= $no ?>"
+                                  style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Archive"><i
+                                    class="fa fa-box-archive text-danger"></i></a>
+                              <?php } else { ?>
+                                <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="e" class="py-1 pe-1 addModalBtn"
+                                  data-toggle="tooltip" data-placement="top" title="Edit">
+                                  <i class="fa fa-pencil text-light"></i>
+                                </a>
+                                <a href="?page=customer-dashboard&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
+                                  data-toggle="tooltip" data-placement="top" title="Dashboard"><i
+                                    class="fa fa-chart-bar text-warning"></i>
+                                </a>
+                                <a href="?page=customer_login_creds&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
+                                  data-toggle="tooltip" data-placement="top" title="Username and Password">
+                                  <i class="fa-solid fa-lock text-info"></i>
+                                </a>
+                                <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
+                                  style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i
+                                    class="fa fa-calculator text-primary"></i>
+                                </a>
+                                <a href="?page=order_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
+                                  style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Orders"><i
+                                    class="fa fa-cart-shopping text-success"></i>
+                                </a>
+                              <?php } ?>
+                            </td>
+                          </tr>
+                          <?php
+                          $no++;
+                        }
+                        ?>
+                      </tbody>
+
+
+                      <script>
+                        $(document).ready(function () {
+                          $('[data-toggle="tooltip"]').tooltip();
+                          // Use event delegation for dynamically generated elements
+                          $(document).on('click', '.changeStatus', function (event) {
+                            event.preventDefault();
+                            var customer_id = $(this).data('id');
+                            var status = $(this).data('status');
+                            var no = $(this).data('no');
+                            $.ajax({
+                              url: 'pages/customer_ajax.php',
+                              type: 'POST',
+                              data: {
+                                customer_id: customer_id,
+                                status: status,
+                                action: 'change_status'
+                              },
+                              success: function (response) {
+                                if (response == 'success') {
+                                  if (status == 1) {
+                                    $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
+                                    $(".changeStatus[data-no='" + no + "']").data('status', "0");
+                                    $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
+                                    $('#action-button-' + no).html('<a href="javascript:void(0)" class="py-1 text-dark hideCustomer" data-id="' + customer_id + '" data-row="' + no + '"><i class="fa fa-trash text-light"></i></a>');
+                                    $('#toggleActive').trigger('change');
+                                  } else {
+                                    $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
+                                    $(".changeStatus[data-no='" + no + "']").data('status', "1");
+                                    $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
+                                    $('#action-button-' + no).html('<a href="javascript:void(0)" data-id=' + customer_id + ' data-type="e" class="py-1"><i class="fa fa-pencil text-light"></i></a>');
+                                    $('#toggleActive').trigger('change');
+                                  }
+                                } else {
+                                  alert('Failed to change status.');
+                                }
+                              },
+                              error: function (jqXHR, textStatus, errorThrown) {
+                                alert('Error: ' + textStatus + ' - ' + errorThrown);
+                              }
+                            });
+                          });
+
+                          $(document).on('click', '.hideCustomer', function (event) {
+                            event.preventDefault();
+                            var customer_id = $(this).data('id');
+                            var rowId = $(this).data('row');
+                            $.ajax({
+                              url: 'pages/customer_ajax.php',
+                              type: 'POST',
+                              data: {
+                                customer_id: customer_id,
+                                action: 'hide_customer'
+                              },
+                              success: function (response) {
+                                if (response == 'success') {
+                                  $('#product-row-' + rowId).remove(); // Remove the row from the DOM
+                                } else {
+                                  alert('Failed to hide customer.');
+                                }
+                              },
+                              error: function (jqXHR, textStatus, errorThrown) {
+                                alert('Error: ' + textStatus + ' - ' + errorThrown);
+                              }
+                            });
+                          });
+                        });
+                      </script>
+
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="map1Modal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mapsModalLabel">Search Address</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="mapForm" class="form-horizontal">
+              <div class="modal-body">
+                  <div class="mb-2">
+                      <input id="searchBox1" class="form-control" placeholder="<?= $addressDetails ?>" list="address1-list" autocomplete="off">
+                      <datalist id="address1-list"></datalist>
+                  </div>
+                  <div id="map1" class="map-container" style="height: 60vh; width: 100%;"></div>
+              </div>
+              <div class="modal-footer">
+                  <div class="form-actions">
+                      <div class="card-body">
+                          <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
+                      </div>
+                  </div>
+              </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+        <h4 id="responseHeader" class="m-0"></h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <p id="responseMsg"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- Modal Structure -->
 <div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -193,10 +453,53 @@ if (!empty($_REQUEST['result'])) {
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <!-- The form -->
         <div class="card">
-          <div class="card-body">
+          <div id="form_section" class="card-body">
             <form id="lineForm" class="form-horizontal">
+              <?php
+                $customer_id = $_SESSION['active_customer_id'] ?? '';
+                $query = "SELECT * FROM customer WHERE customer_id = '$customer_id'";
+                $result = mysqli_query($conn, $query);
+                while ($row = mysqli_fetch_array($result)) {
+                  $customer_id = $row['customer_id'];
+                  $customer_first_name = $row['customer_first_name'];
+                  $customer_last_name = $row['customer_last_name'];
+                  $customer_business_name = $row['customer_business_name'];
+                  $old_customer_type_id = $row['customer_type_id'];
+                  $contact_email = $row['contact_email'];
+                  $contact_phone = $row['contact_phone'];
+                  $primary_contact = $row['primary_contact'];
+                  $contact_fax = $row['contact_fax'];
+                  $address = $row['address'];
+                  $city = $row['city'];
+                  $state = $row['state'];
+                  $zip = $row['zip'];
+                  $secondary_contact_name = $row['secondary_contact_name'];
+                  $secondary_contact_phone = $row['secondary_contact_phone'];
+                  $ap_contact_name = $row['ap_contact_name'];
+                  $ap_contact_email = $row['ap_contact_email'];
+                  $ap_contact_phone = $row['ap_contact_phone'];
+                  $tax_status = $row['tax_status'];
+                  $tax_exempt_number = $row['tax_exempt_number'];
+                  $customer_notes = $row['customer_notes'];
+                  $call_status = $row['call_status'];
+                  $credit_limit = $row['credit_limit'] ?? 0;
+                  $customer_pricing = $row['customer_pricing'] ?? 0;
+                  $lat = !empty($row['lat']) ? $row['lat'] : 0;
+                  $lng = !empty($row['lng']) ? $row['lng'] : 0;
+
+                  $addressDetails = implode(', ', [
+                    $address ?? '',
+                    $city ?? '',
+                    $state ?? '',
+                    $zip ?? ''
+                  ]);
+                  $loyalty = $row['loyalty'];
+                }
+                $saveBtnTxt = "Update";
+                $addHeaderTxt = "Update";
+              
+              ?>
               <div class="row pt-3">
                 <div class="col-md-6">
                   <div class="mb-3">
@@ -484,344 +787,134 @@ if (!empty($_REQUEST['result'])) {
             </form>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
-<div class="card card-body">
-    <div class="row">
-        <div class="col-3">
-            <h3 class="card-title align-items-center mb-2">
-                Filter Customers 
-            </h3>
-            <div class="position-relative w-100 px-0 mr-0 mb-2">
-                <input type="text" class="form-control py-2 ps-5" data-filter-name="Customer Name" id="text-srh" placeholder="Search">
-                <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
-            </div>
-            <div class="align-items-center">
-                <div class="position-relative w-100 px-1 mb-2">
-                    <select class="form-control py-0 ps-5 select2 filter-selection" data-filter="tax" data-filter-name="Tax" id="select-tax">
-                        <option value="">All Tax Status</option>
-                        <optgroup label="Tax Status">
-                          <?php
-                          $query_tax_status = "SELECT * FROM customer_tax";
-                          $result_tax_status = mysqli_query($conn, $query_tax_status);
-                          while ($row_tax_status = mysqli_fetch_array($result_tax_status)) {
-                            ?>
-                            <option value="<?= $row_tax_status['taxid'] ?>">
-                              (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?></option>
-                          <?php
-                          }
-                          ?>
-                        </optgroup>
-                    </select>
-                </div>
-                <div class="position-relative w-100 px-1 mb-2">
-                    <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="loyalty" data-filter-name="Loyalty" id="select-loyalty">
-                        <option value="">All Loyalty Options</option>
-                        <option value="1">ON</option>
-                        <option value="0">OFF</option>
-                    </select>
-                </div>
-                <div class="position-relative w-100 px-1 mb-2">
-                    <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="pricing" data-filter-name="Pricing Category" id="select-pricing">
-                        <option value="" data-category="">All Pricing Category</option>
-                        <optgroup label="Pricing Category">
-                            <?php
-                            $query_pricing = "SELECT * FROM customer_pricing WHERE hidden = '0' AND status = '1'";
-                            $result_pricing = mysqli_query($conn, $query_pricing);            
-                            while ($row_pricing = mysqli_fetch_array($result_pricing)) {
-                            ?>
-                                <option value="<?= $row_pricing['id'] ?>"><?= $row_pricing['pricing_name'] ?></option>
-                            <?php   
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-                <div class="position-relative w-100 px-1 mb-2">
-                    <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="city" data-filter-name="City" id="select-city">
-                        <option value="">All Cities</option>
-                        <optgroup label="Cities">
-                            <?php
-                            $query_city = "SELECT DISTINCT LOWER(city) AS city_lower 
-                                              FROM customer 
-                                              WHERE city IS NOT NULL AND city <> '' AND status = '1' and hidden = '0'
-                                              ORDER BY city_lower;";
-                            $result_city = mysqli_query($conn, $query_city);            
-                            while ($row_city = mysqli_fetch_array($result_city)) {
-                            ?>
-                                <option value="<?= $row_city['city_lower'] ?>"><?= ucwords($row_city['city_lower']) ?></option>
-                            <?php   
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-            </div>
-            <div class="px-3 mb-2"> 
-                <input type="checkbox" id="toggleActive" checked> Show Active Only
-            </div>
-        </div>
-        <div class="col-9">
-            <div id="selected-tags" class="mb-2"></div>
-            <div class="datatables">
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+      <div class="modal-content">
+          <div class="modal-header d-flex align-items-center">
+              <h4 class="modal-title" id="myLargeModalLabel">
+                  Upload <?= $page_title ?>
+              </h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
               <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title d-flex justify-content-between align-items-center">Customer List &nbsp;&nbsp;
-                    <?php if (!empty($_REQUEST['product_line_id'])) { ?>
-                      <a href="?page=customer" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
-                    <?php } ?>
-                    <div> 
-                  </h4>
-
-                  <div class="table-responsive">
-                    <table id="display_customer" class="table table-bordered align-middle table-hover mb-0 text-md-nowrap">
-                      <thead>
-                        <!-- start row -->
-                        <tr>
-                          <th>Name</th>
-                          <th>Business Name</th>
-                          <th>Phone Number</th>
-                          <th>Status</th>
-                          <th>Action</th>
-                        </tr>
-                        <!-- end row -->
-                      </thead>
-                      <tbody>
-                        <?php
-                        $no = 1;
-                        // Fetch customer details along with the count of orders and loyalty information
-                        $query_customer = "
-                          SELECT c.*, ct.customer_type_name, 
-                          (SELECT COUNT(o.customerid) FROM orders o WHERE o.customerid = c.customer_id) AS order_count,
-                          lp.accumulated_total_orders, lp.loyalty_program_name
-                          FROM customer c
-                          LEFT JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id 
-                          LEFT JOIN loyalty_program lp ON c.loyalty = 1 AND 
-                          (SELECT COUNT(o.customerid) FROM orders o WHERE o.customerid = c.customer_id) >= lp.accumulated_total_orders
-                          WHERE c.hidden = 0";
-
-                        $result_customer = mysqli_query($conn, $query_customer);
-                        while ($row_customer = mysqli_fetch_array($result_customer)) {
-                          $customer_id = $row_customer['customer_id'];
-                          $name = $row_customer['customer_first_name'] . " " . $row_customer['customer_last_name'];
-                          $business_name = $row_customer['customer_business_name'];
-                          $email = $row_customer['contact_email'];
-                          $phone = $row_customer['contact_phone'];
-                          $fax = $row_customer['contact_fax'];
-                          $address = $row_customer['address'];
-                          $customer_type_name = $row_customer['customer_type_name'];
-                          $db_status = $row_customer['status'];
-                          $order_count = $row_customer['order_count']; // Customer's order count
-                        
-                          // Check loyalty field and display accordingly
-                          if ($row_customer['loyalty'] == '1') {
-                            // Show loyalty program name if loyalty is 1
-                            if ($order_count >= $row_customer['accumulated_total_orders']) {
-                              $loyalty = $row_customer['loyalty_program_name'];
-                            } else {
-                              $loyalty = "No Loyalty Level";
-                            }
-                          } else {
-                            // Show "Off" if loyalty is not 1
-                            $loyalty = "Off";
-                          }
-
-                          // Display status
-                          if ($row_customer['status'] == '0' || $row_customer['status'] == '3') {
-                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                          } else {
-                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                          }
-                          ?>
-                          <tr id="product-row-<?= $no ?>"
-                              data-tax="<?= $row_customer['tax_status'] ?>"
-                              data-loyalty="<?= $row_customer['loyalty'] ?>"
-                              data-city="<?= strtolower($row_customer['city']) ?>"
-                              data-pricing="<?= $row_customer['customer_pricing'] ?>"
-                          >
-                            <td>
-                              <a href="?page=customer&customer_id=<?= $customer_id ?>&t=v" id="showCustomerDetails" class="text-decoration-none">
-                                <span class="customer<?= $no ?><?php if ($row_customer['status'] == '0' || $row_customer['status'] == '3') {echo 'emphasize-strike';} ?>">
-                                  <?php 
-                                  if($row_customer['status'] == '3'){
-                                    $merge_details = getCustomerDetails($customer_id);
-                                    $merge_id = $merge_details['merge_from'];
-                                    $current_details = getCustomerDetails($merge_id);
-                                    echo "$name - Merge to " .$current_details['customer_first_name'] . " " . $current_details['customer_last_name'];
-                                  }else{
-                                    echo $name;
-                                  }
-                                  ?>
-                                </span>
-                              </a>
-                            </td>
-                            <td><?= $business_name ?></td>
-                            <td><?= $phone ?></td>
-                            <td><?= $status ?></td>
-                            <td class="text-center fs-5" id="action-button-<?= $no ?>">
-                              <?php if ($row_customer['status'] == '0') { ?>
-                                <a href="?page=customer&customer_id=<?= $customer_id ?>&t=e" class="py-1 text-dark hideCustomer" data-id="<?= $customer_id ?>" data-row="<?= $no ?>"
-                                  style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Archive"><i
-                                    class="fa fa-box-archive text-danger"></i></a>
-                              <?php } else { ?>
-                                <a href="?page=customer&customer_id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
-                                  data-toggle="tooltip" data-placement="top" title="Edit">
-                                  <i class="fa fa-pencil text-light"></i>
-                                </a>
-                                <a href="?page=customer-dashboard&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
-                                  data-toggle="tooltip" data-placement="top" title="Dashboard"><i
-                                    class="fa fa-chart-bar text-warning"></i>
-                                </a>
-                                <a href="?page=customer_login_creds&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
-                                  data-toggle="tooltip" data-placement="top" title="Username and Password">
-                                  <i class="fa-solid fa-lock text-info"></i>
-                                </a>
-                                <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
-                                  style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i
-                                    class="fa fa-calculator text-primary"></i>
-                                </a>
-                                <a href="?page=order_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
-                                  style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Orders"><i
-                                    class="fa fa-cart-shopping text-success"></i>
-                                </a>
-                              <?php } ?>
-                            </td>
-                          </tr>
-                          <?php
-                          $no++;
-                        }
-                        ?>
-                      </tbody>
-
-
-                      <script>
-                        $(document).ready(function () {
-                          $('[data-toggle="tooltip"]').tooltip();
-                          // Use event delegation for dynamically generated elements
-                          $(document).on('click', '.changeStatus', function (event) {
-                            event.preventDefault();
-                            var customer_id = $(this).data('id');
-                            var status = $(this).data('status');
-                            var no = $(this).data('no');
-                            $.ajax({
-                              url: 'pages/customer_ajax.php',
-                              type: 'POST',
-                              data: {
-                                customer_id: customer_id,
-                                status: status,
-                                action: 'change_status'
-                              },
-                              success: function (response) {
-                                if (response == 'success') {
-                                  if (status == 1) {
-                                    $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
-                                    $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                                    $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                    $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideCustomer" data-id="' + customer_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
-                                    $('#toggleActive').trigger('change');
-                                  } else {
-                                    $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                                    $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                                    $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                    $('#action-button-' + no).html('<a href="?page=customer&customer_id=' + customer_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
-                                    $('#toggleActive').trigger('change');
-                                  }
-                                } else {
-                                  alert('Failed to change status.');
-                                }
-                              },
-                              error: function (jqXHR, textStatus, errorThrown) {
-                                alert('Error: ' + textStatus + ' - ' + errorThrown);
-                              }
-                            });
-                          });
-
-                          $(document).on('click', '.hideCustomer', function (event) {
-                            event.preventDefault();
-                            var customer_id = $(this).data('id');
-                            var rowId = $(this).data('row');
-                            $.ajax({
-                              url: 'pages/customer_ajax.php',
-                              type: 'POST',
-                              data: {
-                                customer_id: customer_id,
-                                action: 'hide_customer'
-                              },
-                              success: function (response) {
-                                if (response == 'success') {
-                                  $('#product-row-' + rowId).remove(); // Remove the row from the DOM
-                                } else {
-                                  alert('Failed to hide customer.');
-                                }
-                              },
-                              error: function (jqXHR, textStatus, errorThrown) {
-                                alert('Error: ' + textStatus + ' - ' + errorThrown);
-                              }
-                            });
-                          });
-                        });
-                      </script>
-
-                    </table>
+                  <div class="card-body">
+                      <form id="upload_excel_form" action="#" method="post" enctype="multipart/form-data">
+                          <div class="mb-3">
+                              <label for="excel_file" class="form-label fw-semibold">Select Excel File</label>
+                              <input type="file" class="form-control" name="excel_file" accept=".xls,.xlsx" required>
+                          </div>
+                          <div class="text-center">
+                              <button type="submit" class="btn btn-primary">Upload & Read</button>
+                          </div>
+                      </form>
                   </div>
-                </div>
               </div>
-            </div>
-        </div>
-    </div>
+              <div class="card mb-0 mt-2">
+                  <div class="card-body d-flex justify-content-center align-items-center">
+                      <button type="button" id="readUploadBtn" class="btn btn-primary fw-semibold">
+                          <i class="fas fa-eye me-2"></i> View Uploaded File
+                      </button>
+                  </div>
+              </div>    
+          </div>
+      </div>
+  </div>
 </div>
 
-
-<div class="modal fade" id="map1Modal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="mapsModalLabel">Search Address</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form id="mapForm" class="form-horizontal">
-              <div class="modal-body">
-                  <div class="mb-2">
-                      <input id="searchBox1" class="form-control" placeholder="<?= $addressDetails ?>" list="address1-list" autocomplete="off">
-                      <datalist id="address1-list"></datalist>
-                  </div>
-                  <div id="map1" class="map-container" style="height: 60vh; width: 100%;"></div>
-              </div>
-              <div class="modal-footer">
-                  <div class="form-actions">
-                      <div class="card-body">
-                          <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
-                      </div>
-                  </div>
-              </div>
-            </form>
-        </div>
-    </div>
+<div class="modal fade" id="readUploadModal" tabindex="-1" aria-labelledby="readUploadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+      <div class="modal-content">
+          <div class="modal-header d-flex align-items-center">
+              <h4 class="modal-title" id="myLargeModalLabel">
+                  Uploaded Excel <?= $page_title ?>
+              </h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div id="uploaded_excel" class="modal-body"></div>
+      </div>
+  </div>
 </div>
 
-<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
-        <h4 id="responseHeader" class="m-0"></h4>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
+<div class="modal fade" id="downloadClassModal" tabindex="-1" aria-labelledby="downloadClassModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+      <div class="modal-content">
+          <div class="modal-header d-flex align-items-center">
+              <h4 class="modal-title" id="myLargeModalLabel">
+                  Download Classification
+              </h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <form id="download_class_form" class="form-horizontal">
+                  <label for="select-category" class="form-label fw-semibold">Select Classification</label>
+                  <div class="mb-3">
+                      <select class="form-select select2" id="select-download-class" name="category">
+                          <option value="">All Classifications</option>
+                          <optgroup label="Classifications">
+                              <option value="tax_status">Tax Status</option>
+                              <option value="customer_pricing">Customer Pricing</option>
+                          </optgroup>
+                      </select>
+                  </div>
 
-        <p id="responseMsg"></p>
+                  <div class="d-grid">
+                      <button type="submit" class="btn btn-primary fw-semibold">
+                          <i class="fas fa-download me-2"></i> Download Classification
+                      </button>
+                  </div>
+              </form>
+          </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
-          Close
-        </button>
+  </div>
+</div>
+
+<div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+      <div class="modal-content">
+          <div class="modal-header d-flex align-items-center">
+              <h4 class="modal-title" id="myLargeModalLabel">
+                  Download <?= $page_title ?>
+              </h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <form id="download_excel_form" class="form-horizontal">
+                  <label for="select-category" class="form-label fw-semibold">Select Supplier</label>
+                  <div class="mb-3">
+                      <select class="form-select select2" id="select-download-category" name="category">
+                          <option value="">All Suppliers</option>
+                          <optgroup label="Suppliers">
+                              <?php
+                              $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
+                              $result_supplier = mysqli_query($conn, $query_supplier);            
+                              while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                                  $selected = (!empty($supplierid) && $supplierid == $row_supplier['supplier_id']) ? 'selected' : '';
+                                  if(!empty($_REQUEST['supplier_id'])){
+                                    $selected = (!empty($supplier_id) && $supplier_id == $row_supplier['supplier_id']) ? 'selected' : '';
+                                  }
+                              ?>
+                                  <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
+                              <?php   
+                              }
+                              ?>
+                          </optgroup>
+                      </select>
+                  </div>
+
+                  <div class="d-grid">
+                      <button type="submit" class="btn btn-primary fw-semibold">
+                          <i class="fas fa-download me-2"></i> Download Excel
+                      </button>
+                  </div>
+              </form>
+          </div>
       </div>
-    </div>
   </div>
 </div>
 
@@ -971,36 +1064,59 @@ if (!empty($_REQUEST['result'])) {
   window.onload = loadGoogleMapsAPI;
 
   function toggleFormEditable(formId, enable = true, hideBorders = false, hideControls = false) {
-      let form = document.getElementById(formId);
-      if (!form) return;
+    const $form = $("#" + formId);
+    if ($form.length === 0) return;
 
-      form.querySelectorAll("input, select, textarea").forEach(element => {
-          if (enable) {
-              element.removeAttribute("readonly");
-              element.removeAttribute("disabled");
-              element.style.border = hideBorders ? "none" : "";
-              element.style.backgroundColor = "";
-              if (element.tagName === "SELECT") {
-                  element.classList.remove("hide-dropdown");
-              }
-          } else {
-              element.setAttribute("readonly", "true");
-              element.setAttribute("disabled", "true");
-              element.style.border = hideBorders ? "none" : "1px solid #ccc";
-              element.style.backgroundColor = "#f8f9fa";
-              if (element.tagName === "SELECT") {
-                  element.classList.add("hide-dropdown"); // Hide dropdown arrow
-              }
-          }
-      });
+    $form.find("input, select, textarea").each(function () {
+      const $element = $(this);
+      if (enable) {
+        $element.removeAttr("readonly").removeAttr("disabled");
+        $element.css("border", hideBorders ? "none" : "");
+        $element.css("background-color", "");
+        if ($element.is("select")) {
+          $element.removeClass("hide-dropdown");
+        }
+      } else {
+        $element.attr("readonly", true).attr("disabled", true);
+        $element.css("border", hideBorders ? "none" : "1px solid #ccc");
+        $element.css("background-color", "#f8f9fa");
+        if ($element.is("select")) {
+          $element.addClass("hide-dropdown");
+        }
+      }
+    });
 
-      document.querySelectorAll(".toggleElements").forEach(element => {
-          element.classList.toggle("d-none", !enable);
-      });
+    $(".toggleElements").each(function () {
+      $(this).toggleClass("d-none", !enable);
+    });
   }
 
+  function loadCustomerModal(type = 'v'){
+    $("#form_section").load(location.href + " #form_section", function () {
+        if (type === "e") {
+          toggleFormEditable("lineForm", true, false);
+        } else {
+          toggleFormEditable("lineForm", false, true);
+        }
+    });
+  }
 
   $(document).ready(function () {
+    document.title = "<?= $page_title ?>";
+
+    var table = $('#display_customer').DataTable({
+        pageLength: 100
+    });
+
+    $('#display_customer_filter').hide();
+
+    $(".select2").each(function () {
+        $(this).select2({
+            width: '100%',
+            dropdownParent: $(this).parent()
+        });
+    });
+
     $('#map1Modal').on('shown.bs.modal', function () {
         if (!map1) {
             initMaps();
@@ -1011,17 +1127,31 @@ if (!empty($_REQUEST['result'])) {
         $('#customerModal').modal('show');
     });
 
-    // Filter based on dropdown selection
+    $('.addModalBtn').on('click', function () {
+        const id = $(this).data('id');
+        const type = $(this).data('type');
+
+        $.ajax({
+          url: 'pages/customer_ajax.php',
+          type: 'POST',
+          data: {
+            id: id,
+            action: 'change_act_cust_id'
+          },
+          success: function (response) {
+            loadCustomerModal(type);
+            $('#customerModal').modal('show');
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            alert('Error: ' + textStatus + ' - ' + errorThrown);
+          }
+        });
+    });
+
     $('#customerTypeFilter').on('change', function () {
       var selectedValue = $(this).val();
-      table.search(selectedValue).draw();  // Apply global search based on dropdown value
+      table.search(selectedValue).draw();
     });
-
-    var table = $('#display_customer').DataTable({
-        pageLength: 100
-    });
-
-    $('#display_customer_filter').hide();
 
     $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
       var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -1039,8 +1169,6 @@ if (!empty($_REQUEST['result'])) {
 
     $('#toggleActive').trigger('change');
 
-    $('.select2').select2();
-
     function getCookie(name) {
       var nameEQ = name + "=";
       var ca = document.cookie.split(';');
@@ -1052,7 +1180,7 @@ if (!empty($_REQUEST['result'])) {
       return null;
     }
 
-    $('#lineForm').on('submit', function (event) {
+    $(document).on('submit', '#lineForm', function (event) {
       event.preventDefault();
 
       var userid = getCookie('userid');
@@ -1104,6 +1232,144 @@ if (!empty($_REQUEST['result'])) {
           alert('Error: ' + textStatus + ' - ' + errorThrown);
         }
       });
+    });
+
+    $(document).on('click', '#uploadBtn', function(event) {
+        $('#uploadModal').modal('show');
+    });
+
+    $(document).on('click', '#downloadBtn', function(event) {
+        window.location.href = "pages/customer_ajax.php?action=download_excel";
+    });
+
+    $("#download_class_form").submit(function (e) {
+        e.preventDefault();
+        window.location.href = "pages/customer_ajax.php?action=download_classifications&class=" + encodeURIComponent($("#select-download-class").val());
+    });
+
+    $(document).on('click', '#downloadClassModalBtn', function(event) {
+        $('#downloadClassModal').modal('show');
+    });
+
+    $(document).on('click', '#readUploadBtn', function(event) {
+        $.ajax({
+            url: 'pages/customer_ajax.php',
+            type: 'POST',
+            data: {
+                action: "fetch_uploaded_modal"
+            },
+            success: function(response) {
+                $('#uploaded_excel').html(response);
+                $('#readUploadModal').modal('show');
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $('#upload_excel_form').on('submit', function (e) {
+        e.preventDefault();
+        
+        var formData = new FormData(this);
+        formData.append('action', 'upload_excel');
+
+        $.ajax({
+            url: 'pages/customer_ajax.php',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                $('.modal').modal('hide');
+                response = response.trim();
+                if (response.trim() === "success") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("Data Uploaded successfully.");
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
+                    $('#response-modal').on('hide.bs.modal', function () {
+                        location.reload();
+                    });
+                } else {
+                    $('#responseHeader').text("Failed");
+                    $('#responseMsg').text(response);
+                    $('#responseHeaderContainer').removeClass("bg-success");
+                    $('#responseHeaderContainer').addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }  
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('AJAX Error:', textStatus, errorThrown);
+                console.error('Response:', jqXHR.responseText);
+
+                $('#responseHeader').text("Error");
+                $('#responseMsg').text("An error occurred while processing your request.");
+                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                $('#response-modal').modal("show");
+            }
+        });
+    });
+
+    $(document).on('blur', '.table_data', function() {
+        let newValue;
+        let updatedData = {};
+        
+        if ($(this)[0].tagName.toLowerCase() === 'select') {
+            const selectedValue = $(this).val();
+            const selectedText = $(this).find('option:selected').text();
+            newValue = selectedValue ? selectedValue : selectedText;
+        } 
+        else if ($(this).is('td')) {
+            newValue = $(this).text();
+        }
+        
+        const headerName = $(this).data('header-name');
+        const id = $(this).data('id');
+
+        updatedData = {
+            action: 'update_test_data',
+            id: id,
+            header_name: headerName,
+            new_value: newValue,
+        };
+
+        $.ajax({
+            url: 'pages/customer_ajax.php',
+            type: 'POST',
+            data: updatedData,
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(xhr, status, error) {
+                console.log('Error: ' + error);
+                alert('Error updating data');
+            }
+        });
+    });
+
+    $(document).on('click', '#saveTable', function(event) {
+        if (confirm("Are you sure you want to save this Excel data to the product lines data?")) {
+            var formData = new FormData();
+            formData.append("action", "save_table");
+
+            $.ajax({
+                url: "pages/customer_ajax.php",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    $('.modal').modal('hide');
+                    response = response.trim();
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text(response);
+                    $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                    $('#response-modal').modal("show");
+                }
+            });
+        }
     });
 
     function filterTable() {
