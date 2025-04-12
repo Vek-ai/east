@@ -6,6 +6,8 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 function sendEmail($email, $name, $subject, $message) {
+    global $enable_email;
+
     /* $mail_host = 'smtp.sendgrid.net';
     $api_user = 'apikey';
     $api_pass = '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';
@@ -70,12 +72,11 @@ function sendEmail($email, $name, $subject, $message) {
             'error' => "Sending email set to false"
         ];
     }
-
-    
-
 }
 
 function sendPhoneMessage($phone, $name, $subject, $message) {
+    global $enable_phone_message;
+
     if($enable_phone_message){
         $is_success = false;
         if ($is_success) {
