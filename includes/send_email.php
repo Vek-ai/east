@@ -1,5 +1,6 @@
 <?php
 require '../includes/phpmailer/vendor/autoload.php';
+require_once '../includes/dbconn.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
