@@ -148,6 +148,18 @@ function getSubmitWorkOrderDetails($id) {
     return $work_order;
 }
 
+function getStaffAssignedWarehouse($corresponding_user) {
+    global $conn;
+    $corresponding_user = mysqli_real_escape_string($conn, $corresponding_user);
+    $query = "SELECT * FROM warehouses WHERE corresponding_user = '$corresponding_user'";
+    $result = mysqli_query($conn, $query);
+    $warehouse = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $warehouse = $row;
+    }
+    return $warehouse;
+}
+
 function getWarehouseName($WarehouseID){
     global $conn;
     $query = "SELECT WarehouseName FROM warehouses WHERE WarehouseID = '$WarehouseID'";

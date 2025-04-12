@@ -12,3 +12,6 @@ $conn = new mysqli($host, $user, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $mysqli->connect_error);
 }
+
+$enable_email = false;
+$enable_phone_message = false;

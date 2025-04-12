@@ -151,13 +151,8 @@ if(!empty($_REQUEST['id'])){
         <div class="datatables">
           <div class="card">
             <div class="card-body">
-                <h4 class="card-title d-flex justify-content-between align-items-center">Supplier Color List  &nbsp;&nbsp; <?php if(!empty($_REQUEST['id'])){ ?>
-                  <a href="/?page=supplier_color" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
-                  <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
-                </h4>
-              
+                <h4 class="card-title d-flex justify-content-between align-items-center">Supplier Color List</h4>
               <div class="table-responsive">
-            
                 <table id="display_supplier_color" class="table table-striped table-bordered text-nowrap align-middle text-center">
                   <thead>
                     <!-- start row -->

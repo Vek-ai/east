@@ -2,7 +2,7 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-if($_REQUEST['supplier_id']){
+if(isset($_REQUEST['supplier_id'])){
     $supplier_id = $_REQUEST['supplier_id'];
     $supplier_details = getSupplierName($supplier_id);
 }

@@ -129,21 +129,16 @@ td.notes,  td.last-edit{
                   <a href="/?page=supplier_type" class="btn btn-primary" style="border-radius: 10%;">Add New</a>
                   <?php } ?> <div> <input type="checkbox" id="toggleActive" checked> Show Active Only</div>
                 </h4>
-              
               <div class="table-responsive">
-            
                 <table id="display_supplier_type" class="table table-striped table-bordered text-nowrap align-middle">
                   <thead>
-                    <!-- start row -->
                     <tr>
                       <th>Supplier Type</th>
                       <th>Role Description</th>
                       <th>Details</th>
                       <th>Status</th>
-                    
                       <th>Action</th>
                     </tr>
-                    <!-- end row -->
                   </thead>
                   <tbody>
                   <?php
