@@ -61,8 +61,15 @@
         </li>
         <li class="sidebar-item">
           <a class="sidebar-link" href="?page=product">
+            <i class="fa fa-list-alt aside-icon"></i>
+            <span class="hide-menu">View Products</span>
+          </a>
+        </li>
+
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="?page=browse">
             <i class="fa fa-shopping-cart aside-icon"></i>
-            <span class="hide-menu">Products</span>
+            <span class="hide-menu">Order/Estimate</span>
           </a>
         </li>
 

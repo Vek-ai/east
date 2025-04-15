@@ -26,7 +26,7 @@ if (isset($_GET['fetch_cart'])) {
 
             $cartItems[] = [
                 'img_src' => $picture_path,
-                'item_name' => $item['product_item'],
+                'item_name' => $product_details['product_item'],
                 'color_hex' => getColorHexFromColorID($item['custom_color']),
                 'quantity' => $item['quantity_cart'],
                 'product_id' => $item['product_id'],
