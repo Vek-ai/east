@@ -614,7 +614,7 @@ if (isset($_POST['save_estimate'])) {
                     $response['message'] = "Admin email is unavailable.";
                 }
                 
-                $sql = "DELETE FROM customer_cart WHERE customer_id = '$customer_id'";
+                $sql = "DELETE FROM customer_cart WHERE customer_id = '$customerid'";
                 if (!$conn->query($sql)) {
                     $response['message'] = "Error clearing cart: " . $conn->error;
                 }
@@ -898,7 +898,7 @@ if (isset($_POST['save_order'])) {
                     $response['message'] = "Admin email is unavailable.";
                 }
 
-                $sql = "DELETE FROM customer_cart WHERE customer_id = '$customer_id'";
+                $sql = "DELETE FROM customer_cart WHERE customer_id = '$customerid'";
                 if (!$conn->query($sql)) {
                     $response['error'] = "Error clearing cart: " . $conn->error;
                 }
