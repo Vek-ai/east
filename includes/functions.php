@@ -451,7 +451,7 @@ function getSetting($settingName) {
     $setting = 0;
 
     if ($row = mysqli_fetch_assoc($result)) {
-        $setting = floatval($row['value']);
+        $setting = trim($row['value']);
     }
 
     return $setting;
@@ -1071,4 +1071,23 @@ function getPrimaryKey($table) {
 
     return null;
 }
+
+function getCartDataByCustomerId($customer_id) {
+    global $conn;
+
+    $customer_id = (int)$customer_id;
+    
+    $query = "SELECT * FROM customer_cart WHERE customer_id = $customer_id";
+    $result = mysqli_query($conn, $query);
+
+    $cartData = [];
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $cartData[] = $row;
+        }
+    }
+
+    return $cartData;
+}
+
 ?>

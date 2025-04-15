@@ -260,6 +260,10 @@ if(isset($_SESSION['customer_id'])){
             </div>
         </div>
 
+        <?php
+        if(floatval($customer_details['credit_limit']) > 0){
+        ?>
+
         <div class="card">
             <div class="card-body p-9">
                 <div class="hstack gap-9">
@@ -286,6 +290,10 @@ if(isset($_SESSION['customer_id'])){
                 </div>
             </div>
         </div>
+
+        <?php
+        }
+        ?>
     </div>
     
     

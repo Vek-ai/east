@@ -1,9 +1,6 @@
 <?php
-require '../includes/phpmailer/vendor/autoload.php';
-require_once '../includes/dbconn.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+require 'phpmailer/vendor/autoload.php';
+require_once 'dbconn.php';
 
 function sendEmail($email, $name, $subject, $message) {
     global $enable_email;

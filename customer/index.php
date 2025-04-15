@@ -38,6 +38,7 @@ $customer_details = getCustomerDetails($customer_id);
 
   <!-- Core Css -->
   <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="css/customer.css" />
 
   <title>Customers - East Kentucky Metal</title>
 
@@ -538,6 +539,57 @@ $customer_details = getCustomerDetails($customer_id);
 
                     </div>
                   </li>
+
+                  <?php
+                  $cartItems = getCartDataByCustomerId($customer_id);
+
+                  $totalQuantity = 0;
+                  foreach ($cartItems as $item) {
+                      $totalQuantity += (int)$item['quantity_cart'];
+                  }
+                  ?>
+
+                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
+                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="view_cart" aria-expanded="false">
+                      <iconify-icon icon="ic:round-shopping-cart" class="cart-icon"></iconify-icon>
+                      <div class="cart-number">
+                        <span id="cartQty" class="cart-quantity"><?= $totalQuantity; ?></span>
+                      </div>
+                    </a>
+
+                    <div class="dropdown-menu py-0 content-dd dropdown-menu-animate-up dropdown-menu-end" 
+                      aria-labelledby="drop2" style="width: 40vw; max-height: 50vh; overflow-y: auto; padding: 0; margin: 0;">
+                      <div class="py-3 px-4 bg-primary">
+                        <div class="d-flex align-items-center justify-content-between">
+                          <div class="mb-0 fs-6 fw-medium text-white">Cart Contents</div>
+                          <button type="button" class="btn btn-sm mb-2 me-2 " id="clear_cart" style="background-color: #dc3545; color: white;">
+                            <i class="fa fa-trash fs-4 me-2"></i>
+                            Clear Cart
+                          </button>
+                          <span id="cartTotal" class="mb-0 fs-6 fw-medium text-white">
+                            <?php
+                              $grandTotal = 0.00;
+                              foreach ($cartItems as $item) {
+                                  $grandTotal += (float)$item['unit_price'] * (int)$item['quantity_cart'];
+                              }
+                              echo "$" . number_format($grandTotal, 2);
+                            ?>
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="row bg-light text-secondary py-2 mx-0 text-center">
+                        <div class="col-1">Image</div>
+                        <div class="col-7">Description</div>
+                        <div class="col-2">Color</div>
+                        <div class="col-1">Qty</div>
+                        <div class="col-1"></div>
+                      </div>
+                      
+                      <div class="cart-body" data-simplebar></div>
+                    </div>
+                  </li>
+
 
                   <!-- ------------------------------- -->
                   <!-- end notification Dropdown -->
@@ -1304,6 +1356,7 @@ $customer_details = getCustomerDetails($customer_id);
             if ($_REQUEST['page'] == "product") {include 'pages/product.php';}
             if ($_REQUEST['page'] == "estimate") {include 'pages/estimate.php';}
             if ($_REQUEST['page'] == "order") {include 'pages/order.php';}
+            if ($_REQUEST['page'] == "browse") {include 'pages/browse.php';}
           ?>
         </div>
       </div>
@@ -1339,9 +1392,121 @@ $customer_details = getCustomerDetails($customer_id);
   <script src="../assets/libs/owl.carousel/dist/owl.carousel.min.js"></script>
   <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
   <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+
   <script>
+  function handleTheme() {
+    function setThemeAttributes(theme, darkDisplay, lightDisplay, sunDisplay, moonDisplay) {
+      $("html").attr("data-bs-theme", theme);
+      const layoutElement = $(`#${theme}-layout`);
+      if (layoutElement.length) {
+        layoutElement.prop("checked", true);
+      }
+      $(`.${darkDisplay}`).hide();
+      $(`.${lightDisplay}`).css("display", "flex");
+      $(`.${sunDisplay}`).hide();
+      $(`.${moonDisplay}`).css("display", "flex");
+    }
+
+    const currentTheme = $("html").attr("data-bs-theme") || "dark";
+    setThemeAttributes(
+      currentTheme,
+      currentTheme === "dark" ? "dark-logo" : "light-logo",
+      currentTheme === "dark" ? "light-logo" : "dark-logo",
+      currentTheme === "dark" ? "moon" : "sun",
+      currentTheme === "dark" ? "sun" : "moon"
+    );
+
+    $(".dark-layout").on("click", function () {
+      setThemeAttributes("dark", "dark-logo", "light-logo", "moon", "sun");
+    });
+
+    $(".light-layout").on("click", function () {
+      setThemeAttributes("light", "light-logo", "dark-logo", "sun", "moon");
+    });
+  }
+
+  handleTheme();
+
+
+  function loadCartItemsHeader() {
+      $.ajax({
+          url: 'pages/index_ajax.php',
+          type: 'GET',
+          data: { fetch_cart: 'fetch_cart' },
+          dataType: 'json',
+          success: function(response) {
+              if (response.cart_items && Array.isArray(response.cart_items)) {
+                  $('.cart-body').empty();
+                  response.cart_items.forEach(function(item) {
+                      const itemRow = `
+                          <div class="row align-items-center text-center py-2 border-bottom mx-0">
+                              <div class="col-1 text-center">
+                                  <span class="d-flex justify-content-center align-items-center bg-primary-subtle rounded-circle text-primary" 
+                                      style="width: 50px; height: 50px;">
+                                      <img src="${item.img_src}" alt="Item Image" style="width: 100%; height: 100%; object-fit: cover;">
+                                  </span>
+                              </div>
+                              <div class="col-7">
+                                  <h6 class="mb-1">${item.item_name}</h6>
+                              </div>
+                              <div class="col-2">
+                                  <span class="rounded-circle d-inline-block" style="background-color: ${item.color_hex}; width: 20px; height: 20px;"></span>
+                              </div>
+                              <div class="col-1">
+                                  <h6 class="mb-1">${item.quantity}</h6>
+                              </div>
+                              <div class="col-1">
+                                  <button class="btn btn-sm" type="button" data-line="${item.line}" data-id="${item.product_id}" onClick="delete_item(this)">
+                                      <i class="fa fa-trash"></i>
+                                  </button>
+                              </div>
+                          </div>
+                      `;
+                      $('.cart-body').append(itemRow);
+                  });
+                  $("#cartQty").load(location.href + " #cartQty");
+                  $("#cartTotal").load(location.href + " #cartTotal");
+              } else {
+                  console.error('Invalid data format: cart_items is not an array.');
+              }
+          },
+          error: function(xhr, status, error) {
+              console.error('Error fetching cart items:', error);
+          }
+    });
+
+  }
+
+
   $(document).ready(function() {
-    $(".phone-inputmask").inputmask("(999) 999-9999")
+    
+    loadCartItemsHeader();
+
+    $(".phone-inputmask").inputmask("(999) 999-9999");
+
+    $('#customer-search-input').on('input', function() {
+        let customerName = $(this).val();
+        console.log(customerName);
+        if (customerName.length > 0) {
+            $.ajax({
+                url: 'pages/index_ajax.php',
+                type: 'POST',
+                data: { 
+                  customer_name: customerName,
+                  search_customer: 'search_customer'
+                },
+                success: function(response) {
+                    $('#customer-search-list').html(response);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    $('#customer-search-list').html('<p class="list-group-item text-danger text-center">Error fetching results</p>');
+                }
+            });
+        } else {
+            $('#customer-search-list').empty();
+        }
+    });
   });
   </script>
 </body>
