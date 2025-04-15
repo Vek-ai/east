@@ -377,7 +377,7 @@ if (isset($_POST['save_estimate'])) {
     $deliver_fname = mysqli_real_escape_string($conn, $_POST['deliver_fname'] ?? '');
     $deliver_lname = mysqli_real_escape_string($conn, $_POST['deliver_lname'] ?? '');
 
-    if (!isset($_SESSION['customer_id']) || empty($_SESSION['cart'])) {
+    if (!isset($_SESSION['customer_id'])) {
         $response['message'] = "Customer ID or cart is not set.";
         header('Content-Type: application/json');
         echo json_encode($response);
@@ -650,7 +650,7 @@ if (isset($_POST['save_order'])) {
     $delivery_amt = mysqli_real_escape_string($conn, $_POST['delivery_amt'] ?? '');
     $deliver_fname = mysqli_real_escape_string($conn, $_POST['deliver_fname'] ?? '');
     $deliver_lname = mysqli_real_escape_string($conn, $_POST['deliver_lname'] ?? '');
-    if (!isset($_SESSION['customer_id']) || empty($_SESSION['cart'])) {
+    if (!isset($_SESSION['customer_id'])) {
         $response['error'] = "Customer ID or cart is not set.";
         echo json_encode($response);
         exit;
