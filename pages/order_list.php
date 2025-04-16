@@ -135,6 +135,47 @@ if(isset($_REQUEST['customer_id'])){
         </div>
     </div>
 
+    <div class="modal fade" id="shipFormModal" tabindex="-1" aria-labelledby="shipFormModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shipFormModalLabel">Shipping Form</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="shipOrderForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="tracking_number" class="form-label">Tracking Number</label>
+                            <input type="text" class="form-control" id="tracking_number" name="tracking_number" required>
+                        </div>
+
+                        <div>
+                        <label for="shipping_company" class="form-label">Shipping Company</label>
+                        <div class="mb-3">
+                            <select class="form-select select2" id="shipping_company" name="shipping_company" required>
+                                <option value="">Select Shipping Company...</option>
+                                <?php
+                                $query_shipping_company = "SELECT * FROM shipping_company WHERE status = '1' AND hidden = '0' ORDER BY `shipping_company` ASC";
+                                $result_shipping_company = mysqli_query($conn, $query_shipping_company);            
+                                while ($row_shipping_company = mysqli_fetch_array($result_shipping_company)) {
+                                ?>
+                                    <option value="<?= $row_shipping_company['shipping_company_id'] ?>"><?= $row_shipping_company['shipping_company'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        </div>
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="card card-body">
         <div class="card-body datatables">
             <div class="product-details table-responsive text-nowrap">
@@ -220,6 +261,10 @@ if(isset($_REQUEST['customer_id'])){
 
 <script>
     $(document).ready(function() {
+        var dataId = '';
+        var action = '';
+        var selected_prods = [];
+        
         var table = $('#order_list_tbl').DataTable({
             "order": [[1, "asc"]]
         });
@@ -288,9 +333,9 @@ if(isset($_REQUEST['customer_id'])){
         });
 
         $(document).on("click", "#processOrderBtn", function () {
-            var dataId = $(this).data("id");
-            var action = $(this).data("action");
-            var selected_prods = getSelectedIDs();
+            dataId = $(this).data("id");
+            action = $(this).data("action");
+            selected_prods = getSelectedIDs();
 
             var confirmMessage = action.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
 
@@ -328,48 +373,59 @@ if(isset($_REQUEST['customer_id'])){
         });
 
         $(document).on("click", "#shipOrderBtn", function () {
-            var dataId = $(this).data("id");
-            var action = $(this).data("action");
-            var selected_prods = getSelectedIDs();
+            dataId = $(this).data("id");
+            action = $(this).data("action");
+            selected_prods = getSelectedIDs();
 
             if (!Array.isArray(selected_prods) || selected_prods.length === 0) {
                 alert("Select at least 1 product to deliver.");
                 return;
             }
 
-            var confirmMessage = action.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+            $("#shipFormModal").modal("show");
+        });
 
-            if (confirm("Are you sure you want to " + confirmMessage + "?")) {
-                $.ajax({
-                    url: 'pages/order_list_ajax.php',
-                    type: 'POST',
-                    data: {
-                        id: dataId,
-                        method: action,
-                        selected_prods: selected_prods,
-                        action: 'update_status'
-                    },
-                    success: function (response) {
-                        console.log(response);
-                        try {
-                            var jsonResponse = JSON.parse(response);  
-                        } catch (e) {
-                            var jsonResponse = response;
-                        }
+        $(document).on("submit", "#shipOrderForm", function (e) {
+            e.preventDefault();
 
-                        if (jsonResponse.success) {
-                            alert(jsonResponse.message);
-                            location.reload();
-                        } else {
-                            alert("Update Success, but email failed to send");
-                            location.reload();
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.log("AJAX Error:", xhr.responseText);
+            var tracking_number = $('#tracking_number').val();
+            var shipping_company = $('#shipping_company').val();
+
+            $.ajax({
+                url: 'pages/order_list_ajax.php',
+                type: 'POST',
+                data: {
+                    id: dataId,
+                    method: action,
+                    selected_prods: selected_prods,
+                    tracking_number: tracking_number,
+                    shipping_company: shipping_company,
+                    action: 'update_status'
+                },
+                success: function (response) {
+                    console.log(response);
+
+                    try {
+                        var jsonResponse = JSON.parse(response);
+                    } catch (e) {
+                        console.error("Invalid JSON:", e);
+                        alert("Unexpected response from server.");
+                        return;
                     }
-                });
-            }
+
+                    if (jsonResponse.success) {
+                        alert("Status updated successfully!");
+                    } else {
+                        alert("Failed to update");
+                    }
+
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.log("AJAX Error:", xhr.responseText);
+                    alert("An error occurred. Please try again.");
+                }
+            });
         });
     });
 </script>

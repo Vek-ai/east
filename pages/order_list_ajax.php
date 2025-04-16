@@ -328,6 +328,9 @@ if(isset($_REQUEST['action'])) {
     if ($action == "update_status") {
         $orderid = mysqli_real_escape_string($conn, $_POST['id']);
         $method = mysqli_real_escape_string($conn, $_POST['method']); 
+
+        $tracking_number = mysqli_real_escape_string($conn, $_POST['tracking_number'] ?? ''); 
+        $shipping_company = mysqli_real_escape_string($conn, $_POST['shipping_company'] ?? ''); 
         
         $is_edited = '0';
 
@@ -386,8 +389,21 @@ if(isset($_REQUEST['action'])) {
                 echo json_encode($response);
                 exit();
             }
+
+            $updateParts = [
+                "status = '$newStatus'",
+                "is_edited = '0'"
+            ];
+
+            if (!empty($tracking_number)) {
+                $updateParts[] = "tracking_number = '$tracking_number'";
+            }
+        
+            if (!empty($shipping_company)) {
+                $updateParts[] = "shipping_company = '$shipping_company'";
+            }
             
-            $sql = "UPDATE orders SET status = $newStatus, is_edited = '0' WHERE orderid = $orderid";
+            $sql = "UPDATE orders SET " . implode(", ", $updateParts) . " WHERE orderid = $orderid";
             
             if (mysqli_query($conn, $sql)) {
                 $message = "

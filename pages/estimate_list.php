@@ -167,144 +167,6 @@ if(isset($_REQUEST['customer_id'])){
         </div>
     </div>
 
-    <div class="modal fade" id="productsModal" tabindex="-1" role="dialog" aria-labelledby="productsModal" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content modal-content-demo">
-                <div class="modal-header">
-                    <h6 class="modal-title">Add Products</h6>
-                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-
-                    <div id="products-tbl" class="card">
-                        <div class="card-body text-start p-3">
-                            <div class="row pb-3">
-                                <div class="col-2">
-                                    <button type="button" id="updateEstimateBtn" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#updateEstimateModal">
-                                        <i class="ti ti-users text-white me-1 fs-5"></i> Back
-                                    </button>
-                                </div>
-                                <div class="col-10">
-                                    <div class="p-2 text-end">
-                                        <input type="checkbox" id="toggleActive" checked> Show only In Stock
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="d-flex justify-content-between align-items-center  mb-9">
-                                <div class="position-relative w-100 col-4">
-                                    <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
-                                    <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
-                                </div>
-                                <div class="position-relative w-100 px-1 col-2">
-                                    <select class="form-control search-chat py-0 ps-5" id="select-color" data-category="">
-                                        <option value="" data-category="">All Colors</option>
-                                        <optgroup label="Product Colors">
-                                            <?php
-                                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
-                                            $result_color = mysqli_query($conn, $query_color);
-                                            while ($row_color = mysqli_fetch_array($result_color)) {
-                                            ?>
-                                                <option value="<?= $row_color['color_id'] ?>" data-category="category"><?= $row_color['color_name'] ?></option>
-                                            <?php
-                                            }
-                                            ?>
-                                        </optgroup>
-                                    </select>
-                                </div>
-                                <div class="position-relative w-100 px-1 col-2">
-                                    <select class="form-control search-chat py-0 ps-5" id="select-category" data-category="">
-                                        <option value="" data-category="">All Categories</option>
-                                        <optgroup label="Category">
-                                            <?php
-                                            $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                                            $result_category = mysqli_query($conn, $query_category);
-                                            while ($row_category = mysqli_fetch_array($result_category)) {
-                                            ?>
-                                                <option value="<?= $row_category['product_category_id'] ?>" data-category="category"><?= $row_category['product_category'] ?></option>
-                                            <?php
-                                            }
-                                            ?>
-                                        </optgroup>
-                                    </select>
-                                </div>
-                                <div class="position-relative w-100 px-1 col-2">
-                                    <select class="form-control search-chat py-0 ps-5" id="select-line" data-category="">
-                                        <option value="" data-category="">All Product Lines</option>
-                                        <optgroup label="Product Line">
-                                            <?php
-                                            $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
-                                            $result_line = mysqli_query($conn, $query_line);
-                                            while ($row_line = mysqli_fetch_array($result_line)) {
-                                            ?>
-                                                <option value="<?= $row_line['product_line_id'] ?>" data-category="line"><?= $row_line['product_line'] ?></option>
-                                            <?php
-                                            }
-                                            ?>
-                                        </optgroup>
-                                    </select>
-                                </div>
-                                <div class="position-relative w-100 px-1 col-2">
-                                    <select class="form-control search-chat py-0 ps-5" id="select-type" data-category="">
-                                        <option value="" data-category="">All Product Types</option>
-                                        <optgroup label="Product Type">
-                                            <?php
-                                            $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
-                                            $result_type = mysqli_query($conn, $query_type);
-                                            while ($row_type = mysqli_fetch_array($result_type)) {
-                                            ?>
-                                                <option value="<?= $row_type['product_type_id'] ?>" data-category="type"><?= $row_type['product_type'] ?></option>
-                                            <?php
-                                            }
-                                            ?>
-                                        </optgroup>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="table-responsive border rounded">
-                                <table id="productTable" class="table align-middle text-nowrap mb-0 table-fixed text-center">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Products</th>
-                                            <th scope="col">Color</th>
-                                            <th scope="col">Type</th>
-                                            <th scope="col">Line</th>
-                                            <th scope="col">Category</th>
-                                            <th scope="col">Status</th>
-                                            <th scope="col">Price</th>
-                                            <th scope="col">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="productTableBody"></tbody>
-                                </table>
-                                    
-                                <div class="d-flex align-items-center justify-content-end py-1">
-                                    <p class="mb-0 fs-2">Rows per page:</p>
-                                    <select id="rowsPerPage" class="form-select w-auto ms-0 ms-sm-2 me-8 me-sm-4 py-1 pe-7 ps-2 border-0" aria-label="Rows per page">
-                                        <option value="5" selected>5</option>
-                                        <option value="10">10</option>
-                                        <option value="25">25</option>
-                                    </select>
-                                    <p id="paginationInfo" class="mb-0 fs-2"></p>
-                                    <nav aria-label="...">
-                                        <ul id="paginationControls" class="pagination justify-content-center mb-0 ms-8 ms-sm-9">
-                                            <!-- Pagination buttons will be inserted here by JS -->
-                                        </ul>
-                                    </nav>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -325,6 +187,46 @@ if(isset($_REQUEST['customer_id'])){
         </div>
     </div>
 
+    <div class="modal fade" id="shipFormModal" tabindex="-1" aria-labelledby="shipFormModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shipFormModalLabel">Shipping Form</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="shipOrderForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="tracking_number" class="form-label">Tracking Number</label>
+                            <input type="text" class="form-control" id="tracking_number" name="tracking_number" required>
+                        </div>
+
+                        <div>
+                        <label for="shipping_company" class="form-label">Shipping Company</label>
+                        <div class="mb-3">
+                            <select class="form-select select2" id="shipping_company" name="shipping_company" required>
+                                <option value="">Select Shipping Company...</option>
+                                <?php
+                                $query_shipping_company = "SELECT * FROM shipping_company WHERE status = '1' AND hidden = '0' ORDER BY `shipping_company` ASC";
+                                $result_shipping_company = mysqli_query($conn, $query_shipping_company);            
+                                while ($row_shipping_company = mysqli_fetch_array($result_shipping_company)) {
+                                ?>
+                                    <option value="<?= $row_shipping_company['shipping_company_id'] ?>"><?= $row_shipping_company['shipping_company'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        </div>
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     
     <div class="card card-body">
         <div class="card-body datatables">
@@ -774,48 +676,59 @@ if(isset($_REQUEST['customer_id'])){
         });
 
         $(document).on("click", "#shipOrderBtn", function () {
-            var dataId = $(this).data("id");
-            var action = $(this).data("action");
-            var selected_prods = getSelectedIDs();
+            dataId = $(this).data("id");
+            action = $(this).data("action");
+            selected_prods = getSelectedIDs();
 
             if (!Array.isArray(selected_prods) || selected_prods.length === 0) {
                 alert("Select at least 1 product to deliver.");
                 return;
             }
 
-            var confirmMessage = action.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+            $("#shipFormModal").modal("show");
+        });
 
-            if (confirm("Are you sure you want to " + confirmMessage + "?")) {
-                $.ajax({
-                    url: 'pages/estimate_list_ajax.php',
-                    type: 'POST',
-                    data: {
-                        id: dataId,
-                        method: action,
-                        selected_prods: selected_prods,
-                        action: 'update_status'
-                    },
-                    success: function (response) {
-                        console.log(response);
-                        try {
-                            var jsonResponse = JSON.parse(response);  
-                        } catch (e) {
-                            var jsonResponse = response;
-                        }
+        $(document).on("submit", "#shipOrderForm", function (e) {
+            e.preventDefault();
 
-                        if (jsonResponse.success) {
-                            alert(jsonResponse.message);
-                            location.reload();
-                        } else {
-                            alert("Update Success, but email failed to send");
-                            location.reload();
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.log("AJAX Error:", xhr.responseText);
+            var tracking_number = $('#tracking_number').val();
+            var shipping_company = $('#shipping_company').val();
+
+            $.ajax({
+                url: 'pages/estimate_list_ajax.php',
+                type: 'POST',
+                data: {
+                    id: dataId,
+                    method: action,
+                    selected_prods: selected_prods,
+                    tracking_number: tracking_number,
+                    shipping_company: shipping_company,
+                    action: 'update_status'
+                },
+                success: function (response) {
+                    console.log(response);
+
+                    try {
+                        var jsonResponse = JSON.parse(response);
+                    } catch (e) {
+                        console.error("Invalid JSON:", e);
+                        alert("Unexpected response from server.");
+                        return;
                     }
-                });
-            }
+
+                    if (jsonResponse.success) {
+                        alert("Status updated successfully!");
+                    } else {
+                        alert("Failed to update");
+                    }
+
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.log("AJAX Error:", xhr.responseText);
+                    alert("An error occurred. Please try again.");
+                }
+            });
         });
 
         $(document).on("click", ".btn-edit", function () {
