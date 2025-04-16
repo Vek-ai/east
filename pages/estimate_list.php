@@ -187,7 +187,7 @@ if(isset($_REQUEST['customer_id'])){
         </div>
     </div>
 
-    <div class="modal fade" id="shipFormModal" tabindex="-1" aria-labelledby="shipFormModalLabel" aria-hidden="true">
+    <div class="modal fade" id="shipFormModal" tabindex="-1" aria-labelledby="shipFormModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
                 <div class="modal-header">
