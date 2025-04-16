@@ -1437,6 +1437,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "supplier_order_list_all") {include 'pages/supplier_order_list_all.php';}
 
             if ($_REQUEST['page'] == "staging_bin") {include 'pages/staging_bin.php';}
+            if ($_REQUEST['page'] == "shipping_company") {include 'pages/shipping_company.php';}
           ?>
         </div>
       </div>
