@@ -20,8 +20,7 @@ if (isset($_POST['search_orders'])) {
                     <th class="border-0 ps-0">Sales Person</th>
                     <th class="border-0">Date</th>
                     <th class="border-0">Status</th>
-                    <th class="border-0 text-end">Total Amount</th>
-                    <th class="border-0 text-end">Discount</th>
+                    <th class="border-0 text-end">Price</th>
                     <th class="border-0"></th>
                 </tr>
                 </thead>
@@ -72,12 +71,9 @@ if (isset($_POST['search_orders'])) {
                                     <?= $status_html ?>
                                 </td>
                                 <td class="text-end">
-                                    <p class="mb-0">$<?= number_format(getOrderTotals($row['orderid']),2) ?></p>
-                                </td>
-                                <td class="text-end">
                                     <p class="mb-0">$<?= number_format(getOrderTotalsDiscounted($row['orderid']),2) ?></p>
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <?php
                                     if($status_code != null){
                                     ?>
@@ -121,7 +117,7 @@ if (isset($_POST['search_estimates'])) {
                     <th class="border-0 ps-0">Estimate ID</th>
                     <th class="border-0">Status</th>
                     <th class="border-0">No. of changes</th>
-                    <th class="border-0 text-end">Total Amount</th>
+                    <th class="border-0 text-end">Price</th>
                     <th class="border-0 text-end"></th>
                 </tr>
                 </thead>
@@ -351,7 +347,6 @@ if(isset($_POST['fetch_order_details'])){
                         <th class="text-center">Quantity</th>
                         <th class="text-center">Dimensions</th>
                         <th class="text-center">Price</th>
-                        <th class="text-center">Customer Price</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -366,7 +361,6 @@ if(isset($_POST['fetch_order_details'])){
                             $product_id = $row['productid'];
                             $actual_price = $discounted_price = 0;
                             if($row['quantity'] > 0){
-                                $actual_price = number_format(floatval($row['actual_price'] * $row['quantity']),2);
                                 $discounted_price = number_format(floatval($row['discounted_price'] * $row['quantity']),2);
                             ?>
                             <tr>
@@ -420,12 +414,10 @@ if(isset($_POST['fetch_order_details'])){
                                     }
                                     ?>
                                 </td>
-                                <td class="text-end">$ <?= $actual_price ?></td>
                                 <td class="text-end">$ <?= $discounted_price ?></td>
                             </tr>
                     <?php
                             $totalquantity += $row['quantity'] ;
-                            $total_actual_price += $actual_price;
                             $total_disc_price += $discounted_price;
                             }
                         }
@@ -438,7 +430,6 @@ if(isset($_POST['fetch_order_details'])){
                         <td colspan="4">Total</td>
                         <td><?= $totalquantity ?></td>
                         <td></td>
-                        <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
                         <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
                     </tr>
                 </tfoot>
@@ -464,7 +455,6 @@ if(isset($_POST['fetch_order_details'])){
                             <th class="text-center">Quantity</th>
                             <th class="text-center">Dimensions</th>
                             <th class="text-center">Price</th>
-                            <th class="text-center">Customer Price</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -474,7 +464,6 @@ if(isset($_POST['fetch_order_details'])){
                                 $product_id = $row['productid'];
                                 $actual_price = $discounted_price = 0;
                                 if($row['quantity'] > 0){
-                                    $actual_price = number_format(floatval($row['actual_price'] * $row['quantity']),2);
                                     $discounted_price = number_format(floatval($row['discounted_price'] * $row['quantity']),2);
                                     ?>
                                 <tr>
@@ -528,12 +517,10 @@ if(isset($_POST['fetch_order_details'])){
                                         }
                                         ?>
                                     </td>
-                                    <td class="text-end">$ <?= $actual_price ?></td>
                                     <td class="text-end">$ <?= $discounted_price ?></td>
                                 </tr>
                         <?php
                                 $totalquantity += $row['quantity'] ;
-                                $total_actual_price += $actual_price;
                                 $total_disc_price += $discounted_price;
                                 }
                             
@@ -546,7 +533,6 @@ if(isset($_POST['fetch_order_details'])){
                             <td colspan="4">Total</td>
                             <td><?= $totalquantity ?></td>
                             <td></td>
-                            <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
                             <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
                         </tr>
                     </tfoot>
@@ -623,7 +609,6 @@ if (isset($_POST['fetch_estimate_details'])) {
                                                 <th class="text-center">Quantity</th>
                                                 <th class="text-center">Dimensions</th>
                                                 <th class="text-center">Price</th>
-                                                <th class="text-center">Customer Price</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -631,7 +616,6 @@ if (isset($_POST['fetch_estimate_details'])) {
                                                 while ($row = mysqli_fetch_assoc($result)) {
                                                     $estimateid = $row['estimateid'];
                                                     $product_details = getProductDetails($row['product_id']);
-                                                    $actual_price = number_format(floatval($row['actual_price'] * $row['quantity']),2);
                                                     $discounted_price = number_format(floatval($row['discounted_price'] * $row['quantity']),2);
                                                 ?> 
                                                     <tr> 
@@ -683,12 +667,10 @@ if (isset($_POST['fetch_estimate_details'])) {
                                                             }
                                                             ?>
                                                         </td>
-                                                        <td class="text-end">$ <?= $actual_price ?></td>
                                                         <td class="text-end">$ <?= $discounted_price ?></td>
                                                     </tr>
                                             <?php
                                                     $totalquantity += $row['quantity'] ;
-                                                    $total_actual_price += $actual_price;
                                                     $total_disc_price += $discounted_price;
                                                 }
                                             
@@ -700,7 +682,6 @@ if (isset($_POST['fetch_estimate_details'])) {
                                                 <td colspan="4">Total</td>
                                                 <td class="text-start"><?= $totalquantity ?></td>
                                                 <td></td>
-                                                <td class="text-end">$ <?= $total_actual_price ?></td>
                                                 <td class="text-end">$ <?= $total_disc_price ?></td>
                                             </tr>
                                         </tfoot>

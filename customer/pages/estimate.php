@@ -64,8 +64,7 @@ if(!empty($estimateid) && !empty($_REQUEST['key'])){
                       <th scope="col">Color</th>
                       <th scope="col">Quantity</th>
                       <th scope="col">Status</th>
-                      <th scope="col" class="text-right">Unit Price</th>
-                      <th scope="col" class="text-right">Disc Price</th>
+                      <th scope="col" class="text-right">Price</th>
                       <th scope="col" class="text-center">Actions</th>
                   </tr>
               </thead>
@@ -242,7 +241,6 @@ $(document).ready(function () {
                                 </td>
                                 <td><h6 class="mb-0 fs-4">${item.quantity}</h6></td>
                                 <td><span class="${status.class} fw-bold">${status.label}</span></td>
-                                <td class="text-right"><h6 class="mb-0 fs-4">$ ${parseFloat(item.discounted_price).toFixed(2)}</h6></td>
                                 <td class="text-right"><h6 class="mb-0 fs-4">$ ${parseFloat(prodDiscTtlAmt).toFixed(2)}</h6></td>
                                 <td class="text-center">
                                     <a class="fs-6 text-muted btn-edit" href="javascript:void(0)" 

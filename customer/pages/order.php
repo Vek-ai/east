@@ -61,7 +61,6 @@ if(!empty($orderid) && !empty($_REQUEST['key'])){
                       <th scope="col">Color</th>
                       <th scope="col">Quantity</th>
                       <th scope="col">Status</th>
-                      <th scope="col" class="text-right">Unit Price</th>
                       <th scope="col" class="text-right">Disc Price</th>
                   </tr>
               </thead>
@@ -165,7 +164,6 @@ $(document).ready(function () {
                                 </td>
                                 <td><h6 class="mb-0 fs-4">${item.quantity}</h6></td>
                                 <td><span class="${status.class} fw-bold">${status.label}</span></td>
-                                <td class="text-right"><h6 class="mb-0 fs-4">$ ${parseFloat(item.discounted_price).toFixed(2)}</h6></td>
                                 <td class="text-right"><h6 class="mb-0 fs-4">$ ${parseFloat(prodDiscTtlAmt).toFixed(2)}</h6></td>
                             </tr>
                         `);
@@ -177,7 +175,6 @@ $(document).ready(function () {
                                 <td colspan="2" class="text-end">Total:</td>
                                 <td><h6 class="mb-0 fs-4">${totalQuantity}</h6></td>
                                 <td></td>
-                                <td></td>
                                 <td class="text-right"><h6 class="mb-0 fs-4">$ ${totalDiscAmount.toFixed(2)}</h6></td>
                             </tr>
                         </tfoot>
@@ -185,7 +182,7 @@ $(document).ready(function () {
 
                     updatePagination(response.current_page, response.total_pages);
                 } else {
-                    tbody.append('<tr><td colspan="6" class="text-center">No products found.</td></tr>');
+                    tbody.append('<tr><td colspan="5" class="text-center">No products found.</td></tr>');
                 }
             },
             error: function (xhr, status, error) {
