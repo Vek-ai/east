@@ -149,6 +149,48 @@ if(!empty($supplier_order_id)){
     </div>
 </div>
 
+<div class="modal fade" id="shipFormModal" tabindex="-1" aria-labelledby="shipFormModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shipFormModalLabel">Shipping Form</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="shipOrderForm">
+                <div class="modal-body">
+                    <input type="hidden" id="supplier_order_id" name="id">
+
+                    <div class="mb-3">
+                        <label for="tracking_number" class="form-label">Tracking Number</label>
+                        <input type="text" class="form-control" id="tracking_number" name="tracking_number" required>
+                    </div>
+
+                    <div>
+                      <label for="shipping_company" class="form-label">Shipping Company</label>
+                      <div class="mb-3">
+                          <select class="form-select select2" id="shipping_company" name="shipping_company" required>
+                              <option value="">Select Shipping Company...</option>
+                              <?php
+                              $query_shipping_company = "SELECT * FROM shipping_company WHERE status = '1' AND hidden = '0' ORDER BY `shipping_company` ASC";
+                              $result_shipping_company = mysqli_query($conn, $query_shipping_company);            
+                              while ($row_shipping_company = mysqli_fetch_array($result_shipping_company)) {
+                              ?>
+                                  <option value="<?= $row_shipping_company['shipping_company_id'] ?>"><?= $row_shipping_company['shipping_company'] ?></option>
+                              <?php   
+                              }
+                              ?>
+                          </select>
+                      </div>
+                    </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <script>
 function formatOption(state) {
@@ -358,7 +400,7 @@ $(document).ready(function () {
         });
     });
 
-    $(document).on("click", "#resendBtn, #AcceptBtn, #processOrderBtn, #shipOrderBtn", function () {
+    $(document).on("click", "#resendBtn, #AcceptBtn, #processOrderBtn", function () {
         var dataId = $(this).data("id");
         var action = $(this).data("action");
 
@@ -395,6 +437,52 @@ $(document).ready(function () {
             });
         }
     });
+
+    $(document).on("click", "#shipOrderBtn", function () {
+        var id = $(this).data("id");
+        $("#supplier_order_id").val(id);
+        $("#shipFormModal").modal("show");
+    });
+
+    $(document).on("submit", "#shipOrderForm", function (e) {
+        e.preventDefault();
+
+        var formData = new FormData(this);
+        formData.append("action", "update_status");
+        formData.append("method", "ship_order");
+
+        $.ajax({
+            url: 'pages/home_ajax.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                console.log(response);
+
+                try {
+                    var jsonResponse = JSON.parse(response);
+                } catch (e) {
+                    console.error("Invalid JSON:", e);
+                    alert("Unexpected response from server.");
+                    return;
+                }
+
+                if (jsonResponse.success) {
+                    alert("Status updated successfully!");
+                } else {
+                    alert("Failed to update");
+                }
+
+                location.reload();
+            },
+            error: function (xhr, status, error) {
+                console.log("AJAX Error:", xhr.responseText);
+                alert("An error occurred. Please try again.");
+            }
+        });
+    });
+
 
 });
 </script>

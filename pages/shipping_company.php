@@ -2,21 +2,21 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Supplier Type";
+$page_title = "Shipping Company";
 
-$supplier_type = "";
+$shipping_company = "";
 $description = "";
 
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
 
-if(!empty($_REQUEST['supplier_type_id'])){
-  $supplier_type_id = $_REQUEST['supplier_type_id'];
-  $query = "SELECT * FROM supplier_type WHERE supplier_type_id = '$supplier_type_id'";
+if(!empty($_REQUEST['shipping_company_id'])){
+  $shipping_company_id = $_REQUEST['shipping_company_id'];
+  $query = "SELECT * FROM shipping_company WHERE shipping_company_id = '$shipping_company_id'";
   $result = mysqli_query($conn, $query);            
   while ($row = mysqli_fetch_array($result)) {
-      $supplier_type_id = $row['supplier_type_id'];
-      $supplier_type = $row['supplier_type'];
+      $shipping_company_id = $row['shipping_company_id'];
+      $shipping_company = $row['shipping_company'];
       $description = $row['description'];
   }
   $saveBtnTxt = "Update";
@@ -53,37 +53,20 @@ td.notes,  td.last-edit{
   <div class="card-body px-0">
     <div class="d-flex justify-content-between align-items-center">
       <div><br>
-        <h4 class="font-weight-medium fs-14 mb-0">Supplier Types</h4>
+        <h4 class="font-weight-medium fs-14 mb-0"><?= $page_title ?></h4>
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
             <li class="breadcrumb-item">
               <a class="text-muted text-decoration-none" href="">Product Properties
               </a>
             </li>
-            <li class="breadcrumb-item text-muted" aria-current="page">Categories</li>
+            <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
           </ol>
         </nav>
       </div>
       <div>
         <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
-          <div class="d-flex gap-2">
-            <div class="">
-              <small>This Month</small>
-              <h4 class="text-primary mb-0 ">$58,256</h4>
-            </div>
-            <div class="">
-              <div class="breadbar"></div>
-            </div>
-          </div>
-          <div class="d-flex gap-2">
-            <div class="">
-              <small>Last Month</small>
-              <h4 class="text-secondary mb-0 ">$58,256</h4>
-            </div>
-            <div class="">
-              <div class="breadbar2"></div>
-            </div>
-          </div>
+          
         </div>
       </div>
     </div>
@@ -125,13 +108,13 @@ td.notes,  td.last-edit{
         <div class="datatables">
           <div class="card">
             <div class="card-body">
-                <h4 class="card-title d-flex justify-content-between align-items-center">Supplier Types List</h4>
+                <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
               <div class="table-responsive">
-                <table id="display_supplier_type" class="table table-striped table-bordered text-nowrap align-middle">
+                <table id="display_shipping_company" class="table table-striped table-bordered text-nowrap align-middle">
                   <thead>
                     <tr>
-                      <th>Supplier Type</th>
-                      <th>Role Description</th>
+                      <th>Shipping Company</th>
+                      <th>Company Description</th>
                       <th>Details</th>
                       <th>Status</th>
                       <th>Action</th>
@@ -140,19 +123,19 @@ td.notes,  td.last-edit{
                   <tbody>
                   <?php
                   $no = 1;
-                  $query_supplier_type = "SELECT * FROM supplier_type WHERE hidden = 0";
-                  $result_supplier_type = mysqli_query($conn, $query_supplier_type);            
-                  while ($row_supplier_type = mysqli_fetch_array($result_supplier_type)) {
-                      $supplier_type_id = $row_supplier_type['supplier_type_id'];
-                      $supplier_type = $row_supplier_type['supplier_type'];
-                      $description = $row_supplier_type['description'];
-                      $db_status = $row_supplier_type['status'];
+                  $query_shipping_company = "SELECT * FROM shipping_company WHERE hidden = 0";
+                  $result_shipping_company = mysqli_query($conn, $query_shipping_company);            
+                  while ($row_shipping_company = mysqli_fetch_array($result_shipping_company)) {
+                      $shipping_company_id = $row_shipping_company['shipping_company_id'];
+                      $shipping_company = $row_shipping_company['shipping_company'];
+                      $description = $row_shipping_company['description'];
+                      $db_status = $row_shipping_company['status'];
 
-                      $date = new DateTime($row_supplier_type['last_edit']);
+                      $date = new DateTime($row_shipping_company['last_edit']);
                       $last_edit = $date->format('m-d-Y');
 
-                      $added_by = $row_supplier_type['added_by'];
-                      $edited_by = $row_supplier_type['edited_by'];
+                      $added_by = $row_shipping_company['added_by'];
+                      $edited_by = $row_shipping_company['edited_by'];
 
                       
                       if($edited_by != "0"){
@@ -163,24 +146,24 @@ td.notes,  td.last-edit{
                         $last_user_name = "";
                       }
 
-                      if ($row_supplier_type['status'] == '0') {
-                          $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$supplier_type_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+                      if ($row_shipping_company['status'] == '0') {
+                          $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$shipping_company_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
                       } else {
-                          $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$supplier_type_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+                          $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$shipping_company_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
                       }
                   ?>
                   <tr id="product-row-<?= $no ?>">
-                      <td><span class="product<?= $no ?> <?php if ($row_supplier_type['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $supplier_type ?></span></td>
+                      <td><span class="product<?= $no ?> <?php if ($row_shipping_company['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $shipping_company ?></span></td>
                       <td class="notes" style="width:30%;"><?= $description ?></td>
                       <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                       <td><?= $status ?></td>
                       <td class="text-center" id="action-button-<?= $no ?>">
-                          <?php if ($row_supplier_type['status'] == '0') { ?>
-                                <a href="#" class="py-1 text-dark hideSupplierType" data-id="<?= $supplier_type_id ?>" data-row="<?= $no ?>">
+                          <?php if ($row_shipping_company['status'] == '0') { ?>
+                                <a href="#" class="py-1 text-dark hideShippingCompany" data-id="<?= $shipping_company_id ?>" data-row="<?= $no ?>">
                                     <i class="text-danger ti ti-trash fs-7"></i>
                                 </a>
                           <?php } else { ?>
-                                <a href="#" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $supplier_type_id ?>" data-type="edit">
+                                <a href="#" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $shipping_company_id ?>" data-type="edit">
                                     <i class="ti ti-pencil fs-7"></i>
                                 </a>
                           <?php } ?>
@@ -196,14 +179,14 @@ td.notes,  td.last-edit{
                       // Use event delegation for dynamically generated elements
                       $(document).on('click', '.changeStatus', function(event) {
                           event.preventDefault(); 
-                          var supplier_type_id = $(this).data('id');
+                          var shipping_company_id = $(this).data('id');
                           var status = $(this).data('status');
                           var no = $(this).data('no');
                           $.ajax({
-                              url: 'pages/supplier_type_ajax.php',
+                              url: 'pages/shipping_company_ajax.php',
                               type: 'POST',
                               data: {
-                                  supplier_type_id: supplier_type_id,
+                                  shipping_company_id: shipping_company_id,
                                   status: status,
                                   action: 'change_status'
                               },
@@ -213,13 +196,13 @@ td.notes,  td.last-edit{
                                           $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
                                           $(".changeStatus[data-no='" + no + "']").data('status', "0");
                                           $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                          $('#action-button-' + no).html('<a href="#" class="py-1 text-dark hideSupplierType" data-id="' + supplier_type_id + '" data-row="' + no + '"><i class="text-danger ti ti-trash fs-7"></i></a>');
+                                          $('#action-button-' + no).html('<a href="#" class="py-1 text-dark hideShippingCompany" data-id="' + shipping_company_id + '" data-row="' + no + '"><i class="text-danger ti ti-trash fs-7"></i></a>');
                                           $('#toggleActive').trigger('change');
                                         } else {
                                           $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                                           $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                           $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                          $('#action-button-' + no).html('<a href="#" id="addModalBtn" data-id="' + supplier_type_id + '" data-type="edit" class="py-1"><i class="ti ti-pencil fs-7"></i></a>');
+                                          $('#action-button-' + no).html('<a href="#" id="addModalBtn" data-id="' + shipping_company_id + '" data-type="edit" class="py-1"><i class="ti ti-pencil fs-7"></i></a>');
                                           $('#toggleActive').trigger('change');
                                         }
                                   } else {
@@ -232,22 +215,22 @@ td.notes,  td.last-edit{
                           });
                       });
 
-                      $(document).on('click', '.hideSupplierType', function(event) {
+                      $(document).on('click', '.hideShippingCompany', function(event) {
                           event.preventDefault();
-                          var supplier_type_id = $(this).data('id');
+                          var shipping_company_id = $(this).data('id');
                           var rowId = $(this).data('row');
                           $.ajax({
-                              url: 'pages/supplier_type_ajax.php',
+                              url: 'pages/shipping_company_ajax.php',
                               type: 'POST',
                               data: {
-                                  supplier_type_id: supplier_type_id,
-                                  action: 'hide_supplier_type'
+                                  shipping_company_id: shipping_company_id,
+                                  action: 'hide_shipping_company'
                               },
                               success: function(response) {
                                   if (response == 'success') {
                                       $('#product-row-' + rowId).remove(); // Remove the row from the DOM
                                   } else {
-                                      alert('Failed to hide supplier type.');
+                                      alert('Failed to hide shipping company.');
                                   }
                               },
                               error: function(jqXHR, textStatus, errorThrown) {
@@ -296,7 +279,7 @@ td.notes,  td.last-edit{
                 </h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="supplierTypeForm" class="form-horizontal">
+            <form id="shippingCompanyForm" class="form-horizontal">
                 <div class="modal-body">
                     <div class="card">
                         <div class="card-body">
@@ -368,59 +351,15 @@ td.notes,  td.last-edit{
   </div>
 </div>
 
-<div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-md">
-      <div class="modal-content">
-          <div class="modal-header d-flex align-items-center">
-              <h4 class="modal-title" id="myLargeModalLabel">
-                  Download <?= $page_title ?>
-              </h4>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-              <form id="download_excel_form" class="form-horizontal">
-                  <label for="select-category" class="form-label fw-semibold">Select Supplier</label>
-                  <div class="mb-3">
-                      <select class="form-select select2" id="select-download-category" name="category">
-                          <option value="">All Suppliers</option>
-                          <optgroup label="Suppliers">
-                              <?php
-                              $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
-                              $result_supplier = mysqli_query($conn, $query_supplier);            
-                              while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                                  $selected = (!empty($supplierid) && $supplierid == $row_supplier['supplier_id']) ? 'selected' : '';
-                                  if(!empty($_REQUEST['supplier_id'])){
-                                    $selected = (!empty($supplier_id) && $supplier_id == $row_supplier['supplier_id']) ? 'selected' : '';
-                                  }
-                              ?>
-                                  <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
-                              <?php   
-                              }
-                              ?>
-                          </optgroup>
-                      </select>
-                  </div>
-
-                  <div class="d-grid">
-                      <button type="submit" class="btn btn-primary fw-semibold">
-                          <i class="fas fa-download me-2"></i> Download Excel
-                      </button>
-                  </div>
-              </form>
-          </div>
-      </div>
-  </div>
-</div>
-
 <script>
   $(document).ready(function() {
     document.title = "<?= $page_title ?>";
 
-    var table = $('#display_supplier_type').DataTable({
+    var table = $('#display_shipping_company').DataTable({
         pageLength: 100
     });
 
-    $('#display_supplier_type_filter').hide();
+    $('#display_shipping_company_filter').hide();
 
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -449,7 +388,7 @@ td.notes,  td.last-edit{
         return null;
     }
 
-    $('#supplierTypeForm').on('submit', function(event) {
+    $('#shippingCompanyForm').on('submit', function(event) {
         event.preventDefault(); 
         var userid = getCookie('userid');
         var formData = new FormData(this);
@@ -457,26 +396,26 @@ td.notes,  td.last-edit{
         formData.append('userid', userid);
         var appendResult = "";
         $.ajax({
-            url: 'pages/supplier_type_ajax.php',
+            url: 'pages/shipping_company_ajax.php',
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
             success: function(response) {
               $('.modal').modal("hide");
-              if (response === "Supplier type updated successfully.") {
+              if (response.trim() == "success_update") {
                   $('#responseHeader').text("Success");
-                  $('#responseMsg').text(response);
+                  $('#responseMsg').text("<?= $page_title ?> updated successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
 
                   $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=supplier_type";
+                    window.location.href = "?page=shipping_company";
                   });
-              } else if (response === "New supplier type added successfully.") {
+              } else if (response.trim() == "success_add") {
                   $('#responseHeader').text("Success");
-                  $('#responseMsg').text(response);
+                  $('#responseMsg').text("New <?= $page_title ?> added successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
@@ -504,12 +443,12 @@ td.notes,  td.last-edit{
     });
 
     $(document).on('click', '#downloadBtn', function(event) {
-        window.location.href = "pages/supplier_type_ajax.php?action=download_excel";
+        window.location.href = "pages/shipping_company_ajax.php?action=download_excel";
     });
 
     $(document).on('click', '#readUploadBtn', function(event) {
         $.ajax({
-            url: 'pages/supplier_type_ajax.php',
+            url: 'pages/shipping_company_ajax.php',
             type: 'POST',
             data: {
                 action: "fetch_uploaded_modal"
@@ -531,7 +470,7 @@ td.notes,  td.last-edit{
         formData.append('action', 'upload_excel');
 
         $.ajax({
-            url: 'pages/supplier_type_ajax.php',
+            url: 'pages/shipping_company_ajax.php',
             type: 'POST',
             data: formData,
             contentType: false,
@@ -592,7 +531,7 @@ td.notes,  td.last-edit{
         };
 
         $.ajax({
-            url: 'pages/supplier_type_ajax.php',
+            url: 'pages/shipping_company_ajax.php',
             type: 'POST',
             data: updatedData,
             success: function(response) {
@@ -611,7 +550,7 @@ td.notes,  td.last-edit{
             formData.append("action", "save_table");
 
             $.ajax({
-                url: "pages/supplier_type_ajax.php",
+                url: "pages/shipping_company_ajax.php",
                 type: "POST",
                 data: formData,
                 processData: false,
@@ -640,7 +579,7 @@ td.notes,  td.last-edit{
         }
 
         $.ajax({
-            url: 'pages/supplier_type_ajax.php',
+            url: 'pages/shipping_company_ajax.php',
             type: 'POST',
             data: {
               id : id,

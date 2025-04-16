@@ -11,34 +11,30 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-$table = 'supplier_type';
-$test_table = 'supplier_type_excel';
+$table = 'shipping_company';
+$test_table = 'shipping_company_excel';
 $main_primary_key = getPrimaryKey($table);
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-        $supplier_type_id = mysqli_real_escape_string($conn, $_POST['supplier_type_id']);
-        $supplier_type = mysqli_real_escape_string($conn, $_POST['supplier_type']);
+        $shipping_company_id = mysqli_real_escape_string($conn, $_POST['shipping_company_id']);
+        $shipping_company = mysqli_real_escape_string($conn, $_POST['shipping_company']);
         $description = mysqli_real_escape_string($conn, $_POST['description']);
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
-
-        // SQL query to check if the record exists
-        $checkQuery = "SELECT * FROM supplier_type WHERE supplier_type_id = '$supplier_type_id'";
+        $checkQuery = "SELECT * FROM shipping_company WHERE shipping_company_id = '$shipping_company_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            // Record exists, fetch current values
             $row = mysqli_fetch_assoc($result);
-            $current_supplier_type = $row['supplier_type'];
+            $current_shipping_company = $row['shipping_company'];
 
             $duplicates = array();
 
-            // Check for duplicates only if the new values are different from the current values
-            if ($supplier_type != $current_supplier_type) {
-                $checkCategory = "SELECT * FROM supplier_type WHERE supplier_type = '$current_supplier_type'";
+            if ($shipping_company != $current_shipping_company) {
+                $checkCategory = "SELECT * FROM shipping_company WHERE shipping_company = '$current_shipping_company'";
                 $resultCategory = mysqli_query($conn, $checkCategory);
                 if (mysqli_num_rows($resultCategory) > 0) {
                     $duplicates[] = "Supplier Type";
@@ -49,18 +45,16 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                // No duplicates, proceed with update
-                $updateQuery = "UPDATE supplier_type SET supplier_type = '$supplier_type', description = '$description', last_edit = NOW(), edited_by = '$userid'  WHERE supplier_type_id = '$supplier_type_id'";
+                $updateQuery = "UPDATE shipping_company SET shipping_company = '$shipping_company', description = '$description', last_edit = NOW(), edited_by = '$userid'  WHERE shipping_company_id = '$shipping_company_id'";
                 if (mysqli_query($conn, $updateQuery)) {
-                    echo "Supplier type updated successfully.";
+                    echo "success_update";
                 } else {
                     echo "Error updating supplier type: " . mysqli_error($conn);
                 }
             }
         } else {
-            // Record does not exist, perform duplicate checks before inserting
             $duplicates = array();
-            $checkCategory = "SELECT * FROM supplier_type WHERE supplier_type = '$supplier_type'";
+            $checkCategory = "SELECT * FROM shipping_company WHERE shipping_company = '$shipping_company'";
             $resultCategory = mysqli_query($conn, $checkCategory);
             if (mysqli_num_rows($resultCategory) > 0) {
                 $duplicates[] = "Supplier Type";
@@ -70,9 +64,9 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO supplier_type (supplier_type, description, added_date, added_by) VALUES ('$supplier_type', '$description', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO shipping_company (shipping_company, description, added_date, added_by) VALUES ('$shipping_company', '$description', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
-                    echo "New supplier type added successfully.";
+                    echo "success_add";
                 } else {
                     echo "Error adding supplier type: " . mysqli_error($conn);
                 }
@@ -81,11 +75,11 @@ if(isset($_REQUEST['action'])) {
     } 
     
     if ($action == "change_status") {
-        $supplier_type_id = mysqli_real_escape_string($conn, $_POST['supplier_type_id']);
+        $shipping_company_id = mysqli_real_escape_string($conn, $_POST['shipping_company_id']);
         $status = mysqli_real_escape_string($conn, $_POST['status']);
         $new_status = ($status == '0') ? '1' : '0';
 
-        $statusQuery = "UPDATE supplier_type SET status = '$new_status' WHERE supplier_type_id = '$supplier_type_id'";
+        $statusQuery = "UPDATE shipping_company SET status = '$new_status' WHERE shipping_company_id = '$shipping_company_id'";
         if (mysqli_query($conn, $statusQuery)) {
             echo "success";
         } else {
@@ -93,9 +87,9 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
-    if ($action == 'hide_supplier_type') {
-        $supplier_type_id = mysqli_real_escape_string($conn, $_POST['supplier_type_id']);
-        $query = "UPDATE supplier_type SET hidden='1' WHERE supplier_type_id='$supplier_type_id'";
+    if ($action == 'hide_shipping_company') {
+        $shipping_company_id = mysqli_real_escape_string($conn, $_POST['shipping_company_id']);
+        $query = "UPDATE shipping_company SET hidden='1' WHERE shipping_company_id='$shipping_company_id'";
         if (mysqli_query($conn, $query)) {
             echo 'success';
         } else {
@@ -105,15 +99,15 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == 'fetch_modal_content') {
         $id = '';
-        $supplier_type = '';
+        $shipping_company = '';
         $description = '';
         $id = mysqli_real_escape_string($conn, $_POST['id']);
         $query = "SELECT * FROM $table WHERE $main_primary_key = '$id'";
         $result = mysqli_query($conn, $query);
         if ($result && mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_array($result);
-            $supplier_type_id = $row['supplier_type_id'];
-            $supplier_type = $row['supplier_type'];
+            $shipping_company_id = $row['shipping_company_id'];
+            $shipping_company = $row['shipping_company'];
             $description = $row['description'];
         }
 
@@ -121,18 +115,18 @@ if(isset($_REQUEST['action'])) {
             <div class="row pt-3">
                 <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label">Supplier Type</label>
-                    <input type="text" id="supplier_type" name="supplier_type" class="form-control"  value="<?= $supplier_type ?>"/>
+                    <label class="form-label">Shipping Company</label>
+                    <input type="text" id="shipping_company" name="shipping_company" class="form-control"  value="<?= $shipping_company ?>"/>
                 </div>
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Role Description</label>
+                <label class="form-label">Company Description</label>
                 <textarea class="form-control" id="description" name="description" rows="5"><?= $description ?></textarea>
             </div>
 
-            <input type="hidden" id="supplier_type_id" name="supplier_type_id" class="form-control"  value="<?= $id ?>"/>
+            <input type="hidden" id="shipping_company_id" name="shipping_company_id" class="form-control"  value="<?= $id ?>"/>
         <?php
     }
 
@@ -141,8 +135,8 @@ if(isset($_REQUEST['action'])) {
         $column_txt = '*';
 
         $includedColumns = [ 
-            'supplier_type_id',
-            'supplier_type',
+            'shipping_company_id',
+            'shipping_company',
             'description'
         ];
 
@@ -357,8 +351,8 @@ if(isset($_REQUEST['action'])) {
             }
     
             $includedColumns = [ 
-                'supplier_type_id',
-                'supplier_type',
+                'shipping_company_id',
+                'shipping_company',
                 'description'
             ];
     

@@ -106,52 +106,77 @@ if(isset($_REQUEST['action'])) {
         }
     }    
 
-    if ($action == "update_status") {
+    if ($action === "update_status") {
         $orderId = mysqli_real_escape_string($conn, $_POST['id']);
         $method = mysqli_real_escape_string($conn, $_POST['method']); 
-
-        $is_edited = '0';
-
+        $tracking_number = mysqli_real_escape_string($conn, $_POST['tracking_number'] ?? ''); 
+        $shipping_company = mysqli_real_escape_string($conn, $_POST['shipping_company'] ?? ''); 
+    
+        $response = ['success' => false, 'message' => 'Unknown error'];
+    
         $query = "SELECT * FROM supplier_orders WHERE supplier_order_id = '$orderId'";
         $result = mysqli_query($conn, $query);
-        while ($row = mysqli_fetch_assoc($result)) {
-            $supplier_id = $row['supplier_id'];
-            $supplier_details = getSupplierDetails($supplier_id);
-            $supplier_name = $supplier_details['supplier_name'];
-            $key = $row['order_key'];
-        
-            $response = ['success' => false, 'message' => 'Unknown error'];
-        
-            if ($method == "submit_for_approval") {
+    
+        if (!$result || mysqli_num_rows($result) === 0) {
+            $response['message'] = 'Order not found';
+            echo json_encode($response);
+            exit();
+        }
+    
+        $row = mysqli_fetch_assoc($result);
+        $supplier_id = $row['supplier_id'];
+        $supplier_details = getSupplierDetails($supplier_id);
+        $supplier_name = $supplier_details['supplier_name'] ?? 'Supplier';
+        $key = $row['order_key'];
+    
+        switch ($method) {
+            case "submit_for_approval":
+            case "accept_order":
                 $newStatus = 2;
                 $subject = "$supplier_name requested for approval";
-            } elseif ($method == "accept_order") {
-                $newStatus = 2;
-                $subject = "$supplier_name requested for approval";
-            } elseif ($method == "process_order") {
+                break;
+    
+            case "process_order":
                 $newStatus = 5;
                 $subject = "$supplier_name has started to process order";
-            } elseif ($method == "ship_order") {
+                break;
+    
+            case "ship_order":
                 $newStatus = 6;
                 $subject = "$supplier_name has shipped the order";
-            } else {
-                $response['message'] = 'Invalid action';
+                break;
+    
+            default:
+                $response['message'] = 'Invalid method';
                 echo json_encode($response);
                 exit();
-            }
-            
-            $sql = "UPDATE supplier_orders SET status = $newStatus, is_edited = '0' WHERE supplier_order_id = $orderId";
-            
-            if (mysqli_query($conn, $sql)) {
-                $response['success'] = true;
-                $response['message'] = 'Email sent and status updated successfully!';
-            } else {
-                $response['message'] = 'Error updating order status.';
-            }
-        
-            echo json_encode($response);
         }
+    
+        $updateParts = [
+            "status = '$newStatus'",
+            "is_edited = '0'"
+        ];
+    
+        if (!empty($tracking_number)) {
+            $updateParts[] = "tracking_number = '$tracking_number'";
+        }
+    
+        if (!empty($shipping_company)) {
+            $updateParts[] = "shipping_company = '$shipping_company'";
+        }
+    
+        $updateSql = "UPDATE supplier_orders SET " . implode(", ", $updateParts) . " WHERE supplier_order_id = '$orderId'";
+    
+        if (mysqli_query($conn, $updateSql)) {
+            $response['success'] = true;
+            $response['message'] = 'Status updated successfully!';
+        } else {
+            $response['message'] = 'Error updating order status: ' . mysqli_error($conn);
+        }
+    
+        echo json_encode($response);
     }
+    
     
 }
 mysqli_close($conn);
