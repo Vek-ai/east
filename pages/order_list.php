@@ -260,6 +260,14 @@ if(isset($_REQUEST['customer_id'])){
 </div>
 
 <script>
+    function isValidURL(str) {
+        try {
+            new URL(str);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
     $(document).ready(function() {
         var dataId = '';
         var action = '';
@@ -415,6 +423,12 @@ if(isset($_REQUEST['customer_id'])){
 
                     if (jsonResponse.success) {
                         alert("Status updated successfully!");
+
+                        if (jsonResponse.url && isValidURL(jsonResponse.url)) {
+                            window.open(jsonResponse.url, '_blank');
+                        }else{
+                            console.log("invalid url");
+                        }
                     } else {
                         alert("Failed to update");
                     }

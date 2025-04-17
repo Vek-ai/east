@@ -148,6 +148,18 @@ function getSubmitWorkOrderDetails($id) {
     return $work_order;
 }
 
+function getShippingCompanyDetails($shipping_company_id ) {
+    global $conn;
+    $shipping_company_id = mysqli_real_escape_string($conn, $shipping_company_id);
+    $query = "SELECT * FROM shipping_company WHERE shipping_company_id = '$shipping_company_id'";
+    $result = mysqli_query($conn, $query);
+    $shipping_company = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $shipping_company = $row;
+    }
+    return $shipping_company;
+}
+
 function getStaffAssignedWarehouse($corresponding_user) {
     global $conn;
     $corresponding_user = mysqli_real_escape_string($conn, $corresponding_user);

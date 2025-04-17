@@ -21,6 +21,7 @@ if(isset($_REQUEST['action'])) {
     if ($action == "add_update") {
         $shipping_company_id = mysqli_real_escape_string($conn, $_POST['shipping_company_id']);
         $shipping_company = mysqli_real_escape_string($conn, $_POST['shipping_company']);
+        $url = mysqli_real_escape_string($conn, $_POST['url']);
         $description = mysqli_real_escape_string($conn, $_POST['description']);
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
@@ -45,7 +46,7 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $updateQuery = "UPDATE shipping_company SET shipping_company = '$shipping_company', description = '$description', last_edit = NOW(), edited_by = '$userid'  WHERE shipping_company_id = '$shipping_company_id'";
+                $updateQuery = "UPDATE shipping_company SET shipping_company = '$shipping_company', url = '$url', description = '$description', last_edit = NOW(), edited_by = '$userid'  WHERE shipping_company_id = '$shipping_company_id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "success_update";
                 } else {
@@ -64,7 +65,7 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO shipping_company (shipping_company, description, added_date, added_by) VALUES ('$shipping_company', '$description', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO shipping_company (shipping_company, url, description, added_date, added_by) VALUES ('$shipping_company', '$url', '$description', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "success_add";
                 } else {
@@ -100,6 +101,7 @@ if(isset($_REQUEST['action'])) {
     if ($action == 'fetch_modal_content') {
         $id = '';
         $shipping_company = '';
+        $url = '';
         $description = '';
         $id = mysqli_real_escape_string($conn, $_POST['id']);
         $query = "SELECT * FROM $table WHERE $main_primary_key = '$id'";
@@ -108,16 +110,23 @@ if(isset($_REQUEST['action'])) {
             $row = mysqli_fetch_array($result);
             $shipping_company_id = $row['shipping_company_id'];
             $shipping_company = $row['shipping_company'];
+            $url = $row['url'];
             $description = $row['description'];
         }
 
         ?>
             <div class="row pt-3">
-                <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label">Shipping Company</label>
-                    <input type="text" id="shipping_company" name="shipping_company" class="form-control"  value="<?= $shipping_company ?>"/>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="form-label">Shipping Company</label>
+                        <input type="text" id="shipping_company" name="shipping_company" class="form-control"  value="<?= $shipping_company ?>"/>
+                    </div>
                 </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="form-label">URL</label>
+                        <input type="text" id="url" name="url" class="form-control" value="<?= htmlspecialchars($url ?? '', ENT_QUOTES, 'UTF-8') ?>" />
+                    </div>
                 </div>
             </div>
 

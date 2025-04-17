@@ -14,6 +14,9 @@ if(!empty($_REQUEST['id']) && !empty($_REQUEST['key'])){
   $supplier_name = $supplier_details['supplier_name'];
   $status_code = $row['status'];
   $is_edited = $row['is_edited'];
+  $tracking_number = $row['tracking_number'];
+  $shipping_comp_details = getShippingCompanyDetails($row['shipping_company']);
+  $shipping_company = $shipping_comp_details['shipping_company'];
 
   $status_labels = [
       1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
@@ -44,14 +47,34 @@ if(!empty($supplier_order_id)){
 <div class="product-list">
   <div class="card">
     <div class="card-body p-3">
-      <div class="d-flex justify-content-between align-items-center gap-3 mb-9">
-        <div class="d-flex align-items-center">
-          <input type="text" class="form-control search-chat py-2 ps-5" id="text-srh" placeholder="Search Product">
+        <div class="row align-items-center g-3 mb-4">
+            <div class="col-12 col-md-4 col-lg-4">
+                <input type="text" class="form-control search-chat py-2 ps-5" id="text-srh" placeholder="Search Product">
+            </div>
+
+            <div class="col-12 col-md-4 col-lg-4 text-md-start" id="shipping-info">
+                <?php if (!empty($shipping_company)) : ?>
+                <div>
+                    <strong>Shipping Company:</strong>
+                    <span id="shipping-company"><?= htmlspecialchars($shipping_company) ?></span>
+                </div>
+                <?php endif; ?>
+
+                <?php if (!empty($tracking_number)) : ?>
+                <div>
+                    <strong>Tracking #:</strong>
+                    <span id="tracking-number"><?= htmlspecialchars($tracking_number) ?></span>
+                </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="col-12 col-md-4 col-lg-4 text-md-end">
+                <h4 class="mb-0">
+                STATUS:
+                <span class="<?= $status['class']; ?> fw-bold fs-5"><?= $status['label']; ?></span>
+                </h4>
+            </div>
         </div>
-        <h4 class="mb-0">
-          STATUS: <span class="<?= $status['class']; ?> fw-bond fs-5"><?= $status['label']; ?></span>
-        </h4>
-      </div>
       <div class="table-responsive border rounded">
           <table class="table align-middle text-nowrap mb-0" id="productTable">
               <thead>
@@ -205,6 +228,14 @@ function formatOption(state) {
       '</span>'
   );
   return $state;
+}
+function isValidURL(str) {
+    try {
+        new URL(str);
+        return true;
+    } catch (_) {
+        return false;
+    }
 }
 $(document).ready(function () {
     function loadProducts(page = 1, limit = 5) {
@@ -470,6 +501,13 @@ $(document).ready(function () {
 
                 if (jsonResponse.success) {
                     alert("Status updated successfully!");
+
+                    if (jsonResponse.url && isValidURL(jsonResponse.url)) {
+                        window.open(jsonResponse.url, '_blank');
+                    }else{
+                        console.log("invalid url");
+                    }
+
                 } else {
                     alert("Failed to update");
                 }

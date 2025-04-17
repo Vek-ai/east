@@ -19,6 +19,11 @@ if(isset($_REQUEST['action'])) {
             $order_details = getOrderDetails($orderid);
             $totalquantity = $total_actual_price = $total_disc_price = 0;
             $status_code = $order_details['status'];
+
+            $tracking_number = $order_details['tracking_number'];
+            $shipping_comp_details = getShippingCompanyDetails($order_details['shipping_company']);
+            $shipping_company = $shipping_comp_details['shipping_company'];
+
             $response = array();
             ?>
             <style>
@@ -44,6 +49,21 @@ if(isset($_REQUEST['action'])) {
                             <div class="card">
                                 <div class="card-body datatables">
                                     <div class="order-details table-responsive text-nowrap">
+                                        <div class="col-12 col-md-4 col-lg-4 text-md-start mt-3 fs-5" id="shipping-info">
+                                            <?php if (!empty($shipping_company)) : ?>
+                                            <div>
+                                                <strong>Shipping Company:</strong>
+                                                <span id="shipping-company"><?= htmlspecialchars($shipping_company) ?></span>
+                                            </div>
+                                            <?php endif; ?>
+
+                                            <?php if (!empty($tracking_number)) : ?>
+                                            <div>
+                                                <strong>Tracking #:</strong>
+                                                <span id="tracking-number"><?= htmlspecialchars($tracking_number) ?></span>
+                                            </div>
+                                            <?php endif; ?>
+                                        </div>
                                         <table id="est_dtls_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
                                             <thead>
                                                 <tr>
@@ -443,6 +463,11 @@ if(isset($_REQUEST['action'])) {
                     </body>
                     </html>
                     ";
+                    $shipping_url = '';
+                    $shipping_comp_details = getShippingCompanyDetails($shipping_company);
+                    if(!empty($shipping_comp_details['url'])){
+                        $shipping_url = $shipping_comp_details['url'];
+                    }
 
                     if($primary_contact == 2){
                         if(!empty($customer_phone)){
@@ -453,7 +478,8 @@ if(isset($_REQUEST['action'])) {
                                     'msg_success' => true,
                                     'message' => "Successfully sent message to $customer_name for confirmation on orders.",
                                     'id' => $orderid,
-                                    'key' => $order_key
+                                    'key' => $order_key,
+                                    'url' => $shipping_url
                                 ]);
                             } else {
                                 echo json_encode([
@@ -462,7 +488,8 @@ if(isset($_REQUEST['action'])) {
                                     'message' => "Successfully saved, but message could not be sent to $customer_name.",
                                     'error' => $response['error'],
                                     'id' => $orderid,
-                                    'key' => $order_key
+                                    'key' => $order_key,
+                                    'url' => $shipping_url
                                 ]);
                             }
                         } else {
@@ -472,7 +499,8 @@ if(isset($_REQUEST['action'])) {
                                 'message' => "Successfully saved, but message could not be sent to $customer_name.",
                                 'error' => $response['error'],
                                 'id' => $orderid,
-                                'key' => $order_key
+                                'key' => $order_key,
+                                'url' => $shipping_url
                             ]);
                         }
                     }else{
@@ -484,7 +512,8 @@ if(isset($_REQUEST['action'])) {
                                     'email_success' => true,
                                     'message' => "Successfully updated status and sent email confirmation to $customer_name",
                                     'id' => $orderid,
-                                    'key' => $order_key
+                                    'key' => $order_key,
+                                    'url' => $shipping_url
                                 ]);
                             } else {
                                 echo json_encode([
@@ -493,7 +522,8 @@ if(isset($_REQUEST['action'])) {
                                     'message' => "Successfully updated status, but email could not be sent to $customer_name.",
                                     'error' => $response['error'],
                                     'id' => $orderid,
-                                    'key' => $order_key
+                                    'key' => $order_key,
+                                    'url' => $shipping_url
                                 ]);
                             }
             
@@ -504,7 +534,8 @@ if(isset($_REQUEST['action'])) {
                                 'message' => "Successfully updated status, but email could not be sent to $customer_name.",
                                 'error' => $response['error'],
                                 'id' => $orderid,
-                                'key' => $order_key
+                                'key' => $order_key,
+                                'url' => $shipping_url
                             ]);
                         }
                     }
@@ -515,7 +546,8 @@ if(isset($_REQUEST['action'])) {
                     'message' => "Failed to save!",
                     'error' => mysqli_error($conn),
                     'id' => $orderid,
-                    'key' => $order_key
+                    'key' => $order_key,
+                    'url' => ''
                 ]);
             }
         }

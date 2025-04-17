@@ -175,7 +175,6 @@ if(isset($_REQUEST['customer_id'])){
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                
                 <p id="responseMsg"></p>
             </div>
             <div class="modal-footer">
@@ -324,6 +323,14 @@ if(isset($_REQUEST['customer_id'])){
 </div>
 
 <script>
+    function isValidURL(str) {
+        try {
+            new URL(str);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
     function updateEstimateBend(element){
         var bend = $(element).val();
         var id = $(element).data('id');
@@ -718,6 +725,12 @@ if(isset($_REQUEST['customer_id'])){
 
                     if (jsonResponse.success) {
                         alert("Status updated successfully!");
+
+                        if (jsonResponse.url && isValidURL(jsonResponse.url)) {
+                            window.open(jsonResponse.url, '_blank');
+                        }else{
+                            console.log("invalid url");
+                        }
                     } else {
                         alert("Failed to update");
                     }

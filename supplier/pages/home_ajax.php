@@ -168,6 +168,10 @@ if(isset($_REQUEST['action'])) {
         $updateSql = "UPDATE supplier_orders SET " . implode(", ", $updateParts) . " WHERE supplier_order_id = '$orderId'";
     
         if (mysqli_query($conn, $updateSql)) {
+            $shipping_comp_details = getShippingCompanyDetails($shipping_company);
+            if(!empty($shipping_comp_details['url'])){
+                $response['url'] = $shipping_comp_details['url'];
+            }
             $response['success'] = true;
             $response['message'] = 'Status updated successfully!';
         } else {
