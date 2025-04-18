@@ -173,6 +173,7 @@ $page_title = "Staging Bin";
             <div class="col-9">
                 <div id="selected-tags" class="mb-2"></div>
                 <div class="datatables">
+                    <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
                     <div class="product-details table-responsive text-nowrap">
                         <table id="staging_bin_tbl" class="table table-hover mb-0 text-md-nowrap">
                             <thead>
@@ -272,7 +273,7 @@ $page_title = "Staging Bin";
             pageLength: 100
         });
 
-        $('#display_supplier_type_filter').hide();
+        $('#staging_bin_tbl_filter').hide();
 
         $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
             var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
