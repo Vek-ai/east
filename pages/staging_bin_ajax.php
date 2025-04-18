@@ -41,7 +41,14 @@ if(isset($_REQUEST['action'])) {
             die("No staging bin record found.");
         }
     
-        $checkQuery = "SELECT * FROM inventory WHERE Product_id = '$Product_id' AND color_id = '$color_id'";
+        $checkQuery = "SELECT * FROM inventory 
+                        WHERE 
+                            Product_id = '$Product_id' 
+                            AND color_id = '$color_id' 
+                            AND Warehouse_id = '$Warehouse_id' 
+                            AND Shelves_id = '$Shelves_id' 
+                            AND Bin_id = '$Bin_id' 
+                            AND Row_id = '$Row_id'";
         $result = mysqli_query($conn, $checkQuery);
     
         if (!$result) {
@@ -54,7 +61,13 @@ if(isset($_REQUEST['action'])) {
             $updateQuery = "UPDATE inventory SET 
                                 quantity = quantity + '$quantity',
                                 quantity_ttl = quantity_ttl + '$quantity'
-                            WHERE Product_id = '$Product_id' AND color_id = '$color_id'";
+                            WHERE 
+                                Product_id = '$Product_id' 
+                                AND color_id = '$color_id'
+                                AND Warehouse_id = '$Warehouse_id' 
+                                AND Shelves_id = '$Shelves_id' 
+                                AND Bin_id = '$Bin_id' 
+                                AND Row_id = '$Row_id'";
     
             if (mysqli_query($conn, $updateQuery)) {
                 $is_success = true;
@@ -98,9 +111,12 @@ if(isset($_REQUEST['action'])) {
         }
 
         if ($is_success) {
-            $updateQuery = "UPDATE staging_bin 
-                            SET status = '1' 
-                            WHERE id = '$staging_bin_id'";
+            $updateQuery = "UPDATE 
+                                staging_bin 
+                            SET 
+                                status = '1' 
+                            WHERE 
+                                id = '$staging_bin_id'";
         
             if (mysqli_query($conn, $updateQuery)) {
                 if (mysqli_affected_rows($conn) > 0) {
