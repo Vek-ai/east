@@ -167,7 +167,7 @@ $page_title = "Staging Bin";
                     <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
                 <div class="px-3 mb-2"> 
-                    <input type="checkbox" id="toggleActive" checked> Show Active Only
+                    <input type="checkbox" id="toggleActive" checked> Show New Only
                 </div>
             </div>
             <div class="col-9">
