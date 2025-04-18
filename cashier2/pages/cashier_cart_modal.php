@@ -214,6 +214,8 @@ if(isset($_POST['fetch_cart'])){
                             if (isset($values["used_discount"])){
                                 $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
                             }
+
+                            $sold_by_feet = $product['sold_by_feet'];
                         ?>
                             <tr>
                                 <td data-color="<?= getColorName($color_id) ?>" data-pricing="<?=$customer_pricing?>" data-category="<?=$category_id?>" data-customer-pricing="<?=$customer_details_pricing?>">

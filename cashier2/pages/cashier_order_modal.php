@@ -284,6 +284,8 @@ if(isset($_POST['fetch_order'])){
                                     if (isset($values["used_discount"])){
                                         $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
                                     }
+
+                                    $sold_by_feet = $product['sold_by_feet'];
                                 ?>
                                     <tr class="border-bottom border-3 border-white">
                                         <td>

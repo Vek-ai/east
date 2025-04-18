@@ -107,10 +107,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         width: 10% !important; /* Actions */
     }
 
-    .select2-container .select2-dropdown .select2-results__options {
-        max-height: 760px !important;
-    }
-
 </style>
 <div class="product-list pt-4">
     <div class="card">
@@ -132,8 +128,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         </div>
                         <div class="align-items-center">
                             <div class="position-relative w-100 py-2 px-1">
-                                <select class="form-control search-chat ps-5 filter-selection" id="select-category" data-filter-name="Category">
-                                    <option value="">All Categories</option>
+                                <select class="form-control search-chat ps-5" id="select-category" data-category="">
+                                    <option value="" data-category="">All Categories</option>
                                     <optgroup label="Category">
                                         <?php
                                         $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
@@ -963,7 +959,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var line = $(element).data('line');
 
         $.ajax({
-            url: 'pages/cashier_ajax.php',
+            url: 'pages/old_ajax.php',
             type: 'POST',
             data: {
                 color_id: color,
@@ -986,7 +982,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var line = $(element).data('line');
 
         $.ajax({
-            url: 'pages/cashier_ajax.php',
+            url: 'pages/old_ajax.php',
             type: 'POST',
             data: {
                 grade: grade,
@@ -1009,7 +1005,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var line = $(element).data('line');
 
         $.ajax({
-            url: 'pages/cashier_ajax.php',
+            url: 'pages/old_ajax.php',
             type: 'POST',
             data: {
                 bend: bend,
@@ -1032,7 +1028,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var line = $(element).data('line');
 
         $.ajax({
-            url: 'pages/cashier_ajax.php',
+            url: 'pages/old_ajax.php',
             type: 'POST',
             data: {
                 hem: hem,
@@ -1057,7 +1053,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var line = $(element).data('line');
 
         $.ajax({
-            url: 'pages/cashier_ajax.php',
+            url: 'pages/old_ajax.php',
             type: 'POST',
             data: {
                 length: length,
@@ -1082,7 +1078,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var line = $(element).data('line');
 
         $.ajax({
-            url: 'pages/cashier_ajax.php',
+            url: 'pages/old_ajax.php',
             type: 'POST',
             data: {
                 length_inch: length_inch,
@@ -1107,7 +1103,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var line = $(element).data('line');
 
         $.ajax({
-            url: 'pages/cashier_ajax.php',
+            url: 'pages/old_ajax.php',
             type: 'POST',
             data: {
                 height: height,
@@ -1129,7 +1125,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var id = $(element).data('id');
         var line = $(element).data('line');
         $.ajax({
-            url: 'pages/cashier_ajax.php',
+            url: 'pages/old_ajax.php',
             type: 'POST',
             data: {
                 width: width,
@@ -1151,7 +1147,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var id = $(element).data('id');
         var line = $(element).data('line');
         $.ajax({
-            url: 'pages/cashier_ajax.php',
+            url: 'pages/old_ajax.php',
             type: 'POST',
             data: {
                 usage: usage,
@@ -1373,7 +1369,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var line = $(element).data('line');
 
         $.ajax({
-            url: "pages/cashier_ajax.php",
+            url: "pages/old_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -1403,7 +1399,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var line = $(element).data('line');
         var qty = $(element).val();
         $.ajax({
-            url: "pages/cashier_ajax.php",
+            url: "pages/old_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -1434,7 +1430,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var input_quantity = $('input[data-id="' + product_id + '"]');
         var quantity = Number(input_quantity.val());
         $.ajax({
-            url: "pages/cashier_ajax.php",
+            url: "pages/old_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -1465,7 +1461,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var input_quantity = $('input[data-id="' + product_id + '"]');
         var quantity = Number(input_quantity.val());
         $.ajax({
-            url: "pages/cashier_ajax.php",
+            url: "pages/old_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -1494,7 +1490,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var id = $(element).data('id');
         var line = $(element).data('line');
         $.ajax({
-            url: "pages/cashier_ajax.php",
+            url: "pages/old_ajax.php",
             data: {
                 product_id_del: id,
                 line: line,
@@ -1515,7 +1511,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var product_id = $(element).data('id');
         var line = $(element).data('line');
         $.ajax({
-            url: "pages/cashier_ajax.php",
+            url: "pages/old_ajax.php",
             type: "POST",
             data: {
                 product_id: product_id,
@@ -1775,7 +1771,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 const line = $('#custom_trim_line').val();
 
                 $.ajax({
-                    url: 'pages/cashier_ajax.php',
+                    url: 'pages/old_ajax.php',
                     type: 'POST',
                     contentType: 'application/json',
                     dataType: 'json',
@@ -1805,7 +1801,38 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         drawPlaceholderText();
     }
 
-    
+    function updateSearchCategory(){
+        var product_category = $('#select-category').val() || '';
+
+        console.log(product_category);
+        $.ajax({
+            url: "pages/old_ajax.php",
+            type: "POST",
+            data: {
+                product_category: product_category,
+                filter_category: 'filter_category'
+            },
+            success: function(result) {
+                
+                $('.sub_search_cat').html(result);
+
+                $('.select2_filter').each(function () {
+                    $(this).select2({
+                        width: '100%',
+                        dropdownParent: $(this).parent(),
+                        dropdownPosition: 'below'
+                    });
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        }); 
+    }
 
     function formatOption(state) {
         if (!state.id) {
@@ -1852,7 +1879,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
         $(document).on('click', '#btnColorModal', function () {
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: {
                     fetch_change_color_modal: 'fetch_change_color_modal'
@@ -1873,7 +1900,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
         $(document).on('click', '#btnPriceGroupModal', function () {
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: {
                     fetch_change_price_modal: 'fetch_change_price_modal'
@@ -1890,7 +1917,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
         $(document).on('click', '#btnGradeModal', function () {
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: {
                     fetch_change_grade_modal: 'fetch_change_grade_modal'
@@ -1910,7 +1937,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var in_stock_color = $('#in-stock-colors').val();
             var category_id = $('#category_id_color').val();
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: {
                     orig_color: orig_color,
@@ -1949,7 +1976,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         $(document).on('change', '.discount_input', function () {
             var discount = $(this).val();
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: {
                     discount: discount,
@@ -1974,7 +2001,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var notes = $('#notes_input').val();
 
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: {
                     price: price,
@@ -2017,7 +2044,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var in_stock_grade = $('#in-stock-grade').val();
             var category_id = $('#category_id').val();
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: {
                     orig_grade: orig_grade,
@@ -2115,7 +2142,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var type_id = $('#select-type').find('option:selected').val();
             var onlyInStock = $('#toggleActive').prop('checked');
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: {
                     query: query,
@@ -2131,8 +2158,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     $('#productTableBody').html(response);
                     currentPage = 1;
                     updateTable();
-                    updateSelectedTags();
-
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -2164,7 +2189,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var qty = parseInt($('#qty' + product_id).val(), 10) || 0;
 
             $.ajax({
-                url: "pages/cashier_ajax.php",
+                url: "pages/old_ajax.php",
                 type: "POST",
                 data: {
                     product_id: product_id,
@@ -2176,6 +2201,25 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 success: function(data) {
                     $('#qty' + product_id).val(1);
                     loadCartItemsHeader();
+
+                    if ($('#alert-container').length === 0) {
+                        $('body').append(`
+                            <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050; max-width: 300px;">
+                            </div>
+                        `);
+                    }
+
+                    var alertId = 'alert-' + Date.now();
+                    var alertHtml = `
+                        <div id="${alertId}" class="alert alert-success alert-dismissible fade show small mb-2" role="alert">
+                            <strong>Success!</strong> Item added to cart.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>`;
+                    $('#alert-container').append(alertHtml);
+
+                    setTimeout(function() {
+                        $('#' + alertId).alert('close');
+                    }, 5000);
                 },
                 error: function(xhr, status, error) {
                     console.error("AJAX Error:", {
@@ -2238,7 +2282,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var deliver_fname = $('#est_deliver_fname').val();
             var deliver_lname = $('#est_deliver_lname').val();
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: {
                     cash_amt: cash_amt,
@@ -2277,7 +2321,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var id = $(this).data('id');
             console.log(id);
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: {
                     id: id,
@@ -2312,7 +2356,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var deliver_lname = $('#order_deliver_lname').val();
             console.log("Delivery Amt: "+delivery_amt);
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: {
                     cash_amt: cash_amt,
@@ -2353,7 +2397,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
         $(document).on('click', '#submitApprovalBtn', function(event) {
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: {
                     save_approval: 'save_approval'
@@ -2425,7 +2469,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var isConfirmed = confirm("Are you sure you want to clear your cart contents?");
             if (isConfirmed) {
                 $.ajax({
-                    url: 'pages/cashier_ajax.php',
+                    url: 'pages/old_ajax.php',
                     type: 'POST',
                     data: {
                         clear_cart: "clear_cart"
@@ -2572,7 +2616,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
             if (confirm("Are you sure you want to return this product?")) {
                 $.ajax({
-                    url: 'pages/cashier_ajax.php',
+                    url: 'pages/old_ajax.php',
                     type: 'POST',
                     data: {
                         id: id,
@@ -2715,7 +2759,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const performAjax = (formData) => {
                 formData.append('add_to_cart', 'add_to_cart');
                 $.ajax({
-                    url: 'pages/cashier_ajax.php',
+                    url: 'pages/old_ajax.php',
                     type: 'POST',
                     data: formData,
                     processData: false,
@@ -2747,7 +2791,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const formData = new FormData(this);
             formData.append('add_job_name', 'add_job_name');
             $.ajax({
-                url: 'pages/cashier_ajax.php',
+                url: 'pages/old_ajax.php',
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -2777,23 +2821,32 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
 
         function updateSelectedTags() {
-            var displayDiv = $('#selected-tags');
+            const sections = [
+                { id: '#select-color', title: 'Color' },
+                { id: '#select-grade', title: 'Grade' },
+                { id: '#select-gauge', title: 'Gauge' },
+                { id: '#select-category', title: 'Category' },
+                { id: '#select-profile', title: 'Profile' },
+                { id: '#select-type', title: 'Type' },
+            ];
+
+            const displayDiv = $('#selected-tags');
             displayDiv.empty();
 
-            $('.filter-selection').each(function() {
-                var selectedOption = $(this).find('option:selected');
-                var selectedText = selectedOption.text().trim();
-                var filterName = $(this).data('filter-name');
+            sections.forEach((section) => {
+                const selectedOption = $(`${section.id} option:selected`);
+                const selectedText = selectedOption.text().trim();
 
-                if ($(this).val()) {
+                if (selectedOption.val()) {
                     displayDiv.append(`
                         <div class="d-inline-block p-1 m-1 border rounded bg-light">
-                            <span class="text-dark">${filterName}: ${selectedText}</span>
+                            <span class="text-dark">${section.title}: ${selectedText}</span>
                             <button type="button" 
                                 class="btn-close btn-sm ms-1 remove-tag" 
                                 style="width: 0.75rem; height: 0.75rem;" 
                                 aria-label="Close" 
-                                data-select="#${$(this).attr('id')}">
+                                data-tag="${selectedText}" 
+                                data-select="${section.id}">
                             </button>
                         </div>
                     `);
@@ -2801,57 +2854,44 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
 
             $('.remove-tag').on('click', function() {
-                $($(this).data('select')).val('').trigger('change');
+                const selectId = $(this).data('select');
+                
+                $(selectId).val('').trigger('change');
+
                 $(this).parent().remove();
             });
         }
 
-        function updateSearchCategory(){
-            var product_category = $('#select-category').val() || '';
-
-            console.log(product_category);
-            $.ajax({
-                url: "pages/cashier_ajax.php",
-                type: "POST",
-                data: {
-                    product_category: product_category,
-                    filter_category: 'filter_category'
-                },
-                success: function(result) {
-                    $('.sub_search_cat').html('');
-
-                    $('.select2_filter').select2('destroy');
-
-                    $('.sub_search_cat').html(result);
-
-                    $('.select2_filter').each(function () {
-                        $(this).select2({
-                            width: '100%',
-                            dropdownParent: $(this).parent(),
-                            dropdownPosition: 'below'
-                        });
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.error("AJAX Error:", {
-                        status: status,
-                        error: error,
-                        responseText: xhr.responseText
-                    });
-                }
-            }); 
-        }
+        $('#select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type').on('change', updateSelectedTags);
 
         $('#select-category').on('change', updateSearchCategory);
 
-        $(document).on('click', '.reset_filters', function () {
-            $('.filter-selection').each(function () {
-                $(this).val('').trigger('change');;
-            });
-            performSearch($('#text-srh').val());
+        $('#select-color').select2({
+            width: '100%',
+            dropdownParent: $('body'),
+            dropdownPosition: 'below',
         });
-
+        $('#select-grade').select2({
+            width: '100%',
+            dropdownParent: $('body'),
+            dropdownPosition: 'below',
+        });
+        $('#select-gauge').select2({
+            width: '100%',
+            dropdownParent: $('body'),
+            dropdownPosition: 'below',
+        });
         $('#select-category').select2({
+            width: '100%',
+            dropdownParent: $('body'),
+            dropdownPosition: 'below',
+        });
+        $('#select-profile').select2({
+            width: '100%',
+            dropdownParent: $('body'),
+            dropdownPosition: 'below',
+        });
+        $('#select-type').select2({
             width: '100%',
             dropdownParent: $('body'),
             dropdownPosition: 'below',

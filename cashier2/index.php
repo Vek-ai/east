@@ -1396,6 +1396,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "work_order_list") {include 'pages/work_order_list.php';}
             if ($_REQUEST['page'] == "job_details") {include 'pages/job_details.php';}
             if ($_REQUEST['page'] == "supplier_order") {include 'pages/supplier_order.php';}
+            if ($_REQUEST['page'] == "old") {include 'pages/old.php';}
           ?>
         </div>
       </div>
