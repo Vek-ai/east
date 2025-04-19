@@ -130,6 +130,11 @@ if(!empty($_REQUEST['product_type_id'])){
           <div class="px-3 mb-2"> 
               <input type="checkbox" id="toggleActive" checked> Show Active Only
           </div>
+            <div class="d-flex justify-content-end py-2">
+                <button type="button" class="btn btn-outline-primary reset_filters">
+                    <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                </button>
+            </div>
       </div>
       <div class="col-9">
         <div id="selected-tags" class="mb-2"></div>
@@ -846,6 +851,16 @@ if(!empty($_REQUEST['product_type_id'])){
     }
 
     $(document).on('input change', '#text-srh, #toggleActive, .filter-selection', filterTable);
+
+    $(document).on('click', '.reset_filters', function () {
+        $('.filter-selection').each(function () {
+            $(this).val(null).trigger('change.select2');
+        });
+
+        $('#text-srh').val('');
+
+        filterTable();
+    });
     
 });
 </script>

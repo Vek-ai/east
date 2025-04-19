@@ -121,6 +121,11 @@ $page_title = "Supplier";
             <div class="px-3 mb-2"> 
                 <input type="checkbox" id="toggleActive" checked> Show Active Only
             </div>
+            <div class="d-flex justify-content-end py-2">
+                <button type="button" class="btn btn-outline-primary reset_filters">
+                    <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                </button>
+            </div>
         </div>
         <div class="col-9">
             <div id="selected-tags" class="mb-2"></div>
@@ -949,6 +954,16 @@ $page_title = "Supplier";
                 $(this).parent().remove();
             });
         }
+
+        $(document).on('click', '.reset_filters', function () {
+            $('.filter-selection').each(function () {
+                $(this).val(null).trigger('change.select2');
+            });
+
+            $('#text-srh').val('');
+
+            filterTable();
+        });
 
     });
 </script>

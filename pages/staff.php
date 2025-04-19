@@ -2,7 +2,7 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Staff";
+$page_title = "Staff Members";
 
 if(!empty($_REQUEST['staff_id'])){
     $staff_id = $_REQUEST['staff_id'];
@@ -25,14 +25,14 @@ if(!empty($_REQUEST['staff_id'])){
         <div class="card-body px-0">
             <div class="d-flex justify-content-between align-items-center">
             <div><br>
-                <h4 class="font-weight-medium fs-14 mb-0"> Staff</h4>
+                <h4 class="font-weight-medium fs-14 mb-0"> <?= $page_title ?></h4>
                 <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
                     <a class="text-muted text-decoration-none" href="">Home
                     </a>
                     </li>
-                    <li class="breadcrumb-item text-muted" aria-current="page">Staff</li>
+                    <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
                 </ol>
                 </nav>
             </div>
@@ -50,7 +50,7 @@ if(!empty($_REQUEST['staff_id'])){
             <div class="row">
             <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-end mt-3 mt-md-0 gap-3">
                 <button type="button" id="addStaffModalLabel" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addStaffModal">
-                    <i class="ti ti-users text-white me-1 fs-5"></i> Add Staff
+                    <i class="ti ti-users text-white me-1 fs-5"></i> Add <?= $page_title ?>
                 </button>
                 <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
                     <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
@@ -117,6 +117,11 @@ if(!empty($_REQUEST['staff_id'])){
                     </div>
                     <div class="px-3 mb-2"> 
                         <input type="checkbox" id="toggleActive" checked> Show Active Only
+                    </div>
+                    <div class="d-flex justify-content-end py-2">
+                        <button type="button" class="btn btn-outline-primary reset_filters">
+                            <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                        </button>
                     </div>
                 </div>
                 <div class="col-9">
@@ -205,7 +210,7 @@ if(!empty($_REQUEST['staff_id'])){
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header d-flex align-items-center">
-                <h4 class="modal-title" id="myLargeModalLabel">Add Staff</h4>
+                <h4 class="modal-title" id="myLargeModalLabel">Add <?= $page_title ?></h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="add_staff" class="form-horizontal">
@@ -1076,6 +1081,16 @@ $(document).ready(function() {
     $(document).on('input change', '#text-srh, #toggleActive, .filter-selection', filterTable);
     
     filterTable();
+
+    $(document).on('click', '.reset_filters', function () {
+        $('.filter-selection').each(function () {
+            $(this).val(null).trigger('change.select2');
+        });
+
+        $('#text-srh').val('');
+
+        filterTable();
+    });
 
     });
 </script>

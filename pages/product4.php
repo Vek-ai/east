@@ -374,7 +374,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 </div>
                 <div class="align-items-center">
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control py-0 ps-5 select2" id="select-category" data-category="">
+                        <select class="form-control py-0 ps-5 select2 filter-selection" id="select-category" data-category="">
                             <option value="" data-category="">All Categories</option>
                             <optgroup label="Category">
                                 <?php
@@ -391,7 +391,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2" id="select-system" data-category="">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-system" data-category="">
                             <option value="" data-category="">All Product Systems</option>
                             <optgroup label="Product Type">
                                 <?php
@@ -408,7 +408,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2" id="select-line" data-category="">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-line" data-category="">
                             <option value="" data-category="">All Product Lines</option>
                             <optgroup label="Product Type">
                                 <?php
@@ -425,7 +425,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2" id="select-type" data-category="">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-type" data-category="">
                             <option value="" data-category="">All Product Types</option>
                             <optgroup label="Product Type">
                                 <?php
@@ -442,7 +442,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2" id="select-profile" data-category="">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-profile" data-category="">
                             <option value="" data-category="">All Profile Types</option>
                             <optgroup label="Product Line">
                                 <?php
@@ -459,7 +459,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2" id="select-color" data-category="">
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-color" data-category="">
                             <option value="" data-category="">All Colors</option>
                             <optgroup label="Product Colors">
                                 <?php
@@ -476,7 +476,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2" id="select-grade" data-category="">
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-grade" data-category="">
                             <option value="" data-category="">All Grades</option>
                             <optgroup label="Product Grades">
                                 <?php
@@ -493,7 +493,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2" id="select-gauge" data-category="">
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-gauge" data-category="">
                             <option value="" data-category="">All Gauges</option>
                             <optgroup label="Product Gauges">
                                 <?php
@@ -515,6 +515,11 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 </div>
                 <div class="px-3 mb-2">
                     <input type="checkbox" id="onlyInStock" <?= $onlyInStock ? 'checked' : '' ?>> Show only In Stock
+                </div>
+                <div class="d-flex justify-content-end py-2">
+                    <button type="button" class="btn btn-outline-primary reset_filters">
+                        <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                    </button>
                 </div>
             </div>
             <div class="col-9">
@@ -814,8 +819,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
             $('.color-group-filter').toggleClass("d-none", !selectedGroup);
         });
-
-
        
         function updateSearchCategory() {
             var product_category = $('#product_category').val() || '';
@@ -1566,6 +1569,16 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 $(this).parent().remove();
             });
         }
+
+        $(document).on('click', '.reset_filters', function () {
+            $('.filter-selection').each(function () {
+                $(this).val(null).trigger('change.select2');
+            });
+
+            $('#text-srh').val('');
+
+            filterTable();
+        });
 
     });
 </script>

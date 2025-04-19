@@ -105,6 +105,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         width: 10% !important; /* Actions */
     }
 
+    .select2-container .select2-dropdown .select2-results__options {
+        max-height: 760px !important;
+    }
+
 </style>
 <div class="product-list pt-4">
     <div class="card">
@@ -126,8 +130,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         </div>
                         <div class="align-items-center">
                             <div class="position-relative w-100 py-2 px-1">
-                                <select class="form-control search-chat ps-5" id="select-category" data-category="">
-                                    <option value="" data-category="">All Categories</option>
+                                <select class="form-control search-chat ps-5 filter-selection" id="select-category" data-filter-name="Category">
+                                    <option value="">All Categories</option>
                                     <optgroup label="Category">
                                         <?php
                                         $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
@@ -145,9 +149,105 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                 </select>
                             </div>
                             <div class="sub_search_cat">
-                                
+                                <div class="position-relative w-100 py-2 px-1">
+                                    <select class="form-control ps-5 select2_filter filter-selection" id="select-profile" data-filter-name="Profile Type">
+                                        <option value="" data-category="">All Profile Types</option>
+                                        <optgroup label="Product Line">
+                                            <?php
+                                            $query_profile = "SELECT * FROM profile_type WHERE hidden = '0' ORDER BY profile_type ASC";
+                                            $result_profile = mysqli_query($conn, $query_profile);
+                                            while ($row_profile = mysqli_fetch_array($result_profile)) {
+                                            ?>
+                                                <option value="<?= htmlspecialchars($row_profile['profile_type_id']) ?>" 
+                                                        data-category="<?= htmlspecialchars($row_profile['product_category']) ?>">
+                                                    <?= htmlspecialchars($row_profile['profile_type']) ?>
+                                                </option>
+                                            <?php } ?>
+                                        </optgroup>
+                                    </select>
+                                </div>
+
+                                <!-- Product Type -->
+                                <div class="position-relative w-100 py-2 px-1">
+                                    <select class="form-control search-category ps-5 select2_filter filter-selection" id="select-type" data-filter-name="Product Types">
+                                        <option value="" data-category="">All Product Types</option>
+                                        <optgroup label="Product Type">
+                                            <?php
+                                            $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY product_type ASC";
+                                            $result_type = mysqli_query($conn, $query_type);
+                                            while ($row_type = mysqli_fetch_array($result_type)) {
+                                            ?>
+                                                <option value="<?= htmlspecialchars($row_type['product_type_id']) ?>" 
+                                                        data-category="<?= htmlspecialchars($row_type['product_category']) ?>">
+                                                    <?= htmlspecialchars($row_type['product_type']) ?>
+                                                </option>
+                                            <?php } ?>
+                                        </optgroup>
+                                    </select>
+                                </div>
+
+                                <!-- Colors -->
+                                <div class="position-relative w-100 py-2 px-1">
+                                    <select class="form-control search-category ps-5 select2_filter filter-selection" id="select-color" data-filter-name="Color">
+                                        <option value="" data-category="">All Colors</option>
+                                        <optgroup label="Product Colors">
+                                            <?php
+                                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY color_name ASC";
+                                            $result_color = mysqli_query($conn, $query_color);
+                                            while ($row_color = mysqli_fetch_array($result_color)) {
+                                            ?>
+                                                <option value="<?= htmlspecialchars($row_color['color_id']) ?>" 
+                                                        data-category="<?= htmlspecialchars($row_color['product_category']) ?>">
+                                                    <?= htmlspecialchars($row_color['color_name']) ?>
+                                                </option>
+                                            <?php } ?>
+                                        </optgroup>
+                                    </select>
+                                </div>
+
+                                <!-- Grade -->
+                                <div class="position-relative w-100 py-2 px-1">
+                                    <select class="form-control search-category ps-5 select2_filter filter-selection" id="select-grade" data-filter-name="Grade">
+                                        <option value="" data-category="">All Grades</option>
+                                        <optgroup label="Product Grades">
+                                            <?php
+                                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY product_grade ASC";
+                                            $result_grade = mysqli_query($conn, $query_grade);
+                                            while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                            ?>
+                                                <option value="<?= htmlspecialchars($row_grade['product_grade_id']) ?>" 
+                                                        data-category="<?= htmlspecialchars($row_grade['product_category']) ?>">
+                                                    <?= htmlspecialchars($row_grade['product_grade']) ?>
+                                                </option>
+                                            <?php } ?>
+                                        </optgroup>
+                                    </select>
+                                </div>
+
+                                <!-- Gauge -->
+                                <div class="position-relative w-100 py-2 px-1">
+                                    <select class="form-control ps-5 select2_filter filter-selection" id="select-gauge" data-filter-name="Gauge">
+                                        <option value="" data-category="">All Gauges</option>
+                                        <optgroup label="Product Gauges">
+                                            <?php
+                                            $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY product_gauge ASC";
+                                            $result_gauge = mysqli_query($conn, $query_gauge);
+                                            while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            ?>
+                                                <option value="<?= htmlspecialchars($row_gauge['product_gauge_id']) ?>" 
+                                                        data-category="gauge">
+                                                    <?= htmlspecialchars($row_gauge['product_gauge']) ?>
+                                                </option>
+                                            <?php } ?>
+                                        </optgroup>
+                                    </select>
+                                </div>
                             </div>
-                            
+                            <div class="d-flex justify-content-end py-2">
+                                <button type="button" class="btn btn-outline-primary reset_filters">
+                                    <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1243,39 +1343,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
     }
 
-    function updateSearchCategory(){
-        var product_category = $('#select-category').val() || '';
-
-        console.log(product_category);
-        $.ajax({
-            url: "pages/browse_ajax.php",
-            type: "POST",
-            data: {
-                product_category: product_category,
-                filter_category: 'filter_category'
-            },
-            success: function(result) {
-                
-                $('.sub_search_cat').html(result);
-
-                $('.select2_filter').each(function () {
-                    $(this).select2({
-                        width: '100%',
-                        dropdownParent: $(this).parent(),
-                        dropdownPosition: 'below'
-                    });
-                });
-            },
-            error: function(xhr, status, error) {
-                console.error("AJAX Error:", {
-                    status: status,
-                    error: error,
-                    responseText: xhr.responseText
-                });
-            }
-        }); 
-    }
-
     function formatOption(state) {
         if (!state.id) {
             return state.text;
@@ -1397,6 +1464,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     $('#productTableBody').html(response);
                     currentPage = 1;
                     updateTable();
+                    updateSelectedTags();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1440,21 +1508,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 success: function(data) {
                     $('#qty' + product_id).val(1);
                     loadCartItemsHeader();
-
-                    if ($('#alert-container').length === 0) {
-                        $('body').append(`
-                            <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050; max-width: 300px;">
-                            </div>
-                        `);
-                    }
-
-                    var alertId = 'alert-' + Date.now();
-                    var alertHtml = `
-                        <div id="${alertId}" class="alert alert-success alert-dismissible fade show small mb-2" role="alert">
-                            <strong>Success!</strong> Item added to cart.
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>`;
-                    $('#alert-container').append(alertHtml);
 
                     setTimeout(function() {
                         $('#' + alertId).alert('close');
@@ -1880,32 +1933,23 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
 
         function updateSelectedTags() {
-            const sections = [
-                { id: '#select-color', title: 'Color' },
-                { id: '#select-grade', title: 'Grade' },
-                { id: '#select-gauge', title: 'Gauge' },
-                { id: '#select-category', title: 'Category' },
-                { id: '#select-profile', title: 'Profile' },
-                { id: '#select-type', title: 'Type' },
-            ];
-
-            const displayDiv = $('#selected-tags');
+            var displayDiv = $('#selected-tags');
             displayDiv.empty();
 
-            sections.forEach((section) => {
-                const selectedOption = $(`${section.id} option:selected`);
-                const selectedText = selectedOption.text().trim();
+            $('.filter-selection').each(function() {
+                var selectedOption = $(this).find('option:selected');
+                var selectedText = selectedOption.text().trim();
+                var filterName = $(this).data('filter-name');
 
-                if (selectedOption.val()) {
+                if ($(this).val()) {
                     displayDiv.append(`
                         <div class="d-inline-block p-1 m-1 border rounded bg-light">
-                            <span class="text-dark">${section.title}: ${selectedText}</span>
+                            <span class="text-dark">${filterName}: ${selectedText}</span>
                             <button type="button" 
                                 class="btn-close btn-sm ms-1 remove-tag" 
                                 style="width: 0.75rem; height: 0.75rem;" 
                                 aria-label="Close" 
-                                data-tag="${selectedText}" 
-                                data-select="${section.id}">
+                                data-select="#${$(this).attr('id')}">
                             </button>
                         </div>
                     `);
@@ -1913,47 +1957,62 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
 
             $('.remove-tag').on('click', function() {
-                const selectId = $(this).data('select');
-                
-                $(selectId).val('').trigger('change');
-
+                $($(this).data('select')).val('').trigger('change');
                 $(this).parent().remove();
             });
         }
+        
+        function updateSearchCategory(){
+            var product_category = $('#select-category').val() || '';
 
-        $('#select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type').on('change', updateSelectedTags);
+            console.log(product_category);
+            $.ajax({
+                url: "pages/browse_ajax.php",
+                type: "POST",
+                data: {
+                    product_category: product_category,
+                    filter_category: 'filter_category'
+                },
+                success: function(result) {
+                    $('.sub_search_cat').html('');
 
+                    $('.select2_filter').select2('destroy');
+
+                    $('.sub_search_cat').html(result);
+
+                    $('.select2_filter').each(function () {
+                        $(this).select2({
+                            width: '100%',
+                            dropdownParent: $(this).parent(),
+                            dropdownPosition: 'below'
+                        });
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                }
+            }); 
+        }
+        
         $('#select-category').on('change', updateSearchCategory);
 
-        $('#select-color').select2({
-            width: '100%',
-            dropdownParent: $('body'),
-            dropdownPosition: 'below',
+        $(document).on('click', '.reset_filters', function () {
+            $('.filter-selection').each(function () {
+                $(this).val('').trigger('change');;
+            });
+            performSearch($('#text-srh').val());
         });
-        $('#select-grade').select2({
-            width: '100%',
-            dropdownParent: $('body'),
-            dropdownPosition: 'below',
-        });
-        $('#select-gauge').select2({
-            width: '100%',
-            dropdownParent: $('body'),
-            dropdownPosition: 'below',
-        });
-        $('#select-category').select2({
-            width: '100%',
-            dropdownParent: $('body'),
-            dropdownPosition: 'below',
-        });
-        $('#select-profile').select2({
-            width: '100%',
-            dropdownParent: $('body'),
-            dropdownPosition: 'below',
-        });
-        $('#select-type').select2({
-            width: '100%',
-            dropdownParent: $('body'),
-            dropdownPosition: 'below',
+
+        $('.filter-selection').each(function () {
+            $(this).select2({
+                width: '100%',
+                dropdownParent: $(this).parent(),
+                dropdownPosition: 'below'
+            });
         });
 
         $(document).on('input change', '#text-srh, #select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive', function() {

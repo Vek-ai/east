@@ -1704,16 +1704,18 @@ if (isset($_POST['add_job_name'])) {
 if (isset($_POST['filter_category'])) {
     $product_category = isset($_REQUEST['product_category']) ? intval($_REQUEST['product_category']) : '';
 
+    $category_condition = "";
     if (!empty($product_category)) {
+        $category_condition = "AND product_category = '$product_category'";
+    }
         ?>
-        
         <!-- Profile Type -->
         <div class="position-relative w-100 py-2 px-1">
             <select class="form-control ps-5 select2_filter filter-selection" id="select-profile" data-filter-name="Profile Type">
                 <option value="" data-category="">All Profile Types</option>
                 <optgroup label="Product Line">
                     <?php
-                    $query_profile = "SELECT * FROM profile_type WHERE hidden = '0' AND product_category = '$product_category' ORDER BY profile_type ASC";
+                    $query_profile = "SELECT * FROM profile_type WHERE hidden = '0' $category_condition ORDER BY profile_type ASC";
                     $result_profile = mysqli_query($conn, $query_profile);
                     while ($row_profile = mysqli_fetch_array($result_profile)) {
                     ?>
@@ -1732,7 +1734,7 @@ if (isset($_POST['filter_category'])) {
                 <option value="" data-category="">All Product Types</option>
                 <optgroup label="Product Type">
                     <?php
-                    $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' AND product_category = '$product_category' ORDER BY product_type ASC";
+                    $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' $category_condition ORDER BY product_type ASC";
                     $result_type = mysqli_query($conn, $query_type);
                     while ($row_type = mysqli_fetch_array($result_type)) {
                     ?>
@@ -1751,7 +1753,7 @@ if (isset($_POST['filter_category'])) {
                 <option value="" data-category="">All Colors</option>
                 <optgroup label="Product Colors">
                     <?php
-                    $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' AND product_category = '$product_category' ORDER BY color_name ASC";
+                    $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' $category_condition ORDER BY color_name ASC";
                     $result_color = mysqli_query($conn, $query_color);
                     while ($row_color = mysqli_fetch_array($result_color)) {
                     ?>
@@ -1770,7 +1772,7 @@ if (isset($_POST['filter_category'])) {
                 <option value="" data-category="">All Grades</option>
                 <optgroup label="Product Grades">
                     <?php
-                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' AND product_category = '$product_category' ORDER BY product_grade ASC";
+                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' $category_condition ORDER BY product_grade ASC";
                     $result_grade = mysqli_query($conn, $query_grade);
                     while ($row_grade = mysqli_fetch_array($result_grade)) {
                     ?>
@@ -1801,14 +1803,7 @@ if (isset($_POST['filter_category'])) {
                 </optgroup>
             </select>
         </div>
-
-        <div class="d-flex justify-content-end py-2">
-            <button type="button" class="btn btn-outline-primary reset_filters">
-                <i class="fas fa-sync-alt me-1"></i> Reset Filters
-            </button>
-        </div>
         <?php
-    }
 }
 
 ?>

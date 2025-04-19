@@ -307,7 +307,7 @@ require 'includes/functions.php';
                 </div>
                 <div class="align-items-center">
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select id="color_filter" class="form-control color-cart select2-filter" name="color_id">
+                        <select id="color_filter" class="form-control color-cart select2-filter filter-selection" name="color_id">
                             <option value="" >All Colors...</option>
                             <?php
                             $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
@@ -321,7 +321,7 @@ require 'includes/functions.php';
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select id="supplier_filter" class="form-control select2-filter" name="supplier_id">
+                        <select id="supplier_filter" class="form-control select2-filter filter-selection" name="supplier_id">
                             <option value="" >All Suppliers...</option>
                             <optgroup label="Supplier">
                                 <?php
@@ -338,7 +338,7 @@ require 'includes/functions.php';
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select id="warehouse_filter" class="form-control select2-filter" name="Warehouse_id">
+                        <select id="warehouse_filter" class="form-control select2-filter filter-selection" name="Warehouse_id">
                             <option value="" >All Warehouses...</option>
                             <optgroup label="Warehouse">
                                 <?php
@@ -355,7 +355,7 @@ require 'includes/functions.php';
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select id="shelves_filter" class="form-control select2-filter" name="Shelves_id">
+                        <select id="shelves_filter" class="form-control select2-filter filter-selection" name="Shelves_id">
                             <option value="" >All Shelfs...</option>
                             <optgroup label="Shelf">
                                 <?php
@@ -371,7 +371,7 @@ require 'includes/functions.php';
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select id="bin_filter" class="form-control select2-filter" name="Bin_id">
+                        <select id="bin_filter" class="form-control select2-filter filter-selection" name="Bin_id">
                             <option value="" >All Bins...</option>
                             <optgroup label="Bin">
                                 <?php
@@ -387,7 +387,7 @@ require 'includes/functions.php';
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select id="row_filter" class="form-control select2-filter" name="Row_id">
+                        <select id="row_filter" class="form-control select2-filter filter-selection" name="Row_id">
                             <option value="" >All Rows...</option>
                             <optgroup label="Row">
                                 <?php
@@ -405,6 +405,11 @@ require 'includes/functions.php';
                 </div>
                 <div class="px-3"> 
                     <input type="checkbox" id="toggleActive" checked> Show New Only
+                </div>
+                <div class="d-flex justify-content-end py-2">
+                    <button type="button" class="btn btn-outline-primary reset_filters">
+                        <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                    </button>
                 </div>
             </div>
             <div class="col-9">
@@ -848,6 +853,16 @@ require 'includes/functions.php';
         }
 
         filterTable();
+
+        $(document).on('click', '.reset_filters', function () {
+            $('.filter-selection').each(function () {
+                $(this).val(null).trigger('change.select2');
+            });
+
+            $('#text-srh').val('');
+
+            filterTable();
+        });
     });
 </script>
 
