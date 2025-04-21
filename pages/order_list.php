@@ -4,6 +4,15 @@ require 'includes/functions.php';
 
 $picture_path = "images/product/product.jpg";
 
+$page_title = "Order List";
+
+$status_labels = [
+    1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
+    2 => ['label' => 'Processing', 'class' => 'badge bg-warning'],
+    3 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
+    4 => ['label' => 'Sent to Customer', 'class' => 'badge bg-success']
+];
+
 if(isset($_REQUEST['customer_id'])){
     $customer_id = $_REQUEST['customer_id'];
     $customer_details = getCustomerDetails($customer_id);
@@ -11,9 +20,6 @@ if(isset($_REQUEST['customer_id'])){
 
 ?>
 <style>
-    .select2-container {
-        z-index: 9999 !important; 
-    }
     .dz-preview {
         position: relative;
     }
@@ -33,36 +39,33 @@ if(isset($_REQUEST['customer_id'])){
         text-decoration: none;
         font-weight: bold;
         font-size: 12px;
-        z-index: 9999; /* Ensure the remove button is on top of the image */
-        cursor: pointer; /* Make sure it looks clickable */
+        z-index: 9999;
+        cursor: pointer;
     }
 
-    .table-fixed {
-        width: 100%;
+    .tooltip-inner {
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+        border: 1px solid #ced4da;
+        font-size: 0.875rem;
+        padding: 6px 10px;
+        border-radius: 0.25rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
-    .table-fixed th,
-    .table-fixed td {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: normal;
-        word-wrap: break-word;
+    .tooltip.bs-tooltip-top .tooltip-arrow::before,
+    .tooltip.bs-tooltip-bottom .tooltip-arrow::before,
+    .tooltip.bs-tooltip-start .tooltip-arrow::before,
+    .tooltip.bs-tooltip-end .tooltip-arrow::before {
+        border-top-color: #f8f9fa !important;
+        border-bottom-color: #f8f9fa !important;
+        border-left-color: #f8f9fa !important;
+        border-right-color: #f8f9fa !important;
     }
 
-    .table-fixed th:nth-child(1),
-    .table-fixed td:nth-child(1) { width: 30% !important; }
-    .table-fixed th:nth-child(2),
-    .table-fixed td:nth-child(2) { width: 10% !important; }
-    .table-fixed th:nth-child(3),
-    .table-fixed td:nth-child(3) { width: 10% !important; }
-    .table-fixed th:nth-child(4),
-    .table-fixed td:nth-child(4) { width: 10% !important; }
-    .table-fixed th:nth-child(5),
-    .table-fixed td:nth-child(5) { width: 15% !important; }
-    .table-fixed th:nth-child(6),
-    .table-fixed td:nth-child(6) { width: 15% !important; }
-    .table-fixed th:nth-child(7),
-    .table-fixed td:nth-child(7) { width: 10% !important; }
+    .select2-container .select2-dropdown .select2-results__options {
+        max-height: 760px !important;
+    }
 </style>
 
 <div class="container-fluid">
@@ -74,38 +77,19 @@ if(isset($_REQUEST['customer_id'])){
             if(isset($customer_details)){
                 echo "Customer " .$customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'];
             }
-            ?> Order List</h4>
+            ?> <?= $page_title ?></h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
                 <a class="text-muted text-decoration-none" href="">Order
                 </a>
                 </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Order List</li>
+                <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
             </ol>
             </nav>
         </div>
         <div>
-            <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
-            <div class="d-flex gap-2">
-                <div class="">
-                <small>This Month</small>
-                <h4 class="text-primary mb-0 ">$58,256</h4>
-                </div>
-                <div class="">
-                <div class="breadbar"></div>
-                </div>
-            </div>
-            <div class="d-flex gap-2">
-                <div class="">
-                <small>Last Month</small>
-                <h4 class="text-secondary mb-0 ">$58,256</h4>
-                </div>
-                <div class="">
-                <div class="breadbar2"></div>
-                </div>
-            </div>
-            </div>
+            
         </div>
         </div>
     </div>
@@ -177,82 +161,194 @@ if(isset($_REQUEST['customer_id'])){
     </div>
 
     <div class="card card-body">
-        <div class="card-body datatables">
-            <div class="product-details table-responsive text-nowrap">
-                <table id="order_list_tbl" class="table table-hover mb-0 text-md-nowrap">
-                    <thead>
-                        <tr>
-                            <th>Customer</th>
-                            <th>Total Price</th>
-                            <th>Discounted Price</th>
-                            <th>Order Date</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php 
+        <div class="row">
+            <div class="col-3">
+                <h3 class="card-title align-items-center mb-2">
+                    Filter <?= $page_title ?>
+                </h3>
+                <div class="position-relative w-100 px-0 mr-0 mb-2">
+                    <input type="text" class="form-control py-2 ps-5" data-filter-name="Customer Name" id="text-srh" placeholder="Search">
+                    <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
+                </div>
+                <div class="align-items-center">
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="by" data-filter-name="Created By" id="select-created-by">
+                            <option value="">All Created</option>
+                            <option value="1">Created by EKM</option>
+                            <option value="2">Created by Customer</option>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="status" data-filter-name="Status" id="select-status">
+                            <option value="">All Status</option>
+                            <?php
 
-                        $query = "SELECT * FROM orders";
-
-                        if (isset($customer_id) && !empty($customer_id)) {
-                            $query .= " AND customerid = '$customer_id'";
-                        }
-
-                        $result = mysqli_query($conn, $query);
-                    
-                        if ($result && mysqli_num_rows($result) > 0) {
-                            $response = array();
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                $status_code = $row['status'];
-
-                                $status_labels = [
-                                    1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
-                                    2 => ['label' => 'Processing', 'class' => 'badge bg-warning'],
-                                    3 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
-                                    4 => ['label' => 'Delivered', 'class' => 'badge bg-success']
-                                ];
-                              
-                                $status = $status_labels[$status_code];
+                                foreach ($status_labels as $key => $value) {
+                                    echo "<option value=\"$key\">{$value['label']}</option>";
+                                }
                             ?>
-                            <tr>
-                                <td>
-                                    <?php echo get_customer_name($row["customerid"]) ?>
-                                </td>
-                                <td >
-                                    $ <?php echo number_format($row["total_price"],2) ?>
-                                </td>
-                                <td >
-                                    $ <?php echo number_format($row["discounted_price"],2) ?>
-                                </td>
-                                <td>
-                                    <?php echo date("F d, Y", strtotime($row["order_date"])); ?>
-                                </td>
-                                <td class="text-center">
-                                    <span class="<?= $status['class']; ?> fw-bond"><?= $status['label']; ?></span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
-                                    <?php if ($status_code == 1): ?>
-                                        <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>">
-                                            <i class="fa fa-envelope fs-5 text-info"></i>
-                                        </a>
-                                    <?php endif; ?>
-                                    <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
-                                    <a href="print_order_total.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
-                                    <a href="customer/index.php?page=order&id=<?=$row["orderid"]?>&key=<?=$row["order_key"]?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-info fa fa-sign-in-alt fs-5"></i></a>
-                                </td>
-                            </tr>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control py-0 ps-5 select2 filter-selection" data-filter="tax" data-filter-name="Tax" id="select-tax">
+                            <option value="">All Tax Status</option>
+                            <?php
+                            $query_tax_status = "SELECT * FROM customer_tax WHERE status = 1 ORDER BY tax_status_desc ASC";
+                            $result_tax_status = mysqli_query($conn, $query_tax_status);
+                            while ($row_tax_status = mysqli_fetch_array($result_tax_status)) {
+                                ?>
+                                <option value="<?= $row_tax_status['taxid'] ?>">
+                                (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?></option>
                             <?php
                             }
-                        } else {
-                        ?>
-                        
-                        <?php
-                        }
-                        ?>
-                    </tbody>
-                </table>
+                            ?>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="month" data-filter-name="Month" id="select-month">
+                            <option value="">All Months</option>
+                            <option value="01">January</option>
+                            <option value="02">February</option>
+                            <option value="03">March</option>
+                            <option value="04">April</option>
+                            <option value="05">May</option>
+                            <option value="06">June</option>
+                            <option value="07">July</option>
+                            <option value="08">August</option>
+                            <option value="09">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="year" data-filter-name="Year" id="select-year">
+                            <option value="">All Years</option>
+                            <?php
+                                $currentYear = date("Y");
+                                for ($year = $currentYear; $year >= $currentYear - 20; $year--) {
+                                    echo "<option value=\"$year\">$year</option>";
+                                }
+                            ?>
+                        </select>
+                    </div>
+                    
+                </div>
+                <div class="px-3 mb-2"> 
+                    <input type="checkbox" id="toggleActive" checked> Show Processing Only
+                </div>
+                <div class="d-flex justify-content-end py-2">
+                    <button type="button" class="btn btn-outline-primary reset_filters">
+                        <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                    </button>
+                </div>
+            </div>
+            <div class="col-9">
+                <div id="selected-tags" class="mb-2"></div>
+                    <div class="datatables">
+                        <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?></h4>
+                        <div class="product-details table-responsive text-nowrap">
+                            <table id="order_list_tbl" class="table table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Total Price</th>
+                                        <th>Discounted Price</th>
+                                        <th>Order Date</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php 
+
+                                    $query = "SELECT * FROM orders";
+
+                                    if (isset($customer_id) && !empty($customer_id)) {
+                                        $query .= " AND customerid = '$customer_id'";
+                                    }
+
+                                    $result = mysqli_query($conn, $query);
+                                
+                                    if ($result && mysqli_num_rows($result) > 0) {
+                                        $response = array();
+                                        while ($row = mysqli_fetch_assoc($result)) {
+                                            $status_code = $row['status'];
+                                            $customer_id = $row["customerid"];
+                                            $customer_details = getCustomerDetails($customer_id);
+                                        
+                                            $status = $status_labels[$status_code];
+                                        ?>
+                                        <tr
+                                            data-by="<?= $row['order_from'] ?>"
+                                            data-tax="<?= $customer_details['tax_status'] ?>"
+                                            data-month="<?= date('m', strtotime($row['order_date'])) ?>"
+                                            data-year="<?= date('Y', strtotime($row['order_date'])) ?>"
+                                            data-status="<?= $status_code ?>"
+                                        >
+                                            <td style="color: #ffffff !important;">
+                                                <?php echo get_customer_name($row["customerid"]) ?>
+                                            </td>
+                                            <td style="color: #ffffff !important;">
+                                                $ <?php echo number_format($row["total_price"],2) ?>
+                                            </td>
+                                            <td style="color: #ffffff !important;">
+                                                $ <?php echo number_format($row["discounted_price"],2) ?>
+                                            </td>
+                                            <td style="color: #ffffff !important;"
+                                                <?php if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
+                                                    data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
+                                                <?php endif; ?>
+                                            >
+                                                <?php 
+                                                    if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
+                                                        echo date("F d, Y", strtotime($row["order_date"]));
+                                                    } else {
+                                                        echo '';
+                                                    }
+                                                ?>
+                                            </td>
+                                            <td class="text-center" style="color: #ffffff !important;">
+                                                <span class="estimate_status <?= $status['class']; ?> fw-bond"><?= $status['label']; ?></span>
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Order">
+                                                    <i class="text-primary fa fa-eye fs-5"></i>
+                                                </button>
+
+                                                <?php if ($status_code == 1): ?>
+                                                    <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Email Order">
+                                                        <i class="fa fa-envelope fs-5 text-info"></i>
+                                                    </a>
+                                                <?php endif; ?>
+
+                                                <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print Product">
+                                                    <i class="text-success fa fa-print fs-5"></i>
+                                                </a>
+
+                                                <a href="print_order_total.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print Total">
+                                                    <i class="text-white fa fa-file-lines fs-5"></i>
+                                                </a>
+
+                                                <a href="customer/index.php?page=order&id=<?=$row["orderid"]?>&key=<?=$row["order_key"]?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Open Customer View">
+                                                    <i class="text-info fa fa-sign-in-alt fs-5"></i>
+                                                </a>
+                                            </td>
+
+                                        </tr>
+                                        <?php
+                                        }
+                                    } else {
+                                    ?>
+                                    
+                                    <?php
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
             </div>
         </div>
     </div>
@@ -269,13 +365,47 @@ if(isset($_REQUEST['customer_id'])){
         }
     }
     $(document).ready(function() {
+        document.title = "<?= $page_title ?>";
+
         var dataId = '';
         var action = '';
         var selected_prods = [];
-        
+
         var table = $('#order_list_tbl').DataTable({
-            "order": [[1, "asc"]]
+            "order": [[3, "desc"]],
+            "pageLength": 100,
+            "columnDefs": [
+                { targets: '_all', orderable: true }
+            ]
         });
+
+        $('#order_list_tbl_filter').hide();
+
+        $(".select2").each(function () {
+            $(this).select2({
+                width: '100%',
+                dropdownParent: $(this).parent()
+            });
+        });
+
+        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+            var statusSpan = $(table.row(dataIndex).node()).find('td').find('span.estimate_status');
+            var isActive = $('#toggleActive').is(':checked');
+
+            var statusText = statusSpan.text().trim();
+
+            if (isActive && statusText === 'Sent to Customer') {
+                return false;
+            }
+            
+            return true;
+        });
+
+        $('#toggleActive').on('change', function () {
+            table.draw();
+        });
+
+        $('#toggleActive').trigger('change');
 
         $(document).on('click', '#view_order_btn', function(event) {
             event.preventDefault(); 
@@ -440,6 +570,92 @@ if(isset($_REQUEST['customer_id'])){
                     alert("An error occurred. Please try again.");
                 }
             });
+        });
+
+        function filterTable() {
+            var textSearch = $('#text-srh').val().toLowerCase();
+            var isActive = $('#toggleActive').is(':checked');
+
+            $.fn.dataTable.ext.search = [];
+
+            if (textSearch) {
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                    return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
+                });
+            }
+
+            if (isActive) {
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                    var statusText = $(table.row(dataIndex).node()).find('span.estimate_status').text().trim();
+                    return statusText !== 'Sent to Customer';
+                });
+            }
+
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                var row = $(table.row(dataIndex).node());
+                var match = true;
+
+                $('.filter-selection').each(function() {
+                    var filterValue = $(this).val()?.toString() || '';
+                    var rowValue = row.data($(this).data('filter'))?.toString() || '';
+
+                    if (filterValue && filterValue !== '/' && rowValue !== filterValue) {
+                        match = false;
+                        return false;
+                    }
+                });
+
+                return match;
+            });
+
+            table.draw();
+            updateSelectedTags();
+        }
+
+        $(document).on('change', '.filter-selection', filterTable);
+
+        $(document).on('input', '#text-srh', filterTable);
+
+        $(document).on('change', '#toggleActive', filterTable);
+
+        function updateSelectedTags() {
+            var displayDiv = $('#selected-tags');
+            displayDiv.empty();
+
+            $('.filter-selection').each(function() {
+                var selectedOption = $(this).find('option:selected');
+                var selectedText = selectedOption.text().trim();
+                var filterName = $(this).data('filter-name');
+
+                if ($(this).val()) {
+                    displayDiv.append(`
+                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                            <span class="text-dark">${filterName}: ${selectedText}</span>
+                            <button type="button" 
+                                class="btn-close btn-sm ms-1 remove-tag" 
+                                style="width: 0.75rem; height: 0.75rem;" 
+                                aria-label="Close" 
+                                data-select="#${$(this).attr('id')}">
+                            </button>
+                        </div>
+                    `);
+                }
+            });
+
+            $('.remove-tag').on('click', function() {
+                $($(this).data('select')).val('').trigger('change');
+                $(this).parent().remove();
+            });
+        }
+
+        $(document).on('click', '.reset_filters', function () {
+            $('.filter-selection').each(function () {
+                $(this).val(null).trigger('change.select2');
+            });
+
+            $('#text-srh').val('');
+
+            filterTable();
         });
     });
 </script>
