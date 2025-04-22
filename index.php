@@ -1438,6 +1438,15 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "staging_bin") {include 'pages/staging_bin.php';}
             if ($_REQUEST['page'] == "shipping_company") {include 'pages/shipping_company.php';}
+
+            if ($_REQUEST['page'] == "truss_type") {include 'pages/truss_type.php';}
+            if ($_REQUEST['page'] == "truss_material") {include 'pages/truss_material.php';}
+            if ($_REQUEST['page'] == "truss_ceiling_load") {include 'pages/truss_ceiling_load.php';}
+
+            if ($_REQUEST['page'] == "truss_pitch") {include 'pages/truss_pitch.php';}
+            if ($_REQUEST['page'] == "truss_overhang") {include 'pages/truss_overhang.php';}
+            if ($_REQUEST['page'] == "truss_spacing") {include 'pages/truss_spacing.php';}
+            
           ?>
         </div>
       </div>
