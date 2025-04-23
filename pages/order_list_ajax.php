@@ -89,6 +89,13 @@ if(isset($_REQUEST['action'])) {
                                                         
                                                         $status_prod_db = $row['status'];
 
+                                                        $product_name = '';
+                                                        if(!empty($row['product_item'])){
+                                                            $product_name = $row['product_item'];
+                                                        }else{
+                                                            $product_name = getProductName($row['product_id']);
+                                                        }
+
                                                         if($status_prod_db == '1'){
                                                             $is_processing = true;
                                                         }
@@ -108,7 +115,7 @@ if(isset($_REQUEST['action'])) {
                                                                 <input type="checkbox" class="row-checkbox" value="<?= $row['id'] ?>" data-status="">
                                                             </td>
                                                             <td>
-                                                                <?php echo getProductName($row['productid']) ?>
+                                                                <?= $product_name ?>
                                                             </td>
                                                             <td>
                                                             <div class="d-flex mb-0 gap-8">

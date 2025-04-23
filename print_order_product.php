@@ -149,10 +149,18 @@ if (mysqli_num_rows($result) > 0) {
                         $productid = $row_product['productid'];
                         $product_details = getProductDetails($productid);
                         $grade_details = getGradeDetails($product_details['grade']);
+
+                        $product_name = '';
+                        if(!empty($row_product['product_item'])){
+                            $product_name = $row_product['product_item'];
+                        }else{
+                            $product_name = $product_details['product_item'];
+                        }
+
                         $data[] = [
                             $row_product['quantity'],
                             '',
-                            $product_details['product_item'],
+                            $product_name,
                             getColorName($product_details['color']),
                             $grade_details['grade_abbreviations'] ?? '',
                             '',
@@ -238,10 +246,18 @@ if (mysqli_num_rows($result) > 0) {
                     $productid = $row_product['productid'];
                     $product_details = getProductDetails($productid);
                     $grade_details = getGradeDetails($product_details['grade']);
+
+                    $product_name = '';
+                    if(!empty($row_product['product_item'])){
+                        $product_name = $row_product['product_item'];
+                    }else{
+                        $product_name = $product_details['product_item'];
+                    }
+
                     $data[] = [
                         $row_product['quantity'],
                         '',
-                        $product_details['product_item'],
+                        $product_name,
                         getColorName($product_details['color']),
                         $grade_details['grade_abbreviations'] ?? '',
                         '',

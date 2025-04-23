@@ -9,6 +9,7 @@ require '../../includes/functions.php';
 
 $trim_id = 4;
 $panel_id = 3;
+$custom_truss_id = 163;
 
 function findCartKey($cart, $product_id, $line) {
     foreach ($cart as $key => $item) {
@@ -300,6 +301,8 @@ if (isset($_REQUEST['query'])) {
             : $default_image;
 
             $is_panel = $row_product['product_category'] == $panel_id ? true : false;
+            $is_custom_truss = $row_product['product_type'] == $custom_truss_id ? true : false;
+
             $qty_input = !$is_panel 
                 ? ' <div class="input-group input-group-sm">
                         <button class="btn btn-outline-primary btn-minus" type="button" data-id="' . $row_product['product_id'] . '">-</button>
@@ -308,7 +311,13 @@ if (isset($_REQUEST['query'])) {
                     </div>'
                 : '';
 
-            $btn_id = $is_panel ? 'add-to-cart-btn' : 'add-to-cart-non-panel';
+            if($is_panel){
+                $btn_id = 'add-to-cart-btn';
+            }else if($is_custom_truss){
+                $btn_id = 'add-to-cart-custom-truss-btn';
+            }else{
+                $btn_id = 'add-to-cart-non-panel';
+            }
 
             $tableHTML .= '
             <tr>
@@ -552,6 +561,10 @@ if (isset($_POST['save_estimate'])) {
             $product_details = getProductDetails($product_id);
             $quantity_cart = intval($item['quantity_cart']);
 
+            $product_item = $item['product_item'] ?? '';
+
+            $quantity_cart = intval($item['quantity_cart']);
+
             $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
 
             $unit_price = floatval($item['unit_price']);
@@ -575,13 +588,14 @@ if (isset($_POST['save_estimate'])) {
             $stiff_board_batten = !empty($item['stiff_board_batten']) ? $item['stiff_board_batten'] : '0';
             $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
 
-            $values[] = "('$estimateid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
+            $values[] = "('$estimateid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
 
             if ($product_details['product_origin'] == 2) {
                 $query = "INSERT INTO work_order_product (
                             work_order_id, 
                             type,
                             productid, 
+                            product_item,
                             quantity, 
                             custom_width, 
                             custom_bend, 
@@ -604,6 +618,7 @@ if (isset($_POST['save_estimate'])) {
                             '$estimateid', 
                             '1',
                             '$product_id', 
+                            '$product_item', 
                             '$quantity_cart', 
                             '$estimate_width', 
                             '$estimate_bend', 
@@ -630,7 +645,7 @@ if (isset($_POST['save_estimate'])) {
             }
         }
 
-        $query = "INSERT INTO estimate_prod (estimateid, product_id, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
+        $query = "INSERT INTO estimate_prod (estimateid, product_id, product_item, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
@@ -827,6 +842,9 @@ if (isset($_POST['save_order'])) {
             }
             
             $product_id = intval($item['product_id']);
+
+            $product_item = $item['product_item'] ?? '';
+
             $product_details = getProductDetails($product_id);
             $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
             $quantity_cart = intval($item['quantity_cart']);
@@ -853,7 +871,7 @@ if (isset($_POST['save_order'])) {
             $stiff_board_batten = !empty($item['stiff_board_batten']) ? $item['stiff_board_batten'] : '0';
             $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
 
-            $values[] = "('$orderid', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
+            $values[] = "('$orderid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
             
             $upd_inventory = "UPDATE inventory 
                             SET quantity = quantity - $quantity_cart, quantity_ttl = quantity_ttl - $quantity_cart 
@@ -869,6 +887,7 @@ if (isset($_POST['save_order'])) {
                             work_order_id, 
                             type,
                             productid, 
+                            product_item,
                             quantity, 
                             custom_width, 
                             custom_bend, 
@@ -891,6 +910,7 @@ if (isset($_POST['save_order'])) {
                             '$orderid', 
                             '2', 
                             '$product_id', 
+                            '$product_item', 
                             '$quantity_cart', 
                             '$estimate_width', 
                             '$estimate_bend', 
@@ -918,7 +938,7 @@ if (isset($_POST['save_order'])) {
             
         }
 
-        $query = "INSERT INTO order_product (orderid, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
+        $query = "INSERT INTO order_product (orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
@@ -1035,6 +1055,9 @@ if (isset($_POST['save_approval'])) {
                 $discount = isset($discount_default) ? $discount_default : 0.0;
             }
             $product_id = intval($item['product_id']);
+
+            $product_item = $item['product_item'] ?? '';
+
             $product_details = getProductDetails($product_id);
             $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
             $quantity_cart = intval($item['quantity_cart']);
@@ -1057,10 +1080,10 @@ if (isset($_POST['save_approval'])) {
             $stiff_board_batten = !empty($item['stiff_board_batten']) ? $item['stiff_board_batten'] : '0';
             $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
 
-            $values[] = "('$approval_id', '$product_id', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
+            $values[] = "('$approval_id', '$product_id', '$product_item', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
         }
 
-        $query = "INSERT INTO approval_product (approval_id, productid, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
+        $query = "INSERT INTO approval_product (approval_id, productid, product_item, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
@@ -1667,6 +1690,90 @@ if (isset($_POST['add_to_cart'])) {
 
     
 
+    echo 'success';
+}
+
+if (isset($_POST['add_custom_truss_to_cart'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['product_id'] ?? '');
+    $truss_type = mysqli_real_escape_string($conn, $_POST['truss_type'] ?? '');
+    $truss_material = mysqli_real_escape_string($conn, $_POST['truss_material'] ?? '');
+    $size = mysqli_real_escape_string($conn, $_POST['size'] ?? '');
+    $truss_pitch = mysqli_real_escape_string($conn, $_POST['truss_pitch'] ?? '');
+    $truss_spacing = mysqli_real_escape_string($conn, $_POST['truss_spacing'] ?? '');
+    $truss_ceiling_load = mysqli_real_escape_string($conn, $_POST['truss_ceiling_load'] ?? '');
+    $truss_left_overhang = mysqli_real_escape_string($conn, $_POST['truss_left_overhang'] ?? '');
+    $truss_right_overhang = mysqli_real_escape_string($conn, $_POST['truss_right_overhang'] ?? '');
+    $truss_top_pitch = mysqli_real_escape_string($conn, $_POST['truss_top_pitch'] ?? '');
+    $truss_bottom_pitch = mysqli_real_escape_string($conn, $_POST['truss_bottom_pitch'] ?? '');
+    $quantity = mysqli_real_escape_string($conn, $_POST['quantity_product'][0] ?? '');
+    $cost = mysqli_real_escape_string($conn, $_POST['cost'] ?? '');
+    $price = mysqli_real_escape_string($conn, $_POST['price'] ?? '');
+    $line = 1;
+
+    if (!isset($_SESSION["cart"])) {
+        $_SESSION["cart"] = array();
+    }
+
+    $material_name = getTrussMaterialName($truss_material);
+    $overhang_left_name = getTrussOverhangName($truss_left_overhang);
+    $overhang_right_name = getTrussOverhangName($truss_right_overhang);
+    $pitch_name = getTrussPitchName($truss_pitch);
+    $spacing_name = getTrussSpacingName($truss_spacing);
+    $type_name = getTrussTypeName($truss_type);
+
+    $parts = [];
+
+    $parts[] = '(Custom Truss)';
+
+    if (!empty($size)) {
+        $parts[] = $size;
+    }
+    if (!empty($material_name)) {
+        $parts[] = $material_name;
+    }
+    if (!empty($overhang_left_name)) {
+        $parts[] = $overhang_left_name;
+    }
+    if (!empty($overhang_right_name)) {
+        $parts[] = $overhang_right_name;
+    }
+    if (!empty($pitch_name)) {
+        $parts[] = $pitch_name;
+    }
+    if (!empty($spacing_name)) {
+        $parts[] = $spacing_name;
+    }
+    if (!empty($type_name)) {
+        $parts[] = $type_name;
+    }
+
+    $product_item = implode(' - ', $parts);
+
+    $query = "SELECT * FROM product WHERE product_id = '$product_id'";
+    $result = mysqli_query($conn, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $item_quantity = $quantity;
+
+        $quantityInStock = getProductStockInStock($product_id);
+        $totalQuantity = getProductStockTotal($product_id);
+        $totalStock = $totalQuantity;
+
+        $weight = floatval($row['weight']);
+        $item_array = array(
+            'product_id' => $row['product_id'],
+            'product_item' => $product_item,
+            'unit_price' => $price,
+            'line' => 1,
+            'quantity_ttl' => $totalStock,
+            'quantity_in_stock' => $quantityInStock,
+            'quantity_cart' => $item_quantity
+        );
+
+        $_SESSION["cart"][] = $item_array;
+    }
+    
     echo 'success';
 }
 

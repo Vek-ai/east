@@ -8,12 +8,12 @@ $page_title = "Estimate List";
 
 $status_labels = [
     1 => ['label' => 'New Estimate', 'class' => 'badge bg-primary'],
-    2 => ['label' => 'Sent to Customer', 'class' => 'badge bg-success'],
+    2 => ['label' => 'Email Sent to Customer', 'class' => 'badge bg-success'],
     3 => ['label' => 'Modified by Customer', 'class' => 'badge bg-warning'],
     4 => ['label' => 'Approved', 'class' => 'badge bg-secondary'],
     5 => ['label' => 'Processing', 'class' => 'badge bg-success'],
     6 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
-    7 => ['label' => 'Sent to Customer', 'class' => 'badge bg-success']
+    7 => ['label' => 'Delivered', 'class' => 'badge bg-success']
 ];
 
 if(isset($_REQUEST['customer_id'])){
@@ -707,7 +707,7 @@ if(isset($_REQUEST['customer_id'])){
 
             var statusText = statusSpan.text().trim();
 
-            if (isActive && statusText === 'Sent to Customer') {
+            if (isActive && statusText === 'Delivered') {
                 return false;
             }
             
@@ -1178,7 +1178,7 @@ if(isset($_REQUEST['customer_id'])){
             if (isActive) {
                 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                     var statusText = $(table.row(dataIndex).node()).find('span.estimate_status').text().trim();
-                    return statusText !== 'Sent to Customer';
+                    return statusText !== 'Delivered';
                 });
             }
 

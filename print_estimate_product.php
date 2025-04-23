@@ -135,10 +135,18 @@ if (mysqli_num_rows($result) > 0) {
                         $product_id = $row_product['product_id'];
                         $product_details = getProductDetails($product_id);
                         $grade_details = getGradeDetails($product_details['grade']);
+
+                        $product_name = '';
+                        if(!empty($row_product['product_item'])){
+                            $product_name = $row_product['product_item'];
+                        }else{
+                            $product_name = $product_details['product_item'];
+                        }
+
                         $data[] = [
                             $row_product['quantity'],
                             '',
-                            $product_details['product_item'],
+                            $product_name,
                             getColorName($product_details['color']),
                             $grade_details['grade_abbreviations'] ?? '',
                             '',
@@ -199,7 +207,7 @@ if (mysqli_num_rows($result) > 0) {
             $data = array();
             $query_product="SELECT
                                 p.product_category,
-                                ep.*
+                                ep.*, ep.product_item as name
                             FROM
                                 estimate_prod AS ep
                             LEFT JOIN product AS p
@@ -226,10 +234,18 @@ if (mysqli_num_rows($result) > 0) {
                     $product_id = $row_product['product_id'];
                     $product_details = getProductDetails($product_id);
                     $grade_details = getGradeDetails($product_details['grade']);
+
+                    $product_name = '';
+                    if(!empty($row_product['name'])){
+                        $product_name = $row_product['name'];
+                    }else{
+                        $product_name = $product_details['product_item'];
+                    }
+
                     $data[] = [
                         $row_product['quantity'],
                         '',
-                        $product_details['product_item'],
+                        $product_name,
                         getColorName($product_details['color']),
                         $grade_details['grade_abbreviations'] ?? '',
                         '',

@@ -89,6 +89,13 @@ if(isset($_REQUEST['action'])) {
                                                         $estimateid = $row['estimateid'];
                                                         $product_details = getProductDetails($row['product_id']);
 
+                                                        $product_name = '';
+                                                        if(!empty($row['product_item'])){
+                                                            $product_name = $row['product_item'];
+                                                        }else{
+                                                            $product_name = getProductName($row['product_id']);
+                                                        }
+
                                                         $status_prod_db = $row['status'];
 
                                                         if($status_prod_db == '1'){
@@ -109,7 +116,7 @@ if(isset($_REQUEST['action'])) {
                                                     <td class="text-center">
                                                         <input type="checkbox" class="row-checkbox" value="<?= $row['id'] ?>" data-status="">
                                                     </td>
-                                                    <td><?= getProductName($row['product_id']) ?></td>
+                                                    <td><?= $product_name ?></td>
                                                     <td>
                                                         <div class="d-flex mb-0 gap-8">
                                                             <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($row['custom_color'])?>"></a>

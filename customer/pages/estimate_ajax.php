@@ -27,7 +27,7 @@ if(isset($_REQUEST['action'])) {
         $total_records = $total_row['total'];
         $total_pages = ceil($total_records / $limit);
     
-        $query = "SELECT ep.*, p.product_item 
+        $query = "SELECT ep.*, p.product_item, ep.product_item as est_prod_name
                   FROM estimate_prod ep
                   JOIN product p ON ep.product_id = p.product_id
                   WHERE ep.estimateid = '$estimateid' 
@@ -46,8 +46,15 @@ if(isset($_REQUEST['action'])) {
 
         while ($row_prod = mysqli_fetch_assoc($result)) {
             $product_details = getProductDetails($row_prod['product_id']);
+
+            $product_name = '';
+            if(!empty($row_prod['est_prod_name'])){
+                $product_name = $row_prod['est_prod_name'];
+            }else{
+                $product_name = getProductName($row_prod['product_id']);
+            }
             
-            $row_prod['product_name'] = $product_details['product_item'];
+            $row_prod['product_name'] = $product_name;
             $row_prod['category'] = getProductCategoryName($product_details['product_category']);
             $row_prod['image'] = !empty($product_details['main_image']) ? "../" . $product_details['main_image'] : '../images/product/product.jpg';
             

@@ -1102,4 +1102,74 @@ function getCartDataByCustomerId($customer_id) {
     return $cartData;
 }
 
+function getTrussTypeName($id) {
+    global $conn;
+    $id = intval($id);
+    $query = "SELECT truss_type FROM truss_type WHERE truss_type_id = '$id'";
+    $result = mysqli_query($conn, $query);
+    if ($row = mysqli_fetch_assoc($result)) {
+        return $row['truss_type'];
+    }
+    return '';
+}
+
+function getTrussMaterialName($id) {
+    global $conn;
+    $id = intval($id);
+    $query = "SELECT truss_material FROM truss_material WHERE truss_material_id = '$id'";
+    $result = mysqli_query($conn, $query);
+    if ($row = mysqli_fetch_assoc($result)) {
+        return $row['truss_material'];
+    }
+    return '';
+}
+
+function getTrussCeilingLoadName($id) {
+    global $conn;
+    $id = mysqli_real_escape_string($conn, $id);
+    $query = "SELECT truss_ceiling_load FROM truss_ceiling_load WHERE truss_ceiling_load = '$id'";
+    $result = mysqli_query($conn, $query);
+    if ($row = mysqli_fetch_assoc($result)) {
+        return $row['truss_ceiling_load'];
+    }
+    return '';
+}
+
+function getTrussSpacingName($id) {
+    global $conn;
+    $id = intval($id);
+    $query = "SELECT truss_spacing, unit_of_measure FROM truss_spacing WHERE truss_spacing_id = '$id'";
+    $result = mysqli_query($conn, $query);
+    if ($row = mysqli_fetch_assoc($result)) {
+        return trim($row['truss_spacing'] . ' ' . $row['unit_of_measure']);
+    }
+    return '';
+}
+
+function getTrussOverhangName($id) {
+    global $conn;
+    $id = intval($id);
+    $query = "SELECT truss_overhang, unit_of_measure FROM truss_overhang WHERE truss_overhang_id = '$id'";
+    $result = mysqli_query($conn, $query);
+    if ($row = mysqli_fetch_assoc($result)) {
+        return trim($row['truss_overhang'] . ' ' . $row['unit_of_measure']);
+    }
+    return '';
+}
+
+function getTrussPitchName($id) {
+    global $conn;
+    $id = intval($id);
+    $query = "SELECT numerator, denominator FROM truss_pitch WHERE truss_pitch_id = '$id'";
+    $result = mysqli_query($conn, $query);
+    if ($row = mysqli_fetch_assoc($result)) {
+        $numerator = $row['numerator'];
+        $denominator = $row['denominator'];
+        if (!empty($numerator) && !empty($denominator)) {
+            return "{$numerator}/{$denominator}";
+        }
+    }
+    return '';
+}
+
 ?>
