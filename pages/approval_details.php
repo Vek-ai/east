@@ -180,7 +180,7 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                                                     </td>
                                                     <td>
                                                         <div class="action-btn text-center">
-                                                            <a href="#" class="text-decoration-none" id="viewAvailableBtn" data-app-prod-id="<?= $row['id'] ?>">
+                                                            <a href="#" title="View" class="text-decoration-none" id="viewAvailableBtn" data-app-prod-id="<?= $row['id'] ?>">
                                                                 <i class="text-white ti ti-eye fs-7"></i>
                                                             </a>
                                                         </div>

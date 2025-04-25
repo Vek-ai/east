@@ -207,11 +207,11 @@ if(!empty($_REQUEST['product_coating_id'])){
                   <td><?= $status ?></td>
                   <td class="text-center" id="action-button-<?= $no ?>">
                       <?php if ($row_product_coating['status'] == '0') { ?>
-                          <a href="#" class="text-decoration-none py-1 text-dark hideSystem" data-id="<?= $product_coating_id ?>" data-row="<?= $no ?>">
+                          <a href="#" title="Archive" class="text-decoration-none py-1 text-dark hideSystem" data-id="<?= $product_coating_id ?>" data-row="<?= $no ?>">
                             <i class="text-danger ti ti-trash fs-7"></i>
                           </a>
                       <?php } else { ?>
-                          <a href="?page=product_coating&product_coating_id=<?= $product_coating_id ?>" class="text-decoration-none py-1">
+                          <a href="?page=product_coating&product_coating_id=<?= $product_coating_id ?>" title="Edit" class="text-decoration-none py-1">
                             <i class="text-warning ti ti-pencil fs-7"></i>
                           </a>
                       <?php } ?>
@@ -244,13 +244,13 @@ if(!empty($_REQUEST['product_coating_id'])){
                                     $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
                                     $(".changeStatus[data-no='" + no + "']").data('status', "0");
                                     $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                    $('#action-button-' + no).html('<a href="#" class="text-decoration-none py-1 text-dark hideSystem" data-id="' + product_coating_id + '" data-row="' + no + '" style="border-radius: 10%;"><i class="text-danger ti ti-trash fs-7"></i></a>');
+                                    $('#action-button-' + no).html('<a href="#" title="Archive" class="text-decoration-none py-1 text-dark hideSystem" data-id="' + product_coating_id + '" data-row="' + no + '" style="border-radius: 10%;"><i class="text-danger ti ti-trash fs-7"></i></a>');
                                     $('#toggleActive').trigger('change');
                                   } else {
                                     $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                                     $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                     $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                    $('#action-button-' + no).html('<a href="?page=product_coating&product_coating_id=' + product_coating_id + '" class="text-decoration-none py-1" style="border-radius: 10%;"><i class="text-warning ti ti-pencil fs-7"></i></a>');
+                                    $('#action-button-' + no).html('<a href="?page=product_coating&product_coating_id=' + product_coating_id + '" title="Edit" class="text-decoration-none py-1" style="border-radius: 10%;"><i class="text-warning ti ti-pencil fs-7"></i></a>');
                                     $('#toggleActive').trigger('change');
                                   }
                             } else {

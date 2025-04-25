@@ -320,8 +320,8 @@ $picture_path = "images/product/product.jpg";
                                         <td><?= $row_prod_color['gauge'] ?></td>
                                         <td>
                                             <div class="action-btn text-center">
-                                                <a href="#" class="text-primary view_color_btn" data-title="Update Color Group Multiplier" data-category="<?= $row_prod_color['product_category'] ?>" data-id="<?= $row_prod_color['id'] ?>">
-                                                    <i class="text-primary ti ti-eye fs-7"></i>
+                                                <a href="#" title="View" class="view_color_btn" data-title="Update Color Group Multiplier" data-category="<?= $row_prod_color['product_category'] ?>" data-id="<?= $row_prod_color['id'] ?>">
+                                                    <i class="ti ti-eye fs-7"></i>
                                                 </a>
                                             </div>
                                         </td>

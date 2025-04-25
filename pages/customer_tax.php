@@ -170,8 +170,8 @@ if (!empty($_REQUEST['result'])) {
                         <td><?= $tax_status_desc ?></td>
                         <td><?= $percentage ?></td>
                         <td><?= $status ?></td>
-                        <td class="text-center id="action-button-<?= $no ?>">
-                          <a href="#" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $taxid ?>" data-type="edit">
+                        <td class="text-center" id="action-button-<?= $no ?>">
+                          <a href="#" id="addModalBtn" title="Edit" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $taxid ?>" data-type="edit">
                             <i class="ti ti-pencil fs-7"></i>
                           </a>
                         </td>

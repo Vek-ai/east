@@ -193,13 +193,13 @@ $page_title = "Supplier";
                                     <td><?= $status ?></td>
                                     <td>
                                         <div class="action-btn d-flex justify-content-center align-items-center gap-2">
-                                            <a href="#" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-toggle="tooltip" data-placement="top" title="View" data-id="<?= $supplier_id ?>" data-type="view">
+                                            <a href="#" id="addModalBtn" title="View" class="d-flex align-items-center justify-content-center text-decoration-none" data-toggle="tooltip" data-placement="top" title="View" data-id="<?= $supplier_id ?>" data-type="view">
                                                 <i class="fa fa-eye"></i>
                                             </a>
-                                            <a href="#" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-toggle="tooltip" data-placement="top" title="Edit" data-id="<?= $supplier_id ?>" data-type="edit">
+                                            <a href="#" id="addModalBtn" title="Edit" class="d-flex align-items-center justify-content-center text-decoration-none" data-toggle="tooltip" data-placement="top" title="Edit" data-id="<?= $supplier_id ?>" data-type="edit">
                                                 <i class="fa fa-pencil text-warning"></i>
                                             </a>
-                                            <a href="?page=supplier_dashboard&id=<?= $supplier_id ?>" class="py-1 pe-1" data-toggle="tooltip" data-placement="top" title="Dashboard">
+                                            <a href="?page=supplier_dashboard&id=<?= $supplier_id ?>" title="Dashboard"  class="py-1 pe-1" data-toggle="tooltip" data-placement="top" title="Dashboard">
                                                 <i class="fa fa-chart-bar text-info"></i>
                                             </a>
                                             <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_supplier['supplier_id'] ?>">

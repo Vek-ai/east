@@ -216,11 +216,11 @@ if(!empty($_REQUEST['product_system_id'])){
                         <td><?= $status ?></td>
                         <td class="text-center" id="action-button-<?= $no ?>">
                             <?php if ($row_product_system['status'] == '0') { ?>
-                                <a href="#" class="py-1 text-dark hideSystem" data-id="<?= $product_system_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>
+                                <a href="#" class="py-1 text-dark hideSystem" title="Archive" data-id="<?= $product_system_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>
                                     <i class="text-danger ti ti-trash fs-7"></i>
                                 </a>
                             <?php } else { ?>
-                                <a href="#" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $product_system_id ?>" data-type="edit">
+                                <a href="#" id="addModalBtn" title="Edit" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $product_system_id ?>" data-type="edit">
                                     <i class="ti ti-pencil fs-7"></i>
                                 </a>
                             <?php } ?>
@@ -253,13 +253,13 @@ if(!empty($_REQUEST['product_system_id'])){
                                           $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
                                           $(".changeStatus[data-no='" + no + "']").data('status', "0");
                                           $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                          $('#action-button-' + no).html('<a href="#" class="py-1 text-dark hideSystem" data-id="' + product_system_id + '" data-row="' + no + '" style="border-radius: 10%;"><i class="text-danger ti ti-trash fs-7"></i></a>');
+                                          $('#action-button-' + no).html('<a href="#" title="Archive" class="py-1 text-dark hideSystem" data-id="' + product_system_id + '" data-row="' + no + '" style="border-radius: 10%;"><i class="text-danger ti ti-trash fs-7"></i></a>');
                                           $('#toggleActive').trigger('change');
                                         } else {
                                           $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                                           $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                           $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                          $('#action-button-' + no).html('<a href="?page=product_system&product_system_id=' + product_system_id + '" class="py-1" style="border-radius: 10%;"><i class="ti ti-pencil fs-7"></a>');
+                                          $('#action-button-' + no).html('<a href="?page=product_system&product_system_id=' + product_system_id + '" title="Edit" class="py-1" style="border-radius: 10%;"><i class="ti ti-pencil fs-7"></a>');
                                           $('#toggleActive').trigger('change');
                                         }
                                   } else {

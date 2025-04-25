@@ -107,7 +107,7 @@ if (isset($_POST['search_product_orders'])) {
                         <?= htmlspecialchars($total_quantity_sold) ?>
                     </td>
                     <td>
-                        <a href="javascript:void(0)" data-id="<?= $row['product_id'] ?>" id="view_details">
+                        <a href="javascript:void(0)" title="View" data-id="<?= $row['product_id'] ?>" id="view_details">
                             <i class="fa fa-eye"></i>
                         </a>
                     </td>

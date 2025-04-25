@@ -165,10 +165,11 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                         <a href="#" id="section-edit" 
                                                                                     class="text-primary addEditSectionBtn" 
                                                                                     data-id="<?= $row_wh_section['id'] ?>"
+                                                                                    title="Edit"
                                                                                     data-warehouse-id="<?= $WarehouseID ?>">
                                                                             <i class="text-warning ti ti-pencil fs-7"></i>
                                                                         </a>
-                                                                        <a href="#" id="section-delete" class="text-danger" data-id="<?= $row_wh_section['id'] ?>">
+                                                                        <a href="#" id="section-delete" class="text-danger" title="Archive" data-id="<?= $row_wh_section['id'] ?>">
                                                                             <i class="text-danger ti ti-trash fs-7"></i>
                                                                         </a>
                                                                     </div>
@@ -221,10 +222,11 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                         <a href="#" id="row-edit" 
                                                                                     class="text-primary addEditRowBtn" 
                                                                                     data-id="<?= $row_wh_rows['WarehouseRowID'] ?>"
+                                                                                    title="Edit"
                                                                                     data-warehouse-id="<?= $WarehouseID ?>">
                                                                             <i class="text-warning ti ti-pencil fs-7"></i>
                                                                         </a>
-                                                                        <a href="#" id="row-delete" class="text-danger" data-id="<?= $row_wh_rows['WarehouseRowID'] ?>">
+                                                                        <a href="#" id="row-delete" class="text-danger" title="Archive" data-id="<?= $row_wh_rows['WarehouseRowID'] ?>">
                                                                             <i class="text-danger ti ti-trash fs-7"></i>
                                                                         </a>
                                                                     </div>
@@ -286,10 +288,11 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                             <a href="#" id="shelf-edit" 
                                                                                         class="text-primary addEditShelfBtn" 
                                                                                         data-id="<?= $row_wh_shelves['ShelfID'] ?>"
+                                                                                        title="Edit"
                                                                                         data-warehouse-id="<?= $WarehouseID ?>">
                                                                                 <i class="text-warning ti ti-pencil fs-7"></i>
                                                                             </a>
-                                                                            <a href="#" id="shelf-delete" class="text-danger" data-id="<?= $row_wh_shelves['ShelfID'] ?>">
+                                                                            <a href="#" id="shelf-delete" class="text-danger" title="Archive" data-id="<?= $row_wh_shelves['ShelfID'] ?>">
                                                                                 <i class="text-danger ti ti-trash fs-7"></i>
                                                                             </a>
                                                                         </div>
@@ -344,10 +347,11 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                         <a href="#" id="bin-edit" 
                                                                                     class="text-primary addEditBinBtn" 
                                                                                     data-id="<?= $row_wh_bins['BinID'] ?>"
+                                                                                    title="Edit"
                                                                                     data-warehouse-id="<?= $WarehouseID ?>">
                                                                             <i class="text-warning ti ti-pencil fs-7"></i>
                                                                         </a>
-                                                                        <a href="#" id="bin-delete" class="text-danger" data-id="<?= $row_wh_bins['BinID'] ?>">
+                                                                        <a href="#" id="bin-delete" class="text-danger" title="Archive" data-id="<?= $row_wh_bins['BinID'] ?>">
                                                                             <i class="text-danger ti ti-trash fs-7"></i>
                                                                         </a>
                                                                     </div>

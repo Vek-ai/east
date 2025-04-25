@@ -126,7 +126,7 @@ if (isset($_POST['search_requests'])) {
                         $ <?= number_format($ttl_price, 2) ?>
                     </td>
                     <td>
-                        <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="view_request_details" data-id="<?php echo $row["approval_id"]; ?>" data-toggle="tooltip" data-placement="top" title="View"><i class="fa fa-eye"></i></a>
+                        <a href="javascript:void(0);" class="py-1 pe-1 fs-5" title="View" id="view_request_details" data-id="<?php echo $row["approval_id"]; ?>" data-toggle="tooltip" data-placement="top" title="View"><i class="fa fa-eye"></i></a>
                     </td>
                 </tr>
                 <?php

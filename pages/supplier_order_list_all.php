@@ -173,9 +173,9 @@ if(isset($_REQUEST['supplier_id'])){
                                     <span class="<?= $status_info['class'] ?>"><?= $status_info['label'] ?></span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?= $row["supplier_order_id"]; ?>"><i class="text-white fa fa-eye fs-5"></i></button>
-                                    <a href="print_supplier_order.php?id=<?= $row["supplier_order_id"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?= $row["supplier_order_id"]; ?>"><i class="text-info fa fa-print fs-5"></i></a>
-                                    <a href="supplier/index.php?id=<?=$row["supplier_order_id"]?>&key=<?=$row["order_key"]?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?= $row["supplier_order_id"]; ?>">
+                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" title="View" id="view_order_btn" type="button" data-id="<?= $row["supplier_order_id"]; ?>"><i class="text-white fa fa-eye fs-5"></i></button>
+                                    <a href="print_supplier_order.php?id=<?= $row["supplier_order_id"]; ?>" title="Print" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?= $row["supplier_order_id"]; ?>"><i class="text-info fa fa-print fs-5"></i></a>
+                                    <a href="supplier/index.php?id=<?=$row["supplier_order_id"]?>&key=<?=$row["order_key"]?>" title="Summary" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?= $row["supplier_order_id"]; ?>">
                                         <i class="text-info fa fa-sign-in-alt fs-5"></i>
                                     </a>
                                 </td>

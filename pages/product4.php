@@ -632,19 +632,19 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                         <td><?= $status ?></td>
                                         <td>
                                             <div class="action-btn text-center">
-                                                <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
+                                                <a href="#" title="View" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
                                                     <i class="text-primary ti ti-eye fs-7"></i>
                                                 </a>
-                                                <a href="#" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>" data-category="<?= $row_product['product_category'] ?>">
+                                                <a href="#" title="Edit" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>" data-category="<?= $row_product['product_category'] ?>">
                                                     <i class="text-warning ti ti-pencil fs-7"></i>
                                                 </a>
-                                                <a href="#" id="duplicate_product_btn" class="text-info edit" data-id="<?= $row_product['product_id'] ?>" data-category="<?= $row_product['product_category'] ?>">
+                                                <a href="#" title="Duplicate" id="duplicate_product_btn" class="text-info edit" data-id="<?= $row_product['product_id'] ?>" data-category="<?= $row_product['product_category'] ?>">
                                                     <i class="text-info ti ti-copy fs-7"></i>
                                                 </a>
-                                                <a href="#" id="add_inventory_btn" class="text-info edit d-none" data-id="<?= $row_product['product_id'] ?>">
+                                                <a href="#" title="Add to Inventory" id="add_inventory_btn" class="text-info edit d-none" data-id="<?= $row_product['product_id'] ?>">
                                                     <i class="text-info ti ti-plus fs-6"></i>
                                                 </a>
-                                                <a href="#" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $product_id ?>" data-status='<?= $db_status ?>'>
+                                                <a href="#" title="Archive" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $product_id ?>" data-status='<?= $db_status ?>'>
                                                     <i class="text-danger ti ti-trash fs-7"></i>
                                                 </a>
                                                 
@@ -683,7 +683,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                                         var newStatusText = (status == 1) ? 'Inactive' : 'Active';
                                                         var newStatusClass = (status == 1) ? 'alert-danger bg-danger' : 'alert-success bg-success';
                                                         var newIconClass = (status == 1) ? 'text-danger ti ti-reload' : 'text-danger ti ti-trash';
-                                                        var newButtonText = (status == 1) ? 'Archive' : 'Edit';
+                                                        var newButtonText = (status == 1) ? '<i class="text-danger ti ti-trash fs-7"></i>' : '<i class="ti ti-pencil fs-7"></i>';
                                                         
                                                         $('#status-alert' + no)
                                                             .removeClass()
@@ -693,7 +693,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                                         $(".changeStatus[data-no='" + no + "']").data('status', newStatus);
                                                         $('.product' + no).toggleClass('emphasize-strike', newStatus == 0);
                                                         
-                                                        $('#action-button-' + no).html('<a href="#" class="btn ' + (newStatus == 1 ? 'btn-light' : 'btn-primary') + ' py-1" data-id="' + product_id + '" data-row="' + no + '" style="border-radius: 10%;">' + newButtonText + '</a>');
+                                                        $('#action-button-' + no).html('<a href="#" class="py-1" data-id="' + product_id + '" data-row="' + no + '" style="border-radius: 10%;">' + newButtonText + '</a>');
                                                         
                                                         $('#delete_product_btn').find('i').removeClass().addClass(newIconClass + ' fs-7');
                                                         

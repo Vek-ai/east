@@ -203,9 +203,9 @@ while ($row_coil = mysqli_fetch_array($result_coil)) {
     <td><?= $status ?></td>
     <td class="text-center" id="action-button-<?= $no ?>">
         <?php if ($row_coil['status'] == '0') { ?>
-            <a href="#" class="btn btn-light py-1 text-dark hideCoil" data-id="<?= $coil_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
+            <a href="#" title="Archive" class="btn btn-light py-1 text-dark hideCoil" data-id="<?= $coil_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
         <?php } else { ?>
-            <a href="#" id="btnOrderCoil" data-id="<?= $coil_id ?>" class="btn btn-success py-1" style='border-radius: 10%;'>Order</a>
+            <a href="#" title="Edit" id="btnOrderCoil" data-id="<?= $coil_id ?>" class="btn btn-success py-1" style='border-radius: 10%;'>Order</a>
         <?php } ?>
     </td>
 </tr>
@@ -238,13 +238,13 @@ $(document).ready(function() {
                         $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
                         $(".changeStatus[data-no='" + no + "']").data('status', "0");
                         $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                        $('#action-button-' + no).html('<a href="#" class="btn btn-light py-1 text-dark hideCoil" data-id="' + coil_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
+                        $('#action-button-' + no).html('<a href="#" title="Archive" class="btn btn-light py-1 text-dark hideCoil" data-id="' + coil_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
                         $('#toggleActive').trigger('change');
                       } else {
                         $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                         $(".changeStatus[data-no='" + no + "']").data('status', "1");
                         $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                        $('#action-button-' + no).html('<a href="/?page=coils&coil_id=' + coil_id + '" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                        $('#action-button-' + no).html('<a href="/?page=coils&coil_id=' + coil_id + '" title="Edit" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
                         $('#toggleActive').trigger('change');
                       }
                 } else {

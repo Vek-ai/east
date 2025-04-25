@@ -197,7 +197,7 @@ $addressDetails = implode(', ', [
                     <?= $addressDetails ?>
                     </td>
                   <td class="text-center" id="action-button-<?= $no ?>">
-                      <button class="btn btn-primary py-1" id="showMapsBtn" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#map1Modal">Change</button>
+                      <a href="#" class="py-1" id="showMapsBtn" style="border-radius: 10%;" data-bs-toggle="modal" title="Edit" data-bs-target="#map1Modal"><i class="ti ti-pencil fs-7"></i></a>
                   </td>
               </tr>
               <?php
@@ -212,8 +212,8 @@ $addressDetails = implode(', ', [
                   <td><?= $setting_name ?></td>
                   <td><?= $value ?></td>
                   <td class="text-center" id="action-button-<?= $no ?>">
-                          <a href="/?page=settings&settingid=<?= $settingid ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
-                          <a class="btn btn-danger py-1 text-light deleteSettings" data-settingid="<?= $settingid ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Delete</a>
+                          <a href="/?page=settings&settingid=<?= $settingid ?>" title="Edit" class="py-1" style='border-radius: 10%;'><i class="ti ti-pencil fs-7"></i></a>
+                          <a class="py-1 text-light deleteSettings" title="Archive" data-settingid="<?= $settingid ?>" data-row="<?= $no ?>" style='border-radius: 10%;'><i class="text-danger ti ti-trash fs-7"></i></a>
 
                   </td>
               </tr>

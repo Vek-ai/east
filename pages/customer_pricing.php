@@ -164,11 +164,11 @@ if(!empty($_REQUEST['id'])){
                         <td><?= $status ?></td>
                         <td class="text-center" id="action-button-<?= $no ?>">
                             <?php if ($row_customer_pricing['status'] == '0') { ?>
-                                <a href="javascript:void(0)" class="py-1 hideCustomerPricing" data-id="<?= $id ?>" data-row="<?= $no ?>">
+                                <a href="javascript:void(0)" title="Archive" class="py-1 hideCustomerPricing" data-id="<?= $id ?>" data-row="<?= $no ?>">
                                   <i class="ti ti-trash fs-7"></i>
                                 </a>
                             <?php } else { ?>
-                                <a href="javascript:void(0)" id="addModalBtn" data-id="<?= $id ?>" data-type="edit" class="d-flex align-items-center justify-content-center text-decoration-none">
+                                <a href="javascript:void(0)" title="Edit" id="addModalBtn" data-id="<?= $id ?>" data-type="edit" class="d-flex align-items-center justify-content-center text-decoration-none">
                                   <i class="ti ti-pencil fs-7"></i>
                                 </a>
                             <?php } ?>
@@ -200,13 +200,13 @@ if(!empty($_REQUEST['id'])){
                                             $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
                                             $(".changeStatus[data-no='" + no + "']").data('status', "0");
                                             $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                            $('#action-button-' + no).html('<a href="javascript:void(0)" class="py-1 hideCustomerPricing" data-id="' + id + '" data-row="' + no + '"><i class="ti ti-trash fs-7"></i></a>');
+                                            $('#action-button-' + no).html('<a href="javascript:void(0)" title="Archive" class="py-1 hideCustomerPricing" data-id="' + id + '" data-row="' + no + '"><i class="ti ti-trash fs-7"></i></a>');
                                             $('#toggleActive').trigger('change');
                                           } else {
                                             $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
                                             $(".changeStatus[data-no='" + no + "']").data('status', "1");
                                             $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                            $('#action-button-' + no).html('<a href="javascript:void(0)" id="addModalBtn" data-id="' + id + '" data-type="edit" class="py-1"><i class="ti ti-pencil fs-7"></i></a>');
+                                            $('#action-button-' + no).html('<a href="javascript:void(0)" title="Edit" id="addModalBtn" data-id="' + id + '" data-type="edit" class="py-1"><i class="ti ti-pencil fs-7"></i></a>');
                                             $('#toggleActive').trigger('change');
                                           }
                                     } else {

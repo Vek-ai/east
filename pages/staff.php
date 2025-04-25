@@ -183,8 +183,8 @@ if(!empty($_REQUEST['staff_id'])){
                                         <td style="color: #ffffff !important"><?= $status ?></td>
                                         <td>
                                             <div class="action-btn text-center">
-                                                <a href="#" id="view_staff_btn" class="text-primary edit" data-id="<?= $row_staff['staff_id'] ?>">
-                                                    <i class="ti ti-pencil fs-5"></i>
+                                                <a href="#" title="Edit" id="view_staff_btn" class="text-primary edit" data-id="<?= $row_staff['staff_id'] ?>">
+                                                    <i class="ti ti-pencil fs-7"></i>
                                                 </a>
                                                 <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_staff['staff_id'] ?>">
                                                     <i class="ti ti-trash fs-5"></i>

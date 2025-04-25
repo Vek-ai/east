@@ -629,11 +629,11 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                 <td><?= $status ?></td>
                                 <td>
                                     <div class="action-btn text-center">
-                                        <a href="#" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_coil['coil_id'] ?>">
-                                            <i class="text-warning ti ti-pencil fs-7"></i>
+                                        <a href="#" title="Edit" id="edit_product_btn" class="edit" data-id="<?= $row_coil['coil_id'] ?>">
+                                            <i class="ti ti-pencil fs-7"></i>
                                         </a>
-                                        <a href="#" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $coil_id ?>" data-status='<?= $db_status ?>'>
-                                            <i class="ti <?= $status_icon ?> fs-7"></i>
+                                        <a href="#" title="Archive" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $coil_id ?>" data-status='<?= $db_status ?>'>
+                                            <i class="text-danger ti ti-trash fs-7"></i>
                                         </a>
                                     </div>
                                 </td>

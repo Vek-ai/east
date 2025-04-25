@@ -185,8 +185,8 @@ if($_REQUEST['customer_id']){
                                         <?= $customer_count ?>
                                     </td>
                                     <td>
-                                        <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_customers_btn" type="button" data-id="<?= htmlspecialchars($row['loyalty_id']); ?>">
-                                            <i class="text-primary fa fa-eye fs-5"></i>
+                                        <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_customers_btn" title="View" type="button" data-id="<?= htmlspecialchars($row['loyalty_id']); ?>">
+                                            <i class="fa fa-eye fs-5"></i>
                                         </button>
                                     </td>
                                 </tr>

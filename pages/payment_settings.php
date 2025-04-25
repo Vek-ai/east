@@ -37,7 +37,6 @@ $no = 1;
         height: 50px;
         font-size: 16px;
         padding: 10px;
-        border-radius:
     }
     .dataTables_filter {  width: 100%;}
     #toggleActive {
@@ -167,8 +166,8 @@ $no = 1;
                   <td><?= $payment_setting_name ?></td>
                   <td><?= $value ?></td>
                   <td class="text-center" id="action-button-<?= $no ?>">
-                          <a href="/?page=payment_settings&id=<?= $payment_setting_id ?>" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
-                          <a class="btn btn-danger py-1 text-light deleteSettings" data-id="<?= $payment_setting_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Delete</a>
+                          <a href="/?page=payment_settings&id=<?= $payment_setting_id ?>" title="Edit" class="py-1"><i class="ti ti-pencil fs-7"></i></a>
+                          <a class="py-1 text-light deleteSettings" title="Archive" data-id="<?= $payment_setting_id ?>" data-row="<?= $no ?>" ><i class="text-danger ti ti-trash fs-7"></i></a>
 
                   </td>
               </tr>

@@ -210,10 +210,10 @@ require 'includes/functions.php';
                         <td><?= $status ?></td>
                         <td>
                             <div class="action-btn d-flex justify-content-center gap-2">
-                                <a href="#" id="view_warehouse_btn" class="text-primary edit" data-id="<?= $row_warehouse['WarehouseID'] ?>">
+                                <a href="#" id="view_warehouse_btn" class="text-primary edit" data-id="<?= $row_warehouse['WarehouseID'] ?>" title="Archive">
                                     <i class="fa fa-eye fs-6"></i>
                                 </a>
-                                <a href="?page=warehouse_details&warehouse_id=<?= $row_warehouse['WarehouseID'] ?>">
+                                <a href="?page=warehouse_details&warehouse_id=<?= $row_warehouse['WarehouseID'] ?>" title="Edit">
                                     <i class="fa fa-pencil text-warning fs-6"></i>
                                 </a>
                                 <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_warehouse['WarehouseID'] ?>">

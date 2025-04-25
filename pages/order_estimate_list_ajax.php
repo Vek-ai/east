@@ -190,7 +190,7 @@ if (isset($_POST['search_order_estimate'])) {
                         ?>
                     </td>
                     <td>
-                        <a href="javascript:void(0)" data-id="<?= $row['id'] ?>" data-type="<?= $type ?>" id="view_details">
+                        <a href="javascript:void(0)" title='View' data-id="<?= $row['id'] ?>" data-type="<?= $type ?>" id="view_details">
                             <i class="fa fa-eye"></i>
                         </a>
                     </td>

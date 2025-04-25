@@ -70,7 +70,7 @@
         </li>
 
         <li class="sidebar-item">
-          <a class="sidebar-link" href="#">
+          <a class="sidebar-link" href="?page=messages">
             <iconify-icon icon="solar:letter-line-duotone" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Messages</span>
           </a>

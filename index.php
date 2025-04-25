@@ -31,6 +31,26 @@ if (!isset($_SESSION['userid'])) {
   <!-- Core Css -->
   <link rel="stylesheet" href="assets/css/styles.css" />
 
+  <style>
+      .tooltip-inner {
+          background-color: #f8f9fa !important;
+          color: #000 !important;
+          border: 1px solid #ced4da;
+          font-size: 0.875rem;
+          padding: 6px 10px;
+          border-radius: 0.25rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .tooltip.bs-tooltip-top .tooltip-arrow::before,
+      .tooltip.bs-tooltip-bottom .tooltip-arrow::before,
+      .tooltip.bs-tooltip-start .tooltip-arrow::before,
+      .tooltip.bs-tooltip-end .tooltip-arrow::before {
+          background: #f8f9fa !important;
+          border-color: transparent !important;
+      }
+  </style>
+
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
 
@@ -1488,6 +1508,23 @@ if (!isset($_SESSION['userid'])) {
   
   <script>
   $(document).ready(function() {
+    $(document).on('mouseenter', '[title]', function () {
+        const $el = $(this);
+        if (!$el.data('bs.tooltip')) {
+            $el.tooltip({
+                trigger: 'hover',
+                placement: 'top'
+            }).tooltip('show');
+        }
+    });
+
+    $(document).on('mouseleave', '[title]', function () {
+        const $el = $(this);
+        if ($el.data('bs.tooltip')) {
+            $el.tooltip('dispose');
+        }
+    });
+
     $(".phone-inputmask").inputmask("(999) 999-9999")
 
     $('#customer-search-input').on('input', function() {

@@ -476,8 +476,8 @@ require 'includes/functions.php';
                                     <td><?= $status ?></td>
                                     <td>
                                         <div class="action-btn text-center">
-                                            <a href="#" id="view_inventory_btn" class="text-primary edit" data-id="<?= $Inventory_id ?>">
-                                                <i class="ti ti-eye fs-5"></i>
+                                            <a href="#" id="view_inventory_btn" title="Edit" class="text-primary edit" data-id="<?= $Inventory_id ?>">
+                                                <i class="ti ti-pencil fs-5"></i>
                                             </a>
                                         </div>
                                     </td>

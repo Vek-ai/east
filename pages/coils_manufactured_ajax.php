@@ -51,9 +51,9 @@ if (isset($_REQUEST['query'])) {
 
             $add_warehouse_btn = "";
             if ($row_coil['transferred'] == 0) {
-                $add_warehouse_btn='<a class="fs-6 text-muted" href="#" id="viewAddInvModal" data-id="'. $row_coil['id'] .'">
+                $add_warehouse_btn='<a class="fs-6 text-muted" href="#" title="Add to Warehouse" id="viewAddInvModal" data-id="'. $row_coil['id'] .'">
                                         <button class="btn btn-primary">
-                                            <i class="fa fa-exchange"></i> Add to Warehouse
+                                            <i class="fa fa-exchange"></i>
                                         </button> 
                                     </a>';
             }
