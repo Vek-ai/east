@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   $username = $_POST['username'];
   $password = $_POST['password'];
-  $redirect = isset($_REQUEST['redirect']) ? $_REQUEST['redirect'] : 'index.php';
+  $redirect = !empty($_REQUEST['redirect']) ? urldecode($_REQUEST['redirect']) : 'index.php';
 
   $username = $conn->real_escape_string($username);
 
