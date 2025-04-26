@@ -290,7 +290,7 @@ if(isset($_POST['fetch_order'])){
                                     <tr class="border-bottom border-3 border-white">
                                         <td>
                                             <?php
-                                            if($data_id == '277'){
+                                            if($data_id == '64'){
                                                 if(!empty($values["custom_trim_src"])){
                                                 ?>
                                                 <a href="javascript:void(0);" id="custom_trim_draw" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">

@@ -9,7 +9,8 @@ require '../../includes/functions.php';
 
 $trim_id = 4;
 $panel_id = 3;
-$custom_truss_id = 163;
+$custom_truss_id = 47;
+$special_trim_id = 66;
 
 function findCartKey($cart, $product_id, $line) {
     foreach ($cart as $key => $item) {
@@ -301,9 +302,10 @@ if (isset($_REQUEST['query'])) {
             : $default_image;
 
             $is_panel = $row_product['product_category'] == $panel_id ? true : false;
-            $is_custom_truss = $row_product['product_type'] == $custom_truss_id ? true : false;
+            $is_custom_truss = $row_product['product_id'] == $custom_truss_id ? true : false;
+            $is_special_trim = $row_product['product_id'] == $special_trim_id ? true : false;
 
-            $qty_input = !$is_panel 
+            $qty_input = !$is_panel  && !$is_custom_truss && !$is_special_trim
                 ? ' <div class="input-group input-group-sm">
                         <button class="btn btn-outline-primary btn-minus" type="button" data-id="' . $row_product['product_id'] . '">-</button>
                         <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1">
@@ -315,6 +317,8 @@ if (isset($_REQUEST['query'])) {
                 $btn_id = 'add-to-cart-btn';
             }else if($is_custom_truss){
                 $btn_id = 'add-to-cart-custom-truss-btn';
+            }else if($is_special_trim){
+                $btn_id = 'add-to-cart-special-trim-btn';
             }else{
                 $btn_id = 'add-to-cart-non-panel';
             }

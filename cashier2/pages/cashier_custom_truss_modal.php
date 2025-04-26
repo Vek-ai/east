@@ -19,27 +19,7 @@ if(isset($_POST['fetch_modal'])){
     <div class="row">
         <div class="col-6">
             <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label">Truss Type</label>
-                <a href="/?page=truss_type" target="_blank" class="text-decoration-none">Edit</a>
-            </div>
-            <div class="mb-3">
-                <select id="truss_type" class="form-select truss_select2" name="truss_type">
-                    <option value="">Select Truss Type...</option>
-                    <?php
-                    $query = "SELECT * FROM truss_type WHERE status = 1 ORDER BY `truss_type` ASC";
-                    $result = mysqli_query($conn, $query);
-                    while ($row = mysqli_fetch_array($result)) {
-                        ?>
-                        <option value="<?= $row['truss_type_id']; ?>"><?= $row['truss_type']; ?></option>
-                        <?php
-                    }
-                    ?>
-                </select>
-            </div>
-        </div>
-        <div class="col-6">
-            <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label">Truss Material</label>
+                <label class="form-label">Material</label>
                 <a href="/?page=truss_material" target="_blank" class="text-decoration-none">Edit</a>
             </div>
             <div class="mb-3">
@@ -58,25 +38,19 @@ if(isset($_POST['fetch_modal'])){
             </div>
         </div>
         <div class="col-6">
-            <label class="form-label">Size</label>
-            <div class="mb-3">
-                <input type="text" id="size" name="size" class="form-control" placeholder="Enter Size"/>
-            </div>
-        </div>
-        <div class="col-6">
             <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label">Truss Pitch</label>
-                <a href="/?page=truss_pitch" target="_blank" class="text-decoration-none">Edit</a>
+                <label class="form-label">Type</label>
+                <a href="/?page=truss_type" target="_blank" class="text-decoration-none">Edit</a>
             </div>
             <div class="mb-3">
-                <select id="truss_pitch" class="form-select truss_select2" name="truss_pitch">
-                    <option value="">Select Truss Pitch...</option>
+                <select id="truss_type" class="form-select truss_select2" name="truss_type">
+                    <option value="">Select Truss Type...</option>
                     <?php
-                    $query = "SELECT * FROM truss_pitch WHERE status = 1 ORDER BY `truss_pitch` ASC";
+                    $query = "SELECT * FROM truss_type WHERE status = 1 ORDER BY `truss_type` ASC";
                     $result = mysqli_query($conn, $query);
                     while ($row = mysqli_fetch_array($result)) {
                         ?>
-                        <option value="<?= $row['truss_pitch_id']; ?>">(<?= $row['numerator'] ?>/<?= $row['denominator'] ?>)<?= $row['truss_pitch']; ?></option>
+                        <option value="<?= $row['truss_type_id']; ?>"><?= $row['truss_type']; ?></option>
                         <?php
                     }
                     ?>
@@ -84,28 +58,46 @@ if(isset($_POST['fetch_modal'])){
             </div>
         </div>
         <div class="col-6">
-            <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label">Truss Spacing</label>
-                <a href="/?page=truss_spacing" target="_blank" class="text-decoration-none">Edit</a>
-            </div>
             <div class="mb-3">
-                <select id="truss_spacing" class="form-select truss_select2" name="truss_spacing">
-                    <option value="">Select Truss Ceiling Load...</option>
+                <label for="size" class="form-label">Size</label>
+                <input type="text" id="size" name="size" class="form-control" placeholder="Enter Size" />
+            </div>
+        </div>
+
+        <div class="col-6">
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label mb-0">Overhangs</label>
+                <a href="/?page=truss_overhang" target="_blank" class="text-decoration-none small">Edit</a>
+                </div>
+                <div class="d-flex gap-2">
+                <select id="truss_left_overhang" class="form-select truss_select2" name="truss_left_overhang">
+                    <option value="" selected>No Left Overhang...</option>
                     <?php
-                    $query = "SELECT * FROM truss_spacing WHERE status = 1 ORDER BY `truss_spacing` ASC";
+                    $query = "SELECT * FROM truss_overhang WHERE status = 1 ORDER BY `truss_overhang` ASC";
                     $result = mysqli_query($conn, $query);
                     while ($row = mysqli_fetch_array($result)) {
-                        ?>
-                        <option value="<?= $row['truss_spacing_id']; ?>"><?= $row['truss_spacing']; ?> <?= $row['unit_of_measure']; ?></option>
-                        <?php
+                    echo '<option value="' . $row['truss_overhang_id'] . '">' . $row['truss_overhang'] . '</option>';
                     }
                     ?>
                 </select>
+
+                <select id="truss_right_overhang" class="form-select truss_select2" name="truss_right_overhang">
+                    <option value="" selected>No Right Overhang...</option>
+                    <?php
+                    mysqli_data_seek($result, 0);
+                    while ($row = mysqli_fetch_array($result)) {
+                    echo '<option value="' . $row['truss_overhang_id'] . '">' . $row['truss_overhang'] . '</option>';
+                    }
+                    ?>
+                </select>
+                </div>
             </div>
         </div>
-        <div class="col-6">
+
+        <div class="col-4">
             <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label">Truss Ceiling Load</label>
+                <label class="form-label">Ceiling Load</label>
                 <a href="/?page=truss_ceiling_load" target="_blank" class="text-decoration-none">Edit</a>
             </div>
             <div class="mb-3">
@@ -123,47 +115,47 @@ if(isset($_POST['fetch_modal'])){
                 </select>
             </div>
         </div>
-        <div class="col-6">
+        <div class="col-4">
             <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label ">Left Overhang</label>
-                <a href="/?page=truss_overhang" target="_blank" class="text-decoration-none">Edit</a>
+                <label class="form-label">Pitch</label>
+                <a href="/?page=truss_pitch" target="_blank" class="text-decoration-none">Edit</a>
             </div>
             <div class="mb-3">
-                <select id="truss_left_overhang" class="form-select truss_select2" name="truss_left_overhang">
-                    <option value="">No Left Overhang...</option>
+                <select id="truss_pitch" class="form-control truss_select2" name="truss_pitch">
+                    <option value="">Select Truss Pitch...</option>
                     <?php
-                    $query = "SELECT * FROM truss_overhang WHERE status = 1 ORDER BY `truss_overhang` ASC";
+                    $query = "SELECT * FROM truss_pitch WHERE status = 1 ORDER BY `truss_pitch` ASC";
                     $result = mysqli_query($conn, $query);
                     while ($row = mysqli_fetch_array($result)) {
                         ?>
-                        <option value="<?= $row['truss_overhang_id']; ?>"><?= $row['truss_overhang']; ?></option>
-                        <?php
-                    }
-                    ?>
-                </select>
-            </div>
-            
-        </div>
-        <div class="col-6">
-            <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label ">Right Overhang</label>
-                <a href="/?page=truss_overhang" target="_blank" class="text-decoration-none">Edit</a>
-            </div>
-            <div class="mb-3">
-                <select id="truss_right_overhang" class="form-select truss_select2" name="truss_right_overhang">
-                    <option value="">No Right Overhang...</option>
-                    <?php
-                    $query = "SELECT * FROM truss_overhang WHERE status = 1 ORDER BY `truss_overhang` ASC";
-                    $result = mysqli_query($conn, $query);
-                    while ($row = mysqli_fetch_array($result)) {
-                        ?>
-                        <option value="<?= $row['truss_overhang_id']; ?>"><?= $row['truss_overhang']; ?></option>
+                        <option value="<?= $row['truss_pitch_id']; ?>">(<?= $row['numerator'] ?>/<?= $row['denominator'] ?>)<?= $row['truss_pitch']; ?></option>
                         <?php
                     }
                     ?>
                 </select>
             </div>
         </div>
+        <div class="col-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <label class="form-label">Spacing</label>
+                <a href="/?page=truss_spacing" target="_blank" class="text-decoration-none">Edit</a>
+            </div>
+            <div class="mb-3">
+                <select id="truss_spacing" class="form-control truss_select2" name="truss_spacing">
+                    <option value="">Select Truss Ceiling Load...</option>
+                    <?php
+                    $query = "SELECT * FROM truss_spacing WHERE status = 1 ORDER BY `truss_spacing` ASC";
+                    $result = mysqli_query($conn, $query);
+                    while ($row = mysqli_fetch_array($result)) {
+                        ?>
+                        <option value="<?= $row['truss_spacing_id']; ?>"><?= $row['truss_spacing']; ?> <?= $row['unit_of_measure']; ?></option>
+                        <?php
+                    }
+                    ?>
+                </select>
+            </div>
+        </div>
+
         <div class="col-6">
             <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label ">Top Pitch</label>
@@ -204,6 +196,7 @@ if(isset($_POST['fetch_modal'])){
                 </select>
             </div>
         </div>
+        
         <div class="col-4">
             <div class="mb-3">
                 <label class="form-label" for="quantity-product">Quantity</label>

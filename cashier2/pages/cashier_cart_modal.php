@@ -220,7 +220,7 @@ if(isset($_POST['fetch_cart'])){
                             <tr>
                                 <td data-color="<?= getColorName($color_id) ?>" data-pricing="<?=$customer_pricing?>" data-category="<?=$category_id?>" data-customer-pricing="<?=$customer_details_pricing?>">
                                     <?php
-                                    if($data_id == '277'){
+                                    if($data_id == '64'){
                                         if(!empty($values["custom_trim_src"])){
                                         ?>
                                         <a href="javascript:void(0);" id="custom_trim_draw" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">

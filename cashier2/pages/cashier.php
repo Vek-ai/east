@@ -302,7 +302,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
-                <h6 class="modal-title">Draw Custom Trim</h6>
+                <h4 class="modal-title">Special Trim</h4>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -314,7 +314,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             </div>
             <div class="modal-footer">
                 <button id="saveDrawing" class="btn ripple btn-success" type="button">Save</button>
-                <button id="clearButton" class="btn ripple btn-warning" type="button">Reset</button>
                 <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
@@ -737,7 +736,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 </div>
 
 <div class="modal fade" id="custom_truss_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <form id="custom_truss_form" class="modal-content modal-content-demo">
             <div class="modal-header">
                 <h6 class="modal-title">Custom Truss</h6>
@@ -1297,7 +1296,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             },
             success: function(response) {
                 $('#drawing-body').html(response);
-
                 initializeDrawingApp();
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -1658,203 +1656,171 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     function initializeDrawingApp() {
         const canvas = document.getElementById('drawingCanvas');
         const ctx = canvas.getContext('2d');
-        const totalLengthDiv = document.getElementById('totalLength');
-        const totalCostDiv = document.getElementById('totalCost');
-        const lengthAnglePairs = document.getElementById('lengthAnglePairs');
-        const clearButton = document.getElementById('clearButton');
+        const clearButton = document.getElementById('resetBtn');
         const saveDrawing = document.getElementById('saveDrawing');
+        const colorCircle = document.getElementById('colorCircle');
+        const lineColorPicker = document.getElementById('lineColorPicker');
+        const undoButton = document.getElementById('undoBtn');
+        const redoButton = document.getElementById('redoBtn');
+
+        console.log({
+        canvas,
+        clearButton,
+        saveDrawing,
+        colorCircle,
+        lineColorPicker,
+        undoButton,
+        redoButton
+        });
 
         let points = [];
         let lengths = [];
         let angles = [];
         let colors = [];
         let currentStartPoint = null;
+        let undoStack = [];
+        let redoStack = [];
         const pixelsPerInch = 96;
+        let currentColor = "#ffffff";
+        colorCircle.style.backgroundColor = currentColor;
 
-        const colorPrices = {
-            black: 1.9,
-            red: 2.0,
-            green: 2.1,
-            blue: 2.3,
-            yellow: 2.5
-        };
+        $(document).on('click', '#colorCircle', function () {
+            $('#lineColorPicker').click();
+        });
 
-        function drawPlaceholderText() {
+        $(document).on('input', '#lineColorPicker', function () {
+            currentColor = $(this).val();
+            $('#colorCircle').css('background-color', currentColor);
+        });
+
+        const drawPlaceholderText = () => {
             ctx.font = "30px Arial";
             ctx.fillStyle = "lightgray";
             ctx.textAlign = "center";
             ctx.fillText("Draw here", canvas.width / 2, canvas.height / 2);
-        }
+        };
 
-        function drawLine(point1, point2, color) {
+        const drawLine = (p1, p2, color) => {
             ctx.beginPath();
-            ctx.moveTo(point1.x, point1.y);
-            ctx.lineTo(point2.x, point2.y);
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
             ctx.strokeStyle = color;
             ctx.stroke();
-        }
+        };
 
-        function drawTemporaryLine(point1, point2) {
+        const drawTemporaryLine = (p1, p2) => {
             ctx.beginPath();
-            ctx.moveTo(point1.x, point1.y);
-            ctx.lineTo(point2.x, point2.y);
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
             ctx.strokeStyle = 'gray';
             ctx.stroke();
-        }
+        };
 
-        function calculateDistance(point1, point2) {
-            const distanceInPixels = Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
-            return (distanceInPixels / pixelsPerInch).toFixed(2);
-        }
+        const calculateDistance = (p1, p2) => {
+            const dist = Math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2);
+            return (dist / pixelsPerInch).toFixed(2);
+        };
 
-        function calculateInteriorAngle(p1, p2, p3) {
-            const angle = Math.atan2(p3.y - p2.y, p3.x - p2.x) - Math.atan2(p1.y - p2.y, p1.x - p2.x);
+        const calculateInteriorAngle = (p1, p2, p3) => {
+            if (!p1 || !p2 || !p3) return null;
+
+            let angle = Math.atan2(p3.y - p2.y, p3.x - p2.x) - Math.atan2(p1.y - p2.y, p1.x - p2.x);
             let degrees = (angle * 180 / Math.PI) % 360;
-            if (degrees < 0) {
-                degrees += 360;
-            }
-            if (degrees > 180) {
-                degrees = 360 - degrees;
-            }
+
+            if (degrees < 0) degrees += 360;
+            if (degrees > 180) degrees = 360 - degrees;
+
             return degrees;
-        }
+        };
 
-        function drawAngleArc(p1, p2, p3, angle) {
+        const drawAngleArc = (p1, p2, p3, angle) => {
             const radius = 30;
-            const startAngle = Math.atan2(p1.y - p2.y, p1.x - p2.x);
-            const endAngle = Math.atan2(p3.y - p2.y, p3.x - p2.x);
-
+            const start = Math.atan2(p1.y - p2.y, p1.x - p2.x);
+            const end = Math.atan2(p3.y - p2.y, p3.x - p2.x);
             ctx.beginPath();
-            ctx.arc(p2.x, p2.y, radius, startAngle, endAngle, endAngle < startAngle);
+            ctx.arc(p2.x, p2.y, radius, start, end, end < start);
             ctx.strokeStyle = 'red';
             ctx.stroke();
-        }
+        };
 
-        function updateLengthAnglePairs() {
-            lengthAnglePairs.innerHTML = '';
-            let totalLength = 0;
-            let totalCost = 0;
-
-            lengths.forEach((length, index) => {
-                const pair = document.createElement('div');
-                pair.classList.add('length-angle-pair');
-
-                const lengthDiv = document.createElement('div');
-                lengthDiv.textContent = `Line ${index + 1}: ${length} inches`;
-                totalLength += parseFloat(length);
-
-                pair.appendChild(lengthDiv);
-
-                if (index < angles.length) {
-                    const angleInput = document.createElement('input');
-                    angleInput.type = 'number';
-                    angleInput.value = angles[index].toFixed(2);
-                    angleInput.addEventListener('change', (e) => {
-                        const newAngle = parseFloat(e.target.value);
-                        angles[index] = newAngle;
-                        const newPoint = calculateNewPoint(points[index - 1], points[index], lengths[index], newAngle);
-                        points[index + 1] = newPoint;
-                        redrawCanvas();
-                    });
-
-                    const angleLabel = document.createElement('label');
-                    angleLabel.textContent = 'Angle (°): ';
-                    pair.appendChild(angleLabel);
-                    pair.appendChild(angleInput);
-                }
-
-                const colorSelect = document.createElement('select');
-                const colorsOptions = Object.keys(colorPrices);
-                colorsOptions.forEach((color) => {
-                    const option = document.createElement('option');
-                    option.value = color;
-                    option.textContent = color.charAt(0).toUpperCase() + color.slice(1);
-                    colorSelect.appendChild(option);
-                });
-                colorSelect.value = colors[index];
-                colorSelect.addEventListener('change', (e) => {
-                    colors[index] = e.target.value;
-                    updateLengthAnglePairs();
-                    redrawCanvas();
-                });
-
-                pair.appendChild(colorSelect);
-
-                const price = colorPrices[colors[index]];
-                const lineTotal = parseFloat(length) * price;
-                totalCost += lineTotal;
-
-                const priceDiv = document.createElement('div');
-                priceDiv.textContent = `Price: $${price.toFixed(2)}`;
-                pair.appendChild(priceDiv);
-
-                const totalDiv = document.createElement('div');
-                totalDiv.textContent = `Total: $${lineTotal.toFixed(2)}`;
-                pair.appendChild(totalDiv);
-
-                lengthAnglePairs.appendChild(pair);
-            });
-
-            totalLengthDiv.textContent = `Total Length: ${totalLength.toFixed(2)} inches`;
-            totalCostDiv.textContent = `Total Cost: $${totalCost.toFixed(2)}`;
-        }
-
-        function calculateNewPoint(p1, p2, length, angle) {
-            const radians = (angle * Math.PI) / 180;
-            const dx = length * Math.cos(radians);
-            const dy = length * Math.sin(radians);
-            return { x: p2.x + dx, y: p2.y + dy };
-        }
-
-        function clearCanvas() {
+        const clearCanvas = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+        };
 
-        function redrawCanvas() {
+        const redrawCanvas = () => {
             clearCanvas();
+
             for (let i = 1; i < points.length; i++) {
                 drawLine(points[i - 1], points[i], colors[i - 1]);
+
+                const midX = (points[i - 1].x + points[i].x) / 2;
+                const midY = (points[i - 1].y + points[i].y) / 2;
+                const distance = calculateDistance(points[i - 1], points[i]);
+                ctx.font = "14px Arial";
+                ctx.fillStyle = "gray";
+                ctx.fillText(`${distance} in`, midX + 5, midY - 5);
             }
-            for (let i = 2; i < points.length; i++) {
-                drawAngleArc(points[i - 2], points[i - 1], points[i], angles[i - 2]);
+
+            for (let i = 2; i <= points.length; i++) {
+                const angle = calculateInteriorAngle(points[i - 2], points[i - 1], points[i]);
+                drawAngleArc(points[i - 2], points[i - 1], points[i], angle);
+
+                const radius = 30;
+                const p2 = points[i - 1];
+                ctx.font = "14px Arial";
+                ctx.fillStyle = "red";
+                ctx.fillText(`${angle.toFixed(1)}°`, p2.x + radius + 5, p2.y - radius - 5);
             }
-            if (points.length === 0) {
-                drawPlaceholderText();
-            }
-        }
+
+            if (points.length === 0) drawPlaceholderText();
+        };
+
 
         canvas.addEventListener('click', (e) => {
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-
-            let selectedPoint = { x, y };
+            let selected = { x, y };
 
             for (let point of points) {
                 if (Math.hypot(point.x - x, point.y - y) < 5) {
-                    selectedPoint = point;
+                    selected = point;
                     break;
                 }
             }
 
             if (currentStartPoint) {
-                points.push(selectedPoint);
-                colors.push('black');
-                drawLine(currentStartPoint, selectedPoint, 'black');
-                const length = calculateDistance(currentStartPoint, selectedPoint);
-                lengths.push(length);
+                points.push(selected);
+                colors.push(currentColor);
+                drawLine(currentStartPoint, selected, currentColor);
+                lengths.push(calculateDistance(currentStartPoint, selected));
+
                 if (points.length > 2) {
-                    const angle = calculateInteriorAngle(points[points.length - 3], points[points.length - 2], points[points.length - 1]);
-                    angles.push(angle);
-                    drawAngleArc(points[points.length - 3], points[points.length - 2], points[points.length - 1], angle);
+                    let angle = calculateInteriorAngle(
+                        points[points.length - 3],
+                        points[points.length - 2],
+                        points[points.length - 1]
+                    );
+                    //angles.push(angle);
+                    drawAngleArc(
+                        points[points.length - 3],
+                        points[points.length - 2],
+                        points[points.length - 1],
+                        angle
+                    );
                 }
-                updateLengthAnglePairs();
+
+                undoStack.push({
+                    points: [...points],
+                    lengths: [...lengths],
+                    angles: [...angles],
+                    colors: [...colors]
+                });
+                redoStack = [];
                 currentStartPoint = null;
             } else {
-                currentStartPoint = selectedPoint;
-                if (!points.includes(selectedPoint)) {
-                    points.push(selectedPoint);
-                }
+                currentStartPoint = selected;
+                if (!points.includes(selected)) points.push(selected);
             }
         });
 
@@ -1863,9 +1829,42 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 const rect = canvas.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-
                 redrawCanvas();
                 drawTemporaryLine(currentStartPoint, { x, y });
+            }
+        });
+
+        undoButton.addEventListener('click', () => {
+            if (undoStack.length > 0) {
+                redoStack.push({
+                    points: [...points],
+                    lengths: [...lengths],
+                    angles: [...angles],
+                    colors: [...colors]
+                });
+                let last = undoStack.pop();
+                points = [...last.points];
+                lengths = [...last.lengths];
+                angles = [...last.angles];
+                colors = [...last.colors];
+                redrawCanvas();
+            }
+        });
+
+        redoButton.addEventListener('click', () => {
+            if (redoStack.length > 0) {
+                undoStack.push({
+                    points: [...points],
+                    lengths: [...lengths],
+                    angles: [...angles],
+                    colors: [...colors]
+                });
+                let next = redoStack.pop();
+                points = [...next.points];
+                lengths = [...next.lengths];
+                angles = [...next.angles];
+                colors = [...next.colors];
+                redrawCanvas();
             }
         });
 
@@ -1876,17 +1875,15 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             angles = [];
             colors = [];
             currentStartPoint = null;
-            updateLengthAnglePairs();
+            undoStack = [];
+            redoStack = [];
             drawPlaceholderText();
         });
 
         saveDrawing.addEventListener('click', () => {
             var isSave = confirm("Are you sure you want to finalize your custom trim?");
-            
             if (isSave) {
-                const canvasDrawn = $('#drawingCanvas')[0];
-                const image_data = canvasDrawn.toDataURL('image/png');
-
+                const image_data = canvas.toDataURL('image/png');
                 const id = $('#custom_trim_id').val();
                 const line = $('#custom_trim_line').val();
 
@@ -1920,8 +1917,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
         drawPlaceholderText();
     }
-
-    
 
     function formatOption(state) {
         if (!state.id) {
@@ -2268,6 +2263,32 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 success: function(response) {
                     $('#custom_truss_container').html(response);
                     $('#custom_truss_modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on("click", "#add-to-cart-special-trim-btn", function() {
+            var id = $(this).data('id');
+            var line = '0';
+
+            console.log(`123`);
+            $.ajax({
+                url: 'pages/cashier_drawing_modal.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    line: line,
+                    fetch_drawing: 'fetch_drawing'
+                },
+                success: function(response) {
+                    $('#drawing-body').html(response);
+                    setTimeout(function () {
+                        initializeDrawingApp();
+                        $('#custom_trim_draw_modal').modal('show');
+                    }, 100);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);

@@ -36,6 +36,26 @@ if (!isset($_SESSION['userid'])) {
   <link rel="stylesheet" href="../assets/css/styles.css" />
   <link rel="stylesheet" href="css/cashier.css" />
 
+  <style>
+      .tooltip-inner {
+          background-color: #f8f9fa !important;
+          color: #000 !important;
+          border: 1px solid #ced4da;
+          font-size: 0.875rem;
+          padding: 6px 10px;
+          border-radius: 0.25rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .tooltip.bs-tooltip-top .tooltip-arrow::before,
+      .tooltip.bs-tooltip-bottom .tooltip-arrow::before,
+      .tooltip.bs-tooltip-start .tooltip-arrow::before,
+      .tooltip.bs-tooltip-end .tooltip-arrow::before {
+          background: #f8f9fa !important;
+          border-color: transparent !important;
+      }
+  </style>
+
   <title>East Kentucky Metal</title>
 
 </head>
@@ -1521,6 +1541,22 @@ if (!isset($_SESSION['userid'])) {
 
 
   $(document).ready(function() {
+    $(document).on('mouseenter', '[title]', function () {
+        const $el = $(this);
+        if (!$el.data('bs.tooltip')) {
+            $el.tooltip({
+                trigger: 'hover',
+                placement: 'top'
+            }).tooltip('show');
+        }
+    });
+
+    $(document).on('mouseleave', '[title]', function () {
+        const $el = $(this);
+        if ($el.data('bs.tooltip')) {
+            $el.tooltip('dispose');
+        }
+    });
     
     loadCartItemsHeader();
 
