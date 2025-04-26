@@ -51,7 +51,7 @@ if(isset($_SESSION['customer_id'])){
         </div>
     </div>
 
-    <div class="card overflow-hidden chat-application">
+    <div class="card overflow-hidden chat-application" >
         <div class="d-flex align-items-center justify-content-between gap-6 m-3 d-lg-none">
         <button class="btn btn-primary d-flex" type="button" data-bs-toggle="offcanvas" data-bs-target="#chat-sidebar" aria-controls="chat-sidebar">
             <i class="ti ti-menu-2 fs-5"></i>
@@ -63,7 +63,7 @@ if(isset($_SESSION['customer_id'])){
         
         </div>
         <div class="d-flex">
-        <div class="w-100 w-lg-100 d-lg-block border-end user-chat-box">
+        <div class="w-100 w-lg-100 d-lg-block border-end user-chat-box" style="height: 60vh;">
             <div class="px-4 pt-9 pb-6">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <div class="d-flex align-items-center">
