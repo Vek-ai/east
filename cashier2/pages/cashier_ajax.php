@@ -204,7 +204,7 @@ if (isset($_REQUEST['query'])) {
     }
 
     if (!empty($color_id)) {
-        $query_product .= " AND p.color = '$color_id'";
+        $query_product .= " AND i.color_id = '$color_id'";
     }
 
     if (!empty($grade_id)) {
@@ -302,10 +302,11 @@ if (isset($_REQUEST['query'])) {
             : $default_image;
 
             $is_panel = $row_product['product_category'] == $panel_id ? true : false;
+            $is_trim = $row_product['product_category'] == $trim_id ? true : false;
             $is_custom_truss = $row_product['product_id'] == $custom_truss_id ? true : false;
             $is_special_trim = $row_product['product_id'] == $special_trim_id ? true : false;
 
-            $qty_input = !$is_panel  && !$is_custom_truss && !$is_special_trim
+            $qty_input = !$is_panel  && !$is_custom_truss && !$is_special_trim && !$is_trim
                 ? ' <div class="input-group input-group-sm">
                         <button class="btn btn-outline-primary btn-minus" type="button" data-id="' . $row_product['product_id'] . '">-</button>
                         <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1">
@@ -313,14 +314,16 @@ if (isset($_REQUEST['query'])) {
                     </div>'
                 : '';
 
-            if($is_panel){
-                $btn_id = 'add-to-cart-btn';
-            }else if($is_custom_truss){
+            if($is_custom_truss){
                 $btn_id = 'add-to-cart-custom-truss-btn';
             }else if($is_special_trim){
                 $btn_id = 'add-to-cart-special-trim-btn';
+            }else if($is_panel){
+                $btn_id = 'add-to-cart-panel-btn';
+            }else if($is_trim){
+                $btn_id = 'add-to-cart-trim-btn';
             }else{
-                $btn_id = 'add-to-cart-non-panel';
+                $btn_id = 'add-to-cart-btn';
             }
 
             $tableHTML .= '
@@ -1158,6 +1161,75 @@ if (isset($_POST['unset_customer'])) {
     echo "Customer session unset";
 }
 
+if (isset($_POST['save_trim'])) {
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $quantity = floatval(mysqli_real_escape_string($conn, $_POST['quantity']));
+    $length = floatval(mysqli_real_escape_string($conn, $_POST['length']));
+    $price = floatval(mysqli_real_escape_string($conn, $_POST['price']));
+    $img_src = mysqli_real_escape_string($conn, $_POST['img_src']);
+
+    $color = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
+    $grade = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
+    $gauge = mysqli_real_escape_string($conn, $_POST['gauge'] ?? '');
+
+    if (!isset($_SESSION["cart"])) {
+        $_SESSION["cart"] = array();
+    }
+
+    $key = findCartKey($_SESSION["cart"], $id, $line);
+
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['custom_trim_src'] = $img_src;
+        $_SESSION["cart"][$key]['quantity_cart'] = $quantity;
+        $_SESSION["cart"][$key]['estimate_length'] = $length;
+        $_SESSION["cart"][$key]['unit_price'] = $price;
+    } else {
+        $query = "SELECT * FROM product WHERE product_id = '$id'";
+        $result = mysqli_query($conn, $query);
+    
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+    
+            $max_line = 0;
+            foreach ($_SESSION["cart"] as $item) {
+                if ($item['product_id'] == $id && $item['line'] > $max_line) {
+                    $max_line = $item['line'];
+                }
+            }
+            $line_to_use = $max_line + 1;
+    
+            $item_array = array(
+                'product_id' => $row['product_id'],
+                'product_item' => $row['product_item'],
+                'unit_price' => $price,
+                'line' => $line_to_use,
+                'quantity_ttl' => 0,
+                'quantity_in_stock' => 0,
+                'quantity_cart' => $quantity,
+                'estimate_width' => 0,
+                'estimate_length' => $length,
+                'estimate_length_inch' => '',
+                'usage' => 0,
+                'custom_color' => $color,
+                'weight' => 0,
+                'supplier_id' => '',
+                'custom_grade' => $grade,
+                'custom_gauge' => $gauge,
+                'custom_trim_src' => $img_src
+            );
+    
+            $_SESSION["cart"][] = $item_array;
+        } else {
+            echo json_encode(['error' => "Trim Product not available"]);
+            exit;
+        }
+    }
+
+    echo json_encode(['success' => true]);
+}
+
+
 if (isset($_POST['save_drawing'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
@@ -1174,51 +1246,6 @@ if (isset($_POST['save_drawing'])) {
         $filename = uniqid() . '.png';
 
         if (file_put_contents($images_directory . $filename, $decodedData)) {
-
-            if(empty($line)){
-                if (!isset($_SESSION["cart"])) {
-                    $_SESSION["cart"] = array();
-                }
-    
-                $query = "SELECT * FROM product WHERE product_id = '$id'";
-                $result = mysqli_query($conn, $query);
-    
-                if (mysqli_num_rows($result) > 0) {
-                    $row = mysqli_fetch_assoc($result);
-                    $item_quantity = min($qty, $totalStock);
-    
-                    $item_array = array(
-                        'product_id' => $row['product_id'],
-                        'product_item' => $row['product_item'],
-                        'unit_price' => $price,
-                        'line' => 1,
-                        'quantity_ttl' => $totalStock,
-                        'quantity_in_stock' => $quantityInStock,
-                        'quantity_cart' => $quantity,
-                        'estimate_width' => 0,
-                        'estimate_length' => $length,
-                        'estimate_length_inch' => '',
-                        'usage' => 0,
-                        'custom_color' => '',
-                        'weight' => 0,
-                        'supplier_id' => '',
-                        'custom_grade' => '',
-                        'custom_trim_src' => $filename
-                    );
-    
-                    $_SESSION["cart"][] = $item_array;
-                }else{
-                    echo json_encode(['error' => "Trim Product not available"]);
-                }
-            }else{
-                $key = findCartKey($_SESSION["cart"], $id, $line);
-                if ($key !== false && isset($_SESSION["cart"][$key])) {
-                    $_SESSION["cart"][$key]['custom_trim_src'] = $filename;
-                } else {
-                    echo json_encode(['error' => "Product not found in cart: ID: $id, Line: $line"]);
-                }  
-            }
-
             echo json_encode(['filename' => $filename]);
         } else {
             echo json_encode(['error' => 'Failed to save image']);

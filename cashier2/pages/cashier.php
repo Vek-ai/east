@@ -17,12 +17,20 @@ $latSettings = !empty($addressSettings['lat']) ? $addressSettings['lat'] : 0;
 $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 ?>
 <style>
+    #special_trim_modal {
+        z-index: 11060;
+    }
+
+    #special_trim_modal ~ .modal-backdrop.show {
+        z-index: 11055;
+    }
+
     #custom_trim_draw_modal {
-        z-index: 1060;
+        z-index: 12060;
     }
 
     #custom_trim_draw_modal ~ .modal-backdrop.show {
-        z-index: 1055;
+        z-index: 12055;
     }
 
     #viewOutOfStockmodal {
@@ -298,11 +306,12 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         </div>
     </div>
 </div>
+
 <div class="modal" id="custom_trim_draw_modal">
-    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
-                <h4 class="modal-title">Special Trim</h4>
+                <h4 class="modal-title"></h4>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -315,6 +324,22 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             <div class="modal-footer">
                 <button id="saveDrawing" class="btn ripple btn-success" type="button">Save</button>
                 <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="special_trim_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Special Trim Configuration</h4>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <div id="special_trim_body">
+                    <!-- Content here -->
+                </div>
             </div>
         </div>
     </div>
@@ -715,10 +740,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 </div>
 
 <div class="modal fade" id="prompt_quantity_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <form id="quantity_form" class="modal-content modal-content-demo">
             <div class="modal-header">
-                <h6 class="modal-title">Select Quantity</h6>
+                <h6 class="modal-title">Metal Panel Configuration</h6>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -729,6 +754,23 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             <div class="modal-footer">
                 <button class="btn btn-success ripple btn-secondary" data-bs-dismiss="modal" type="submit">Add to Cart</button>
                 <button class="btn btn-danger ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="trim_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <form id="trim_form" class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Trim Configuration</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="trim_container"></div>
             </div>
         </form>
         </div>
@@ -1663,16 +1705,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         const undoButton = document.getElementById('undoBtn');
         const redoButton = document.getElementById('redoBtn');
 
-        console.log({
-        canvas,
-        clearButton,
-        saveDrawing,
-        colorCircle,
-        lineColorPicker,
-        undoButton,
-        redoButton
-        });
-
         let points = [];
         let lengths = [];
         let angles = [];
@@ -1700,11 +1732,19 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             ctx.fillText("Draw here", canvas.width / 2, canvas.height / 2);
         };
 
+        const finalizeDraw = () => {
+            const tempStartPoint = currentStartPoint;
+            currentStartPoint = null;
+            redrawCanvas();
+            currentStartPoint = tempStartPoint;
+        };
+
         const drawLine = (p1, p2, color) => {
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
             ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
             ctx.stroke();
         };
 
@@ -1713,6 +1753,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
             ctx.strokeStyle = 'gray';
+            ctx.lineWidth = 1;
             ctx.stroke();
         };
 
@@ -1761,7 +1802,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 ctx.fillText(`${distance} in`, midX + 5, midY - 5);
             }
 
-            for (let i = 2; i <= points.length; i++) {
+            for (let i = 2; i < points.length; i++) {
                 const angle = calculateInteriorAngle(points[i - 2], points[i - 1], points[i]);
                 drawAngleArc(points[i - 2], points[i - 1], points[i], angle);
 
@@ -1774,6 +1815,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
             if (points.length === 0) drawPlaceholderText();
         };
+
 
 
         canvas.addEventListener('click', (e) => {
@@ -1801,7 +1843,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         points[points.length - 2],
                         points[points.length - 1]
                     );
-                    //angles.push(angle);
                     drawAngleArc(
                         points[points.length - 3],
                         points[points.length - 2],
@@ -1817,11 +1858,22 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     colors: [...colors]
                 });
                 redoStack = [];
-                currentStartPoint = null;
+
+                currentStartPoint = selected;
             } else {
                 currentStartPoint = selected;
                 if (!points.includes(selected)) points.push(selected);
+
+                undoStack.push({
+                    points: [...points],
+                    lengths: [...lengths],
+                    angles: [...angles],
+                    colors: [...colors]
+                });
+                redoStack = [];
             }
+
+            redrawCanvas();
         });
 
         canvas.addEventListener('mousemove', (e) => {
@@ -1829,8 +1881,18 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 const rect = canvas.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
+                const currentPoint = { x, y };
+
                 redrawCanvas();
-                drawTemporaryLine(currentStartPoint, { x, y });
+                drawTemporaryLine(currentStartPoint, currentPoint);
+
+                const midX = (currentStartPoint.x + currentPoint.x) / 2;
+                const midY = (currentStartPoint.y + currentPoint.y) / 2;
+                const distance = calculateDistance(currentStartPoint, currentPoint);
+
+                ctx.font = "14px Arial";
+                ctx.fillStyle = "gray";
+                ctx.fillText(`${distance} in`, midX + 5, midY - 5);
             }
         });
 
@@ -1847,9 +1909,17 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 lengths = [...last.lengths];
                 angles = [...last.angles];
                 colors = [...last.colors];
+
+                if (points.length > 0) {
+                    currentStartPoint = points[points.length - 1];
+                } else {
+                    currentStartPoint = null;
+                }
+
                 redrawCanvas();
             }
         });
+
 
         redoButton.addEventListener('click', () => {
             if (redoStack.length > 0) {
@@ -1864,6 +1934,13 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 lengths = [...next.lengths];
                 angles = [...next.angles];
                 colors = [...next.colors];
+
+                if (points.length > 0) {
+                    currentStartPoint = points[points.length - 1];
+                } else {
+                    currentStartPoint = null;
+                }
+
                 redrawCanvas();
             }
         });
@@ -1883,12 +1960,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         saveDrawing.addEventListener('click', () => {
             var isSave = confirm("Are you sure you want to finalize your custom trim?");
             if (isSave) {
+                finalizeDraw();
+
                 const image_data = canvas.toDataURL('image/png');
-                const id = $('#custom_trim_id').val();
-                const line = $('#custom_trim_line').val();
-                const quantity = $('#custom_trim_qty').val();
-                const length = $('#custom_trim_length').val();
-                const price = $('#custom_trim_price').val();
+                
 
                 $.ajax({
                     url: 'pages/cashier_ajax.php',
@@ -1896,19 +1971,39 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     dataType: 'json',
                     data: {
                         image_data: image_data,
-                        save_drawing: 'save_drawing',
-                        id: id,
-                        line: line,
-                        quantity: quantity,
-                        length: length,
-                        price: price
+                        save_drawing: 'save_drawing'
                     },
                     success: function(response) {
                         if (response.filename) {
-                            loadCart();
-                            loadOrderContents();
-                            loadEstimateContents();
                             $('#custom_trim_draw_modal').modal('hide');
+
+                            currentStartPoint = null;
+                            
+                            const drawingImage = document.getElementById('drawingImage');
+                            if (drawingImage) {
+                                drawingImage.src = '../images/drawing/' + response.filename;
+                                drawingImage.style.display = 'block';
+                            }
+
+                            const drawingTrimImage = document.getElementById('drawingTrimImage');
+                            if (drawingTrimImage) {
+                                drawingTrimImage.src = '../images/drawing/' + response.filename;
+                                drawingTrimImage.style.display = 'block';
+                            }
+
+                            const placeholderText = document.getElementById('placeholderText');
+                            if (placeholderText) {
+                                placeholderText.style.display = 'none';
+                            }
+
+                            const imgSrcInput = document.getElementById('img_src');
+                            if (imgSrcInput) {
+                                imgSrcInput.value = response.filename;
+                            }
+                            const imgTrimSrcInput = document.getElementById('img_trim_src');
+                            if (imgTrimSrcInput) {
+                                imgTrimSrcInput.value = response.filename;
+                            }
                         } else {
                             console.log("Error: Response:" + response.error);
                         }
@@ -2279,21 +2374,17 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var id = $(this).data('id');
             var line = '0';
 
-            console.log(`123`);
             $.ajax({
-                url: 'pages/cashier_drawing_modal.php',
+                url: 'pages/cashier_special_trim_modal.php',
                 type: 'POST',
                 data: {
                     id: id,
                     line: line,
-                    fetch_drawing: 'fetch_drawing'
+                    fetch_modal: 'fetch_modal'
                 },
                 success: function(response) {
-                    $('#drawing-body').html(response);
-                    setTimeout(function () {
-                        initializeDrawingApp();
-                        $('#custom_trim_draw_modal').modal('show');
-                    }, 100);
+                    $('#special_trim_body').html(response);
+                    $('#special_trim_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -2301,8 +2392,77 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
 
-        $(document).on("click", "#add-to-cart-btn", function() {
+        $(document).on('click', '#custom_trim_draw', function(event) {
             var id = $(this).data('id');
+            var line = $(this).data('line');
+
+            $.ajax({
+                url: 'pages/cashier_special_trim_modal.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    line: line,
+                    fetch_modal: 'fetch_modal'
+                },
+                success: function(response) {
+                    $('#special_trim_body').html(response);
+                    $('#special_trim_modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('submit', '#specialTrimForm', function (event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+            formData.append('save_trim', 'save_trim');
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    console.log(response);
+                    loadCart();
+                    loadEstimateContents();
+                    loadOrderContents();
+                    $('.modal').modal("hide");
+                },
+                error: function (xhr) {
+                    console.error('Error:', xhr.responseText);
+                }
+            });
+        });
+
+        $(document).on("click", "#drawingContainer, #trim_draw", function() {
+            $.ajax({
+                url: 'pages/cashier_drawing_modal.php',
+                type: 'POST',
+                data: {
+                    fetch_drawing: 'fetch_drawing'
+                },
+                success: function(response) {
+                    $('#drawing-body').html(response);
+                    $('#custom_trim_draw_modal').modal('show');
+                    initializeDrawingApp();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on("click", "#add-to-cart-panel-btn", function() {
+            var id = $(this).data('id');
+
+            var color_id = $('#select-color').find('option:selected').val();
+            var grade_id = $('#select-grade').find('option:selected').val();
+            var gauge_id = $('#select-gauge').find('option:selected').val();
             $.ajax({
                 url: 'pages/cashier_quantity_modal.php',
                 type: 'POST', 
@@ -2312,6 +2472,19 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 },
                 success: function(response) {
                     $('#qty_prompt_container').html(response);
+
+                    $('.qty_select2').each(function () {
+                        $(this).select2({
+                            width: '300px',
+                            dropdownParent: $(this).parent(),
+                            dropdownPosition: 'below'
+                        });
+                    });
+
+                    $('#qty-color').val(color_id).trigger('change');
+                    $('#qty-grade').val(grade_id).trigger('change');
+                    $('#qty-gauge').val(gauge_id).trigger('change');
+
                     $('#prompt_quantity_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -2320,7 +2493,43 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
 
-        $(document).on('click', '#add-to-cart-non-panel', function() {
+        $(document).on("click", "#add-to-cart-trim-btn", function() {
+            var id = $(this).data('id');
+
+            var color_id = $('#select-color').find('option:selected').val();
+            var grade_id = $('#select-grade').find('option:selected').val();
+            var gauge_id = $('#select-gauge').find('option:selected').val();
+            $.ajax({
+                url: 'pages/cashier_trim_modal.php',
+                type: 'POST', 
+                data: {
+                    id: id,
+                    fetch_modal: 'fetch_modal'
+                },
+                success: function(response) {
+                    $('#trim_container').html(response);
+
+                    $('.trim_select2').each(function () {
+                        $(this).select2({
+                            width: '300px',
+                            dropdownParent: $(this).parent(),
+                            dropdownPosition: 'below'
+                        });
+                    });
+
+                    $('#trim-color').val(color_id).trigger('change');
+                    $('#trim-grade').val(grade_id).trigger('change');
+                    $('#trim-gauge').val(gauge_id).trigger('change');
+
+                    $('#trim_modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#add-to-cart-btn', function() {
             var product_id = $(this).data('id');
             var qty = parseInt($('#qty' + product_id).val(), 10) || 0;
 
@@ -2621,11 +2830,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
 
-        $(document).on('click', '#custom_trim_draw', function(event) {
-            loadDrawingModal(this);
-            $('#custom_trim_draw_modal').modal('show');
-        });
-
         $(document).on('click', '#view_cart', function(event) {
             loadCart();
             $('#view_cart_modal').modal('show');
@@ -2900,6 +3104,28 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             } else {
                 performAjax(formData);
             }
+        });
+
+        $(document).on('submit', '#trim_form', function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            formData.append('save_trim', 'save_trim');
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    console.log(response);
+                    $('.modal').modal("hide");
+                    loadCart();
+                },
+                error: function (xhr) {
+                    console.error('Error:', xhr.responseText);
+                }
+            });
         });
 
         $(document).on('submit', '#custom_truss_form', function (event) {

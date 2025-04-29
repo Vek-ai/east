@@ -37,6 +37,10 @@ if (!isset($_SESSION['userid'])) {
   <link rel="stylesheet" href="css/cashier.css" />
 
   <style>
+      .tooltip {
+          z-index: 9999999 !important;
+      }
+
       .tooltip-inner {
           background-color: #f8f9fa !important;
           color: #000 !important;
@@ -1541,22 +1545,29 @@ if (!isset($_SESSION['userid'])) {
 
 
   $(document).ready(function() {
-    $(document).on('mouseenter', '[title]', function () {
-        const $el = $(this);
-        if (!$el.data('bs.tooltip')) {
-            $el.tooltip({
+    document.addEventListener('mouseenter', function (e) {
+        const el = e.target.closest('[title]');
+        if (!el) return;
+
+        if (!el._tooltipInstance) {
+            el._tooltipInstance = new bootstrap.Tooltip(el, {
                 trigger: 'hover',
                 placement: 'top'
-            }).tooltip('show');
+            });
+            el._tooltipInstance.show();
         }
-    });
+    }, true);
 
-    $(document).on('mouseleave', '[title]', function () {
-        const $el = $(this);
-        if ($el.data('bs.tooltip')) {
-            $el.tooltip('dispose');
+    document.addEventListener('mouseleave', function (e) {
+        const el = e.target.closest('[title]');
+        if (!el) return;
+
+        if (el._tooltipInstance) {
+            el._tooltipInstance.dispose();
+            el._tooltipInstance = null;
         }
-    });
+    }, true);
+
     
     loadCartItemsHeader();
 
