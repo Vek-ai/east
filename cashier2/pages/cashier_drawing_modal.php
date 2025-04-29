@@ -141,13 +141,13 @@ if(isset($_POST['fetch_drawing'])){
                             <div class="col-6">
                                 <div class="mb-3">
                                     <label class="form-label" for="trim_quantity">Quantity</label>
-                                    <input type="number" value="1" id="trim_quantity" name="quantity" class="form-control mb-1" placeholder="Enter Quantity">
+                                    <input type="number" value="1" id="custom_trim_qty" name="quantity" class="form-control mb-1" placeholder="Enter Quantity">
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="mb-3">
                                     <label class="form-label" for="trim_length">Length</label>
-                                    <select id="trim_length" name="length" class="form-select mb-1">
+                                    <select id="custom_trim_length" name="length" class="form-select mb-1">
                                         <!-- Default 10ft -->
                                         <option value="10">10 ft</option>
                                         <option value="12">12 ft</option>
@@ -161,7 +161,7 @@ if(isset($_POST['fetch_drawing'])){
                             <div class="col-12">
                                 <div class="mb-3">
                                     <label class="form-label" for="truss_price">Price</label>
-                                    <input type="text" id="truss_price" name="price" class="form-control mb-1" placeholder="Enter Price">
+                                    <input type="text" id="custom_trim_price" name="price" class="form-control mb-1" placeholder="Enter Price">
                                 </div>
                             </div>
                         </div>

@@ -1681,7 +1681,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         let undoStack = [];
         let redoStack = [];
         const pixelsPerInch = 96;
-        let currentColor = "#ffffff";
+        let currentColor = "#000000";
         colorCircle.style.backgroundColor = currentColor;
 
         $(document).on('click', '#colorCircle', function () {
@@ -1886,18 +1886,23 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 const image_data = canvas.toDataURL('image/png');
                 const id = $('#custom_trim_id').val();
                 const line = $('#custom_trim_line').val();
+                const quantity = $('#custom_trim_qty').val();
+                const length = $('#custom_trim_length').val();
+                const price = $('#custom_trim_price').val();
 
                 $.ajax({
                     url: 'pages/cashier_ajax.php',
                     type: 'POST',
-                    contentType: 'application/json',
                     dataType: 'json',
-                    data: JSON.stringify({
+                    data: {
                         image_data: image_data,
                         save_drawing: 'save_drawing',
                         id: id,
-                        line: line
-                    }),
+                        line: line,
+                        quantity: quantity,
+                        length: length,
+                        price: price
+                    },
                     success: function(response) {
                         if (response.filename) {
                             loadCart();
@@ -1905,11 +1910,11 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             loadEstimateContents();
                             $('#custom_trim_draw_modal').modal('hide');
                         } else {
-                            console.log("Error: " + response.error);
+                            console.log("Error: Response:" + response.error);
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.log("Error: " + xhr.responseText);
+                        console.log("Error: XHR:" + xhr.responseText);
                     }
                 });
             }

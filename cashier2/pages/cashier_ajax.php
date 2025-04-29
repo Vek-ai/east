@@ -1158,35 +1158,76 @@ if (isset($_POST['unset_customer'])) {
     echo "Customer session unset";
 }
 
-if (isset($input['save_drawing'])) {
-    $input = json_decode(file_get_contents('php://input'), true);
-    $id = mysqli_real_escape_string($conn, $input['id']);
-    $line = mysqli_real_escape_string($conn, $input['line']);
+if (isset($_POST['save_drawing'])) {
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $quantity = floatval(mysqli_real_escape_string($conn, $_POST['quantity']));
+    $length = floatval(mysqli_real_escape_string($conn, $_POST['length']));
+    $price = floatval(mysqli_real_escape_string($conn, $_POST['price']));
 
-    if (isset($input['image_data'])) {
-        $key = findCartKey($_SESSION["cart"], $id, $line);
-        if ($key !== false && isset($_SESSION["cart"][$key])) {
-            $image_data = $input['image_data'];
-            $image_data = str_replace('data:image/png;base64,', '', $image_data);
-            $image_data = str_replace(' ', '+', $image_data);
-            $decodedData = base64_decode($image_data);
-            $images_directory = "../../images/drawing/";
-            $filename = uniqid() . '.png';
-            
-            if (file_put_contents($images_directory . $filename, $decodedData)) {
-                $_SESSION["cart"][$key]['custom_trim_src'] = $filename;
-                echo json_encode(['filename' => $filename]);
-            } else {
-                echo json_encode(['error' => 'Failed to save image']);
+    if (isset($_POST['image_data'])) {
+        $image_data = $_POST['image_data'];
+        $image_data = str_replace('data:image/png;base64,', '', $image_data);
+        $image_data = str_replace(' ', '+', $image_data);
+        $decodedData = base64_decode($image_data);
+        $images_directory = "../../images/drawing/";
+        $filename = uniqid() . '.png';
+
+        if (file_put_contents($images_directory . $filename, $decodedData)) {
+
+            if(empty($line)){
+                if (!isset($_SESSION["cart"])) {
+                    $_SESSION["cart"] = array();
+                }
+    
+                $query = "SELECT * FROM product WHERE product_id = '$id'";
+                $result = mysqli_query($conn, $query);
+    
+                if (mysqli_num_rows($result) > 0) {
+                    $row = mysqli_fetch_assoc($result);
+                    $item_quantity = min($qty, $totalStock);
+    
+                    $item_array = array(
+                        'product_id' => $row['product_id'],
+                        'product_item' => $row['product_item'],
+                        'unit_price' => $price,
+                        'line' => 1,
+                        'quantity_ttl' => $totalStock,
+                        'quantity_in_stock' => $quantityInStock,
+                        'quantity_cart' => $quantity,
+                        'estimate_width' => 0,
+                        'estimate_length' => $length,
+                        'estimate_length_inch' => '',
+                        'usage' => 0,
+                        'custom_color' => '',
+                        'weight' => 0,
+                        'supplier_id' => '',
+                        'custom_grade' => '',
+                        'custom_trim_src' => $filename
+                    );
+    
+                    $_SESSION["cart"][] = $item_array;
+                }else{
+                    echo json_encode(['error' => "Trim Product not available"]);
+                }
+            }else{
+                $key = findCartKey($_SESSION["cart"], $id, $line);
+                if ($key !== false && isset($_SESSION["cart"][$key])) {
+                    $_SESSION["cart"][$key]['custom_trim_src'] = $filename;
+                } else {
+                    echo json_encode(['error' => "Product not found in cart: ID: $id, Line: $line"]);
+                }  
             }
+
+            echo json_encode(['filename' => $filename]);
         } else {
-            echo json_encode(['error' => "Product not found in cart: ID: $id, Line: $line"]);
-        }  
+            echo json_encode(['error' => 'Failed to save image']);
+        }
     } else {
         echo json_encode(['error' => 'No image data provided']);
     }
-    
 }
+
 
 if (isset($_POST['return_product'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
