@@ -3118,7 +3118,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    console.log(response);
                     $('.modal').modal("hide");
                     loadCart();
                 },

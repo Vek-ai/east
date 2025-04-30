@@ -514,6 +514,48 @@ if(isset($_REQUEST['action'])) {
         exit;
     }  
 
+    if ($action == 'fetch_table') {
+        $query = "SELECT * FROM product_grade WHERE hidden = 0";
+        $result = mysqli_query($conn, $query);
+    
+        $data = [];
+        $no = 1;
+        while ($row = mysqli_fetch_assoc($result)) {
+            $rowData = [];
+    
+            $rowData['product_grade'] = '<span class="product' . $no . ($row['status'] == '0' ? ' emphasize-strike' : '') . '">' . $row['product_grade'] . '</span>';
+            $rowData['grade_abbreviations'] = $row['grade_abbreviations'];
+            $rowData['multiplier'] = $row['multiplier'];
+            $rowData['product_category_name'] = getProductCategoryName($row['product_category']);
+            $rowData['notes'] = $row['notes'];
+            
+            $last_edit = '';
+            if (!empty($row['last_edit'])) {
+                $date = new DateTime($row['last_edit']);
+                $last_edit = $date->format('m-d-Y');
+            }
+    
+            $user_id = $row['edited_by'] != 0 ? $row['edited_by'] : $row['added_by'];
+            $last_user_name = $user_id ? get_name($user_id) : '';
+            $rowData['details'] = "Last Edited $last_edit by $last_user_name";
+    
+            $status = $row['status'];
+            $rowData['status_html'] = '<a href="javascript:void(0)" class="changeStatus" data-no="' . $no . '" data-id="' . $row['product_grade_id'] . '" data-status="' . $status . '"><div id="status-alert' . $no . '" class="alert ' . ($status == '0' ? 'alert-danger bg-danger' : 'alert-success bg-success') . ' text-white border-0 text-center py-1 px-2 my-0" style="border-radius: 5%;">' . ($status == '0' ? 'Inactive' : 'Active') . '</div></a>';
+    
+            if ($status == '0') {
+                $rowData['action_html'] = '<a href="javascript:void(0)" class="text-decoration-none py-1 text-dark hideProductGrade" data-id="' . $row['product_grade_id'] . '" data-row="' . $no . '"><i class="text-danger ti ti-trash fs-7"></i></a>';
+            } else {
+                $rowData['action_html'] = '<a href="javascript:void(0)" class="text-decoration-none py-1" id="addModalBtn" data-id="' . $row['product_grade_id'] . '" data-type="edit"><i class="ti ti-pencil fs-7"></i></a>';
+            }
+    
+            $data[] = $rowData;
+            $no++;
+        }
+    
+        echo json_encode(['data' => $data]);
+        exit;
+    }
+
     mysqli_close($conn);
 }
 ?>

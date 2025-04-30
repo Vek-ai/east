@@ -1,61 +1,6 @@
 <?php
 require 'includes/dbconn.php';
 require 'includes/functions.php';
-
-$color_name = "";
-$color_code = "";
-$color_group = "";
-$provider_id = "";
-$ekm_color_code = "";
-$ekm_color_no = "";
-$ekm_paint_code = "";
-$stock_availability = '';
-$product_category = '';
-$multiplier_category = '';
-$color_abbreviation = "";
-$ranking = '';
-
-$saveBtnTxt = "Add";
-$addHeaderTxt = "Add New";
-
-if(!empty($_REQUEST['color_id'])){
-  $color_id = $_REQUEST['color_id'];
-  $query = "SELECT * FROM paint_colors WHERE color_id = '$color_id'";
-  $result = mysqli_query($conn, $query);            
-  while ($row = mysqli_fetch_array($result)) {
-      $color_id = $row['color_id'];
-      $color_name = $row['color_name'];
-      $color_code = $row['color_code'];
-      $color_group = $row['color_group'];
-      $provider_id = $row['provider_id'];
-      $availability = $row['stock_availability'];
-      $product_category = $row['product_category'];
-      $multiplier_category = $row['multiplier_category'];
-      $ekm_color_code = $row['ekm_color_code'];
-      $ekm_color_no = $row['ekm_color_no'];
-      $ekm_paint_code = $row['ekm_paint_code'];
-      $color_abbreviation = $row['color_abbreviation'];
-      $ranking = $row['ranking'];
-  }
-  $saveBtnTxt = "Update";
-  $addHeaderTxt = "Update";
-}
-
-$message = "";
-if(!empty($_REQUEST['result'])){
-  if($_REQUEST['result'] == '1'){
-    $message = "New paint color added successfully.";
-    $textColor = "text-success";
-  }else if($_REQUEST['result'] == '2'){
-    $message = "Paint color updated successfully.";
-    $textColor = "text-success";
-  }else if($_REQUEST['result'] == '0'){
-    $message = "Failed to Perform Operation";
-    $textColor = "text-danger";
-  }
-  
-}
-
 ?>
 <style>
     .emphasize-strike {
@@ -129,7 +74,7 @@ if(!empty($_REQUEST['result'])){
 <div class="card card-body">
     <div class="row">
       <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
-          <button type="button" id="add_edit_color_btn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
+          <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
               <i class="ti ti-plus text-white me-1 fs-5"></i> Add Paint Color
           </button>
           <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
@@ -166,7 +111,7 @@ if(!empty($_REQUEST['result'])){
                           while ($row_category = mysqli_fetch_array($result_category)) {
                               $selected = ($category_id == $row_category['product_category_id']) ? 'selected' : '';
                           ?>
-                              <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
+                              <option value="<?= $row_category['product_category'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
                           <?php
                           }
                           ?>
@@ -190,7 +135,7 @@ if(!empty($_REQUEST['result'])){
                               while ($row_color_group = mysqli_fetch_array($result_color_group)) {
                                   $selected = (($color_details['color_group'] ?? '') == $row_color_group['color_group_name_id']) ? 'selected' : '';
                               ?>
-                                  <option value="<?= $row_color_group['color_group_name_id'] ?>" data-color-group="<?= $row_category['color_group_name'] ?>" <?= $selected ?>>
+                                  <option value="<?= $row_color_group['color_group_name'] ?>" data-color-group="<?= $row_category['color_group_name'] ?>" <?= $selected ?>>
                                       <?= $row_color_group['color_group_name'] ?>
                                   </option>
                               <?php
@@ -209,7 +154,7 @@ if(!empty($_REQUEST['result'])){
                           while ($row_rows = mysqli_fetch_array($result_rows)) {
                           $selected = ($row_rows['provider_id'] == ($color_details['provider_id'] ?? '')) ? 'selected' : '';
                           ?>
-                              <option value="<?= $row_rows['provider_id'] ?>" data-provider="<?= $row_rows['provider_name'] ?>" <?= $selected ?>><?= $row_rows['provider_name'] ?></option>
+                              <option value="<?= $row_rows['provider_name'] ?>" data-provider="<?= $row_rows['provider_name'] ?>" <?= $selected ?>><?= $row_rows['provider_name'] ?></option>
                           <?php   
                           }
                           ?>
@@ -226,7 +171,7 @@ if(!empty($_REQUEST['result'])){
                           while ($row_availability = mysqli_fetch_array($result_availability)) {
                           $selected = ($row_availability['product_availability_id'] == ($color_details['stock_availability'] ?? '')) ? 'selected' : '';
                           ?>
-                              <option value="<?= $row_availability['product_availability_id'] ?>" data-availability="<?= $row_availability['product_availability'] ?>" <?= $selected ?> ><?= $row_availability['product_availability'] ?></option>
+                              <option value="<?= $row_availability['product_availability'] ?>" data-availability="<?= $row_availability['product_availability'] ?>" <?= $selected ?> ><?= $row_availability['product_availability'] ?></option>
                           <?php   
                           }
                           ?>
@@ -262,137 +207,8 @@ if(!empty($_REQUEST['result'])){
                       </tr>
                     </thead>
                     <tbody>
-                    <?php
-                    $no = 1;
-                    $query_paint_color = "SELECT * FROM paint_colors WHERE hidden=0";
-                    $result_paint_color = mysqli_query($conn, $query_paint_color);            
-                    while ($row_paint_color = mysqli_fetch_array($result_paint_color)) {
-                        $color_id = $row_paint_color['color_id'];
-                        $color_name = $row_paint_color['color_name'];
-                        $color_code = $row_paint_color['color_code'];
-                        $color_group = getColorGroupName($row_paint_color['color_group']);
-                        $provider_id = $row_paint_color['provider_id'];
-                        $product_category = getProductCategoryName($row_paint_color['product_category']);
-                        $availability_details = getAvailabilityDetails($row_paint_color['stock_availability']);
-                        $availability = $availability_details['product_availability'];
-                        $db_status = $row_paint_color['color_status'];
-                        // $last_edit = $row_paint_color['last_edit'];
-                        $date = new DateTime($row_paint_color['last_edit']);
-                        $last_edit = $date->format('m-d-Y');
-
-                        $added_by = $row_paint_color['added_by'];
-                        $edited_by = $row_paint_color['edited_by'];
-
-                        
-                        if($edited_by != "0"){
-                          $last_user_name = get_name($edited_by);
-                        }else if($added_by != "0"){
-                          $last_user_name = get_name($added_by);
-                        }else{
-                          $last_user_name = "";
-                        }
-
-                        if ($row_paint_color['color_status'] == '0') {
-                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$color_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                        } else {
-                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$color_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                        }
-                    ?>
-                    <tr id="product-row-<?= $no ?>"
-                        data-category="<?=$row_paint_color['product_category']?>"
-                        data-color-group="<?=$row_paint_color['color_group']?>"
-                        data-provider="<?=$row_paint_color['provider_id']?>"
-                        data-availability="<?=$row_paint_color['stock_availability']?>"
-                    >
-                        <td><span class="product<?= $no ?> <?php if ($row_paint_color['color_status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $color_name ?></span></td>
-                        <td><?= $color_code ?></td>
-                        <td><?= $color_group ?></td>
-                        <td><?= getPaintProviderName($provider_id) ?></td>
-                        <td><?= $product_category ?></td>
-                        <td><?= $availability ?></td>
-                        <td class="last-edit" style="width:20%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
-                        <td><?= $status ?></td>
-                        <td class="text-center" id="action-button-<?= $no ?>">
-                            <?php if ($row_paint_color['color_status'] == '0') { ?>
-                                <a href="#" title="Archive" class="py-1 text-dark hideProductLine" data-id="<?= $color_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'><i class="ti ti-trash text-danger fs-7"></i></a>
-                            <?php } else { ?>
-                                <a href="#" title="Edit" id="add_edit_color_btn" data-type="edit" data-id="<?= $color_id ?>" class="py-1" style='border-radius: 10%;'>
-                                  <i class="ti ti-pencil fs-7"></i>
-                                </a>
-                            <?php } ?>
-                        </td>
-                    </tr>
-                    <?php
-                    $no++;
-                    }
-                    ?>
+                    
                     </tbody>
-                    <script>
-                    $(document).ready(function() {
-                        $(document).on('click', '.changeStatus', function(event) {
-                            event.preventDefault(); 
-                            var color_id = $(this).data('id');
-                            var status = $(this).data('status');
-                            var no = $(this).data('no');
-                            $.ajax({
-                                url: 'pages/paint_colors_ajax.php',
-                                type: 'POST',
-                                data: {
-                                    color_id: color_id,
-                                    status: status,
-                                    action: 'change_status'
-                                },
-                                success: function(response) {
-                                  console.log(response);
-                                    if (response == 'success') {
-                                        if (status == 1) {
-                                            $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
-                                            $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                                            $('.product' + no).addClass('emphasize-strike');
-                                            $('#action-button-' + no).html('<a href="#" title="Archive" class="py-1 hideProductLine" data-id="' + color_id + '" data-row="' + no + '" style="border-radius: 10%;"><i class="ti ti-trash text-danger fs-7"></i></a>');
-                                            $('#toggleActive').trigger('change');
-                                          } else {
-                                            $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                                            $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                                            $('.product' + no).removeClass('emphasize-strike');
-                                            $('#action-button-' + no).html('<a href="?page=paint_colors&color_id=' + color_id + '" title="Edit" class="py-1" style="border-radius: 10%;"><i class="ti ti-pencil fs-7"></i></a>');
-                                            $('#toggleActive').trigger('change');
-                                          }
-                                    } else {
-                                        alert('Failed to change status.');
-                                    }
-                                },
-                                error: function(jqXHR, textStatus, errorThrown) {
-                                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                }
-                            });
-                        });
-
-                        $(document).on('click', '.hideProductLine', function(event) {
-                            event.preventDefault();
-                            var color_id = $(this).data('id');
-                            var rowId = $(this).data('row');
-                            $.ajax({
-                                url: 'pages/paint_colors_ajax.php',
-                                type: 'POST',
-                                data: {
-                                    color_id: color_id,
-                                    action: 'hide_paint_color'
-                                },
-                                success: function(response) {
-                                    if (response == 'success') {
-                                        $('#product-row-' + rowId).remove();
-                                    } else {
-                                        alert('Failed to hide paint color.');
-                                    }
-                                },
-                                error: function(jqXHR, textStatus, errorThrown) {
-                                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                }
-                            });
-                        });
-                    });
-                    </script>
                   </table>
                 </div>
               </div>
@@ -584,7 +400,29 @@ if(!empty($_REQUEST['result'])){
     document.title = "Paint Colors";
 
     var table = $('#display_paint_colors').DataTable({
-        pageLength: 100
+        pageLength: 100,
+        ajax: {
+            url: 'pages/paint_colors_ajax.php',
+            type: 'POST',
+            data: { action: 'fetch_table' }
+        },
+        columns: [
+            { data: 'color_name' },
+            { data: 'color_code' },
+            { data: 'color_group' },
+            { data: 'provider' },
+            { data: 'product_category_name' },
+            { data: 'availability' },
+            { data: 'last_edit' },
+            { data: 'status_html' },
+            { data: 'action_html' }
+        ],
+        createdRow: function (row, data, dataIndex) {
+            $(row).attr('data-category', data.product_category_name);
+            $(row).attr('data-color-group', data.color_group);
+            $(row).attr('data-provider', data.provider);
+            $(row).attr('data-availability', data.availability);
+        }
     });
 
     $('#display_paint_colors_filter').hide();
@@ -623,7 +461,7 @@ if(!empty($_REQUEST['result'])){
         return null;
     }
 
-    $(document).on('click', '#add_edit_color_btn', function(event) {
+    $(document).on('click', '#addModalBtn', function(event) {
         event.preventDefault(); 
         var id = $(this).data('id') || '';
         var type = $(this).data('type') || '';
@@ -657,6 +495,56 @@ if(!empty($_REQUEST['result'])){
         });
     });
 
+    $(document).on('click', '.changeStatus', function(event) {
+        event.preventDefault(); 
+        var color_id = $(this).data('id');
+        var status = $(this).data('status');
+        var no = $(this).data('no');
+        $.ajax({
+            url: 'pages/paint_colors_ajax.php',
+            type: 'POST',
+            data: {
+                color_id: color_id,
+                status: status,
+                action: 'change_status'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+                } else {
+                    alert('Failed to change status.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $(document).on('click', '.hidePaintColor', function(event) {
+        event.preventDefault();
+        var color_id = $(this).data('id');
+        var rowId = $(this).data('row');
+        $.ajax({
+            url: 'pages/paint_colors_ajax.php',
+            type: 'POST',
+            data: {
+                color_id: color_id,
+                action: 'hide_paint_color'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+                } else {
+                    alert('Failed to hide product system.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
     $('#color_form').on('submit', function(event) {
         event.preventDefault(); 
 
@@ -665,11 +553,6 @@ if(!empty($_REQUEST['result'])){
         var formData = new FormData(this);
         formData.append('action', 'add_update');
         formData.append('userid', userid);
-
-        console.log("Form Data Before Sending:");
-        for (let [key, value] of formData.entries()) {
-            console.log(key + ": " + value);
-        }
 
         $.ajax({
             url: 'pages/paint_colors_ajax.php',
@@ -685,20 +568,14 @@ if(!empty($_REQUEST['result'])){
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=paint_colors";
-                  });
+                  table.ajax.reload(null, false);
               } else if (response.trim() === "New paint color added successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                      location.reload();
-                  });
+                  table.ajax.reload(null, false);
               } else {
                   $('#responseHeader').text("Failed");
                   $('#responseMsg').text(response);

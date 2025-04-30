@@ -1,32 +1,6 @@
 <?php
 require 'includes/dbconn.php';
 require 'includes/functions.php';
-
-$id = 0;
-$product_category = 0;
-$product_system = 0;
-$product_line = 0;
-$product_type = 0;
-$width = 0;
-
-$saveBtnTxt = "Add";
-$addHeaderTxt = "Add New";
-
-if(!empty($_REQUEST['id'])){
-  $id = $_REQUEST['id'];
-  $query = "SELECT * FROM flat_sheet_width WHERE id = '$id'";
-  $result = mysqli_query($conn, $query);            
-  while ($row = mysqli_fetch_array($result)) {
-        $id = $row['id'];
-        $product_category = $row['product_category'];
-        $product_system = $row['product_system'];
-        $product_line = $row['product_line'];
-        $product_type = $row['product_type'];
-        $width = $row['width'];
-  }
-  $saveBtnTxt = "Update";
-  $addHeaderTxt = "Update";
-}
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -123,7 +97,7 @@ if(!empty($_REQUEST['id'])){
                           while ($row_category = mysqli_fetch_array($result_category)) {
                               $selected = ($category_id == $row_category['product_category_id']) ? 'selected' : '';
                           ?>
-                              <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
+                              <option value="<?= $row_category['product_category'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
                           <?php
                           }
                           ?>
@@ -131,7 +105,7 @@ if(!empty($_REQUEST['id'])){
                   </select>
               </div>
               <div class="position-relative w-100 px-1 mb-2">
-                  <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="filter-system" data-filter="system" data-filter-name="Product System">
+                  <select class="form-control filter-category py-0 ps-5 select2 filter-selection" id="filter-system" data-filter="system" data-filter-name="Product System">
                       <option value="">All Product Systems</option>
                       <optgroup label="Product Type">
                           <?php
@@ -140,7 +114,7 @@ if(!empty($_REQUEST['id'])){
                           while ($row_system = mysqli_fetch_array($result_system)) {
                               $selected = ($product_system == $row_system['product_system_id']) ? 'selected' : '';
                           ?>
-                              <option value="<?= $row_system['product_system_id'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
+                              <option value="<?= $row_system['product_system'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
                           <?php
                           }
                           ?>
@@ -148,7 +122,7 @@ if(!empty($_REQUEST['id'])){
                   </select>
               </div>
               <div class="position-relative w-100 px-1 mb-2">
-                  <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="filter-line" data-filter="line" data-filter-name="Product Line">
+                  <select class="form-control filter-category py-0 ps-5 select2 filter-selection" id="filter-line" data-filter="line" data-filter-name="Product Line">
                       <option value="">All Product Lines</option>
                       <optgroup label="Product Type">
                           <?php
@@ -157,7 +131,7 @@ if(!empty($_REQUEST['id'])){
                           while ($row_line = mysqli_fetch_array($result_line)) {
                               $selected = ($type_id == $row_line['product_line_id']) ? 'selected' : '';
                           ?>
-                              <option value="<?= $row_line['product_line_id'] ?>" data-category="<?= $row_line['product_category'] ?>" <?= $selected ?>><?= $row_line['product_line'] ?></option>
+                              <option value="<?= $row_line['product_line'] ?>" data-category="<?= $row_line['product_category'] ?>" <?= $selected ?>><?= $row_line['product_line'] ?></option>
                           <?php
                           }
                           ?>
@@ -165,7 +139,7 @@ if(!empty($_REQUEST['id'])){
                   </select>
               </div>
               <div class="position-relative w-100 px-1 mb-2">
-                  <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="filter-type" data-filter="type" data-filter-name="Product Type">
+                  <select class="form-control filter-category py-0 ps-5 select2 filter-selection" id="filter-type" data-filter="type" data-filter-name="Product Type">
                       <option value="">All Product Types</option>
                       <optgroup label="Product Type">
                           <?php
@@ -174,7 +148,7 @@ if(!empty($_REQUEST['id'])){
                           while ($row_type = mysqli_fetch_array($result_type)) {
                               $selected = ($type_id == $row_type['product_type_id']) ? 'selected' : '';
                           ?>
-                              <option value="<?= $row_type['product_type_id'] ?>" data-category="<?= $row_type['product_category'] ?>" <?= $selected ?>><?= $row_type['product_type'] ?></option>
+                              <option value="<?= $row_type['product_type'] ?>" data-category="<?= $row_type['product_category'] ?>" <?= $selected ?>><?= $row_type['product_type'] ?></option>
                           <?php
                           }
                           ?>
@@ -197,7 +171,6 @@ if(!empty($_REQUEST['id'])){
               
                   <table id="display_flat_sheet_width" class="table table-striped table-bordered align-middle text-center">
                     <thead>
-                      <!-- start row -->
                       <tr>
                         <th>Width</th>
                         <th>Product System</th>
@@ -207,140 +180,10 @@ if(!empty($_REQUEST['id'])){
                         <th>Status</th>
                         <th>Action</th>
                       </tr>
-                      <!-- end row -->
                     </thead>
                     <tbody>
-                      <?php
-                      $no = 1;
-                      $query_fs_width = "SELECT * FROM flat_sheet_width WHERE hidden=0";
-                      $result_fs_width = mysqli_query($conn, $query_fs_width);            
-                      while ($row_fs_width = mysqli_fetch_array($result_fs_width)) {
-                          $id = $row_fs_width['id'];
-                          $product_category = $row_fs_width['product_category'];
-                          $product_system = $row_fs_width['product_system'];
-                          $product_line = $row_fs_width['product_line'];
-                          $product_type = $row_fs_width['product_type'];
-                          $width = $row_fs_width['width'];
-                          $db_status = $row_fs_width['status'];
-                          // $last_edit = $row_fs_width['last_edit'];
-                          $date = new DateTime($row_fs_width['last_edit'] ?? '');
-                          $last_edit = $date->format('m-d-Y');
-
-                          $added_by = $row_fs_width['added_by'];
-                          $edited_by = $row_fs_width['edited_by'];
-
-                          if($edited_by != "0"){
-                            $last_user_name = get_name($edited_by);
-                          }else if($added_by != "0"){
-                            $last_user_name = get_name($added_by);
-                          }else{
-                            $last_user_name = "";
-                          }
-
-                          if ($row_fs_width['status'] == '0') {
-                              $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                          } else {
-                              $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                          }
-                      ?>
-                        <tr id="product-row-<?= $no ?>"
-                            data-category="<?=$row_fs_width['product_category']?>"
-                            data-system="<?=$row_fs_width['product_system']?>"
-                            data-line="<?=$row_fs_width['product_line']?>"
-                            data-type="<?=$row_fs_width['product_type']?>"
-                        >
-                            <td><?= number_format(floatval($width),2) ?></td>
-                            <td><?= getProductSystemName($product_system) ?></td>
-                            <td><?= getProductCategoryName($product_category) ?></td>
-                            <td><?= getProductLineName($product_line) ?></td>
-                            <td>
-                                <a href="#" id="viewModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $id ?>" data-type="<?= $product_type ?>">
-                                    <?= getProductTypeName($product_type) ?>
-                                </a>
-                            </td>
-                            <td><?= $status ?></td>
-                            <td class="text-center" id="action-button-<?= $no ?>">
-                            <?php if ($row_fs_width['status'] == '0') { ?>
-                                <a href="#" title="Archive" class="text-decoration-none py-1 text-dark hideFSWidth" data-id="<?= $id ?>" data-row="<?= $no ?>">
-                                <i class="text-danger ti ti-trash fs-7"></i>
-                                </a>
-                            <?php } else { ?>
-                                <a href="#" title="Edit" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $id ?>" data-type="edit">
-                                    <i class="ti ti-pencil fs-7"></i>
-                                </a>
-                            <?php } ?>
-                            </td>
-                        </tr>
-                      <?php
-                      $no++;
-                      }
-                      ?>
-                      </tbody>
-                      <script>
-                      $(document).ready(function() {
-                          $(document).on('click', '.changeStatus', function(event) {
-                              event.preventDefault(); 
-                              var id = $(this).data('id');
-                              var status = $(this).data('status');
-                              var no = $(this).data('no');
-                              $.ajax({
-                                  url: 'pages/flat_sheet_width_ajax.php',
-                                  type: 'POST',
-                                  data: {
-                                      id: id,
-                                      status: status,
-                                      action: 'change_status'
-                                  },
-                                  success: function(response) {
-                                      if (response == 'success') {
-                                          if (status == 1) {
-                                              $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
-                                              $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                                              $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                              $('#action-button-' + no).html('<a href="#" title="Archive" class="text-decoration-none py-1 text-dark hideFSWidth" data-id="' + id + '" data-row="' + no + '" style="border-radius: 10%;"><i class="text-danger ti ti-trash fs-7"></i></a>');
-                                              $('#toggleActive').trigger('change');
-                                            } else {
-                                              $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                                              $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                                              $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                              $('#action-button-' + no).html('<a href="?page=flat_sheet_width&id=' + id + '" title="Edit" class="text-decoration-none py-1" style="border-radius: 10%;"><i class="text-warning ti ti-pencil fs-7"></i></a>');
-                                              $('#toggleActive').trigger('change');
-                                            }
-                                      } else {
-                                          alert('Failed to change status.');
-                                      }
-                                  },
-                                  error: function(jqXHR, textStatus, errorThrown) {
-                                      alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                  }
-                              });
-                          });
-
-                          $(document).on('click', '.hideFSWidth', function(event) {
-                              event.preventDefault();
-                              var id = $(this).data('id');
-                              var rowId = $(this).data('row');
-                              $.ajax({
-                                  url: 'pages/flat_sheet_width_ajax.php',
-                                  type: 'POST',
-                                  data: {
-                                      id: id,
-                                      action: 'hide_fs_width'
-                                  },
-                                  success: function(response) {
-                                      if (response == 'success') {
-                                          $('#product-row-' + rowId).remove(); // Remove the row from the DOM
-                                      } else {
-                                          alert('Failed to hide category.');
-                                      }
-                                  },
-                                  error: function(jqXHR, textStatus, errorThrown) {
-                                      alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                  }
-                              });
-                          });
-                      });
-                      </script>
+                      
+                    </tbody>
                   </table>
                 </div>
               </div>
@@ -517,7 +360,7 @@ if(!empty($_REQUEST['id'])){
           </div>
           <div class="modal-body">
               <form id="download_excel_form" class="form-horizontal">
-                  <label for="select-category" class="form-label fw-semibold">Select Category</label>
+                  <label for="search-category" class="form-label fw-semibold">Select Category</label>
                   <div class="mb-3">
                       <select class="form-select select2" id="select-download-category" name="category">
                           <option value="">All Categories</option>
@@ -548,6 +391,45 @@ if(!empty($_REQUEST['id'])){
 
 <script>
     function updateSearchCategory() {
+        let selectedCategory = $('#search-category option:selected').data('category');
+        let hasCategory = !!selectedCategory;
+
+        $('.search-category').each(function () {
+            let $select2Element = $(this);
+
+            if (!$select2Element.data('all-options')) {
+                $select2Element.data('all-options', $select2Element.find('option').clone(true));
+            }
+
+            let allOptions = $select2Element.data('all-options');
+
+            $select2Element.empty();
+
+            if (hasCategory) {
+                allOptions.each(function () {
+                    let optionCategory = $(this).data('category');
+                    if (String(optionCategory) === String(selectedCategory)) {
+                        $select2Element.append($(this).clone(true));
+                    }
+                });
+            } else {
+                allOptions.each(function () {
+                    $select2Element.append($(this).clone(true));
+                });
+            }
+
+            $select2Element.select2('destroy');
+
+            let parentContainer = $select2Element.parent();
+            $select2Element.select2({
+                width: '100%',
+                dropdownParent: parentContainer
+            });
+        });
+
+    }
+
+    function updateSelectCategory() {
         let selectedCategory = $('#select-category option:selected').data('category');
         let hasCategory = !!selectedCategory;
 
@@ -591,7 +473,32 @@ if(!empty($_REQUEST['id'])){
     document.title = "Flat Sheet Width";
 
     var table = $('#display_flat_sheet_width').DataTable({
-        pageLength: 100
+        pageLength: 100,
+        ajax: {
+            url: 'pages/flat_sheet_width_ajax.php',
+            type: 'POST',
+            data: { action: 'fetch_table' }
+        },
+        columns: [
+            { data: 'width' },
+            { data: 'product_system' },
+            { data: 'product_category_name' },
+            { data: 'product_line' },
+            { data: 'product_type' },
+            { data: 'status_html' },
+            { data: 'action_html' }
+        ],
+        createdRow: function (row, data, dataIndex) {
+            $(row).attr('data-category', data.product_category_name);
+            $(row).attr('data-system', data.product_system);
+            $(row).attr('data-line', data.product_line);
+            $(row).attr('data-type', data.product_type);
+        }
+    });
+
+    $('#display_flat_sheet_width').on('xhr.dt', function (e, settings, json, xhr) {
+        console.log("Raw response text:", xhr.responseText);
+        console.log("Parsed JSON:", json);
     });
 
     $('#display_flat_sheet_width_filter').hide();
@@ -634,6 +541,56 @@ if(!empty($_REQUEST['id'])){
         });
     });
 
+    $(document).on('click', '.changeStatus', function(event) {
+        event.preventDefault(); 
+        var id = $(this).data('id');
+        var status = $(this).data('status');
+        var no = $(this).data('no');
+        $.ajax({
+            url: 'pages/flat_sheet_width_ajax.php',
+            type: 'POST',
+            data: {
+                id: id,
+                status: status,
+                action: 'change_status'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+                } else {
+                    alert('Failed to change status.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $(document).on('click', '.hideFSWidth', function(event) {
+        event.preventDefault();
+        var id = $(this).data('id');
+        var rowId = $(this).data('row');
+        $.ajax({
+            url: 'pages/flat_sheet_width_ajax.php',
+            type: 'POST',
+            data: {
+                id: id,
+                action: 'hide_fs_width'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+                } else {
+                    alert('Failed to hide product system.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
     $('#flatSheetWidthForm').on('submit', function(event) {
         event.preventDefault(); 
 
@@ -657,20 +614,14 @@ if(!empty($_REQUEST['id'])){
                     $('#responseHeaderContainer').removeClass("bg-danger");
                     $('#responseHeaderContainer').addClass("bg-success");
                     $('#response-modal').modal("show");
-
-                    $('#response-modal').on('hide.bs.modal', function () {
-                        location.reload();
-                    });
+                    table.ajax.reload(null, false);
                 } else if (response.trim() === "success_add") {
                     $('#responseHeader').text("Success");
                     $('#responseMsg').text('New Flat Sheet Width added successfully.');
                     $('#responseHeaderContainer').removeClass("bg-danger");
                     $('#responseHeaderContainer').addClass("bg-success");
                     $('#response-modal').modal("show");
-
-                    $('#response-modal').on('hide.bs.modal', function () {
-                        location.reload();
-                    });
+                    table.ajax.reload(null, false);
                 } else {
                     $('#responseHeader').text("Failed");
                     $('#responseMsg').text(response);

@@ -114,7 +114,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-4">
                 <label class="form-label">Product System</label>
                 <div class="mb-3">
-                    <select class="form-control select2" id="select-system" name="product_system">
+                    <select class="form-control select2 search-category" id="select-system" name="product_system">
                         <option value="">All Product Systems</option>
                         <optgroup label="Product Type">
                             <?php
@@ -134,7 +134,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-4">
                 <label class="form-label">Product Line</label>
                 <div class="mb-3">
-                    <select class="form-control select2" id="select-line" name="product_line">
+                    <select class="form-control select2 search-category" id="select-line" name="product_line">
                         <option value="" >All Product Lines</option>
                         <optgroup label="Product Type">
                             <?php
@@ -154,7 +154,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-4">
                 <label class="form-label">Product Type</label>
                 <div class="mb-3">
-                    <select class="form-control select2" id="select-type" name="product_type">
+                    <select class="form-control select2 search-category" id="select-type" name="product_type">
                         <option value="" >All Product Types</option>
                         <optgroup label="Product Type">
                             <?php
@@ -174,7 +174,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-12 pt-3">
                 <label class="form-label">Width</label>
                 <div class="mb-3">
-                    <input type="number" id="width" name="width" class="form-control" value="<?= $row['width'] ?? '' ?>"/>
+                    <input type="number" step="0.000001" id="width" name="width" class="form-control" value="<?= $row['width'] ?? '' ?>"/>
                 </div>
             </div>
         </div>
@@ -184,17 +184,12 @@ if(isset($_REQUEST['action'])) {
         <script>
             $(document).ready(function () {
                 $(".select2").each(function () {
-                    if ($(this).hasClass("select2-hidden-accessible")) {
-                        $(this).select2("destroy");
-                    }
-
-                    let parentContainer = $(this).parent();
                     $(this).select2({
-                        dropdownParent: parentContainer
+                        dropdownParent: $(this).parent()
                     });
                 });
 
-                updateSearchCategory();
+                updateSelectCategory();
             });
 
         </script>
@@ -592,7 +587,65 @@ if(isset($_REQUEST['action'])) {
         readfile($filePath);
         unlink($filePath);
         exit;
-    }  
+    } 
+    
+    if ($action === 'fetch_table') {
+        $query = "SELECT * FROM flat_sheet_width WHERE hidden = 0";
+        $result = mysqli_query($conn, $query);
+    
+        $data = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $no = $row['id'];
+            $product_category = getProductCategoryName($row['product_category']);
+            $product_system = getProductSystemName($row['product_system']);
+            $product_line = getProductLineName($row['product_line']);
+            $product_type = getProductTypeName($row['product_type']);
+            $width = number_format(floatval($row['width']),2);
+    
+            $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m-d-Y') : '';
+    
+            $added_by = $row['added_by'];
+            $edited_by = $row['edited_by'];
+    
+            if ($edited_by != "0") {
+                $last_user_name = get_name($edited_by);
+            } elseif ($added_by != "0") {
+                $last_user_name = get_name($added_by);
+            } else {
+                $last_user_name = "";
+            }
+    
+            $status_html = $row['status'] == '0'
+                ? "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-status='0'>
+                        <div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Inactive</div>
+                   </a>"
+                : "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-status='1'>
+                        <div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Active</div>
+                   </a>";
+    
+            $action_html = $row['status'] == '0'
+                ? "<a href='javascript:void(0)' class='py-1 text-dark hideFSWidth' title='Archive' data-id='$no' data-row='$no' style='border-radius: 10%;'>
+                        <i class='text-danger ti ti-trash fs-7'></i>
+                   </a>"
+                : "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='edit'>
+                        <i class='ti ti-pencil fs-7'></i>
+                   </a>";
+    
+            $data[] = [
+                'width' => $width,
+                'product_system' => $product_system,
+                'product_category_name' => $product_category,
+                'product_line' => $product_line,
+                'product_type' => $product_type,
+                'last_edit' => "Last Edited $last_edit by $last_user_name",
+                'status_html' => $status_html,
+                'action_html' => $action_html
+            ];
+        }
+    
+        echo json_encode(['data' => $data]);
+        exit;
+    }
     mysqli_close($conn);
 }
 ?>

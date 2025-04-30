@@ -1,29 +1,6 @@
 <?php
 require 'includes/dbconn.php';
 require 'includes/functions.php';
-
-$profile_type = "";
-$profile_abbreviations = "";
-$product_category = '';
-$notes = "";
-
-$saveBtnTxt = "Add";
-$addHeaderTxt = "Add New";
-
-if(!empty($_REQUEST['profile_type_id'])){
-  $profile_type_id = $_REQUEST['profile_type_id'];
-  $query = "SELECT * FROM profile_type WHERE profile_type_id = '$profile_type_id'";
-  $result = mysqli_query($conn, $query);            
-  while ($row = mysqli_fetch_array($result)) {
-      $profile_type_id = $row['profile_type_id'];
-      $profile_type = $row['profile_type'];
-      $profile_abbreviations = $row['profile_abbreviations'];
-      $product_category = $row['product_category'];
-      $notes = $row['notes'];
-  }
-  $saveBtnTxt = "Update";
-  $addHeaderTxt = "Update";
-}
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -120,7 +97,7 @@ if(!empty($_REQUEST['profile_type_id'])){
                           while ($row_category = mysqli_fetch_array($result_category)) {
                               $selected = ($category_id == $row_category['product_category_id']) ? 'selected' : '';
                           ?>
-                              <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
+                              <option value="<?= $row_category['product_category'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
                           <?php
                           }
                           ?>
@@ -152,130 +129,8 @@ if(!empty($_REQUEST['profile_type_id'])){
                       </tr>
                     </thead>
                     <tbody>
-                    <?php
-                    $no = 1;
-                    $query_profile_type = "SELECT * FROM profile_type WHERE hidden=0";
-                    $result_profile_type = mysqli_query($conn, $query_profile_type);            
-                    while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
-                        $profile_type_id = $row_profile_type['profile_type_id'];
-                        $profile_type = $row_profile_type['profile_type'];
-                        $profile_abbreviations = $row_profile_type['profile_abbreviations'];
-                        $product_category = $row_profile_type['product_category'];
-                        $db_status = $row_profile_type['status'];
-                        $notes = $row_profile_type['notes'];
-                      // $last_edit = $row_profile_type['last_edit'];
-                        $date = new DateTime($row_profile_type['last_edit']);
-                        $last_edit = $date->format('m-d-Y');
-
-                        $added_by = $row_profile_type['added_by'];
-                        $edited_by = $row_profile_type['edited_by'];
-
-                        
-                        if($edited_by != "0"){
-                          $last_user_name = get_name($edited_by);
-                        }else if($added_by != "0"){
-                          $last_user_name = get_name($added_by);
-                        }else{
-                          $last_user_name = "";
-                        }
-
-                        if ($row_profile_type['status'] == '0') {
-                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$profile_type_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                        } else {
-                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$profile_type_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                        }
-                    ?>
-                    <tr id="product-row-<?= $no ?>"
-                        data-category="<?=$row_profile_type['product_category']?>"
-                    >
-                        <td><span class="product<?= $no ?> <?php if ($row_profile_type['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $profile_type ?></span></td>
-                        <td><?= $profile_abbreviations ?></td>
-                        <td><?= getProductCategoryName($product_category) ?></td>
-                        <td class="notes"><?= $notes ?></td>
-                        <td class="last-edit">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
-                        <td><?= $status ?></td>
-                        <td class="text-center" id="action-button-<?= $no ?>">
-                            <?php if ($row_profile_type['status'] == '0') { ?>
-                                <a href="#" title="Archive" class="py-1 text-dark hideProfileType" data-id="<?= $profile_type_id ?>" data-row="<?= $no ?>">
-                                  <i class="text-danger ti ti-trash fs-7"></i>
-                                </a>
-                            <?php } else { ?>
-                                <a href="#" title="Edit" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $profile_type_id ?>" data-type="edit">
-                                  <i class="ti ti-pencil fs-7"></i>
-                                </a>
-                            <?php } ?>
-                        </td>
-                    </tr>
-                    <?php
-                    $no++;
-                    }
-                    ?>
+                    
                     </tbody>
-                    <script>
-                    $(document).ready(function() {
-                        $(document).on('click', '.changeStatus', function(event) {
-                            event.preventDefault(); 
-                            var profile_type_id = $(this).data('id');
-                            var status = $(this).data('status');
-                            var no = $(this).data('no');
-                            $.ajax({
-                                url: 'pages/profile_type_ajax.php',
-                                type: 'POST',
-                                data: {
-                                    profile_type_id: profile_type_id,
-                                    status: status,
-                                    action: 'change_status'
-                                },
-                                success: function(response) {
-                                    if (response == 'success') {
-                                        if (status == 1) {
-                                            $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
-                                            $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                                            $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                            $('#action-button-' + no).html('<a href="#" title="Archive" class="py-1 text-dark hideProfileType" data-id="' + profile_type_id + '" data-row="' + no + '"><i class="text-danger ti ti-trash fs-7"></i></a>');
-                                            $('#toggleActive').trigger('change');
-                                          } else {
-                                            $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                                            $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                                            $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                            $('#action-button-' + no).html('<a href="#" title="Edit" id="addModalBtn" class="py-1 class="text-decoration-none" data-id="' + profile_type_id + '"><i class="text-warning ti ti-pencil fs-7"></i></a>');
-                                            $('#toggleActive').trigger('change');
-                                          }
-                                    } else {
-                                        alert('Failed to change status.');
-                                    }
-                                },
-                                error: function(jqXHR, textStatus, errorThrown) {
-                                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                }
-                            });
-                        });
-
-                        $(document).on('click', '.hideProfileType', function(event) {
-                            event.preventDefault();
-                            var profile_type_id = $(this).data('id');
-                            var rowId = $(this).data('row');
-                            $.ajax({
-                                url: 'pages/profile_type_ajax.php',
-                                type: 'POST',
-                                data: {
-                                    profile_type_id: profile_type_id,
-                                    action: 'hide_profile_type'
-                                },
-                                success: function(response) {
-                                    if (response == 'success') {
-                                        $('#product-row-' + rowId).remove();
-                                    } else {
-                                        alert('Failed to hide product profile type.');
-                                    }
-                                },
-                                error: function(jqXHR, textStatus, errorThrown) {
-                                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                }
-                            });
-                        });
-                    });
-                    </script>
                   </table>
                 </div>
               </div>
@@ -460,8 +315,28 @@ if(!empty($_REQUEST['profile_type_id'])){
 
 <script>
   $(document).ready(function() {
-    document.title = "Product Profile";
-    var table = $('#display_profile_type').DataTable();
+    document.title = "Product Profile Type";
+
+    var table = $('#display_profile_type').DataTable({
+        pageLength: 100,
+        ajax: {
+            url: 'pages/profile_type_ajax.php',
+            type: 'POST',
+            data: { action: 'fetch_table' }
+        },
+        columns: [
+            { data: 'profile_type' },
+            { data: 'profile_abbreviations' },
+            { data: 'product_category_name' },
+            { data: 'notes' },
+            { data: 'last_edit' },
+            { data: 'status_html' },
+            { data: 'action_html' }
+        ],
+        createdRow: function (row, data, dataIndex) {
+            $(row).attr('data-category', data.product_category_name);
+        }
+    });
 
     $('#display_profile_type_filter').hide();
 
@@ -499,6 +374,56 @@ if(!empty($_REQUEST['profile_type_id'])){
         return null;
     }
 
+    $(document).on('click', '.changeStatus', function(event) {
+        event.preventDefault(); 
+        var profile_type_id = $(this).data('id');
+        var status = $(this).data('status');
+        var no = $(this).data('no');
+        $.ajax({
+            url: 'pages/profile_type_ajax.php',
+            type: 'POST',
+            data: {
+                profile_type_id: profile_type_id,
+                status: status,
+                action: 'change_status'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+                } else {
+                    alert('Failed to change status.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $(document).on('click', '.hideProfileType', function(event) {
+        event.preventDefault();
+        var profile_type_id = $(this).data('id');
+        var rowId = $(this).data('row');
+        $.ajax({
+            url: 'pages/profile_type_ajax.php',
+            type: 'POST',
+            data: {
+                profile_type_id: profile_type_id,
+                action: 'hide_profile_type'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+                } else {
+                    alert('Failed to hide product system.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
     $('#profileTypeForm').on('submit', function(event) {
         event.preventDefault(); 
         var userid = getCookie('userid');
@@ -522,20 +447,14 @@ if(!empty($_REQUEST['profile_type_id'])){
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=profile_type";
-                  });
+                  table.ajax.reload(null, false);
               } else if (response === "add-success") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text("New product profile type added successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                      location.reload();
-                  });
+                  table.ajax.reload(null, false);
               } else {
                   $('#responseHeader').text("Failed");
                   $('#responseMsg').text(response);

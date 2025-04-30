@@ -1,29 +1,6 @@
 <?php
 require 'includes/dbconn.php';
 require 'includes/functions.php';
-
-$product_category = "";
-$category_abreviations = "";
-$notes = "";
-$multiplier = 0;
-
-$saveBtnTxt = "Add";
-$addHeaderTxt = "Add New";
-
-if(!empty($_REQUEST['category_id'])){
-  $category_id = $_REQUEST['category_id'];
-  $query = "SELECT * FROM product_category WHERE product_category_id = '$category_id'";
-  $result = mysqli_query($conn, $query);            
-  while ($row = mysqli_fetch_array($result)) {
-      $product_category_id = $row['product_category_id'];
-      $product_category = $row['product_category'];
-      $category_abreviations = $row['category_abreviations'];
-      $notes = $row['notes'];
-      $multiplier = $row['multiplier'];
-  }
-  $saveBtnTxt = "Update";
-  $addHeaderTxt = "Update";
-}
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -116,143 +93,21 @@ if(!empty($_REQUEST['category_id'])){
             <div class="card-body">
                 <h4 class="card-title d-flex justify-content-between align-items-center">Category List</h4>
                 <div class="table-responsive">
-                  <table id="display_category" class="table table-striped table-bordered text-nowrap align-middle">
+                  <table id="display_category" class="table table-striped table-bordered align-middle">
                     <thead>
-                      <!-- start row -->
                       <tr>
-                        <th >Product Category</th>
-                        <th>Category Abreviations</th>
+                        <th>Product Category</th>
+                        <th>Abreviations</th>
                         <th>Multiplier</th>
                         <th>Notes</th>
                         <th>Details</th>
                         <th>Status</th>
-                      
                         <th>Action</th>
                       </tr>
-                      <!-- end row -->
                     </thead>
                     <tbody>
-                      <?php
-                      $no = 1;
-                      $query_product_category = "SELECT * FROM product_category WHERE hidden=0";
-                      $result_product_category = mysqli_query($conn, $query_product_category);            
-                      while ($row_product_category = mysqli_fetch_array($result_product_category)) {
-                          $product_category_id = $row_product_category['product_category_id'];
-                          $product_category = $row_product_category['product_category'];
-                          $category_abreviations = $row_product_category['category_abreviations'];
-                          $db_status = $row_product_category['status'];
-                          $notes = $row_product_category['notes'];
-                          $multiplier = $row_product_category['multiplier'];
-                        // $last_edit = $row_product_category['last_edit'];
-                          $date = new DateTime($row_product_category['last_edit']);
-                          $last_edit = $date->format('m-d-Y');
-
-                          $added_by = $row_product_category['added_by'];
-                          $edited_by = $row_product_category['edited_by'];
-
-                          
-                          if($edited_by != "0"){
-                            $last_user_name = get_name($edited_by);
-                          }else if($added_by != "0"){
-                            $last_user_name = get_name($added_by);
-                          }else{
-                            $last_user_name = "";
-                          }
-
-                          if ($row_product_category['status'] == '0') {
-                              $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_category_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                          } else {
-                              $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_category_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                          }
-                      ?>
-                      <tr id="product-row-<?= $no ?>">
-                          <td><span class="product<?= $no ?> <?php if ($row_product_category['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_category ?></span></td>
-                          <td><?= $category_abreviations ?></td>
-                          <td><?= $multiplier ?></td>
-                          <td class="notes" style="width:30%;"><?= $notes ?></td>
-                          <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
-                          <td><?= $status ?></td>
-                          <td class="text-center" id="action-button-<?= $no ?>">
-                              <?php if ($row_product_category['status'] == '0') { ?>
-                                  <a href="#" title="Archive" class="btn btn-light py-1 text-dark hideCategory" data-id="<?= $product_category_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
-                              <?php } else { ?>
-                                  <a href="#" title="Edit" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $product_category_id ?>" data-type="edit">
-                                    <i class="ti ti-pencil fs-7"></i>
-                                  </a>
-                              <?php } ?>
-                          </td>
-                      </tr>
-                      <?php
-                      $no++;
-                      }
-                      ?>
-                      </tbody>
-                      <script>
-                      $(document).ready(function() {
-                          // Use event delegation for dynamically generated elements
-                          $(document).on('click', '.changeStatus', function(event) {
-                              event.preventDefault(); 
-                              var product_category_id = $(this).data('id');
-                              var status = $(this).data('status');
-                              var no = $(this).data('no');
-                              $.ajax({
-                                  url: 'pages/category_ajax.php',
-                                  type: 'POST',
-                                  data: {
-                                      product_category_id: product_category_id,
-                                      status: status,
-                                      action: 'change_status'
-                                  },
-                                  success: function(response) {
-                                      if (response == 'success') {
-                                          if (status == 1) {
-                                              $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
-                                              $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                                              $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                              $('#action-button-' + no).html('<a href="#" title="Archive" class="btn btn-light py-1 text-dark hideCategory" data-id="' + product_category_id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
-                                              $('#toggleActive').trigger('change');
-                                            } else {
-                                              $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                                              $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                                              $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                              $('#action-button-' + no).html('<a href="/?page=category&category_id=' + product_category_id + '" title="Edit" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
-                                              $('#toggleActive').trigger('change');
-                                            }
-                                      } else {
-                                          alert('Failed to change status.');
-                                      }
-                                  },
-                                  error: function(jqXHR, textStatus, errorThrown) {
-                                      alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                  }
-                              });
-                          });
-
-                          $(document).on('click', '.hideCategory', function(event) {
-                              event.preventDefault();
-                              var product_category_id = $(this).data('id');
-                              var rowId = $(this).data('row');
-                              $.ajax({
-                                  url: 'pages/category_ajax.php',
-                                  type: 'POST',
-                                  data: {
-                                      product_category_id: product_category_id,
-                                      action: 'hide_category'
-                                  },
-                                  success: function(response) {
-                                      if (response == 'success') {
-                                          $('#product-row-' + rowId).remove(); // Remove the row from the DOM
-                                      } else {
-                                          alert('Failed to hide category.');
-                                      }
-                                  },
-                                  error: function(jqXHR, textStatus, errorThrown) {
-                                      alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                  }
-                              });
-                          });
-                      });
-                      </script>
+                      
+                    </tbody>
                   </table>
                 </div>
             </div>
@@ -369,7 +224,21 @@ if(!empty($_REQUEST['category_id'])){
     document.title = "Product Category";
 
     var table = $('#display_category').DataTable({
-        pageLength: 100
+        pageLength: 100,
+        ajax: {
+            url: 'pages/category_ajax.php',
+            type: 'POST',
+            data: { action: 'fetch_table' }
+        },
+        columns: [
+            { data: 'product_category' },
+            { data: 'category_abreviations' },
+            { data: 'multiplier' },
+            { data: 'notes' },
+            { data: 'last_edit' },
+            { data: 'status_html' },
+            { data: 'action_html' }
+        ]
     });
 
     $('#display_category_filter').hide();
@@ -401,6 +270,56 @@ if(!empty($_REQUEST['category_id'])){
         return null;
     }
 
+    $(document).on('click', '.changeStatus', function(event) {
+        event.preventDefault(); 
+        var product_category_id = $(this).data('id');
+        var status = $(this).data('status');
+        var no = $(this).data('no');
+        $.ajax({
+            url: 'pages/category_ajax.php',
+            type: 'POST',
+            data: {
+                product_category_id: product_category_id,
+                status: status,
+                action: 'change_status'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+                } else {
+                    alert('Failed to change status.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $(document).on('click', '.hideCategory', function(event) {
+        event.preventDefault();
+        var product_category_id = $(this).data('id');
+        var rowId = $(this).data('row');
+        $.ajax({
+            url: 'pages/category_ajax.php',
+            type: 'POST',
+            data: {
+                product_category_id: product_category_id,
+                action: 'hide_category'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+                } else {
+                    alert('Failed to hide product category.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
     $('#categoryForm').on('submit', function(event) {
         event.preventDefault(); 
 
@@ -426,20 +345,14 @@ if(!empty($_REQUEST['category_id'])){
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=category";
-                  });
+                  table.ajax.reload(null, false);
               } else if (response === "New category added successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                      location.reload();
-                  });
+                  table.ajax.reload(null, false);
               } else {
                   $('#responseHeader').text("Failed");
                   $('#responseMsg').text(response);

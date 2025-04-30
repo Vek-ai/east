@@ -1,31 +1,6 @@
 <?php
 require 'includes/dbconn.php';
 require 'includes/functions.php';
-
-$product_line = "";
-$line_abreviations = "";
-$product_category = "";
-$notes = "";
-$multiplier = 0;
-
-$saveBtnTxt = "Add";
-$addHeaderTxt = "Add New";
-
-if(!empty($_REQUEST['product_line_id'])){
-  $product_line_id = $_REQUEST['product_line_id'];
-  $query = "SELECT * FROM product_line WHERE product_line_id = '$product_line_id'";
-  $result = mysqli_query($conn, $query);            
-  while ($row = mysqli_fetch_array($result)) {
-      $product_line_id = $row['product_line_id'];
-      $product_line = $row['product_line'];
-      $line_abreviations = $row['line_abreviations'];
-      $product_category = $row['product_category'];
-      $notes = $row['notes'];
-      $multiplier = $row['multiplier'];
-  }
-  $saveBtnTxt = "Update";
-  $addHeaderTxt = "Update";
-}
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -117,7 +92,7 @@ if(!empty($_REQUEST['product_line_id'])){
                           while ($row_category = mysqli_fetch_array($result_category)) {
                               $selected = ($category_id == $row_category['product_category_id']) ? 'selected' : '';
                           ?>
-                              <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
+                              <option value="<?= $row_category['product_category'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
                           <?php
                           }
                           ?>
@@ -140,12 +115,9 @@ if(!empty($_REQUEST['product_line_id'])){
           <div class="card">
             <div class="card-body">
                 <h4 class="card-title d-flex justify-content-between align-items-center">Product line List</h4>
-              
               <div class="table-responsive">
-            
-                <table id="display_product_line" class="table table-striped table-bordered text-nowrap align-middle">
+                <table id="display_line" class="table table-striped table-bordered align-middle">
                   <thead>
-                    <!-- start row -->
                     <tr>
                       <th>Product line</th>
                       <th>Abreviations</th>
@@ -156,136 +128,10 @@ if(!empty($_REQUEST['product_line_id'])){
                       <th>Status</th>
                       <th>Action</th>
                     </tr>
-                    <!-- end row -->
                   </thead>
                   <tbody>
-                    <?php
-                    $no = 1;
-                    $query_product_line = "SELECT * FROM product_line WHERE hidden=0";
-                    $result_product_line = mysqli_query($conn, $query_product_line);            
-                    while ($row_product_line = mysqli_fetch_array($result_product_line)) {
-                        $product_line_id = $row_product_line['product_line_id'];
-                        $product_line = $row_product_line['product_line'];
-                        $line_abreviations = $row_product_line['line_abreviations'];
-                        $product_category = $row_product_line['product_category'];
-                        $db_status = $row_product_line['status'];
-                        $notes = $row_product_line['notes'];
-                        $multiplier = $row_product_line['multiplier'];
-                        // $last_edit = $row_product_line['last_edit'];
-                        $date = new DateTime($row_product_line['last_edit']);
-                        $last_edit = $date->format('m-d-Y');
-
-                        $added_by = $row_product_line['added_by'];
-                        $edited_by = $row_product_line['edited_by'];
-
-                        
-                        if($edited_by != "0"){
-                          $last_user_name = get_name($edited_by);
-                        }else if($added_by != "0"){
-                          $last_user_name = get_name($added_by);
-                        }else{
-                          $last_user_name = "";
-                        }
-
-                        if ($row_product_line['status'] == '0') {
-                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_line_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                        } else {
-                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_line_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                        }
-                    ?>
-                    <tr id="product-row-<?= $no ?>"
-                        data-category="<?=$row_product_line['product_category']?>"
-                    >
-                        <td><span class="product<?= $no ?> <?php if ($row_product_line['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_line ?></span></td>
-                        <td><?= $line_abreviations ?></td>
-                        <td><?= getProductCategoryName($product_category) ?></td>
-                        <td><?= $multiplier ?></td>
-                        <td class="notes" style="width:30%;"><?= $notes ?></td>
-                        <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
-                        <td><?= $status ?></td>
-                        <td class="text-center" id="action-button-<?= $no ?>">
-                            <?php if ($row_product_line['status'] == '0') { ?>
-                                <a href="#" title="Archive" class="text-decoration-none py-1 text-dark hideProductLine" data-id="<?= $product_line_id ?>" data-row="<?= $no ?>">
-                                  <i class="text-danger ti ti-trash fs-7"></i>
-                                </a>
-                            <?php } else { ?>
-                                <a href="#" title="Edit" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $product_line_id ?>" data-type="edit">
-                                  <i class="ti ti-pencil fs-7"></i>
-                                </a>
-                            <?php } ?>
-                        </td>
-                    </tr>
-                    <?php
-                    $no++;
-                    }
-                    ?>
+                    
                   </tbody>
-                  <script>
-                  $(document).ready(function() {
-                      // Use event delegation for dynamically generated elements
-                      $(document).on('click', '.changeStatus', function(event) {
-                          event.preventDefault(); 
-                          var product_line_id = $(this).data('id');
-                          var status = $(this).data('status');
-                          var no = $(this).data('no');
-                          $.ajax({
-                              url: 'pages/product_line_ajax.php',
-                              type: 'POST',
-                              data: {
-                                  product_line_id: product_line_id,
-                                  status: status,
-                                  action: 'change_status'
-                              },
-                              success: function(response) {
-                                  if (response == 'success') {
-                                      if (status == 1) {
-                                          $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
-                                          $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                                          $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                          $('#action-button-' + no).html('<a href="#" title="Archive" class="text-decoration-none py-1 text-dark hideProductLine" data-id="' + product_line_id + '" data-row="' + no + '" style="border-radius: 10%;"><i class="text-danger ti ti-trash fs-7"></i></a>');
-                                          $('#toggleActive').trigger('change');
-                                        } else {
-                                          $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                                          $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                                          $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                          $('#action-button-' + no).html('<a href="/?page=product_line&product_line_id=' + product_line_id + '" title="Edit" class="text-decoration-none py-1" style="border-radius: 10%;"><i class="ti ti-pencil fs-7"></i></a>');
-                                          $('#toggleActive').trigger('change');
-                                        }
-                                  } else {
-                                      alert('Failed to change status.');
-                                  }
-                              },
-                              error: function(jqXHR, textStatus, errorThrown) {
-                                  alert('Error: ' + textStatus + ' - ' + errorThrown);
-                              }
-                          });
-                      });
-
-                      $(document).on('click', '.hideProductLine', function(event) {
-                          event.preventDefault();
-                          var product_line_id = $(this).data('id');
-                          var rowId = $(this).data('row');
-                          $.ajax({
-                              url: 'pages/product_line_ajax.php',
-                              type: 'POST',
-                              data: {
-                                  product_line_id: product_line_id,
-                                  action: 'hide_product_line'
-                              },
-                              success: function(response) {
-                                  if (response == 'success') {
-                                      $('#product-row-' + rowId).remove(); // Remove the row from the DOM
-                                  } else {
-                                      alert('Failed to hide product line.');
-                                  }
-                              },
-                              error: function(jqXHR, textStatus, errorThrown) {
-                                  alert('Error: ' + textStatus + ' - ' + errorThrown);
-                              }
-                          });
-                      });
-                  });
-                  </script>
                 </table>
               </div>
             </div>
@@ -472,11 +318,34 @@ if(!empty($_REQUEST['product_line_id'])){
   $(document).ready(function() {
     document.title = "Product Lines";
 
-    var table = $('#display_product_line').DataTable({
-        pageLength: 100
+    var table = $('#display_line').DataTable({
+        pageLength: 100,
+        ajax: {
+            url: 'pages/product_line_ajax.php',
+            type: 'POST',
+            data: { action: 'fetch_table' }
+        },
+        columns: [
+            { data: 'product_line' },
+            { data: 'line_abreviations' },
+            { data: 'product_category_name' },
+            { data: 'multiplier' },
+            { data: 'notes' },
+            { data: 'last_edit' },
+            { data: 'status_html' },
+            { data: 'action_html' }
+        ],
+        createdRow: function (row, data, dataIndex) {
+            $(row).attr('data-category', data.product_category_name);
+        }
     });
 
-    $('#display_product_line_filter').hide();
+    $('#display_line').on('xhr.dt', function (e, settings, json, xhr) {
+        console.log("Raw response text:", xhr.responseText);
+        console.log("Parsed JSON:", json);
+    });
+
+    $('#display_line_filter').hide();
     
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -512,6 +381,56 @@ if(!empty($_REQUEST['product_line_id'])){
         return null;
     }
 
+    $(document).on('click', '.changeStatus', function(event) {
+        event.preventDefault(); 
+        var product_line_id = $(this).data('id');
+        var status = $(this).data('status');
+        var no = $(this).data('no');
+        $.ajax({
+            url: 'pages/product_line_ajax.php',
+            type: 'POST',
+            data: {
+                product_line_id: product_line_id,
+                status: status,
+                action: 'change_status'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+                } else {
+                    alert('Failed to change status.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $(document).on('click', '.hideLine', function(event) {
+        event.preventDefault();
+        var product_line_id = $(this).data('id');
+        var rowId = $(this).data('row');
+        $.ajax({
+            url: 'pages/product_line_ajax.php',
+            type: 'POST',
+            data: {
+                product_line_id: product_line_id,
+                action: 'hide_product_line'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+                } else {
+                    alert('Failed to hide product line.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
     $('#lineForm').on('submit', function(event) {
         event.preventDefault(); 
 
@@ -537,20 +456,14 @@ if(!empty($_REQUEST['product_line_id'])){
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=product_line";
-                  });
+                  table.ajax.reload(null, false);
               } else if (response === "New product line added successfully.") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text(response);
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                      location.reload();
-                  });
+                  table.ajax.reload(null, false);
               } else {
                   $('#responseHeader').text("Failed");
                   $('#responseMsg').text(response);

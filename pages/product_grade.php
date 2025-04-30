@@ -1,35 +1,6 @@
 <?php
 require 'includes/dbconn.php';
 require 'includes/functions.php';
-
-$product_grade = "";
-$grade_abbreviations = "";
-$product_category = "";
-$multiplier = 1;
-$defect_code = "";
-$defect_description = "";
-$notes = "";
-
-$saveBtnTxt = "Add";
-$addHeaderTxt = "Add New";
-
-if(!empty($_REQUEST['product_grade_id'])){
-  $product_grade_id = $_REQUEST['product_grade_id'];
-  $query = "SELECT * FROM product_grade WHERE product_grade_id = '$product_grade_id'";
-  $result = mysqli_query($conn, $query);            
-  while ($row = mysqli_fetch_array($result)) {
-      $product_grade_id = $row['product_grade_id'];
-      $product_grade = $row['product_grade'];
-      $product_category = $row['product_category'];
-      $grade_abbreviations = $row['grade_abbreviations'];
-      $multiplier = $row['multiplier'];
-      $notes = $row['notes'];
-      $defect_code = $row['defect_code'];
-      $defect_description = $row['defect_description'];
-  }
-  $saveBtnTxt = "Update";
-  $addHeaderTxt = "Update";
-}
 ?>
 <style>
   td.notes,  td.last-edit{
@@ -122,7 +93,7 @@ if(!empty($_REQUEST['product_grade_id'])){
                           while ($row_category = mysqli_fetch_array($result_category)) {
                               $selected = ($category_id == $row_category['product_category_id']) ? 'selected' : '';
                           ?>
-                              <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
+                              <option value="<?= $row_category['product_category'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
                           <?php
                           }
                           ?>
@@ -141,7 +112,7 @@ if(!empty($_REQUEST['product_grade_id'])){
             <div class="card-body">
               <h4 class="card-title d-flex justify-content-between align-items-center">Product Grade List</h4>
               <div class="table-responsive">
-                <table id="display_product_grade" class="table table-striped table-bordered text-nowrap align-middle">
+                <table id="display_product_grade" class="table table-striped table-bordered align-middle">
                   <thead>
                     <tr>
                       <th>Product grade</th>
@@ -155,132 +126,8 @@ if(!empty($_REQUEST['product_grade_id'])){
                     </tr>
                   </thead>
                   <tbody>
-                  <?php
-                  $no = 1;
-                  $query_product_grade = "SELECT * FROM product_grade WHERE hidden=0";
-                  $result_product_grade = mysqli_query($conn, $query_product_grade);            
-                  while ($row_product_grade = mysqli_fetch_array($result_product_grade)) {
-                      $product_grade_id = $row_product_grade['product_grade_id'];
-                      $product_grade = $row_product_grade['product_grade'];
-                      $grade_abbreviations = $row_product_grade['grade_abbreviations'];
-                      $product_category = $row_product_grade['product_category'];
-                      $multiplier = $row_product_grade['multiplier'];
-                      $db_status = $row_product_grade['status'];
-                      $notes = $row_product_grade['notes'];
-                      // $last_edit = $row_product_grade['last_edit'];
-                      $date = new DateTime($row_product_grade['last_edit']);
-                      $last_edit = $date->format('m-d-Y');
-
-                      $added_by = $row_product_grade['added_by'];
-                      $edited_by = $row_product_grade['edited_by'];
-
-                      
-                      if($edited_by != "0"){
-                        $last_user_name = get_name($edited_by);
-                      }else if($added_by != "0"){
-                        $last_user_name = get_name($added_by);
-                      }else{
-                        $last_user_name = "";
-                      }
-
-                      if ($row_product_grade['status'] == '0') {
-                          $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_grade_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                      } else {
-                          $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$product_grade_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                      }
-                  ?>
-                  <tr id="product-row-<?= $no ?>"
-                      data-category="<?=$row_product_grade['product_category']?>"
-                  >
-                      <td><span class="product<?= $no ?> <?php if ($row_product_grade['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $product_grade ?></span></td>
-                      <td><?= $grade_abbreviations ?></td>
-                      <td><?= getProductCategoryName($product_category) ?></td>
-                      <td><?= $multiplier ?></td>
-                      <td class="notes" style="width:30%;"><?= $notes ?></td>
-                      <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
-                      <td><?= $status ?></td>
-                      <td class="text-center" id="action-button-<?= $no ?>">
-                          <?php if ($row_product_grade['status'] == '0') { ?>
-                              <a href="#" title="Archive" class="py-1 text-dark hideProductGrade" data-id="<?= $product_grade_id ?>" data-row="<?= $no ?>">
-                                <i class="text-danger ti ti-trash fs-7"></i>
-                              </a>
-                          <?php } else { ?>
-                            <a href="#" title="Edit" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $product_grade_id ?>" data-type="edit">
-                                <i class="ti ti-pencil fs-7"></i>
-                              </a>
-                          <?php } ?>
-                      </td>
-                  </tr>
-                  <?php
-                  $no++;
-                  }
-                  ?>
+                  
                   </tbody>
-                  <script>
-                  $(document).ready(function() {
-                      $(document).on('click', '.changeStatus', function(event) {
-                          event.preventDefault(); 
-                          var product_grade_id = $(this).data('id');
-                          var status = $(this).data('status');
-                          var no = $(this).data('no');
-                          $.ajax({
-                              url: 'pages/product_grade_ajax.php',
-                              type: 'POST',
-                              data: {
-                                  product_grade_id: product_grade_id,
-                                  status: status,
-                                  action: 'change_status'
-                              },
-                              success: function(response) {
-                                  if (response == 'success') {
-                                      if (status == 1) {
-                                          $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
-                                          $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                                          $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                          $('#action-button-' + no).html('<a href="#" title="Archive" class="py-1 text-dark hideProductGrade" data-id="' + product_grade_id + '" data-row="' + no + '"><i class="text-danger ti ti-trash fs-7"></i></a>');
-                                          $('#toggleActive').trigger('change');
-                                        } else {
-                                          $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                                          $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                                          $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                          $('#action-button-' + no).html('<a href="?page=product_grade&product_grade_id=' + product_grade_id + '" title="Edit" class="btn btn-primary py-1"><i class="ti ti-pencil fs-7"></i></a>');
-                                          $('#toggleActive').trigger('change');
-                                        }
-                                  } else {
-                                      alert('Failed to change status.');
-                                  }
-                              },
-                              error: function(jqXHR, textStatus, errorThrown) {
-                                  alert('Error: ' + textStatus + ' - ' + errorThrown);
-                              }
-                          });
-                      });
-
-                      $(document).on('click', '.hideProductGrade', function(event) {
-                          event.preventDefault();
-                          var product_grade_id = $(this).data('id');
-                          var rowId = $(this).data('row');
-                          $.ajax({
-                              url: 'pages/product_grade_ajax.php',
-                              type: 'POST',
-                              data: {
-                                  product_grade_id: product_grade_id,
-                                  action: 'hide_product_grade'
-                              },
-                              success: function(response) {
-                                  if (response == 'success') {
-                                      $('#product-row-' + rowId).remove(); // Remove the row from the DOM
-                                  } else {
-                                      alert('Failed to hide product grade.');
-                                  }
-                              },
-                              error: function(jqXHR, textStatus, errorThrown) {
-                                  alert('Error: ' + textStatus + ' - ' + errorThrown);
-                              }
-                          });
-                      });
-                  });
-                  </script>
                 </table>
               </div>
             </div>
@@ -468,7 +315,25 @@ if(!empty($_REQUEST['product_grade_id'])){
     document.title = "Product Grade";
 
     var table = $('#display_product_grade').DataTable({
-        pageLength: 100
+        pageLength: 100,
+        ajax: {
+            url: 'pages/product_grade_ajax.php',
+            type: 'POST',
+            data: { action: 'fetch_table' }
+        },
+        columns: [
+            { data: 'product_grade' },
+            { data: 'grade_abbreviations' },
+            { data: 'product_category_name' },
+            { data: 'multiplier' },
+            { data: 'notes' },
+            { data: 'details' },
+            { data: 'status_html' },
+            { data: 'action_html' }
+        ],
+        createdRow: function (row, data, dataIndex) {
+            $(row).attr('data-category', data.product_category_name);
+        }
     });
 
     $('#display_product_grade_filter').hide();
@@ -507,6 +372,60 @@ if(!empty($_REQUEST['product_grade_id'])){
         return null;
     }
 
+    $(document).on('click', '.changeStatus', function(event) {
+        event.preventDefault();
+        
+        var product_grade_id = $(this).data('id');
+        var status = $(this).data('status');
+        var no = $(this).data('no');
+        
+        $.ajax({
+            url: 'pages/product_grade_ajax.php',
+            type: 'POST',
+            data: {
+                product_grade_id: product_grade_id,
+                status: status,
+                action: 'change_status'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+                } else {
+                    alert('Failed to change status.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $(document).on('click', '.hideGrade', function(event) {
+        event.preventDefault();
+        
+        var product_grade_id = $(this).data('id');
+        var rowId = $(this).data('row');
+        
+        $.ajax({
+            url: 'pages/product_grade_ajax.php',
+            type: 'POST',
+            data: {
+                product_grade_id: product_grade_id,
+                action: 'hide_grade'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+                } else {
+                    alert('Failed to hide product grade.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
     $('#gradeForm').on('submit', function(event) {
         event.preventDefault(); 
 
@@ -532,20 +451,14 @@ if(!empty($_REQUEST['product_grade_id'])){
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=product_grade";
-                  });
+                  table.ajax.reload(null, false);
               } else if (response === "add-success") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text("New product grade added successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                      location.reload();
-                  });
+                  table.ajax.reload(null, false);
               } else {
                   $('#responseHeader').text("Failed");
                   $('#responseMsg').text(response);

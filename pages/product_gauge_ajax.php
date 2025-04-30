@@ -21,33 +21,66 @@ if(isset($_REQUEST['action'])) {
         $product_gauge_id = mysqli_real_escape_string($conn, $_POST['product_gauge_id']);
         $product_gauge = mysqli_real_escape_string($conn, $_POST['product_gauge']);
         $gauge_abbreviations = mysqli_real_escape_string($conn, $_POST['gauge_abbreviations']);
+        $multiplier = mysqli_real_escape_string($conn, $_POST['multiplier']);
         $thickness = mysqli_real_escape_string($conn, $_POST['thickness']);
         $no_per_sqft = mysqli_real_escape_string($conn, $_POST['no_per_sqft']);
         $no_per_sqin = mysqli_real_escape_string($conn, $_POST['no_per_sqin']);
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
-
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
-
-        // SQL query to check if the record exists
+    
         $checkQuery = "SELECT * FROM product_gauge WHERE product_gauge_id = '$product_gauge_id'";
         $result = mysqli_query($conn, $checkQuery);
-
+    
         if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE product_gauge SET product_gauge = '$product_gauge', gauge_abbreviations = '$gauge_abbreviations', notes = '$notes', thickness = '$thickness', no_per_sqft = '$no_per_sqft', no_per_sqin = '$no_per_sqin', last_edit = NOW(), edited_by = '$userid'  WHERE product_gauge_id = '$product_gauge_id'";
+            $updateQuery = "
+                UPDATE product_gauge SET 
+                    product_gauge = '$product_gauge',
+                    gauge_abbreviations = '$gauge_abbreviations',
+                    multiplier = '$multiplier',
+                    thickness = '$thickness',
+                    no_per_sqft = '$no_per_sqft',
+                    no_per_sqin = '$no_per_sqin',
+                    notes = '$notes',
+                    last_edit = NOW(),
+                    edited_by = '$userid'
+                WHERE product_gauge_id = '$product_gauge_id'
+            ";
             if (mysqli_query($conn, $updateQuery)) {
                 echo "update-success";
             } else {
                 echo "Error updating product gauge: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO product_gauge (product_gauge, gauge_abbreviations, notes, thickness, no_per_sqft, no_per_sqin, added_date, added_by) VALUES ('$product_gauge', '$gauge_abbreviations', '$thickness', '$no_per_sqft', '$no_per_sqin', '$notes', NOW(), '$userid')";
+            $insertQuery = "
+                INSERT INTO product_gauge (
+                    product_gauge,
+                    gauge_abbreviations,
+                    multiplier,
+                    thickness,
+                    no_per_sqft,
+                    no_per_sqin,
+                    notes,
+                    added_date,
+                    added_by
+                ) VALUES (
+                    '$product_gauge',
+                    '$gauge_abbreviations',
+                    '$multiplier',
+                    '$thickness',
+                    '$no_per_sqft',
+                    '$no_per_sqin',
+                    '$notes',
+                    NOW(),
+                    '$userid'
+                )
+            ";
             if (mysqli_query($conn, $insertQuery)) {
                 echo "add-success";
             } else {
                 echo "Error adding product gauge: " . mysqli_error($conn);
             }
         }
-    } 
+    }    
     
     if ($action == "change_status") {
         $product_gauge_id = mysqli_real_escape_string($conn, $_POST['product_gauge_id']);
@@ -111,7 +144,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="col-md-4">
                 <div class="mb-3">
                     <label class="form-label">Thickness</label>
-                    <input type="number" id="thickness" name="thickness" class="form-control"  value="<?= $row['thickness'] ?? '' ?>"/>
+                    <input type="number" step="0.00001" id="thickness" name="thickness" class="form-control"  value="<?= $row['thickness'] ?? '' ?>"/>
                 </div>
                 </div>
                 <div class="col-md-4">
@@ -437,6 +470,49 @@ if(isset($_REQUEST['action'])) {
         } else {
             echo "<p>No data found in the table.</p>";
         }
+    }
+
+    if ($action == 'fetch_table') {
+        $query = "SELECT * FROM product_gauge WHERE hidden = 0";
+        $result = mysqli_query($conn, $query);
+    
+        $data = [];
+        $no = 1;
+        while ($row = mysqli_fetch_assoc($result)) {
+            $rowData = [];
+    
+            $rowData['product_gauge'] = '<span class="product' . $no . ($row['status'] == '0' ? ' emphasize-strike' : '') . '">' . $row['product_gauge'] . '</span>';
+            $rowData['gauge_abbreviations'] = $row['gauge_abbreviations'];
+            $rowData['multiplier'] = $row['multiplier'];
+            $rowData['thickness'] = floatval($row['thickness']);
+            $rowData['no_per_sqft'] = floatval($row['no_per_sqft']);
+            $rowData['no_per_sqin'] = floatval($row['no_per_sqin']);
+    
+            $last_edit = '';
+            if (!empty($row['last_edit'])) {
+                $date = new DateTime($row['last_edit']);
+                $last_edit = $date->format('m-d-Y');
+            }
+    
+            $user_id = $row['edited_by'] != 0 ? $row['edited_by'] : $row['added_by'];
+            $last_user_name = $user_id ? get_name($user_id) : '';
+            $rowData['details'] = "Last Edited $last_edit by $last_user_name";
+    
+            $status = $row['status'];
+            $rowData['status_html'] = '<a href="javascript:void(0)" class="changeStatus" data-no="' . $no . '" data-id="' . $row['product_gauge_id'] . '" data-status="' . $status . '"><div id="status-alert' . $no . '" class="alert ' . ($status == '0' ? 'alert-danger bg-danger' : 'alert-success bg-success') . ' text-white border-0 text-center py-1 px-2 my-0" style="border-radius: 5%;">' . ($status == '0' ? 'Inactive' : 'Active') . '</div></a>';
+    
+            if ($status == '0') {
+                $rowData['action_html'] = '<a href="javascript:void(0)" class="text-decoration-none py-1 text-dark hideProductGauge" data-id="' . $row['product_gauge_id'] . '" data-row="' . $no . '"><i class="text-danger ti ti-trash fs-7"></i></a>';
+            } else {
+                $rowData['action_html'] = '<a href="javascript:void(0)" class="text-decoration-none py-1" id="addModalBtn" data-id="' . $row['product_gauge_id'] . '" data-type="edit"><i class="ti ti-pencil fs-7"></i></a>';
+            }
+    
+            $data[] = $rowData;
+            $no++;
+        }
+    
+        echo json_encode(['data' => $data]);
+        exit;
     }
 
     mysqli_close($conn);
