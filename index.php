@@ -1466,6 +1466,8 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "truss_pitch") {include 'pages/truss_pitch.php';}
             if ($_REQUEST['page'] == "truss_overhang") {include 'pages/truss_overhang.php';}
             if ($_REQUEST['page'] == "truss_spacing") {include 'pages/truss_spacing.php';}
+
+            if ($_REQUEST['page'] == "product_color_width") {include 'pages/product_color_width.php';}
             
           ?>
         </div>

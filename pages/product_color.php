@@ -2,7 +2,7 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$picture_path = "images/product/product.jpg";
+$page_title = "Color Group";
 ?>
 <style>
     /* .select2-container {
@@ -85,22 +85,20 @@ $picture_path = "images/product/product.jpg";
     <div class="widget-content searchable-container list">
     <div class="card card-body">
         <div class="row">
-        <div class="col-md-4 col-xl-3">
-            <!-- <form class="position-relative">
-            <input type="text" class="form-control product-search ps-5" id="input-search" placeholder="Search Contacts..." />
-            <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
-            </form> -->
-        </div>
-        <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
-            <div class="action-btn show-btn">
-            <a href="javascript:void(0)" class="delete-multiple bg-danger-subtle btn me-2 text-danger d-flex align-items-center ">
-                <i class="ti ti-trash me-1 fs-5"></i> Delete All Row
-            </a>
+            <div class="col-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+                <button type="button" id="addProductModalLabel" class="btn btn-primary d-flex align-items-center view_color_btn" data-title="Add Color Group Multiplier" data-category="" data-id="0">
+                    <i class="ti ti-users text-white me-1 fs-5"></i> Add Color Group
+                </button>
+                <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
+                </button>
+                <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-download text-white me-1 fs-5"></i> Download <?= $page_title ?>
+                </button>
+                <button type="button" id="uploadBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-upload text-white me-1 fs-5"></i> Upload <?= $page_title ?>
+                </button>
             </div>
-            <button type="button" id="addProductModalLabel" class="btn btn-primary d-flex align-items-center view_color_btn" data-title="Add Color Group Multiplier" data-category="" data-id="0">
-                <i class="ti ti-users text-white me-1 fs-5"></i> Add Color Group
-            </button>
-        </div>
         </div>
     </div>
 
@@ -185,6 +183,134 @@ $picture_path = "images/product/product.jpg";
         </div>
     </div>
 
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Upload <?= $page_title ?>
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="upload_excel_form" action="#" method="post" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="excel_file" class="form-label fw-semibold">Select Excel File</label>
+                                    <input type="file" class="form-control" name="excel_file" accept=".xls,.xlsx" required>
+                                </div>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary">Upload & Read</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card mb-0 mt-2">
+                        <div class="card-body d-flex justify-content-center align-items-center">
+                            <button type="button" id="readUploadBtn" class="btn btn-primary fw-semibold">
+                                <i class="fas fa-eye me-2"></i> View Uploaded File
+                            </button>
+                        </div>
+                    </div>    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="downloadClassModal" tabindex="-1" aria-labelledby="downloadClassModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Download Classification
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="download_class_form" class="form-horizontal">
+                        <label for="select-category" class="form-label fw-semibold">Select Classification</label>
+                        <div class="mb-3">
+                            <select class="form-select select2" id="select-download-class" name="category">
+                                <option value="">All Classifications</option>
+                                <optgroup label="Classifications">
+                                    <option value="product_system">Product System</option>
+                                    <option value="product_gauge">Product Gauge</option>
+                                    <option value="product_grade">Product Grade</option>
+                                    <option value="product_coating">Product Coating</option>
+                                    <option value="color_group_name">Color Group Name</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary fw-semibold">
+                                <i class="fas fa-download me-2"></i> Download Classification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="readUploadModal" tabindex="-1" aria-labelledby="readUploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Uploaded Excel <?= $page_title ?>
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="uploaded_excel" class="modal-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Download <?= $page_title ?>
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="download_excel_form" class="form-horizontal">
+                        <label for="select-category" class="form-label fw-semibold">Select Supplier</label>
+                        <div class="mb-3">
+                            <select class="form-select select2" id="select-download-category" name="category">
+                                <option value="">All Suppliers</option>
+                                <optgroup label="Suppliers">
+                                    <?php
+                                    $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
+                                    $result_supplier = mysqli_query($conn, $query_supplier);            
+                                    while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                                        $selected = (!empty($supplierid) && $supplierid == $row_supplier['supplier_id']) ? 'selected' : '';
+                                        if(!empty($_REQUEST['supplier_id'])){
+                                            $selected = (!empty($supplier_id) && $supplier_id == $row_supplier['supplier_id']) ? 'selected' : '';
+                                        }
+                                    ?>
+                                        <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary fw-semibold">
+                                <i class="fas fa-download me-2"></i> Download Excel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <div class="card card-body">
         <div class="row">
@@ -198,7 +324,7 @@ $picture_path = "images/product/product.jpg";
                 </div>
                 <div class="align-items-center filter_container">
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2-filter" id="select-category" title="Categories">
+                        <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-category" data-filter="category" data-filter-name="Category">
                             <option value="">All Categories</option>
                             <optgroup label="Category">
                                 <?php
@@ -214,7 +340,23 @@ $picture_path = "images/product/product.jpg";
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2-filter" id="select-color-multiplier" title="Color Multipliers">
+                        <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-system" data-filter="system" data-filter-name="Product System">
+                            <option value="">All Product System</option>
+                            <optgroup label="Product Systems">
+                                <?php
+                                $query_system = "SELECT DISTINCT product_system FROM product_system WHERE hidden = '0' AND status = '1' ORDER BY `product_system` ASC";
+                                $result_system = mysqli_query($conn, $query_system);
+                                while ($row_system = mysqli_fetch_array($result_system)) {
+                                ?>
+                                    <option value="<?= $row_system['product_system'] ?>"><?= $row_system['product_system'] ?></option>
+                                <?php
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-color-multiplier" data-filter="multiplier" data-filter-name="Color Multiplier">
                             <option value="">All Color Multipliers</option>
                             <optgroup label="Product Color Multipliers">
                                 <?php
@@ -230,24 +372,15 @@ $picture_path = "images/product/product.jpg";
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2-filter" id="select-grade" title="Grade">
+                        <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-grade" data-filter="grade" data-filter-name="Product Grade">
                             <option value="">All Grades</option>
-                            <optgroup label="Product Grades">
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2-filter" id="select-gauge" title="Gauges">
-                            <option value="">All Gauges</option>
-                            <optgroup label="Product Gauges">
+                            <optgroup label="Product Grade">
                                 <?php
-                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
-                                $result_gauge = mysqli_query($conn, $query_gauge);
-                                while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                $query_grade = "SELECT DISTINCT product_grade FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
+                                $result_grade = mysqli_query($conn, $query_grade);
+                                while ($row_grade = mysqli_fetch_array($result_grade)) {
                                 ?>
-                                    <option value="<?= $row_gauge['product_gauge_id'] ?>"><?= $row_gauge['product_gauge'] ?></option>
+                                    <option value="<?= $row_grade['product_grade'] ?>"><?= $row_grade['product_grade'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -255,7 +388,23 @@ $picture_path = "images/product/product.jpg";
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2-filter" id="select-coating" title="Coating">
+                        <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-gauge" data-filter="gauge" data-filter-name="Product Gauge">
+                            <option value="">All Gauges</option>
+                            <optgroup label="Product Gauges">
+                                <?php
+                                    $query_gauge = "SELECT DISTINCT product_gauge FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY product_gauge ASC";
+                                    $result_gauge = mysqli_query($conn, $query_gauge);
+                                    while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                    ?>
+                                        <option value="<?= htmlspecialchars($row_gauge['product_gauge']) ?>"><?= htmlspecialchars($row_gauge['product_gauge']) ?></option>
+                                    <?php
+                                    }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-coating" data-filter="coating" data-filter-name="Product Coating">
                             <option value="">All Coatings</option>
                             <optgroup label="Category">
                                 <option value="bare">Bare</option>
@@ -264,7 +413,7 @@ $picture_path = "images/product/product.jpg";
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2-filter" id="select-surface" title="Surface">
+                        <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-surface" data-filter="surface" data-filter-name="Surface">
                             <option value="">All Surfaces</option>
                             <optgroup label="Surfaces">
                                 <option value="textured">Textured</option>
@@ -303,12 +452,13 @@ $picture_path = "images/product/product.jpg";
                                 ?>
                                     <tr class="search-items" 
                                         data-category="<?= $row_prod_color['product_category'] ?>"
+                                        data-system="<?= getProductSystemName($row_prod_color['product_system']) ?>"
                                         data-multiplier="<?= $row_prod_color['color_mult_id'] ?>"
                                         data-availability="<?= $row_prod_color['availability'] ?>"
                                         data-coating="<?= strtolower($row_prod_color['coating']) ?>"
                                         data-surface="<?= strtolower($row_prod_color['surface']) ?>"
-                                        data-grade="<?= $row_prod_color['grade'] ?>"
-                                        data-gauge="<?= $row_prod_color['gauge'] ?>"
+                                        data-grade="<?= getGradeName($row_prod_color['grade']) ?>"
+                                        data-gauge="<?= getGaugeName($row_prod_color['gauge']) ?>"
                                         >
                                         <td>
                                             <?= getColorGroupName($row_prod_color['color']) ?>
@@ -316,8 +466,8 @@ $picture_path = "images/product/product.jpg";
                                         <td><?= getProductCategoryName($row_prod_color['product_category']) ?></td>
                                         <td><?= getProductSystemName($row_prod_color['product_system']) ?></td>
                                         <td><?= $row_prod_color['multiplier'] ?></td>
-                                        <td><?= $row_prod_color['grade'] ?></td>
-                                        <td><?= $row_prod_color['gauge'] ?></td>
+                                        <td><?= getGradeName($row_prod_color['grade']) ?></td>
+                                        <td><?= getGaugeName($row_prod_color['gauge']) ?></td>
                                         <td>
                                             <div class="action-btn text-center">
                                                 <a href="#" title="View" class="view_color_btn" data-title="Update Color Group Multiplier" data-category="<?= $row_prod_color['product_category'] ?>" data-id="<?= $row_prod_color['id'] ?>">
@@ -345,6 +495,8 @@ $picture_path = "images/product/product.jpg";
 <script>
     
     $(document).ready(function() {
+        document.title = "<?= $page_title ?>";
+
         var table = $('#colorList').DataTable({
             "order": [[1, "asc"]],
             "pageLength": 100,
@@ -355,7 +507,9 @@ $picture_path = "images/product/product.jpg";
             "dom": 'lftp',
         });
 
-        $('#select-profile, #select-color, #select-color-multiplier, #select-grade, #select-gauge, #select-category, #select-surface, #select-coating').on('change', filterTable);
+        $('#colorList_filter').hide();
+
+        $('#select-profile, #select-color, #select-system, #select-color-multiplier, #select-grade, #select-gauge, #select-category, #select-surface, #select-coating').on('change', filterTable);
 
         $('#text-srh').on('keyup', filterTable);
 
@@ -584,99 +738,200 @@ $picture_path = "images/product/product.jpg";
         }
 
         function filterTable() {
-            var category = $('#select-category').val()?.toString() || '';
-            var multiplier = $('#select-color-multiplier').val()?.toString() || '';
-            var grade = $('#select-grade').val()?.toString() || '';
-            var gauge = $('#select-gauge').val()?.toString() || '';
-            
-            var surface = $('#select-surface').val()?.toString() || '';
-            var coating = $('#select-coating').val()?.toString() || '';
             var textSearch = $('#text-srh').val().toLowerCase();
             var isActive = $('#toggleActive').is(':checked');
-
-            console.log(surface)
 
             $.fn.dataTable.ext.search = [];
 
             if (textSearch) {
-                $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-                    var rowText = $(table.row(dataIndex).node()).text().toLowerCase();
-                    return rowText.includes(textSearch);
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                    return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
                 });
             }
 
-            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                 var row = $(table.row(dataIndex).node());
-                if (category && category !== '' && category !== '/' && row.data('category').toString() !== category) {
-                    return false;
-                }
-                if (multiplier && multiplier !== '' && multiplier !== '/' && row.data('multiplier').toString() !== multiplier) {
-                    return false;
-                }
-                if (grade && grade !== '' && grade !== '/' && row.data('grade').toString() !== grade) {
-                    return false;
-                }
-                if (gauge && gauge !== '' && gauge !== '/' && row.data('gauge').toString() !== gauge) {
-                    return false;
-                }
-                if (surface && surface !== '' && surface !== '/' && row.data('surface').toString() !== surface) {
-                    return false;
-                }
-                if (coating && coating !== '' && coating !== '/' && row.data('coating').toString() !== coating) {
-                    return false;
-                }
+                var match = true;
 
-                return true;
+                $('.filter-selection').each(function() {
+                    var filterValue = $(this).val()?.toString() || '';
+                    var rowValue = row.data($(this).data('filter'))?.toString() || '';
+
+                    if (filterValue && filterValue !== '/' && rowValue !== filterValue) {
+                        match = false;
+                        return false;
+                    }
+                });
+
+                return match;
             });
 
             table.draw();
-
             updateSelectedTags();
         }
 
         function updateSelectedTags() {
-            const containerDiv = $('.filter_container');
-            const sections = [];
-
-            containerDiv.find('select').each(function () {
-                const selectElement = $(this);
-                const id = '#' + selectElement.attr('id');
-                const title = selectElement.attr('title');
-
-                if (id && title) {
-                    sections.push({ id: id, title: title });
-                }
-            });
-
-            const displayDiv = $('#selected-tags');
+            var displayDiv = $('#selected-tags');
             displayDiv.empty();
 
-            sections.forEach(function (section) {
-                const selectedOption = $(section.id + ' option:selected');
-                const selectedText = selectedOption.text().trim();
+            $('.filter-selection').each(function() {
+                var selectedOption = $(this).find('option:selected');
+                var selectedText = selectedOption.text().trim();
+                var filterName = $(this).data('filter-name');
 
-                if (selectedOption.val()) {
-                    displayDiv.append(
-                        '<div class="d-inline-block p-1 m-1 border rounded bg-light">' +
-                            '<span class="text-dark">' + section.title + ': ' + selectedText + '</span>' +
-                            '<button type="button" ' +
-                                'class="btn-close btn-sm ms-1 remove-tag" ' +
-                                'style="width: 0.75rem; height: 0.75rem;" ' +
-                                'aria-label="Close" ' +
-                                'data-tag="' + selectedText + '" ' +
-                                'data-select="' + section.id + '">' +
-                            '</button>' +
-                        '</div>'
-                    );
+                if ($(this).val()) {
+                    displayDiv.append(`
+                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                            <span class="text-dark">${filterName}: ${selectedText}</span>
+                            <button type="button" 
+                                class="btn-close btn-sm ms-1 remove-tag" 
+                                style="width: 0.75rem; height: 0.75rem;" 
+                                aria-label="Close" 
+                                data-select="#${$(this).attr('id')}">
+                            </button>
+                        </div>
+                    `);
                 }
             });
 
-            $('.remove-tag').on('click', function () {
-                const selectId = $(this).data('select');
-                $(selectId).val('').trigger('change');
+            $('.remove-tag').on('click', function() {
+                $($(this).data('select')).val('').trigger('change');
                 $(this).parent().remove();
             });
         }
+
+        $(document).on('click', '#uploadBtn', function(event) {
+            $('#uploadModal').modal('show');
+        });
+
+        $(document).on('click', '#downloadClassModalBtn', function(event) {
+            $('#downloadClassModal').modal('show');
+        });
+
+        $(document).on('click', '#downloadBtn', function(event) {
+            window.location.href = "pages/product_color_ajax.php?action=download_excel";
+        });
+
+        $(document).on('click', '#readUploadBtn', function(event) {
+            $.ajax({
+                url: 'pages/product_color_ajax.php',
+                type: 'POST',
+                data: {
+                    action: "fetch_uploaded_modal"
+                },
+                success: function(response) {
+                    $('#uploaded_excel').html(response);
+                    $('#readUploadModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $('#upload_excel_form').on('submit', function (e) {
+            e.preventDefault();
+            
+            var formData = new FormData(this);
+            formData.append('action', 'upload_excel');
+
+            $.ajax({
+                url: 'pages/product_color_ajax.php',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    $('.modal').modal('hide');
+                    response = response.trim();
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Data Uploaded successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }  
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX Error:', textStatus, errorThrown);
+                    console.error('Response:', jqXHR.responseText);
+
+                    $('#responseHeader').text("Error");
+                    $('#responseMsg').text("An error occurred while processing your request.");
+                    $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            });
+        });
+
+        $(document).on('blur', '.table_data', function() {
+            let newValue;
+            let updatedData = {};
+            
+            if ($(this)[0].tagName.toLowerCase() === 'select') {
+                const selectedValue = $(this).val();
+                const selectedText = $(this).find('option:selected').text();
+                newValue = selectedValue ? selectedValue : selectedText;
+            } 
+            else if ($(this).is('td')) {
+                newValue = $(this).text();
+            }
+            
+            const headerName = $(this).data('header-name');
+            const id = $(this).data('id');
+
+            updatedData = {
+                action: 'update_test_data',
+                id: id,
+                header_name: headerName,
+                new_value: newValue,
+            };
+
+            $.ajax({
+                url: 'pages/product_color_ajax.php',
+                type: 'POST',
+                data: updatedData,
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error: ' + error);
+                    alert('Error updating data');
+                }
+            });
+        });
+
+        $(document).on('click', '#saveTable', function(event) {
+            if (confirm("Are you sure you want to save this Excel data to the product lines data?")) {
+                var formData = new FormData();
+                formData.append("action", "save_table");
+
+                $.ajax({
+                    url: "pages/product_color_ajax.php",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        $('.modal').modal('hide');
+                        response = response.trim();
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                        $('#response-modal').modal("show");
+                    }
+                });
+            }
+        });
 
     });
 </script>

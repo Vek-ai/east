@@ -1120,16 +1120,19 @@ if (isset($_POST['search_customer'])) {
 
     $query = "
         SELECT 
-            customer_id AS value, 
-            CONCAT(customer_first_name, ' ', customer_last_name) AS label
+            customer_id, 
+            customer_first_name, 
+            customer_last_name, 
+            customer_business_name
         FROM 
             customer
         WHERE 
-            (customer_first_name LIKE '%$search%' 
-            OR 
-            customer_last_name LIKE '%$search%')
-            AND status != '3'
-            AND status != '0'
+            (
+                customer_first_name LIKE '%$search%' 
+                OR customer_last_name LIKE '%$search%'
+                OR customer_business_name LIKE '%$search%'
+            )
+            AND status NOT IN ('0', '3')
         LIMIT 15
     ";
 
@@ -1138,13 +1141,22 @@ if (isset($_POST['search_customer'])) {
     if ($result) {
         $response = array();
         while ($row = mysqli_fetch_assoc($result)) {
-            $response[] = $row;
+            $fullName = $row['customer_first_name'] . ' ' . $row['customer_last_name'];
+            $label = !empty($row['customer_business_name']) 
+                ? $fullName . ' (' . $row['customer_business_name'] . ')' 
+                : $fullName;
+
+            $response[] = [
+                'value' => $row['customer_id'],
+                'label' => $label
+            ];
         }
         echo json_encode($response);
     } else {
-        echo json_encode(array('error' => 'Query failed'));
+        echo json_encode(['error' => 'Query failed']);
     }
 }
+
 
 if (isset($_POST['change_customer'])) {
     if (isset($_POST['customer_id'])) {

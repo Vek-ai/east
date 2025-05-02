@@ -75,18 +75,43 @@ if(isset($_REQUEST['action'])) {
             </div>
             <div class="col-md-6 panel-fields">
                 <div class="d-flex justify-content-between align-items-center">
-                    <label class="form-label mb-1">Width</label>
+                    <label class="form-label">Product Grade</label>
+                    <a href="?page=product_grade" target="_blank" class="text-decoration-none">Edit</a>
+                </div>
+                <div class="mb-3">
+                <select id="product_grade" class="form-control add-category calculate" name="grade">
+                    <option value="" >Select Grade...</option>
+                    <?php
+                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY product_grade";
+                    $result_grade = mysqli_query($conn, $query_grade);
+                    while ($row_grade = mysqli_fetch_array($result_grade)) {
+                        $selected = (($row['product_grade'] ?? '') == $row_grade['product_grade_id']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $row_grade['product_grade_id'] ?>" data-category="<?= $row_grade['product_category'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                    <?php
+                    }
+                    ?>
+                </select>
+                </div>
+            </div>
+            <div class="col-md-6 panel-fields">
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Width</label>
+                    <a href="?page=product_color_width" target="_blank" class="text-decoration-none">Edit</a>
                 </div>
                 <div class="mb-3">
                     <select id="width" class="form-control calculate" name="width">
                         <option value="" >Select Width...</option>
-                        <option value="13.625" <?= ($row['width'] ?? '') == '13.625' ? 'selected' : '' ?>>13.625</option>
-                        <option value="20.5" <?= ($row['width'] ?? '') == '20.5' ? 'selected' : '' ?>>20.5</option>
-                        <option value="28" <?= ($row['width'] ?? '') == '28' ? 'selected' : '' ?>>28</option>
-                        <option value="41" <?= ($row['width'] ?? '') == '41' ? 'selected' : '' ?>>41</option>
-                        <option value="41.625" <?= ($row['width'] ?? '') == '41.625' ? 'selected' : '' ?>>41.625</option>
-                        <option value="43" <?= ($row['width'] ?? '') == '43' ? 'selected' : '' ?>>43</option>
-                        <option value="20" <?= ($row['width'] ?? '') == '20' ? 'selected' : '' ?>>20</option>
+                        <?php
+                        $query_color_group = "SELECT * FROM product_color_width WHERE hidden = '0' AND status = '1' ORDER BY product_color_width";
+                        $result_color_group = mysqli_query($conn, $query_color_group);
+                        while ($row_color_group = mysqli_fetch_array($result_color_group)) {
+                            $selected = (($row['width'] ?? '') == $row_color_group['product_color_width_id']) ? 'selected' : '';
+                        ?>
+                            <option value="<?= $row_color_group['product_color_width_id'] ?>" <?= $selected ?>><?= $row_color_group['product_color_width'] ?></option>
+                        <?php
+                        }
+                        ?>
                     </select>
                 </div>
             </div>

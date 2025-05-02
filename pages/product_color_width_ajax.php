@@ -1,7 +1,7 @@
 <?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
-error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
+error_reporting(E_ALL);
 
 require '../includes/dbconn.php';
 require '../includes/functions.php';
@@ -11,104 +11,144 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-$table = 'product_color';
-$test_table = 'product_color_excel';
+$table = 'product_color_width';
+$test_table = 'product_color_width_excel';
 $main_primary_key = getPrimaryKey($table);
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-        $table = "product_color";
-    
-        $primaryKeyQuery = "SHOW KEYS FROM $table WHERE Key_name = 'PRIMARY'";
-        $primaryKeyResult = mysqli_query($conn, $primaryKeyQuery);
-        $primaryKeyRow = mysqli_fetch_assoc($primaryKeyResult);
-        $primaryKey = $primaryKeyRow['Column_name'];
-    
-        if (!$primaryKey) {
-            echo "Error: Unable to retrieve primary key for table $table";
-            exit;
-        }
-    
-        $primaryKeyValue = mysqli_real_escape_string($conn, $_POST[$primaryKey]);
-    
-        $fields = [];
-        foreach ($_POST as $key => $value) {
-            if ($key != $primaryKey) {
-                $fields[$key] = mysqli_real_escape_string($conn, $value);
-            }
-        }
-    
-        $checkQuery = "SELECT * FROM $table WHERE $primaryKey = '$primaryKeyValue'";
+        $product_color_width_id = mysqli_real_escape_string($conn, $_POST['product_color_width_id']);
+        $product_color_width = mysqli_real_escape_string($conn, $_POST['product_color_width']);
+        $description = mysqli_real_escape_string($conn, $_POST['description']);
+
+        $userid = mysqli_real_escape_string($conn, $_POST['userid']);
+
+        // SQL query to check if the record exists
+        $checkQuery = "SELECT * FROM product_color_width WHERE product_color_width_id = '$product_color_width_id'";
         $result = mysqli_query($conn, $checkQuery);
-    
+
         if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE $table SET ";
-    
-            foreach ($fields as $column => $value) {
-                $columnExists = mysqli_query($conn, "SHOW COLUMNS FROM $table LIKE '$column'");
-                if (mysqli_num_rows($columnExists) > 0) {
-                    $updateQuery .= "$column = '$value', ";
+            // Record exists, fetch current values
+            $row = mysqli_fetch_assoc($result);
+            $current_product_color_width = $row['product_color_width'];
+
+            $duplicates = array();
+
+            // Check for duplicates only if the new values are different from the current values
+            if ($product_color_width != $current_product_color_width) {
+                $checkCategory = "SELECT * FROM product_color_width WHERE product_color_width = '$current_product_color_width'";
+                $resultCategory = mysqli_query($conn, $checkCategory);
+                if (mysqli_num_rows($resultCategory) > 0) {
+                    $duplicates[] = "Product Color Width";
                 }
             }
-    
-            $updateQuery = rtrim($updateQuery, ", ");
-            $updateQuery .= " WHERE $primaryKey = '$primaryKeyValue'";
-    
-            if (mysqli_query($conn, $updateQuery)) {
-                echo "success_update";
+
+            if (!empty($duplicates)) {
+                $msg = implode(", ", $duplicates);
+                echo "$msg already exist! Please change to a unique value";
             } else {
-                echo "Error updating product: " . mysqli_error($conn);
+                // No duplicates, proceed with update
+                $updateQuery = "UPDATE product_color_width SET product_color_width = '$product_color_width', description = '$description', last_edit = NOW(), edited_by = '$userid'  WHERE product_color_width_id = '$product_color_width_id'";
+                if (mysqli_query($conn, $updateQuery)) {
+                    echo "success_update";
+                } else {
+                    echo "Error updating product color width: " . mysqli_error($conn);
+                }
             }
         } else {
-            $columns = [];
-            $values = [];
-    
-            foreach ($fields as $column => $value) {
-                $columnExists = mysqli_query($conn, "SHOW COLUMNS FROM $table LIKE '$column'");
-                if (mysqli_num_rows($columnExists) > 0) {
-                    $columns[] = $column;
-                    $values[] = "'$value'";
+            // Record does not exist, perform duplicate checks before inserting
+            $duplicates = array();
+            $checkCategory = "SELECT * FROM product_color_width WHERE product_color_width = '$product_color_width'";
+            $resultCategory = mysqli_query($conn, $checkCategory);
+            if (mysqli_num_rows($resultCategory) > 0) {
+                $duplicates[] = "Product Color Width";
+            }
+
+            if(!empty($duplicates)){
+                $msg = implode(", ", $duplicates);
+                echo "$msg already exist! Please change to a unique value";
+            } else {
+                $insertQuery = "INSERT INTO product_color_width (product_color_width, description, added_date, added_by) VALUES ('$product_color_width', '$description', NOW(), '$userid')";
+                if (mysqli_query($conn, $insertQuery)) {
+                    echo "success_add";
+                } else {
+                    echo "Error adding product color width: " . mysqli_error($conn);
                 }
             }
-    
-            $columnsStr = implode(", ", $columns);
-            $valuesStr = implode(", ", $values);
-    
-            $insertQuery = "INSERT INTO $table ($primaryKey, $columnsStr) VALUES ('$primaryKeyValue', $valuesStr)";
-    
-            if (mysqli_query($conn, $insertQuery)) {
-                echo "success_add";
-            } else {
-                echo "Error adding product: " . mysqli_error($conn);
-            }
         }
-    }    
+    } 
+    
+    if ($action == "change_status") {
+        $product_color_width_id = mysqli_real_escape_string($conn, $_POST['product_color_width_id']);
+        $status = mysqli_real_escape_string($conn, $_POST['status']);
+        $new_status = ($status == '0') ? '1' : '0';
+
+        $statusQuery = "UPDATE product_color_width SET status = '$new_status' WHERE product_color_width_id = '$product_color_width_id'";
+        if (mysqli_query($conn, $statusQuery)) {
+            echo "success";
+        } else {
+            echo "Error updating status: " . mysqli_error($conn);
+        }
+    }
+
+    if ($action == 'hide_product_color_width') {
+        $product_color_width_id = mysqli_real_escape_string($conn, $_POST['product_color_width_id']);
+        $query = "UPDATE product_color_width SET hidden='1' WHERE product_color_width_id='$product_color_width_id'";
+        if (mysqli_query($conn, $query)) {
+            echo 'success';
+        } else {
+            echo 'error';
+        }
+    }
+
+    if ($action == 'fetch_modal_content') {
+        $id = '';
+        $product_color_width = '';
+        $description = '';
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM $table WHERE $main_primary_key = '$id'";
+        $result = mysqli_query($conn, $query);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
+            $product_color_width_id = $row['product_color_width_id'];
+            $product_color_width = $row['product_color_width'];
+            $description = $row['description'];
+        }
+
+        ?>
+            <div class="row pt-3">
+                <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Product Color Width</label>
+                    <input type="number" step="0.00001" id="product_color_width" name="product_color_width" class="form-control"  value="<?= $product_color_width ?>"/>
+                </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="5"><?= $description ?></textarea>
+            </div>
+
+            <input type="hidden" id="product_color_width_id" name="product_color_width_id" class="form-control"  value="<?= $id ?>"/>
+        <?php
+    }
 
     if ($action == "download_excel") {
         $includedColumns = array();
         $column_txt = '*';
 
         $includedColumns = [ 
-            'id',
-            'product_category',
-            'color',
-            'multiplier',
-            'product_system',
-            'gauge',
-            'width',
-            'multiplier',
-            'price_per_sqft',
-            'calculated_markup',
-            'coating',
-            'coating_multiplier',
-            'width'
+            'product_color_width_id',
+            'product_color_width',
+            'description'
         ];
 
         $column_txt = implode(', ', $includedColumns);
 
-        $sql = "SELECT " . $column_txt . " FROM $table";
+        $sql = "SELECT " . $column_txt . " FROM $table WHERE hidden = '0' AND status = '1'";
         $result = $conn->query($sql);
 
         $spreadsheet = new Spreadsheet();
@@ -317,19 +357,9 @@ if(isset($_REQUEST['action'])) {
             }
     
             $includedColumns = [ 
-                'id',
-                'product_category',
-                'color',
-                'multiplier',
-                'product_system',
-                'gauge',
-                'width',
-                'multiplier',
-                'price_per_sqft',
-                'calculated_markup',
-                'coating',
-                'coating_multiplier',
-                'width'
+                'product_color_width_id',
+                'product_color_width',
+                'description'
             ];
     
             $columns = array_filter($columns, function ($col) use ($includedColumns) {
@@ -392,92 +422,6 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
-    if ($action == "download_classifications") {
-        $classification = mysqli_real_escape_string($conn, $_REQUEST['class'] ?? '');
-
-        $classifications = [
-            'product_system' => [
-                'columns' => ['product_system_id', 'product_system'],
-                'table' => 'product_system',
-                'where' => "status = '1'"
-            ],
-            'product_gauge' => [
-                'columns' => ['product_gauge_id', 'product_gauge'],
-                'table' => 'product_gauge',
-                'where' => "status = '1'"
-            ],
-            'product_coating' => [
-                'columns' => ['product_coating_id', 'product_coating'],
-                'table' => 'product_coating',
-                'where' => "status = '1'"
-            ],
-            'color_group_name' => [
-                'columns' => ['color_group_name_id', 'color_group_name'],
-                'table' => 'color_group_name',
-                'where' => "status = '1'"
-            ]
-        ];
-
-        $spreadsheet = new Spreadsheet();
-        $spreadsheet->removeSheetByIndex(0);
-        $selectedClassifications = empty($classification) ? array_keys($classifications) : [$classification];
-
-        foreach ($selectedClassifications as $class) {
-            if (!isset($classifications[$class])) {
-                continue;
-            }
-
-            $includedColumns = $classifications[$class]['columns'];
-            $table = $classifications[$class]['table'];
-            $where = $classifications[$class]['where'];
-            $column_txt = implode(', ', array_map(fn($col) => "`$col`", $includedColumns));
-            $sql = "SELECT $column_txt FROM $table WHERE $where";
-            $result = $conn->query($sql);
-
-            $sheet = $spreadsheet->createSheet();
-            $sheet->setTitle(ucwords($class));
-
-            $row = 1;
-            foreach ($includedColumns as $index => $column) {
-                $header = ucwords(str_replace('_', ' ', $column));
-                $columnLetter = chr(65 + $index);
-                $sheet->setCellValue($columnLetter . $row, $header);
-            }
-
-            $row = 2;
-            while ($data = $result->fetch_assoc()) {
-                foreach ($includedColumns as $index => $column) {
-                    $columnLetter = chr(65 + $index);
-
-                    $value = $data[$column] ?? '';
-                        
-                    $sheet->setCellValue($columnLetter . $row, $value);
-                }
-                $row++;
-            }
-        }
-
-        if(empty($classification)){
-            $classification = 'All';
-        }else{
-            $classification = ucwords($classification);
-        }
-
-        $filename = "$classification Classifications.xlsx";
-        $filePath = $filename;
-        $writer = new Xlsx($spreadsheet);
-        $writer->save($filePath);
-
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Content-Length: ' . filesize($filePath));
-        header('Cache-Control: max-age=0');
-
-        readfile($filePath);
-        unlink($filePath);
-        exit;
-    }
-    
     mysqli_close($conn);
 }
 ?>

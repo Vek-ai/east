@@ -17,6 +17,7 @@ if(isset($_POST['fetch_modal'])){
             $category_id = $product_details['product_category'];
         ?>
         <input type="hidden" id="product_id" name="id" value="<?= $id ?>" />
+        <input type="hidden" id="product_price" value="<?= $product_details['unit_price'] ?>" />
         <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
         <h5 class="text-center"><?= $product_details['description'] ?></h5>
         <div class="d-flex justify-content-center flex-column align-items-center mb-3">
@@ -121,7 +122,7 @@ if(isset($_POST['fetch_modal'])){
                 </div>
             </div>
         </div>
-        <div class="modal-footer px-0">
+        <div class="modal-footer d-flex justify-content-between align-items-center px-0">
             <button class="btn btn-warning ripple btn-secondary" id="trim_draw" type="button">Modify Trim</button>
             <button class="btn btn-success ripple btn-secondary" type="submit">Add to Cart</button>
         </div>
