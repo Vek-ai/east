@@ -1379,7 +1379,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "product_fields") {include 'pages/product_fields.php';}
             if ($_REQUEST['page'] == "coils") {include 'pages/coils.php';}
 
-            if ($_REQUEST['page'] == "test") {include 'pages/compute.php';}
+            if ($_REQUEST['page'] == "coil_create") {include 'pages/compute.php';}
 
             if ($_REQUEST['page'] == "coils_manufactured") {include 'pages/coils_manufactured.php';}
             if ($_REQUEST['page'] == "coil_transactions") {include 'pages/coils_transactions.php';}
