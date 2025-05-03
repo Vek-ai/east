@@ -2,8 +2,8 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$trim_id = 43;
-$panel_id = 46;
+$trim_id = 4;
+$panel_id = 3;
 
 $allowed_category = array();
 $allowed_category[] = $trim_id;
