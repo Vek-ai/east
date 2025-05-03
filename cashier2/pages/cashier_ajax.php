@@ -529,6 +529,7 @@ if (isset($_POST['save_estimate'])) {
 
     $total_actual_price = 0;
     $total_discounted_price = 0;
+    $pre_orders = array();
     foreach ($cart as $item) {
         $discount = 0;
         if(isset($item['used_discount'])){
@@ -662,9 +663,9 @@ if (isset($_POST['save_estimate'])) {
                 $pre_orders = [
                     'product_item' => $product_item,
                     'product_category' => ucwords(getProductCategoryName($product_details['product_category'])),
-                    'color' => $custom_color,
-                    'grade' => $custom_grade,
-                    'gauge' => $custom_gauge
+                    'color' => getColorName($custom_color),
+                    'grade' => getGradeName($custom_grade),
+                    'gauge' => getGaugeName($custom_gauge)
                 ];
 
                 $insert_query = "
@@ -1052,9 +1053,9 @@ if (isset($_POST['save_order'])) {
                 $pre_orders = [
                     'product_item' => $product_item,
                     'product_category' => ucwords(getProductCategoryName($product_details['product_category'])),
-                    'color' => $custom_color,
-                    'grade' => $custom_grade,
-                    'gauge' => $custom_gauge
+                    'color' => getColorName($custom_color),
+                    'grade' => getGradeName($custom_grade),
+                    'gauge' => getGaugeName($custom_gauge)
                 ];
 
                 $insert_query = "
