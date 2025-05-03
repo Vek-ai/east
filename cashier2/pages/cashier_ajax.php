@@ -657,12 +657,14 @@ if (isset($_POST['save_estimate'])) {
                 }
             }
 
+            $product_category = $product_details['product_category'];
+
             $is_pre_order = $item['is_pre_order'];
 
             if($is_pre_order == '1'){
                 $pre_orders = [
                     'product_item' => $product_item,
-                    'product_category' => ucwords(getProductCategoryName($product_details['product_category'])),
+                    'product_category' => ucwords(getProductCategoryName($product_category)),
                     'color' => getColorName($custom_color),
                     'grade' => getGradeName($custom_grade),
                     'gauge' => getGaugeName($custom_gauge)
