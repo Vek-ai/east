@@ -45,16 +45,17 @@ if(isset($_POST['fetch_prompt_quantity'])){
         ?>
         <input type="hidden" id="product_id" name="product_id" value="<?= $id ?>" />
         <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
+        <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
         <div class="row">
 
             <!-- Colors -->
             <div class="col-4">
-                <select class="form-control qty_select2" id="qty-color" name="color">
+                <select class="form-control qty_select2" id="qty-color" name="color" >
                     <option value="" data-category="">All Colors</option>
                     <optgroup label="Product Colors">
                         <?php
                         $query_color = "SELECT MIN(color_id) AS color_id, color_name, product_category FROM paint_colors 
-                                        WHERE hidden = '0' AND color_status = '1' $category_condition
+                                        WHERE hidden = '0' AND color_status = '1'
                                         GROUP BY color_name 
                                         ORDER BY color_name ASC";
 
@@ -76,7 +77,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     <option value="" data-category="">All Grades</option>
                     <optgroup label="Product Grades">
                         <?php
-                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' $category_condition ORDER BY product_grade ASC";
+                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY product_grade ASC";
                         $result_grade = mysqli_query($conn, $query_grade);
                         while ($row_grade = mysqli_fetch_array($result_grade)) {
                         ?>
@@ -106,6 +107,10 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         <?php } ?>
                     </optgroup>
                 </select>
+            </div>
+
+            <div class="col-12">
+                <h5 class="text-center pt-3 fs-5 fw-bold"><span id="coil-stock"></span></h5>
             </div>
 
             <div class="col-12"><hr class="w-100"></div>
@@ -254,6 +259,49 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 });
             }
 
+            function fetchCoilStock() {
+                const color = parseInt($('#qty-color').val()) || 0;
+                const grade = parseInt($('#qty-grade').val()) || 0;
+                const gauge = parseInt($('#qty-gauge').val()) || 0;
+
+                if (color === 0 || grade === 0 || gauge === 0) {
+                    $('#coil-stock').text('');
+                    $('#is_pre_order').val('0');
+                    return;
+                }
+
+                $.ajax({
+                    url: 'pages/cashier_quantity_modal.php',
+                    method: 'POST',
+                    dataType: 'json',
+                    data: {
+                        color: color,
+                        grade: grade,
+                        gauge: gauge,
+                        fetch_stock_coil: 'fetch_stock_coil'
+                    },
+                    success: function(response) {
+                        if (response.success === true) {
+                            $('#coil-stock').text('AVAILABLE');
+                            $('#is_pre_order').val('0');
+                        } else {
+                            $('#coil-stock').text('PREORDER');
+                            $('#is_pre_order').val('1');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", {
+                            status: status,
+                            error: error,
+                            responseText: xhr.responseText
+                        });
+                    }
+                });
+            }
+
+            $(document).on('change', '#qty-color, #qty-grade, #qty-gauge', function() {
+                fetchCoilStock();
+            });
 
             $('#duplicateFields').click(function() {
                 var $quantityClone = $('#quantity-product').first().clone();
@@ -341,4 +389,30 @@ if (isset($_POST['fetch_price'])) {
     }
 
     echo number_format($totalPrice, 2);
+}
+
+if (isset($_POST['fetch_stock_coil'])) {
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $product_details = getProductDetails($id);
+
+    $color = mysqli_real_escape_string($conn, $_POST['color']);
+    $grade = mysqli_real_escape_string($conn, $_POST['grade']);
+    $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
+
+    $query_coil = "SELECT 1 FROM coil_product 
+                   WHERE 
+                       hidden = '0' AND
+                       status = '1' AND
+                       color_sold_as = '$color' AND
+                       grade = '$grade' AND
+                       gauge = '$gauge'
+                   LIMIT 1";
+
+    $result = mysqli_query($conn, $query_coil);
+
+    if (mysqli_num_rows($result) > 0) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false]);
+    }
 }

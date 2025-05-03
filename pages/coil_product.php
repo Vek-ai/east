@@ -382,21 +382,38 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         </div>
                                     </div>
                                     <div class="col-md-6">
+                                        <label class="form-label">Gauge</label>
                                         <div class="mb-3">
-                                            <label class="form-label">Coating</label>
-                                            <input type="text" id="coating_add" name="coating" class="form-control" />
+                                            <select id="gauge_add" class="form-control select2-add" name="gauge">
+                                                <option value="" >Select Gauge...</option>
+                                                <?php
+                                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
+                                                $result_gauge = mysqli_query($conn, $query_gauge);            
+                                                while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                                ?>
+                                                    <option value="<?= $row_gauge['product_gauge_id'] ?>" ><?= $row_gauge['product_gauge'] ?></option>
+                                                <?php
+                                                }
+                                                ?>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="row pt-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Coating</label>
+                                            <input type="text" id="coating_add" name="coating" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label class="form-label">Tag #</label>
                                             <input type="text" id="tag_no_add" name="tag_no" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label class="form-label">Invoice #</label>
                                             <input type="text" id="invoice_no_add" name="invoice_no" class="form-control" />
@@ -497,7 +514,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
         <h3 class="card-title d-flex justify-content-between align-items-center">
             Coils List
             <div class="px-3"> 
-                <input type="checkbox" id="toggleActive" checked> Show Active Onlyf
+                <input type="checkbox" id="toggleActive" checked> Show Active Only
             </div>
             <div class="p-2 text-right">
                 <input type="checkbox" id="onlyInStock" <?= $onlyInStock ? 'checked' : '' ?>> Show only In Stock

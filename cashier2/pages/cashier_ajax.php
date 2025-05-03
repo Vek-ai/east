@@ -6,6 +6,9 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
+require '../../includes/send_email.php';
+
+$admin_email = getSetting('admin_email');
 
 $trim_id = 4;
 $panel_id = 3;
@@ -279,7 +282,7 @@ if (isset($_REQUEST['query'])) {
                     </a>';
             
                 if ($row_product['product_category'] == $trim_id || $row_product['product_category'] == $panel_id) {
-                    $sql = "SELECT COUNT(*) AS count FROM coil WHERE color = '$product_color'";
+                    $sql = "SELECT COUNT(*) AS count FROM coil_product WHERE color_sold_as = '$product_color'";
                     $result = mysqli_query($conn, $sql);
 
                     if ($result) {
@@ -582,6 +585,8 @@ if (isset($_POST['save_estimate'])) {
             $estimate_length_inch = floatval($item['estimate_length_inch']);
             $custom_color = $item['custom_color'];
             $custom_grade = $item['custom_grade'];
+            $custom_gauge = $item['custom_gauge'];
+            $is_pre_order = $item['is_pre_order'];
             $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
             $actual_price = $unit_price;
@@ -649,6 +654,103 @@ if (isset($_POST['save_estimate'])) {
                 } else {
                     die("Error: " . $conn->error);
                 }
+            }
+
+            $is_pre_order = $item['is_pre_order'];
+
+            if($is_pre_order == '1'){
+                $pre_orders = [
+                    'product_item' => $product_item,
+                    'product_category' => ucwords(getProductCategoryName($product_details['product_category'])),
+                    'color' => $custom_color,
+                    'grade' => $custom_grade,
+                    'gauge' => $custom_gauge
+                ];
+
+                $insert_query = "
+                    INSERT INTO product_preorder (
+                        product_id,
+                        product_category,
+                        color,
+                        grade,
+                        gauge
+                    ) VALUES (
+                        '$product_id',
+                        '$product_category',
+                        '$color',
+                        '$grade',
+                        '$gauge'
+                    )
+                ";
+
+                if (mysqli_query($conn, $insert_query)) {
+                } else {
+                    $response['error'] = "Insert failed: " . mysqli_error($conn);
+                }
+            }
+        }
+
+        if (!empty($pre_orders)) {
+            $list_items = '<ul style="list-style-type: none; padding-left: 0;">';
+            foreach ($pre_orders as $key => $value) {
+                $label = ucfirst(str_replace('_', ' ', $key));
+                $list_items .= "
+                    <li style='margin-bottom: 8px;'>
+                        <span style='display: inline-block; min-width: 140px; font-weight: bold; color: #333;'>$label:</span>
+                        <span style='color: #555;'>" . htmlspecialchars($value) . "</span>
+                    </li>";
+            }
+            $list_items .= '</ul>';
+        
+            $subject ="Out of Stock items has been preordered";
+        
+            $message = "
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                        }
+                        .container {
+                            padding: 20px;
+                            border: 1px solid #e0e0e0;
+                            background-color: #f9f9f9;
+                            width: 80%;
+                            margin: 0 auto;
+                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        }
+                        h2 {
+                            color: #0056b3;
+                            margin-bottom: 20px;
+                        }
+                        p {
+                            margin: 5px 0;
+                        }
+                        ul {
+                            padding-left: 20px;
+                        }
+                        li {
+                            margin-bottom: 5px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <h2>$subject</h2>
+                        <ul>
+                            $list_items
+                        </ul>
+                    </div>
+                </body>
+                </html>
+            ";
+
+            $response = sendEmail($admin_email, 'EKM', $subject, $message);
+            if ($response['success'] == true) {
+            } else {
+                $response['error'] = "Failed to send Mail" . $conn->error;
             }
         }
 
@@ -808,7 +910,7 @@ if (isset($_POST['save_order'])) {
 
     $total_price = 0;
     $total_discounted_price = 0;
-
+    $pre_orders = array();
     foreach ($cart as $item) {
         $discount = 0;
         if (isset($item['used_discount']) && is_numeric($item['used_discount'])) {
@@ -863,6 +965,7 @@ if (isset($_POST['save_order'])) {
             $estimate_length_inch = floatval($item['estimate_length_inch']);
             $custom_color = $item['custom_color'];
             $custom_grade = $item['custom_grade'];
+            $custom_gauge = $item['custom_gauge'];
 
             $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
@@ -942,7 +1045,103 @@ if (isset($_POST['save_order'])) {
                     die("Error: " . $conn->error);
                 }
             }
-            
+
+            $is_pre_order = $item['is_pre_order'];
+
+            if($is_pre_order == '1'){
+                $pre_orders = [
+                    'product_item' => $product_item,
+                    'product_category' => ucwords(getProductCategoryName($product_details['product_category'])),
+                    'color' => $custom_color,
+                    'grade' => $custom_grade,
+                    'gauge' => $custom_gauge
+                ];
+
+                $insert_query = "
+                    INSERT INTO product_preorder (
+                        product_id,
+                        product_category,
+                        color,
+                        grade,
+                        gauge
+                    ) VALUES (
+                        '$product_id',
+                        '$product_category',
+                        '$color',
+                        '$grade',
+                        '$gauge'
+                    )
+                ";
+
+                if (mysqli_query($conn, $insert_query)) {
+                } else {
+                    $response['error'] = "Insert failed: " . mysqli_error($conn);
+                }
+            }
+        }
+
+        if (!empty($pre_orders)) {
+            $list_items = '<ul style="list-style-type: none; padding-left: 0;">';
+            foreach ($pre_orders as $key => $value) {
+                $label = ucfirst(str_replace('_', ' ', $key));
+                $list_items .= "
+                    <li style='margin-bottom: 8px;'>
+                        <span style='display: inline-block; min-width: 140px; font-weight: bold; color: #333;'>$label:</span>
+                        <span style='color: #555;'>" . htmlspecialchars($value) . "</span>
+                    </li>";
+            }
+            $list_items .= '</ul>';
+        
+            $subject ="Out of Stock items has been preordered";
+        
+            $message = "
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                        }
+                        .container {
+                            padding: 20px;
+                            border: 1px solid #e0e0e0;
+                            background-color: #f9f9f9;
+                            width: 80%;
+                            margin: 0 auto;
+                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        }
+                        h2 {
+                            color: #0056b3;
+                            margin-bottom: 20px;
+                        }
+                        p {
+                            margin: 5px 0;
+                        }
+                        ul {
+                            padding-left: 20px;
+                        }
+                        li {
+                            margin-bottom: 5px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <h2>$subject</h2>
+                        <ul>
+                            $list_items
+                        </ul>
+                    </div>
+                </body>
+                </html>
+            ";
+
+            $response = sendEmail($admin_email, 'EKM', $subject, $message);
+            if ($response['success'] == true) {
+            } else {
+                $response['error'] = "Failed to send Mail" . $conn->error;
+            }
         }
 
         $query = "INSERT INTO order_product (orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
@@ -1180,6 +1379,7 @@ if (isset($_POST['save_trim'])) {
     $length = floatval(mysqli_real_escape_string($conn, $_POST['length']));
     $price = floatval(mysqli_real_escape_string($conn, $_POST['price']));
     $img_src = mysqli_real_escape_string($conn, $_POST['img_src']);
+    $is_pre_order = mysqli_real_escape_string($conn, $_POST['is_pre_order'] ?? 0);
 
     $color = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
     $grade = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
@@ -1228,6 +1428,7 @@ if (isset($_POST['save_trim'])) {
                 'supplier_id' => '',
                 'custom_grade' => $grade,
                 'custom_gauge' => $gauge,
+                'is_pre_order' => $is_pre_order,
                 'custom_trim_src' => $img_src
             );
     
@@ -1326,7 +1527,7 @@ if(isset($_POST['fetch_change_color_modal'])){
             }
 
             if ($product_details["product_category"] == $trim_id || $product_details["product_category"] == $panel_id) {
-                $sql = "SELECT COUNT(*) AS count FROM coil WHERE color = '".$values["custom_color"]."'";
+                $sql = "SELECT COUNT(*) AS count FROM coil_product WHERE color_sold_as = '".$values["custom_color"]."'";
                 $result = mysqli_query($conn, $sql);
 
                 if ($result) {
@@ -1512,7 +1713,7 @@ if(isset($_POST['fetch_change_grade_modal'])){
             $in_stock_grade[] = $product_details['grade'];
 
             if ($product_details["product_category"] == $trim_id || $product_details["product_category"] == $panel_id) {
-                $sql = "SELECT grade FROM coil";
+                $sql = "SELECT grade FROM coil_product";
                 $result = mysqli_query($conn, $sql);
             
                 if ($result) {
@@ -1698,7 +1899,11 @@ if (isset($_POST['add_to_cart'])) {
     $lengthFeet = isset($_POST['length_feet']) ? $_POST['length_feet'] : [];
     $lengthInch = isset($_POST['length_inch']) ? $_POST['length_inch'] : [];
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+    $is_pre_order = mysqli_real_escape_string($conn, $_POST['is_pre_order'] ?? 0);
     $panel_type = mysqli_real_escape_string($conn, $_POST['panel_type']);
+    $color = mysqli_real_escape_string($conn, $_POST['color']);
+    $grade = mysqli_real_escape_string($conn, $_POST['grade']);
+    $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
     $panel_drip_stop = mysqli_real_escape_string($conn, $_POST['panel_drip_stop']);
     $stiff_board_batten = isset($_POST['stiff_board_batten']) ? mysqli_real_escape_string($conn, $_POST['stiff_board_batten']) : '';
     $stiff_stand_seam = isset($_POST['stiff_stand_seam']) ? mysqli_real_escape_string($conn, $_POST['stiff_stand_seam']) : '';
@@ -1758,12 +1963,14 @@ if (isset($_POST['add_to_cart'])) {
                     'estimate_length' => $length_feet,
                     'estimate_length_inch' => $length_inch,
                     'usage' => 0,
-                    'custom_color' => $row['color'],
+                    'custom_color' => !empty($color) ? $color : $row['color'],
                     'panel_type' => $panel_type,
                     'weight' => $weight,
-                    'custom_grade' => intval($row['grade']),
+                    'custom_grade' => !empty($grade) ? $grade : $row['grade'],
+                    'custom_gauge' => !empty($gauge) ? $gauge : $row['gauge'],
                     'stiff_board_batten' => $stiff_board_batten,
-                    'stiff_stand_seam' => $stiff_stand_seam
+                    'stiff_stand_seam' => $stiff_stand_seam,
+                    'is_pre_order' => $is_pre_order
                 );
     
                 $_SESSION["cart"][] = $item_array;

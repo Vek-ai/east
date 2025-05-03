@@ -18,7 +18,9 @@ if(isset($_POST['fetch_modal'])){
         ?>
         <input type="hidden" id="product_id" name="id" value="<?= $id ?>" />
         <input type="hidden" id="product_price" value="<?= $product_details['unit_price'] ?>" />
+        <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
         <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
+
         <h5 class="text-center"><?= $product_details['description'] ?></h5>
         <div class="d-flex justify-content-center flex-column align-items-center mb-3">
             <!-- Canvas Wrapper with Relative Position -->
@@ -94,6 +96,10 @@ if(isset($_POST['fetch_modal'])){
                 </select>
             </div>
 
+            <div class="col-12">
+                <h5 class="text-center pt-3 fs-5 fw-bold"><span id="coil-stock"></span></h5>
+            </div>
+
             <div class="col-12"><hr class="w-100"></div>
             
             <div class="col-6">
@@ -133,5 +139,106 @@ if(isset($_POST['fetch_modal'])){
         <?php
         }
         ?>
+
+        <script>
+            $(document).ready(function () {
+                function fetchCoilStock() {
+                    const color = parseInt($('#trim-color').val()) || 0;
+                    const grade = parseInt($('#trim-grade').val()) || 0;
+                    const gauge = parseInt($('#trim-gauge').val()) || 0;
+
+                    if (color === 0 || grade === 0 || gauge === 0) {
+                        $('#coil-stock').text('');
+                        $('#is_pre_order').val('0');
+                        return;
+                    }
+
+                    $.ajax({
+                        url: 'pages/cashier_trim_modal.php',
+                        method: 'POST',
+                        dataType: 'json',
+                        data: {
+                            color: color,
+                            grade: grade,
+                            gauge: gauge,
+                            fetch_stock_coil: 'fetch_stock_coil'
+                        },
+                        success: function(response) {
+                            if (response.success === true) {
+                                $('#coil-stock').text('AVAILABLE');
+                                $('#is_pre_order').val('0');
+                            } else {
+                                $('#coil-stock').text('PREORDER');
+                                $('#is_pre_order').val('1');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("AJAX Error:", {
+                                status: status,
+                                error: error,
+                                responseText: xhr.responseText
+                            });
+                        }
+                    });
+                }
+
+                $(document).on('change', '#trim-color, #trim-grade, #trim-gauge', function() {
+                    fetchCoilStock();
+                });
+            });
+        </script>
 <?php
+}
+
+if (isset($_POST['fetch_stock_coil'])) {
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $product_details = getProductDetails($id);
+
+    $color = mysqli_real_escape_string($conn, $_POST['color']);
+    $grade = mysqli_real_escape_string($conn, $_POST['grade']);
+    $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
+
+    $query_product = "
+        SELECT 
+            p.product_id,
+            COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
+        FROM 
+            product AS p
+        LEFT JOIN 
+            inventory AS i ON p.product_id = i.product_id
+        WHERE 
+            p.product_category = '3' AND 
+            i.color_id = '$color' AND
+            p.grade = '$grade' AND
+            p.gauge = '$gauge'
+        GROUP BY p.product_id
+        HAVING total_quantity > 0
+        LIMIT 1
+    ";
+
+    $result_product = mysqli_query($conn, $query_product);
+
+    if (mysqli_num_rows($result_product) > 0) {
+        echo json_encode(['success' => true]);
+        exit;
+    }
+
+    $query_coil = "
+        SELECT 1 FROM coil_product 
+        WHERE 
+            hidden = '0' AND
+            status = '1' AND
+            color_sold_as = '$color' AND
+            grade = '$grade' AND
+            gauge = '$gauge'
+        LIMIT 1
+    ";
+
+    $result_coil = mysqli_query($conn, $query_coil);
+
+    if (mysqli_num_rows($result_coil) > 0) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false]);
+    }
 }

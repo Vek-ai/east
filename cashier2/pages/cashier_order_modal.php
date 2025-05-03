@@ -317,7 +317,12 @@ if(isset($_POST['fetch_order'])){
                                             } ?>
                                         </td>
                                         <td>
-                                            <h6 class="fw-semibold mb-0 fs-4"><?= $values["product_item"] ?></h6>
+                                            <h6 class="fw-semibold mb-0 fs-4">
+                                                <?= $values["product_item"] ?>
+                                                <?php if ($values["is_pre_order"] == 1): ?>
+                                                    <br>( PREORDER )
+                                                <?php endif; ?>
+                                            </h6>
                                         </td>
                                         <td>
                                             <select id="color_order<?= $no ?>" class="form-control color-order text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">

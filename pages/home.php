@@ -507,6 +507,80 @@ $reorder_level = 1;
     </div>
   </div>
 
+  <div class="col-lg-6">
+    <div class="card my-5">
+      <div class="card-body mt-3">
+        <div class="d-flex align-items-center flex-wrap mb-9">
+          <div class="w-100">
+            <h3 class="card-title">Pre-Ordered Products</h3>
+            <div class="ms-auto align-self-center">
+              <div class="datatables">
+                <div class="table-responsive">
+                  <table id="productPreOrderedList" class="table search-table table-sm align-middle text-wrap text-center">
+                      <thead class="header-item">
+                        <th class="text-center">Description</th>
+                        <th class="text-center">Category</th>
+                      </thead>
+                      <tbody>
+                      <?php
+                          $query_product = "
+                              SELECT 
+                                  *
+                              FROM 
+                                  product_preorder
+                              LIMIT 10
+                          ";
+
+                          $result_product = mysqli_query($conn, $query_product);            
+                          while ($row_product = mysqli_fetch_array($result_product)) {
+                              $product_id = $row_product['product_id'];
+
+                              $product_details = getProductDetails($product_id);
+
+                              if (!empty($row_product['main_image'])) {
+                                  $image_path = ltrim($row_product['main_image'], '../');
+                                  
+                                  if (file_exists($image_path)) {
+                                      $picture_path = $image_path;
+                                  } else {
+                                      $picture_path = "images/product/product.jpg";
+                                  }
+                              } else {
+                                  $picture_path = "images/product/product.jpg";
+                              }
+
+                          ?>
+                              <!-- start row -->
+                              <tr class="search-items" 
+                                  >
+                                  <td>
+                                      <a href="?page=product_details&product_id=<?= $row_product['product_id'] ?>">
+                                          <div class="d-flex align-items-center">
+                                              <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
+                                              <div class="ms-3">
+                                                  <h6 class="fw-semibold mb-0 fs-4 text-start"><?= $product_details['product_item'] ?></h6>
+                                              </div>
+                                          </div>
+                                      </a>
+                                  </td>
+                                  <td><?= getProductCategoryName($row_product['product_category']) ?></td>
+                              </tr>
+                          <?php 
+                          } ?>
+                      </tbody>
+                      
+                  </table>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="col-lg-6 col-md-12">
     <!-- Column -->
     <div class="card earning-widget my-5">
@@ -1327,6 +1401,16 @@ $(document).ready(function() {
     });
 
     var estimate_customer_table = $('#estimate_customer_table').DataTable({
+        "order": [[1, "asc"]],
+        "pageLength": 5,
+        "lengthMenu": [
+            [10, 25, 50, 100],
+            [10, 25, 50, 100]
+        ],
+        "dom": 'lftp',
+    });
+
+    var pre_ordered_table = $('#productPreOrderedList').DataTable({
         "order": [[1, "asc"]],
         "pageLength": 5,
         "lengthMenu": [

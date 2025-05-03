@@ -36,13 +36,13 @@ if(isset($_REQUEST['action'])) {
         $thickness = isset($_POST['thickness']) ? mysqli_real_escape_string($conn, $_POST['thickness']) : 0;
         $width = isset($_POST['width']) ? mysqli_real_escape_string($conn, $_POST['width']) : 0;
         $grade = isset($_POST['grade']) ? mysqli_real_escape_string($conn, $_POST['grade']) : '';
+        $gauge = isset($_POST['gauge']) ? mysqli_real_escape_string($conn, $_POST['gauge']) : '';
         $coating = isset($_POST['coating']) ? mysqli_real_escape_string($conn, $_POST['coating']) : '';
         $tag_no = isset($_POST['tag_no']) ? mysqli_real_escape_string($conn, $_POST['tag_no']) : '';
         $invoice_no = isset($_POST['invoice_no']) ? mysqli_real_escape_string($conn, $_POST['invoice_no']) : '';
         $remaining_feet = isset($_POST['remaining_feet']) ? mysqli_real_escape_string($conn, $_POST['remaining_feet']) : 0; 
         $last_inventory_count = isset($_POST['last_inventory_count']) ? mysqli_real_escape_string($conn, $_POST['last_inventory_count']) : 0; 
         $coil_class = isset($_POST['coil_class']) ? mysqli_real_escape_string($conn, $_POST['coil_class']) : '';
-        $gauge = $thickness > 0.0161 ? $gauge_26_id : $gauge_29_id;
         if (!empty($date)) {
             $year = date('Y', strtotime($date));
             $month = date('m', strtotime($date));
@@ -494,21 +494,39 @@ if(isset($_REQUEST['action'])) {
                                             </div>
                                         </div>
                                         <div class="col-md-6">
+                                            <label class="form-label">Gauge</label>
                                             <div class="mb-3">
-                                                <label class="form-label">Coating</label>
-                                                <input type="text" id="coating_edit" name="coating" class="form-control" value="<?= $row['coating'] ?>"/>
+                                                <select id="gauge_edit" class="form-control select2-edit" name="gauge">
+                                                    <option value="" >Select Gauge...</option>
+                                                    <?php
+                                                    $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' GROUP BY product_gauge ORDER BY `product_gauge` ASC";
+                                                    $result_gauge = mysqli_query($conn, $query_gauge);            
+                                                    while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                                        $selected = ($row['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                                                    ?>
+                                                        <option value="<?= $row_gauge['product_gauge_id'] ?>" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
+                                                    <?php
+                                                    }
+                                                    ?>
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="row pt-3">
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Coating</label>
+                                                <input type="text" id="coating_edit" name="coating" class="form-control" value="<?= $row['coating'] ?>"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
                                             <div class="mb-3">
                                                 <label class="form-label">Tag #</label>
                                                 <input type="text" id="tag_no_edit" name="tag_no" class="form-control" value="<?= $row['tag_no'] ?>"/>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <div class="mb-3">
                                                 <label class="form-label">Invoice #</label>
                                                 <input type="text" id="invoice_no_edit" name="invoice_no" class="form-control" value="<?= $row['invoice_no'] ?>"/>
