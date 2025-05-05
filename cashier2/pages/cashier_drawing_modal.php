@@ -19,7 +19,10 @@ function findCartKey($cart, $product_id, $line) {
 if(isset($_POST['fetch_drawing'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $drawing_data = $_POST['drawing_data'];
     ?>
+        <input type="hidden" id="initial_drawing_data" value='<?= htmlspecialchars($drawing_data, ENT_QUOTES, "UTF-8") ?>'>
+        
         <div class="card-body">
             <div class="product-details table-responsive text-nowrap">
                 <form id="drawingForm">

@@ -29,6 +29,8 @@ if(isset($_POST['fetch_modal'])){
         $quantity = $cart_item['quantity_cart'];
         $length = $cart_item['estimate_length'];
         $img = $cart_item['custom_trim_src'];
+        $drawing_data = htmlspecialchars($cart_item['drawing_data'], ENT_QUOTES, 'UTF-8');
+
     }
     
     $hasImage = !empty($img);
@@ -43,13 +45,13 @@ if(isset($_POST['fetch_modal'])){
 
                         <input type="hidden" id="custom_trim_id" name="id" value="<?= $id ?>">
                         <input type="hidden" id="custom_trim_line" name="line" value="<?= $line ?>">
-
+                    
                         <div class="d-flex justify-content-center flex-column align-items-center mb-3">
                             <div class="mb-2 text-center text-secondary" style="font-size: 14px; font-weight: 500;">
                                 Click the image to start drawing
                             </div>
                             <!-- Canvas Wrapper with Relative Position -->
-                            <div id="drawingContainer" class="d-flex justify-content-center align-items-center border border-dashed" style="width: 700px; height: 500px; position: relative; cursor: pointer;">
+                            <div id="drawingContainer" data-id="<?= $id ?>" data-line="<?= $line ?>" data-drawing="<?= $drawing_data ?>" class="drawingContainer d-flex justify-content-center align-items-center border border-dashed" style="width: 700px; height: 500px; position: relative; cursor: pointer;">
                                 <img id="drawingImage"
                                     src="<?php echo $hasImage ? htmlspecialchars($images_directory . $img) : ''; ?>"
                                     alt="Drawing"

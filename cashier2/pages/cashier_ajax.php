@@ -600,6 +600,7 @@ if (isset($_POST['save_estimate'])) {
             $stiff_stand_seam = !empty($item['stiff_stand_seam']) ? $item['stiff_stand_seam'] : '0';
             $stiff_board_batten = !empty($item['stiff_board_batten']) ? $item['stiff_board_batten'] : '0';
             $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
+            $custom_img_src = $item['custom_trim_src'];
 
             $values[] = "('$estimateid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
 
@@ -625,7 +626,8 @@ if (isset($_POST['save_estimate'])) {
                             used_discount, 
                             stiff_stand_seam, 
                             stiff_board_batten, 
-                            panel_type
+                            panel_type,
+                            custom_img_src
                         ) 
                         VALUES (
                             '$estimateid', 
@@ -648,7 +650,8 @@ if (isset($_POST['save_estimate'])) {
                             '$used_discount', 
                             '$stiff_stand_seam', 
                             '$stiff_board_batten', 
-                            '$panel_type'
+                            '$panel_type',
+                            '$custom_img_src'
                         )";
             
                 if ($conn->query($query) === TRUE) {
@@ -983,6 +986,7 @@ if (isset($_POST['save_order'])) {
             $stiff_stand_seam = !empty($item['stiff_stand_seam']) ? $item['stiff_stand_seam'] : '0';
             $stiff_board_batten = !empty($item['stiff_board_batten']) ? $item['stiff_board_batten'] : '0';
             $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
+            $custom_img_src = $item['custom_trim_src'];
 
             $values[] = "('$orderid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type')";
             
@@ -1017,7 +1021,8 @@ if (isset($_POST['save_order'])) {
                             used_discount, 
                             stiff_stand_seam, 
                             stiff_board_batten, 
-                            panel_type
+                            panel_type,
+                            custom_img_src
                         ) 
                         VALUES (
                             '$orderid', 
@@ -1040,7 +1045,8 @@ if (isset($_POST['save_order'])) {
                             '$used_discount', 
                             '$stiff_stand_seam', 
                             '$stiff_board_batten', 
-                            '$panel_type'
+                            '$panel_type', 
+                            '$custom_img_src'
                         )";
             
                 if ($conn->query($query) === TRUE) {
@@ -1381,6 +1387,7 @@ if (isset($_POST['save_trim'])) {
     $quantity = floatval(mysqli_real_escape_string($conn, $_POST['quantity']));
     $length = floatval(mysqli_real_escape_string($conn, $_POST['length']));
     $price = floatval(mysqli_real_escape_string($conn, $_POST['price']));
+    $drawing_data = mysqli_real_escape_string($conn, $_POST['drawing_data']);
     $img_src = mysqli_real_escape_string($conn, $_POST['img_src']);
     $is_pre_order = mysqli_real_escape_string($conn, $_POST['is_pre_order'] ?? 0);
 
@@ -1432,7 +1439,8 @@ if (isset($_POST['save_trim'])) {
                 'custom_grade' => $grade,
                 'custom_gauge' => $gauge,
                 'is_pre_order' => $is_pre_order,
-                'custom_trim_src' => $img_src
+                'custom_trim_src' => $img_src,
+                'drawing_data' => $drawing_data
             );
     
             $_SESSION["cart"][] = $item_array;

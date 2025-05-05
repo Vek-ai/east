@@ -122,6 +122,16 @@ require '../includes/functions.php';
     </div>
 </div>
 
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-transparent border-0" >
+      <div class="modal-body text-center p-0">
+        <img id="modalImage" style="background-color: #fff;" src="" alt="Full Size" class="img-fluid w-100">
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
     $("#product_search").autocomplete({
         source: function(request, response) {
@@ -216,6 +226,12 @@ require '../includes/functions.php';
 
         $('#btn-view-sales').on('click', function() {
             performSearch();
+        });
+
+        $(document).on('click', '.preview-image', function () {
+            var imgSrc = $(this).attr('src');
+            $('#modalImage').attr('src', imgSrc);
+            $('#imageModal').modal('show');
         });
 
         performSearch();

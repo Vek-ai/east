@@ -287,7 +287,9 @@ if (isset($_POST['search_work_order'])) {
             </thead>
             <tbody>     
             <?php
+            $images_directory = "../images/drawing/";
 
+            $default_image = '../images/product/product.jpg';
             while ($row = mysqli_fetch_assoc($result)) {
                 $color_details = getColorDetails($row['custom_color']);
                 $product_id = $row['productid'];
@@ -296,10 +298,15 @@ if (isset($_POST['search_work_order'])) {
                 $hem = $row['custom_hem'];
                 $length = $row['custom_length'];
                 $inch = $row['custom_length2'];
+
+                $picture_path = !empty($row['custom_img_src']) ? $images_directory.$row["custom_img_src"] : $default_image;
                 ?>
                 <tr data-id="<?= $product_id ?>">
-                    <td class="text-wrap w-20"> 
-                        <?php echo getProductName($product_id) ?>
+                    <td class="align-middle text-wrap w-20"> 
+                        <a href="javascript:void(0);" class="d-inline-flex align-items-center justify-content-start">
+                                <img src="<?= $picture_path ?>" style="background-color: #fff; width: 56px; height: 56px;" class="rounded-circle img-thumbnail preview-image" width="56" height="56" style="background-color: #fff;">
+                            <div class="mt-1 ms-2"><?= getProductName($product_id) ?></div>
+                        </a>
                     </td>
                     <td>
                         <?= get_name($row['user_id']); ?>

@@ -216,6 +216,8 @@ if(isset($_POST['fetch_cart'])){
                             }
 
                             $sold_by_feet = $product['sold_by_feet'];
+
+                            $drawing_data = $values['drawing_data'];
                         ?>
                             <tr>
                                 <td data-color="<?= getColorName($color_id) ?>" data-pricing="<?=$customer_pricing?>" data-category="<?=$category_id?>" data-customer-pricing="<?=$customer_details_pricing?>">
@@ -223,7 +225,7 @@ if(isset($_POST['fetch_cart'])){
                                     if($category_id == $trim_id){
                                         if(!empty($values["custom_trim_src"])){
                                         ?>
-                                        <a href="javascript:void(0);" id="custom_trim_draw" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
+                                        <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" data-drawing="<?= $drawing_data ?>">
                                             <div class="align-items-center text-center w-100" style="background: #ffffff">
                                                 <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
                                             </div>
@@ -231,7 +233,7 @@ if(isset($_POST['fetch_cart'])){
                                         <?php
                                         }else{
                                         ?>
-                                        <a href="javascript:void(0);" id="custom_trim_draw" class="btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
+                                        <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
                                             Draw Here
                                         </a>
                                         <?php
