@@ -118,10 +118,6 @@ require '../includes/functions.php';
             <div class="modal-body">
                 <div id="available-details"></div>
             </div>
-            <div class="modal-footer">
-                <button id="saveSelection" class="btn ripple btn-success" type="button">Run Work Order</button>
-                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Cancel</button>
-            </div>
         </div>
     </div>
 </div>
