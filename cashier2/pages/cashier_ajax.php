@@ -1402,25 +1402,30 @@ if (isset($_POST['save_trim'])) {
     $key = findCartKey($_SESSION["cart"], $id, $line);
 
     if ($key !== false && isset($_SESSION["cart"][$key])) {
-        $_SESSION["cart"][$key]['custom_trim_src'] = $img_src;
         $_SESSION["cart"][$key]['quantity_cart'] = $quantity;
         $_SESSION["cart"][$key]['estimate_length'] = $length;
         $_SESSION["cart"][$key]['unit_price'] = $price;
+        $_SESSION["cart"][$key]['custom_trim_src'] = $img_src;
+        $_SESSION["cart"][$key]['drawing_data'] = $drawing_data;
+        $_SESSION["cart"][$key]['custom_color'] = $color;
+        $_SESSION["cart"][$key]['custom_grade'] = $grade;
+        $_SESSION["cart"][$key]['custom_gauge'] = $gauge;
+        $_SESSION["cart"][$key]['is_pre_order'] = $is_pre_order;
     } else {
         $query = "SELECT * FROM product WHERE product_id = '$id'";
         $result = mysqli_query($conn, $query);
-    
+
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
-    
-            $max_line = 0;
+
+            $line_to_use = is_numeric($line) ? intval($line) : 1;
+
             foreach ($_SESSION["cart"] as $item) {
-                if ($item['product_id'] == $id && $item['line'] > $max_line) {
-                    $max_line = $item['line'];
+                if ($item['product_id'] == $id && $item['line'] >= $line_to_use) {
+                    $line_to_use = $item['line'] + 1;
                 }
             }
-            $line_to_use = $max_line + 1;
-    
+
             $item_array = array(
                 'product_id' => $row['product_id'],
                 'product_item' => $row['product_item'],
@@ -1442,7 +1447,7 @@ if (isset($_POST['save_trim'])) {
                 'custom_trim_src' => $img_src,
                 'drawing_data' => $drawing_data
             );
-    
+
             $_SESSION["cart"][] = $item_array;
         } else {
             echo json_encode(['error' => "Trim Product not available"]);

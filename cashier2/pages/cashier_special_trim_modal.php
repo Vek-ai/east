@@ -45,6 +45,7 @@ if(isset($_POST['fetch_modal'])){
 
                         <input type="hidden" id="custom_trim_id" name="id" value="<?= $id ?>">
                         <input type="hidden" id="custom_trim_line" name="line" value="<?= $line ?>">
+                        <input type="hidden" id="drawing_data" name="drawing_data" value="<?= $drawing_data ?>">
                     
                         <div class="d-flex justify-content-center flex-column align-items-center mb-3">
                             <div class="mb-2 text-center text-secondary" style="font-size: 14px; font-weight: 500;">

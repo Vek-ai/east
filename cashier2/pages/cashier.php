@@ -2066,7 +2066,13 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
                 $('.drawingContainer').each(function () {
                     $(this).data("drawing", drawingDataJson); // jQuery memory only
+                    $(this).attr("data-drawing", drawingDataJson);
+                    console.log(drawingDataJson)
                 });
+
+                $('#drawing_data').val(drawingDataJson); 
+
+                console.log(drawingDataJson)
 
                 $.ajax({
                     url: 'pages/cashier_ajax.php',
@@ -2514,7 +2520,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     loadCart();
                     loadEstimateContents();
                     loadOrderContents();
-                    $('.modal').modal("hide");
+                    $('#special_trim_modal').modal("hide");
                 },
                 error: function (xhr) {
                     console.error('Error:', xhr.responseText);
