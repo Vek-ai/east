@@ -1788,34 +1788,46 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
             for (let i = 1; i < points.length; i++) {
                 const distance = calculateDistance(points[i - 1], points[i]);
+                const angle = i > 1 ? calculateInteriorAngle(points[i - 2], points[i - 1], points[i]) : null;
 
                 const lineDiv = document.createElement('div');
                 lineDiv.className = 'mb-2 py-1 px-2 border rounded bg-light';
 
                 lineDiv.innerHTML = `
                     <div class="row g-2 align-items-center">
-                        <div class="col-2">
+                        <div class="col-1">
                             <span class="fw-bold">L${i}:</span>
                         </div>
-                        
+
                         <div class="col-5 d-flex align-items-center justify-content-start gap-2">
                             <label class="fw-bold mb-0">Length</label>
                             <input type="number" step="0.01" value="${distance}" data-index="${i}"
                                 class="form-control form-control-sm line-length-input" style="width: 100%;">
                         </div>
-                        
+
                         <div class="col-5 d-flex align-items-center justify-content-start gap-2">
                             <label class="fw-bold mb-0">Color</label>
                             <input type="color" value="${colors[i - 1]}" data-index="${i}"
                                 class="form-control form-control-color line-color-input" style="width: 100%; height: 30px; padding: 0;">
+                        </div>
+
+                        <div class="col-1 d-flex align-items-center justify-content-center">
+                            <a href="javascript:void(0)" class="delete-line-btn" data-index="${i}">&times;</a>
                         </div>
                     </div>
                 `;
 
                 editorList.appendChild(lineDiv);
             }
-        };
 
+            document.querySelectorAll('.delete-line-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    deleteLine(index);
+                });
+            }); 
+
+        };
 
         const finalizeDraw = () => {
             currentStartPoint = null;
@@ -1830,7 +1842,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             ctx.lineWidth = 4;
             ctx.stroke();
 
-            // Draw small circle at end point
             ctx.beginPath();
             ctx.arc(p2.x, p2.y, 4, 0, 2 * Math.PI);
             ctx.fillStyle = 'lightblue';
@@ -1845,7 +1856,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Draw small circle at end point
             ctx.beginPath();
             ctx.arc(p2.x, p2.y, 4, 0, 2 * Math.PI);
             ctx.fillStyle = 'lightblue';
@@ -1905,6 +1915,29 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
             if (points.length === 0) drawPlaceholderText();
 
+            updateLineEditor();
+        };
+
+        const deleteLine = (index) => {
+            if (index < 1 || index >= points.length) return;
+
+            points.splice(index, 1);
+            lengths.splice(index - 1, 1);
+            angles.splice(index - 1, 1);
+            colors.splice(index - 1, 1);
+
+            if (index === points.length) {
+                currentStartPoint = points[points.length - 1] || null;
+            }
+
+            if (index < points.length) {
+                const p1 = points[index - 1];
+                const p2 = points[index];
+                drawLine(p1, p2, colors[index - 1]);
+                lengths[index - 1] = calculateDistance(p1, p2);
+            }
+
+            redrawCanvas();
             updateLineEditor();
         };
 
