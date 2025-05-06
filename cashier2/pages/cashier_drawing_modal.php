@@ -55,6 +55,10 @@ if(isset($_POST['fetch_drawing'])){
                                 </div>
 
                                 <canvas id="drawingCanvas" width="700" height="500" class="border rounded bg-white"></canvas>
+                                <div id="lineEditorContainer" class="mt-3 p-2 border rounded">
+                                    <h5>Edit Lines</h5>
+                                    <div id="lineEditorList"></div>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -1782,7 +1782,40 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             $('#colorCircle').css('background-color', currentColor);
         });
 
-        
+        const updateLineEditor = () => {
+            const editorList = document.getElementById('lineEditorList');
+            editorList.innerHTML = '';
+
+            for (let i = 1; i < points.length; i++) {
+                const distance = calculateDistance(points[i - 1], points[i]);
+
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'mb-2 py-1 px-2 border rounded bg-light';
+
+                lineDiv.innerHTML = `
+                    <div class="row g-2 align-items-center">
+                        <div class="col-2">
+                            <span class="fw-bold">L${i}:</span>
+                        </div>
+                        
+                        <div class="col-5 d-flex align-items-center justify-content-start gap-2">
+                            <label class="fw-bold mb-0">Length</label>
+                            <input type="number" step="0.01" value="${distance}" data-index="${i}"
+                                class="form-control form-control-sm line-length-input" style="width: 100%;">
+                        </div>
+                        
+                        <div class="col-5 d-flex align-items-center justify-content-start gap-2">
+                            <label class="fw-bold mb-0">Color</label>
+                            <input type="color" value="${colors[i - 1]}" data-index="${i}"
+                                class="form-control form-control-color line-color-input" style="width: 100%; height: 30px; padding: 0;">
+                        </div>
+                    </div>
+                `;
+
+                editorList.appendChild(lineDiv);
+            }
+        };
+
 
         const finalizeDraw = () => {
             currentStartPoint = null;
@@ -1871,6 +1904,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             }
 
             if (points.length === 0) drawPlaceholderText();
+
+            updateLineEditor();
         };
 
         canvas.addEventListener('mousedown', (e) => {
@@ -2048,6 +2083,35 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             undoStack = [];
             redoStack = [];
             drawPlaceholderText();
+        });
+
+        $(document).on('input', '.line-color-input', function () {
+            const index = parseInt($(this).data('index'));
+            const color = $(this).val();
+            colors[index - 1] = color;
+            redrawCanvas();
+        });
+
+        $(document).on('change', '.line-length-input', function () {
+            const index = parseInt($(this).data('index'));
+            const newLengthInch = parseFloat($(this).val());
+            if (isNaN(newLengthInch) || index < 1 || index >= points.length) return;
+
+            const p1 = points[index - 1];
+            const p2 = points[index];
+
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const currentLength = Math.sqrt(dx * dx + dy * dy);
+
+            if (currentLength === 0) return;
+
+            const scale = (newLengthInch * pixelsPerInch) / currentLength;
+            const newX = p1.x + dx * scale;
+            const newY = p1.y + dy * scale;
+
+            points[index] = { x: newX, y: newY };
+            redrawCanvas();
         });
 
         $(document).off('click', '#saveDrawing').on('click', '#saveDrawing', function () {
