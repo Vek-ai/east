@@ -426,7 +426,7 @@ require 'includes/functions.php';
     });
 
     table.on('xhr', function (e, settings, json, xhr) {
-        console.log('DataTables AJAX response:', json);
+        console.log('Raw XHR response text:', xhr.responseText);
     });
 
     $('#display_paint_colors_filter').hide();
