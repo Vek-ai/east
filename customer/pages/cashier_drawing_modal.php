@@ -1,0 +1,60 @@
+<?php
+session_start();
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
+
+require '../../includes/dbconn.php';
+require '../../includes/functions.php';
+
+if(isset($_POST['fetch_drawing'])){
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $drawing_data = json_decode($_POST['drawing_data'], true);
+    ?>
+        <input type="hidden" id="initial_drawing_data" value='<?= htmlspecialchars($drawing_data, ENT_QUOTES, "UTF-8") ?>'>
+        
+        <div class="card-body">
+            <div class="product-details table-responsive text-nowrap">
+                <form id="drawingForm">
+                    <div class="container ">
+                        <h4>Trim Draw Box</h4>
+                        <div class="d-flex justify-content-center">
+                            <div class="position-relative d-inline-block border rounded shadow-sm p-2 bg-light">
+                                <div class="position-absolute top-0 end-0 m-2 d-flex gap-2 align-items-center z-3">
+                                    <div id="colorCircle"
+                                        class="rounded-circle border border-secondary shadow-sm"
+                                        style="width: 30px; height: 30px; background-color: #000000; cursor: pointer;"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="bottom"
+                                        title="Select line color">
+                                    </div>
+
+                                    <input type="color" id="lineColorPicker" value="#ffffff" class="form-control form-control-color d-none" title="Choose line color">
+
+                                    <a href="javascript:void(0)" id="undoBtn" class="btn btn-warning btn-sm p-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Undo">
+                                        <i class="fas fa-undo-alt"></i>
+                                    </a>
+
+                                    <a href="javascript:void(0)" id="redoBtn" class="btn btn-info btn-sm p-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Redo">
+                                        <i class="fas fa-redo-alt"></i>
+                                    </a>
+
+                                    <a href="javascript:void(0)" id="resetBtn" class="btn btn-danger btn-sm p-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Clear">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+
+                                <canvas id="drawingCanvas" width="700" height="500" class="border rounded bg-white"></canvas>
+                                <div id="lineEditorContainer" class="mt-3 p-2 border rounded">
+                                    <h5>Edit Lines</h5>
+                                    <div id="lineEditorList"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    <?php
+}

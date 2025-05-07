@@ -1102,6 +1102,21 @@ function getCartDataByCustomerId($customer_id) {
     return $cartData;
 }
 
+function deleteCustomerCart() {
+    global $conn;
+
+    $customer_id = intval($_SESSION['customer_id']);
+    if ($customer_id <= 0) {
+        return;
+    }
+
+    $query = "DELETE FROM customer_cart WHERE customer_id = ?";
+    if ($stmt = $conn->prepare($query)) {
+        $stmt->bind_param("i", $customer_id);
+        $stmt->execute();
+    }
+}
+
 function getTrussTypeName($id) {
     global $conn;
     $id = intval($id);
