@@ -634,7 +634,7 @@ if(isset($_REQUEST['action'])) {
             $provider = getPaintProviderName($row['provider_id']);
             $product_category = getProductCategoryName($row['product_category']);
             $availability_details = getAvailabilityDetails($row['stock_availability']);
-            $availability = $availability_details['product_availability'];
+            $availability = $availability_details['product_availability'] ?? '';
     
             $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m-d-Y') : '';
     
