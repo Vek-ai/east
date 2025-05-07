@@ -425,6 +425,10 @@ require 'includes/functions.php';
         }
     });
 
+    table.on('xhr', function (e, settings, json, xhr) {
+        console.log('DataTables AJAX response:', json);
+    });
+
     $('#display_paint_colors_filter').hide();
 
     $(".select2").each(function () {
