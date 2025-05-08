@@ -69,7 +69,9 @@ if(isset($_REQUEST['action'])) {
                 $checkCustomer = "SELECT CONCAT(customer_first_name, ' ', customer_last_name) AS full_name 
                 FROM customer 
                 WHERE customer_first_name = '$customer_first_name' 
-                  AND customer_last_name = '$customer_last_name'";
+                  AND customer_last_name = '$customer_last_name'
+                  AND (status = '1' OR hidden = '0')
+                  ";
                 $resultCustomer = mysqli_query($conn, $checkCustomer);
                 if (mysqli_num_rows($resultCustomer) > 0) {
                     $duplicates[] = "Customer";
@@ -159,7 +161,9 @@ if(isset($_REQUEST['action'])) {
             $checkCustomer = "SELECT CONCAT(customer_first_name, ' ', customer_last_name) AS full_name 
             FROM customer 
             WHERE customer_first_name = '$customer_first_name' 
-              AND customer_last_name = '$customer_last_name'";
+              AND customer_last_name = '$customer_last_name'
+              AND (status = '1' OR hidden = '0')
+              ";
             $resultCustomer = mysqli_query($conn, $checkCustomer);
             if (mysqli_num_rows($resultCustomer) > 0) {
                 $duplicates[] = "Customer";
