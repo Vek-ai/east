@@ -59,12 +59,12 @@ if(isset($_POST['fetch_drawing'])){
                                     <div class="col-md-6">
                                         <div class="d-flex align-items-center gap-2">
                                             <div class="d-flex flex-column align-items-center">
-                                                <img src="../images/hems1.png" alt="Hem 1" style="width: 100px; height: auto;">
-                                                <img src="../images/hems2.png" alt="Hem 2" style="width: 100px; height: auto; margin-top: 5px;">
+                                                <img src="../images/hems1.png" alt="Hem 1" class="insert-img" style="width: 100px; height: auto;">
+                                                <img src="../images/hems2.png" alt="Hem 2" class="insert-img" style="width: 100px; height: auto; margin-top: 5px;">
                                             </div>
 
                                             <div>
-                                                <img src="../images/arrow1.png" alt="Arrow" style="width: 100px; height: auto; margin-left: 5px;">
+                                                <img src="../images/arrow1.png" alt="Arrow" class="insert-img" style="width: 100px; height: auto; margin-left: 5px;">
                                             </div>
                                         </div>
                                     </div>

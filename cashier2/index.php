@@ -1546,7 +1546,7 @@ if (!isset($_SESSION['userid'])) {
 
   $(document).ready(function() {
     document.addEventListener('mouseenter', function (e) {
-        const el = e.target.closest('[title]');
+        const el = e.target instanceof Element ? e.target.closest('[title]') : null;
         if (!el) return;
 
         if (!el._tooltipInstance) {
@@ -1559,7 +1559,7 @@ if (!isset($_SESSION['userid'])) {
     }, true);
 
     document.addEventListener('mouseleave', function (e) {
-        const el = e.target.closest('[title]');
+        const el = e.target instanceof Element ? e.target.closest('[title]') : null;
         if (!el) return;
 
         if (el._tooltipInstance) {

@@ -888,6 +888,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+
 <script>
     let map1;
     let marker1;
@@ -1714,6 +1716,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         let lengths = [];
         let angles = [];
         let colors = [];
+        let images = [];
         let currentStartPoint = null;
         let undoStack = [];
         let redoStack = [];
@@ -1726,6 +1729,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         let wasDragging = false;
         let dragStartSnapshot = null;
         let isLoading = true;
+
+        let isResizing = false;
+        let isRotating = false;
+        let dragHandle = null;
 
         const drawPlaceholderText = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1741,10 +1748,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             }
         };
 
-        drawPlaceholderText();
-
         const dataInput = document.getElementById('initial_drawing_data');
         if (dataInput && dataInput.value) {
+            isLoading = true;
+            drawPlaceholderText();
             try {
                 let decodedData = decodeHtmlEntities(dataInput.value);
 
@@ -1756,39 +1763,63 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 angles = loadedData.angles || [];
                 colors = loadedData.colors || [];
                 currentStartPoint = points.length > 0 ? points[points.length - 1] : null;
+
+                isLoading = false;
+                drawPlaceholderText();
             } catch (e) {
                 console.error("Invalid drawing data:", e);
             }
-
-            isLoading = false;
+        }else{
             drawPlaceholderText();
-            
         }
-
-        isLoading = false;
-        drawPlaceholderText();
 
         function decodeHtmlEntities(text) {
             var doc = new DOMParser().parseFromString(text, 'text/html');
             return doc.documentElement.textContent;
         }
 
-        $(document).on('click', '#colorCircle', function () {
-            $('#lineColorPicker').click();
-        });
+        function adjustLineAngle(p1, p2, newAngle) {
+            newAngle = (newAngle % 360 + 360) % 360;
 
-        $(document).on('input', '#lineColorPicker', function () {
-            currentColor = $(this).val();
-            $('#colorCircle').css('background-color', currentColor);
-        });
+            const length = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+            const angleRad = (newAngle * Math.PI) / 180;
 
+            const newX = p1.x + Math.cos(angleRad) * length;
+            const newY = p1.y + Math.sin(angleRad) * length;
+
+            points[points.indexOf(p2)] = { x: newX, y: newY };
+
+            undoStack.push({
+                points: [...points.map(p => ({ ...p }))],
+                lengths: [...lengths],
+                angles: [...angles],
+                colors: [...colors]
+            });
+
+            redoStack = [];
+            redrawCanvas();
+        }
+
+        function calculateLineAngle(p1, p2) {
+            if (!p1 || !p2) return null;
+
+            const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+
+            let degrees = (angle * 180 / Math.PI) % 360;
+
+            if (degrees < 0) degrees += 360;
+
+            return degrees;
+        }
+        
         const updateLineEditor = () => {
             const editorList = document.getElementById('lineEditorList');
             editorList.innerHTML = '';
 
             for (let i = 1; i < points.length; i++) {
                 const distance = calculateDistance(points[i - 1], points[i]);
-                const angle = i > 1 ? calculateInteriorAngle(points[i - 2], points[i - 1], points[i]) : null;
+
+                const angle = i > 0 ? calculateLineAngle(points[i - 1], points[i]) : null;
 
                 const lineDiv = document.createElement('div');
                 lineDiv.className = 'mb-2 py-1 px-2 border rounded bg-light';
@@ -1799,17 +1830,25 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             <span class="fw-bold">L${i}:</span>
                         </div>
 
-                        <div class="col-5 d-flex align-items-center justify-content-start gap-2">
+                        <div class="col-4 d-flex align-items-center gap-2">
                             <label class="fw-bold mb-0">Length</label>
                             <input type="number" step="0.01" value="${distance}" data-index="${i}"
                                 class="form-control form-control-sm line-length-input" style="width: 100%;">
                         </div>
 
-                        <div class="col-5 d-flex align-items-center justify-content-start gap-2">
+                        <div class="col-3 d-flex align-items-center gap-2">
                             <label class="fw-bold mb-0">Color</label>
                             <input type="color" value="${colors[i - 1]}" data-index="${i}"
                                 class="form-control form-control-color line-color-input" style="width: 100%; height: 30px; padding: 0;">
                         </div>
+
+                        ${angle !== null ? `
+                        <div class="col-3 d-flex align-items-center gap-2">
+                            <label class="fw-bold mb-0">Angle</label>
+                            <input type="number" step="0.1" value="${angle.toFixed(1)}" data-index="${i}"
+                                class="form-control form-control-sm line-angle-input" style="width: 100%;">
+                        </div>
+                        ` : ''}
 
                         <div class="col-1 d-flex align-items-center justify-content-center">
                             <a href="javascript:void(0)" class="delete-line-btn" data-index="${i}">&times;</a>
@@ -1825,8 +1864,21 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     const index = parseInt(e.target.dataset.index);
                     deleteLine(index);
                 });
-            }); 
+            });
 
+            document.querySelectorAll('.line-angle-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    const newAngle = parseFloat(e.target.value);
+
+                    if (!isNaN(newAngle) && index > 0 && points[index - 1] && points[index]) {
+                        const p1 = points[index - 1];
+                        const p2 = points[index];
+
+                        adjustLineAngle(p1, p2, newAngle);
+                    }
+                });
+            });
         };
 
         const finalizeDraw = () => {
@@ -1913,6 +1965,21 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 ctx.fillText(`${angle.toFixed(1)}°`, p2.x + radius + 5, p2.y - radius - 5);
             }
 
+            for (let i = 0; i < images.length; i++) {
+                const img = images[i].img;
+                const x = images[i].x;
+                const y = images[i].y;
+                const width = images[i].width;
+                const height = images[i].height;
+                const rotation = images[i].rotation;
+
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rotation * Math.PI / 180);
+                ctx.drawImage(img, -width / 2, -height / 2, width, height);
+                ctx.restore();
+            }
+
             if (points.length === 0) drawPlaceholderText();
 
             updateLineEditor();
@@ -1958,7 +2025,27 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         angles: [...angles],
                         colors: [...colors]
                     };
+                    return;
+                }
+            }
 
+            for (let i = 0; i < images.length; i++) {
+                const img = images[i];
+                const imgX = img.x;
+                const imgY = img.y;
+
+                if (x >= imgX - img.img.width / 2 && x <= imgX + img.img.width / 2 && y >= imgY - img.img.height / 2 && y <= imgY + img.img.height / 2) {
+                    isDragging = true;
+                    dragIndex = i;
+                    wasDragging = false;
+
+                    dragStartSnapshot = {
+                        images: [...images.map(i => ({ ...i }))],
+                        points: [...points.map(p => ({ ...p }))],
+                        lengths: [...lengths],
+                        angles: [...angles],
+                        colors: [...colors]
+                    };
                     return;
                 }
             }
@@ -1970,13 +2057,21 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const y = e.clientY - rect.top;
 
             let hoveringOnPoint = points.some(p => Math.hypot(p.x - x, p.y - y) < 6);
-            canvas.style.cursor = hoveringOnPoint ? 'move' : 'default';
+            let hoveringOnImage = images.some(img => x >= img.x - img.img.width / 2 && x <= img.x + img.img.width / 2 && y >= img.y - img.img.height / 2 && y <= img.y + img.img.height / 2);
+
+            canvas.style.cursor = hoveringOnPoint || hoveringOnImage ? 'move' : 'default';
 
             if (isDragging && dragIndex !== -1) {
-                points[dragIndex] = { x, y };
-                if (dragIndex === points.length - 1) {
-                    currentStartPoint = points[dragIndex];
+                if (dragStartSnapshot.images) {
+                    images[dragIndex].x = x;
+                    images[dragIndex].y = y;
+                } else {
+                    points[dragIndex] = { x, y };
+                    if (dragIndex === points.length - 1) {
+                        currentStartPoint = points[dragIndex];
+                    }
                 }
+
                 wasDragging = true;
                 redrawCanvas();
             } else if (currentStartPoint) {
@@ -1994,9 +2089,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
         canvas.addEventListener('mouseup', () => {
             if (isDragging && dragStartSnapshot) {
-                const moved = points.some((p, i) =>
-                    p.x !== dragStartSnapshot.points[i].x || p.y !== dragStartSnapshot.points[i].y
-                );
+                const moved = (dragStartSnapshot.images && images.some((img, i) => 
+                    img.x !== dragStartSnapshot.images[i].x || img.y !== dragStartSnapshot.images[i].y
+                )) || (points.some((p, i) => p.x !== dragStartSnapshot.points[i].x || p.y !== dragStartSnapshot.points[i].y));
 
                 if (moved) {
                     undoStack.push(dragStartSnapshot);
@@ -2118,6 +2213,15 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             drawPlaceholderText();
         });
 
+        $(document).on('click', '#colorCircle', function () {
+            $('#lineColorPicker').click();
+        });
+
+        $(document).on('input', '#lineColorPicker', function () {
+            currentColor = $(this).val();
+            $('#colorCircle').css('background-color', currentColor);
+        });
+
         $(document).on('input', '.line-color-input', function () {
             const index = parseInt($(this).data('index'));
             const color = $(this).val();
@@ -2147,6 +2251,27 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             redrawCanvas();
         });
 
+        $(document).off('click', '.insert-img').on('click', '.insert-img', function () {
+            const imgX = currentStartPoint ? currentStartPoint.x : canvas.width / 2;
+            const imgY = currentStartPoint ? currentStartPoint.y : canvas.height / 2;
+
+            const imgElement = new Image();
+            imgElement.src = $(this).attr('src');
+
+            imgElement.onload = function() {
+                images.push({
+                    img: imgElement,
+                    x: imgX,
+                    y: imgY,
+                    width: imgElement.width,
+                    height: imgElement.height,
+                    rotation: 0
+                });
+
+                redrawCanvas();
+            };
+        });
+
         $(document).off('click', '#saveDrawing').on('click', '#saveDrawing', function () {
             if (confirm("Are you sure you want to finalize your custom trim?")) {
                 finalizeDraw();
@@ -2162,7 +2287,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 const drawingDataJson = JSON.stringify(drawingData);
 
                 $('.drawingContainer').each(function () {
-                    $(this).data("drawing", drawingDataJson); // jQuery memory only
+                    $(this).data("drawing", drawingDataJson);
                     $(this).attr("data-drawing", drawingDataJson);
                     console.log(drawingDataJson)
                 });
@@ -2199,9 +2324,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 });
             }
         });
-
-
-        drawPlaceholderText();
     }
 
     function formatOption(state) {
