@@ -1811,6 +1811,46 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
             return degrees;
         }
+
+        function updateImageProperty(index, prop, value) {
+            const image = images[index];
+            if (!image) return;
+
+            undoStack.push({
+                points: [...points],
+                lengths: [...lengths],
+                angles: [...angles],
+                colors: [...colors],
+                images: images.map(img => ({ ...img }))
+            });
+
+            if (prop === 'width') {
+                const newWidthPx = value * pixelsPerInch;
+                const aspectRatio = image.height / image.width;
+                image.width = newWidthPx;
+                image.height = newWidthPx * aspectRatio;
+            } else if (prop === 'rotation') {
+                image.rotation = value;
+            }
+
+            redrawCanvas();
+        }
+
+        function isPointInRotatedRect(px, py, img) {
+            const cx = img.x;
+            const cy = img.y;
+            const width = img.width;
+            const height = img.height;
+            const angle = (img.rotation || 0) * Math.PI / 180;
+
+            const dx = px - cx;
+            const dy = py - cy;
+
+            const rx = dx * Math.cos(-angle) - dy * Math.sin(-angle);
+            const ry = dx * Math.sin(-angle) + dy * Math.cos(-angle);
+
+            return Math.abs(rx) <= width / 2 && Math.abs(ry) <= height / 2;
+        }
         
         const updateLineEditor = () => {
             const editorList = document.getElementById('lineEditorList');
@@ -1859,10 +1899,62 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 editorList.appendChild(lineDiv);
             }
 
+            images.forEach((imgObj, idx) => {
+                const imageRow = document.createElement('div');
+                imageRow.className = 'mb-2 py-1 px-2 border rounded bg-light';
+
+                imageRow.innerHTML = `
+                <div class="row g-2 align-items-center">
+                    <div class="col-2">
+                        <span class="fw-bold">Image ${idx + 1}:</span>
+                    </div>
+
+                    <div class="col-5 d-flex align-items-center gap-2">
+                        <label class="fw-bold mb-0">Width (in)</label>
+                        <input type="number" step="0.01" value="${(imgObj.width / pixelsPerInch).toFixed(2)}" data-index="${idx}" data-prop="width"
+                            class="form-control form-control-sm image-prop-input">
+                    </div>
+
+                    <div class="col-4 d-flex align-items-center gap-2">
+                        <label class="fw-bold mb-0">Rotation</label>
+                        <input type="number" step="0.1" value="${imgObj.rotation.toFixed(1)}" data-index="${idx}" data-prop="rotation"
+                            class="form-control form-control-sm image-prop-input">
+                    </div>
+
+                    <div class="col-1 d-flex align-items-center justify-content-center">
+                        <a href="javascript:void(0)" class="delete-image-btn text-danger" data-index="${idx}">&times;</a>
+                    </div>
+                </div>
+                `;
+
+                editorList.appendChild(imageRow);
+            });
+
+
+            document.querySelectorAll('.delete-image-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    images.splice(index, 1);
+                    redrawCanvas();
+                });
+            });
+
             document.querySelectorAll('.delete-line-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const index = parseInt(e.target.dataset.index);
                     deleteLine(index);
+                });
+            });
+
+            document.querySelectorAll('.image-prop-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    const prop = e.target.dataset.prop;
+                    let value = parseFloat(e.target.value);
+
+                    if (!isNaN(value)) {
+                        updateImageProperty(index, prop, value);
+                    }
                 });
             });
 
@@ -2034,7 +2126,16 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 const imgX = img.x;
                 const imgY = img.y;
 
-                if (x >= imgX - img.img.width / 2 && x <= imgX + img.img.width / 2 && y >= imgY - img.img.height / 2 && y <= imgY + img.img.height / 2) {
+                if (isPointInRotatedRect(x, y, images[i])) {
+
+                    undoStack.push({
+                        points: [...points],
+                        lengths: [...lengths],
+                        angles: [...angles],
+                        colors: [...colors],
+                        images: images.map(img => ({ ...img }))
+                    });
+
                     isDragging = true;
                     dragIndex = i;
                     wasDragging = false;
@@ -2057,7 +2158,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const y = e.clientY - rect.top;
 
             let hoveringOnPoint = points.some(p => Math.hypot(p.x - x, p.y - y) < 6);
-            let hoveringOnImage = images.some(img => x >= img.x - img.img.width / 2 && x <= img.x + img.img.width / 2 && y >= img.y - img.img.height / 2 && y <= img.y + img.img.height / 2);
+            let hoveringOnImage = images.some(img => isPointInRotatedRect(x, y, img));
 
             canvas.style.cursor = hoveringOnPoint || hoveringOnImage ? 'move' : 'default';
 
@@ -2171,13 +2272,17 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     points: [...points],
                     lengths: [...lengths],
                     angles: [...angles],
-                    colors: [...colors]
+                    colors: [...colors],
+                    images: images.map(img => ({ ...img }))
                 });
+
                 let last = undoStack.pop();
                 points = [...last.points];
                 lengths = [...last.lengths];
                 angles = [...last.angles];
                 colors = [...last.colors];
+                images = last.images ? last.images.map(img => ({ ...img })) : [];
+
                 currentStartPoint = points.length > 0 ? points[points.length - 1] : null;
                 redrawCanvas();
             }
@@ -2189,13 +2294,17 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     points: [...points],
                     lengths: [...lengths],
                     angles: [...angles],
-                    colors: [...colors]
+                    colors: [...colors],
+                    images: images.map(img => ({ ...img }))
                 });
+
                 let next = redoStack.pop();
                 points = [...next.points];
                 lengths = [...next.lengths];
                 angles = [...next.angles];
                 colors = [...next.colors];
+                images = next.images ? next.images.map(img => ({ ...img })) : [];
+
                 currentStartPoint = points.length > 0 ? points[points.length - 1] : null;
                 redrawCanvas();
             }
@@ -2252,19 +2361,22 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
 
         $(document).off('click', '.insert-img').on('click', '.insert-img', function () {
-            const imgX = currentStartPoint ? currentStartPoint.x : canvas.width / 2;
-            const imgY = currentStartPoint ? currentStartPoint.y : canvas.height / 2;
-
             const imgElement = new Image();
             imgElement.src = $(this).attr('src');
 
-            imgElement.onload = function() {
+            imgElement.onload = function () {
+                const imageWidth = imgElement.width;
+                const imageHeight = imgElement.height;
+
+                const imgX = currentStartPoint ? currentStartPoint.x + imageWidth / 2 : canvas.width / 2;
+                const imgY = currentStartPoint ? currentStartPoint.y : canvas.height / 2;
+
                 images.push({
                     img: imgElement,
                     x: imgX,
                     y: imgY,
-                    width: imgElement.width,
-                    height: imgElement.height,
+                    width: imageWidth,
+                    height: imageHeight,
                     rotation: 0
                 });
 
