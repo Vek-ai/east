@@ -1761,13 +1761,14 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 angles = loadedData.angles || [];
                 colors = loadedData.colors || [];
                 currentStartPoint = points.length > 0 ? points[points.length - 1] : null;
-
-                isLoading = false;
-                drawPlaceholderText();
             } catch (e) {
                 console.error("Invalid drawing data:", e);
             }
+
+            isLoading = false;
+            drawPlaceholderText();
         }else{
+            isLoading = false;
             drawPlaceholderText();
         }
 
@@ -2344,12 +2345,19 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
 
         $(document).off('click', '.insert-img').on('click', '.insert-img', function () {
+            const imgSrc = $(this).find('img').attr('src');
             const imgElement = new Image();
-            imgElement.src = $(this).attr('src');
+            imgElement.src = imgSrc;
 
             imgElement.onload = function () {
-                const imageWidth = imgElement.width;
-                const imageHeight = imgElement.height;
+                let imageWidth = imgElement.width;
+                let imageHeight = imgElement.height;
+
+                if (imageWidth > 30) {
+                    const scaleFactor = 30 / imageWidth;
+                    imageWidth = 30;
+                    imageHeight = imageHeight * scaleFactor;
+                }
 
                 const imgX = currentStartPoint ? currentStartPoint.x + imageWidth / 2 : canvas.width / 2;
                 const imgY = currentStartPoint ? currentStartPoint.y : canvas.height / 2;
@@ -2366,6 +2374,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 redrawCanvas();
             };
         });
+
 
         $(document).off('click', '#saveDrawing').on('click', '#saveDrawing', function () {
             if (confirm("Are you sure you want to finalize your custom trim?")) {
