@@ -31,16 +31,6 @@ if(isset($_POST['fetch_drawing'])){
                         <div class="d-flex justify-content-center">
                             <div class="position-relative d-inline-block border rounded shadow-sm p-2 bg-light">
                                 <div class="position-absolute top-0 end-0 m-2 d-flex gap-2 align-items-center z-3">
-                                    <div id="colorCircle"
-                                        class="rounded-circle border border-secondary shadow-sm"
-                                        style="width: 30px; height: 30px; background-color: #000000; cursor: pointer;"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="bottom"
-                                        title="Select line color">
-                                    </div>
-
-                                    <input type="color" id="lineColorPicker" value="#ffffff" class="form-control form-control-color d-none" title="Choose line color">
-
                                     <a href="javascript:void(0)" id="undoBtn" class="btn btn-warning btn-sm p-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Undo">
                                         <i class="fas fa-undo-alt"></i>
                                     </a>

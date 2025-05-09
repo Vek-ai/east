@@ -1707,7 +1707,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         const ctx = canvas.getContext('2d');
         const clearButton = document.getElementById('resetBtn');
         const saveDrawing = document.getElementById('saveDrawing');
-        const colorCircle = document.getElementById('colorCircle');
         const lineColorPicker = document.getElementById('lineColorPicker');
         const undoButton = document.getElementById('undoBtn');
         const redoButton = document.getElementById('redoBtn');
@@ -1722,7 +1721,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         let redoStack = [];
         const pixelsPerInch = 96;
         let currentColor = "#000000";
-        colorCircle.style.backgroundColor = currentColor;
 
         let isDragging = false;
         let dragIndex = -1;
@@ -1866,24 +1864,18 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
                 lineDiv.innerHTML = `
                     <div class="row g-2 align-items-center">
-                        <div class="col-1">
+                        <div class="col-2">
                             <span class="fw-bold">L${i}:</span>
                         </div>
 
-                        <div class="col-4 d-flex align-items-center gap-2">
-                            <label class="fw-bold mb-0">Length</label>
+                        <div class="col-5 d-flex align-items-center gap-2">
+                            <label class="fw-bold mb-0">Length (in)</label>
                             <input type="number" step="0.01" value="${distance}" data-index="${i}"
                                 class="form-control form-control-sm line-length-input" style="width: 100%;">
                         </div>
 
-                        <div class="col-3 d-flex align-items-center gap-2">
-                            <label class="fw-bold mb-0">Color</label>
-                            <input type="color" value="${colors[i - 1]}" data-index="${i}"
-                                class="form-control form-control-color line-color-input" style="width: 100%; height: 30px; padding: 0;">
-                        </div>
-
                         ${angle !== null ? `
-                        <div class="col-3 d-flex align-items-center gap-2">
+                        <div class="col-4 d-flex align-items-center gap-2">
                             <label class="fw-bold mb-0">Angle</label>
                             <input type="number" step="0.1" value="${angle.toFixed(1)}" data-index="${i}"
                                 class="form-control form-control-sm line-angle-input" style="width: 100%;">
@@ -1910,13 +1902,13 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     </div>
 
                     <div class="col-5 d-flex align-items-center gap-2">
-                        <label class="fw-bold mb-0">Width (in)</label>
+                        <label class="fw-bold mb-0">Length (in)</label>
                         <input type="number" step="0.01" value="${(imgObj.width / pixelsPerInch).toFixed(2)}" data-index="${idx}" data-prop="width"
                             class="form-control form-control-sm image-prop-input">
                     </div>
 
                     <div class="col-4 d-flex align-items-center gap-2">
-                        <label class="fw-bold mb-0">Rotation</label>
+                        <label class="fw-bold mb-0">Angle</label>
                         <input type="number" step="0.1" value="${imgObj.rotation.toFixed(1)}" data-index="${idx}" data-prop="rotation"
                             class="form-control form-control-sm image-prop-input">
                     </div>
@@ -2320,15 +2312,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             undoStack = [];
             redoStack = [];
             drawPlaceholderText();
-        });
-
-        $(document).on('click', '#colorCircle', function () {
-            $('#lineColorPicker').click();
-        });
-
-        $(document).on('input', '#lineColorPicker', function () {
-            currentColor = $(this).val();
-            $('#colorCircle').css('background-color', currentColor);
         });
 
         $(document).on('input', '.line-color-input', function () {
