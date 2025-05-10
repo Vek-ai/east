@@ -44,23 +44,47 @@ if(isset($_POST['fetch_drawing'])){
                                     </a>
                                 </div>
 
-                                <canvas id="drawingCanvas" width="700" height="500" class="border rounded bg-white"></canvas>
+                                <canvas id="drawingCanvas" width="1000" height="500" class="border rounded bg-white"></canvas>
                                 <div class="row mt-0">
                                     <div class="col-md-6 d-flex align-items-center gap-2">
+                                        <!--
                                         <button type="button" class="btn p-0 border-0 bg-transparent insert-img" title="Insert Flat Hem">
-                                            <img src="../images/hems1.png" alt="Hem 1" style="width: 60px; height: auto;">
+                                            <img src="../images/flat-hem.svg" alt="Hem 1" style="width: 60px; height: auto;">
                                         </button>
+                                        
                                         <button type="button" class="btn p-0 border-0 bg-transparent insert-img" title="Insert Open Hem">
-                                            <img src="../images/hems2.png" alt="Hem 2" style="width: 60px; height: auto;">
-                                        </button>
+                                            <img src="../images/open-hem.svg" alt="Hem 2" style="width: 60px; height: auto;">
+                                        </button> -->
                                         <button type="button" class="btn p-0 border-0 bg-transparent insert-img" title="Insert Arrow">
                                             <img src="../images/arrow.png" alt="Arrow" style="width: 30px; height: auto;">
                                         </button>
                                     </div>
-                                    <div class="col-md-6"></div>
+                                    <div class="col-md-6 d-flex justify-content-end align-items-center gap-2">
+                                        <button type="button" id="btn-pencil" class="btn btn-success px-2 py-1" style="display: none;">
+                                            Start Drawing
+                                        </button>
+                                        <button type="button" id="btn-stop" class="btn btn-danger px-2 py-1" style="display: none;">
+                                            Stop Drawing
+                                        </button>
+                                    </div>
                                 </div>
                                 <div id="lineEditorContainer" class="mt-3 p-2 border rounded">
-                                    <h5>Edit Lines</h5>
+                                    <div class="row mt-0 mb-2">
+                                        <div class="col-md-6 d-flex justify-content-start align-items-center gap-2">
+                                            <h5>Edit Lines</h5>
+                                        </div>
+                                        <div class="col-md-6 d-flex justify-content-end align-items-center gap-2">
+                                            <div class="col-md-6 d-flex justify-content-end align-items-center gap-2">
+                                                <button type="button" id="btn-show-angles" class="btn btn-success px-2 py-1" style="display: none;">
+                                                    Show Angles
+                                                </button>
+                                                <button type="button" id="btn-hide-angles" class="btn btn-danger px-2 py-1" style="display: none;">
+                                                    Hide Angles
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div id="lineEditorList"></div>
                                 </div>
                             </div>

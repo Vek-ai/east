@@ -1710,6 +1710,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         const lineColorPicker = document.getElementById('lineColorPicker');
         const undoButton = document.getElementById('undoBtn');
         const redoButton = document.getElementById('redoBtn');
+        const dataInput = document.getElementById('initial_drawing_data');
 
         let points = [];
         let lengths = [];
@@ -1719,18 +1720,30 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         let currentStartPoint = null;
         let undoStack = [];
         let redoStack = [];
+        let lineTypes = [];
         const pixelsPerInch = 96;
         let currentColor = "#000000";
+        let hemHeight = 15;
 
         let isDragging = false;
         let dragIndex = -1;
         let wasDragging = false;
         let dragStartSnapshot = null;
         let isLoading = true;
+        let showAngles = true;
 
         let isResizing = false;
         let isRotating = false;
         let dragHandle = null;
+
+        let isTemporaryLineActive = true;
+        const hemImages = {
+            flat: new Image(),
+            open: new Image()
+        };
+
+        hemImages.flat.src = '../images/hems1.png';
+        hemImages.open.src = '../images/hems2.png';
 
         const drawPlaceholderText = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1746,7 +1759,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             }
         };
 
-        const dataInput = document.getElementById('initial_drawing_data');
+        
         if (dataInput && dataInput.value) {
             isLoading = true;
             drawPlaceholderText();
@@ -1850,14 +1863,35 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
             return Math.abs(rx) <= width / 2 && Math.abs(ry) <= height / 2;
         }
-        
+
+        function drawHemImage(p1, p2, img) {
+            if (!img.complete) return;
+
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+
+            const imgHeight = img.height;
+            const desiredHeight = hemHeight;
+
+            const scaleX = length / img.width;
+            const scaleY = desiredHeight / imgHeight;
+
+            const angle = Math.atan2(dy, dx);
+
+            ctx.save();
+            ctx.translate(p1.x, p1.y);
+            ctx.rotate(angle); 
+            ctx.drawImage(img, 0, -desiredHeight / 2, img.width * scaleX, imgHeight * scaleY);
+            ctx.restore();
+        }
+
         const updateLineEditor = () => {
             const editorList = document.getElementById('lineEditorList');
             editorList.innerHTML = '';
 
             for (let i = 1; i < points.length; i++) {
                 const distance = calculateDistance(points[i - 1], points[i]);
-
                 const angle = i > 0 ? calculateLineAngle(points[i - 1], points[i]) : null;
 
                 const lineDiv = document.createElement('div');
@@ -1865,23 +1899,32 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
                 lineDiv.innerHTML = `
                     <div class="row g-2 align-items-center">
-                        <div class="col-2">
+                        <div class="col-1">
                             <span class="fw-bold">L${i}:</span>
                         </div>
 
-                        <div class="col-5 d-flex align-items-center gap-2">
-                            <label class="fw-bold mb-0">Length (in)</label>
+                        <div class="col-4 d-flex align-items-center gap-2">
+                            <label class="fw-bold mb-0">Length</label>
                             <input type="number" step="0.01" value="${distance}" data-index="${i}"
                                 class="form-control form-control-sm line-length-input" style="width: 100%;">
                         </div>
 
                         ${angle !== null ? `
-                        <div class="col-4 d-flex align-items-center gap-2">
+                        <div class="col-3 d-flex align-items-center gap-2">
                             <label class="fw-bold mb-0">Angle</label>
                             <input type="number" step="0.1" value="${angle.toFixed(1)}" data-index="${i}"
                                 class="form-control form-control-sm line-angle-input" style="width: 100%;">
                         </div>
                         ` : ''}
+
+                        <div class="col-3 d-flex align-items-center gap-2">
+                            <label class="fw-bold mb-0">Hem</label>
+                            <select class="form-select form-select-sm line-hem-select" data-index="${i}">
+                                <option value="normal" ${lineTypes[i] === 'normal' ? 'selected' : ''}>None</option>
+                                <option value="flat" ${lineTypes[i] === 'flat' ? 'selected' : ''}>Flat</option>
+                                <option value="open" ${lineTypes[i] === 'open' ? 'selected' : ''}>Open</option>
+                            </select>
+                        </div>
 
                         <div class="col-1 d-flex align-items-center justify-content-center">
                             <a href="javascript:void(0)" class="delete-line-btn" data-index="${i}">&times;</a>
@@ -1897,31 +1940,32 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 imageRow.className = 'mb-2 py-1 px-2 border rounded bg-light';
 
                 imageRow.innerHTML = `
-                <div class="row g-2 align-items-center">
-                    <div class="col-2">
-                        <span class="fw-bold">Image ${idx + 1}:</span>
-                    </div>
+                    <div class="row g-2 align-items-center">
+                        <div class="col-2">
+                            <span class="fw-bold">Image ${idx + 1}:</span>
+                        </div>
 
-                    <div class="col-5 d-flex align-items-center gap-2">
-                        <label class="fw-bold mb-0">Length (in)</label>
-                        <input type="number" step="0.01" value="${(imgObj.width / pixelsPerInch).toFixed(2)}" data-index="${idx}" data-prop="width"
-                            class="form-control form-control-sm image-prop-input">
-                    </div>
+                        <div class="col-4 d-flex align-items-center gap-2">
+                            <label class="fw-bold mb-0">Width (in)</label>
+                            <input type="number" step="0.01" value="${(imgObj.width / pixelsPerInch).toFixed(2)}" data-index="${idx}" data-prop="width"
+                                class="form-control form-control-sm image-prop-input" style="width: 100%;">
+                        </div>
 
-                    <div class="col-4 d-flex align-items-center gap-2">
-                        <label class="fw-bold mb-0">Angle</label>
-                        <input type="number" step="0.1" value="${imgObj.rotation.toFixed(1)}" data-index="${idx}" data-prop="rotation"
-                            class="form-control form-control-sm image-prop-input">
-                    </div>
+                        <div class="col-4 d-flex align-items-center gap-2">
+                            <label class="fw-bold mb-0">Angle</label>
+                            <input type="number" step="0.1" value="${imgObj.rotation.toFixed(1)}" data-index="${idx}" data-prop="rotation"
+                                class="form-control form-control-sm image-prop-input" style="width: 100%;">
+                        </div>
 
-                    <div class="col-1 d-flex align-items-center justify-content-center">
-                        <a href="javascript:void(0)" class="delete-image-btn text-danger" data-index="${idx}">&times;</a>
+                        <div class="col-1 d-flex align-items-center justify-content-center">
+                            <a href="javascript:void(0)" class="delete-image-btn text-danger" data-index="${idx}">&times;</a>
+                        </div>
                     </div>
-                </div>
                 `;
 
                 editorList.appendChild(imageRow);
             });
+
 
 
             document.querySelectorAll('.delete-image-btn').forEach(button => {
@@ -2023,31 +2067,39 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             ctx.stroke();
         };
 
-        const clearCanvas = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        };
-
         const redrawCanvas = () => {
             clearCanvas();
 
             for (let i = 1; i < points.length; i++) {
-                drawLine(points[i - 1], points[i], colors[i - 1]);
-                const midX = (points[i - 1].x + points[i].x) / 2;
-                const midY = (points[i - 1].y + points[i].y) / 2;
-                const distance = calculateDistance(points[i - 1], points[i]);
+                const type = lineTypes[i] || 'normal';
+                const p1 = points[i - 1];
+                const p2 = points[i];
+                const midX = (p1.x + p2.x) / 2;
+                const midY = (p1.y + p2.y) / 2;
+                const distance = calculateDistance(p1, p2);
+
+                if (type === 'flat' || type === 'open') {
+                    const img = hemImages[type];
+                    drawHemImage(p1, p2, img);
+                } else {
+                    drawLine(p1, p2, colors[i - 1]);
+                }
+
                 ctx.font = "14px Arial";
-                ctx.fillStyle = "gray";
+                ctx.fillStyle = "white";
                 ctx.fillText(`${distance} in`, midX + 5, midY - 5);
             }
 
-            for (let i = 2; i < points.length; i++) {
-                const angle = calculateInteriorAngle(points[i - 2], points[i - 1], points[i]);
-                drawAngleArc(points[i - 2], points[i - 1], points[i], angle);
-                const radius = 30;
-                const p2 = points[i - 1];
-                ctx.font = "14px Arial";
-                ctx.fillStyle = "red";
-                ctx.fillText(`${angle.toFixed(1)}°`, p2.x + radius + 5, p2.y - radius - 5);
+            if (showAngles) {
+                for (let i = 2; i < points.length; i++) {
+                    const angle = calculateInteriorAngle(points[i - 2], points[i - 1], points[i]);
+                    drawAngleArc(points[i - 2], points[i - 1], points[i], angle);
+                    const radius = 30;
+                    const p2 = points[i - 1];
+                    ctx.font = "14px Arial";
+                    ctx.fillStyle = "red";
+                    ctx.fillText(`${angle.toFixed(1)}°`, p2.x + radius + 5, p2.y - radius - 5);
+                }
             }
 
             for (let i = 0; i < images.length; i++) {
@@ -2168,7 +2220,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
                 wasDragging = true;
                 redrawCanvas();
-            } else if (currentStartPoint) {
+            } else if (currentStartPoint && isTemporaryLineActive) {
                 const currentPoint = { x, y };
                 redrawCanvas();
                 drawTemporaryLine(currentStartPoint, currentPoint);
@@ -2214,46 +2266,53 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 }
             }
 
-            if (currentStartPoint) {
-                if (selected === currentStartPoint) return;
-                points.push(selected);
-                colors.push(currentColor);
-                drawLine(currentStartPoint, selected, currentColor);
-                lengths.push(calculateDistance(currentStartPoint, selected));
+            if(isTemporaryLineActive){
+                lineTypes.push('normal');
+                if (currentStartPoint) {
+                    if (selected === currentStartPoint) return;
+                    points.push(selected);
+                    colors.push(currentColor);
+                    drawLine(currentStartPoint, selected, currentColor);
+                    lengths.push(calculateDistance(currentStartPoint, selected));
 
-                if (points.length > 2) {
-                    let angle = calculateInteriorAngle(
-                        points[points.length - 3],
-                        points[points.length - 2],
-                        points[points.length - 1]
-                    );
-                    drawAngleArc(
-                        points[points.length - 3],
-                        points[points.length - 2],
-                        points[points.length - 1],
-                        angle
-                    );
+                    if (points.length > 2) {
+                        let angle = calculateInteriorAngle(
+                            points[points.length - 3],
+                            points[points.length - 2],
+                            points[points.length - 1]
+                        );
+                        drawAngleArc(
+                            points[points.length - 3],
+                            points[points.length - 2],
+                            points[points.length - 1],
+                            angle
+                        );
+                    }
+
+                    undoStack.push({
+                        points: [...points],
+                        lengths: [...lengths],
+                        angles: [...angles],
+                        colors: [...colors]
+                    });
+                    redoStack = [];
+                    currentStartPoint = selected;
+                } else {
+                    currentStartPoint = selected;
+                    if (!points.includes(selected)) points.push(selected);
+
+                    undoStack.push({
+                        points: [...points],
+                        lengths: [...lengths],
+                        angles: [...angles],
+                        colors: [...colors]
+                    });
+                    redoStack = [];
+
+                    document.getElementById('btn-stop').style.display = 'inline-block';
+                    document.getElementById('btn-hide-angles').style.display = 'inline-block';
+                    isTemporaryLineActive = true;
                 }
-
-                undoStack.push({
-                    points: [...points],
-                    lengths: [...lengths],
-                    angles: [...angles],
-                    colors: [...colors]
-                });
-                redoStack = [];
-                currentStartPoint = selected;
-            } else {
-                currentStartPoint = selected;
-                if (!points.includes(selected)) points.push(selected);
-
-                undoStack.push({
-                    points: [...points],
-                    lengths: [...lengths],
-                    angles: [...angles],
-                    colors: [...colors]
-                });
-                redoStack = [];
             }
 
             redrawCanvas();
@@ -2313,6 +2372,45 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             undoStack = [];
             redoStack = [];
             drawPlaceholderText();
+        });
+
+        const clearCanvas = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        };
+
+        $(document).on('change', '.line-hem-select', function () {
+            const index = $(this).data('index');
+            const selectedType = $(this).val();
+
+            lineTypes[index] = selectedType;
+            redrawCanvas();
+        });
+
+        $(document).on('click', '#btn-pencil', function () {
+            isTemporaryLineActive = true;
+            $('#btn-pencil').hide();
+            $('#btn-stop').show();
+        });
+
+        $(document).on('click', '#btn-stop', function () {
+            isTemporaryLineActive = false;
+            redrawCanvas();
+            $('#btn-stop').hide();
+            $('#btn-pencil').show();
+        });
+
+        $(document).on('click', '#btn-show-angles', function () {
+            showAngles = true;
+            $('#btn-show-angles').hide();
+            $('#btn-hide-angles').css('display', 'inline-block');
+            redrawCanvas();
+        });
+
+        $(document).on('click', '#btn-hide-angles', function () {
+            showAngles = false;
+            $('#btn-hide-angles').hide();
+            $('#btn-show-angles').css('display', 'inline-block');
+            redrawCanvas();
         });
 
         $(document).on('input', '.line-color-input', function () {
@@ -2375,7 +2473,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             };
         });
 
-
         $(document).off('click', '#saveDrawing').on('click', '#saveDrawing', function () {
             if (confirm("Are you sure you want to finalize your custom trim?")) {
                 finalizeDraw();
@@ -2428,6 +2525,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 });
             }
         });
+
+        drawPlaceholderText();
     }
 
     function formatOption(state) {

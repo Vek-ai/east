@@ -383,7 +383,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                 while ($row_category = mysqli_fetch_array($result_category)) {
                                     $selected = ($category_id == $row_category['product_category_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
+                                    <option value="<?= $row_category['product_category'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -400,7 +400,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                 while ($row_system = mysqli_fetch_array($result_system)) {
                                     $selected = ($product_system == $row_system['product_system_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_system['product_system_id'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
+                                    <option value="<?= $row_system['product_system'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -417,7 +417,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                 while ($row_line = mysqli_fetch_array($result_line)) {
                                     $selected = ($type_id == $row_line['product_line_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_line['product_line_id'] ?>" data-category="<?= $row_line['product_category'] ?>" <?= $selected ?>><?= $row_line['product_line'] ?></option>
+                                    <option value="<?= $row_line['product_line'] ?>" data-category="<?= $row_line['product_category'] ?>" <?= $selected ?>><?= $row_line['product_line'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -434,7 +434,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                 while ($row_type = mysqli_fetch_array($result_type)) {
                                     $selected = ($type_id == $row_type['product_type_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_type['product_type_id'] ?>" data-category="<?= $row_type['product_category'] ?>" <?= $selected ?>><?= $row_type['product_type'] ?></option>
+                                    <option value="<?= $row_type['product_type'] ?>" data-category="<?= $row_type['product_category'] ?>" <?= $selected ?>><?= $row_type['product_type'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -451,7 +451,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                 while ($row_profile = mysqli_fetch_array($result_profile)) {
                                     $selected = ($profile_id == $row_profile['profile_type_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_profile['profile_type_id'] ?>" data-category="<?= $v['product_category'] ?>" <?= $selected ?>><?= $row_profile['profile_type'] ?></option>
+                                    <option value="<?= $row_profile['profile_type'] ?>" data-category="<?= $v['product_category'] ?>" <?= $selected ?>><?= $row_profile['profile_type'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -468,7 +468,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                 while ($row_color = mysqli_fetch_array($result_color)) {
                                     $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_color['color_id'] ?>" data-category="category" <?= $selected ?>><?= $row_color['color_name'] ?></option>
+                                    <option value="<?= $row_color['paint_colors'] ?>" data-category="category" <?= $selected ?>><?= $row_color['color_name'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -485,7 +485,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                 while ($row_grade = mysqli_fetch_array($result_grade)) {
                                     $selected = ($grade_id == $row_grade['product_grade_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                    <option value="<?= $row_grade['product_grade'] ?>" data-category="grade" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -502,7 +502,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                                 while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                                     $selected = ($gauge_id == $row_gauge['product_gauge_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_gauge['product_gauge_id'] ?>" data-category="gauge" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
+                                    <option value="<?= $row_gauge['product_gauge'] ?>" data-category="gauge" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -539,203 +539,8 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             <th>Action</th>
                             </thead>
                             <tbody>
-                            <?php
-                                $no = 1;
-                                $query_product = "
-                                    SELECT 
-                                        p.*,
-                                        COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
-                                    FROM 
-                                        product AS p
-                                    LEFT JOIN 
-                                        inventory AS i ON p.product_id = i.product_id
-                                    WHERE 
-                                        p.hidden = '0'
-                                ";
-
-                                if (!empty($color_id)) {
-                                    $query_product .= " AND p.color = '$color_id'";
-                                }
-
-                                if (!empty($grade_id)) {
-                                    $query_product .= " AND p.grade = '$grade_id'";
-                                }
-
-                                if (!empty($gauge_id)) {
-                                    $query_product .= " AND p.gauge = '$gauge_id'";
-                                }
-
-                                if (!empty($type_id)) {
-                                    $query_product .= " AND p.product_type = '$type_id'";
-                                }
-
-                                if (!empty($profile_id)) {
-                                    $query_product .= " AND p.profile = '$profile_id'";
-                                }
-
-                                if (!empty($category_id)) {
-                                    $query_product .= " AND p.product_category = '$category_id'";
-                                }
-
-                                $query_product .= " GROUP BY p.product_id";
-
-                                if ($onlyInStock) {
-                                    $query_product .= " HAVING total_quantity > 1";
-                                }
-
-                                $result_product = mysqli_query($conn, $query_product);            
-                                while ($row_product = mysqli_fetch_array($result_product)) {
-                                    $product_id = $row_product['product_id'];
-                                    $db_status = $row_product['status'];
-
-                                    if ($db_status == '0') {
-                                        $status_icon = "text-danger ti ti-trash";
-                                        $status = "<a href='#'><div id='status-alert$no' class='changeStatus alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='$db_status' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                                    } else {
-                                        $status_icon = "text-warning ti ti-reload";
-                                        $status = "<a href='#'><div id='status-alert$no' class='changeStatus alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='$db_status' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                                    }
-
-                                    if(!empty($row_product['main_image'])){
-                                        $picture_path = $row_product['main_image'];
-                                    }else{
-                                        $picture_path = "images/product/product.jpg";
-                                    }
-                
-                                ?>
-                                    <!-- start row -->
-                                    <tr class="search-items" 
-                                        data-system="<?= $row_product['product_system'] ?>"
-                                        data-line="<?= $row_product['product_line'] ?>"
-                                        data-profile="<?= $row_product['profile'] ?>"
-                                        data-color="<?= $row_product['color'] ?>"
-                                        data-grade="<?= $row_product['grade'] ?>"
-                                        data-gauge="<?= $row_product['gauge'] ?>"
-                                        data-category="<?= $row_product['product_category'] ?>"
-                                        data-type="<?= $row_product['product_type'] ?>"
-                                        data-active="<?= $row_product['p.status'] = 1 ? 1 : 0 ?>"
-                                        data-instock="<?= $row_product['total_quantity'] > 1 ? 1 : 0 ?>"
-                                        >
-                                        <td>
-                                            <a href="/?page=product_details&product_id=<?= $row_product['product_id'] ?>">
-                                                <div class="d-flex align-items-center">
-                                                    <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
-                                                    <div class="ms-3">
-                                                        <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['product_item'] ?></h6>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </td>
-                                        <td><?= getProductCategoryName($row_product['product_category']) ?></td>
-                                        <td><?= getProductLineName($row_product['product_line']) ?></td>
-                                        <td><?= getProductTypeName($row_product['product_type']) ?></td>
-                                        <td><?= $status ?></td>
-                                        <td>
-                                            <div class="action-btn text-center">
-                                                <a href="#" title="View" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
-                                                    <i class="text-primary ti ti-eye fs-7"></i>
-                                                </a>
-                                                <a href="#" title="Edit" id="edit_product_btn" class="text-warning edit" data-id="<?= $row_product['product_id'] ?>" data-category="<?= $row_product['product_category'] ?>">
-                                                    <i class="text-warning ti ti-pencil fs-7"></i>
-                                                </a>
-                                                <a href="#" title="Duplicate" id="duplicate_product_btn" class="text-info edit" data-id="<?= $row_product['product_id'] ?>" data-category="<?= $row_product['product_category'] ?>">
-                                                    <i class="text-info ti ti-copy fs-7"></i>
-                                                </a>
-                                                <a href="#" title="Add to Inventory" id="add_inventory_btn" class="text-info edit d-none" data-id="<?= $row_product['product_id'] ?>">
-                                                    <i class="text-info ti ti-plus fs-6"></i>
-                                                </a>
-                                                <a href="#" title="Archive" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $product_id ?>" data-status='<?= $db_status ?>'>
-                                                    <i class="text-danger ti ti-trash fs-7"></i>
-                                                </a>
-                                                
-                                                
-                                                <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_product['product_id'] ?>">
-                                                    <i class="ti ti-trash fs-5"></i>
-                                                </a> -->
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php 
-                                $no++;
-                                } ?>
+                            
                             </tbody>
-                            <script>
-                                $(document).ready(function() {
-                                    $(document).on('click', '.changeStatus', function(event) {
-                                        var confirmed = confirm("Are you sure you want to change the status of this Product?");
-                                        
-                                        if (confirmed) {
-                                            var product_id = $(this).data('id');
-                                            var status = $(this).data('status');
-                                            var no = $(this).data('no');
-                                            
-                                            $.ajax({
-                                                url: 'pages/product4_ajax.php',
-                                                type: 'POST',
-                                                data: {
-                                                    product_id: product_id,
-                                                    status: status,
-                                                    action: 'change_status'
-                                                },
-                                                success: function(response) {
-                                                    if (response == 'success') {
-                                                        var newStatus = (status == 1) ? 0 : 1;
-                                                        var newStatusText = (status == 1) ? 'Inactive' : 'Active';
-                                                        var newStatusClass = (status == 1) ? 'alert-danger bg-danger' : 'alert-success bg-success';
-                                                        var newIconClass = (status == 1) ? 'text-danger ti ti-reload' : 'text-danger ti ti-trash';
-                                                        var newButtonText = (status == 1) ? '<i class="text-danger ti ti-trash fs-7"></i>' : '<i class="ti ti-pencil fs-7"></i>';
-                                                        
-                                                        $('#status-alert' + no)
-                                                            .removeClass()
-                                                            .addClass('alert ' + newStatusClass + ' text-white border-0 text-center py-1 px-2 my-0')
-                                                            .text(newStatusText);
-                                                        
-                                                        $(".changeStatus[data-no='" + no + "']").data('status', newStatus);
-                                                        $('.product' + no).toggleClass('emphasize-strike', newStatus == 0);
-                                                        
-                                                        $('#action-button-' + no).html('<a href="#" class="py-1" data-id="' + product_id + '" data-row="' + no + '" style="border-radius: 10%;">' + newButtonText + '</a>');
-                                                        
-                                                        $('#delete_product_btn').find('i').removeClass().addClass(newIconClass + ' fs-7');
-                                                        
-                                                        $('#toggleActive').trigger('change');
-                                                    } else {
-                                                        alert('Failed to change status.');
-                                                    }
-                                                },
-                                                error: function(jqXHR, textStatus, errorThrown) {
-                                                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                                }
-                                            });
-                                        }
-                                    });
-
-
-
-                                    $(document).on('click', '.hideProduct', function(event) {
-                                        event.preventDefault();
-                                        var product_id = $(this).data('id');
-                                        var rowId = $(this).data('row');
-                                        $.ajax({
-                                            url: 'pages/product4_ajax.php',
-                                            type: 'POST',
-                                            data: {
-                                                product_id: product_id,
-                                                action: 'hide_product'
-                                            },
-                                            success: function(response) {
-                                                if (response == 'success') {
-                                                    $('#product-row-' + rowId).remove();
-                                                } else {
-                                                    alert('Failed to hide product.');
-                                                }
-                                            },
-                                            error: function(jqXHR, textStatus, errorThrown) {
-                                                alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                            }
-                                        });
-                                    });
-                                });
-                                </script>
                         </table>
                     </div>
                 </div>
@@ -753,14 +558,37 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         var selectedCategory = '';
 
         var table = $('#productList').DataTable({
-            "order": [[1, "asc"]],
-            "pageLength": 100,
-            "lengthMenu": [
-                [10, 25, 50, 100],
-                [10, 25, 50, 100]
+            order: [[1, "asc"]],
+            pageLength: 100,
+            ajax: {
+                url: 'pages/product4_ajax.php',
+                type: 'POST',
+                data: { action: 'fetch_products' }
+            },
+            columns: [
+                { data: 'product_name_html' },
+                { data: 'product_category' },
+                { data: 'product_line' },
+                { data: 'product_type' },
+                { data: 'status_html' },
+                { data: 'action_html' }
             ],
-            "dom": 'lftp',
+            createdRow: function (row, data, dataIndex) {
+                $(row).attr('data-category', data.product_category);
+                $(row).attr('data-system', data.product_system);
+                $(row).attr('data-line', data.product_line);
+                $(row).attr('data-type', data.product_type);
+                $(row).attr('data-profile', data.profile);
+                $(row).attr('data-color', data.color);
+                $(row).attr('data-grade', data.grade);
+                $(row).attr('data-gauge', data.gauge);
+                $(row).attr('data-active', data.active);
+                $(row).attr('data-instock', data.instock);
+            },
+            "dom": 'lftp'
         });
+
+        $('#productList_filter').hide();
 
         $(document).on('click', '.remove-image-btn', function(event) {
             event.preventDefault();
@@ -1114,6 +942,57 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             }
         });
 
+        $(document).on('click', '.changeStatus', function(event) {
+            event.preventDefault(); 
+            var product_id = $(this).data('id');
+            var status = $(this).data('status');
+            var no = $(this).data('no');
+            $.ajax({
+                url: 'pages/product4_ajax.php',
+                type: 'POST',
+                data: {
+                    product_id: product_id,
+                    status: status,
+                    action: 'change_status'
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response == 'success') {
+                        table.ajax.reload(null, false);
+                    } else {
+                        alert('Failed to change status.');
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '.hideProduct', function(event) {
+            event.preventDefault();
+            var product_id = $(this).data('id');
+            var rowId = $(this).data('row');
+            $.ajax({
+                url: 'pages/product4_ajax.php',
+                type: 'POST',
+                data: {
+                    product_id: product_id,
+                    action: 'hide_product'
+                },
+                success: function(response) {
+                    if (response == 'success') {
+                        table.ajax.reload(null, false);
+                    } else {
+                        alert('Failed to hide product system.');
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
         $(document).on('submit', '#product_form', function(event) {
             event.preventDefault(); 
 
@@ -1134,20 +1013,14 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");
-
-                        $('#response-modal').on('hide.bs.modal', function () {
-                            location.reload();
-                        });
+                        table.ajax.reload(null, false);
                     } else if (response.trim() === "success_add") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("New product added successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");
-
-                        $('#response-modal').on('hide.bs.modal', function () {
-                            location.reload();
-                        });
+                        table.ajax.reload(null, false);
                     } else {
                         $('#responseHeader').text("Failed");
                         $('#responseMsg').text(response);

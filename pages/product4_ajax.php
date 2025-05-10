@@ -488,7 +488,7 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
-    if ($action == 'hide_category') {
+    if ($action == 'hide_product') {
         $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
         $query = "UPDATE product SET hidden='1' WHERE product_id='$product_id'";
         if (mysqli_query($conn, $query)) {
@@ -1294,7 +1294,74 @@ if(isset($_REQUEST['action'])) {
         } else {
             echo "Product not found.";
         }
-    }     
+    }   
+    
+    if ($action == 'fetch_products') {
+        $data = [];
+        $query = "
+            SELECT 
+                p.*, 
+                COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity 
+            FROM product AS p 
+            LEFT JOIN inventory AS i ON p.product_id = i.product_id 
+            WHERE p.hidden = 0 
+            GROUP BY p.product_id
+        ";
+        $result = mysqli_query($conn, $query);
+        $no = 1;
+    
+        while ($row = mysqli_fetch_assoc($result)) {
+            $product_id = $row['product_id'];
+            $status = $row['status'];
+            $instock = $row['total_quantity'] > 1 ? 1 : 0;
+            $category_id = $row['product_category'];
+    
+            $status_html = $status == 1
+                ? "<a href='#'><div id='status-alert$no' class='changeStatus alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='1' style='border-radius: 5%;'>Active</div></a>"
+                : "<a href='#'><div id='status-alert$no' class='changeStatus alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='0' style='border-radius: 5%;'>Inactive</div></a>";
+    
+            $picture_path = !empty($row['main_image']) ? $row['main_image'] : "images/product/product.jpg";
+    
+            $product_name_html = "
+                <a href='?page=product_details&product_id={$product_id}'>
+                    <div class='d-flex align-items-center'>
+                        <img src='{$picture_path}' class='rounded-circle' width='56' height='56'>
+                        <div class='ms-3'>
+                            <h6 class='fw-semibold mb-0 fs-4'>{$row['product_item']}</h6>
+                        </div>
+                    </div>
+                </a>";
+    
+            $action_html = "
+                <div class='action-btn text-center'>
+                    <a href='javascript:void(0)' id='view_product_btn' title='View' class='text-primary edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-eye fs-7'></i></a>
+                    <a href='javascript:void(0)' id='edit_product_btn' title='Edit' class='text-warning edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-pencil fs-7'></i></a>
+                    <a href='javascript:void(0)' id='duplicate_product_btn' title='Duplicate' class='text-info edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-copy fs-7'></i></a>
+                    <a href='javascript:void(0)' id='add_inventory_btn' title='Add Inventory' class='text-secondary edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-plus fs-7'></i></a>
+                    <a href='javascript:void(0)' id='delete_product_btn' title='Archive' class='text-danger edit hideProduct' data-no='{$no}' data-id='{$product_id}' data-status='{$status}'><i class='ti ti-trash fs-7'></i></a>
+                </div>";
+    
+            $data[] = [
+                'product_name_html'   => $product_name_html,
+                'product_category'    => getProductCategoryName($row['product_category']),
+                'product_system'      => getProductSystemName($row['product_system']),
+                'product_line'        => getProductLineName($row['product_line']),
+                'product_type'        => getProductTypeName($row['product_type']),
+                'profile'             => getProfileTypeName($row['profile']),
+                'color'               => getColorName($row['color']),
+                'grade'               => getGradeName($row['grade']),
+                'gauge'               => getGaugeName($row['gauge']),
+                'active'              => $status,
+                'instock'             => $instock,
+                'status_html'         => $status_html,
+                'action_html'         => $action_html
+            ];
+    
+            $no++;
+        }
+    
+        echo json_encode(['data' => $data]);
+    }
     
     mysqli_close($conn);
 }
