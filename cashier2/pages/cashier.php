@@ -1742,6 +1742,16 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             open: new Image()
         };
 
+        const arrows = [];
+
+        let isDrawingArrow = false;
+        let isDraggingArrow = false;
+        let arrowStartPoint = null;
+        let arrowEndPoint = null;
+
+        let dragArrowIndex = -1;
+        let draggingArrowPoint = null;
+
         hemImages.flat.src = '../images/hems1.png';
         hemImages.open.src = '../images/hems2.png';
 
@@ -1884,6 +1894,32 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             ctx.rotate(angle); 
             ctx.drawImage(img, 0, -desiredHeight / 2, img.width * scaleX, imgHeight * scaleY);
             ctx.restore();
+        }
+
+        function drawArrow(from, to, color = 'black') {
+            const headLength = 30;
+            const angle = Math.atan2(to.y - from.y, to.x - from.x);
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 5;
+
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(to.x, to.y);
+            ctx.lineTo(
+                to.x - headLength * Math.cos(angle - Math.PI / 6),
+                to.y - headLength * Math.sin(angle - Math.PI / 6)
+            );
+            ctx.moveTo(to.x, to.y);
+            ctx.lineTo(
+                to.x - headLength * Math.cos(angle + Math.PI / 6),
+                to.y - headLength * Math.sin(angle + Math.PI / 6)
+            );
+            ctx.stroke();
         }
 
         const updateLineEditor = () => {
@@ -2057,14 +2093,41 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             return degrees;
         };
 
-        const drawAngleArc = (p1, p2, p3, angle) => {
+        function drawAngleArc(p1, p2, p3, adjustment = 0) {
             const radius = 30;
-            const start = Math.atan2(p1.y - p2.y, p1.x - p2.x);
-            const end = Math.atan2(p3.y - p2.y, p3.x - p2.x);
+
+            const adjustedP3 = rotatePoint(p3, p2, adjustment);
+
+            const angle1 = Math.atan2(p1.y - p2.y, p1.x - p2.x);
+            const angle2 = Math.atan2(adjustedP3.y - p2.y, adjustedP3.x - p2.x);
+
+            let start = angle1;
+            let end = angle2;
+            let anticlockwise = false;
+
+            if (end < start) {
+                const temp = start;
+                start = end;
+                end = temp;
+                anticlockwise = true;
+            }
+
             ctx.beginPath();
-            ctx.arc(p2.x, p2.y, radius, start, end, end < start);
+            ctx.arc(p2.x, p2.y, radius, start, end, anticlockwise);
             ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
             ctx.stroke();
+        }
+
+        const rotatePoint = (point, origin, angle) => {
+            const rad = angle * Math.PI / 180;
+            const dx = point.x - origin.x;
+            const dy = point.y - origin.y;
+            
+            const rotatedX = origin.x + (dx * Math.cos(rad) - dy * Math.sin(rad));
+            const rotatedY = origin.y + (dx * Math.sin(rad) + dy * Math.cos(rad));
+            
+            return { x: rotatedX, y: rotatedY };
         };
 
         const redrawCanvas = () => {
@@ -2073,7 +2136,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             for (let i = 1; i < points.length; i++) {
                 const type = lineTypes[i] || 'normal';
                 const p1 = points[i - 1];
-                const p2 = points[i];
+                let p2 = points[i];
                 const midX = (p1.x + p2.x) / 2;
                 const midY = (p1.y + p2.y) / 2;
                 const distance = calculateDistance(p1, p2);
@@ -2092,14 +2155,43 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
             if (showAngles) {
                 for (let i = 2; i < points.length; i++) {
-                    const angle = calculateInteriorAngle(points[i - 2], points[i - 1], points[i]);
-                    drawAngleArc(points[i - 2], points[i - 1], points[i], angle);
+                    const p0 = points[i - 2];
+                    const p1 = points[i - 1];
+                    const p2 = points[i];
+                    const type = lineTypes[i] || 'normal';
+
+                    let adjustment = 0;
+                    if (type === 'flat') adjustment = 5;
+                    else if (type === 'open') adjustment = 20;
+
+                    drawAngleArc(p0, p1, p2, adjustment);
+
+                    const angle = calculateInteriorAngle(p0, p1, p2) + adjustment;
+
                     const radius = 30;
-                    const p2 = points[i - 1];
+                    const dx1 = p0.x - p1.x;
+                    const dy1 = p0.y - p1.y;
+                    const dx2 = p2.x - p1.x;
+                    const dy2 = p2.y - p1.y;
+
+                    const avgDx = (dx1 + dx2) / 2;
+                    const avgDy = (dy1 + dy2) / 2;
+                    const norm = Math.hypot(avgDx, avgDy);
+                    const labelX = p1.x + (radius + 5) * (avgDx / norm);
+                    const labelY = p1.y + (radius + 5) * (avgDy / norm);
+
                     ctx.font = "14px Arial";
                     ctx.fillStyle = "red";
-                    ctx.fillText(`${angle.toFixed(1)}°`, p2.x + radius + 5, p2.y - radius - 5);
+                    ctx.fillText(`${angle.toFixed(1)}°`, labelX, labelY);
                 }
+            }
+
+            for (const arrow of arrows) {
+                drawArrow(arrow.p1, arrow.p2, arrow.color);
+
+                const midX = (arrow.p1.x + arrow.p2.x) / 2;
+                const midY = (arrow.p1.y + arrow.p2.y) / 2;
+                const distance = calculateDistance(arrow.p1, arrow.p2);
             }
 
             for (let i = 0; i < images.length; i++) {
@@ -2149,6 +2241,37 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+
+            if (isDrawingArrow) {
+                arrowStartPoint = { x, y };
+                arrowEndPoint = null;
+                isDraggingArrow = true;
+                return;
+            }
+
+            for (let i = 0; i < arrows.length; i++) {
+                const { p1, p2 } = arrows[i];
+
+                if (Math.hypot(p1.x - x, p1.y - y) < 6) {
+                    isDragging = true;
+                    wasDragging = false;
+                    dragArrowIndex = i;
+                    draggingArrowPoint = 'p1';
+                    dragStartSnapshot = {
+                        arrows: arrows.map(a => ({ p1: { ...a.p1 }, p2: { ...a.p2 }, color: a.color })),
+                    };
+                    return;
+                } else if (Math.hypot(p2.x - x, p2.y - y) < 6) {
+                    isDragging = true;
+                    wasDragging = false;
+                    dragArrowIndex = i;
+                    draggingArrowPoint = 'p2';
+                    dragStartSnapshot = {
+                        arrows: arrows.map(a => ({ p1: { ...a.p1 }, p2: { ...a.p2 }, color: a.color })),
+                    };
+                    return;
+                }
+            }
 
             for (let i = 0; i < points.length; i++) {
                 if (Math.hypot(points[i].x - x, points[i].y - y) < 6) {
@@ -2202,10 +2325,38 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
+            if (isDrawingArrow && isDraggingArrow && arrowStartPoint) {
+                canvas.style.cursor = 'crosshair';
+                arrowEndPoint = { x, y };
+                redrawCanvas();
+                drawArrow(arrowStartPoint, arrowEndPoint, currentColor);
+                return;
+            }
+
+            if (isDragging && dragArrowIndex !== -1 && draggingArrowPoint) {
+                arrows[dragArrowIndex][draggingArrowPoint] = { x, y };
+                wasDragging = true;
+                redrawCanvas();
+                return;
+            }
+
             let hoveringOnPoint = points.some(p => Math.hypot(p.x - x, p.y - y) < 6);
             let hoveringOnImage = images.some(img => isPointInRotatedRect(x, y, img));
 
-            canvas.style.cursor = hoveringOnPoint || hoveringOnImage ? 'move' : 'default';
+            if (isDrawingArrow) {
+                canvas.style.cursor = 'crosshair';
+            } else {
+                const hoveringOnPoint = points.some(p => Math.hypot(p.x - x, p.y - y) < 6);
+                const hoveringOnImage = images.some(img => isPointInRotatedRect(x, y, img));
+                
+                const hoveringOnArrowEndpoint = arrows.some(a =>
+                    Math.hypot(a.p1.x - x, a.p1.y - y) < 6 ||
+                    Math.hypot(a.p2.x - x, a.p2.y - y) < 6
+                );
+
+                const shouldShowMoveCursor = hoveringOnPoint || hoveringOnImage || hoveringOnArrowEndpoint;
+                canvas.style.cursor = shouldShowMoveCursor ? 'move' : 'default';
+            }
 
             if (isDragging && dragIndex !== -1) {
                 if (dragStartSnapshot.images) {
@@ -2234,10 +2385,48 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
 
         canvas.addEventListener('mouseup', () => {
+            if (isDrawingArrow && isDraggingArrow && arrowStartPoint && arrowEndPoint) {
+                arrows.push({
+                    p1: arrowStartPoint,
+                    p2: arrowEndPoint,
+                    color: currentColor
+                });
+
+                undoStack.push({
+                    points: [...points],
+                    lengths: [...lengths],
+                    angles: [...angles],
+                    colors: [...colors],
+                    lineTypes: [...lineTypes]
+                });
+
+                redoStack = [];
+                return; 
+            }
+
+            if (isDragging && dragArrowIndex !== -1 && draggingArrowPoint) {
+                undoStack.push(dragStartSnapshot);
+                redoStack = [];
+            }
+
             if (isDragging && dragStartSnapshot) {
-                const moved = (dragStartSnapshot.images && images.some((img, i) => 
-                    img.x !== dragStartSnapshot.images[i].x || img.y !== dragStartSnapshot.images[i].y
-                )) || (points.some((p, i) => p.x !== dragStartSnapshot.points[i].x || p.y !== dragStartSnapshot.points[i].y));
+                const moved =
+                    (dragStartSnapshot.images &&
+                        images.some((img, i) =>
+                            dragStartSnapshot.images[i] &&
+                            (img.x !== dragStartSnapshot.images[i].x || img.y !== dragStartSnapshot.images[i].y)
+                        )) ||
+                    (dragStartSnapshot.points &&
+                        points.some((p, i) =>
+                            dragStartSnapshot.points[i] &&
+                            (p.x !== dragStartSnapshot.points[i].x || p.y !== dragStartSnapshot.points[i].y)
+                        )) ||
+                    (dragStartSnapshot.arrows &&
+                        arrows.some((a, i) =>
+                            dragStartSnapshot.arrows[i] &&
+                            (a.p1.x !== dragStartSnapshot.arrows[i].p1.x || a.p1.y !== dragStartSnapshot.arrows[i].p1.y ||
+                            a.p2.x !== dragStartSnapshot.arrows[i].p2.x || a.p2.y !== dragStartSnapshot.arrows[i].p2.y)
+                        ));
 
                 if (moved) {
                     undoStack.push(dragStartSnapshot);
@@ -2246,6 +2435,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             }
 
             isDragging = false;
+            draggingArrowPoint = null;
+            dragArrowIndex = -1;
             dragIndex = -1;
             dragStartSnapshot = null;
             setTimeout(() => { wasDragging = false; }, 100);
@@ -2254,29 +2445,45 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         canvas.addEventListener('click', (e) => {
             if (wasDragging) return;
 
+            if (isDrawingArrow || isDraggingArrow || arrowStartPoint || arrowEndPoint) {
+                isDrawingArrow = false;
+                isDraggingArrow = false;
+                arrowStartPoint = null;
+                arrowEndPoint = null;
+                canvas.style.cursor = 'default';
+                isTemporaryLineActive = true;
+                redrawCanvas();
+                return;
+            }
+
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-            let selected = { x, y };
 
-            for (let point of points) {
-                if (Math.hypot(point.x - x, point.y - y) < 6) {
-                    selected = point;
-                    break;
+            const clickedPoint = { x, y };
+
+            if (isTemporaryLineActive) {
+                let selected = { x, y };
+
+                for (let point of points) {
+                    if (Math.hypot(point.x - x, point.y - y) < 6) {
+                        selected = point;
+                        break;
+                    }
                 }
-            }
 
-            if(isTemporaryLineActive){
-                lineTypes.push('normal');
+                if (currentStartPoint && selected === currentStartPoint) return;
+
                 if (currentStartPoint) {
-                    if (selected === currentStartPoint) return;
                     points.push(selected);
+                    currentStartPoint = points[points.length - 1];
                     colors.push(currentColor);
+                    lineTypes.push('normal');
                     drawLine(currentStartPoint, selected, currentColor);
                     lengths.push(calculateDistance(currentStartPoint, selected));
 
                     if (points.length > 2) {
-                        let angle = calculateInteriorAngle(
+                        const angle = calculateInteriorAngle(
                             points[points.length - 3],
                             points[points.length - 2],
                             points[points.length - 1]
@@ -2296,10 +2503,14 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         colors: [...colors]
                     });
                     redoStack = [];
+
                     currentStartPoint = selected;
                 } else {
                     currentStartPoint = selected;
-                    if (!points.includes(selected)) points.push(selected);
+                    if (!points.includes(selected)){
+                        points.push(selected)
+                        currentStartPoint = points[points.length - 1];
+                    };
 
                     undoStack.push({
                         points: [...points],
@@ -2311,11 +2522,21 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
                     document.getElementById('btn-stop').style.display = 'inline-block';
                     document.getElementById('btn-hide-angles').style.display = 'inline-block';
-                    isTemporaryLineActive = true;
                 }
-            }
 
-            redrawCanvas();
+                redrawCanvas();
+            }
+        });
+
+        canvas.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            if (isDrawingArrow) {
+                isDrawingArrow = false;
+                isDraggingArrow = false;
+                arrowStartPoint = null;
+                arrowEndPoint = null;
+                redrawCanvas();
+            }
         });
 
         undoButton.addEventListener('click', () => {
@@ -2378,13 +2599,68 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         };
 
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape' && isDrawingArrow) {
+                isDrawingArrow = false;
+                isDraggingArrow = false;
+                arrowStartPoint = null;
+                arrowEndPoint = null;
+                canvas.style.cursor = 'default';
+                redrawCanvas();
+            }
+        });
+
+        $(document).on('click', '.insert-arrow-line', function () {
+            isDrawingArrow = true;
+            arrowStartPoint = null;
+            arrowEndPoint = null;
+            canvas.style.cursor = 'crosshair';
+
+            isTemporaryLineActive = false;
+            redrawCanvas();
+        });
+
         $(document).on('change', '.line-hem-select', function () {
             const index = $(this).data('index');
             const selectedType = $(this).val();
+            let currentType = lineTypes[index];
+
+            if (!['normal', 'flat', 'open'].includes(currentType)) {
+                currentType = 'normal';
+                lineTypes[index] = currentType;
+            }
+
+            if (!['normal', 'flat', 'open'].includes(selectedType)) {
+                console.error('Invalid selectedType:', selectedType);
+                return;
+            }
 
             lineTypes[index] = selectedType;
+
+            const adjustments = {
+                normal: 0,
+                flat: 5,
+                open: 20
+            };
+
+            const adjustmentDifference = adjustments[selectedType] - adjustments[currentType];
+
+            if (isNaN(adjustmentDifference)) {
+                console.error('Invalid adjustment difference:', adjustmentDifference);
+                return;
+            }
+
+            var p1 = points[index - 1];
+            var p2 = points[index];
+
+            p2 = rotatePoint(p2, p1, adjustmentDifference);
+            points[index] = p2;
             redrawCanvas();
         });
+
+
+
+
 
         $(document).on('click', '#btn-pencil', function () {
             isTemporaryLineActive = true;

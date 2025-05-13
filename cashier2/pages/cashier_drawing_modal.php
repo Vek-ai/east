@@ -51,11 +51,15 @@ if(isset($_POST['fetch_drawing'])){
                                         <button type="button" class="btn p-0 border-0 bg-transparent insert-img" title="Insert Flat Hem">
                                             <img src="../images/flat-hem.svg" alt="Hem 1" style="width: 60px; height: auto;">
                                         </button>
-                                        
                                         <button type="button" class="btn p-0 border-0 bg-transparent insert-img" title="Insert Open Hem">
                                             <img src="../images/open-hem.svg" alt="Hem 2" style="width: 60px; height: auto;">
-                                        </button> -->
+                                        </button>
                                         <button type="button" class="btn p-0 border-0 bg-transparent insert-img" title="Insert Arrow">
+                                            <img src="../images/arrow.png" alt="Arrow" style="width: 30px; height: auto;">
+                                        </button>
+                                        -->
+
+                                        <button type="button" class="btn p-0 border-0 bg-transparent insert-arrow-line" title="Click and Drag to Draw Arrow">
                                             <img src="../images/arrow.png" alt="Arrow" style="width: 30px; height: auto;">
                                         </button>
                                     </div>
