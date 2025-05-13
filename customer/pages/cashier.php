@@ -1703,27 +1703,53 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         const ctx = canvas.getContext('2d');
         const clearButton = document.getElementById('resetBtn');
         const saveDrawing = document.getElementById('saveDrawing');
-        const colorCircle = document.getElementById('colorCircle');
         const lineColorPicker = document.getElementById('lineColorPicker');
         const undoButton = document.getElementById('undoBtn');
         const redoButton = document.getElementById('redoBtn');
+        const dataInput = document.getElementById('initial_drawing_data');
 
         let points = [];
         let lengths = [];
         let angles = [];
         let colors = [];
+        let images = [];
         let currentStartPoint = null;
         let undoStack = [];
         let redoStack = [];
+        let lineTypes = [];
         const pixelsPerInch = 96;
         let currentColor = "#000000";
-        colorCircle.style.backgroundColor = currentColor;
+        let hemHeight = 15;
 
         let isDragging = false;
         let dragIndex = -1;
         let wasDragging = false;
         let dragStartSnapshot = null;
         let isLoading = true;
+        let showAngles = false;
+
+        let isResizing = false;
+        let isRotating = false;
+        let dragHandle = null;
+
+        let isTemporaryLineActive = true;
+        const hemImages = {
+            flat: new Image(),
+            open: new Image()
+        };
+
+        const arrows = [];
+
+        let isDrawingArrow = false;
+        let isDraggingArrow = false;
+        let arrowStartPoint = null;
+        let arrowEndPoint = null;
+
+        let dragArrowIndex = -1;
+        let draggingArrowPoint = null;
+
+        hemImages.flat.src = '../images/hems1.png';
+        hemImages.open.src = '../images/hems2.png';
 
         const drawPlaceholderText = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1739,10 +1765,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             }
         };
 
-        drawPlaceholderText();
-
-        const dataInput = document.getElementById('initial_drawing_data');
+        
         if (dataInput && dataInput.value) {
+            isLoading = true;
+            drawPlaceholderText();
             try {
                 let decodedData = decodeHtmlEntities(dataInput.value);
 
@@ -1760,25 +1786,137 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
             isLoading = false;
             drawPlaceholderText();
-            
+        }else{
+            isLoading = false;
+            drawPlaceholderText();
         }
-
-        isLoading = false;
-        drawPlaceholderText();
 
         function decodeHtmlEntities(text) {
             var doc = new DOMParser().parseFromString(text, 'text/html');
             return doc.documentElement.textContent;
         }
 
-        $(document).on('click', '#colorCircle', function () {
-            $('#lineColorPicker').click();
-        });
+        function adjustLineAngle(p1, p2, newAngle) {
+            newAngle = (newAngle % 360 + 360) % 360;
 
-        $(document).on('input', '#lineColorPicker', function () {
-            currentColor = $(this).val();
-            $('#colorCircle').css('background-color', currentColor);
-        });
+            const length = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+            const angleRad = (newAngle * Math.PI) / 180;
+
+            const newX = p1.x + Math.cos(angleRad) * length;
+            const newY = p1.y + Math.sin(angleRad) * length;
+
+            points[points.indexOf(p2)] = { x: newX, y: newY };
+
+            undoStack.push({
+                points: [...points.map(p => ({ ...p }))],
+                lengths: [...lengths],
+                angles: [...angles],
+                colors: [...colors]
+            });
+
+            redoStack = [];
+            redrawCanvas();
+        }
+
+        function calculateLineAngle(p1, p2) {
+            if (!p1 || !p2) return null;
+
+            const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+
+            let degrees = (angle * 180 / Math.PI) % 360;
+
+            if (degrees < 0) degrees += 360;
+
+            return degrees;
+        }
+
+        function updateImageProperty(index, prop, value) {
+            const image = images[index];
+            if (!image) return;
+
+            undoStack.push({
+                points: [...points],
+                lengths: [...lengths],
+                angles: [...angles],
+                colors: [...colors],
+                images: images.map(img => ({ ...img }))
+            });
+
+            if (prop === 'width') {
+                const newWidthPx = value * pixelsPerInch;
+                const aspectRatio = image.height / image.width;
+                image.width = newWidthPx;
+                image.height = newWidthPx * aspectRatio;
+            } else if (prop === 'rotation') {
+                image.rotation = value;
+            }
+
+            redrawCanvas();
+        }
+
+        function isPointInRotatedRect(px, py, img) {
+            const cx = img.x;
+            const cy = img.y;
+            const width = img.width;
+            const height = img.height;
+            const angle = (img.rotation || 0) * Math.PI / 180;
+
+            const dx = px - cx;
+            const dy = py - cy;
+
+            const rx = dx * Math.cos(-angle) - dy * Math.sin(-angle);
+            const ry = dx * Math.sin(-angle) + dy * Math.cos(-angle);
+
+            return Math.abs(rx) <= width / 2 && Math.abs(ry) <= height / 2;
+        }
+
+        function drawHemImage(p1, p2, img) {
+            if (!img.complete) return;
+
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+
+            const imgHeight = img.height;
+            const desiredHeight = hemHeight;
+
+            const scaleX = length / img.width;
+            const scaleY = desiredHeight / imgHeight;
+
+            const angle = Math.atan2(dy, dx);
+
+            ctx.save();
+            ctx.translate(p1.x, p1.y);
+            ctx.rotate(angle); 
+            ctx.drawImage(img, 0, -desiredHeight / 2, img.width * scaleX, imgHeight * scaleY);
+            ctx.restore();
+        }
+
+        function drawArrow(from, to, color = '#90EE90') {
+            const headLength = 30;
+            const angle = Math.atan2(to.y - from.y, to.x - from.x);
+
+            ctx.strokeStyle = '#90EE90';
+            ctx.lineWidth = 5;
+
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(to.x, to.y);
+            ctx.lineTo(
+                to.x - headLength * Math.cos(angle - Math.PI / 6),
+                to.y - headLength * Math.sin(angle - Math.PI / 6)
+            );
+            ctx.moveTo(to.x, to.y);
+            ctx.lineTo(
+                to.x - headLength * Math.cos(angle + Math.PI / 6),
+                to.y - headLength * Math.sin(angle + Math.PI / 6)
+            );
+            ctx.stroke();
+        }
 
         const updateLineEditor = () => {
             const editorList = document.getElementById('lineEditorList');
@@ -1786,7 +1924,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
             for (let i = 1; i < points.length; i++) {
                 const distance = calculateDistance(points[i - 1], points[i]);
-                const angle = i > 1 ? calculateInteriorAngle(points[i - 2], points[i - 1], points[i]) : null;
+                const angle = i > 0 ? calculateLineAngle(points[i - 1], points[i]) : null;
 
                 const lineDiv = document.createElement('div');
                 lineDiv.className = 'mb-2 py-1 px-2 border rounded bg-light';
@@ -1797,16 +1935,27 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             <span class="fw-bold">L${i}:</span>
                         </div>
 
-                        <div class="col-5 d-flex align-items-center justify-content-start gap-2">
+                        <div class="col-4 d-flex align-items-center gap-2">
                             <label class="fw-bold mb-0">Length</label>
                             <input type="number" step="0.01" value="${distance}" data-index="${i}"
                                 class="form-control form-control-sm line-length-input" style="width: 100%;">
                         </div>
 
-                        <div class="col-5 d-flex align-items-center justify-content-start gap-2">
-                            <label class="fw-bold mb-0">Color</label>
-                            <input type="color" value="${colors[i - 1]}" data-index="${i}"
-                                class="form-control form-control-color line-color-input" style="width: 100%; height: 30px; padding: 0;">
+                        ${angle !== null ? `
+                        <div class="col-3 d-flex align-items-center gap-2">
+                            <label class="fw-bold mb-0">Angle</label>
+                            <input type="number" step="0.1" value="${angle.toFixed(1)}" data-index="${i}"
+                                class="form-control form-control-sm line-angle-input" style="width: 100%;">
+                        </div>
+                        ` : ''}
+
+                        <div class="col-3 d-flex align-items-center gap-2">
+                            <label class="fw-bold mb-0">Hem</label>
+                            <select class="form-select form-select-sm line-hem-select" data-index="${i}">
+                                <option value="normal" ${lineTypes[i] === 'normal' ? 'selected' : ''}>None</option>
+                                <option value="flat" ${lineTypes[i] === 'flat' ? 'selected' : ''}>Flat</option>
+                                <option value="open" ${lineTypes[i] === 'open' ? 'selected' : ''}>Open</option>
+                            </select>
                         </div>
 
                         <div class="col-1 d-flex align-items-center justify-content-center">
@@ -1818,13 +1967,79 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 editorList.appendChild(lineDiv);
             }
 
+            images.forEach((imgObj, idx) => {
+                const imageRow = document.createElement('div');
+                imageRow.className = 'mb-2 py-1 px-2 border rounded bg-light';
+
+                imageRow.innerHTML = `
+                    <div class="row g-2 align-items-center">
+                        <div class="col-2">
+                            <span class="fw-bold">Image ${idx + 1}:</span>
+                        </div>
+
+                        <div class="col-4 d-flex align-items-center gap-2">
+                            <label class="fw-bold mb-0">Width (in)</label>
+                            <input type="number" step="0.01" value="${(imgObj.width / pixelsPerInch).toFixed(2)}" data-index="${idx}" data-prop="width"
+                                class="form-control form-control-sm image-prop-input" style="width: 100%;">
+                        </div>
+
+                        <div class="col-4 d-flex align-items-center gap-2">
+                            <label class="fw-bold mb-0">Angle</label>
+                            <input type="number" step="0.1" value="${imgObj.rotation.toFixed(1)}" data-index="${idx}" data-prop="rotation"
+                                class="form-control form-control-sm image-prop-input" style="width: 100%;">
+                        </div>
+
+                        <div class="col-1 d-flex align-items-center justify-content-center">
+                            <a href="javascript:void(0)" class="delete-image-btn text-danger" data-index="${idx}">&times;</a>
+                        </div>
+                    </div>
+                `;
+
+                editorList.appendChild(imageRow);
+            });
+
+
+
+            document.querySelectorAll('.delete-image-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    images.splice(index, 1);
+                    redrawCanvas();
+                });
+            });
+
             document.querySelectorAll('.delete-line-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const index = parseInt(e.target.dataset.index);
                     deleteLine(index);
                 });
-            }); 
+            });
 
+            document.querySelectorAll('.image-prop-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    const prop = e.target.dataset.prop;
+                    let value = parseFloat(e.target.value);
+
+                    if (!isNaN(value)) {
+                        updateImageProperty(index, prop, value);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.line-angle-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    const newAngle = parseFloat(e.target.value);
+
+                    if (!isNaN(newAngle) && index > 0 && points[index - 1] && points[index]) {
+                        const p1 = points[index - 1];
+                        const p2 = points[index];
+
+                        adjustLineAngle(p1, p2, newAngle);
+                    }
+                });
+            });
         };
 
         const finalizeDraw = () => {
@@ -1874,41 +2089,124 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             return degrees;
         };
 
-        const drawAngleArc = (p1, p2, p3, angle) => {
+        function drawAngleArc(p1, p2, p3, adjustment = 0) {
             const radius = 30;
-            const start = Math.atan2(p1.y - p2.y, p1.x - p2.x);
-            const end = Math.atan2(p3.y - p2.y, p3.x - p2.x);
-            ctx.beginPath();
-            ctx.arc(p2.x, p2.y, radius, start, end, end < start);
-            ctx.strokeStyle = 'red';
-            ctx.stroke();
-        };
 
-        const clearCanvas = () => {
+            const adjustedP3 = rotatePoint(p3, p2, adjustment);
+
+            const angle1 = Math.atan2(p1.y - p2.y, p1.x - p2.x);
+            const angle2 = Math.atan2(adjustedP3.y - p2.y, adjustedP3.x - p2.x);
+
+            let start = angle1;
+            let end = angle2;
+            let anticlockwise = false;
+
+            if (end < start) {
+                const temp = start;
+                start = end;
+                end = temp;
+                anticlockwise = true;
+            }
+
+            ctx.beginPath();
+            ctx.arc(p2.x, p2.y, radius, start, end, anticlockwise);
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function clearCanvas(){
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        const rotatePoint = (point, origin, angle) => {
+            const rad = angle * Math.PI / 180;
+            const dx = point.x - origin.x;
+            const dy = point.y - origin.y;
+            
+            const rotatedX = origin.x + (dx * Math.cos(rad) - dy * Math.sin(rad));
+            const rotatedY = origin.y + (dx * Math.sin(rad) + dy * Math.cos(rad));
+            
+            return { x: rotatedX, y: rotatedY };
         };
 
         const redrawCanvas = () => {
             clearCanvas();
 
             for (let i = 1; i < points.length; i++) {
-                drawLine(points[i - 1], points[i], colors[i - 1]);
-                const midX = (points[i - 1].x + points[i].x) / 2;
-                const midY = (points[i - 1].y + points[i].y) / 2;
-                const distance = calculateDistance(points[i - 1], points[i]);
+                const type = lineTypes[i] || 'normal';
+                const p1 = points[i - 1];
+                let p2 = points[i];
+                const midX = (p1.x + p2.x) / 2;
+                const midY = (p1.y + p2.y) / 2;
+                const distance = calculateDistance(p1, p2);
+
+                if (type === 'flat' || type === 'open') {
+                    const img = hemImages[type];
+                    drawHemImage(p1, p2, img);
+                } else {
+                    drawLine(p1, p2, colors[i - 1]);
+                }
+
                 ctx.font = "14px Arial";
-                ctx.fillStyle = "gray";
+                ctx.fillStyle = "white";
                 ctx.fillText(`${distance} in`, midX + 5, midY - 5);
             }
 
-            for (let i = 2; i < points.length; i++) {
-                const angle = calculateInteriorAngle(points[i - 2], points[i - 1], points[i]);
-                drawAngleArc(points[i - 2], points[i - 1], points[i], angle);
-                const radius = 30;
-                const p2 = points[i - 1];
-                ctx.font = "14px Arial";
-                ctx.fillStyle = "red";
-                ctx.fillText(`${angle.toFixed(1)}°`, p2.x + radius + 5, p2.y - radius - 5);
+            if (showAngles) {
+                for (let i = 2; i < points.length; i++) {
+                    const p0 = points[i - 2];
+                    const p1 = points[i - 1];
+                    const p2 = points[i];
+                    const type = lineTypes[i] || 'normal';
+
+                    let adjustment = 0;
+                    if (type === 'flat') adjustment = 5;
+                    else if (type === 'open') adjustment = 20;
+
+                    drawAngleArc(p0, p1, p2, adjustment);
+
+                    const angle = calculateInteriorAngle(p0, p1, p2) + adjustment;
+
+                    const radius = 30;
+                    const dx1 = p0.x - p1.x;
+                    const dy1 = p0.y - p1.y;
+                    const dx2 = p2.x - p1.x;
+                    const dy2 = p2.y - p1.y;
+
+                    const avgDx = (dx1 + dx2) / 2;
+                    const avgDy = (dy1 + dy2) / 2;
+                    const norm = Math.hypot(avgDx, avgDy);
+                    const labelX = p1.x + (radius + 5) * (avgDx / norm);
+                    const labelY = p1.y + (radius + 5) * (avgDy / norm);
+
+                    ctx.font = "14px Arial";
+                    ctx.fillStyle = "red";
+                    ctx.fillText(`${angle.toFixed(1)}°`, labelX, labelY);
+                }
+            }
+
+            for (const arrow of arrows) {
+                drawArrow(arrow.p1, arrow.p2, arrow.color);
+
+                const midX = (arrow.p1.x + arrow.p2.x) / 2;
+                const midY = (arrow.p1.y + arrow.p2.y) / 2;
+                const distance = calculateDistance(arrow.p1, arrow.p2);
+            }
+
+            for (let i = 0; i < images.length; i++) {
+                const img = images[i].img;
+                const x = images[i].x;
+                const y = images[i].y;
+                const width = images[i].width;
+                const height = images[i].height;
+                const rotation = images[i].rotation;
+
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rotation * Math.PI / 180);
+                ctx.drawImage(img, -width / 2, -height / 2, width, height);
+                ctx.restore();
             }
 
             if (points.length === 0) drawPlaceholderText();
@@ -1944,6 +2242,37 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
+            if (isDrawingArrow) {
+                arrowStartPoint = { x, y };
+                arrowEndPoint = null;
+                isDraggingArrow = true;
+                return;
+            }
+
+            for (let i = 0; i < arrows.length; i++) {
+                const { p1, p2 } = arrows[i];
+
+                if (Math.hypot(p1.x - x, p1.y - y) < 6) {
+                    isDragging = true;
+                    wasDragging = false;
+                    dragArrowIndex = i;
+                    draggingArrowPoint = 'p1';
+                    dragStartSnapshot = {
+                        arrows: arrows.map(a => ({ p1: { ...a.p1 }, p2: { ...a.p2 }, color: a.color })),
+                    };
+                    return;
+                } else if (Math.hypot(p2.x - x, p2.y - y) < 6) {
+                    isDragging = true;
+                    wasDragging = false;
+                    dragArrowIndex = i;
+                    draggingArrowPoint = 'p2';
+                    dragStartSnapshot = {
+                        arrows: arrows.map(a => ({ p1: { ...a.p1 }, p2: { ...a.p2 }, color: a.color })),
+                    };
+                    return;
+                }
+            }
+
             for (let i = 0; i < points.length; i++) {
                 if (Math.hypot(points[i].x - x, points[i].y - y) < 6) {
                     isDragging = true;
@@ -1956,7 +2285,36 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         angles: [...angles],
                         colors: [...colors]
                     };
+                    return;
+                }
+            }
 
+            for (let i = 0; i < images.length; i++) {
+                const img = images[i];
+                const imgX = img.x;
+                const imgY = img.y;
+
+                if (isPointInRotatedRect(x, y, images[i])) {
+
+                    undoStack.push({
+                        points: [...points],
+                        lengths: [...lengths],
+                        angles: [...angles],
+                        colors: [...colors],
+                        images: images.map(img => ({ ...img }))
+                    });
+
+                    isDragging = true;
+                    dragIndex = i;
+                    wasDragging = false;
+
+                    dragStartSnapshot = {
+                        images: [...images.map(i => ({ ...i }))],
+                        points: [...points.map(p => ({ ...p }))],
+                        lengths: [...lengths],
+                        angles: [...angles],
+                        colors: [...colors]
+                    };
                     return;
                 }
             }
@@ -1967,17 +2325,53 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
-            let hoveringOnPoint = points.some(p => Math.hypot(p.x - x, p.y - y) < 6);
-            canvas.style.cursor = hoveringOnPoint ? 'move' : 'default';
+            if (isDrawingArrow && isDraggingArrow && arrowStartPoint) {
+                canvas.style.cursor = 'crosshair';
+                arrowEndPoint = { x, y };
+                redrawCanvas();
+                drawArrow(arrowStartPoint, arrowEndPoint, '#90EE90');
+                return;
+            }
 
-            if (isDragging && dragIndex !== -1) {
-                points[dragIndex] = { x, y };
-                if (dragIndex === points.length - 1) {
-                    currentStartPoint = points[dragIndex];
-                }
+            if (isDragging && dragArrowIndex !== -1 && draggingArrowPoint) {
+                arrows[dragArrowIndex][draggingArrowPoint] = { x, y };
                 wasDragging = true;
                 redrawCanvas();
-            } else if (currentStartPoint) {
+                return;
+            }
+
+            let hoveringOnPoint = points.some(p => Math.hypot(p.x - x, p.y - y) < 6);
+            let hoveringOnImage = images.some(img => isPointInRotatedRect(x, y, img));
+
+            if (isDrawingArrow) {
+                canvas.style.cursor = 'crosshair';
+            } else {
+                const hoveringOnPoint = points.some(p => Math.hypot(p.x - x, p.y - y) < 6);
+                const hoveringOnImage = images.some(img => isPointInRotatedRect(x, y, img));
+                
+                const hoveringOnArrowEndpoint = arrows.some(a =>
+                    Math.hypot(a.p1.x - x, a.p1.y - y) < 6 ||
+                    Math.hypot(a.p2.x - x, a.p2.y - y) < 6
+                );
+
+                const shouldShowMoveCursor = hoveringOnPoint || hoveringOnImage || hoveringOnArrowEndpoint;
+                canvas.style.cursor = shouldShowMoveCursor ? 'move' : 'default';
+            }
+
+            if (isDragging && dragIndex !== -1) {
+                if (dragStartSnapshot.images) {
+                    images[dragIndex].x = x;
+                    images[dragIndex].y = y;
+                } else {
+                    points[dragIndex] = { x, y };
+                    if (dragIndex === points.length - 1) {
+                        currentStartPoint = points[dragIndex];
+                    }
+                }
+
+                wasDragging = true;
+                redrawCanvas();
+            } else if (currentStartPoint && isTemporaryLineActive) {
                 const currentPoint = { x, y };
                 redrawCanvas();
                 drawTemporaryLine(currentStartPoint, currentPoint);
@@ -1991,10 +2385,48 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
 
         canvas.addEventListener('mouseup', () => {
+            if (isDrawingArrow && isDraggingArrow && arrowStartPoint && arrowEndPoint) {
+                arrows.push({
+                    p1: arrowStartPoint,
+                    p2: arrowEndPoint,
+                    color: currentColor
+                });
+
+                undoStack.push({
+                    points: [...points],
+                    lengths: [...lengths],
+                    angles: [...angles],
+                    colors: [...colors],
+                    lineTypes: [...lineTypes]
+                });
+
+                redoStack = [];
+                return; 
+            }
+
+            if (isDragging && dragArrowIndex !== -1 && draggingArrowPoint) {
+                undoStack.push(dragStartSnapshot);
+                redoStack = [];
+            }
+
             if (isDragging && dragStartSnapshot) {
-                const moved = points.some((p, i) =>
-                    p.x !== dragStartSnapshot.points[i].x || p.y !== dragStartSnapshot.points[i].y
-                );
+                const moved =
+                    (dragStartSnapshot.images &&
+                        images.some((img, i) =>
+                            dragStartSnapshot.images[i] &&
+                            (img.x !== dragStartSnapshot.images[i].x || img.y !== dragStartSnapshot.images[i].y)
+                        )) ||
+                    (dragStartSnapshot.points &&
+                        points.some((p, i) =>
+                            dragStartSnapshot.points[i] &&
+                            (p.x !== dragStartSnapshot.points[i].x || p.y !== dragStartSnapshot.points[i].y)
+                        )) ||
+                    (dragStartSnapshot.arrows &&
+                        arrows.some((a, i) =>
+                            dragStartSnapshot.arrows[i] &&
+                            (a.p1.x !== dragStartSnapshot.arrows[i].p1.x || a.p1.y !== dragStartSnapshot.arrows[i].p1.y ||
+                            a.p2.x !== dragStartSnapshot.arrows[i].p2.x || a.p2.y !== dragStartSnapshot.arrows[i].p2.y)
+                        ));
 
                 if (moved) {
                     undoStack.push(dragStartSnapshot);
@@ -2003,6 +2435,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             }
 
             isDragging = false;
+            draggingArrowPoint = null;
+            dragArrowIndex = -1;
             dragIndex = -1;
             dragStartSnapshot = null;
             setTimeout(() => { wasDragging = false; }, 100);
@@ -2011,61 +2445,84 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         canvas.addEventListener('click', (e) => {
             if (wasDragging) return;
 
+            if (isDrawingArrow || isDraggingArrow || arrowStartPoint || arrowEndPoint) {
+                isDrawingArrow = false;
+                isDraggingArrow = false;
+                arrowStartPoint = null;
+                arrowEndPoint = null;
+                canvas.style.cursor = 'default';
+                isTemporaryLineActive = true;
+                redrawCanvas();
+                return;
+            }
+
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-            let selected = { x, y };
 
-            for (let point of points) {
-                if (Math.hypot(point.x - x, point.y - y) < 6) {
-                    selected = point;
-                    break;
-                }
-            }
+            const clickedPoint = { x, y };
 
-            if (currentStartPoint) {
-                if (selected === currentStartPoint) return;
-                points.push(selected);
-                colors.push(currentColor);
-                drawLine(currentStartPoint, selected, currentColor);
-                lengths.push(calculateDistance(currentStartPoint, selected));
+            if (isTemporaryLineActive) {
+                let selected = { x, y };
 
-                if (points.length > 2) {
-                    let angle = calculateInteriorAngle(
-                        points[points.length - 3],
-                        points[points.length - 2],
-                        points[points.length - 1]
-                    );
-                    drawAngleArc(
-                        points[points.length - 3],
-                        points[points.length - 2],
-                        points[points.length - 1],
-                        angle
-                    );
+                for (let point of points) {
+                    if (Math.hypot(point.x - x, point.y - y) < 6) {
+                        selected = point;
+                        break;
+                    }
                 }
 
-                undoStack.push({
-                    points: [...points],
-                    lengths: [...lengths],
-                    angles: [...angles],
-                    colors: [...colors]
-                });
-                redoStack = [];
-                currentStartPoint = selected;
-            } else {
-                currentStartPoint = selected;
-                if (!points.includes(selected)) points.push(selected);
+                if (currentStartPoint && selected === currentStartPoint) return;
 
-                undoStack.push({
-                    points: [...points],
-                    lengths: [...lengths],
-                    angles: [...angles],
-                    colors: [...colors]
-                });
-                redoStack = [];
+                if (currentStartPoint) {
+                    points.push(selected);
+                    currentStartPoint = points[points.length - 1];
+                    colors.push(currentColor);
+                    lineTypes.push('normal');
+                    drawLine(currentStartPoint, selected, currentColor);
+                    lengths.push(calculateDistance(currentStartPoint, selected));
+
+                    if (points.length > 2) {
+                        const angle = calculateInteriorAngle(
+                            points[points.length - 3],
+                            points[points.length - 2],
+                            points[points.length - 1]
+                        );
+                        drawAngleArc(
+                            points[points.length - 3],
+                            points[points.length - 2],
+                            points[points.length - 1],
+                            angle
+                        );
+                    }
+
+                    undoStack.push({
+                        points: [...points],
+                        lengths: [...lengths],
+                        angles: [...angles],
+                        colors: [...colors]
+                    });
+                    redoStack = [];
+
+                    currentStartPoint = selected;
+                } else {
+                    currentStartPoint = selected;
+                    if (!points.includes(selected)){
+                        points.push(selected)
+                        currentStartPoint = points[points.length - 1];
+                    };
+
+                    undoStack.push({
+                        points: [...points],
+                        lengths: [...lengths],
+                        angles: [...angles],
+                        colors: [...colors]
+                    });
+                    redoStack = [];
+                }
+
+                redrawCanvas();
             }
-
-            redrawCanvas();
         });
 
         undoButton.addEventListener('click', () => {
@@ -2074,13 +2531,17 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     points: [...points],
                     lengths: [...lengths],
                     angles: [...angles],
-                    colors: [...colors]
+                    colors: [...colors],
+                    images: images.map(img => ({ ...img }))
                 });
+
                 let last = undoStack.pop();
                 points = [...last.points];
                 lengths = [...last.lengths];
                 angles = [...last.angles];
                 colors = [...last.colors];
+                images = last.images ? last.images.map(img => ({ ...img })) : [];
+
                 currentStartPoint = points.length > 0 ? points[points.length - 1] : null;
                 redrawCanvas();
             }
@@ -2092,13 +2553,17 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     points: [...points],
                     lengths: [...lengths],
                     angles: [...angles],
-                    colors: [...colors]
+                    colors: [...colors],
+                    images: images.map(img => ({ ...img }))
                 });
+
                 let next = redoStack.pop();
                 points = [...next.points];
                 lengths = [...next.lengths];
                 angles = [...next.angles];
                 colors = [...next.colors];
+                images = next.images ? next.images.map(img => ({ ...img })) : [];
+
                 currentStartPoint = points.length > 0 ? points[points.length - 1] : null;
                 redrawCanvas();
             }
@@ -2114,6 +2579,92 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             undoStack = [];
             redoStack = [];
             drawPlaceholderText();
+        });
+
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape' && isDrawingArrow) {
+                isDrawingArrow = false;
+                isDraggingArrow = false;
+                arrowStartPoint = null;
+                arrowEndPoint = null;
+                canvas.style.cursor = 'default';
+                redrawCanvas();
+            }
+        });
+
+        $(document).on('click', '.insert-arrow-line', function () {
+            isDrawingArrow = true;
+            arrowStartPoint = null;
+            arrowEndPoint = null;
+            canvas.style.cursor = 'crosshair';
+
+            isTemporaryLineActive = false;
+            redrawCanvas();
+        });
+
+        $(document).on('change', '.line-hem-select', function () {
+            const index = $(this).data('index');
+            const selectedType = $(this).val();
+            let currentType = lineTypes[index];
+
+            if (!['normal', 'flat', 'open'].includes(currentType)) {
+                currentType = 'normal';
+                lineTypes[index] = currentType;
+            }
+
+            if (!['normal', 'flat', 'open'].includes(selectedType)) {
+                console.error('Invalid selectedType:', selectedType);
+                return;
+            }
+
+            lineTypes[index] = selectedType;
+
+            const adjustments = {
+                normal: 0,
+                flat: 5,
+                open: 20
+            };
+
+            const adjustmentDifference = adjustments[selectedType] - adjustments[currentType];
+
+            if (isNaN(adjustmentDifference)) {
+                console.error('Invalid adjustment difference:', adjustmentDifference);
+                return;
+            }
+
+            var p1 = points[index - 1];
+            var p2 = points[index];
+
+            p2 = rotatePoint(p2, p1, adjustmentDifference);
+            points[index] = p2;
+            redrawCanvas();
+        });
+
+        $(document).on('click', '#btn-pencil', function () {
+            isTemporaryLineActive = true;
+            $('#btn-pencil').hide();
+            $('#btn-stop').show();
+        });
+
+        $(document).on('click', '#btn-stop', function () {
+            isTemporaryLineActive = false;
+            redrawCanvas();
+            $('#btn-stop').hide();
+            $('#btn-pencil').show();
+        });
+
+        $(document).on('click', '#btn-show-angles', function () {
+            showAngles = true;
+            $('#btn-show-angles').hide();
+            $('#btn-hide-angles').css('display', 'inline-block');
+            redrawCanvas();
+        });
+
+        $(document).on('click', '#btn-hide-angles', function () {
+            showAngles = false;
+            $('#btn-hide-angles').hide();
+            $('#btn-show-angles').css('display', 'inline-block');
+            redrawCanvas();
         });
 
         $(document).on('input', '.line-color-input', function () {
@@ -2145,6 +2696,48 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             redrawCanvas();
         });
 
+        $('#triggerUpload').on('click', function () {
+            $('#uploadImage').click();
+        });
+
+        $('#uploadImage').on('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const imgElement = new Image();
+                imgElement.src = event.target.result;
+
+                imgElement.onload = function () {
+                    let imageWidth = imgElement.width;
+                    let imageHeight = imgElement.height;
+
+                    if (imageWidth > 80) {
+                        const scaleFactor = 80 / imageWidth;
+                        imageWidth = 80;
+                        imageHeight = imageHeight * scaleFactor;
+                    }
+
+                    const imgX = currentStartPoint ? currentStartPoint.x + imageWidth / 2 : canvas.width / 2;
+                    const imgY = currentStartPoint ? currentStartPoint.y : canvas.height / 2;
+
+                    images.push({
+                        img: imgElement,
+                        x: imgX,
+                        y: imgY,
+                        width: imageWidth,
+                        height: imageHeight,
+                        rotation: 0
+                    });
+
+                    redrawCanvas();
+                };
+            };
+
+            reader.readAsDataURL(file);
+        });
+
         $(document).off('click', '#saveDrawing').on('click', '#saveDrawing', function () {
             if (confirm("Are you sure you want to finalize your custom trim?")) {
                 finalizeDraw();
@@ -2160,7 +2753,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 const drawingDataJson = JSON.stringify(drawingData);
 
                 $('.drawingContainer').each(function () {
-                    $(this).data("drawing", drawingDataJson); // jQuery memory only
+                    $(this).data("drawing", drawingDataJson);
                     $(this).attr("data-drawing", drawingDataJson);
                     console.log(drawingDataJson)
                 });
@@ -2198,8 +2791,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             }
         });
 
-
         drawPlaceholderText();
+        document.getElementById('btn-stop').style.display = 'inline-block';
+        document.getElementById('btn-show-angles').style.display = 'inline-block';
     }
 
     function formatOption(state) {

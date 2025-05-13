@@ -7,15 +7,6 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
-function findCartKey($cart, $product_id, $line) {
-    foreach ($cart as $key => $item) {
-        if ($item['product_id'] == $product_id && $item['line'] == $line) {
-            return $key;
-        }
-    }
-    return false;
-}
-
 if(isset($_POST['fetch_drawing'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
@@ -45,6 +36,7 @@ if(isset($_POST['fetch_drawing'])){
                                 </div>
 
                                 <canvas id="drawingCanvas" width="1000" height="500" class="border rounded bg-white"></canvas>
+                                
                                 <div class="row mt-0">
                                     <div class="col-md-6 d-flex align-items-center gap-2">
                                         <!--
@@ -59,9 +51,14 @@ if(isset($_POST['fetch_drawing'])){
                                         </button>
                                         -->
 
-                                        <button type="button" class="btn p-0 border-0 bg-transparent insert-arrow-line" title="Click and Drag to Draw Arrow">
-                                            <img src="../images/arrow.png" alt="Arrow" style="width: 30px; height: auto;">
+                                        <button type="button" class="btn p-0 border-0 bg-transparent insert-arrow-line" title="Click and Drag to Draw Arrow" style="cursor: pointer;">
+                                            <i class="fas fa-arrow-right" style="font-size: 30px; color: lightgreen; transform: rotate(315deg);"></i>
                                         </button>
+
+                                        <button type="button" id="triggerUpload" class="btn p-0 border-0 bg-transparent" title="Insert Image" style="cursor: pointer;">
+                                            <i class="fas fa-upload" style="font-size: 24px;"></i>
+                                        </button>
+                                        <input type="file" id="uploadImage" accept="image/*" style="display: none;">
                                     </div>
                                     <div class="col-md-6 d-flex justify-content-end align-items-center gap-2">
                                         <button type="button" id="btn-pencil" class="btn btn-success px-2 py-1" style="display: none;">

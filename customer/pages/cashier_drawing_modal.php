@@ -10,7 +10,7 @@ require '../../includes/functions.php';
 if(isset($_POST['fetch_drawing'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
-    $drawing_data = json_decode($_POST['drawing_data'], true);
+    $drawing_data = $_POST['drawing_data'];
     ?>
         <input type="hidden" id="initial_drawing_data" value='<?= htmlspecialchars($drawing_data, ENT_QUOTES, "UTF-8") ?>'>
         
@@ -22,16 +22,6 @@ if(isset($_POST['fetch_drawing'])){
                         <div class="d-flex justify-content-center">
                             <div class="position-relative d-inline-block border rounded shadow-sm p-2 bg-light">
                                 <div class="position-absolute top-0 end-0 m-2 d-flex gap-2 align-items-center z-3">
-                                    <div id="colorCircle"
-                                        class="rounded-circle border border-secondary shadow-sm"
-                                        style="width: 30px; height: 30px; background-color: #000000; cursor: pointer;"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="bottom"
-                                        title="Select line color">
-                                    </div>
-
-                                    <input type="color" id="lineColorPicker" value="#ffffff" class="form-control form-control-color d-none" title="Choose line color">
-
                                     <a href="javascript:void(0)" id="undoBtn" class="btn btn-warning btn-sm p-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Undo">
                                         <i class="fas fa-undo-alt"></i>
                                     </a>
@@ -45,9 +35,57 @@ if(isset($_POST['fetch_drawing'])){
                                     </a>
                                 </div>
 
-                                <canvas id="drawingCanvas" width="700" height="500" class="border rounded bg-white"></canvas>
+                                <canvas id="drawingCanvas" width="1000" height="500" class="border rounded bg-white"></canvas>
+                                
+                                <div class="row mt-0">
+                                    <div class="col-md-6 d-flex align-items-center gap-2">
+                                        <!--
+                                        <button type="button" class="btn p-0 border-0 bg-transparent insert-img" title="Insert Flat Hem">
+                                            <img src="../images/flat-hem.svg" alt="Hem 1" style="width: 60px; height: auto;">
+                                        </button>
+                                        <button type="button" class="btn p-0 border-0 bg-transparent insert-img" title="Insert Open Hem">
+                                            <img src="../images/open-hem.svg" alt="Hem 2" style="width: 60px; height: auto;">
+                                        </button>
+                                        <button type="button" class="btn p-0 border-0 bg-transparent insert-img" title="Insert Arrow">
+                                            <img src="../images/arrow.png" alt="Arrow" style="width: 30px; height: auto;">
+                                        </button>
+                                        -->
+
+                                        <button type="button" class="btn p-0 border-0 bg-transparent insert-arrow-line" title="Click and Drag to Draw Arrow" style="cursor: pointer;">
+                                            <i class="fas fa-arrow-right" style="font-size: 30px; color: lightgreen; transform: rotate(315deg);"></i>
+                                        </button>
+
+                                        <button type="button" id="triggerUpload" class="btn p-0 border-0 bg-transparent" title="Insert Image" style="cursor: pointer;">
+                                            <i class="fas fa-upload" style="font-size: 24px;"></i>
+                                        </button>
+                                        <input type="file" id="uploadImage" accept="image/*" style="display: none;">
+                                    </div>
+                                    <div class="col-md-6 d-flex justify-content-end align-items-center gap-2">
+                                        <button type="button" id="btn-pencil" class="btn btn-success px-2 py-1" style="display: none;">
+                                            Start Drawing
+                                        </button>
+                                        <button type="button" id="btn-stop" class="btn btn-danger px-2 py-1" style="display: none;">
+                                            Stop Drawing
+                                        </button>
+                                    </div>
+                                </div>
                                 <div id="lineEditorContainer" class="mt-3 p-2 border rounded">
-                                    <h5>Edit Lines</h5>
+                                    <div class="row mt-0 mb-2">
+                                        <div class="col-md-6 d-flex justify-content-start align-items-center gap-2">
+                                            <h5>Edit Lines</h5>
+                                        </div>
+                                        <div class="col-md-6 d-flex justify-content-end align-items-center gap-2">
+                                            <div class="col-md-6 d-flex justify-content-end align-items-center gap-2">
+                                                <button type="button" id="btn-show-angles" class="btn btn-success px-2 py-1" style="display: none;">
+                                                    Show Angles
+                                                </button>
+                                                <button type="button" id="btn-hide-angles" class="btn btn-danger px-2 py-1" style="display: none;">
+                                                    Hide Angles
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div id="lineEditorList"></div>
                                 </div>
                             </div>

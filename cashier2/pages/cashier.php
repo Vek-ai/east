@@ -118,6 +118,34 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     .select2-container .select2-dropdown .select2-results__options {
         max-height: 760px !important;
     }
+    
+    .line:last-child {
+        cursor: pointer;
+    }
+
+    .context-menu {
+        background-color: #ffffff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        padding: 5px;
+    }
+
+    .context-menu ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .context-menu li {
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+
+    .context-menu li:hover {
+        background-color: #f1f1f1;
+    }
 
 </style>
 <div class="product-list pt-4">
@@ -1730,7 +1758,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         let wasDragging = false;
         let dragStartSnapshot = null;
         let isLoading = true;
-        let showAngles = true;
+        let showAngles = false;
 
         let isResizing = false;
         let isRotating = false;
@@ -1751,6 +1779,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
         let dragArrowIndex = -1;
         let draggingArrowPoint = null;
+
+        let contextMenu = null;
 
         hemImages.flat.src = '../images/hems1.png';
         hemImages.open.src = '../images/hems2.png';
@@ -1896,11 +1926,11 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             ctx.restore();
         }
 
-        function drawArrow(from, to, color = 'black') {
+        function drawArrow(from, to, color = '#90EE90') {
             const headLength = 30;
             const angle = Math.atan2(to.y - from.y, to.x - from.x);
 
-            ctx.strokeStyle = color;
+            ctx.strokeStyle = '#90EE90';
             ctx.lineWidth = 5;
 
             ctx.beginPath();
@@ -2119,6 +2149,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             ctx.stroke();
         }
 
+        function clearCanvas(){
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
         const rotatePoint = (point, origin, angle) => {
             const rad = angle * Math.PI / 180;
             const dx = point.x - origin.x;
@@ -2329,7 +2363,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 canvas.style.cursor = 'crosshair';
                 arrowEndPoint = { x, y };
                 redrawCanvas();
-                drawArrow(arrowStartPoint, arrowEndPoint, currentColor);
+                drawArrow(arrowStartPoint, arrowEndPoint, '#90EE90');
                 return;
             }
 
@@ -2340,22 +2374,30 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 return;
             }
 
-            let hoveringOnPoint = points.some(p => Math.hypot(p.x - x, p.y - y) < 6);
-            let hoveringOnImage = images.some(img => isPointInRotatedRect(x, y, img));
+            const lastLineIndex = points.length - 1;
+            if (lastLineIndex >= 1) {
+                const p1 = points[lastLineIndex - 1];
+                const p2 = points[lastLineIndex];
 
-            if (isDrawingArrow) {
-                canvas.style.cursor = 'crosshair';
-            } else {
+                const distanceToLine = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                const distanceToPoint = Math.hypot(x - p1.x, y - p1.y) + Math.hypot(x - p2.x, y - p2.y);
+
+                const isNearLastLine = Math.abs(distanceToPoint - distanceToLine) < 6;
                 const hoveringOnPoint = points.some(p => Math.hypot(p.x - x, p.y - y) < 6);
                 const hoveringOnImage = images.some(img => isPointInRotatedRect(x, y, img));
-                
                 const hoveringOnArrowEndpoint = arrows.some(a =>
                     Math.hypot(a.p1.x - x, a.p1.y - y) < 6 ||
                     Math.hypot(a.p2.x - x, a.p2.y - y) < 6
                 );
 
-                const shouldShowMoveCursor = hoveringOnPoint || hoveringOnImage || hoveringOnArrowEndpoint;
-                canvas.style.cursor = shouldShowMoveCursor ? 'move' : 'default';
+                if (isDrawingArrow) {
+                    canvas.style.cursor = 'crosshair';
+                } else {
+                    const shouldShowMoveCursor = hoveringOnPoint || hoveringOnImage || hoveringOnArrowEndpoint;
+                    canvas.style.cursor = shouldShowMoveCursor ? 'move' : 'default';
+                }
+            } else {
+                canvas.style.cursor = 'default';
             }
 
             if (isDragging && dragIndex !== -1) {
@@ -2519,22 +2561,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         colors: [...colors]
                     });
                     redoStack = [];
-
-                    document.getElementById('btn-stop').style.display = 'inline-block';
-                    document.getElementById('btn-hide-angles').style.display = 'inline-block';
                 }
 
-                redrawCanvas();
-            }
-        });
-
-        canvas.addEventListener('contextmenu', function (e) {
-            e.preventDefault();
-            if (isDrawingArrow) {
-                isDrawingArrow = false;
-                isDraggingArrow = false;
-                arrowStartPoint = null;
-                arrowEndPoint = null;
                 redrawCanvas();
             }
         });
@@ -2595,9 +2623,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             drawPlaceholderText();
         });
 
-        const clearCanvas = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        };
+        $(document).on('contextmenu', '#drawingCanvas', function (e) {
+            e.preventDefault();
+        });
 
         $(document).on('keydown', function (e) {
             if (e.key === 'Escape' && isDrawingArrow) {
@@ -2658,10 +2686,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             redrawCanvas();
         });
 
-
-
-
-
         $(document).on('click', '#btn-pencil', function () {
             isTemporaryLineActive = true;
             $('#btn-pencil').hide();
@@ -2718,35 +2742,46 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             redrawCanvas();
         });
 
-        $(document).off('click', '.insert-img').on('click', '.insert-img', function () {
-            const imgSrc = $(this).find('img').attr('src');
-            const imgElement = new Image();
-            imgElement.src = imgSrc;
+        $('#triggerUpload').on('click', function () {
+            $('#uploadImage').click();
+        });
 
-            imgElement.onload = function () {
-                let imageWidth = imgElement.width;
-                let imageHeight = imgElement.height;
+        $('#uploadImage').on('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
-                if (imageWidth > 30) {
-                    const scaleFactor = 30 / imageWidth;
-                    imageWidth = 30;
-                    imageHeight = imageHeight * scaleFactor;
-                }
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const imgElement = new Image();
+                imgElement.src = event.target.result;
 
-                const imgX = currentStartPoint ? currentStartPoint.x + imageWidth / 2 : canvas.width / 2;
-                const imgY = currentStartPoint ? currentStartPoint.y : canvas.height / 2;
+                imgElement.onload = function () {
+                    let imageWidth = imgElement.width;
+                    let imageHeight = imgElement.height;
 
-                images.push({
-                    img: imgElement,
-                    x: imgX,
-                    y: imgY,
-                    width: imageWidth,
-                    height: imageHeight,
-                    rotation: 0
-                });
+                    if (imageWidth > 80) {
+                        const scaleFactor = 80 / imageWidth;
+                        imageWidth = 80;
+                        imageHeight = imageHeight * scaleFactor;
+                    }
 
-                redrawCanvas();
+                    const imgX = currentStartPoint ? currentStartPoint.x + imageWidth / 2 : canvas.width / 2;
+                    const imgY = currentStartPoint ? currentStartPoint.y : canvas.height / 2;
+
+                    images.push({
+                        img: imgElement,
+                        x: imgX,
+                        y: imgY,
+                        width: imageWidth,
+                        height: imageHeight,
+                        rotation: 0
+                    });
+
+                    redrawCanvas();
+                };
             };
+
+            reader.readAsDataURL(file);
         });
 
         $(document).off('click', '#saveDrawing').on('click', '#saveDrawing', function () {
@@ -2803,6 +2838,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
 
         drawPlaceholderText();
+        document.getElementById('btn-stop').style.display = 'inline-block';
+        document.getElementById('btn-show-angles').style.display = 'inline-block';
     }
 
     function formatOption(state) {
@@ -2835,6 +2872,11 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     
     $(document).ready(function() {
         var panel_id = '<?= $panel_id ?>';
+
+        $(document).on('contextmenu', '#drawingCanvas', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
 
         if (typeof $.ui === 'undefined') {
             $.getScript("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", function() {
