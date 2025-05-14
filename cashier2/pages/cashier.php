@@ -1956,9 +1956,23 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const editorList = document.getElementById('lineEditorList');
             editorList.innerHTML = '';
 
+            let visibleLineIndex = 1;
+
             for (let i = 1; i < points.length; i++) {
-                const distance = calculateDistance(points[i - 1], points[i]);
-                const angle = i > 0 ? calculateLineAngle(points[i - 1], points[i]) : null;
+                const p1 = points[i - 1];
+                const p2 = points[i];
+
+                if (!p1 || !p2) continue;
+
+                const distance = calculateDistance(p1, p2);
+                
+                if (isNaN(distance)) {
+                    console.error(`Invalid distance for line ${i}`);
+                    continue;
+                }
+
+                const angle = calculateLineAngle(p1, p2);
+                const isLastLine = i === points.length - 1 || points[i + 1] === null;
 
                 const lineDiv = document.createElement('div');
                 lineDiv.className = 'mb-2 py-1 px-2 border rounded bg-light';
@@ -1966,23 +1980,22 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 lineDiv.innerHTML = `
                     <div class="row g-2 align-items-center">
                         <div class="col-1">
-                            <span class="fw-bold">L${i}:</span>
+                            <span class="fw-bold">L${visibleLineIndex++}:</span>
                         </div>
 
                         <div class="col-4 d-flex align-items-center gap-2">
                             <label class="fw-bold mb-0">Length</label>
-                            <input type="number" step="0.01" value="${distance}" data-index="${i}"
+                            <input type="number" step="0.01" value="${distance.toFixed(2)}" data-index="${i}"
                                 class="form-control form-control-sm line-length-input" style="width: 100%;">
                         </div>
 
-                        ${angle !== null ? `
                         <div class="col-3 d-flex align-items-center gap-2">
                             <label class="fw-bold mb-0">Angle</label>
                             <input type="number" step="0.1" value="${angle.toFixed(1)}" data-index="${i}"
                                 class="form-control form-control-sm line-angle-input" style="width: 100%;">
                         </div>
-                        ` : ''}
 
+                        ${isLastLine ? `
                         <div class="col-3 d-flex align-items-center gap-2">
                             <label class="fw-bold mb-0">Hem</label>
                             <select class="form-select form-select-sm line-hem-select" data-index="${i}">
@@ -1991,6 +2004,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                 <option value="open" ${lineTypes[i] === 'open' ? 'selected' : ''}>Open</option>
                             </select>
                         </div>
+                        ` : ''}
 
                         <div class="col-1 d-flex align-items-center justify-content-center">
                             <a href="javascript:void(0)" class="delete-line-btn" data-index="${i}">&times;</a>
@@ -2032,13 +2046,12 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 editorList.appendChild(imageRow);
             });
 
-
-
             document.querySelectorAll('.delete-image-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const index = parseInt(e.target.dataset.index);
                     images.splice(index, 1);
                     redrawCanvas();
+                    updateLineEditor();
                 });
             });
 
@@ -2066,15 +2079,32 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     const index = parseInt(e.target.dataset.index);
                     const newAngle = parseFloat(e.target.value);
 
-                    if (!isNaN(newAngle) && index > 0 && points[index - 1] && points[index]) {
-                        const p1 = points[index - 1];
-                        const p2 = points[index];
-
-                        adjustLineAngle(p1, p2, newAngle);
+                    if (!isNaN(newAngle) && points[index - 1] && points[index]) {
+                        adjustLineAngle(points[index - 1], points[index], newAngle);
                     }
                 });
             });
+
+            document.querySelectorAll('.line-length-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    const newLength = parseFloat(e.target.value);
+
+                    if (!isNaN(newLength) && points[index - 1] && points[index]) {
+                        adjustLineLength(points[index - 1], points[index], newLength);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.line-hem-select').forEach(select => {
+                select.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    lineTypes[index] = e.target.value;
+                    redrawCanvas();
+                });
+            });
         };
+
 
         const finalizeDraw = () => {
             currentStartPoint = null;
@@ -2111,8 +2141,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
         const calculateDistance = (p1, p2) => {
             const dist = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
-            return (dist / pixelsPerInch).toFixed(2);
+            return dist / pixelsPerInch;
         };
+
 
         const calculateInteriorAngle = (p1, p2, p3) => {
             if (!p1 || !p2 || !p3) return null;
@@ -2168,9 +2199,12 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             clearCanvas();
 
             for (let i = 1; i < points.length; i++) {
-                const type = lineTypes[i] || 'normal';
-                const p1 = points[i - 1];
+                let p1 = points[i - 1];
                 let p2 = points[i];
+
+                if (!p1 || !p2) continue;
+
+                const type = lineTypes[i] || 'normal';
                 const midX = (p1.x + p2.x) / 2;
                 const midY = (p1.y + p2.y) / 2;
                 const distance = calculateDistance(p1, p2);
@@ -2184,7 +2218,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
                 ctx.font = "14px Arial";
                 ctx.fillStyle = "white";
-                ctx.fillText(`${distance} in`, midX + 5, midY - 5);
+                ctx.fillText(`${distance.toFixed(2)} in`, midX + 5, midY - 5);
             }
 
             if (showAngles) {
@@ -2192,6 +2226,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     const p0 = points[i - 2];
                     const p1 = points[i - 1];
                     const p2 = points[i];
+
+                    if (!p0 || !p1 || !p2) continue;
+
                     const type = lineTypes[i] || 'normal';
 
                     let adjustment = 0;
@@ -2285,7 +2322,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
             for (let i = 0; i < arrows.length; i++) {
                 const { p1, p2 } = arrows[i];
-
                 if (Math.hypot(p1.x - x, p1.y - y) < 6) {
                     isDragging = true;
                     wasDragging = false;
@@ -2308,13 +2344,13 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             }
 
             for (let i = 0; i < points.length; i++) {
-                if (Math.hypot(points[i].x - x, points[i].y - y) < 6) {
+                if (points[i] && Math.hypot(points[i].x - x, points[i].y - y) < 6) {
                     isDragging = true;
                     dragIndex = i;
                     wasDragging = false;
 
                     dragStartSnapshot = {
-                        points: [...points.map(p => ({ ...p }))],
+                        points: [...points.map(p => p ? { ...p } : null)],
                         lengths: [...lengths],
                         angles: [...angles],
                         colors: [...colors]
@@ -2324,12 +2360,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             }
 
             for (let i = 0; i < images.length; i++) {
-                const img = images[i];
-                const imgX = img.x;
-                const imgY = img.y;
-
                 if (isPointInRotatedRect(x, y, images[i])) {
-
                     undoStack.push({
                         points: [...points],
                         lengths: [...lengths],
@@ -2344,7 +2375,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
                     dragStartSnapshot = {
                         images: [...images.map(i => ({ ...i }))],
-                        points: [...points.map(p => ({ ...p }))],
+                        points: [...points.map(p => p ? { ...p } : null)],
                         lengths: [...lengths],
                         angles: [...angles],
                         colors: [...colors]
@@ -2358,6 +2389,49 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+            
+            if (currentStartPoint && isTemporaryLineActive) {
+                const currentPoint = { x, y };
+
+                redrawCanvas();
+                drawTemporaryLine(currentStartPoint, currentPoint);
+                const midX = (currentStartPoint.x + currentPoint.x) / 2;
+                const midY = (currentStartPoint.y + currentPoint.y) / 2;
+                const distance = calculateDistance(currentStartPoint, currentPoint);
+                ctx.font = "14px Arial";
+                ctx.fillStyle = "gray";
+                ctx.fillText(`${distance.toFixed(2)} in`, midX + 5, midY - 5);
+            }
+
+            if(!currentStartPoint && isTemporaryLineActive){
+                canvas.style.cursor = 'crosshair';
+            }else{
+                const lastLineIndex = points.length - 1;
+                if (lastLineIndex >= 1) {
+                    const p1 = points[lastLineIndex - 1];
+                    const p2 = points[lastLineIndex];
+
+                    if (!p1 || !p2) return;
+
+                    const distanceToLine = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                    const distanceToPoint = Math.hypot(x - p1.x, y - p1.y) + Math.hypot(x - p2.x, y - p2.y);
+
+                    const isNearLastLine = Math.abs(distanceToPoint - distanceToLine) < 6;
+                    const hoveringOnPoint = points.some(p => p && Math.hypot(p.x - x, p.y - y) < 6);
+                    const hoveringOnImage = images.some(img => isPointInRotatedRect(x, y, img));
+                    const hoveringOnArrowEndpoint = arrows.some(a =>
+                        Math.hypot(a.p1.x - x, a.p1.y - y) < 6 ||
+                        Math.hypot(a.p2.x - x, a.p2.y - y) < 6
+                    );
+
+                    if (isDrawingArrow) {
+                        canvas.style.cursor = 'crosshair';
+                    } else {
+                        const shouldShowMoveCursor = hoveringOnPoint || hoveringOnImage || hoveringOnArrowEndpoint;
+                        canvas.style.cursor = shouldShowMoveCursor ? 'move' : 'default';
+                    }
+                }
+            }
 
             if (isDrawingArrow && isDraggingArrow && arrowStartPoint) {
                 canvas.style.cursor = 'crosshair';
@@ -2374,32 +2448,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 return;
             }
 
-            const lastLineIndex = points.length - 1;
-            if (lastLineIndex >= 1) {
-                const p1 = points[lastLineIndex - 1];
-                const p2 = points[lastLineIndex];
-
-                const distanceToLine = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-                const distanceToPoint = Math.hypot(x - p1.x, y - p1.y) + Math.hypot(x - p2.x, y - p2.y);
-
-                const isNearLastLine = Math.abs(distanceToPoint - distanceToLine) < 6;
-                const hoveringOnPoint = points.some(p => Math.hypot(p.x - x, p.y - y) < 6);
-                const hoveringOnImage = images.some(img => isPointInRotatedRect(x, y, img));
-                const hoveringOnArrowEndpoint = arrows.some(a =>
-                    Math.hypot(a.p1.x - x, a.p1.y - y) < 6 ||
-                    Math.hypot(a.p2.x - x, a.p2.y - y) < 6
-                );
-
-                if (isDrawingArrow) {
-                    canvas.style.cursor = 'crosshair';
-                } else {
-                    const shouldShowMoveCursor = hoveringOnPoint || hoveringOnImage || hoveringOnArrowEndpoint;
-                    canvas.style.cursor = shouldShowMoveCursor ? 'move' : 'default';
-                }
-            } else {
-                canvas.style.cursor = 'default';
-            }
-
             if (isDragging && dragIndex !== -1) {
                 if (dragStartSnapshot.images) {
                     images[dragIndex].x = x;
@@ -2413,16 +2461,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
                 wasDragging = true;
                 redrawCanvas();
-            } else if (currentStartPoint && isTemporaryLineActive) {
-                const currentPoint = { x, y };
-                redrawCanvas();
-                drawTemporaryLine(currentStartPoint, currentPoint);
-                const midX = (currentStartPoint.x + currentPoint.x) / 2;
-                const midY = (currentStartPoint.y + currentPoint.y) / 2;
-                const distance = calculateDistance(currentStartPoint, currentPoint);
-                ctx.font = "14px Arial";
-                ctx.fillStyle = "gray";
-                ctx.fillText(`${distance} in`, midX + 5, midY - 5);
             }
         });
 
@@ -2443,7 +2481,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 });
 
                 redoStack = [];
-                return; 
+                return;
             }
 
             if (isDragging && dragArrowIndex !== -1 && draggingArrowPoint) {
@@ -2467,7 +2505,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         arrows.some((a, i) =>
                             dragStartSnapshot.arrows[i] &&
                             (a.p1.x !== dragStartSnapshot.arrows[i].p1.x || a.p1.y !== dragStartSnapshot.arrows[i].p1.y ||
-                            a.p2.x !== dragStartSnapshot.arrows[i].p2.x || a.p2.y !== dragStartSnapshot.arrows[i].p2.y)
+                                a.p2.x !== dragStartSnapshot.arrows[i].p2.x || a.p2.y !== dragStartSnapshot.arrows[i].p2.y)
                         ));
 
                 if (moved) {
@@ -2501,13 +2539,13 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-
             const clickedPoint = { x, y };
 
             if (isTemporaryLineActive) {
                 let selected = { x, y };
 
                 for (let point of points) {
+                    if (!point) continue;
                     if (Math.hypot(point.x - x, point.y - y) < 6) {
                         selected = point;
                         break;
@@ -2518,50 +2556,28 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
                 if (currentStartPoint) {
                     points.push(selected);
-                    currentStartPoint = points[points.length - 1];
                     colors.push(currentColor);
                     lineTypes.push('normal');
-                    drawLine(currentStartPoint, selected, currentColor);
                     lengths.push(calculateDistance(currentStartPoint, selected));
 
-                    if (points.length > 2) {
-                        const angle = calculateInteriorAngle(
-                            points[points.length - 3],
-                            points[points.length - 2],
-                            points[points.length - 1]
-                        );
-                        drawAngleArc(
-                            points[points.length - 3],
-                            points[points.length - 2],
-                            points[points.length - 1],
-                            angle
-                        );
-                    }
-
-                    undoStack.push({
-                        points: [...points],
-                        lengths: [...lengths],
-                        angles: [...angles],
-                        colors: [...colors]
-                    });
-                    redoStack = [];
-
                     currentStartPoint = selected;
+
                 } else {
-                    currentStartPoint = selected;
-                    if (!points.includes(selected)){
-                        points.push(selected)
-                        currentStartPoint = points[points.length - 1];
-                    };
+                    points.push(selected);
+                    colors.push(currentColor);
+                    lineTypes.push(null);
+                    lengths.push(null);
 
-                    undoStack.push({
-                        points: [...points],
-                        lengths: [...lengths],
-                        angles: [...angles],
-                        colors: [...colors]
-                    });
-                    redoStack = [];
+                    currentStartPoint = selected;
                 }
+
+                undoStack.push({
+                    points: [...points],
+                    lengths: [...lengths],
+                    angles: [...angles],
+                    colors: [...colors]
+                });
+                redoStack = [];
 
                 redrawCanvas();
             }
@@ -2688,9 +2704,16 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
         $(document).on('click', '#btn-pencil', function () {
             isTemporaryLineActive = true;
+            currentStartPoint = null;
+            points.push(null); 
+            lineTypes.push(null);    
+            colors.push(null);    
+            lengths.push(null);
+
             $('#btn-pencil').hide();
             $('#btn-stop').show();
         });
+
 
         $(document).on('click', '#btn-stop', function () {
             isTemporaryLineActive = false;
