@@ -144,7 +144,7 @@ if (mysqli_num_rows($result_img) > 0) { ?>
     <div class="mb-3">
         <div class="d-flex justify-content-between align-items-center">
             <label class="form-label">Warranty Type</label>
-            <a href="?page=warranty_type" target="_blank" class="text-decoration-none">Edit</a>
+            <a href="?page=product_warranty_type" target="_blank" class="text-decoration-none">Edit</a>
         </div>
         <select id="warranty_type" class="form-control" name="warranty_type">
             <option value="" >Select Warranty Type...</option>
