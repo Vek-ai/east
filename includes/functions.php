@@ -64,6 +64,18 @@ function getProductColorMultValue($id) {
     return 1;
 }
 
+function getStaffDetails($staff_id) {
+    global $conn;
+    $staff_id = mysqli_real_escape_string($conn, $staff_id);
+    $query = "SELECT * FROM staff WHERE staff_id = '$staff_id'";
+    $result = mysqli_query($conn, $query);
+    $staff = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $staff = $row;
+    }
+    return $staff;
+}
+
 function getProductDetails($product_id) {
     global $conn;
     $product_id = mysqli_real_escape_string($conn, $product_id);

@@ -45,9 +45,15 @@
                <span class="hide-menu">Work Orders</span>
             </li>
             <li class="sidebar-item">
-               <a class="sidebar-link" href="?page=work_order">
-                  <iconify-icon icon="solar:pen-new-round-linear" class="aside-icon"></iconify-icon>
+               <a class="sidebar-link" href="?page=">
+                  <i class="fa fa-clipboard-list fs-7 aside-icon"></i>
                   <span class="hide-menu">Work Orders</span>
+               </a>
+            </li>
+            <li class="sidebar-item">
+               <a class="sidebar-link" href="?page=messages">
+                  <i class="fa fa-envelope fs-7 aside-icon"></i>
+                  <span class="hide-menu">Messages</span>
                </a>
             </li>
          </ul>

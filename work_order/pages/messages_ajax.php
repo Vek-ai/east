@@ -8,7 +8,7 @@ require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
 if (isset($_POST['fetch_chat_history'])) {
-    $current_user_id = $_SESSION['customer_id'];
+    $current_user_id = $_SESSION['work_order_user_id'];
     $other_user_id = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
 
     $conn->query("
@@ -19,17 +19,17 @@ if (isset($_POST['fetch_chat_history'])) {
     ");
 
     $sql = "
-        SELECT cm.*, 
-            c1.customer_first_name AS sender_fname, 
-            c1.customer_last_name AS sender_lname, 
-            c2.customer_first_name AS receiver_fname, 
-            c2.customer_last_name AS receiver_lname
-        FROM customer_messages cm
-        LEFT JOIN customer c1 ON cm.sender_id = c1.customer_id
-        LEFT JOIN customer c2 ON cm.receiver_id = c2.customer_id
-        WHERE (cm.sender_id = $current_user_id AND cm.receiver_id = $other_user_id)
-        OR (cm.sender_id = $other_user_id AND cm.receiver_id = $current_user_id)
-        ORDER BY cm.sent_at ASC";
+        SELECT sm.*, 
+            s1.staff_fname AS sender_fname, 
+            s1.staff_lname AS sender_lname, 
+            s2.staff_fname AS receiver_fname, 
+            s2.staff_lname AS receiver_lname
+        FROM staff_messages sm
+        LEFT JOIN staff s1 ON sm.sender_id = s1.staff_id
+        LEFT JOIN staff s2 ON sm.receiver_id = s2.staff_id
+        WHERE (sm.sender_id = $current_user_id AND sm.receiver_id = $other_user_id)
+        OR (sm.sender_id = $other_user_id AND sm.receiver_id = $current_user_id)
+        ORDER BY sm.sent_at ASC";
 
     $result = $conn->query($sql);
 
@@ -58,8 +58,8 @@ if (isset($_POST['fetch_chat_history'])) {
 
     $other_user_name = '';
     if (!empty($other_user_id)) {
-        $friend_details = getCustomerDetails($other_user_id);
-        $friend_name = $friend_details['customer_first_name'] .' ' .$friend_details['customer_last_name'];
+        $friend_details = getStaffDetails($other_user_id);
+        $friend_name = $friend_details['staff_fname'] .' ' .$friend_details['staff_lname'];
     }
 
     $response = [
@@ -74,7 +74,7 @@ if (isset($_POST['fetch_chat_history'])) {
 }
 
 if (isset($_POST['send_message'])) {
-    $sender_id = $_SESSION['customer_id'];
+    $sender_id = $_SESSION['work_order_user_id'];
     $message = $_POST['message'];
     $receiver_id = $_POST['user_id'];
 
@@ -82,11 +82,11 @@ if (isset($_POST['send_message'])) {
     $message = $conn->real_escape_string($message);
     $receiver_id = $conn->real_escape_string($receiver_id);
 
-    $sql = "INSERT INTO customer_messages (sender_id, receiver_id, message, sent_at, is_read) 
+    $sql = "INSERT INTO staff_messages (sender_id, receiver_id, message, sent_at, is_read) 
             VALUES ('$sender_id', '$receiver_id', '$message', NOW(), 0)";
 
     if ($conn->query($sql) === TRUE) {
-        echo $sql;
+        echo 'success';
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Error sending message: ' . $conn->error]);
     }
@@ -95,21 +95,21 @@ if (isset($_POST['send_message'])) {
 if (isset($_POST['search_contact'])) {
     $search = $conn->real_escape_string($_POST['search']);
     
-    $sql = "SELECT * FROM customer WHERE CONCAT(customer_first_name, ' ', customer_last_name) LIKE '%$search%' OR contact_email LIKE '%$search%' LIMIT 10";
+    $sql = "SELECT * FROM staff WHERE CONCAT(staff_fname, ' ', staff_lname) LIKE '%$search%' OR email LIKE '%$search%' LIMIT 10";
     $result = $conn->query($sql);
 
     $image = "../assets/images/profile/user-6.jpg";
 
-    $customers = [];
+    $staffs = [];
     while ($row = $result->fetch_assoc()) {
-        $customers[] = [
-            'id' => $row['customer_id'],
-            'name' => $row['customer_first_name'] .' ' .$row['customer_last_name'],
-            'email' => $row['contact_email'],
+        $staffs[] = [
+            'id' => $row['staff_id'],
+            'name' => $row['staff_fname'] .' ' .$row['staff_lname'],
+            'email' => $row['email'],
             'image' => $image,
         ];
     }
 
-    echo json_encode($customers);
+    echo json_encode($staffs);
 
 }
