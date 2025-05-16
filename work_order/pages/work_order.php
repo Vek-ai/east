@@ -71,15 +71,6 @@ $page_title = "Work Order";
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-inventory" data-filter="inventory" data-filter-name="Inventory Type">
-                            <option value="" data-category="">All Inventory Types</option>
-                            <optgroup label="Inventory Types">
-                                <option value="Coils">Coils</option>
-                                <option value="Flat-Stock">Flat-Stock</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="position-relative w-100 px-1 mb-2">
                         <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-width" data-filter="width" data-filter-name="Product Width">
                             <option value="" data-category="">All Widths</option>
                             <optgroup label="Product Widths">
@@ -533,6 +524,7 @@ $page_title = "Work Order";
 
             if (!isActive) {
                 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                    if (settings.nTable.id != 'work_order_table') return true;
                     return $(table.row(dataIndex).node()).find('span.badge').text().trim() != 'Done';
                 });
             }

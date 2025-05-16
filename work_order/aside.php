@@ -45,17 +45,26 @@
                <span class="hide-menu">Work Orders</span>
             </li>
             <li class="sidebar-item">
-               <a class="sidebar-link" href="?page=">
-                  <i class="fa fa-clipboard-list fs-7 aside-icon"></i>
+               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=">
+                  <iconify-icon icon="mdi:clipboard-text-outline" class="fs-7 aside-icon"></iconify-icon>
                   <span class="hide-menu">Work Orders</span>
                </a>
             </li>
+
             <li class="sidebar-item">
-               <a class="sidebar-link" href="?page=messages">
-                  <i class="fa fa-envelope fs-7 aside-icon"></i>
+               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=inventory">
+                  <iconify-icon icon="mdi:warehouse" class="fs-7 aside-icon"></iconify-icon>
+                  <span class="hide-menu">Inventory</span>
+               </a>
+            </li>
+
+            <li class="sidebar-item">
+               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=messages">
+                  <iconify-icon icon="mdi:email-outline" class="fs-7 aside-icon"></iconify-icon>
                   <span class="hide-menu">Messages</span>
                </a>
             </li>
+
          </ul>
       </nav>
       <!-- End Sidebar scroll-->

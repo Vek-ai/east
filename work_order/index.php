@@ -72,6 +72,44 @@ if (!isset($_SESSION['work_order_user_id'])) {
   <div class="preloader">
     <img src="../assets/images/logos/logo-icon.svg" alt="loader" class="lds-ripple img-fluid" />
   </div>
+
+  <div id="toast-container" class="position-fixed top-0 end-0 p-3 d-flex flex-column gap-2" style="z-index: 1055; width: 300px;">
+
+    <div class="alert customize-alert alert-dismissible text-success alert-light-success bg-success-subtle fade show remove-close-icon small shadow-sm mb-2" role="alert">
+      <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+      <div class="d-flex align-items-center">
+        <i class="ti ti-circle-check fs-5 me-2 text-success"></i>
+        Start production on Order # 123
+      </div>
+    </div>
+
+    <div class="alert customize-alert alert-dismissible text-secondary alert-light-secondary bg-secondary-subtle fade show remove-close-icon small shadow-sm mb-2" role="alert">
+      <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+      <div class="d-flex align-items-center">
+        <i class="ti ti-info-square fs-5 me-2 text-secondary"></i>
+        Come see Matt on next break
+      </div>
+    </div>
+
+    <div class="alert customize-alert alert-dismissible text-danger alert-light-danger bg-danger-subtle fade show remove-close-icon small shadow-sm mb-2" role="alert">
+      <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+      <div class="d-flex align-items-center">
+        <i class="ti ti-alert-triangle fs-5 me-2 text-danger"></i>
+        Don't use Coil # 599
+      </div>
+    </div>
+
+    <div class="alert customize-alert alert-dismissible text-warning alert-light-warning bg-warning-subtle fade show remove-close-icon small shadow-sm mb-2" role="alert">
+      <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+      <div class="d-flex align-items-center">
+        <i class="ti ti-alert-circle fs-5 me-2 text-warning"></i>
+        Stop production on next Break
+      </div>
+    </div>
+
+  </div>
+
+
   <div id="main-wrapper">
 
     <?php include 'aside.php';?>
@@ -164,116 +202,6 @@ if (!isset($_SESSION['work_order_user_id'])) {
                     </div>
                   </li>
 
-                  <li class="nav-item hover-dd dropdown  nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                    <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" aria-expanded="false">
-                      <iconify-icon icon="solar:inbox-line-line-duotone"></iconify-icon>
-                      <div class="notify">
-                        <span class="heartbit"></span>
-                        <span class="point"></span>
-                      </div>
-                    </a>
-                    <div class="dropdown-menu py-0 content-dd dropdown-menu-animate-up dropdown-menu-end overflow-hidden" aria-labelledby="drop2">
-
-                      <div class="py-3 px-4 bg-secondary">
-                        <div class="mb-0 fs-6 fw-medium text-white">Messages</div>
-                        <div class="mb-0 fs-2 fw-medium text-white">You have 5 new messages</div>
-                      </div>
-                      <div class="message-body" data-simplebar>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                          <span class="user-img position-relative d-inline-block">
-                            <img src="../assets/images/profile/user-2.jpg" alt="user" class="rounded-circle w-100 round-40" />
-                            <span class="profile-status bg-success position-absolute rounded-circle"></span>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Mathew Anderson</h6>
-                              <span class="fs-2 d-block text-muted">9:30 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">Just see the my new admin!</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                          <span class="user-img position-relative d-inline-block">
-                            <img src="../assets/images/profile/user-3.jpg" alt="user" class="rounded-circle w-100 round-40" />
-                            <span class="profile-status bg-success position-absolute rounded-circle"></span>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Bianca Anderson</h6>
-                              <span class="fs-2 d-block text-muted">9:10 AM</span>
-                            </div>
-
-                            <span class="fs-2 d-block text-truncate text-muted">Just a reminder that you have event</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                          <span class="user-img position-relative d-inline-block">
-                            <img src="../assets/images/profile/user-4.jpg" alt="user" class="rounded-circle w-100 round-40" />
-                            <span class="profile-status bg-success position-absolute rounded-circle"></span>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Andrew Johnson</h6>
-                              <span class="fs-2 d-block text-muted">9:08 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">You can customize this template as you want</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                          <span class="user-img position-relative d-inline-block">
-                            <img src="../assets/images/profile/user-5.jpg" alt="user" class="rounded-circle w-100 round-40" />
-                            <span class="profile-status bg-success position-absolute rounded-circle"></span>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Miyra Strokes</h6>
-                              <span class="fs-2 d-block text-muted">9:30 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">Just see the my new admin!</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                          <span class="user-img position-relative d-inline-block">
-                            <img src="../assets/images/profile/user-6.jpg" alt="user" class="rounded-circle w-100 round-40" />
-                            <span class="profile-status bg-success position-absolute rounded-circle"></span>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Mark, Stoinus & Rishvi..</h6>
-                              <span class="fs-2 d-block text-muted">9:10 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">Just a reminder that you have event</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                          <span class="user-img position-relative d-inline-block">
-                            <img src="../assets/images/profile/user-7.jpg" alt="user" class="rounded-circle w-100 round-40" />
-                            <span class="profile-status bg-success position-absolute rounded-circle"></span>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Eliga Rush</h6>
-                              <span class="fs-2 d-block text-muted">9:08 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">You can customize this template as you want</span>
-                          </div>
-                        </a>
-                      </div>
-                      <div class="p-3">
-                        <a class="d-flex btn btn-secondary  align-items-center justify-content-center gap-2" href="javascript:void(0);">
-                          <span>Check all Messages</span>
-                          <iconify-icon icon="solar:alt-arrow-right-outline" class="iconify-sm"></iconify-icon>
-                        </a>
-                      </div>
-
-                    </div>
-                  </li>
-
-                  <!-- ------------------------------- -->
-                  <!-- end notification Dropdown -->
-                  <!-- ------------------------------- -->
-
-
                 </ul>
               </div>
             </div>
@@ -290,6 +218,7 @@ if (!isset($_SESSION['work_order_user_id'])) {
           <?php 
             if (empty($_REQUEST['page'])) {include 'pages/work_order.php';}
             if ($_REQUEST['page'] == "messages") {include 'pages/messages.php';}
+            if ($_REQUEST['page'] == "inventory") {include 'pages/inventory.php';}
           ?>
         </div>
       </div>
