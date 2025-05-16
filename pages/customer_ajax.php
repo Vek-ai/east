@@ -52,128 +52,84 @@ if(isset($_REQUEST['action'])) {
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
-        // SQL query to check if the record exists
         $checkQuery = "SELECT * FROM customer WHERE customer_id = '$customer_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            // Record exists, fetch current values
-            $row = mysqli_fetch_assoc($result);
-                $current_customer_id = $row['customer_id'];
-                $current_customer_name = $row['customer_first_name'] . "" . $row['customer_last_name'];
-                $current_customer_type_id = $row['customer_type_id'];
-            $duplicates = array();
+            $updateQuery = "
+                UPDATE customer
+                SET  
+                    customer_first_name = '$customer_first_name', 
+                    customer_last_name = '$customer_last_name', 
+                    customer_business_name = '$customer_business_name', 
+                    contact_email = '$contact_email', 
+                    contact_phone = '$contact_phone', 
+                    primary_contact = '$primary_contact', 
+                    contact_fax = '$contact_fax', 
+                    address = '$address', 
+                    city = '$city', 
+                    state = '$state',
+                    zip = '$zip',
+                    lat = '$lat',
+                    lng = '$lng',
+                    secondary_contact_name = '$secondary_contact_name',
+                    secondary_contact_phone = '$secondary_contact_phone',
+                    ap_contact_name = '$ap_contact_name',
+                    ap_contact_email = '$ap_contact_email',
+                    ap_contact_phone = '$ap_contact_phone',
+                    tax_status = '$tax_status',
+                    tax_exempt_number = '$tax_exempt_number',
+                    customer_notes = '$customer_notes',
+                    call_status = '$call_status',
+                    credit_limit = '$credit_limit',
+                    customer_type_id = '$new_customer_type_id',
+                    loyalty = '$loyalty',
+                    customer_pricing = '$customer_pricing'
+                WHERE 
+                    customer_id = '$customer_id'";
+            if (mysqli_query($conn, $updateQuery)) {
+                // Get the currently added customer
+                    $sql = "SELECT c.customer_id, c.customer_type_id, ct.customer_type_name
+                            FROM customer c
+                            JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id
+                            WHERE c.customer_first_name = '$customer_first_name' 
+                            AND c.customer_last_name = '$customer_last_name'";
 
-            // Check for duplicates only if the new values are different from the current values
-            if ($customer_name != $current_customer_name) {
-                $checkCustomer = "SELECT CONCAT(customer_first_name, ' ', customer_last_name) AS full_name 
-                FROM customer 
-                WHERE customer_first_name = '$customer_first_name' 
-                  AND customer_last_name = '$customer_last_name'
-                  AND (status = '1' OR hidden = '0')
-                  ";
-                $resultCustomer = mysqli_query($conn, $checkCustomer);
-                if (mysqli_num_rows($resultCustomer) > 0) {
-                    $duplicates[] = "Customer";
-                }
-            }
+                // Get the current customer type ID
+                    $resultSql = mysqli_query($conn, $sql);
+                    if($new_customer_type_id != 0 && mysqli_num_rows($resultSql) > 0) {
+                        $row = mysqli_fetch_assoc($resultSql);
+                        $customer_id = $row['customer_id'];
+                        $customer_type_name = $row['customer_type_name'];
 
-            if (!empty($duplicates)) {
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
-            } else {
-                // No duplicates, proceed with update
-                $updateQuery = "UPDATE customer
-                    SET  
-                        customer_first_name = '$customer_first_name', 
-                        customer_last_name = '$customer_last_name', 
-                        customer_business_name = '$customer_business_name', 
-                        contact_email = '$contact_email', 
-                        contact_phone = '$contact_phone', 
-                        primary_contact = '$primary_contact', 
-                        contact_fax = '$contact_fax', 
-                        address = '$address', 
-                        city = '$city', 
-                        state = '$state',
-                        zip = '$zip',
-                        lat = '$lat',
-                        lng = '$lng',
-                        secondary_contact_name = '$secondary_contact_name',
-                        secondary_contact_phone = '$secondary_contact_phone',
-                        ap_contact_name = '$ap_contact_name',
-                        ap_contact_email = '$ap_contact_email',
-                        ap_contact_phone = '$ap_contact_phone',
-                        tax_status = '$tax_status',
-                        tax_exempt_number = '$tax_exempt_number',
-                        customer_notes = '$customer_notes',
-                        call_status = '$call_status',
-                        credit_limit = '$credit_limit',
-                        customer_type_id = '$new_customer_type_id',
-                        loyalty = '$loyalty',
-                        customer_pricing = '$customer_pricing'
-                        
-                        WHERE customer_id = '$customer_id'";
-
-                if (mysqli_query($conn, $updateQuery)) {
-                    // Get the currently added customer
-                        $sql = "SELECT c.customer_id, c.customer_type_id, ct.customer_type_name
-                                FROM customer c
-                                JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id
-                                WHERE c.customer_first_name = '$customer_first_name' 
-                                AND c.customer_last_name = '$customer_last_name'";
-
-                    // Get the current customer type ID
-                        $resultSql = mysqli_query($conn, $sql);
-                        if($new_customer_type_id != 0 && mysqli_num_rows($resultSql) > 0) {
-                            $row = mysqli_fetch_assoc($resultSql);
-                            $customer_id = $row['customer_id'];
-                            $customer_type_name = $row['customer_type_name'];
-
-                            if($current_customer_type_id != $new_customer_type_id) {
-                                $insertQuery = "INSERT INTO customer_customer_type (
-                                    customer_id,
-                                    customer_type,
-                                    date_added
-                                ) VALUE (
-                                    '$customer_id',
-                                    '$customer_type_name',
-                                    NOW()
-                                )";
-                                
-                                if (mysqli_query($conn, $insertQuery)) {
-                                    echo "Customer updated successfully.";
-                                } else {
-                                    echo "Error updating customer: " . mysqli_error($conn);
-                                }
-                            } else {
+                        if($current_customer_type_id != $new_customer_type_id) {
+                            $insertQuery = "INSERT INTO customer_customer_type (
+                                customer_id,
+                                customer_type,
+                                date_added
+                            ) VALUE (
+                                '$customer_id',
+                                '$customer_type_name',
+                                NOW()
+                            )";
+                            
+                            if (mysqli_query($conn, $insertQuery)) {
                                 echo "Customer updated successfully.";
+                            } else {
+                                echo "Error updating customer: " . mysqli_error($conn);
                             }
                         } else {
                             echo "Customer updated successfully.";
                         }
-                } else {
-                    echo "Error updating customer: " . mysqli_error($conn);
-                }
+                    } else {
+                        echo "Customer updated successfully.";
+                    }
+            } else {
+                echo "Error updating customer: " . mysqli_error($conn);
             }
         } else {
-            // Record does not exist, perform duplicate checks before inserting
-            $duplicates = array();
-            $checkCustomer = "SELECT CONCAT(customer_first_name, ' ', customer_last_name) AS full_name 
-            FROM customer 
-            WHERE customer_first_name = '$customer_first_name' 
-              AND customer_last_name = '$customer_last_name'
-              AND (status = '1' OR hidden = '0')
-              ";
-            $resultCustomer = mysqli_query($conn, $checkCustomer);
-            if (mysqli_num_rows($resultCustomer) > 0) {
-                $duplicates[] = "Customer";
-            }
-
-            if(!empty($duplicates)){
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
-            } else {
-                $insertQuery = "INSERT INTO customer (
+            $insertQuery = "
+                INSERT INTO customer (
                     customer_first_name, 
                     customer_last_name, 
                     customer_business_name, 
@@ -228,41 +184,40 @@ if(isset($_REQUEST['action'])) {
                     '$loyalty',
                     '$customer_pricing')";
 
-                if (mysqli_query($conn, $insertQuery)) {
-                        // Get the currently added customer
-                        $sql = "SELECT c.customer_id, ct.customer_type_name
-                                            FROM customer c
-                                            JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id
-                                            WHERE c.customer_first_name = '$customer_first_name' 
-                                            AND c.customer_last_name = '$customer_last_name'";
-                                        
-                        $resultSql = mysqli_query($conn, $sql);
-                        if($new_customer_type_id != 0 && mysqli_num_rows($resultSql) > 0) {
-                            $row = mysqli_fetch_assoc($resultSql);
-                            $customer_id = $row['customer_id'];
-                            $customer_type_name = $row['customer_type_name'];
+            if (mysqli_query($conn, $insertQuery)) {
+                    // Get the currently added customer
+                    $sql = "SELECT c.customer_id, ct.customer_type_name
+                                        FROM customer c
+                                        JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id
+                                        WHERE c.customer_first_name = '$customer_first_name' 
+                                        AND c.customer_last_name = '$customer_last_name'";
+                                    
+                    $resultSql = mysqli_query($conn, $sql);
+                    if($new_customer_type_id != 0 && mysqli_num_rows($resultSql) > 0) {
+                        $row = mysqli_fetch_assoc($resultSql);
+                        $customer_id = $row['customer_id'];
+                        $customer_type_name = $row['customer_type_name'];
 
-                            $insertQuery = "INSERT INTO customer_customer_type (
-                                customer_id,
-                                customer_type,
-                                date_added
-                            ) VALUE (
-                                '$customer_id',
-                                '$customer_type_name',
-                                NOW()
-                            )";
+                        $insertQuery = "INSERT INTO customer_customer_type (
+                            customer_id,
+                            customer_type,
+                            date_added
+                        ) VALUE (
+                            '$customer_id',
+                            '$customer_type_name',
+                            NOW()
+                        )";
 
-                            if (mysqli_query($conn, $insertQuery)) {
-                                echo "New customer added successfully.";
-                            } else {
-                                echo "Error adding customer type: " . mysqli_error($conn);
-                            }
-                        } else {
+                        if (mysqli_query($conn, $insertQuery)) {
                             echo "New customer added successfully.";
+                        } else {
+                            echo "Error adding customer type: " . mysqli_error($conn);
                         }
-                } else {
-                    echo "Error adding customer: " . mysqli_error($conn);
-                }
+                    } else {
+                        echo "New customer added successfully.";
+                    }
+            } else {
+                echo "Error adding customer: " . mysqli_error($conn);
             }
         }
     } 
