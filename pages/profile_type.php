@@ -1,6 +1,8 @@
 <?php
 require 'includes/dbconn.php';
 require 'includes/functions.php';
+
+$page_title = "Profile Type";
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -32,14 +34,14 @@ require 'includes/functions.php';
   <div class="card-body px-0">
     <div class="d-flex justify-content-between align-items-center">
       <div><br>
-        <h4 class="font-weight-medium fs-14 mb-0">Product Profile Type</h4>
+        <h4 class="font-weight-medium fs-14 mb-0">Product <?= $page_title ?></h4>
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
             <li class="breadcrumb-item">
               <a class="text-muted text-decoration-none" href="">Product Properties
               </a>
             </li>
-            <li class="breadcrumb-item text-muted" aria-current="page">Product Profile Type</li>
+            <li class="breadcrumb-item text-muted" aria-current="page">Product <?= $page_title ?></li>
           </ol>
         </nav>
       </div>
@@ -60,17 +62,17 @@ require 'includes/functions.php';
 <div class="card card-body">
     <div class="row">
       <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
-          <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
-              <i class="ti ti-plus text-white me-1 fs-5"></i> Add Product Profile
+          <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-name="" data-id="" data-type="add">
+              <i class="ti ti-plus text-white me-1 fs-5"></i> Add Product <?= $page_title ?>
           </button>
           <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
               <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
           </button>
           <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
-              <i class="ti ti-download text-white me-1 fs-5"></i> Download Profiles
+              <i class="ti ti-download text-white me-1 fs-5"></i> Download <?= $page_title ?>
           </button>
           <button type="button" id="uploadBtn" class="btn btn-primary d-flex align-items-center">
-              <i class="ti ti-upload text-white me-1 fs-5"></i> Upload Profiles
+              <i class="ti ti-upload text-white me-1 fs-5"></i> Upload <?= $page_title ?>
           </button>
       </div>
     </div>
@@ -80,7 +82,7 @@ require 'includes/functions.php';
   <div class="row">
       <div class="col-3">
           <h3 class="card-title align-items-center mb-2">
-              Filter Profiles
+              Filter <?= $page_title ?>s
           </h3>
           <div class="position-relative w-100 px-0 mr-0 mb-2">
               <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search">
@@ -114,7 +116,7 @@ require 'includes/functions.php';
           <div class="datatables">
             <div class="card">
               <div class="card-body">
-                  <h4 class="card-title d-flex justify-content-between align-items-center">Profile type List</h4>
+                  <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
                 <div class="table-responsive">
                   <table id="display_profile_type" class="table table-striped table-bordered align-middle">
                     <thead>
@@ -165,7 +167,7 @@ require 'includes/functions.php';
         <div class="modal-content">
             <div class="modal-header d-flex align-items-center">
                 <h4 class="modal-title" id="add-header">
-                    Add
+                    Add <?= $page_title ?>
                 </h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -197,7 +199,7 @@ require 'includes/functions.php';
       <div class="modal-content">
           <div class="modal-header d-flex align-items-center">
               <h4 class="modal-title" id="myLargeModalLabel">
-                  Upload Profiles
+                  Upload <?= $page_title ?>
               </h4>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
@@ -278,7 +280,7 @@ require 'includes/functions.php';
       <div class="modal-content">
           <div class="modal-header d-flex align-items-center">
               <h4 class="modal-title" id="myLargeModalLabel">
-                  Download Profiles
+                  Download <?= $page_title ?>
               </h4>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
@@ -315,7 +317,7 @@ require 'includes/functions.php';
 
 <script>
   $(document).ready(function() {
-    document.title = "Product Profile Type";
+    document.title = "Product <?= $page_title ?>";
 
     var table = $('#display_profile_type').DataTable({
         pageLength: 100,
@@ -379,12 +381,14 @@ require 'includes/functions.php';
         var profile_type_id = $(this).data('id');
         var status = $(this).data('status');
         var no = $(this).data('no');
+        var name = $(this).data('name');
         $.ajax({
             url: 'pages/profile_type_ajax.php',
             type: 'POST',
             data: {
                 profile_type_id: profile_type_id,
                 status: status,
+                name: name,
                 action: 'change_status'
             },
             success: function(response) {
@@ -404,11 +408,13 @@ require 'includes/functions.php';
         event.preventDefault();
         var profile_type_id = $(this).data('id');
         var rowId = $(this).data('row');
+        var name = $(this).data('name');
         $.ajax({
             url: 'pages/profile_type_ajax.php',
             type: 'POST',
             data: {
                 profile_type_id: profile_type_id,
+                name: name,
                 action: 'hide_profile_type'
             },
             success: function(response) {
@@ -441,16 +447,9 @@ require 'includes/functions.php';
             contentType: false,
             success: function(response) {
               $('.modal').modal("hide");
-              if (response === "update-success") {
+              if (response === "success") {
                   $('#responseHeader').text("Success");
-                  $('#responseMsg').text("Profile type updated successfully.");
-                  $('#responseHeaderContainer').removeClass("bg-danger");
-                  $('#responseHeaderContainer').addClass("bg-success");
-                  $('#response-modal').modal("show");
-                  table.ajax.reload(null, false);
-              } else if (response === "add-success") {
-                  $('#responseHeader').text("Success");
-                  $('#responseMsg').text("New product profile type added successfully.");
+                  $('#responseMsg').text("Profile type successfully saved.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
@@ -617,11 +616,12 @@ require 'includes/functions.php';
         event.preventDefault();
         var id = $(this).data('id') || '';
         var type = $(this).data('type') || '';
+        var name = $(this).data('name');
 
         if(type == 'edit'){
-          $('#add-header').html('Update Product Type');
+          $('#add-header').html('Update <?= $page_title ?>');
         }else{
-          $('#add-header').html('Add Product Type');
+          $('#add-header').html('Add <?= $page_title ?>');
         }
 
         $.ajax({
@@ -629,10 +629,17 @@ require 'includes/functions.php';
             type: 'POST',
             data: {
               id : id,
+              name : name,
               action: 'fetch_modal_content'
             },
             success: function (response) {
                 $('#add-fields').html(response);
+                $(".select2").each(function () {
+                    $(this).select2({
+                        width: '100%',
+                        dropdownParent: $(this).parent()
+                    });
+                });
                 $('#addModal').modal('show');
             },
             error: function (jqXHR, textStatus, errorThrown) {

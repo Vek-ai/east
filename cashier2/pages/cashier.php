@@ -192,15 +192,18 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                         <option value="" data-category="">All Profile Types</option>
                                         <optgroup label="Product Line">
                                             <?php
-                                            $query_profile = "SELECT * FROM profile_type WHERE hidden = '0' ORDER BY profile_type ASC";
-                                            $result_profile = mysqli_query($conn, $query_profile);
-                                            while ($row_profile = mysqli_fetch_array($result_profile)) {
-                                            ?>
-                                                <option value="<?= htmlspecialchars($row_profile['profile_type_id']) ?>" 
-                                                        data-category="<?= htmlspecialchars($row_profile['product_category']) ?>">
-                                                    <?= htmlspecialchars($row_profile['profile_type']) ?>
-                                                </option>
-                                            <?php } ?>
+                                                $query_profile = "
+                                                    SELECT DISTINCT profile_type
+                                                    FROM profile_type 
+                                                    WHERE hidden = '0' $category_condition
+                                                    ORDER BY profile_type ASC";
+                                                $result_profile = mysqli_query($conn, $query_profile);
+                                                while ($row_profile = mysqli_fetch_array($result_profile)) {
+                                                ?>
+                                                    <option value="<?= $row_profile['profile_type'] ?>">
+                                                        <?= $row_profile['profile_type'] ?>
+                                                    </option>
+                                                <?php } ?>
                                         </optgroup>
                                     </select>
                                 </div>

@@ -18,33 +18,71 @@ if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-        $profile_type_id = mysqli_real_escape_string($conn, $_POST['profile_type_id']);
+        $profile_type_ids_raw = mysqli_real_escape_string($conn, $_POST['profile_type_id']);
+        $profile_type_ids = explode(',', $profile_type_ids_raw);
+
         $profile_type = mysqli_real_escape_string($conn, $_POST['profile_type']);
         $profile_abbreviations = mysqli_real_escape_string($conn, $_POST['profile_abbreviations']);
-        $product_category = mysqli_real_escape_string($conn, $_POST['product_category']);
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
+        $product_categories = $_POST['product_category'] ?? [];
 
-        $checkQuery = "SELECT * FROM profile_type WHERE profile_type_id = '$profile_type_id'";
-        $result = mysqli_query($conn, $checkQuery);
+        $errors = [];
+        $success = [];
+        $processed_ids = [];
 
-        if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE profile_type SET profile_type = '$profile_type', profile_abbreviations = '$profile_abbreviations', product_category = '$product_category', notes = '$notes', last_edit = NOW(), edited_by = '$userid'  WHERE profile_type_id = '$profile_type_id'";
-            if (mysqli_query($conn, $updateQuery)) {
-                echo "update-success";
-            } else {
-                echo "Error updating profile type: " . mysqli_error($conn);
-            }
-        } else {
-            $insertQuery = "INSERT INTO profile_type (profile_type, profile_abbreviations, product_category, notes, added_date, added_by) VALUES ('$profile_type', '$profile_abbreviations', '$product_category', '$notes', NOW(), '$userid')";
-            if (mysqli_query($conn, $insertQuery)) {
-                echo "add-success";
-            } else {
-                echo "Error adding profile type: " . mysqli_error($conn);
+        if (!empty($product_categories)) {
+            foreach ($product_categories as $index => $product_category_id) {
+                $product_category_id = mysqli_real_escape_string($conn, $product_category_id);
+                $existing_id = isset($profile_type_ids[$index]) ? mysqli_real_escape_string($conn, $profile_type_ids[$index]) : '';
+
+                if (!empty($existing_id)) {
+                    $updateQuery = "UPDATE profile_type 
+                                    SET profile_type = '$profile_type',
+                                        profile_abbreviations = '$profile_abbreviations', 
+                                        product_category = '$product_category_id',
+                                        notes = '$notes', 
+                                        last_edit = NOW(), 
+                                        edited_by = '$userid' 
+                                    WHERE profile_type_id = '$existing_id'";
+                    if (mysqli_query($conn, $updateQuery)) {
+                        $success[] = "Updated ID $existing_id";
+                        $processed_ids[] = $existing_id;
+                    } else {
+                        $errors[] = "Update error for ID $existing_id: " . mysqli_error($conn);
+                    }
+                } else {
+                    $insertQuery = "INSERT INTO profile_type 
+                                    (profile_type, profile_abbreviations, product_category, notes, added_date, added_by) 
+                                    VALUES 
+                                    ('$profile_type', '$profile_abbreviations', '$product_category_id', '$notes', NOW(), '$userid')";
+                    if (mysqli_query($conn, $insertQuery)) {
+                        $success[] = "Inserted new for category $product_category_id";
+                    } else {
+                        $errors[] = "Insert error: " . mysqli_error($conn);
+                    }
+                }
             }
         }
-    } 
-    
+
+        foreach ($profile_type_ids as $old_id) {
+            if (!in_array($old_id, $processed_ids) && !empty($old_id)) {
+                $deleteQuery = "DELETE FROM profile_type WHERE profile_type_id = '$old_id'";
+                if (mysqli_query($conn, $deleteQuery)) {
+                    $success[] = "Deleted ID $old_id (unselected)";
+                } else {
+                    $errors[] = "Delete error for ID $old_id: " . mysqli_error($conn);
+                }
+            }
+        }
+
+        if (!empty($errors)) {
+            echo "Errors:\n" . implode("\n", $errors);
+        } else {
+            echo "success";
+        }
+    }
+
     if ($action == "change_status") {
         $profile_type_id = mysqli_real_escape_string($conn, $_POST['profile_type_id']);
         $status = mysqli_real_escape_string($conn, $_POST['status']);
@@ -69,54 +107,66 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == 'fetch_modal_content') {
         $profile_type_id = mysqli_real_escape_string($conn, $_POST['id']);
-        $query = "SELECT * FROM profile_type WHERE profile_type_id = '$profile_type_id'";
+        $profile_type = mysqli_real_escape_string($conn, $_POST['name']);
+
+        $query = "SELECT * FROM profile_type WHERE profile_type = '$profile_type'";
         $result = mysqli_query($conn, $query);
-        if ($result && mysqli_num_rows($result) > 0) {
-            $row = mysqli_fetch_array($result);
+
+        $row = [];
+        $selected_ids = [];
+        $selected_categories = [];
+
+        while ($r = mysqli_fetch_array($result)) {
+            if (empty($row)) {
+                $row = $r;
+            }
+            $selected_categories[] = $r['product_category'];
+            $selected_ids[] = $r['profile_type_id'];
         }
-
         ?>
-            <div class="row pt-3">
-                <div class="col-md-6">
+        <div class="row pt-3">
+            <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label">Product type</label>
-                    <input type="text" id="profile_type" name="profile_type" class="form-control"  value="<?= $row['profile_type'] ?? '' ?>"/>
+                    <label class="form-label">Product Type</label>
+                    <input type="text" id="profile_type" name="profile_type" class="form-control" value="<?= $row['profile_type'] ?? '' ?>"/>
                 </div>
-                </div>
-                <div class="col-md-6">
+            </div>
+            <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label">Profile Type Abreviations</label>
-                    <input type="text" id="profile_abbreviations" name="profile_abbreviations" class="form-control" value="<?= $row['profile_abbreviations'] ?? '' ?>" />
+                    <label class="form-label">Profile Type Abbreviations</label>
+                    <input type="text" id="profile_abbreviations" name="profile_abbreviations" class="form-control" value="<?= $row['profile_abbreviations'] ?? '' ?>"/>
                 </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="form-label">Product Category</label>
-                        <select id="product_category" class="form-control" name="product_category">
-                            <option value="">Select One...</option>
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">Product Category</label>
+                <div class="mb-3">
+                    <select id="product_category" class="form-control select2" name="product_category[]" multiple required>
+                        <?php
+                        $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                        $result_roles = mysqli_query($conn, $query_roles);            
+                        while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                            $selected = in_array($row_product_category['product_category_id'], $selected_categories) ? 'selected' : '';
+                            ?>
+                            <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>>
+                                <?= $row_product_category['product_category'] ?>
+                            </option>
                             <?php
-                            $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                            $result_roles = mysqli_query($conn, $query_roles);            
-                            while ($row_product_category = mysqli_fetch_array($result_roles)) {
-                                $selected = (($row['product_category'] ?? '') == $row_product_category['product_category_id']) ? 'selected' : '';
-                            ?>
-                                <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
-                            <?php   
-                            }
-                            ?>
-                        </select>
-                    </div>
+                        }
+                        ?>
+                    </select>
                 </div>
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">Notes</label>
-                <textarea class="form-control" id="notes" name="notes" rows="5"><?= $row['notes'] ?? '' ?></textarea>
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" id="notes" name="notes" rows="5"><?= $row['notes'] ?? '' ?></textarea>
+        </div>
 
-            <input type="hidden" id="profile_type_id" name="profile_type_id" class="form-control"  value="<?= $profile_type_id ?>"/>
+        <input type="hidden" id="profile_type_id" name="profile_type_id" value="<?= implode(',', $selected_ids); ?>"/>
         <?php
     }
+
 
     if ($action == "download_excel") {
         $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
@@ -488,20 +538,20 @@ if(isset($_REQUEST['action'])) {
     if ($action === 'fetch_table') {
         $query = "SELECT * FROM profile_type WHERE hidden = 0";
         $result = mysqli_query($conn, $query);
-    
-        $data = [];
+
+        $groupedData = [];
+
         while ($row = mysqli_fetch_assoc($result)) {
-            $no = $row['profile_type_id'];
             $profile_type = $row['profile_type'];
-            $profile_abbreviations = $row['profile_abbreviations'];
-            $product_category_name = getProductCategoryName($row['product_category']);
+            $no = $row['profile_type_id'];
+            $category_name = getProductCategoryName($row['product_category']);
+            $abbreviations = $row['profile_abbreviations'];
             $notes = $row['notes'];
-    
+
             $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m-d-Y') : '';
-    
             $added_by = $row['added_by'];
             $edited_by = $row['edited_by'];
-    
+
             if ($edited_by != "0") {
                 $last_user_name = get_name($edited_by);
             } elseif ($added_by != "0") {
@@ -509,34 +559,53 @@ if(isset($_REQUEST['action'])) {
             } else {
                 $last_user_name = "";
             }
-    
+
+            $last_edit_text = "Last Edited $last_edit by $last_user_name";
+
             $status_html = $row['status'] == '0'
-                ? "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-status='0'>
+                ? "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-name='$profile_type' data-status='0'>
                         <div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Inactive</div>
-                   </a>"
-                : "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-status='1'>
+                </a>"
+                : "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-name='$profile_type' data-status='1'>
                         <div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Active</div>
-                   </a>";
-    
+                </a>";
+
             $action_html = $row['status'] == '0'
-                ? "<a href='javascript:void(0)' class='py-1 text-dark hideProfileType' title='Archive' data-id='$no' data-row='$no' style='border-radius: 10%;'>
+                ? "<a href='javascript:void(0)' class='py-1 text-dark hideProfileType' title='Archive' data-id='$no' data-name='$profile_type' data-row='$no' style='border-radius: 10%;'>
                         <i class='text-danger ti ti-trash fs-7'></i>
-                   </a>"
-                : "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='edit'>
+                </a>"
+                : "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-name='$profile_type' data-type='edit'>
                         <i class='ti ti-pencil fs-7'></i>
-                   </a>";
-    
+                </a>";
+
+            if (!isset($groupedData[$profile_type])) {
+                $groupedData[$profile_type] = [
+                    'profile_type' => $profile_type,
+                    'profile_abbreviations' => $abbreviations,
+                    'notes' => $notes,
+                    'product_category_names' => [$category_name],
+                    'last_edit' => $last_edit_text,
+                    'status_html' => $status_html,
+                    'action_html' => $action_html
+                ];
+            } else {
+                $groupedData[$profile_type]['product_category_names'][] = $category_name;
+            }
+        }
+
+        $data = [];
+        foreach ($groupedData as $item) {
             $data[] = [
-                'profile_type' => $profile_type,
-                'profile_abbreviations' => $profile_abbreviations,
-                'product_category_name' => $product_category_name,
-                'notes' => $notes,
-                'last_edit' => "Last Edited $last_edit by $last_user_name",
-                'status_html' => $status_html,
-                'action_html' => $action_html
+                'profile_type' => $item['profile_type'],
+                'profile_abbreviations' => $item['profile_abbreviations'],
+                'product_category_name' => implode(', ', array_unique($item['product_category_names'])),
+                'notes' => $item['notes'],
+                'last_edit' => $item['last_edit'],
+                'status_html' => $item['status_html'],
+                'action_html' => $item['action_html']
             ];
         }
-    
+
         echo json_encode(['data' => $data]);
         exit;
     }
