@@ -518,11 +518,24 @@ function getSettingAmtPerMile() {
 
 function get_customer_name($customer_id){
     global $conn;
-    $query = "SELECT customer_first_name, customer_last_name FROM customer WHERE customer_id = '$customer_id'";
-    $result = mysqli_query($conn,$query);
-    $row = mysqli_fetch_array($result); 
-    $customer_name = $row['customer_first_name'] . ' ' .$row['customer_last_name'];
-    return  $customer_name;
+
+    $query = "SELECT customer_first_name, customer_last_name, customer_business_name FROM customer WHERE customer_id = '$customer_id'";
+    $result = mysqli_query($conn, $query);
+
+    if ($row = mysqli_fetch_array($result)) {
+        $name = trim($row['customer_first_name'] . ' ' . $row['customer_last_name']);
+        $business = trim($row['customer_business_name']);
+
+        if (!empty($name) && !empty($business)) {
+            return $name . ' (' . $business . ')';
+        } elseif (!empty($name)) {
+            return $name;
+        } elseif (!empty($business)) {
+            return $business;
+        }
+    }
+
+    return '';
 }
 
 function getCustomerAddress($customer_id) {
