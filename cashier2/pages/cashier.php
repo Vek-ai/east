@@ -2108,7 +2108,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         };
 
-
         const finalizeDraw = () => {
             currentStartPoint = null;
             redrawCanvas();
@@ -2146,7 +2145,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             const dist = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
             return dist / pixelsPerInch;
         };
-
 
         const calculateInteriorAngle = (p1, p2, p3) => {
             if (!p1 || !p2 || !p3) return null;
@@ -2716,7 +2714,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             $('#btn-pencil').hide();
             $('#btn-stop').show();
         });
-
 
         $(document).on('click', '#btn-stop', function () {
             isTemporaryLineActive = false;

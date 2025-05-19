@@ -422,6 +422,9 @@ foreach ($cartItems as $item) {
           ?>
         </div>
       </div>
+      <?php 
+          include 'cart/cart.php';
+        ?>
       <script>
   function handleColorTheme(e) {
     $("html").attr("data-color-theme", e);

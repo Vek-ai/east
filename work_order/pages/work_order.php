@@ -160,6 +160,15 @@ $page_title = "Work Order";
                             </optgroup>
                         </select>
                     </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-order" data-filter="order" data-filter-name="Order Type">
+                            <option value="" data-category="">All Orders</option>
+                            <optgroup label="Order Types">
+                                <option value="1">Estimate Order</option>
+                                <option value="2">Sales Order</option>
+                            </optgroup>
+                        </select>
+                    </div>
                 </div>
                 <div class="px-3 mb-2"> 
                     <input type="checkbox" id="toggleActive"> Show Done
@@ -178,8 +187,9 @@ $page_title = "Work Order";
                         <div id="tbl-work-order" class="product-details table-responsive">
                             <?php
                             $query = "
-                                SELECT wo.*, p.product_item
+                                SELECT wo.*, p.product_item, wop.type as order_type
                                 FROM work_order AS wo
+                                LEFT JOIN work_order_product AS wop ON wo.work_order_product_id = wop.id
                                 LEFT JOIN product AS p ON p.product_id = wo.productid
                                 WHERE 
                                 (wo.submitted_date >= DATE_SUB(curdate(), INTERVAL 2 WEEK) AND wo.submitted_date <= NOW())
@@ -195,6 +205,7 @@ $page_title = "Work Order";
                                 <table id="work_order_table" class="table table-hover mb-0 text-md-nowrap">
                                     <thead>
                                         <tr>
+                                            <th class="align-middle">Order #</th>
                                             <th class="w-20 align-middle">Description</th>
                                             <th class="text-center align-middle">Cashier</th>
                                             <th class="text-center align-middle">Color</th>
@@ -224,6 +235,7 @@ $page_title = "Work Order";
                                         $inch = $row['custom_length2'];
                                         $inventory_type = '';
                                         $status = $row['status'];
+                                        $order_type = $row['order_type'];
 
                                         $status = (int)$row['status'];
                                         $statusText = '';
@@ -242,6 +254,14 @@ $page_title = "Work Order";
                                                 $statusText = 'Unknown';
                                         }
 
+                                        $order_no = $row['id'];
+
+                                        if($order_type == 1){
+                                            $order_no = 'ES-'  .$order_no;
+                                        }else{
+                                            $order_no = 'SO-'  .$order_no;
+                                        }
+
 
                                         $picture_path = !empty($row['custom_img_src']) ? $images_directory.$row["custom_img_src"] : $default_image;
                                         ?>
@@ -255,7 +275,12 @@ $page_title = "Work Order";
                                             data-color="<?= getColorName($row['custom_color']) ?>"
                                             data-profile="<?= getProfileTypeName($product_details['profile']) ?>"
                                             data-status="<?= $statusText ?>"
+                                            data-order="<?= $order_type ?>"
+
                                         >
+                                            <td class="align-middle">
+                                                <?= $order_no ?>
+                                            </td>
                                             <td class="align-middle text-wrap w-20"> 
                                                 <a href="javascript:void(0);" class="d-inline-flex align-items-center justify-content-start">
                                                         <img src="<?= $picture_path ?>" style="background-color: #fff; width: 56px; height: 56px;" class="rounded-circle img-thumbnail preview-image" width="56" height="56" style="background-color: #fff;">
