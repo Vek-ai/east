@@ -484,8 +484,14 @@ require 'includes/functions.php';
               action: "fetch_update_modal"
           },
           success: function(response) {
-              $('#color_form_body').html(response);
-              $('#addColorModal').modal('show');
+            $('#color_form_body').html(response);
+            $(".select2").each(function () {
+                    $(this).select2({
+                        width: '100%',
+                        dropdownParent: $(this).parent()
+                    });
+                });
+            $('#addColorModal').modal('show');
           },
           error: function (jqXHR, textStatus, errorThrown) {
               console.error('AJAX Error:', textStatus, errorThrown);
@@ -776,12 +782,14 @@ require 'includes/functions.php';
             var match = true;
 
             $('.filter-selection').each(function() {
-                var filterValue = $(this).val()?.toString() || '';
-                var rowValue = row.data($(this).data('filter'))?.toString() || '';
+                var filterValue = $(this).val()?.toString().toLowerCase() || '';
+                var rowValue = row.data($(this).data('filter'))?.toString().toLowerCase() || '';
 
-                if (filterValue && filterValue !== '/' && rowValue !== filterValue) {
-                    match = false;
-                    return false;
+                if (filterValue && filterValue !== '/') {
+                    if (!rowValue.includes(filterValue)) {
+                        match = false;
+                        return false;
+                    }
                 }
             });
 

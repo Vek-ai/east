@@ -21,7 +21,10 @@ if(isset($_REQUEST['action'])) {
         $product_system_id = mysqli_real_escape_string($conn, $_POST['product_system_id']);
         $product_system = mysqli_real_escape_string($conn, $_POST['product_system']);
         $system_abbreviations = mysqli_real_escape_string($conn, $_POST['system_abbreviations']);
-        $product_category = mysqli_real_escape_string($conn, $_POST['product_category']);
+        
+        $product_category_array = $_POST['product_category'] ?? [];
+        $product_category = mysqli_real_escape_string($conn, json_encode($product_category_array));
+
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $multiplier = mysqli_real_escape_string($conn, floatval($_POST['multiplier'] ?? 0.00));
 
@@ -74,10 +77,20 @@ if(isset($_REQUEST['action'])) {
         $product_system_id = mysqli_real_escape_string($conn, $_POST['id']);
         $query = "SELECT * FROM product_system WHERE product_system_id = '$product_system_id'";
         $result = mysqli_query($conn, $query);
+        $selected_categories = [];
         if ($result && mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_array($result);
-        }
 
+            $selected_categories = json_decode($row['product_category'], true);
+            if (!is_array($selected_categories)) {
+                if ($selected_categories !== null) {
+                    $selected_categories = [$selected_categories];
+                } else {
+                    $selected_categories = [];
+                }
+            }
+            $selected_categories = array_map('intval', $selected_categories);
+        }
         ?>
         <div class="row pt-3">
             <div class="col-md-6">
@@ -89,23 +102,21 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">Product Category</label>
-                    <select id="product_category" class="form-control" name="product_category">
-                        <option value="">Select One...</option>
+                    <select id="product_category" class="form-control select2" name="product_category[]" multiple required>
                         <?php
                         $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                        $result_roles = mysqli_query($conn, $query_roles);            
-
-                        while ($row_product_category = mysqli_fetch_assoc($result_roles)) {
-                            $selected = (($row['product_category'] ?? '') == $row_product_category['product_category_id']) ? 'selected' : '';
-                        ?>
-                            <option value="<?= htmlspecialchars($row_product_category['product_category_id']) ?>" <?= $selected ?>>
+                        $result_roles = mysqli_query($conn, $query_roles);
+                        while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                            $cat_id = intval($row_product_category['product_category_id']);
+                            $selected = in_array($cat_id, $selected_categories) ? 'selected' : '';
+                            ?>
+                            <option value="<?= $cat_id ?>" <?= $selected ?>>
                                 <?= htmlspecialchars($row_product_category['product_category']) ?>
                             </option>
-                        <?php   
+                            <?php
                         }
                         ?>
                     </select>
-
                 </div>
             </div>
         </div>
@@ -512,7 +523,12 @@ if(isset($_REQUEST['action'])) {
             $no = $row['product_system_id'];
             $product_system = $row['product_system'];
             $system_abbreviations = $row['system_abbreviations'];
-            $product_category_name = getProductCategoryName($row['product_category']);
+            
+            $category_ids = json_decode($row['product_category'] ?? '', true);
+            $category_ids = is_array($category_ids) ? $category_ids : [];
+
+            $category_name_str = implode(', ', array_unique(array_map('getProductCategoryName', $category_ids)));
+
             $multiplier = $row['multiplier'];
             $notes = $row['notes'];
     
@@ -548,7 +564,7 @@ if(isset($_REQUEST['action'])) {
             $data[] = [
                 'product_system' => $product_system,
                 'system_abbreviations' => $system_abbreviations,
-                'product_category_name' => $product_category_name,
+                'product_category_name' => $category_name_str,
                 'multiplier' => $multiplier,
                 'notes' => $notes,
                 'last_edit' => "Last Edited $last_edit by $last_user_name",

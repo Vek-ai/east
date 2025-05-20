@@ -595,12 +595,14 @@ td.notes,  td.last-edit{
             var match = true;
 
             $('.filter-selection').each(function() {
-                var filterValue = $(this).val()?.toString() || '';
-                var rowValue = row.data($(this).data('filter'))?.toString() || '';
+                var filterValue = $(this).val()?.toString().toLowerCase() || '';
+                var rowValue = row.data($(this).data('filter'))?.toString().toLowerCase() || '';
 
-                if (filterValue && filterValue !== '/' && rowValue !== filterValue) {
-                    match = false;
-                    return false;
+                if (filterValue && filterValue !== '/') {
+                    if (!rowValue.includes(filterValue)) {
+                        match = false;
+                        return false;
+                    }
                 }
             });
 

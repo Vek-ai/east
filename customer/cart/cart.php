@@ -19,10 +19,6 @@
                                 <i class="fa fa-trash fs-4 me-2"></i>
                                 Clear Cart
                             </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="btnPriceGroupModal" style="background-color: #007bff; color: white;">
-                                <i class="fa fa-tag fs-4 me-2"></i>
-                                Change Price Group
-                            </button>
                             <button type="button" class="btn mb-2 me-2 flex-fill" id="btnGradeModal" style="background-color: #6c757d; color: white;">
                                 <i class="fa fa-chart-line fs-4 me-2"></i>
                                 Change Grade
@@ -33,15 +29,15 @@
                             </button>
                             <button type="button" class="btn mb-2 me-2 flex-fill" id="btnApprovalModal" style="background-color: #800080; color: white;">
                                 <i class="fa fa-check-circle fs-4 me-2"></i>
-                                Submit Approval
+                                Save to My Projects
                             </button>
                             <button type="button" class="btn mb-2 me-2 flex-fill" id="view_estimate" style="background-color: #ffc107; color: black;">
                                 <i class="fa fa-calculator fs-4 me-2"></i>
-                                Estimate
+                                Save as an Estimate
                             </button>
                             <button type="button" class="btn mb-2 me-2 flex-fill" id="view_order" style="background-color: #28a745; color: white;">
                                 <i class="fa fa-shopping-cart fs-4 me-2"></i>
-                                Order
+                                Place Order
                             </button>
                         </div>
                     </div>

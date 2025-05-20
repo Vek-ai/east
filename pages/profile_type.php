@@ -340,6 +340,10 @@ $page_title = "Profile Type";
         }
     });
 
+    table.on('xhr', function (e, settings, json, xhr) {
+        console.log('Raw AJAX response text:', xhr.responseText);
+    });
+
     $('#display_profile_type_filter').hide();
 
     $(".select2").each(function () {
@@ -447,9 +451,16 @@ $page_title = "Profile Type";
             contentType: false,
             success: function(response) {
               $('.modal').modal("hide");
-              if (response === "success") {
+              if (response === "update-success") {
                   $('#responseHeader').text("Success");
-                  $('#responseMsg').text("Profile type successfully saved.");
+                  $('#responseMsg').text("Profile type updated successfully.");
+                  $('#responseHeaderContainer').removeClass("bg-danger");
+                  $('#responseHeaderContainer').addClass("bg-success");
+                  $('#response-modal').modal("show");
+                  table.ajax.reload(null, false);
+              } else if (response === "add-success") {
+                  $('#responseHeader').text("Success");
+                  $('#responseMsg').text("New profile type added successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
@@ -616,7 +627,6 @@ $page_title = "Profile Type";
         event.preventDefault();
         var id = $(this).data('id') || '';
         var type = $(this).data('type') || '';
-        var name = $(this).data('name');
 
         if(type == 'edit'){
           $('#add-header').html('Update <?= $page_title ?>');
@@ -629,7 +639,6 @@ $page_title = "Profile Type";
             type: 'POST',
             data: {
               id : id,
-              name : name,
               action: 'fetch_modal_content'
             },
             success: function (response) {
@@ -677,12 +686,14 @@ $page_title = "Profile Type";
             var match = true;
 
             $('.filter-selection').each(function() {
-                var filterValue = $(this).val()?.toString() || '';
-                var rowValue = row.data($(this).data('filter'))?.toString() || '';
+                var filterValue = $(this).val()?.toString().toLowerCase() || '';
+                var rowValue = row.data($(this).data('filter'))?.toString().toLowerCase() || '';
 
-                if (filterValue && filterValue !== '/' && rowValue !== filterValue) {
-                    match = false;
-                    return false;
+                if (filterValue && filterValue !== '/') {
+                    if (!rowValue.includes(filterValue)) {
+                        match = false;
+                        return false;
+                    }
                 }
             });
 

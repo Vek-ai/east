@@ -355,10 +355,9 @@ require 'includes/functions.php';
         }
     });
 
-    /* $('#display_system').on('xhr.dt', function (e, settings, json, xhr) {
-        console.log("Raw response text:", xhr.responseText);
-        console.log("Parsed JSON:", json);
-    }); */
+    table.on('xhr', function (e, settings, json, xhr) {
+        console.log('Raw AJAX response text:', xhr.responseText);
+    });
 
     $('#display_system_filter').hide();
 
@@ -652,6 +651,12 @@ require 'includes/functions.php';
             },
             success: function (response) {
                 $('#add-fields').html(response);
+                $(".select2").each(function () {
+                    $(this).select2({
+                        width: '100%',
+                        dropdownParent: $(this).parent()
+                    });
+                });
                 $('#addModal').modal('show');
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -689,12 +694,14 @@ require 'includes/functions.php';
             var match = true;
 
             $('.filter-selection').each(function() {
-                var filterValue = $(this).val()?.toString() || '';
-                var rowValue = row.data($(this).data('filter'))?.toString() || '';
+                var filterValue = $(this).val()?.toString().toLowerCase() || '';
+                var rowValue = row.data($(this).data('filter'))?.toString().toLowerCase() || '';
 
-                if (filterValue && filterValue !== '/' && rowValue !== filterValue) {
-                    match = false;
-                    return false; // Exit loop early if mismatch is found
+                if (filterValue && filterValue !== '/') {
+                    if (!rowValue.includes(filterValue)) {
+                        match = false;
+                        return false;
+                    }
                 }
             });
 

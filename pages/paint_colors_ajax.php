@@ -30,7 +30,10 @@ if(isset($_REQUEST['action'])) {
         $color_name = mysqli_real_escape_string($conn, $_POST['color_name']);
         $color_code = mysqli_real_escape_string($conn, $_POST['color_code']);
         $color_group = mysqli_real_escape_string($conn, $_POST['color_group']);
-        $product_category = mysqli_real_escape_string($conn, $_POST['product_category']);
+
+        $product_category_array = $_POST['product_category'] ?? [];
+        $product_category = mysqli_real_escape_string($conn, json_encode($product_category_array));
+        
         $provider_id = mysqli_real_escape_string($conn, $_POST['provider']);
         $ekm_color_code = mysqli_real_escape_string($conn, $_POST['ekm_color_code']);
         $ekm_color_no = mysqli_real_escape_string($conn, $_POST['ekm_color_no']);
@@ -76,6 +79,16 @@ if(isset($_REQUEST['action'])) {
     if ($action == "fetch_update_modal") {
         $color_id = mysqli_real_escape_string($conn, $_POST['id']);
         $color_details = getColorDetails($color_id);
+
+        $selected_categories = json_decode($color_details['product_category'] ?? '', true);
+        if (!is_array($selected_categories)) {
+            if ($selected_categories !== null) {
+                $selected_categories = [$selected_categories];
+            } else {
+                $selected_categories = [];
+            }
+        }
+        $selected_categories = array_map('intval', $selected_categories);
         ?>
         <input type="hidden" id="color_id" name="color_id" class="form-control" value="<?= $color_id ?>"/>
         <div class="modal-body">
@@ -113,21 +126,23 @@ if(isset($_REQUEST['action'])) {
                         </div>
                         </div>
                         <div class="col-md-4">
+                            <label class="form-label">Product Category</label>
                             <div class="mb-3">
-                                <label class="form-label">Product Category</label>
-                                <select id="product_category" class="form-control" name="product_category">
-                                    <option value="">Select One...</option>
+                                <select id="product_category" class="form-control select2" name="product_category[]" multiple required>
+                                <?php
+                                $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                                $result_roles = mysqli_query($conn, $query_roles);
+                                while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                                    $cat_id = intval($row_product_category['product_category_id']);
+                                    $selected = in_array($cat_id, $selected_categories) ? 'selected' : '';
+                                    ?>
+                                    <option value="<?= $cat_id ?>" <?= $selected ?>>
+                                        <?= htmlspecialchars($row_product_category['product_category']) ?>
+                                    </option>
                                     <?php
-                                    $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                                    $result_roles = mysqli_query($conn, $query_roles);            
-                                    while ($row_product_category = mysqli_fetch_array($result_roles)) {
-                                        $selected = (($color_details['product_category'] ?? '') == $row_product_category['product_category_id']) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>><?= $row_product_category['product_category'] ?></option>
-                                    <?php   
-                                    }
-                                    ?>
-                                </select>
+                                }
+                                ?>
+                            </select>
                             </div>
                         </div>
                         <div class="col-md-4 trim-field screw-fields panel-fields">
@@ -632,7 +647,13 @@ if(isset($_REQUEST['action'])) {
             $color_code = $row['color_code'];
             $color_group = getColorGroupName($row['color_group']);
             $provider = getPaintProviderName($row['provider_id']);
-            $product_category = getProductCategoryName($row['product_category']);
+
+            //$product_category = getProductCategoryName($row['product_category']);
+            $category_ids = json_decode($row['product_category'], true);
+            $category_ids = is_array($category_ids) ? $category_ids : [];
+
+            $product_category = implode(', ', array_unique(array_map('getProductCategoryName', $category_ids)));
+
             $availability_details = getAvailabilityDetails($row['stock_availability']);
             $availability = $availability_details['product_availability'] ?? '';
     

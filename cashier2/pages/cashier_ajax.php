@@ -182,7 +182,7 @@ if (isset($_POST['deleteitem'])) {
 if (isset($_REQUEST['query'])) {
     $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
     $color_id = isset($_REQUEST['color_id']) ? mysqli_real_escape_string($conn, $_REQUEST['color_id']) : '';
-    $grade_id = isset($_REQUEST['grade_id']) ? mysqli_real_escape_string($conn, $_REQUEST['grade_id']) : '';
+    $grade = isset($_REQUEST['grade']) ? mysqli_real_escape_string($conn, $_REQUEST['grade']) : '';
     $gauge_id = isset($_REQUEST['gauge_id']) ? mysqli_real_escape_string($conn, $_REQUEST['gauge_id']) : '';
     $type_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['type_id']) : '';
     $profile_id = isset($_REQUEST['profile_id']) ? mysqli_real_escape_string($conn, $_REQUEST['profile_id']) : '';
@@ -194,13 +194,16 @@ if (isset($_REQUEST['query'])) {
         SELECT 
             p.*,
             COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity,
-            pt.profile_type as profile_type_name
+            pt.profile_type as profile_type_name,
+            pg.product_grade as product_grade_name
         FROM 
             product AS p
         LEFT JOIN 
             inventory AS i ON p.product_id = i.product_id
         LEFT JOIN 
             profile_type AS pt ON p.profile = pt.profile_type_id
+        LEFT JOIN 
+            product_grade AS pg ON p.grade = pg.product_grade_id
         WHERE 
             p.hidden = '0' and p.status = '1'
     ";
@@ -213,8 +216,8 @@ if (isset($_REQUEST['query'])) {
         $query_product .= " AND i.color_id = '$color_id'";
     }
 
-    if (!empty($grade_id)) {
-        $query_product .= " AND p.grade = '$grade_id'";
+    if (!empty($grade)) {
+        $query_product .= " AND pg.product_grade = '$grade'";
     }
 
     if (!empty($gauge_id)) {

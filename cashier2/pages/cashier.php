@@ -256,7 +256,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                             $result_grade = mysqli_query($conn, $query_grade);
                                             while ($row_grade = mysqli_fetch_array($result_grade)) {
                                             ?>
-                                                <option value="<?= htmlspecialchars($row_grade['product_grade_id']) ?>" 
+                                                <option value="<?= htmlspecialchars($row_grade['product_grade']) ?>" 
                                                         data-category="<?= htmlspecialchars($row_grade['product_category']) ?>">
                                                     <?= htmlspecialchars($row_grade['product_grade']) ?>
                                                 </option>
@@ -3171,7 +3171,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
         function performSearch(query) {
             var color_id = $('#select-color').find('option:selected').val();
-            var grade_id = $('#select-grade').find('option:selected').val();
+            var grade = $('#select-grade').find('option:selected').val();
             var gauge_id = $('#select-gauge').find('option:selected').val();
             var category_id = $('#select-category').find('option:selected').val();
             var profile_id = $('#select-profile').find('option:selected').val();
@@ -3183,7 +3183,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 data: {
                     query: query,
                     color_id: color_id,
-                    grade_id: grade_id,
+                    grade: grade,
                     gauge_id: gauge_id,
                     category_id: category_id,
                     profile_id: profile_id,
