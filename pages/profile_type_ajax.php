@@ -1,8 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 require '../includes/vendor/autoload.php';
@@ -84,7 +80,7 @@ if(isset($_REQUEST['action'])) {
         $query = "SELECT * FROM profile_type WHERE profile_type_id = '$profile_type_id'";
         $result = mysqli_query($conn, $query);
         $row = mysqli_fetch_array($result);
-        $selected_categories = json_decode($row['product_category'], true);
+        $selected_categories = json_decode($row['product_category'] ?? '', true);
         if (!is_array($selected_categories)) {
             if ($selected_categories !== null) {
                 $selected_categories = [$selected_categories];
