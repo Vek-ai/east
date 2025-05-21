@@ -150,7 +150,7 @@ if(isset($_REQUEST['action'])) {
             mysqli_query($conn, $insert);
         }
 
-        echo "$cg, $g, $p, $w, $m";
+        echo "Successfully saved";
         exit;
     }
 
