@@ -285,8 +285,9 @@ if (isset($_REQUEST['query'])) {
             $is_trim = $row_product['product_category'] == $trim_id ? true : false;
             $is_custom_truss = $row_product['product_id'] == $custom_truss_id ? true : false;
             $is_special_trim = $row_product['product_id'] == $special_trim_id ? true : false;
+            $is_custom_length = $row_product['is_custom_length'] == 1 ? true : false;
 
-            $qty_input = !$is_panel  && !$is_custom_truss && !$is_special_trim && !$is_trim
+            $qty_input = !$is_panel  && !$is_custom_truss && !$is_special_trim && !$is_trim  && !$is_custom_length
                 ? ' <div class="input-group input-group-sm">
                         <button class="btn btn-outline-primary btn-minus" type="button" data-id="' . $row_product['product_id'] . '">-</button>
                         <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1">
@@ -302,6 +303,8 @@ if (isset($_REQUEST['query'])) {
                 $btn_id = 'add-to-cart-panel-btn';
             }else if($is_trim){
                 $btn_id = 'add-to-cart-trim-btn';
+            }else if($is_custom_length){
+                $btn_id = 'add-to-cart-custom-length-btn';
             }else{
                 $btn_id = 'add-to-cart-btn';
             }
@@ -1321,6 +1324,78 @@ if (isset($_POST['save_trim'])) {
     }
 
     echo json_encode(['success' => true]);
+}
+
+if (isset($_POST['save_custom_length'])) {
+    $customer_id = mysqli_real_escape_string($conn, $_SESSION['customer_id']);
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line'] ?? 1);
+    $quantity = floatval(mysqli_real_escape_string($conn, $_POST['quantity']));
+    $estimate_length = floatval(mysqli_real_escape_string($conn, $_POST['custom_length_feet']));
+    $estimate_length_inch = floatval(mysqli_real_escape_string($conn, $_POST['custom_length_inch']));
+    $price = floatval(mysqli_real_escape_string($conn, $_POST['price']));
+
+    $query = "SELECT * FROM product WHERE product_id = '$id'";
+    $result = mysqli_query($conn, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+
+        $line_to_use = is_numeric($line) ? intval($line) : 1;
+        $line_query = "SELECT MAX(line) as max_line FROM customer_cart 
+                       WHERE customer_id = '$customer_id' AND product_id = '$id'";
+        $line_result = mysqli_query($conn, $line_query);
+        if ($line_result && $line_data = mysqli_fetch_assoc($line_result)) {
+            if ($line_data['max_line'] !== null) {
+                $line_to_use = $line_data['max_line'] + 1;
+            }
+        }
+
+        $insert_query = "INSERT INTO customer_cart (
+                customer_id, 
+                product_id, 
+                product_item, 
+                unit_price, 
+                line, 
+                quantity_cart, 
+                estimate_width, 
+                estimate_length, 
+                estimate_length_inch, 
+                prod_usage, 
+                custom_color, 
+                weight, 
+                supplier_id, 
+                custom_grade, 
+                custom_img_src,
+                drawing_data
+            ) VALUES (
+                '$customer_id', 
+                '$id', 
+                '" . mysqli_real_escape_string($conn, $row['product_item']) . "', 
+                '$price', 
+                '$line_to_use', 
+                '$quantity', 
+                0, 
+                '$estimate_length', 
+                '$estimate_length_inch', 
+                0, 
+                '', 
+                0, 
+                '',
+                '', 
+                '',
+                ''
+            )";
+
+        if (mysqli_query($conn, $insert_query)) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['error' => 'Insert failed: ' . mysqli_error($conn)]);
+        }
+
+    } else {
+        echo json_encode(['error' => "Trim Product not available"]);
+    }
 }
 
 if (isset($_POST['save_drawing'])) {

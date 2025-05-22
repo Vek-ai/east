@@ -1365,6 +1365,8 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "customer_tax") {include 'pages/customer_tax.php';}
             if ($_REQUEST['page'] == "settings") {include 'pages/settings.php';}
 
+            if ($_REQUEST['page'] == "product_length") {include 'pages/product_length.php';}
+
             if ($_REQUEST['page'] == "generate_barcode") {include 'pages/generate_barcode.php';}
             if ($_REQUEST['page'] == "scan_barcode") {include 'pages/scan_barcode.php';}
             if ($_REQUEST['page'] == "inventory") {include 'pages/inventory.php';}

@@ -242,12 +242,15 @@ if(isset($_POST['fetch_estimate'])){
                                         $customer_pricing = getPricingCategory($category_id, $customer_details_pricing) / 100;
 
                                         $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 0;
-                                        $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? $values["estimate_length_inch"] : 0;
-                                        $total_length = floatval($estimate_length) + (floatval($estimate_length_inch) / 12);
+                                        $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
 
-                                        $amount_discount = !empty($values["amount_discount"]) ? $values["amount_discount"] : 0;
+                                        $total_length = $estimate_length + ($estimate_length_inch / 12);
+                                        $amount_discount = isset($values["amount_discount"]) && is_numeric($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
 
-                                        $product_price = ($values["quantity_cart"] * ($values["unit_price"])) - $amount_discount;
+                                        $quantity = isset($values["quantity_cart"]) && is_numeric($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
+                                        $unit_price = isset($values["unit_price"]) && is_numeric($values["unit_price"]) ? floatval($values["unit_price"]) : 0;
+
+                                        $product_price = ($quantity * $unit_price * $total_length) - $amount_discount;
 
                                         $color_id = $values["custom_color"];
                                         if (isset($values["used_discount"])){
@@ -443,22 +446,12 @@ if(isset($_POST['fetch_estimate'])){
                                             }else{
                                             ?>
                                             <td class="text-center">
-                                                <?php
-                                                if($sold_by_feet == 1){
-                                                ?>
-                                                    <fieldset class="border p-1 position-relative">
-                                                        <div class="input-group d-flex align-items-center">
-                                                            <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                            <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
-                                                        </div>
-                                                    </fieldset>
-                                                <?php
-                                                }else{
-                                                ?>
-                                                N/A
-                                                <?php
-                                                }
-                                                ?>
+                                                <fieldset class="border p-1 position-relative">
+                                                    <div class="input-group d-flex align-items-center">
+                                                        <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
+                                                        <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
+                                                    </div>
+                                                </fieldset>
                                             </td>
                                             <?php
                                             }

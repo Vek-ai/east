@@ -314,8 +314,9 @@ if (isset($_REQUEST['query'])) {
             $is_trim = $row_product['product_category'] == $trim_id ? true : false;
             $is_custom_truss = $row_product['product_id'] == $custom_truss_id ? true : false;
             $is_special_trim = $row_product['product_id'] == $special_trim_id ? true : false;
+            $is_custom_length = $row_product['is_custom_length'] == 1 ? true : false;
 
-            $qty_input = !$is_panel  && !$is_custom_truss && !$is_special_trim && !$is_trim
+            $qty_input = !$is_panel  && !$is_custom_truss && !$is_special_trim && !$is_trim && !$is_custom_length
                 ? ' <div class="input-group input-group-sm">
                         <button class="btn btn-outline-primary btn-minus" type="button" data-id="' . $row_product['product_id'] . '">-</button>
                         <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1">
@@ -331,6 +332,8 @@ if (isset($_REQUEST['query'])) {
                 $btn_id = 'add-to-cart-panel-btn';
             }else if($is_trim){
                 $btn_id = 'add-to-cart-trim-btn';
+            }else if($is_custom_length){
+                $btn_id = 'add-to-cart-custom-length-btn';
             }else{
                 $btn_id = 'add-to-cart-btn';
             }
@@ -1462,6 +1465,68 @@ if (isset($_POST['save_trim'])) {
     }
 
     echo json_encode(['success' => true]);
+}
+
+if (isset($_POST['save_custom_length'])) {
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line'] ?? 1);
+    $quantity = floatval(mysqli_real_escape_string($conn, $_POST['quantity']));
+    $estimate_length = floatval(mysqli_real_escape_string($conn, $_POST['custom_length_feet']));
+    $estimate_length_inch = floatval(mysqli_real_escape_string($conn, $_POST['custom_length_inch']));
+    $price = floatval(mysqli_real_escape_string($conn, $_POST['price']));
+
+    if (!isset($_SESSION["cart"])) {
+        $_SESSION["cart"] = array();
+    }
+
+    $key = findCartKey($_SESSION["cart"], $id, $line);
+
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['quantity_cart'] += $quantity;
+        $_SESSION["cart"][$key]['estimate_length'] = $length;
+        $_SESSION["cart"][$key]['unit_price'] = $price;
+    } else {
+        $query = "SELECT * FROM product WHERE product_id = '$id'";
+        $result = mysqli_query($conn, $query);
+
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+
+            $line_to_use = is_numeric($line) ? intval($line) : 1;
+
+            foreach ($_SESSION["cart"] as $item) {
+                if ($item['product_id'] == $id && $item['line'] >= $line_to_use) {
+                    $line_to_use = $item['line'] + 1;
+                }
+            }
+
+            $item_array = array(
+                'product_id' => $row['product_id'],
+                'product_item' => $row['product_item'],
+                'unit_price' => $price,
+                'line' => $line_to_use,
+                'quantity_ttl' => 0,
+                'quantity_in_stock' => 0,
+                'quantity_cart' => $quantity,
+                'estimate_width' => 0,
+                'estimate_length' => $estimate_length,
+                'estimate_length_inch' => $estimate_length_inch,
+                'usage' => 0,
+                'custom_color' => '',
+                'weight' => 0,
+                'supplier_id' => '',
+                'custom_grade' => '',
+                'custom_gauge' => ''
+            );
+
+            $_SESSION["cart"][] = $item_array;
+        } else {
+            echo json_encode(['error' => "Trim Product not available"]);
+            exit;
+        }
+    }
+
+    echo json_encode(['success' =>$_SESSION["cart"]]);
 }
 
 

@@ -2479,6 +2479,35 @@ $(document).ready(function() {
         });
     });
 
+    $(document).on("click", "#add-to-cart-custom-length-btn", function() {
+        var id = $(this).data('id');
+
+        $.ajax({
+            url: 'pages/cashier_custom_length_modal.php',
+            type: 'POST', 
+            data: {
+                id: id,
+                fetch_modal: 'fetch_modal'
+            },
+            success: function(response) {
+                $('#custom_length_container').html(response);
+
+                $('.custom_length_select2').each(function () {
+                    $(this).select2({
+                        width: '300px',
+                        dropdownParent: $(this).parent(),
+                        dropdownPosition: 'below'
+                    });
+                });
+
+                $('#custom_length_modal').modal('show');
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
     $(document).on('click', '#add-to-cart-btn', function() {
         var product_id = $(this).data('id');
         var qty = parseInt($('#qty' + product_id).val(), 10) || 0;
@@ -3044,6 +3073,28 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function (response) {
+                $('.modal').modal("hide");
+                loadCart();
+            },
+            error: function (xhr) {
+                console.error('Error:', xhr.responseText);
+            }
+        });
+    });
+
+    $(document).on('submit', '#custom_length_form', function (event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+        formData.append('save_custom_length', 'save_custom_length');
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                console.log(response);
                 $('.modal').modal("hide");
                 loadCart();
             },

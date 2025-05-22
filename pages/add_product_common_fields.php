@@ -188,7 +188,7 @@ if (mysqli_num_rows($result_img) > 0) { ?>
     <input type="number" id="weight" name="weight" class="form-control" step="0.01" value="<?= $row['weight']?>" />
     </div>
 </div>
-<div class="col-md-6">
+<div class="col-md-4">
     <div class="mb-3">
         <label class="form-label">Usage</label>
         <select id="product_usage" class="form-control" name="product_usage">
@@ -206,17 +206,26 @@ if (mysqli_num_rows($result_img) > 0) { ?>
         </select>
     </div>
 </div>
-<div class="col-md-6">
+<div class="col-md-4">
     <div class="mb-3">
     <label class="form-label">UPC</label>
     <input type="text" id="upc" name="upc" class="form-control" value="<?= !empty($row['upc']) ? $row['upc'] : generateRandomUPC(); ?>" />
     </div>
 </div>
 
-<div class="col-md-6">
+<div class="col-md-4">
     <div class="mb-3">
     <label class="form-label">Reorder Level</label>
         <input type="number" id="reorder_level" name="reorder_level" class="form-control" step="0.01" value="<?= $row['reorder_level']?>" />
+    </div>
+</div>
+
+<div class="col-md-12 d-flex justify-content-center align-items-center gap-3">
+    <div class="mb-1 d-flex justify-content-center">
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="is_custom_length" name="is_custom_length" value="1" <?= $row['is_custom_length'] == 1 ? 'checked' : '' ?>>
+            <label class="form-check-label" for="is_custom_length">Sold with custom length?</label>
+        </div>
     </div>
 </div>
 
