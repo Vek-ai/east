@@ -1,4 +1,6 @@
 <?php
+header('Content-Type: application/javascript');
+
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 $lat = 0;
