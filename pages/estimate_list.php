@@ -454,7 +454,7 @@ if(isset($_REQUEST['customer_id'])){
         <div class="mt-3 text-end">
             <button id="printBtn" class="btn btn-success me-2">Print</button>
             <button id="downloadBtn" class="btn btn-primary me-2">Download</button>
-            <button class="btn btn-secondary">Cancel</button>
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
         </div>
 

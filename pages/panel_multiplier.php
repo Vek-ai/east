@@ -150,7 +150,7 @@ td.notes,  td.last-edit{
   <div class="row">
       <div class="col-3" id="filter-per-inch" style="display: none;">
           <h3 class="card-title align-items-center mb-2">
-              Filter <?= htmlspecialchars($page_title) ?> SQ IN
+              Filter <?= htmlspecialchars($page_title) ?> SQ FT
           </h3>
           <div class="position-relative w-100 px-0 mr-0 mb-2">
               <input type="text" class="form-control py-2 ps-5" id="text-srh" placeholder="Search">
