@@ -2,7 +2,7 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Product Length";
+$page_title = "Trim Length";
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -38,7 +38,7 @@ $page_title = "Product Length";
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
             <li class="breadcrumb-item">
-              <a class="text-muted text-decoration-none" href="">Product Properties
+              <a class="text-muted text-decoration-none" href="">Trim Properties
               </a>
             </li>
             <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
@@ -60,9 +60,6 @@ $page_title = "Product Length";
           <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
               <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title ?>
           </button>
-          <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
-              <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
-          </button>
           <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
               <i class="ti ti-download text-white me-1 fs-5"></i> Download <?= $page_title ?>
           </button>
@@ -83,25 +80,6 @@ $page_title = "Product Length";
               <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search">
               <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
           </div>
-          <div class="align-items-center">
-              <div class="position-relative w-100 px-1 mb-2">
-                  <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-category" data-filter="category" data-filter-name="Product Category">
-                      <option value="">All Categories</option>
-                      <optgroup label="Category">
-                          <?php
-                          $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                          $result_category = mysqli_query($conn, $query_category);
-                          while ($row_category = mysqli_fetch_array($result_category)) {
-                              $selected = ($category_id == $row_category['product_category_id']) ? 'selected' : '';
-                          ?>
-                              <option value="<?= $row_category['product_category'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
-                          <?php
-                          }
-                          ?>
-                      </optgroup>
-                  </select>
-              </div>
-          </div>
           <div class="px-3 mb-2"> 
               <input type="checkbox" id="toggleActive" checked> Show Active Only
           </div>
@@ -121,9 +99,8 @@ $page_title = "Product Length";
                 <table id="display_length" class="table table-striped table-bordered align-middle">
                   <thead>
                     <tr>
-                      <th>Product length</th>
+                      <th>Trim length</th>
                       <th>Abreviations</th>
-                      <th>Category</th>
                       <th>Multiplier</th>
                       <th>Notes</th>
                       <th>Details</th>
@@ -323,14 +300,13 @@ $page_title = "Product Length";
     var table = $('#display_length').DataTable({
         pageLength: 100,
         ajax: {
-            url: 'pages/product_length_ajax.php',
+            url: 'pages/trim_length_ajax.php',
             type: 'POST',
             data: { action: 'fetch_table' }
         },
         columns: [
-            { data: 'product_length' },
+            { data: 'trim_length' },
             { data: 'length_abreviations' },
-            { data: 'product_category_name' },
             { data: 'multiplier' },
             { data: 'notes' },
             { data: 'last_edit' },
@@ -385,14 +361,14 @@ $page_title = "Product Length";
 
     $(document).on('click', '.changeStatus', function(event) {
         event.preventDefault(); 
-        var product_length_id = $(this).data('id');
+        var trim_length_id = $(this).data('id');
         var status = $(this).data('status');
         var no = $(this).data('no');
         $.ajax({
-            url: 'pages/product_length_ajax.php',
+            url: 'pages/trim_length_ajax.php',
             type: 'POST',
             data: {
-                product_length_id: product_length_id,
+                trim_length_id: trim_length_id,
                 status: status,
                 action: 'change_status'
             },
@@ -411,14 +387,14 @@ $page_title = "Product Length";
 
     $(document).on('click', '.hideLength', function(event) {
         event.preventDefault();
-        var product_length_id = $(this).data('id');
+        var trim_length_id = $(this).data('id');
         var rowId = $(this).data('row');
         $.ajax({
-            url: 'pages/product_length_ajax.php',
+            url: 'pages/trim_length_ajax.php',
             type: 'POST',
             data: {
-                product_length_id: product_length_id,
-                action: 'hide_product_length'
+                trim_length_id: trim_length_id,
+                action: 'hide_trim_length'
             },
             success: function(response) {
                 if (response == 'success') {
@@ -445,7 +421,7 @@ $page_title = "Product Length";
         var appendResult = "";
 
         $.ajax({
-            url: 'pages/product_length_ajax.php',
+            url: 'pages/trim_length_ajax.php',
             type: 'POST',
             data: formData,
             processData: false,
@@ -481,14 +457,9 @@ $page_title = "Product Length";
         });
     });
 
-    $("#download_excel_form").submit(function (e) {
-        e.preventDefault();
-        window.location.href = "pages/product_length_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
-    });
-
     $("#download_class_form").submit(function (e) {
         e.preventDefault();
-        window.location.href = "pages/product_length_ajax.php?action=download_classifications&class=" + encodeURIComponent($("#select-download-class").val());
+        window.location.href = "pages/trim_length_ajax.php?action=download_classifications&class=" + encodeURIComponent($("#select-download-class").val());
     });
 
     $(document).on('click', '#uploadBtn', function(event) {
@@ -500,12 +471,12 @@ $page_title = "Product Length";
     });
 
     $(document).on('click', '#downloadBtn', function(event) {
-        $('#downloadModal').modal('show');
+        window.location.href = "pages/trim_length_ajax.php?action=download_excel";
     });
 
     $(document).on('click', '#readUploadBtn', function(event) {
         $.ajax({
-            url: 'pages/product_length_ajax.php',
+            url: 'pages/trim_length_ajax.php',
             type: 'POST',
             data: {
                 action: "fetch_uploaded_modal"
@@ -527,7 +498,7 @@ $page_title = "Product Length";
         formData.append('action', 'upload_excel');
 
         $.ajax({
-            url: 'pages/product_length_ajax.php',
+            url: 'pages/trim_length_ajax.php',
             type: 'POST',
             data: formData,
             contentType: false,
@@ -588,7 +559,7 @@ $page_title = "Product Length";
         };
 
         $.ajax({
-            url: 'pages/product_length_ajax.php',
+            url: 'pages/trim_length_ajax.php',
             type: 'POST',
             data: updatedData,
             success: function(response) {
@@ -607,7 +578,7 @@ $page_title = "Product Length";
             formData.append("action", "save_table");
 
             $.ajax({
-                url: "pages/product_length_ajax.php",
+                url: "pages/trim_length_ajax.php",
                 type: "POST",
                 data: formData,
                 processData: false,
@@ -636,7 +607,7 @@ $page_title = "Product Length";
         }
 
         $.ajax({
-            url: 'pages/product_length_ajax.php',
+            url: 'pages/trim_length_ajax.php',
             type: 'POST',
             data: {
               id : id,

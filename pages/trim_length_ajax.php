@@ -7,38 +7,35 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-$table = 'product_length';
-$test_table = 'product_length_excel';
+$table = 'trim_length';
+$test_table = 'trim_length_excel';
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-        $product_length_id = mysqli_real_escape_string($conn, $_POST['product_length_id']);
-        $product_length = mysqli_real_escape_string($conn, $_POST['product_length']);
+        $trim_length_id = mysqli_real_escape_string($conn, $_POST['trim_length_id']);
+        $trim_length = mysqli_real_escape_string($conn, $_POST['trim_length']);
         $length_abreviations = mysqli_real_escape_string($conn, $_POST['length_abreviations']);
         
-        $product_category_array = $_POST['product_category'] ?? [];
-        $product_category = mysqli_real_escape_string($conn, json_encode($product_category_array));
-
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $multiplier = mysqli_real_escape_string($conn, floatval($_POST['multiplier'] ?? 0.00));
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
         // SQL query to check if the record exists
-        $checkQuery = "SELECT * FROM product_length WHERE product_length_id = '$product_length_id'";
+        $checkQuery = "SELECT * FROM trim_length WHERE trim_length_id = '$trim_length_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE product_length SET product_length = '$product_length', length_abreviations = '$length_abreviations', product_category = '$product_category', notes = '$notes', multiplier = '$multiplier', last_edit = NOW(), edited_by = '$userid'  WHERE product_length_id = '$product_length_id'";
+            $updateQuery = "UPDATE trim_length SET trim_length = '$trim_length', length_abreviations = '$length_abreviations', notes = '$notes', multiplier = '$multiplier', last_edit = NOW(), edited_by = '$userid'  WHERE trim_length_id = '$trim_length_id'";
             if (mysqli_query($conn, $updateQuery)) {
                 echo "success_update";
             } else {
                 echo "Error updating product length: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO product_length (product_length, length_abreviations, product_category, notes, multiplier, added_date, added_by) VALUES ('$product_length', '$length_abreviations', '$product_category', '$notes', '$multiplier', NOW(), '$userid')";
+            $insertQuery = "INSERT INTO trim_length (trim_length, length_abreviations, notes, multiplier, added_date, added_by) VALUES ('$trim_length', '$length_abreviations', '$notes', '$multiplier', NOW(), '$userid')";
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";
             } else {
@@ -48,20 +45,20 @@ if(isset($_REQUEST['action'])) {
     } 
     
     if ($action == "change_status") {
-        $product_length_id = mysqli_real_escape_string($conn, $_POST['product_length_id']);
+        $trim_length_id = mysqli_real_escape_string($conn, $_POST['trim_length_id']);
         $status = mysqli_real_escape_string($conn, $_POST['status']);
         $new_status = ($status == '0') ? '1' : '0';
 
-        $statusQuery = "UPDATE product_length SET status = '$new_status' WHERE product_length_id = '$product_length_id'";
+        $statusQuery = "UPDATE trim_length SET status = '$new_status' WHERE trim_length_id = '$trim_length_id'";
         if (mysqli_query($conn, $statusQuery)) {
             echo "success";
         } else {
             echo "Error updating status: " . mysqli_error($conn);
         }
     }
-    if ($action == 'hide_product_length') {
-        $product_length_id = mysqli_real_escape_string($conn, $_POST['product_length_id']);
-        $query = "UPDATE product_length SET hidden='1' WHERE product_length_id='$product_length_id'";
+    if ($action == 'hide_trim_length') {
+        $trim_length_id = mysqli_real_escape_string($conn, $_POST['trim_length_id']);
+        $query = "UPDATE trim_length SET hidden='1' WHERE trim_length_id='$trim_length_id'";
         if (mysqli_query($conn, $query)) {
             echo 'success';
         } else {
@@ -70,51 +67,20 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == 'fetch_modal_content') {
-        $product_length_id = mysqli_real_escape_string($conn, $_POST['id']);
-        $query = "SELECT * FROM product_length WHERE product_length_id = '$product_length_id'";
+        $trim_length_id = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM trim_length WHERE trim_length_id = '$trim_length_id'";
         $result = mysqli_query($conn, $query);
-        $selected_categories = [];
         if ($result && mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_array($result);
-
-            $selected_categories = json_decode($row['product_category'], true);
-            if (!is_array($selected_categories)) {
-                if ($selected_categories !== null) {
-                    $selected_categories = [$selected_categories];
-                } else {
-                    $selected_categories = [];
-                }
-            }
-            $selected_categories = array_map('intval', $selected_categories);
         }
 
         ?>
         <div class="row pt-3">
             <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label">Product length (FT)</label>
-                <input type="text" id="product_length" name="product_length" class="form-control"  value="<?= $row['product_length'] ?? '' ?>"/>
+                <label class="form-label">Trim length (FT)</label>
+                <input type="text" id="trim_length" name="trim_length" class="form-control"  value="<?= $row['trim_length'] ?? '' ?>"/>
             </div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Product Category</label>
-                <div class="mb-3">
-                    <select id="product_category" class="form-control select2" name="product_category[]" multiple required>
-                        <?php
-                        $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                        $result_roles = mysqli_query($conn, $query_roles);
-                        while ($row_product_category = mysqli_fetch_array($result_roles)) {
-                            $cat_id = intval($row_product_category['product_category_id']);
-                            $selected = in_array($cat_id, $selected_categories) ? 'selected' : '';
-                            ?>
-                            <option value="<?= $cat_id ?>" <?= $selected ?>>
-                                <?= htmlspecialchars($row_product_category['product_category']) ?>
-                            </option>
-                            <?php
-                        }
-                        ?>
-                    </select>
-                </div>
             </div>
         </div>
 
@@ -146,7 +112,7 @@ if(isset($_REQUEST['action'])) {
             <textarea class="form-control" id="notes" name="notes" rows="5"><?= $row['notes'] ?? '' ?></textarea>
         </div>
 
-            <input type="hidden" id="product_length_id" name="product_length_id" class="form-control"  value="<?= $product_length_id ?>"/>
+            <input type="hidden" id="trim_length_id" name="trim_length_id" class="form-control"  value="<?= $trim_length_id ?>"/>
         <?php
     }
 
@@ -158,9 +124,8 @@ if(isset($_REQUEST['action'])) {
         $column_txt = '*';
 
         $includedColumns = [ 
-            'product_length_id',
-            'product_category',
-            'product_length',
+            'trim_length_id',
+            'trim_length',
             'length_abreviations',
             'notes',
             'multiplier'
@@ -380,9 +345,8 @@ if(isset($_REQUEST['action'])) {
             }
     
             $includedColumns = [ 
-                'product_length_id',
-                'product_category',
-                'product_length',
+                'trim_length_id',
+                'trim_length',
                 'length_abreviations',
                 'notes',
                 'multiplier'
@@ -448,91 +412,16 @@ if(isset($_REQUEST['action'])) {
         }
     }
     
-    if ($action == "download_classifications") {
-        $classification = mysqli_real_escape_string($conn, $_REQUEST['class'] ?? '');
-
-        $classifications = [
-            'category' => [
-                'columns' => ['product_category_id', 'product_category'],
-                'table' => 'product_category',
-                'where' => "status = '1'"
-            ]
-        ];
-
-        $spreadsheet = new Spreadsheet();
-        $spreadsheet->removeSheetByIndex(0);
-        $selectedClassifications = empty($classification) ? array_keys($classifications) : [$classification];
-
-        foreach ($selectedClassifications as $class) {
-            if (!isset($classifications[$class])) {
-                continue;
-            }
-
-            $includedColumns = $classifications[$class]['columns'];
-            $table = $classifications[$class]['table'];
-            $where = $classifications[$class]['where'];
-            $column_txt = implode(', ', $includedColumns);
-            $sql = "SELECT $column_txt FROM $table WHERE $where";
-            $result = $conn->query($sql);
-
-            $sheet = $spreadsheet->createSheet();
-            $sheet->setTitle(ucwords($class));
-
-            $row = 1;
-            foreach ($includedColumns as $index => $column) {
-                $header = ucwords(str_replace('_', ' ', $column));
-                $columnLetter = chr(65 + $index);
-                $sheet->setCellValue($columnLetter . $row, $header);
-            }
-
-            $row = 2;
-            while ($data = $result->fetch_assoc()) {
-                foreach ($includedColumns as $index => $column) {
-                    $columnLetter = chr(65 + $index);
-
-                    $value = $data[$column] ?? '';
-                        
-                    $sheet->setCellValue($columnLetter . $row, $value);
-                }
-                $row++;
-            }
-        }
-
-        if(empty($classification)){
-            $classification = 'Classifications';
-        }else{
-            $classification = ucwords($classification);
-        }
-
-        $filename = "$classification Classifications.xlsx";
-        $filePath = $filename;
-        $writer = new Xlsx($spreadsheet);
-        $writer->save($filePath);
-
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Content-Length: ' . filesize($filePath));
-        header('Cache-Control: max-age=0');
-
-        readfile($filePath);
-        unlink($filePath);
-        exit;
-    }   
-    
     if ($action === 'fetch_table') {
-        $query = "SELECT * FROM product_length WHERE hidden = 0";
+        $query = "SELECT * FROM trim_length WHERE hidden = 0";
         $result = mysqli_query($conn, $query);
     
         $data = [];
         while ($row = mysqli_fetch_assoc($result)) {
-            $no = $row['product_length_id'];
-            $product_length = $row['product_length'];
+            $no = $row['trim_length_id'];
+            $trim_length = $row['trim_length'];
             $length_abreviations = $row['length_abreviations'];
             
-            $category_ids = json_decode($row['product_category'] ?? '', true);
-            $category_ids = is_array($category_ids) ? $category_ids : [];
-            $category_name_str = implode(', ', array_unique(array_map('getProductCategoryName', $category_ids)));
-
             $multiplier = $row['multiplier'];
             $notes = $row['notes'];
     
@@ -566,9 +455,8 @@ if(isset($_REQUEST['action'])) {
                    </a>";
     
             $data[] = [
-                'product_length' => $product_length,
+                'trim_length' => $trim_length,
                 'length_abreviations' => $length_abreviations,
-                'product_category_name' => $category_name_str,
                 'multiplier' => $multiplier,
                 'notes' => $notes,
                 'last_edit' => "Last Edited $last_edit by $last_user_name",

@@ -1365,8 +1365,6 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "customer_tax") {include 'pages/customer_tax.php';}
             if ($_REQUEST['page'] == "settings") {include 'pages/settings.php';}
 
-            if ($_REQUEST['page'] == "product_length") {include 'pages/product_length.php';}
-
             if ($_REQUEST['page'] == "generate_barcode") {include 'pages/generate_barcode.php';}
             if ($_REQUEST['page'] == "scan_barcode") {include 'pages/scan_barcode.php';}
             if ($_REQUEST['page'] == "inventory") {include 'pages/inventory.php';}
@@ -1471,6 +1469,8 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "product_color_width") {include 'pages/product_color_width.php';}
             if ($_REQUEST['page'] == "panel_multiplier") {include 'pages/panel_multiplier.php';}
+
+            if ($_REQUEST['page'] == "trim_length") {include 'pages/trim_length.php';}
           ?>
         </div>
       </div>

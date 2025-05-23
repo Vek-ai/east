@@ -66,6 +66,29 @@ if(isset($_REQUEST['customer_id'])){
     .select2-container .select2-dropdown .select2-results__options {
         max-height: 760px !important;
     }
+
+    .modal.custom-size .modal-dialog {
+        width: 80%;
+        max-width: none;
+        margin: 0 auto;
+        height: 100vh;
+    }
+
+    .modal.custom-size .modal-content {
+        height: 100%;
+        border-radius: 0;
+    }
+
+    .modal.custom-size .modal-body {
+        height: calc(100% - 56px);
+        overflow: hidden;
+    }
+
+    .modal.custom-size iframe {
+        width: 100%;
+        height: 80%;
+        border: none;
+    }
 </style>
 
 <div class="container-fluid">
@@ -323,11 +346,11 @@ if(isset($_REQUEST['customer_id'])){
                                                     </a>
                                                 <?php endif; ?>
 
-                                                <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print Product">
+                                                <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print Product">
                                                     <i class="text-success fa fa-print fs-5"></i>
                                                 </a>
 
-                                                <a href="print_order_total.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print Total">
+                                                <a href="print_order_total.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print Total">
                                                     <i class="text-white fa fa-file-lines fs-5"></i>
                                                 </a>
 
@@ -355,6 +378,60 @@ if(isset($_REQUEST['customer_id'])){
     </div>
 </div>
 
+<div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Print/View Outputs</h5>
+        <button type="button" class="close" data-bs-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <iframe id="pdfFrame" src=""></iframe>
+
+        <div class="container mt-3 border rounded p-3" style="width: 100%;">
+        <h6 class="mb-3">Download Outputs</h6>
+        <div class="row">
+            <div class="col-md-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="officeCopy">
+                <label class="form-check-label" style="color: #ffffff;" for="officeCopy">Cover Sheet (Office Copy)</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="customerCopy">
+                <label class="form-check-label" style="color: #ffffff;" for="customerCopy">Cover Sheet (Customer Copy)</label>
+            </div>
+            </div>
+            <div class="col-md-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="ekmCost">
+                <label class="form-check-label" style="color: #ffffff;" for="ekmCost">EKM Cost Breakdown</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="noPrice">
+                <label class="form-check-label" style="color: #ffffff;" for="noPrice">Cover Sheet w/o Price</label>
+            </div>
+            </div>
+            <div class="col-md-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="jobCsv">
+                <label class="form-check-label" style="color: #ffffff;" for="jobCsv">Job Data CSV</label>
+            </div>
+            </div>
+        </div>
+        <div class="mt-3 text-end">
+            <button id="printBtn" class="btn btn-success me-2">Print</button>
+            <button id="downloadBtn" class="btn btn-primary me-2">Download</button>
+            <button class="btn btn-secondary">Cancel</button>
+        </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
     function isValidURL(str) {
         try {
@@ -370,6 +447,9 @@ if(isset($_REQUEST['customer_id'])){
         var dataId = '';
         var action = '';
         var selected_prods = [];
+
+        var pdfUrl = '';
+        var isPrinting = false;
 
         var table = $('#order_list_tbl').DataTable({
             "order": [[3, "desc"]],
@@ -425,6 +505,48 @@ if(isset($_REQUEST['customer_id'])){
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
                     }
             });
+        });
+
+        $(document).on('click', '.btn-show-pdf', function(e) {
+            e.preventDefault();
+            pdfUrl = $(this).attr('href');
+            document.getElementById('pdfFrame').src = pdfUrl;
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            modal.show();
+        });
+
+        $('#printBtn').on('click', function () {
+            if (isPrinting) {
+                return;
+            }
+
+            isPrinting = true;
+            const $iframe = $('#pdfFrame');
+
+            $iframe.off('load').one('load', function () {
+                try {
+                    this.contentWindow.focus();
+                    this.contentWindow.print();
+                } catch (e) {
+                    alert("Failed to print PDF.");
+                }
+                isPrinting = false;
+            });
+
+            $iframe.attr('src', pdfUrl);
+
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            modal.show();
+        });
+
+
+        $('#downloadBtn').on('click', function () {
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.download = '';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         });
 
         $(document).on('click', '.email_order_btn', function(event) {

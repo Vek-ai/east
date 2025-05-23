@@ -74,12 +74,19 @@ if(isset($_POST['fetch_modal'])){
                                 <div class="mb-3">
                                     <label class="form-label" for="trim_length">Length</label>
                                     <select id="custom_trim_length" name="length" class="form-select mb-1">
-                                        <option value="10" <?= $length == 10 ? 'selected' : '' ?>>10 ft</option>
-                                        <option value="12" <?= $length == 12 ? 'selected' : '' ?>>12 ft</option>
-                                        <option value="14" <?= $length == 14 ? 'selected' : '' ?>>14 ft</option>
-                                        <option value="16" <?= $length == 16 ? 'selected' : '' ?>>16 ft</option>
-                                        <option value="18" <?= $length == 18 ? 'selected' : '' ?>>18 ft</option>
-                                        <option value="20" <?= $length == 20 ? 'selected' : '' ?>>20 ft</option>
+                                        <option value="">Select Length</option>
+                                        <?php
+                                        $query = "SELECT * FROM trim_length WHERE hidden = 0 AND status = 1 ORDER BY trim_length + 0 ASC";
+                                        $result = mysqli_query($conn, $query);
+
+                                        while ($row = mysqli_fetch_assoc($result)) {
+                                            $selected = ($length == $row['trim_length']) ? 'selected' : '';
+                                            $label = htmlspecialchars($row['trim_length']);
+                                            $value = htmlspecialchars($row['trim_length_id']);
+                                            $multiplier = htmlspecialchars($row['multiplier']);
+                                            echo "<option value=\"$value\" data-multiplier=\"$multiplier\" $selected>$label</option>";
+                                        }
+                                        ?>
                                     </select>
                                 </div>
                             </div>
