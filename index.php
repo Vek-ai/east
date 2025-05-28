@@ -49,6 +49,10 @@ if (!isset($_SESSION['userid'])) {
           background: #f8f9fa !important;
           border-color: transparent !important;
       }
+
+      .select2-container .select2-dropdown .select2-results__options {
+          max-height: 760px !important;
+      }
   </style>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

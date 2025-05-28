@@ -226,7 +226,6 @@ if(isset($_POST['fetch_order'])){
                                 <th width="5%" class="text-center">Grade</th>
                                 <th width="5%" class="text-center">Profile</th>
                                 <th width="25%" class="text-center pl-3">Quantity</th>
-                                <th width="15%" class="text-center pl-3">Usage</th>
                                 <th width="30%" class="text-center">Dimensions<br>(Width x Length)</th>
                                 <th width="5%" class="text-center">Stock</th>
                                 <th width="7%" class="text-center">Price</th>
@@ -391,37 +390,6 @@ if(isset($_POST['fetch_order'])){
                                                         <i class="fa fa-plus"></i>
                                                     </button>
                                                 </span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="input-group text-start">
-                                                <select id="usage<?= $no ?>" class="form-control usage-order" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
-                                                    <option value="">Select Usage...</option>
-                                                    <?php
-                                                    $query_key = "SELECT * FROM key_components ORDER BY component_name ASC";
-                                                    $result_key = mysqli_query($conn, $query_key);
-
-                                                    while ($row_key = mysqli_fetch_array($result_key)) {
-                                                        $componentid = $row_key['componentid'];
-                                                        ?>
-                                                        <optgroup label="<?= strtoupper($row_key['component_name']); ?>">
-                                                            <?php 
-                                                            $query_usage = "SELECT * FROM component_usage WHERE componentid = '$componentid' ORDER BY `usage_name` ASC";
-                                                            $result_usage = mysqli_query($conn, $query_usage);
-
-                                                            while ($row_usage = mysqli_fetch_array($result_usage)) {
-                                                                $selected = ($values['usage'] == $row_usage['usageid']) ? 'selected' : '';
-                                                                ?>
-                                                                <option value="<?= $row_usage['usageid']; ?>" <?= $selected; ?>><?= $row_usage['usage_name']; ?></option>
-                                                                <?php
-                                                            }
-                                                            ?>
-                                                        </optgroup>
-                                                        <?php
-                                                    }
-                                                    ?>
-                                                </select>
-
                                             </div>
                                         </td>
                                         <?php 
@@ -589,7 +557,7 @@ if(isset($_POST['fetch_order'])){
                                         <div class="col-6">
                                             <div class="form-group">
                                                 <label>Cash Amount</label>
-                                                <input type="number" class="form-control" id="order_cash" value="<?= round($total_customer_price + $delivery_price, 2) ?>">
+                                                <input type="number" class="form-control" id="order_cash" value="<?= round($total_customer_price, 2) ?>">
                                             </div>
                                         </div>
                                     </div>
@@ -615,25 +583,25 @@ if(isset($_POST['fetch_order'])){
                                                 <th class="text-right border-bottom">Delivery Method</th>
                                                 <td class="text-right border-bottom">
                                                     <select id="order_delivery_method" name="order_delivery_method" class="form-control text-right p-2">
-                                                        <option value="deliver">Deliver</option>
                                                         <option value="pickup">Pickup</option>
+                                                        <option value="deliver">Deliver</option>
                                                     </select>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-right border-bottom">Delivery($)</th>
                                                 <td class="text-right border-bottom">
-                                                    <input type="number" id="delivery_amt" name="delivery_amt" value="<?= number_format($delivery_price, 2) ?>" class="text-right form-control" placeholder="Delivery Amount">
+                                                    <input type="number" id="delivery_amt" name="delivery_amt" value="0" class="text-right form-control" placeholder="Delivery Amount">
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-right border-bottom">Sales Tax</th>
-                                                <td class="text-right border-bottom">$<span id="sales_tax"><?= number_format((floatval($total_customer_price) + $delivery_price) * $tax, 2) ?></span></td>
+                                                <td class="text-right border-bottom">$<span id="sales_tax"><?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span></td>
                                             </tr>
                                             <tr>
                                                 <th class="text-right border-bottom">Total Payable</th>
-                                                <td class="text-right border-bottom">$<span id="total_payable"><?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?></span></td>
-                                                <input type="hidden" id="payable_amt" value="<?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?>">
+                                                <td class="text-right border-bottom">$<span id="total_payable"><?= number_format((floatval($total_customer_price)), 2) ?></span></td>
+                                                <input type="hidden" id="payable_amt" value="<?= number_format((floatval($total_customer_price)), 2) ?>">
                                             </tr>
                                             <tr class="bg-primary text-white" style="font-size: 1.25rem;">
                                                 <th class="text-right">Change</th>
@@ -831,18 +799,6 @@ if(isset($_POST['fetch_order'])){
             });
 
             $(".grade-order").each(function() {
-                if ($(this).data('select2')) {
-                    $(this).select2('destroy');
-                }
-                $(this).select2({
-                    width: '300px',
-                    placeholder: "Select...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('#orderTable')
-                });
-            });
-
-            $(".usage-order").each(function() {
                 if ($(this).data('select2')) {
                     $(this).select2('destroy');
                 }

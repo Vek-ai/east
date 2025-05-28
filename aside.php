@@ -60,8 +60,20 @@
           </a>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="returns_refunds.php">
-            <iconify-icon icon="solar:hand-money-linear" class="aside-icon"></iconify-icon>
+          <a class="sidebar-link" href="?page=order_list">
+            <iconify-icon icon="solar:wallet-money-linear" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Orders</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="?page=estimate_list">
+            <iconify-icon icon="solar:document-linear" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Estimates</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="estimate_list.php">
+            <iconify-icon icon="solar:undo-left-round-linear" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Returns/Refunds</span>
           </a>
         </li>
@@ -131,12 +143,6 @@
           <a class="sidebar-link" href="add_barcode.php">
             <iconify-icon icon="solar:camera-add-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Print QR</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="send_job.php">
-          <iconify-icon icon="solar:map-arrow-square-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Send Job</span>
           </a>
         </li>
  <!-- Products -->

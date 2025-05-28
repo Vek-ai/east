@@ -131,7 +131,6 @@ if(isset($_POST['fetch_cart'])){
                         <th class="text-center">Grade</th>
                         <th class="text-center">Profile</th>
                         <th class="text-center pl-3">Quantity</th>
-                        <th class="text-center pl-3">Usage</th>
                         <th class="text-center">Dimensions<br>(Width x Length)</th>
                         <th class="text-center">Stock</th>
                         <th class="text-center">Price</th>
@@ -298,37 +297,6 @@ if(isset($_POST['fetch_cart'])){
                                         </span>
                                     </div>
                                 </td>
-                                <td>
-                                    <div class="input-group text-start">
-                                        <select id="usage<?= $no ?>" class="form-control usage-cart" name="usage" onchange="updateUsage(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
-                                            <option value="">Select Usage...</option>
-                                            <?php
-                                            $query_key = "SELECT * FROM key_components ORDER BY component_name ASC";
-                                            $result_key = mysqli_query($conn, $query_key);
-
-                                            while ($row_key = mysqli_fetch_array($result_key)) {
-                                                $componentid = $row_key['componentid'];
-                                                ?>
-                                                <optgroup label="<?= strtoupper($row_key['component_name']); ?>">
-                                                    <?php 
-                                                    $query_usage = "SELECT * FROM component_usage WHERE componentid = '$componentid' ORDER BY `usage_name` ASC";
-                                                    $result_usage = mysqli_query($conn, $query_usage);
-
-                                                    while ($row_usage = mysqli_fetch_array($result_usage)) {
-                                                        $selected = ($values['usage'] == $row_usage['usageid']) ? 'selected' : '';
-                                                        ?>
-                                                        <option value="<?= $row_usage['usageid']; ?>" <?= $selected; ?>><?= $row_usage['usage_name']; ?></option>
-                                                        <?php
-                                                    }
-                                                    ?>
-                                                </optgroup>
-                                                <?php
-                                            }
-                                            ?>
-                                        </select>
-
-                                    </div>
-                                </td>
                                 <?php 
                                     if($category_id == $panel_id){ // Panels ID
                                     ?>
@@ -435,7 +403,7 @@ if(isset($_POST['fetch_cart'])){
                     <tr>
                         <td colspan="2" class="text-end">Total Weight</td>
                         <td><?= number_format(floatval($total_weight), 2) ?> LBS</td>
-                        <td colspan="3" class="text-end">Total Quantity:</td>
+                        <td colspan="2" class="text-end">Total Quantity:</td>
                         <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
                         <td colspan="3" class="text-end">Amount Due:</td>
                         <td colspan="1" class="text-end"><span id="ammount_due"><?= number_format($total_customer_price,2) ?> $</span></td>
@@ -481,15 +449,15 @@ if(isset($_POST['fetch_cart'])){
                                     </tr>
                                     <tr>
                                         <th class="text-right border-bottom">Delivery</th>
-                                        <td class="text-right border-bottom">$ <span id="delivery_amt"><?= number_format($delivery_price, 2) ?></span></td>
+                                        <td class="text-right border-bottom">$ <span id="delivery_amt">0</span></td>
                                     </tr>
                                     <tr>
                                         <th class="text-right border-bottom">Sales Tax</th>
-                                        <td class="text-right border-bottom">$ <span id="sales_tax"><?= number_format((floatval($total_customer_price) + $delivery_price) * $tax, 2) ?></span></td>
+                                        <td class="text-right border-bottom">$ <span id="sales_tax"><?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span></td>
                                     </tr>
                                     <tr>
                                         <th class="text-right border-bottom">Total Payable</th>
-                                        <td class="text-right border-bottom">$ <span id="total_payable_est"><?= number_format((floatval($total_customer_price) + $delivery_price), 2) ?></span></td>
+                                        <td class="text-right border-bottom">$ <span id="total_payable_est"><?= number_format((floatval($total_customer_price)), 2) ?></span></td>
                                     </tr>
                                     <tr class="bg-primary text-white" style="font-size: 1.25rem;">
                                         <th class="text-right">Change</th>
@@ -520,18 +488,6 @@ if(isset($_POST['fetch_cart'])){
             });
 
             $(".grade-cart").each(function() {
-                if ($(this).data('select2')) {
-                    $(this).select2('destroy');
-                }
-                $(this).select2({
-                    width: '300px',
-                    placeholder: "Select...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('#cartTable')
-                });
-            });
-
-            $(".usage-cart").each(function() {
                 if ($(this).data('select2')) {
                     $(this).select2('destroy');
                 }

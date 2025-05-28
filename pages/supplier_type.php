@@ -711,46 +711,6 @@ td.notes,  td.last-edit{
         updateSelectedTags();
     }
 
-    function updateSearchCategory() {
-        let selectedCategory = $('#select-category option:selected').data('category');
-        let hasCategory = !!selectedCategory;
-
-        $('.search-category').each(function () {
-            let $select2Element = $(this);
-
-            if (!$select2Element.data('all-options')) {
-                $select2Element.data('all-options', $select2Element.find('option').clone(true));
-            }
-
-            let allOptions = $select2Element.data('all-options');
-
-            $select2Element.empty();
-
-            if (hasCategory) {
-                allOptions.each(function () {
-                    let optionCategory = $(this).data('category');
-                    if (String(optionCategory) === String(selectedCategory)) {
-                        $select2Element.append($(this).clone(true));
-                    }
-                });
-            } else {
-                allOptions.each(function () {
-                    $select2Element.append($(this).clone(true));
-                });
-            }
-
-            $select2Element.select2('destroy');
-
-            let parentContainer = $select2Element.parent();
-            $select2Element.select2({
-                width: '100%',
-                dropdownParent: parentContainer
-            });
-        });
-
-        $('.category_selection').toggleClass('d-none', !hasCategory);
-    }
-
     function updateSelectedTags() {
         var displayDiv = $('#selected-tags');
         displayDiv.empty();

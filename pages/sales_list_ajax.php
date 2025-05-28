@@ -45,9 +45,21 @@ if (isset($_POST['search_customer'])) {
 }
 
 if (isset($_POST['search_orders'])) {
+    $response = [
+        'orders' => [],
+        'total_count' => 0,
+        'total_amount' => 0,
+        'error' => null
+    ];
+
     $customer_name = mysqli_real_escape_string($conn, $_POST['customer_name']);
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
+
+    $months = array_map('intval', $_POST['months'] ?? []);
+    $years = array_map('intval', $_POST['years'] ?? []);
+    $staff = mysqli_real_escape_string($conn, $_POST['staff']);
+    $tax_status = mysqli_real_escape_string($conn, $_POST['tax_status']);
 
     $query = "
         SELECT o.*, CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name
@@ -63,76 +75,52 @@ if (isset($_POST['search_orders'])) {
     if (!empty($date_from) && !empty($date_to)) {
         $date_to .= ' 23:59:59';
         $query .= " AND (o.order_date >= '$date_from' AND o.order_date <= '$date_to') ";
+    } elseif (!empty($date_from)) {
+        $query .= " AND o.order_date >= '$date_from' ";
+    } elseif (!empty($date_to)) {
+        $date_to .= ' 23:59:59';
+        $query .= " AND o.order_date <= '$date_to' ";
+    }
+
+    if (!empty($months)) {
+        $months_in = implode(',', $months);
+        $query .= " AND MONTH(o.order_date) IN ($months_in)";
+    }
+
+    if (!empty($years)) {
+        $years_in = implode(',', $years);
+        $query .= " AND YEAR(o.order_date) IN ($years_in)";
+    }
+
+    if (!empty($staff)) {
+        $query .= " AND cashier = '$staff'";
+    }
+
+    if (!empty($tax_status)) {
+        $query .= " AND c.tax_status = '$tax_status'";
     }
 
     $result = mysqli_query($conn, $query);
 
     if ($result && mysqli_num_rows($result) > 0) {
-        $total_amount = 0;
-        $total_count = 0;
-
-        ?>
-        <table id="sales_table" class="table table-hover mb-0 text-md-nowrap">
-            <thead>
-                <tr>
-                    <th>Invoice Number</th>
-                    <th>Purchase Date</th>
-                    <th>Time</th>
-                    <th>Cashier</th>
-                    <th>Customer</th>
-                    <th>Amount</th>
-                    <th> </th>
-                </tr>
-            </thead>
-            <tbody>     
-            <?php
-
-            while ($row = mysqli_fetch_assoc($result)) {
-                $total_amount += $row['discounted_price'];
-                $total_count += 1;
-
-                $order_date = $row['order_date'];
-                $customer_name = $row['customer_name'];
-            
-                ?>
-                <tr>
-                    <td>
-                        <?= htmlspecialchars($row['orderid']) ?>
-                    </td>
-                    <td>
-                        <?= htmlspecialchars(date("F d, Y", strtotime($order_date))) ?>
-                    </td>
-                    <td>
-                        <?= htmlspecialchars(date("h:i A", strtotime($order_date))) ?>
-                    </td>
-                    <td>
-                        <?= get_staff_name($row['cashier']) ?>
-                    </td>
-                    <td>
-                        <?= htmlspecialchars($customer_name) ?>
-                    </td>
-                    <td class="text-end">
-                        $ <?= number_format($row['discounted_price'], 2) ?>
-                    </td>
-                    <td>
-                        <a href="javascript:void(0);" title="View" class="py-1 pe-1 fs-5" id="view_order_details" data-id="<?php echo $row["orderid"]; ?>" data-toggle="tooltip" data-placement="top" title="View"><i class="fa fa-eye"></i></a>
-                    </td>
-                </tr>
-                <?php
-            }
-            ?>
-            </tbody>
-            <tfoot>
-                <td colspan="2" class="text-end">Total Orders: </td>
-                <td><?= $total_count ?></td>
-                <td colspan="2" class="text-end">Total Amount: </td>
-                <td class="text-end">$ <?= $total_amount ?></td>
-            </tfoot>
-        </table>
-        <?php
+        while ($row = mysqli_fetch_assoc($result)) {
+            $response['orders'][] = [
+                'orderid' => $row['orderid'],
+                'order_date' => $row['order_date'],
+                'formatted_date' => date("F d, Y", strtotime($row['order_date'])),
+                'formatted_time' => date("h:i A", strtotime($row['order_date'])),
+                'cashier' => get_staff_name($row['cashier']),
+                'customer_name' => $row['customer_name'],
+                'amount' => number_format($row['discounted_price'], 2),
+            ];
+            $response['total_amount'] += $row['discounted_price'];
+            $response['total_count']++;
+        }
     } else {
-        echo "<h4 class='text-center'>No orders found</h4>";
+        $response['error'] = 'No orders found';
     }
+
+    echo json_encode($response);
 }
 
 if(isset($_POST['fetch_order_details'])){

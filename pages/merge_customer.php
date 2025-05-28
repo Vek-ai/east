@@ -65,11 +65,11 @@ $panel_id = 46;
                 <select id="customer_merge" class="form-control select2-merge" name="customer_merge">
                     <option value=""></option>
                     <?php
-                    $query_merge_customers = "SELECT * FROM customer WHERE status != '3' AND hidden='0'";
+                    $query_merge_customers = "SELECT * FROM customer WHERE status != '3' AND status != '0' AND hidden='0'";
                     $result_merge_customers = mysqli_query($conn, $query_merge_customers);            
                     while ($row_merge_customers = mysqli_fetch_array($result_merge_customers)) {
                     ?>
-                        <option value="<?= $row_merge_customers['customer_id'] ?>" ><?= $row_merge_customers['customer_first_name'] .' ' .$row_merge_customers['customer_last_name'] ?></option>
+                        <option value="<?= $row_merge_customers['customer_id'] ?>" ><?= get_customer_name($row_merge_customers['customer_id']) ?></option>
                     <?php   
                     }
                     ?>
@@ -82,11 +82,11 @@ $panel_id = 46;
                 <select id="customer_original" class="form-control select2-original" name="customer_original">
                     <option value=""></option>
                     <?php
-                    $query_original_customers = "SELECT * FROM customer WHERE status != '3' AND hidden='0'";
+                    $query_original_customers = "SELECT * FROM customer WHERE status != '3' AND status != '0' AND hidden='0'";
                     $result_original_customers = mysqli_query($conn, $query_original_customers);            
                     while ($row_original_customers = mysqli_fetch_array($result_original_customers)) {
                     ?>
-                        <option value="<?= $row_original_customers['customer_id'] ?>" ><?= $row_original_customers['customer_first_name'] .' ' .$row_original_customers['customer_last_name'] ?></option>
+                        <option value="<?= $row_original_customers['customer_id'] ?>" ><?= get_customer_name($row_original_customers['customer_id']) ?></option>
                     <?php   
                     }
                     ?>

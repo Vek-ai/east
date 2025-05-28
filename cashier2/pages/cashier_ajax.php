@@ -797,6 +797,8 @@ if (isset($_POST['save_estimate'])) {
         } else {
             $response['message'] = "Error inserting estimate products: " . $conn->error;
         }
+
+        unset($_SESSION['customer_id']);
     } else {
         $response['message'] = "Error inserting estimate: " . $conn->error;
     }
@@ -1212,6 +1214,8 @@ if (isset($_POST['save_order'])) {
         } else {
             $response['error'] = "Error inserting order products: " . $conn->error;
         }
+
+        unset($_SESSION['customer_id']);
     } else {
         $response['error'] = "Error inserting order: " . $conn->error;
     }
@@ -1320,6 +1324,8 @@ if (isset($_POST['save_approval'])) {
         } else {
             $response['error'] = "Error inserting order products: " . $conn->error;
         }
+
+        unset($_SESSION['customer_id']);
     } else {
         $response['error'] = "Error inserting order: " . $conn->error;
     }
