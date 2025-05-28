@@ -23,6 +23,7 @@ if(isset($_REQUEST['action'])) {
         $category_abreviations = mysqli_real_escape_string($conn, $_POST['category_abreviations']);
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $multiplier = mysqli_real_escape_string($conn, floatval($_POST['multiplier'] ?? 0.00));
+        $custom_multiplier = mysqli_real_escape_string($conn, floatval($_POST['custom_multiplier'] ?? 0.00));
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
         // SQL query to check if the record exists
@@ -59,7 +60,7 @@ if(isset($_REQUEST['action'])) {
                 echo "$msg already exist! Please change to a unique value";
             } else {
                 // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_category SET product_category = '$product_category', category_abreviations = '$category_abreviations', notes = '$notes', multiplier = '$multiplier', last_edit = NOW(), edited_by = '$userid'  WHERE product_category_id = '$product_category_id'";
+                $updateQuery = "UPDATE product_category SET product_category = '$product_category', category_abreviations = '$category_abreviations', notes = '$notes', multiplier = '$multiplier', custom_multiplier = '$custom_multiplier', last_edit = NOW(), edited_by = '$userid'  WHERE product_category_id = '$product_category_id'";
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "Category updated successfully.";
                 } else {
@@ -85,7 +86,7 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO product_category (product_category, category_abreviations, notes, multiplier, added_date, added_by) VALUES ('$product_category', '$category_abreviations', '$notes', '$multiplier', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO product_category (product_category, category_abreviations, notes, multiplier, custom_multiplier, added_date, added_by) VALUES ('$product_category', '$category_abreviations', '$notes', '$multiplier', '$custom_multiplier', NOW(), '$userid')";
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "New category added successfully.";
                 } else {
@@ -131,19 +132,25 @@ if(isset($_REQUEST['action'])) {
                     <input type="text" id="product_category" name="product_category" class="form-control"  value="<?= $row['product_category'] ?? '' ?>"/>
                 </div>
                 </div>
-            </div>
-
-            <div class="row pt-3">
                 <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">Category Abreviations</label>
                     <input type="text" id="category_abreviations" name="category_abreviations" class="form-control" value="<?= $row['category_abreviations'] ?? '' ?>" />
                 </div>
                 </div>
+            </div>
+
+            <div class="row pt-3">
                 <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">Multiplier</label>
-                    <input type="number" id="multiplier" name="multiplier" class="form-control" value="<?= $row['multiplier'] ?? '' ?>" />
+                    <input type="number" step="0.001" id="multiplier" name="multiplier" class="form-control" value="<?= $row['multiplier'] ?? '' ?>" />
+                </div>
+                </div>
+                <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Customized Order Multiplier</label>
+                    <input type="number" step="0.001" id="custom_multiplier" name="custom_multiplier" class="form-control" value="<?= $row['custom_multiplier'] ?? '' ?>" />
                 </div>
                 </div>
             </div>

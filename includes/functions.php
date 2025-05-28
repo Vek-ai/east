@@ -247,6 +247,15 @@ function getProductCategoryName($product_category_id){
     return  $product_category;
 }
 
+function getCustomMultiplier($product_category_id){
+    global $conn;
+    $query = "SELECT custom_multiplier FROM product_category WHERE product_category_id = '$product_category_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $custom_multiplier = $row['product_category'] ?? 100;
+    return floatval($custom_multiplier/100);
+}
+
 function getCustomerPricingName($id){
     global $conn;
     $query = "SELECT pricing_name FROM customer_pricing WHERE id = '$id'";

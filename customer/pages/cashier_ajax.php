@@ -1242,6 +1242,7 @@ if (isset($_POST['save_trim'])) {
     $drawing_data = mysqli_real_escape_string($conn, $_POST['drawing_data']);
     $img_src = mysqli_real_escape_string($conn, $_POST['img_src']);
     $is_pre_order = mysqli_real_escape_string($conn, $_POST['is_pre_order'] ?? 0);
+    $is_custom = mysqli_real_escape_string($conn, $_POST['is_custom'] ?? 0);
 
     $color = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
     $grade = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
@@ -1260,7 +1261,8 @@ if (isset($_POST['save_trim'])) {
             custom_color = '$color', 
             custom_grade = '$grade', 
             custom_gauge = '$gauge', 
-            is_pre_order = '$is_pre_order' 
+            is_pre_order = '$is_pre_order',
+            is_custom = '$is_custom',
             WHERE customer_id = '$customer_id' AND product_id = '$id' AND line = '$line'";
 
         $update_result = mysqli_query($conn, $update_query);
@@ -1296,7 +1298,9 @@ if (isset($_POST['save_trim'])) {
                 supplier_id, 
                 custom_grade, 
                 custom_img_src,
-                drawing_data
+                drawing_data,
+                is_pre_order,
+                is_custom
             ) VALUES (
                 '$customer_id', 
                 '$id', 
@@ -1313,7 +1317,9 @@ if (isset($_POST['save_trim'])) {
                 '{$row['supplier_id']}',
                 '$grade', 
                 '$img_src',
-                '$drawing_data'
+                '$drawing_data',
+                '$is_pre_order',
+                '$is_custom'
             )";            
 
             $insert_result = mysqli_query($conn, $insert_query);

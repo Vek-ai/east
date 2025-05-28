@@ -1399,6 +1399,7 @@ if (isset($_POST['save_trim'])) {
     $drawing_data = mysqli_real_escape_string($conn, $_POST['drawing_data']);
     $img_src = mysqli_real_escape_string($conn, $_POST['img_src']);
     $is_pre_order = mysqli_real_escape_string($conn, $_POST['is_pre_order'] ?? 0);
+    $is_custom = mysqli_real_escape_string($conn, $_POST['is_custom'] ?? 0);
 
     $color = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
     $grade = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
@@ -1420,6 +1421,7 @@ if (isset($_POST['save_trim'])) {
         $_SESSION["cart"][$key]['custom_grade'] = $grade;
         $_SESSION["cart"][$key]['custom_gauge'] = $gauge;
         $_SESSION["cart"][$key]['is_pre_order'] = $is_pre_order;
+        $_SESSION["cart"][$key]['is_custom'] = $is_pre_order;
     } else {
         $query = "SELECT * FROM product WHERE product_id = '$id'";
         $result = mysqli_query($conn, $query);
@@ -1453,6 +1455,7 @@ if (isset($_POST['save_trim'])) {
                 'custom_grade' => $grade,
                 'custom_gauge' => $gauge,
                 'is_pre_order' => $is_pre_order,
+                'is_custom' => $is_custom,
                 'custom_trim_src' => $img_src,
                 'drawing_data' => $drawing_data
             );

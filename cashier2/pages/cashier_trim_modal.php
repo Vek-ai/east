@@ -11,14 +11,17 @@ if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $product_details = getProductDetails($id);
     $type_details = getProductTypeDetails($product_details['product_type']);
+    $custom_multiplier = getCustomMultiplier($product_details['product_category']);
     ?>
     <?php
         if (!empty($product_details)) {
             $category_id = $product_details['product_category'];
         ?>
         <input type="hidden" id="product_id" name="id" value="<?= $id ?>" />
-        <input type="hidden" id="product_price" value="<?= $product_details['unit_price'] ?>" />
+        <input type="hidden" id="product_price" name="price" value="<?= $product_details['unit_price'] ?>" />
+        <input type="hidden" id="custom_multiplier_trim" name="custom_multiplier" value="<?= $custom_multiplier ?>" />
         <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
+        <input type="hidden" id="is_custom_trim" name="is_custom" value="0" />
         <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
 
         <h5 class="text-center"><?= $product_details['description'] ?></h5>
@@ -105,26 +108,40 @@ if(isset($_POST['fetch_modal'])){
             <div class="col-6">
                 <div class="mb-3">
                     <label class="form-label" for="trim_quantity">Quantity</label>
-                    <input type="number" id="trim_qty" name="quantity" class="form-control mb-1" value="<?= $quantity ?>" placeholder="Enter Quantity">
+                    <input type="number" id="trim_qty" name="quantity" class="form-control mb-1" value="1" placeholder="Enter Quantity">
                 </div>
             </div>
             <div class="col-6">
-                <label class="form-label" for="trim_length">Length</label>
                 <div class="mb-3">
-                    <select id="trim_length" name="length" class="form-select mb-1 trim_select2">
-                        <option value="10" <?= $length == 10 ? 'selected' : '' ?>>10 ft</option>
-                        <option value="12" <?= $length == 12 ? 'selected' : '' ?>>12 ft</option>
-                        <option value="14" <?= $length == 14 ? 'selected' : '' ?>>14 ft</option>
-                        <option value="16" <?= $length == 16 ? 'selected' : '' ?>>16 ft</option>
-                        <option value="18" <?= $length == 18 ? 'selected' : '' ?>>18 ft</option>
-                        <option value="20" <?= $length == 20 ? 'selected' : '' ?>>20 ft</option>
-                    </select>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label class="form-label" for="trim_length">Length</label>
+                        <a href="/?page=trim_length" target="_blank" class="text-decoration-none">Edit</a>
+                    </div>
+                    <input
+                        list="trim_length_list"
+                        id="trim_length"
+                        name="length"
+                        class="form-control mb-1"
+                        value="1"
+                        autocomplete="off"
+                    >
+                    <datalist id="trim_length_list">
+                        <?php
+                        $query = "SELECT * FROM trim_length WHERE hidden = 0 AND status = 1 ORDER BY trim_length + 0 ASC";
+                        $result = mysqli_query($conn, $query);
+
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            $label = htmlspecialchars($row['trim_length']);
+                            echo "<option value=\"$label\"></option>";
+                        }
+                        ?>
+                    </datalist>
                 </div>
             </div>
             <div class="col-12">
                 <div class="mb-3">
                     <label class="form-label" for="truss_price">Price</label>
-                    <input type="text" id="trim_price" name="price" class="form-control mb-1" value="<?= $price ?>" placeholder="Enter Price">
+                    <input type="text" id="trim_price" class="form-control mb-1" value="<?= $price ?>" placeholder="Enter Price">
                 </div>
             </div>
         </div>

@@ -1991,7 +1991,11 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 }
 
                 const angle = calculateLineAngle(p1, p2);
-                const isLastLine = i === points.length - 1 || points[i + 1] === null;
+                const isFirstOrLastLine = 
+                        i === 1 || 
+                        i === points.length - 1 || 
+                        points[i - 1] === null || 
+                        points[i + 1] === null;
 
                 const lineDiv = document.createElement('div');
                 lineDiv.className = 'mb-2 py-1 px-2 border rounded bg-light';
@@ -2014,7 +2018,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                 class="form-control form-control-sm line-angle-input" style="width: 100%;">
                         </div>
 
-                        ${isLastLine ? `
+                        ${isFirstOrLastLine ? `
                         <div class="col-3 d-flex align-items-center gap-2">
                             <label class="fw-bold mb-0">Hem</label>
                             <select class="form-select form-select-sm line-hem-select" data-index="${i}">
@@ -2100,17 +2104,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
                     if (!isNaN(newAngle) && points[index - 1] && points[index]) {
                         adjustLineAngle(points[index - 1], points[index], newAngle);
-                    }
-                });
-            });
-
-            document.querySelectorAll('.line-length-input').forEach(input => {
-                input.addEventListener('change', (e) => {
-                    const index = parseInt(e.target.dataset.index);
-                    const newLength = parseFloat(e.target.value);
-
-                    if (!isNaN(newLength) && points[index - 1] && points[index]) {
-                        adjustLineLength(points[index - 1], points[index], newLength);
                     }
                 });
             });
@@ -2835,6 +2828,19 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     colors: colors
                 };
 
+                const totalLength = points.reduce((sum, point, i) => {
+                    if (i === 0 || points[i] === null || points[i - 1] === null) return sum;
+
+                    const p1 = points[i - 1];
+                    const p2 = point;
+
+                    const dx = p2.x - p1.x;
+                    const dy = p2.y - p1.y;
+                    const segmentLength = Math.sqrt(dx * dx + dy * dy);
+
+                    return sum + segmentLength / pixelsPerInch;
+                }, 0);
+
                 const drawingDataJson = JSON.stringify(drawingData);
 
                 $('.drawingContainer').each(function () {
@@ -2844,8 +2850,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 });
 
                 $('#drawing_data').val(drawingDataJson); 
-
-                console.log(drawingDataJson)
 
                 $.ajax({
                     url: 'pages/cashier_ajax.php',
@@ -2859,6 +2863,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         if (response.filename) {
                             $('#custom_trim_draw_modal').modal('hide');
                             currentStartPoint = null;
+
+                            $('#trim_length').val(totalLength.toFixed(2));
+                            $('#is_custom_trim').val("1");
+                            updatePrice();
 
                             $('#drawingImage').attr('src', '../images/drawing/' + response.filename).show();
                             $('#drawingTrimImage').attr('src', '../images/drawing/' + response.filename).show();
@@ -2908,6 +2916,28 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         );
         return $state;
     }
+
+    function updatePrice() {
+        const basePrice = parseFloat($('#product_price').val()) || 0;
+        const feet = parseFloat($('#trim_length').val()) || 0;
+        const quantity = parseFloat($('#trim_qty').val()) || 1;
+        const is_custom = parseInt($('#is_custom_trim').val()) || 0;
+        const custom_multiplier_trim = parseFloat($('#custom_multiplier_trim').val()) || 1;
+
+        let totalPrice = basePrice * feet * quantity;
+
+        if (is_custom === 1) {
+            totalPrice += totalPrice * custom_multiplier_trim;
+        }
+
+        $('#trim_price').val(totalPrice.toFixed(2));
+    }
+
+    $(document).on('change', '#trim_length, #trim_qty', function() {
+        updatePrice();
+    });
+
+    updatePrice();
     
     $(document).ready(function() {
         var panel_id = '<?= $panel_id ?>';
