@@ -116,6 +116,14 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     .select2-container .select2-dropdown .select2-results__options {
         max-height: 760px !important;
     }
+
+    #custom_chart_modal {
+        z-index: 91100;
+    }
+
+    .modal-backdrop.custom-backdrop {
+        z-index: 91090;
+    }
 </style>
 <div class="product-list pt-4">
     <div class="card">
@@ -123,9 +131,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             <div class="row">
                 <div class="col-2">
                     <div class="p-2 align-items-center gap-4 text-center">
-                        <button class="btn btn-primary m-2" data-bs-toggle="modal" data-bs-target="#trim_chart_modal" type="button">
-                            View Trim Chart
-                        </button>
                         <div style="color: #ffffff !important; opacity: 1;">
                             <input type="checkbox" id="toggleActive" checked> Show only In Stock
                         </div>
@@ -356,4 +361,23 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             </div>
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="custom_chart_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h6 class="modal-title">Custom Chart Guide</h6>
+            <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="custom_chart_container"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+        </div>
+    </div>
+  </div>
 </div>

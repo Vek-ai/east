@@ -5,7 +5,7 @@ require 'includes/functions.php';
 $generate_rend_upc = generateRandomUPC();
 $picture_path = "images/product/product.jpg";
 
-if($_REQUEST['customer_id']){
+if(!empty($_REQUEST['customer_id'])){
     $customer_id = $_REQUEST['customer_id'];
     $customer_details = getCustomerDetails($customer_id);
 }

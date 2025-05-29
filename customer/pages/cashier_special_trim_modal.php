@@ -11,6 +11,8 @@ if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
     $customer_id = $_SESSION['customer_id'];
+    $product_details = getProductDetails($id);
+    $category_id = $product_details['product_category'];
 
     $sql = "SELECT * FROM customer_cart 
             WHERE customer_id = '$customer_id' 
@@ -98,9 +100,13 @@ if(isset($_POST['fetch_modal'])){
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button id="saveDrawing" class="btn btn-success" type="submit">Save</button>
-                        <button class="btn btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+                    <div class="modal-footer d-flex justify-content-between align-items-center px-0">
+                        <div class="d-flex justify-content-start">
+                            <button id="btnCustomChart" class="btn btn-warning ripple btn-secondary" type="button" data-category="<?= $category_id ?>">Chart</button>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button id="saveDrawing" class="btn btn-success" type="submit">Save</button>
+                        </div>
                     </div>
                 </form>
             </div>

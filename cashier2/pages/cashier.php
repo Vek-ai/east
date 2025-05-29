@@ -147,6 +147,14 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         background-color: #f1f1f1;
     }
 
+    #custom_chart_modal {
+        z-index: 91100;
+    }
+
+    .modal-backdrop.custom-backdrop {
+        z-index: 91090;
+    }
+
 </style>
 <div class="product-list pt-4">
     <div class="card">
@@ -154,9 +162,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             <div class="row">
                 <div class="col-2">
                     <div class="p-2 align-items-center gap-4 text-center">
-                        <button class="btn btn-primary m-2" data-bs-toggle="modal" data-bs-target="#trim_chart_modal" type="button">
-                            View Trim Chart
-                        </button>
                         <div style="color: #ffffff !important; opacity: 1;">
                             <input type="checkbox" id="toggleActive" checked> Show only In Stock
                         </div>
@@ -371,22 +376,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 <div id="special_trim_body">
                     <!-- Content here -->
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="trim_chart_modal">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content modal-content-demo">
-            <div class="modal-header">
-                <h6 class="modal-title">Trim Chart</h6>
-            </div>
-            <div class="modal-body">
-                <img id="chartImage" src="../assets/images/trim_chart.jpg" alt="Trim Chart" class="img-fluid">
-            </div>
-            <div class="modal-footer">
-                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>
@@ -782,10 +771,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             <div class="modal-body">
                 <div id="qty_prompt_container"></div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-success ripple btn-secondary" data-bs-dismiss="modal" type="submit">Add to Cart</button>
-                <button class="btn btn-danger ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-            </div>
         </form>
         </div>
     </div>
@@ -835,9 +820,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             </div>
             <div class="modal-body">
                 <div id="custom_truss_container"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-success ripple btn-secondary" data-bs-dismiss="modal" type="submit">Add to Cart</button>
             </div>
         </form>
         </div>
@@ -934,6 +916,26 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="custom_chart_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h6 class="modal-title">Custom Chart Guide</h6>
+            <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="custom_chart_container"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+        </div>
+    </div>
+  </div>
+</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 
@@ -3009,6 +3011,32 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     $('#chng_grade_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#btnCustomChart', function () {
+            var category = $(this).data("category");
+
+            $.ajax({
+                url: 'pages/cashier_custom_chart.php',
+                type: 'POST',
+                data: {
+                    category: category,
+                    fetch_modal: 'fetch_modal'
+                },
+                success: function (response) {
+                    $('#custom_chart_container').html(response);
+
+                    $('#custom_chart_modal').modal({
+                        backdrop: true,
+                        keyboard: true
+                    });
+
+                    $('#custom_chart_modal').modal("show");
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });

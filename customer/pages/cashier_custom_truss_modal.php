@@ -10,10 +10,8 @@ require '../../includes/functions.php';
 if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $product_details = getProductDetails($id);
+    $category_id = $product_details['product_category'];
 ?>
-    <script>
-        console.log(<?= var_dump($_SESSION['cart']) ?>);
-    </script>
     <input type="hidden" id="product_id" name="product_id" value="<?= $id ?>" />
 
     <div class="row">
@@ -214,6 +212,15 @@ if(isset($_POST['fetch_modal'])){
                 <label class="form-label" for="price">Price</label>
                 <input type="number" id="truss_price" name="price" class="form-control mb-1" placeholder="Enter Price">
             </div>
+        </div>
+    </div>
+
+    <div class="modal-footer d-flex justify-content-between align-items-center px-0">
+        <div class="d-flex justify-content-start">
+            <button id="btnCustomChart" class="btn btn-warning ripple btn-secondary" type="button" data-category="<?= $category_id ?>">Chart</button>
+        </div>
+        <div class="d-flex justify-content-end">
+            <button class="btn btn-success ripple btn-secondary" type="submit">Add to Cart</button>
         </div>
     </div>
 <?php

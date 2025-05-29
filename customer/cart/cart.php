@@ -305,10 +305,6 @@
             <div class="modal-body">
                 <div id="qty_prompt_container"></div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-success ripple btn-secondary" data-bs-dismiss="modal" type="submit">Add to Cart</button>
-                <button class="btn btn-danger ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-            </div>
         </form>
         </div>
     </div>
@@ -358,9 +354,6 @@
             </div>
             <div class="modal-body">
                 <div id="custom_truss_container"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-success ripple btn-secondary" data-bs-dismiss="modal" type="submit">Add to Cart</button>
             </div>
         </form>
         </div>

@@ -369,6 +369,18 @@ function getGradeFromID($product_id){
     return getGradeName($grade);
 }
 
+function getCategoryDetails($product_category_id) {
+    global $conn;
+    $product_category_id = mysqli_real_escape_string($conn, $product_category_id);
+    $query = "SELECT * FROM product_category WHERE product_category_id = '$product_category_id'";
+    $result = mysqli_query($conn, $query);
+    $product_category = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $product_category = $row;
+    }
+    return $product_category;
+}
+
 function getGradeDetails($product_grade_id) {
     global $conn;
     $product_grade_id = mysqli_real_escape_string($conn, $product_grade_id);

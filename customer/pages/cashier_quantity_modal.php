@@ -204,6 +204,15 @@ if(isset($_POST['fetch_prompt_quantity'])){
         <div class="product_cost_display">
             <h5 class="text-center pt-3 fs-5 fw-bold">Product Cost: $<span id="product-cost">0.00</span></h5>
         </div>
+
+        <div class="modal-footer d-flex justify-content-between align-items-center px-0">
+            <div class="d-flex justify-content-start">
+                <button id="btnCustomChart" class="btn btn-warning ripple btn-secondary" type="button" data-category="<?= $category_id ?>">Chart</button>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-success ripple btn-secondary" type="submit">Add to Cart</button>
+            </div>
+        </div>
         <script>
         $(document).ready(function () {
             function calculateProductCost() {

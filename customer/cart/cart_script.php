@@ -2084,6 +2084,32 @@ $(document).ready(function() {
         });
     });
 
+    $(document).on('click', '#btnCustomChart', function () {
+        var category = $(this).data("category");
+
+        $.ajax({
+            url: 'pages/cashier_custom_chart.php',
+            type: 'POST',
+            data: {
+                category: category,
+                fetch_modal: 'fetch_modal'
+            },
+            success: function (response) {
+                $('#custom_chart_container').html(response);
+
+                $('#custom_chart_modal').modal({
+                    backdrop: true,
+                    keyboard: true
+                });
+
+                $('#custom_chart_modal').modal("show");
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
     $(document).on('click', '#save_color_change', function () {
         var orig_color = $('#orig-colors').val();
         var in_stock_color = $('#in-stock-colors').val();

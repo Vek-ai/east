@@ -146,8 +146,15 @@ if(isset($_POST['fetch_modal'])){
             </div>
         </div>
         <div class="modal-footer d-flex justify-content-between align-items-center px-0">
-            <button class="btn btn-warning ripple btn-secondary" id="trim_draw" type="button">Modify Trim</button>
-            <button class="btn btn-success ripple btn-secondary" type="submit">Add to Cart</button>
+            <div class="d-flex justify-content-start">
+                <button class="btn btn-warning ripple btn-secondary" id="trim_draw" type="button">Modify Trim</button>
+            </div>
+            <div class="d-flex justify-content-center">
+                <button id="btnCustomChart" class="btn btn-warning ripple btn-secondary" type="button" data-category="<?= $category_id ?>">Chart</button>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button id="saveDrawing" class="btn btn-success" type="submit">Save</button>
+            </div>
         </div>
         <?php
         }else{

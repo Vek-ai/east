@@ -190,7 +190,7 @@
           </a>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=customer_loyalty">
+          <a class="sidebar-link" href="?page=loyalty_program">
             <iconify-icon icon="solar:graph-new-up-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Loyalty Program</span>
           </a>

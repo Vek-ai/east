@@ -220,7 +220,21 @@ require 'includes/functions.php';
 </div>
 
 <script>
-  $(document).ready(function() {
+function previewChartImage(input) {
+    const $preview = $('#custom_chart_preview');
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            $preview.attr('src', e.target.result).removeClass('d-none');
+        };
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        $preview.attr('src', '#').addClass('d-none');
+    }
+}
+
+$(document).ready(function() {
     document.title = "Product Category";
 
     var table = $('#display_category').DataTable({
@@ -518,6 +532,21 @@ require 'includes/functions.php';
             success: function (response) {
                 $('#add-fields').html(response);
                 $('#addModal').modal('show');
+
+                $(document).on('change', '#custom_chart_image', function () {
+                    const input = this;
+                    const $preview = $('#custom_chart_preview');
+
+                    if (input.files && input.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            $preview.attr('src', e.target.result).removeClass('d-none');
+                        };
+                        reader.readAsDataURL(input.files[0]);
+                    } else {
+                        $preview.attr('src', '#').addClass('d-none');
+                    }
+                });
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 console.error('AJAX Error:', textStatus, errorThrown);

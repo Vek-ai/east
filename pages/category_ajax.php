@@ -26,19 +26,49 @@ if(isset($_REQUEST['action'])) {
         $custom_multiplier = mysqli_real_escape_string($conn, floatval($_POST['custom_multiplier'] ?? 0.00));
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
-        // SQL query to check if the record exists
+        $uploadDir = '../images/chart_images/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0775, true);
+        }
+
+        $custom_chart_image = '';
+
+        if (isset($_FILES['custom_chart_image']) && $_FILES['custom_chart_image']['error'] === UPLOAD_ERR_OK) {
+            $originalName = basename($_FILES['custom_chart_image']['name']);
+            $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+            $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+            if (in_array($extension, $allowedTypes)) {
+                $uniqueName = time() . "_" . preg_replace("/[^a-zA-Z0-9_\.-]/", "_", $originalName);
+                $targetPath = $uploadDir . $uniqueName;
+
+                if (move_uploaded_file($_FILES['custom_chart_image']['tmp_name'], $targetPath)) {
+                    $custom_chart_image = $uniqueName;
+                } else {
+                    echo "Failed to upload image.";
+                    exit;
+                }
+            } else {
+                echo "Only JPG, JPEG, PNG, GIF, and WEBP files are allowed.";
+                exit;
+            }
+        }
+
         $checkQuery = "SELECT * FROM product_category WHERE product_category_id = '$product_category_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            // Record exists, fetch current values
             $row = mysqli_fetch_assoc($result);
             $current_product_category = $row['product_category'];
             $current_category_abreviations = $row['category_abreviations'];
+            $current_chart_image = $row['custom_chart_image'];
 
-            $duplicates = array();
+            if (empty($custom_chart_image)) {
+                $custom_chart_image = $current_chart_image;
+            }
 
-            // Check for duplicates only if the new values are different from the current values
+            $duplicates = [];
+
             if ($product_category != $current_product_category) {
                 $checkCategory = "SELECT * FROM product_category WHERE product_category = '$product_category'";
                 $resultCategory = mysqli_query($conn, $checkCategory);
@@ -59,8 +89,17 @@ if(isset($_REQUEST['action'])) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                // No duplicates, proceed with update
-                $updateQuery = "UPDATE product_category SET product_category = '$product_category', category_abreviations = '$category_abreviations', notes = '$notes', multiplier = '$multiplier', custom_multiplier = '$custom_multiplier', last_edit = NOW(), edited_by = '$userid'  WHERE product_category_id = '$product_category_id'";
+                $updateQuery = "UPDATE product_category SET 
+                    product_category = '$product_category', 
+                    category_abreviations = '$category_abreviations', 
+                    notes = '$notes', 
+                    multiplier = '$multiplier', 
+                    custom_multiplier = '$custom_multiplier', 
+                    custom_chart_image = '$custom_chart_image', 
+                    last_edit = NOW(), 
+                    edited_by = '$userid' 
+                    WHERE product_category_id = '$product_category_id'";
+
                 if (mysqli_query($conn, $updateQuery)) {
                     echo "Category updated successfully.";
                 } else {
@@ -68,8 +107,8 @@ if(isset($_REQUEST['action'])) {
                 }
             }
         } else {
-            // Record does not exist, perform duplicate checks before inserting
-            $duplicates = array();
+            $duplicates = [];
+
             $checkCategory = "SELECT * FROM product_category WHERE product_category = '$product_category'";
             $resultCategory = mysqli_query($conn, $checkCategory);
             if (mysqli_num_rows($resultCategory) > 0) {
@@ -82,11 +121,15 @@ if(isset($_REQUEST['action'])) {
                 $duplicates[] = "Category Abbreviations";
             }
 
-            if(!empty($duplicates)){
+            if (!empty($duplicates)) {
                 $msg = implode(", ", $duplicates);
                 echo "$msg already exist! Please change to a unique value";
             } else {
-                $insertQuery = "INSERT INTO product_category (product_category, category_abreviations, notes, multiplier, custom_multiplier, added_date, added_by) VALUES ('$product_category', '$category_abreviations', '$notes', '$multiplier', '$custom_multiplier', NOW(), '$userid')";
+                $insertQuery = "INSERT INTO product_category 
+                    (product_category, category_abreviations, notes, multiplier, custom_multiplier, custom_chart_image, added_date, added_by) 
+                    VALUES 
+                    ('$product_category', '$category_abreviations', '$notes', '$multiplier', '$custom_multiplier', '$custom_chart_image', NOW(), '$userid')";
+
                 if (mysqli_query($conn, $insertQuery)) {
                     echo "New category added successfully.";
                 } else {
@@ -94,7 +137,8 @@ if(isset($_REQUEST['action'])) {
                 }
             }
         }
-    } 
+    }
+
     if ($action == "change_status") {
         $product_category_id = mysqli_real_escape_string($conn, $_POST['product_category_id']);
         $status = mysqli_real_escape_string($conn, $_POST['status']);
@@ -126,7 +170,7 @@ if(isset($_REQUEST['action'])) {
 
         ?>
             <div class="row pt-3">
-                <div class="col-md-6">
+                <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label">Product Category</label>
                     <input type="text" id="product_category" name="product_category" class="form-control"  value="<?= $row['product_category'] ?? '' ?>"/>
@@ -138,20 +182,37 @@ if(isset($_REQUEST['action'])) {
                     <input type="text" id="category_abreviations" name="category_abreviations" class="form-control" value="<?= $row['category_abreviations'] ?? '' ?>" />
                 </div>
                 </div>
-            </div>
-
-            <div class="row pt-3">
                 <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">Multiplier</label>
                     <input type="number" step="0.001" id="multiplier" name="multiplier" class="form-control" value="<?= $row['multiplier'] ?? '' ?>" />
                 </div>
                 </div>
+            </div>
+
+            <div class="row pt-3">
                 <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">Customized Order Multiplier</label>
                     <input type="number" step="0.001" id="custom_multiplier" name="custom_multiplier" class="form-control" value="<?= $row['custom_multiplier'] ?? '' ?>" />
                 </div>
+                </div>
+                <?php 
+                    $chartImage = $row['custom_chart_image'] ?? '';
+                    $chart_path = $chartImage ? "images/chart_images/" . $chartImage : '#';
+                ?>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Custom Chart Image</label>
+                        <input type="file" id="custom_chart_image" name="custom_chart_image" accept="image/*" class="form-control">
+                        <div class="mt-2">
+                            <img id="custom_chart_preview"
+                                src="<?= $chart_path ?>"
+                                alt="Selected Chart Image"
+                                class="img-fluid border rounded <?= $chartImage ? '' : 'd-none' ?>"
+                                style="max-height: 200px;" />
+                        </div>
+                    </div>
                 </div>
             </div>
 
