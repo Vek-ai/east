@@ -1475,6 +1475,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "panel_multiplier") {include 'pages/panel_multiplier.php';}
 
             if ($_REQUEST['page'] == "trim_length") {include 'pages/trim_length.php';}
+            if ($_REQUEST['page'] == "promotions") {include 'pages/promotions.php';}
           ?>
         </div>
       </div>

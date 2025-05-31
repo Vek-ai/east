@@ -4,6 +4,30 @@ require 'includes/functions.php';
 
 $page_title = "Sales History";
 ?>
+<style>
+    .modal.custom-size .modal-dialog {
+        width: 80%;
+        max-width: none;
+        margin: 0 auto;
+        height: 100vh;
+    }
+
+    .modal.custom-size .modal-content {
+        height: 100%;
+        border-radius: 0;
+    }
+
+    .modal.custom-size .modal-body {
+        height: calc(100% - 56px);
+        overflow: hidden;
+    }
+
+    .modal.custom-size iframe {
+        width: 100%;
+        height: 80%;
+        border: none;
+    }
+</style>
 
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -125,13 +149,13 @@ $page_title = "Sales History";
                             <table id="sales_table" class="table table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
-                                        <th>Invoice Number</th>
-                                        <th>Purchase Date</th>
+                                        <th>Invoice #</th>
+                                        <th>Date</th>
                                         <th>Time</th>
                                         <th>Cashier</th>
                                         <th>Customer</th>
                                         <th>Amount</th>
-                                        <th> </th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -163,6 +187,60 @@ $page_title = "Sales History";
             </div>
         </div>
     </div>
+</div>
+
+<div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Print/View Outputs</h5>
+        <button type="button" class="close" data-bs-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <iframe id="pdfFrame" src=""></iframe>
+
+        <div class="container mt-3 border rounded p-3" style="width: 100%;">
+        <h6 class="mb-3">Download Outputs</h6>
+        <div class="row">
+            <div class="col-md-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="officeCopy">
+                <label class="form-check-label" style="color: #ffffff;" for="officeCopy">Cover Sheet (Office Copy)</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="customerCopy">
+                <label class="form-check-label" style="color: #ffffff;" for="customerCopy">Cover Sheet (Customer Copy)</label>
+            </div>
+            </div>
+            <div class="col-md-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="ekmCost">
+                <label class="form-check-label" style="color: #ffffff;" for="ekmCost">EKM Cost Breakdown</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="noPrice">
+                <label class="form-check-label" style="color: #ffffff;" for="noPrice">Cover Sheet w/o Price</label>
+            </div>
+            </div>
+            <div class="col-md-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="jobCsv">
+                <label class="form-check-label" style="color: #ffffff;" for="jobCsv">Job Data CSV</label>
+            </div>
+            </div>
+        </div>
+        <div class="mt-3 text-end">
+            <button id="printBtn" class="btn btn-success me-2">Print</button>
+            <button id="downloadBtn" class="btn btn-primary me-2">Download</button>
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -212,6 +290,9 @@ $page_title = "Sales History";
     }
 
     $(document).ready(function() {
+        var pdfUrl = '';
+        var isPrinting = false;
+
         document.title = "<?= $page_title ?>";
 
         const yearSelect = $('#year_select');
@@ -258,6 +339,38 @@ $page_title = "Sales History";
             dropdownParent: $("#year_select").parent()
         });
 
+        $(document).on('click', '.btn-show-pdf', function(e) {
+            e.preventDefault();
+            pdfUrl = $(this).attr('href');
+            document.getElementById('pdfFrame').src = pdfUrl;
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            modal.show();
+        });
+
+        $('#printBtn').on('click', function () {
+            if (isPrinting) {
+                return;
+            }
+
+            isPrinting = true;
+            const $iframe = $('#pdfFrame');
+
+            $iframe.off('load').one('load', function () {
+                try {
+                    this.contentWindow.focus();
+                    this.contentWindow.print();
+                } catch (e) {
+                    alert("Failed to print PDF.");
+                }
+                isPrinting = false;
+            });
+
+            $iframe.attr('src', pdfUrl);
+
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            modal.show();
+        });
+
         function updateSelectedTags() {
             var displayDiv = $('#selected-tags');
             displayDiv.empty();
@@ -292,7 +405,6 @@ $page_title = "Sales History";
             const customer_name = $('#customer_search').val();
             const date_from = $('#date_from').val();
             const date_to = $('#date_to').val();
-
             const month_select = $('#month_select').val() || [];
             const year_select = $('#year_select').val() || [];
             const staff = $('#filter-staff').val();
@@ -303,17 +415,18 @@ $page_title = "Sales History";
                 type: 'POST',
                 dataType: 'json',
                 data: {
-                    customer_name: customer_name,
-                    date_from: date_from,
-                    date_to: date_to,
-                    month_select: month_select,
-                    year_select: year_select,
-                    tax_status : tax_status,
-                    staff: staff,
+                    customer_name,
+                    date_from,
+                    date_to,
+                    month_select,
+                    year_select,
+                    tax_status,
+                    staff,
                     search_orders: 'search_orders'
                 },
                 success: function (response) {
                     console.log(response);
+
                     if ($.fn.DataTable.isDataTable('#sales_table')) {
                         $('#sales_table').DataTable().clear().destroy();
                     }
@@ -323,7 +436,6 @@ $page_title = "Sales History";
                     });
 
                     $('#sales_table_filter').hide();
-
                     table.clear();
 
                     if (response.orders.length > 0) {
@@ -335,9 +447,26 @@ $page_title = "Sales History";
                                 order.cashier,
                                 order.customer_name,
                                 `$ ${parseFloat(order.amount).toFixed(2)}`,
-                                `<a href="#" class="text-primary" id="view_order_details" data-id="${order.orderid}"><i class="fa fa-eye"></i></a>`
+                                `
+                                <a href="javascript:void(0)" class="text-primary" id="view_order_details" data-id="${order.orderid}">
+                                    <i class="fa fa-eye"></i>
+                                </a>
+                                <a href="print_order_product.php?id=${order.orderid}" 
+                                class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" 
+                                data-id="${order.orderid}" data-bs-toggle="tooltip" 
+                                title="Print Product">
+                                    <i class="text-success fa fa-print fs-5"></i>
+                                </a>
+                                <a href="print_order_total.php?id=${order.orderid}" 
+                                class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" 
+                                data-id="${order.orderid}" data-bs-toggle="tooltip" 
+                                title="Print Total">
+                                    <i class="text-white fa fa-file-lines fs-5"></i>
+                                </a>
+                                `
                             ]);
                         });
+
                         table.draw();
 
                         $('#sales_table tfoot').html(`
@@ -364,6 +493,7 @@ $page_title = "Sales History";
                 }
             });
         }
+
 
         $(document).on('change', '#customer_search, #date_from, #date_to, .filter-selection', function(event) {
             performSearch();

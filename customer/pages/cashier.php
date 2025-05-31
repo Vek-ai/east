@@ -131,6 +131,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             <div class="row">
                 <div class="col-2">
                     <div class="p-2 align-items-center gap-4 text-center">
+                        <button class="btn btn-primary m-2" data-bs-toggle="modal" data-bs-target="#trim_chart_modal" type="button">
+                            View Trim Chart
+                        </button>
                         <div style="color: #ffffff !important; opacity: 1;">
                             <input type="checkbox" id="toggleActive" checked> Show only In Stock
                         </div>
@@ -348,19 +351,97 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 </div>
 
 <div class="modal" id="trim_chart_modal">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content modal-content-demo">
-            <div class="modal-header">
-                <h6 class="modal-title">Trim Chart</h6>
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">Trim Chart</h6>
+      </div>
+      <div class="modal-body">
+        <!-- Main Image -->
+        <img id="chartImage" src="../assets/images/low_rib.jpg" alt="Trim Chart" class="img-fluid mb-4">
+
+        <!-- Exposed Fasteners -->
+        <h6>Exposed Fasteners</h6>
+        <div class="d-flex align-items-center">
+          <button class="btn btn-outline-secondary me-2" type="button" data-bs-target="#exposedCarousel" data-bs-slide="prev">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          <div id="exposedCarousel" class="carousel slide w-100" data-bs-ride="false">
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <div class="row g-3">
+                  <div class="col-4">
+                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/low_rib.jpg">Low-Rib</button>
+                  </div>
+                  <div class="col-4">
+                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/hi_rib.jpg">Hi-Rib</button>
+                  </div>
+                  <div class="col-4">
+                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/corrugated.jpg">Corrugated</button>
+                  </div>
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="row g-3">
+                  <div class="col-4">
+                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/5v.jpg">5-V</button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="modal-body">
-                <img id="chartImage" src="../assets/images/trim_chart.jpg" alt="Trim Chart" class="img-fluid">
-            </div>
-            <div class="modal-footer">
-                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
-            </div>
+          </div>
+          <button class="btn btn-outline-secondary ms-2" type="button" data-bs-target="#exposedCarousel" data-bs-slide="next">
+            <i class="fa fa-chevron-right"></i>
+          </button>
         </div>
+
+        <!-- Concealed Fasteners -->
+        <h6 class="mt-4">Concealed Fasteners</h6>
+        <div class="d-flex align-items-center">
+          <button class="btn btn-outline-secondary me-2" type="button" data-bs-target="#concealedCarousel" data-bs-slide="prev">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          <div id="concealedCarousel" class="carousel slide w-100" data-bs-ride="false">
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <div class="row g-3">
+                  <div class="col-4">
+                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/board_batten.jpg">Board & Batten</button>
+                  </div>
+                  <div class="col-4">
+                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/standing_seam.jpg">Standing Seam 1.5in</button>
+                  </div>
+                  <div class="col-4">
+                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/snap_lock.jpg">Snap Lock 1.75in</button>
+                  </div>
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="row g-3">
+                  <div class="col-4">
+                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/mechanical_seam.jpg">Mechanical Seam 2in</button>
+                  </div>
+                  <div class="col-4">
+                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/plank.jpg">Plank</button>
+                  </div>
+                  <div class="col-4">
+                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/flush_mount.jpg">Flush Mount Soffit</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-outline-secondary ms-2" type="button" data-bs-target="#concealedCarousel" data-bs-slide="next">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+      </div>
     </div>
+  </div>
 </div>
 
 <div class="modal fade" id="custom_chart_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">

@@ -3284,6 +3284,11 @@ $(document).ready(function() {
         $('#text-srh').val('').trigger('input');
     });
 
+    $(document).on('click', '.chart-btn', function () {
+        const newSrc = $(this).data('img');
+        $('#chartImage').attr('src', newSrc);
+    });
+
     $('.filter-selection').each(function () {
         $(this).select2({
             width: '100%',

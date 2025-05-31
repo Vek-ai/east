@@ -275,6 +275,7 @@ if(isset($_REQUEST['customer_id'])){
                             <table id="order_list_tbl" class="table table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
+                                        <th>OrderID</th>
                                         <th>Customer</th>
                                         <th>Total Price</th>
                                         <th>Discounted Price</th>
@@ -310,6 +311,9 @@ if(isset($_REQUEST['customer_id'])){
                                             data-year="<?= date('Y', strtotime($row['order_date'])) ?>"
                                             data-status="<?= $status_code ?>"
                                         >
+                                            <td style="color: #ffffff !important;">
+                                                <?= $row["orderid"]; ?>
+                                            </td>
                                             <td style="color: #ffffff !important;">
                                                 <?php echo get_customer_name($row["customerid"]) ?>
                                             </td>

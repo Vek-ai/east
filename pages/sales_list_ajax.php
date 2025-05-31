@@ -145,8 +145,8 @@ if(isset($_POST['fetch_order_details'])){
                         <th>Profile</th>
                         <th class="text-center">Quantity</th>
                         <th class="text-center">Dimensions</th>
+                        <th class="text-center">Unit Price</th>
                         <th class="text-center">Price</th>
-                        <th class="text-center">Customer Price</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -212,13 +212,13 @@ if(isset($_POST['fetch_order_details'])){
                                     }
                                     ?>
                                 </td>
-                                <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
                                 <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
+                                <td class="text-end">$ <?= number_format($row['discounted_price'] * $row['quantity'],2) ?></td>
                             </tr>
                     <?php
                             $totalquantity += $row['quantity'] ;
-                            $total_actual_price += $row['actual_price'];
-                            $total_disc_price += $row['discounted_price'];
+                            $total_actual_price += $row['discounted_price'];
+                            $total_disc_price += $row['discounted_price'] * $row['quantity'];
                             }
                         }
                     }
