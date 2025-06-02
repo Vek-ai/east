@@ -80,20 +80,18 @@ if(isset($_POST['fetch_modal'])){
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <label class="form-label">Length</label>
-                                        <a href="/?page=trim_length" target="_blank" class="text-decoration-none">Edit</a>
+                                        <a href="?page=product_length" target="_blank" class="text-decoration-none">Edit</a>
                                     </div>
-                                    <select id="custom_trim_length" name="length" class="form-select mb-1">
-                                        <option value="">Select Length</option>
+                                    <select id="custom_trim_length" class="form-control mb-1">
                                         <?php
-                                        $query = "SELECT * FROM trim_length WHERE hidden = 0 AND status = 1 ORDER BY trim_length + 0 ASC";
+                                        $query = "SELECT * FROM product_length WHERE hidden = 0 AND status = 1 ORDER BY product_length + 0 ASC";
                                         $result = mysqli_query($conn, $query);
 
                                         while ($row = mysqli_fetch_assoc($result)) {
-                                            $selected = ($length == $row['trim_length']) ? 'selected' : '';
-                                            $label = htmlspecialchars($row['trim_length']);
-                                            $value = htmlspecialchars($row['trim_length_id']);
-                                            $multiplier = htmlspecialchars($row['multiplier']);
-                                            echo "<option value=\"$value\" data-multiplier=\"$multiplier\" $selected>$label</option>";
+                                            $product_length = htmlspecialchars($row['product_length']);
+                                            $length_in_feet = htmlspecialchars($row['length_in_feet']);
+                                            $selected = ($length_in_feet == 1) ? 'selected' : '';
+                                            echo "<option value=\"$length_in_feet\" $selected>$product_length</option>";
                                         }
                                         ?>
                                     </select>

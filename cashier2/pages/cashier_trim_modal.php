@@ -115,44 +115,40 @@ if(isset($_POST['fetch_modal'])){
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label" for="trim_length">Length</label>
-                        <a href="/?page=trim_length" target="_blank" class="text-decoration-none">Edit</a>
+                        <a href="/?page=product_length" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
-                    <input
-                        list="trim_length_list"
-                        id="trim_length"
-                        name="length"
-                        class="form-control mb-1"
-                        value="1"
-                        autocomplete="off"
-                    >
-                    <datalist id="trim_length_list">
+                    <select id="trim_length_select" class="form-control mb-1">
+                        <option value="0" $selected>Select Length</option>
                         <?php
-                        $query = "SELECT * FROM trim_length WHERE hidden = 0 AND status = 1 ORDER BY trim_length + 0 ASC";
+                        $query = "SELECT * FROM product_length WHERE hidden = 0 AND status = 1 ORDER BY product_length + 0 ASC";
                         $result = mysqli_query($conn, $query);
 
                         while ($row = mysqli_fetch_assoc($result)) {
-                            $label = htmlspecialchars($row['trim_length']);
-                            echo "<option value=\"$label\"></option>";
+                            $product_length = htmlspecialchars($row['product_length']);
+                            $length_in_feet = htmlspecialchars($row['length_in_feet']);
+                            $selected = ($length_in_feet == 1) ? 'selected' : '';
+                            echo "<option value=\"$length_in_feet\" $selected>$product_length</option>";
                         }
                         ?>
-                    </datalist>
+                    </select>
+                    <input type="hidden" id="trim_length" name="length" class="form-control mb-1">
                 </div>
             </div>
             <div class="col-12">
                 <div class="product_cost_display">
-                    <h5 class="text-center pt-3 fs-5 fw-bold">Product Cost: $<span id="trim_price"><?= number_format(floatval($product_details['unit_price']),2) ?></span></h5>
+                    <h5 class="text-center pt-3 fs-5 fw-bold">Product Cost: $<span id="trim_price"><?= number_format(0,2) ?></span></h5>
                 </div>
             </div>
-        </div>
-        <div class="modal-footer d-flex justify-content-between align-items-center px-0">
-            <div class="d-flex justify-content-start">
-                <button class="btn btn-warning ripple btn-secondary" id="trim_draw" type="button">Modify Trim</button>
-            </div>
-            <div class="d-flex justify-content-center">
-                <button id="btnCustomChart" class="btn btn-warning ripple btn-secondary" type="button" data-category="<?= $category_id ?>">Trim Profile</button>
-            </div>
-            <div class="d-flex justify-content-end">
-                <button id="saveDrawing" class="btn btn-success" type="submit">Save</button>
+            <div class="modal-footer d-flex justify-content-between align-items-center px-0">
+                <div class="d-flex justify-content-start">
+                    <button class="btn btn-warning ripple btn-secondary" id="trim_draw" type="button">Modify Trim</button>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button id="btnCustomChart" class="btn btn-warning ripple btn-secondary" type="button" data-category="<?= $category_id ?>">Trim Profile</button>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button id="saveDrawing" class="btn btn-success" type="submit">Save</button>
+                </div>
             </div>
         </div>
         <?php

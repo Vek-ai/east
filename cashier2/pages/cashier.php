@@ -2923,7 +2923,33 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                             $('#custom_trim_draw_modal').modal('hide');
                             currentStartPoint = null;
 
-                            $('#trim_length').val(totalLength.toFixed(2));
+                            if (typeof totalLength !== 'undefined' && !isNaN(totalLength)) {
+                                var lengthInFeet = totalLength / 12;
+                                var formattedFeet = Math.floor(lengthInFeet);
+                                var formattedInches = ((lengthInFeet - formattedFeet) * 12).toFixed(2);
+
+                                var combinedText = formattedFeet + ' ft ' + formattedInches + ' in (custom)';
+                                var lengthFeetValue = lengthInFeet.toFixed(2);
+
+                                let $option = $('#trim_length_select option[value="' + lengthFeetValue + '"]');
+
+                                if ($option.length) {
+                                    $option.prop('selected', true);
+                                } else {
+                                    $('#trim_length_select').append(
+                                        $('<option>', {
+                                            value: lengthFeetValue,
+                                            text: combinedText,
+                                            selected: true,
+                                            hidden: true
+                                        })
+                                    );
+                                }
+                            } else {
+                                console.log('totalLength is undefined or not a number:', totalLength);
+                            }
+
+                            $('#trim_length').val(totalLength / 12);
                             $('#is_custom_trim').val("1");
                             updatePrice();
 
@@ -2993,6 +3019,12 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     }
 
     $(document).on('change', '#trim_length, #trim_qty', function() {
+        updatePrice();
+    });
+
+    $(document).on('change', '#trim_length_select', function() {
+        var value = $(this).val();
+        $('#trim_length').val(value);
         updatePrice();
     });
 

@@ -1247,6 +1247,9 @@ if (isset($_POST['save_trim'])) {
     $line = mysqli_real_escape_string($conn, $_POST['line']);
     $quantity = floatval(mysqli_real_escape_string($conn, $_POST['quantity']));
     $length = floatval(mysqli_real_escape_string($conn, $_POST['length']));
+    $feet = floor($length);
+    $decimalFeet = $length - $feet;
+    $inches = $decimalFeet * 12;
     $price = floatval(mysqli_real_escape_string($conn, $_POST['price']));
     $drawing_data = mysqli_real_escape_string($conn, $_POST['drawing_data']);
     $img_src = mysqli_real_escape_string($conn, $_POST['img_src']);
@@ -1263,7 +1266,8 @@ if (isset($_POST['save_trim'])) {
     if (mysqli_num_rows($result) > 0) {
         $update_query = "UPDATE customer_cart SET 
             quantity_cart = '$quantity', 
-            estimate_length = '$length', 
+            estimate_length = '$feet', 
+            estimate_length_inch = '$inches', 
             unit_price = '$price', 
             custom_img_src = '$img_src', 
             drawing_data = '$drawing_data', 
@@ -1318,8 +1322,8 @@ if (isset($_POST['save_trim'])) {
                 '$line_to_use', 
                 '$quantity', 
                 0, 
-                '$length', 
-                '', 
+                '$feet', 
+                '$inches', 
                 0, 
                 '$color', 
                 0, 

@@ -1410,6 +1410,9 @@ if (isset($_POST['save_trim'])) {
     $line = mysqli_real_escape_string($conn, $_POST['line']);
     $quantity = floatval(mysqli_real_escape_string($conn, $_POST['quantity']));
     $length = floatval(mysqli_real_escape_string($conn, $_POST['length']));
+    $feet = floor($length);
+    $decimalFeet = $length - $feet;
+    $inches = $decimalFeet * 12;
     $price = floatval(mysqli_real_escape_string($conn, $_POST['price']));
     $drawing_data = mysqli_real_escape_string($conn, $_POST['drawing_data']);
     $img_src = mysqli_real_escape_string($conn, $_POST['img_src']);
@@ -1428,7 +1431,8 @@ if (isset($_POST['save_trim'])) {
 
     if ($key !== false && isset($_SESSION["cart"][$key])) {
         $_SESSION["cart"][$key]['quantity_cart'] = $quantity;
-        $_SESSION["cart"][$key]['estimate_length'] = $length;
+        $_SESSION["cart"][$key]['estimate_length'] = $feet;
+        $_SESSION["cart"][$key]['estimate_length_inch'] = $inches;
         $_SESSION["cart"][$key]['unit_price'] = $price;
         $_SESSION["cart"][$key]['custom_trim_src'] = $img_src;
         $_SESSION["cart"][$key]['drawing_data'] = $drawing_data;
@@ -1461,8 +1465,8 @@ if (isset($_POST['save_trim'])) {
                 'quantity_in_stock' => 0,
                 'quantity_cart' => $quantity,
                 'estimate_width' => 0,
-                'estimate_length' => $length,
-                'estimate_length_inch' => '',
+                'estimate_length' => $feet,
+                'estimate_length_inch' => $inches,
                 'usage' => 0,
                 'custom_color' => $color,
                 'weight' => 0,
