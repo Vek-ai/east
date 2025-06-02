@@ -139,9 +139,8 @@ if(isset($_POST['fetch_modal'])){
                 </div>
             </div>
             <div class="col-12">
-                <div class="mb-3">
-                    <label class="form-label" for="truss_price">Price</label>
-                    <input type="text" id="trim_price" class="form-control mb-1" value="<?= $price ?>" placeholder="Enter Price">
+                <div class="product_cost_display">
+                    <h5 class="text-center pt-3 fs-5 fw-bold">Product Cost: $<span id="trim_price"><?= number_format(floatval($product_details['unit_price']),2) ?></span></h5>
                 </div>
             </div>
         </div>  

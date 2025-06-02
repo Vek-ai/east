@@ -1545,29 +1545,28 @@ if (!isset($_SESSION['userid'])) {
 
 
   $(document).ready(function() {
-    document.addEventListener('mouseenter', function (e) {
-        const el = e.target instanceof Element ? e.target.closest('[title]') : null;
-        if (!el) return;
+    $(document).on('mouseenter', '[title]', function () {
+        const $el = $(this);
 
-        if (!el._tooltipInstance) {
-            el._tooltipInstance = new bootstrap.Tooltip(el, {
+        if ($el.closest('.select2-container').length > 0) return;
+
+        if (!$el.data('bs.tooltip')) {
+            $el.tooltip({
                 trigger: 'hover',
                 placement: 'top'
-            });
-            el._tooltipInstance.show();
+            }).tooltip('show');
         }
-    }, true);
+    });
 
-    document.addEventListener('mouseleave', function (e) {
-        const el = e.target instanceof Element ? e.target.closest('[title]') : null;
-        if (!el) return;
+    $(document).on('mouseleave', '[title]', function () {
+        const $el = $(this);
 
-        if (el._tooltipInstance) {
-            el._tooltipInstance.dispose();
-            el._tooltipInstance = null;
+        if ($el.closest('.select2-container').length > 0) return;
+
+        if ($el.data('bs.tooltip')) {
+            $el.tooltip('dispose');
         }
-    }, true);
-
+    });
     
     loadCartItemsHeader();
 

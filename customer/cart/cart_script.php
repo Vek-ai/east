@@ -2007,7 +2007,7 @@ function updatePrice() {
         totalPrice += totalPrice * custom_multiplier_trim;
     }
 
-    $('#trim_price').val(totalPrice.toFixed(2));
+    $('#trim_price').text(totalPrice.toFixed(2));
 }
 
 $(document).on('change', '#trim_length, #trim_qty', function() {

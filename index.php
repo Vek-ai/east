@@ -1474,7 +1474,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "product_color_width") {include 'pages/product_color_width.php';}
             if ($_REQUEST['page'] == "panel_multiplier") {include 'pages/panel_multiplier.php';}
 
-            if ($_REQUEST['page'] == "trim_length") {include 'pages/trim_length.php';}
+            if ($_REQUEST['page'] == "product_length") {include 'pages/product_length.php';}
             if ($_REQUEST['page'] == "promotions") {include 'pages/promotions.php';}
           ?>
         </div>

@@ -16,7 +16,7 @@ if(isset($_POST['fetch_modal'])){
             $category_id = $product_details['product_category'];
         ?>
         <input type="hidden" id="product_id" name="id" value="<?= $id ?>" />
-        <input type="hidden" id="product_price" value="<?= $product_details['unit_price'] ?>" />
+        <input type="hidden" id="product_price" name="price" value="<?= $product_details['unit_price'] ?>" />
         <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
         <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
 
@@ -34,17 +34,16 @@ if(isset($_POST['fetch_modal'])){
                 <label class="form-label">Length</label>
                 <div class="mb-3 row g-2">
                     <div class="col">
-                        <input type="number" step="0.01" min="0" class="form-control" name="custom_length_feet" id="custom_length_feet" placeholder="Feet">
+                        <input type="number" step="0.001" min="0" class="form-control" name="custom_length_feet" id="custom_length_feet" placeholder="Feet">
                     </div>
                     <div class="col">
-                        <input type="number" step="0.01" min="0" class="form-control" name="custom_length_inch" id="custom_length_inch" placeholder="Inches">
+                        <input type="number" step="0.001" min="0" class="form-control" name="custom_length_inch" id="custom_length_inch" placeholder="Inches">
                     </div>
                 </div>
             </div>
             <div class="col-12">
-                <div class="mb-3">
-                    <label class="form-label" for="truss_price">Price</label>
-                    <input type="text" id="trim_price" name="price" class="form-control mb-1" value="0" placeholder="Enter Price">
+                <div class="product_cost_display">
+                    <h5 class="text-center pt-3 fs-5 fw-bold">Product Cost: $<span id="price_display">0.00</span></h5>
                 </div>
             </div>
         </div>
@@ -77,10 +76,11 @@ if(isset($_POST['fetch_modal'])){
 
                     const finalPrice = (basePrice * multiplier * quantity).toFixed(2);
 
-                    $('#trim_price').val(finalPrice);
+                    $('#total_price').val(finalPrice);
+                    $('#price_display').text(finalPrice);
                 }
 
-                $(document).on('change', '#custom_length', updatePrice);
+                $(document).on('input', '#custom_length_quantity', updatePrice);
                 $(document).on('input', '#custom_length_feet', updatePrice);
                 $(document).on('input', '#custom_length_inch', updatePrice);
 

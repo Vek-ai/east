@@ -2,7 +2,7 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Trim Length";
+$page_title = "Product Length";
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -38,7 +38,7 @@ $page_title = "Trim Length";
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
             <li class="breadcrumb-item">
-              <a class="text-muted text-decoration-none" href="">Trim Properties
+              <a class="text-muted text-decoration-none" href="">Product Properties
               </a>
             </li>
             <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
@@ -76,9 +76,44 @@ $page_title = "Trim Length";
           <h3 class="card-title align-items-center mb-2">
               Filter <?= $page_title ?>
           </h3>
-          <div class="position-relative w-100 px-0 mr-0 mb-2">
+          <div class="position-relative w-100 px-1 mr-0 mb-2">
               <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search">
               <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
+          </div>
+          <div class="align-items-center">
+              <div class="position-relative w-100 px-1 mb-2">
+                  <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-category" data-filter="category" data-filter-name="Product Category">
+                      <option value="">All Categories</option>
+                      <optgroup label="Category">
+                          <?php
+                          $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                          $result_category = mysqli_query($conn, $query_category);
+                          while ($row_category = mysqli_fetch_array($result_category)) {
+                          ?>
+                              <option value="<?= $row_category['product_category'] ?>"><?= $row_category['product_category'] ?></option>
+                          <?php
+                          }
+                          ?>
+                      </optgroup>
+                  </select>
+              </div>
+              <div class="position-relative w-100 px-1 mb-2">
+                  <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-type" data-filter="type" data-filter-name="Product Type">
+                      <option value="">All Types</option>
+                      <optgroup label="Category">
+                          <?php
+                          $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
+                          $result_type = mysqli_query($conn, $query_type);
+                          while ($row_type = mysqli_fetch_array($result_type)) {
+                              $selected = ($category_id == $row_type['product_type_id']) ? 'selected' : '';
+                          ?>
+                              <option value="<?= $row_type['product_type'] ?>"><?= $row_type['product_type'] ?></option>
+                          <?php
+                          }
+                          ?>
+                      </optgroup>
+                  </select>
+              </div>
           </div>
           <div class="px-3 mb-2"> 
               <input type="checkbox" id="toggleActive" checked> Show Active Only
@@ -99,9 +134,12 @@ $page_title = "Trim Length";
                 <table id="display_length" class="table table-striped table-bordered align-middle">
                   <thead>
                     <tr>
-                      <th>Trim length</th>
+                      <th>Product length</th>
                       <th>Abreviations</th>
-                      <th>Multiplier</th>
+                      <th>Feet</th>
+                      <th>Inch</th>
+                      <th>Category</th>
+                      <th>Type</th>
                       <th>Notes</th>
                       <th>Details</th>
                       <th>Status</th>
@@ -300,14 +338,17 @@ $page_title = "Trim Length";
     var table = $('#display_length').DataTable({
         pageLength: 100,
         ajax: {
-            url: 'pages/trim_length_ajax.php',
+            url: 'pages/product_length_ajax.php',
             type: 'POST',
             data: { action: 'fetch_table' }
         },
         columns: [
-            { data: 'trim_length' },
+            { data: 'product_length' },
             { data: 'length_abreviations' },
-            { data: 'multiplier' },
+            { data: 'feet' },
+            { data: 'inches' },
+            { data: 'product_category_name' },
+            { data: 'product_type_name' },
             { data: 'notes' },
             { data: 'last_edit' },
             { data: 'status_html' },
@@ -315,6 +356,7 @@ $page_title = "Trim Length";
         ],
         createdRow: function (row, data, dataIndex) {
             $(row).attr('data-category', data.product_category_name);
+            $(row).attr('data-type', data.product_type_name);
         }
     });
 
@@ -361,14 +403,14 @@ $page_title = "Trim Length";
 
     $(document).on('click', '.changeStatus', function(event) {
         event.preventDefault(); 
-        var trim_length_id = $(this).data('id');
+        var product_length_id = $(this).data('id');
         var status = $(this).data('status');
         var no = $(this).data('no');
         $.ajax({
-            url: 'pages/trim_length_ajax.php',
+            url: 'pages/product_length_ajax.php',
             type: 'POST',
             data: {
-                trim_length_id: trim_length_id,
+                product_length_id: product_length_id,
                 status: status,
                 action: 'change_status'
             },
@@ -387,14 +429,14 @@ $page_title = "Trim Length";
 
     $(document).on('click', '.hideLength', function(event) {
         event.preventDefault();
-        var trim_length_id = $(this).data('id');
+        var product_length_id = $(this).data('id');
         var rowId = $(this).data('row');
         $.ajax({
-            url: 'pages/trim_length_ajax.php',
+            url: 'pages/product_length_ajax.php',
             type: 'POST',
             data: {
-                trim_length_id: trim_length_id,
-                action: 'hide_trim_length'
+                product_length_id: product_length_id,
+                action: 'hide_product_length'
             },
             success: function(response) {
                 if (response == 'success') {
@@ -421,7 +463,7 @@ $page_title = "Trim Length";
         var appendResult = "";
 
         $.ajax({
-            url: 'pages/trim_length_ajax.php',
+            url: 'pages/product_length_ajax.php',
             type: 'POST',
             data: formData,
             processData: false,
@@ -459,7 +501,7 @@ $page_title = "Trim Length";
 
     $("#download_class_form").submit(function (e) {
         e.preventDefault();
-        window.location.href = "pages/trim_length_ajax.php?action=download_classifications&class=" + encodeURIComponent($("#select-download-class").val());
+        window.location.href = "pages/product_length_ajax.php?action=download_classifications&class=" + encodeURIComponent($("#select-download-class").val());
     });
 
     $(document).on('click', '#uploadBtn', function(event) {
@@ -471,12 +513,12 @@ $page_title = "Trim Length";
     });
 
     $(document).on('click', '#downloadBtn', function(event) {
-        window.location.href = "pages/trim_length_ajax.php?action=download_excel";
+        window.location.href = "pages/product_length_ajax.php?action=download_excel";
     });
 
     $(document).on('click', '#readUploadBtn', function(event) {
         $.ajax({
-            url: 'pages/trim_length_ajax.php',
+            url: 'pages/product_length_ajax.php',
             type: 'POST',
             data: {
                 action: "fetch_uploaded_modal"
@@ -498,15 +540,15 @@ $page_title = "Trim Length";
         formData.append('action', 'upload_excel');
 
         $.ajax({
-            url: 'pages/trim_length_ajax.php',
+            url: 'pages/product_length_ajax.php',
             type: 'POST',
             data: formData,
             contentType: false,
             processData: false,
             success: function (response) {
                 $('.modal').modal('hide');
-                response = response.trim();
-                if (response.trim() === "success") {
+                response = response.product();
+                if (response.product() === "success") {
                     $('#responseHeader').text("Success");
                     $('#responseMsg').text("Data Uploaded successfully.");
                     $('#responseHeaderContainer').removeClass("bg-danger");
@@ -559,7 +601,7 @@ $page_title = "Trim Length";
         };
 
         $.ajax({
-            url: 'pages/trim_length_ajax.php',
+            url: 'pages/product_length_ajax.php',
             type: 'POST',
             data: updatedData,
             success: function(response) {
@@ -578,14 +620,14 @@ $page_title = "Trim Length";
             formData.append("action", "save_table");
 
             $.ajax({
-                url: "pages/trim_length_ajax.php",
+                url: "pages/product_length_ajax.php",
                 type: "POST",
                 data: formData,
                 processData: false,
                 contentType: false,
                 success: function (response) {
                     $('.modal').modal('hide');
-                    response = response.trim();
+                    response = response.product();
                     $('#responseHeader').text("Success");
                     $('#responseMsg').text(response);
                     $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
@@ -607,7 +649,7 @@ $page_title = "Trim Length";
         }
 
         $.ajax({
-            url: 'pages/trim_length_ajax.php',
+            url: 'pages/product_length_ajax.php',
             type: 'POST',
             data: {
               id : id,
@@ -649,7 +691,7 @@ $page_title = "Trim Length";
 
         if (isActive) {
             $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                return $(table.row(dataIndex).node()).find('a .alert').text().trim() === 'Active';
+                return $(table.row(dataIndex).node()).find('a .alert').text() === 'Active';
             });
         }
 
@@ -682,7 +724,7 @@ $page_title = "Trim Length";
 
         $('.filter-selection').each(function() {
             var selectedOption = $(this).find('option:selected');
-            var selectedText = selectedOption.text().trim();
+            var selectedText = selectedOption.text();
             var filterName = $(this).data('filter-name');
 
             if ($(this).val()) {

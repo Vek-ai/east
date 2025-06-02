@@ -1497,51 +1497,43 @@ if (isset($_POST['save_custom_length'])) {
         $_SESSION["cart"] = array();
     }
 
-    $key = findCartKey($_SESSION["cart"], $id, $line);
+    $query = "SELECT * FROM product WHERE product_id = '$id'";
+    $result = mysqli_query($conn, $query);
 
-    if ($key !== false && isset($_SESSION["cart"][$key])) {
-        $_SESSION["cart"][$key]['quantity_cart'] += $quantity;
-        $_SESSION["cart"][$key]['estimate_length'] = $length;
-        $_SESSION["cart"][$key]['unit_price'] = $price;
-    } else {
-        $query = "SELECT * FROM product WHERE product_id = '$id'";
-        $result = mysqli_query($conn, $query);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
 
-        if (mysqli_num_rows($result) > 0) {
-            $row = mysqli_fetch_assoc($result);
+        $line_to_use = is_numeric($line) ? intval($line) : 1;
 
-            $line_to_use = is_numeric($line) ? intval($line) : 1;
-
-            foreach ($_SESSION["cart"] as $item) {
-                if ($item['product_id'] == $id && $item['line'] >= $line_to_use) {
-                    $line_to_use = $item['line'] + 1;
-                }
+        foreach ($_SESSION["cart"] as $item) {
+            if ($item['product_id'] == $id && $item['line'] >= $line_to_use) {
+                $line_to_use = $item['line'] + 1;
             }
-
-            $item_array = array(
-                'product_id' => $row['product_id'],
-                'product_item' => $row['product_item'],
-                'unit_price' => $price,
-                'line' => $line_to_use,
-                'quantity_ttl' => 0,
-                'quantity_in_stock' => 0,
-                'quantity_cart' => $quantity,
-                'estimate_width' => 0,
-                'estimate_length' => $estimate_length,
-                'estimate_length_inch' => $estimate_length_inch,
-                'usage' => 0,
-                'custom_color' => '',
-                'weight' => 0,
-                'supplier_id' => '',
-                'custom_grade' => '',
-                'custom_gauge' => ''
-            );
-
-            $_SESSION["cart"][] = $item_array;
-        } else {
-            echo json_encode(['error' => "Trim Product not available"]);
-            exit;
         }
+
+        $item_array = array(
+            'product_id' => $row['product_id'],
+            'product_item' => $row['product_item'],
+            'unit_price' => $price,
+            'line' => $line_to_use,
+            'quantity_ttl' => 0,
+            'quantity_in_stock' => 0,
+            'quantity_cart' => $quantity,
+            'estimate_width' => 0,
+            'estimate_length' => $estimate_length,
+            'estimate_length_inch' => $estimate_length_inch,
+            'usage' => 0,
+            'custom_color' => '',
+            'weight' => 0,
+            'supplier_id' => '',
+            'custom_grade' => '',
+            'custom_gauge' => ''
+        );
+
+        $_SESSION["cart"][] = $item_array;
+    } else {
+        echo json_encode(['error' => "Trim Product not available"]);
+        exit;
     }
 
     echo json_encode(['success' =>$_SESSION["cart"]]);
