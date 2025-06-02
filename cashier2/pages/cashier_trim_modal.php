@@ -149,7 +149,7 @@ if(isset($_POST['fetch_modal'])){
                 <button class="btn btn-warning ripple btn-secondary" id="trim_draw" type="button">Modify Trim</button>
             </div>
             <div class="d-flex justify-content-center">
-                <button id="btnCustomChart" class="btn btn-warning ripple btn-secondary" type="button" data-category="<?= $category_id ?>">Chart</button>
+                <button id="btnCustomChart" class="btn btn-warning ripple btn-secondary" type="button" data-category="<?= $category_id ?>">Trim Profile</button>
             </div>
             <div class="d-flex justify-content-end">
                 <button id="saveDrawing" class="btn btn-success" type="submit">Save</button>
