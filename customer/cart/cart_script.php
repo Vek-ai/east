@@ -2319,6 +2319,8 @@ $(document).ready(function() {
         var profile_id = $('#select-profile').find('option:selected').val();
         var type_id = $('#select-type').find('option:selected').val();
         var onlyInStock = $('#toggleActive').prop('checked');
+        var onlyPromotions = $('#onlyPromotions').prop('checked');
+        var onlyOnSale = $('#onlyOnSale').prop('checked');
         $.ajax({
             url: 'pages/cashier_ajax.php',
             type: 'POST',
@@ -2330,7 +2332,9 @@ $(document).ready(function() {
                 category_id: category_id,
                 profile_id: profile_id,
                 type_id: type_id,
-                onlyInStock: onlyInStock
+                onlyInStock: onlyInStock,
+                onlyPromotions: onlyPromotions,
+                onlyOnSale: onlyOnSale
             },
             success: function(response) {
                 $('#productTableBody').html(response);
@@ -3215,28 +3219,53 @@ $(document).ready(function() {
         var displayDiv = $('#selected-tags');
         displayDiv.empty();
 
-        $('.filter-selection').each(function() {
-            var selectedOption = $(this).find('option:selected');
-            var selectedText = selectedOption.text().trim();
-            var filterName = $(this).data('filter-name');
+        $('.filter-selection, #onlyOnSale, #onlyPromotions').each(function() {
+            var $filter = $(this);
+            var filterName = $filter.data('filter-name');
+            var filterId = $filter.attr('id');
+            var value = $filter.val();
 
-            if ($(this).val()) {
-                displayDiv.append(`
-                    <div class="d-inline-block p-1 m-1 border rounded bg-light">
-                        <span class="text-dark">${filterName}: ${selectedText}</span>
-                        <button type="button" 
-                            class="btn-close btn-sm ms-1 remove-tag" 
-                            style="width: 0.75rem; height: 0.75rem;" 
-                            aria-label="Close" 
-                            data-select="#${$(this).attr('id')}">
-                        </button>
-                    </div>
-                `);
+            if ($filter.attr('type') === 'checkbox') {
+                if ($filter.is(':checked')) {
+                    displayDiv.append(`
+                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                            <span class="text-dark">${filterName}</span>
+                            <button type="button"
+                                class="btn-close btn-sm ms-1 remove-tag"
+                                style="width: 0.75rem; height: 0.75rem;"
+                                aria-label="Close"
+                                data-select="#${filterId}">
+                            </button>
+                        </div>
+                    `);
+                }
+            } else {
+                if (value) {
+                    var selectedOption = $filter.find('option:selected');
+                    var selectedText = selectedOption.text().trim();
+
+                    displayDiv.append(`
+                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                            <span class="text-dark">${filterName}: ${selectedText}</span>
+                            <button type="button"
+                                class="btn-close btn-sm ms-1 remove-tag"
+                                style="width: 0.75rem; height: 0.75rem;"
+                                aria-label="Close"
+                                data-select="#${filterId}">
+                            </button>
+                        </div>
+                    `);
+                }
             }
         });
 
         $('.remove-tag').on('click', function() {
-            $($(this).data('select')).val('').trigger('change');
+            var $target = $($(this).data('select'));
+            if ($target.attr('type') === 'checkbox') {
+                $target.prop('checked', false).trigger('change');
+            } else {
+                $target.val('').trigger('change');
+            }
             $(this).parent().remove();
         });
     }
@@ -3297,7 +3326,7 @@ $(document).ready(function() {
         });
     });
 
-    $(document).on('input change', '#text-srh, #select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive', function() {
+    $(document).on('input change', '#text-srh, #select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive, #onlyOnSale, #onlyPromotions', function() {
         performSearch($('#text-srh').val());
     });
 

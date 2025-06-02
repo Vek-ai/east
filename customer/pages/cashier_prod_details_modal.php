@@ -83,40 +83,59 @@ if(isset($_POST['fetch_details_modal'])){
 
                         </div>
                         <div class="col-lg-6">
-                        <div class="shop-content">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                            <?php
-                            $totalQuantity = getProductStockTotal($row['product_id']);
-                            if($totalQuantity > 0){
-                            ?>
-                                <span class="badge text-bg-success fs-2 fw-semibold">In Stock</span>
-                            <?php
-                            }else{
-                            ?>
-                                <span class="badge text-bg-danger fs-2 fw-semibold">Out of Stock</span>
-                            <?php
-                            }
-                            ?>
-                            
-                            <span class="fs-2"><?= getProductCategoryName($row['product_category']) ?></span>
-                            </div>
-                            <h4><?= $row['product_item'] ?></h4>
-                            <p class="mb-3"><?= $row['description'] ?></p>
-                            <h4 class="fw-semibold mb-3">
-                                $<?= $row['unit_price'] ?> 
-                            </h4>
-                            <div class="d-flex align-items-center gap-8 py-7">
+                            <div class="shop-content">
+                                <div class="d-flex align-items-center gap-2 mb-2">
                                 <?php
-                                if (!empty($row['color'])) {
+                                $totalQuantity = getProductStockTotal($row['product_id']);
+                                if($totalQuantity > 0){
                                 ?>
-                                    <h6 class="mb-0 fs-4 fw-semibold">Colors:</h6>
-                                    <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color: <?= getColorHexFromColorID($row['color']) ?>"></a>
-                                <?php 
+                                    <span class="badge text-bg-success fs-2 fw-semibold">In Stock</span>
+                                <?php
+                                }else{
+                                ?>
+                                    <span class="badge text-bg-danger fs-2 fw-semibold">Out of Stock</span>
+                                <?php
                                 }
-                                ?> 
-                            </div>
+                                ?>
+                                
+                                <span class="fs-2"><?= getProductCategoryName($row['product_category']) ?></span>
+                                </div>
+                                <h4><?= $row['product_item'] ?></h4>
+                                <p class="mb-3"><?= $row['description'] ?></p>
+                                <h4 class="fw-semibold mb-3">
+                                    $<?= $row['unit_price'] ?> 
+                                </h4>
+                                <div class="d-flex align-items-center gap-8 py-7">
+                                    <?php
+                                    if (!empty($row['color'])) {
+                                    ?>
+                                        <h6 class="mb-0 fs-4 fw-semibold">Colors:</h6>
+                                        <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color: <?= getColorHexFromColorID($row['color']) ?>"></a>
+                                    <?php 
+                                    }
+                                    ?> 
+                                </div>
 
+                            </div>
                         </div>
+                        <div class="col-lg-12">
+                            <?php
+                                $statusMessages = [];
+                                if (!empty($row['on_sale']) && $row['on_sale'] == 1) {
+                                    $statusMessages[] = "<span class='badge bg-success me-1'>On Sale</span>";
+                                }
+                                if (!empty($row['on_promotion']) && $row['on_promotion'] == 1) {
+                                    $statusMessages[] = "<span class='badge bg-warning text-dark'>On Promotion</span>";
+                                }
+                                
+                                if (!empty($statusMessages)) {
+                                    echo "<h5>Status: " . implode(" & ", $statusMessages) . "</h5>";
+
+                                    if (!empty($row['reason'])) {
+                                        echo "<p class='mb-0'><em>Reason:</em> " . htmlspecialchars($row['reason']) . "</p>";
+                                    }
+                                }
+                            ?>
                         </div>
                     </div>
                     </div>

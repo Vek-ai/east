@@ -5,6 +5,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require 'includes/dbconn.php';
 require 'includes/functions.php';
+
+$page_title = "Promotions/Discounts"
 ?>
 <style>
     .dz-preview {
@@ -44,17 +46,27 @@ require 'includes/functions.php';
         <div class="card-body px-0">
             <div class="d-flex justify-content-between align-items-center">
             <div><br>
-                <h4 class="font-weight-medium fs-14 mb-0">Promotions/Discounts</h4>
+                <h4 class="font-weight-medium fs-14 mb-0"><?= $page_title ?></h4>
                 <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
                     <a class="text-muted text-decoration-none" href="">Home
                     </a>
                     </li>
-                    <li class="breadcrumb-item text-muted" aria-current="page">Promotions/Discounts</li>
+                    <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
                 </ol>
                 </nav>
             </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-body">
+        <div class="row">
+            <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+                <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
+                    <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title ?>
+                </button>
             </div>
         </div>
     </div>
@@ -66,13 +78,13 @@ require 'includes/functions.php';
                     <h3 class="card-title align-items-center mb-2">
                         Filter Products 
                     </h3>
-                    <div class="position-relative w-100 px-0 mr-0 mb-2">
+                    <div class="position-relative w-100 px-1 mr-0 mb-2">
                         <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search Product">
                         <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                     </div>
                     <div class="align-items-center">
                         <div class="position-relative w-100 px-1 mb-2">
-                            <select class="form-control py-0 ps-5 select2" id="select-category" data-category="">
+                            <select class="form-control py-0 ps-5 select2 filter-selection" id="select-category" id="filter-category" data-filter="category" data-filter-name="Product Category">
                                 <option value="" data-category="">All Categories</option>
                                 <optgroup label="Category">
                                     <?php
@@ -89,58 +101,7 @@ require 'includes/functions.php';
                             </select>
                         </div>
                         <div class="position-relative w-100 px-1 mb-2">
-                            <select class="form-control search-category py-0 ps-5 select2" id="select-system" data-category="">
-                                <option value="" data-category="">All Product Systems</option>
-                                <optgroup label="Product Type">
-                                    <?php
-                                    $query_system = "SELECT * FROM product_system WHERE hidden = '0' AND status = '1' ORDER BY `product_system` ASC";
-                                    $result_system = mysqli_query($conn, $query_system);
-                                    while ($row_system = mysqli_fetch_array($result_system)) {
-                                        $selected = ($product_system == $row_system['product_system_id']) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_system['product_system_id'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
-                                    <?php
-                                    }
-                                    ?>
-                                </optgroup>
-                            </select>
-                        </div>
-                        <div class="position-relative w-100 px-1 mb-2">
-                            <select class="form-control search-category py-0 ps-5 select2" id="select-line" data-category="">
-                                <option value="" data-category="">All Product Lines</option>
-                                <optgroup label="Product Type">
-                                    <?php
-                                    $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
-                                    $result_line = mysqli_query($conn, $query_line);
-                                    while ($row_line = mysqli_fetch_array($result_line)) {
-                                        $selected = ($type_id == $row_line['product_line_id']) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_line['product_line_id'] ?>" data-category="<?= $row_line['product_category'] ?>" <?= $selected ?>><?= $row_line['product_line'] ?></option>
-                                    <?php
-                                    }
-                                    ?>
-                                </optgroup>
-                            </select>
-                        </div>
-                        <div class="position-relative w-100 px-1 mb-2">
-                            <select class="form-control search-category py-0 ps-5 select2" id="select-type" data-category="">
-                                <option value="" data-category="">All Product Types</option>
-                                <optgroup label="Product Type">
-                                    <?php
-                                    $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
-                                    $result_type = mysqli_query($conn, $query_type);
-                                    while ($row_type = mysqli_fetch_array($result_type)) {
-                                        $selected = ($type_id == $row_type['product_type_id']) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_type['product_type_id'] ?>" data-category="<?= $row_type['product_category'] ?>" <?= $selected ?>><?= $row_type['product_type'] ?></option>
-                                    <?php
-                                    }
-                                    ?>
-                                </optgroup>
-                            </select>
-                        </div>
-                        <div class="position-relative w-100 px-1 mb-2">
-                            <select class="form-control search-category py-0 ps-5 select2" id="select-profile" data-category="">
+                            <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-profile" data-filter="profile" data-filter-name="Product Profile">
                                 <option value="" data-category="">All Profile Types</option>
                                 <optgroup label="Product Line">
                                     <?php
@@ -157,7 +118,7 @@ require 'includes/functions.php';
                             </select>
                         </div>
                         <div class="position-relative w-100 px-1 mb-2">
-                            <select class="form-control search-chat py-0 ps-5 select2" id="select-color" data-category="">
+                            <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-color" data-filter="color" data-filter-name="Paint Color">
                                 <option value="" data-category="">All Colors</option>
                                 <optgroup label="Product Colors">
                                     <?php
@@ -174,24 +135,7 @@ require 'includes/functions.php';
                             </select>
                         </div>
                         <div class="position-relative w-100 px-1 mb-2">
-                            <select class="form-control search-chat py-0 ps-5 select2" id="select-grade" data-category="">
-                                <option value="" data-category="">All Grades</option>
-                                <optgroup label="Product Grades">
-                                    <?php
-                                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
-                                    $result_grade = mysqli_query($conn, $query_grade);
-                                    while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                        $selected = ($grade_id == $row_grade['product_grade_id']) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
-                                    <?php
-                                    }
-                                    ?>
-                                </optgroup>
-                            </select>
-                        </div>
-                        <div class="position-relative w-100 px-1 mb-2">
-                            <select class="form-control search-chat py-0 ps-5 select2" id="select-gauge" data-category="">
+                            <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-gauge" data-filter="gauge" data-filter-name="Product Gauge">
                                 <option value="" data-category="">All Gauges</option>
                                 <optgroup label="Product Gauges">
                                     <?php
@@ -209,8 +153,12 @@ require 'includes/functions.php';
                         </div>
                     </div>
                     <div class="px-3 mb-2">
-                        <input type="checkbox" id="onlyInStock" <?= $onlyInStock ? 'checked' : '' ?>> Show only In Stock
+                        <input type="checkbox" class="filter-selection" id="onlyPromotions" value="true" data-filter="promotion" data-filter-name="On Promotions"> Show Items on Promotion Only
                     </div>
+                    <div class="px-3 mb-2">
+                        <input type="checkbox" class="filter-selection" id="onlyOnSale" value="true" data-filter="on-sale" data-filter-name="On Sale"> Show Items on Sale Only
+                    </div>
+                    
                 </div>
                 <div class="col-9">
                     <h3 class="card-title mb-2">
@@ -219,27 +167,24 @@ require 'includes/functions.php';
                     <div id="selected-tags" class="mb-2"></div>
                     <div class="datatables">
                         <div class="table-responsive">
-                            <table id="productList" class="table search-table align-middle text-wrap">
+                            <table id="productList" class="table search-table align-middle text-wrap text-center">
                                 <thead class="header-item">
-                                <th>Product Name</th>
-                                <th>Promotions</th>
-                                <th>Discounts</th>
-                                <th>Action</th>
+                                    <th class="align-middle text-start">Product Name</th>
+                                    <th class="align-middle text-center">On Promotions</th>
+                                    <th class="align-middle text-center">On Sale</th>
+                                    <th class="align-middle text-center">Reason</th>
+                                    <th class="align-middle text-center">Action</th>
                                 </thead>
                                 <tbody>
                                 <?php
                                     $no = 1;
                                     $query_product = "
                                         SELECT 
-                                            p.*,
-                                            COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
+                                            *
                                         FROM 
-                                            product_duplicate AS p
-                                        LEFT JOIN 
-                                            inventory AS i ON p.product_id = i.product_id
+                                            product
                                         WHERE 
-                                            p.hidden = '0' AND p.status = '1'
-                                        GROUP BY p.product_id
+                                            hidden = '0' AND status = '1' AND ( on_sale = '1' || on_promotion = '1' )
                                     ";
 
                                     $result_product = mysqli_query($conn, $query_product);            
@@ -264,19 +209,14 @@ require 'includes/functions.php';
                                     ?>
                                         <!-- start row -->
                                         <tr class="search-items" 
-                                            data-system="<?= $row_product['product_system'] ?>"
-                                            data-line="<?= $row_product['product_line'] ?>"
-                                            data-profile="<?= $row_product['profile'] ?>"
+                                            data-category="<?= $row_product['product_category'] ?>"
                                             data-profile="<?= $row_product['profile'] ?>"
                                             data-color="<?= $row_product['color'] ?>"
-                                            data-grade="<?= $row_product['grade'] ?>"
                                             data-gauge="<?= $row_product['gauge'] ?>"
-                                            data-category="<?= $row_product['product_category'] ?>"
-                                            data-type="<?= $row_product['product_type'] ?>"
-                                            data-active="<?= $row_product['p.status'] = 1 ? 1 : 0 ?>"
-                                            data-instock="<?= $row_product['total_quantity'] > 1 ? 1 : 0 ?>"
+                                            data-on-sale="<?= $row_product['on_sale'] ?? '' == 1 ? 'true' : 'false' ?>"
+                                            data-promotion="<?= $row_product['on_promotion'] ?? '' == 1 ? 'true' : 'false' ?>"
                                             >
-                                            <td>
+                                            <td class="align-middle">
                                                 <a href="/?page=product_details&product_id=<?= $row_product['product_id'] ?>">
                                                     <div class="d-flex align-items-center">
                                                         <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
@@ -286,12 +226,16 @@ require 'includes/functions.php';
                                                     </div>
                                                 </a>
                                             </td>
-                                            <td></td>
-                                            <td></td>
-                                            <td>
-                                                <div class="action-btn text-center">
-                                                    <a href="#" id="view_product_btn" class="text-primary edit" data-id="<?= $row_product['product_id'] ?>">
+                                            <td class="align-middle"><?= $row_product['on_sale'] ?? '' == 1 ? '<i class="fas fa-check"></i>' : '' ?></td>
+                                            <td class="align-middle"><?= $row_product['on_promotion'] ?? '' == 1 ? '<i class="fas fa-check"></i>' : '' ?></td>
+                                            <td class="align-middle"><?= $row_product['reason'] ?></td>
+                                            <td class="align-middle">
+                                                <div class="action-btn text-center d-flex justify-content-center gap-2">
+                                                    <a href="#" id="view_product_btn" class="edit d-flex align-items-center" data-id="<?= $row_product['product_id'] ?>" title="View">
                                                         <i class="text-primary ti ti-eye fs-7"></i>
+                                                    </a>
+                                                    <a href="#" id="addModalBtn" title="Edit" class="edit d-flex align-items-center" data-id="<?= $row_product['product_id'] ?>" data-type="edit">
+                                                        <i class="text-warning ti ti-pencil fs-7"></i>
                                                     </a>
                                                 </div>
                                             </td>
@@ -311,6 +255,57 @@ require 'includes/functions.php';
         <div class="modal fade" id="updateProductModal" tabindex="-1" role="dialog" aria-labelledby="updateProductModal" aria-hidden="true">  
         </div>
 
+        <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header d-flex align-items-center">
+                        <h4 class="modal-title" id="add-header">
+                            Add <?= $page_title ?>
+                        </h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="promotionDiscountsForm" class="form-horizontal">
+                        <div class="modal-body">
+                            <div class="card">
+                                <div class="card-body">
+                                <div id="add-fields" class=""></div>
+                                <div class="form-actions">
+                                    <div class="border-top">
+                                        <div class="row mt-2">
+                                            <div class="col-6 text-start"></div>
+                                            <div class="col-6 text-end ">
+                                                <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+                        <h4 id="responseHeader" class="m-0"></h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                <div class="modal-body">
+                    
+                    <p id="responseMsg"></p>
+                </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+                        Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -357,89 +352,199 @@ require 'includes/functions.php';
             });
         });
 
+        $('#promotionDiscountsForm').on('submit', function(event) {
+            event.preventDefault(); 
+            var formData = new FormData(this);
+            formData.append('action', 'add_update');
+            $.ajax({
+                url: 'pages/promotions_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                $('.modal').modal("hide");
+                if (response === "update_success") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("<?= $page_title ?> updated successfully.");
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
+                    $('#response-modal').on('hide.bs.modal', function () {
+                        location.reload();
+                    });
+                } else if (response === "add_update") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("New <?= $page_title ?> added successfully.");
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
+                    $('#response-modal').on('hide.bs.modal', function () {
+                        location.reload();
+                    });
+                } else {
+                    $('#responseHeader').text("Failed");
+                    $('#responseMsg').text(response);
+
+                    $('#responseHeaderContainer').removeClass("bg-success");
+                    $('#responseHeaderContainer').addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#addModalBtn', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id') || '';
+            var type = $(this).data('type') || '';
+
+            if(type == 'edit'){
+                $('#add-header').html('Update <?= $page_title ?>');
+            }else{
+                $('#add-header').html('Add <?= $page_title ?>');
+            }
+
+            $.ajax({
+                url: 'pages/promotions_ajax.php',
+                type: 'POST',
+                data: {
+                    id : id,
+                    action: 'fetch_modal_content'
+                },
+                success: function (response) {
+                    $('#add-fields').html(response);
+
+                    $("#product_select").each(function () {
+                        $(this).select2({
+                            width: '100%',
+                            dropdownParent: $(this).parent(),
+                            placeholder: "Select Product/s"
+                        });
+                    });
+
+                    $('#addModal').modal('show');
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX Error:', textStatus, errorThrown);
+                    console.error('Response:', jqXHR.responseText);
+
+                    $('#responseHeader').text("Error");
+                    $('#responseMsg').text("An error occurred while processing your request.");
+                    $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            });
+        });
+
         function filterTable() {
-            var system = $('#select-system').val()?.toString() || '';
-            var line = $('#select-line').val()?.toString() || '';
-            var profile = $('#select-profile').val()?.toString() || '';
-            var profile = $('#select-profile').val()?.toString() || '';
-            var color = $('#select-color').val()?.toString() || '';
-            var grade = $('#select-grade').val()?.toString() || '';
-            var gauge = $('#select-gauge').val()?.toString() || '';
-            var category = $('#select-category').val()?.toString() || '';
-            var type = $('#select-type').val()?.toString() || '';
-            var onlyInStock = $('#onlyInStock').prop('checked') ? 1 : 0;
             var textSearch = $('#text-srh').val().toLowerCase();
 
             $.fn.dataTable.ext.search = [];
 
             if (textSearch) {
                 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                    var rowText = $(table.row(dataIndex).node()).text().toLowerCase();
-                    return rowText.includes(textSearch);
+                    return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
                 });
             }
 
             $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                 var row = $(table.row(dataIndex).node());
-                if (system && system !== '/' && row.data('system').toString() !== system) return false;
-                if (line && line !== '/' && row.data('line').toString() !== line) return false;
-                if (profile && profile !== '/' && row.data('profile').toString() !== profile) return false;
-                if (color && color !== '/' && row.data('color').toString() !== color) return false;
-                if (grade && grade !== '/' && row.data('grade').toString() !== grade) return false;
-                if (gauge && gauge !== '/' && row.data('gauge').toString() !== gauge) return false;
-                if (category && category !== '/' && row.data('category').toString() !== category) return false;
-                if (type && type !== '/' && row.data('type').toString() !== type) return false;
-                if (onlyInStock && row.data('instock') != onlyInStock) return false;
+                var match = true;
 
-                return true;
+                $('.filter-selection').each(function() {
+                    var $filter = $(this);
+                    var filterType = $filter.attr('type');
+                    var dataKey = $filter.data('filter');
+                    var filterVal = '';
+
+                    if (filterType === 'checkbox') {
+                        if ($filter.is(':checked')) {
+                            let rowVal = row.data(dataKey);
+                            match = rowVal === true || rowVal === 'true';
+                        }
+                    } else {
+                        filterVal = $filter.val()?.toString().trim().toLowerCase() || '';
+                        let rowVal = row.data(dataKey)?.toString().toLowerCase() || '';
+
+                        if (filterVal && filterVal !== '/' && !rowVal.includes(filterVal)) {
+                            match = false;
+                        }
+                    }
+
+                    if (!match) return false;
+                });
+
+                return match;
             });
 
             table.draw();
+            updateSelectedTags();
         }
 
-        function updateSelectedTags() {
-            const sections = [
-                { id: '#select-color', title: 'Color' },
-                { id: '#select-grade', title: 'Grade' },
-                { id: '#select-gauge', title: 'Gauge' },
-                { id: '#select-category', title: 'Category' },
-                { id: '#select-profile', title: 'Profile' },
-                { id: '#select-system', title: 'System' },
-                { id: '#select-line', title: 'Line' },
-                { id: '#select-profile', title: 'Profile' },
-                { id: '#select-type', title: 'Type' },
-            ];
 
-            const displayDiv = $('#selected-tags');
+        function updateSelectedTags() {
+            var displayDiv = $('#selected-tags');
             displayDiv.empty();
 
-            sections.forEach((section) => {
-                const selectedOption = $(`${section.id} option:selected`);
-                const selectedText = selectedOption.text().trim();
+            $('.filter-selection').each(function () {
+                var $filter = $(this);
+                var filterName = $filter.data('filter-name');
+                var filterId = $filter.attr('id');
+                var value = $filter.val();
 
-                if (selectedOption.val()) {
-                    displayDiv.append(`
-                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
-                            <span class="text-dark">${section.title}: ${selectedText}</span>
-                            <button type="button" 
-                                class="btn-close btn-sm ms-1 remove-tag" 
-                                style="width: 0.75rem; height: 0.75rem;" 
-                                aria-label="Close" 
-                                data-tag="${selectedText}" 
-                                data-select="${section.id}">
-                            </button>
-                        </div>
-                    `);
+                if ($filter.attr('type') === 'checkbox') {
+                    if ($filter.is(':checked')) {
+                        displayDiv.append(`
+                            <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                                <span class="text-dark">${filterName}</span>
+                                <button type="button"
+                                    class="btn-close btn-sm ms-1 remove-tag"
+                                    style="width: 0.75rem; height: 0.75rem;"
+                                    aria-label="Close"
+                                    data-select="#${filterId}">
+                                </button>
+                            </div>
+                        `);
+                    }
+                } else {
+                    if (value) {
+                        var selectedOption = $filter.find('option:selected');
+                        var selectedText = selectedOption.text().trim();
+
+                        displayDiv.append(`
+                            <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                                <span class="text-dark">${filterName}: ${selectedText}</span>
+                                <button type="button"
+                                    class="btn-close btn-sm ms-1 remove-tag"
+                                    style="width: 0.75rem; height: 0.75rem;"
+                                    aria-label="Close"
+                                    data-select="#${filterId}">
+                                </button>
+                            </div>
+                        `);
+                    }
                 }
             });
 
-            $('.remove-tag').on('click', function() {
-                const selectId = $(this).data('select');
-                $(selectId).val('').trigger('change');
-
+            $('.remove-tag').on('click', function () {
+                var $target = $($(this).data('select'));
+                if ($target.attr('type') === 'checkbox') {
+                    $target.prop('checked', false).trigger('change');
+                } else {
+                    $target.val('').trigger('change');
+                }
                 $(this).parent().remove();
             });
         }
+
+
+        $(document).on('input change', '#text-srh, .filter-selection', filterTable);
+
+        filterTable();
 
     });
 </script>

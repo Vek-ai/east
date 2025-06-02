@@ -165,7 +165,8 @@ if (isset($_REQUEST['query'])) {
     $profile_id = isset($_REQUEST['profile_id']) ? mysqli_real_escape_string($conn, $_REQUEST['profile_id']) : '';
     $category_id = isset($_REQUEST['category_id']) ? mysqli_real_escape_string($conn, $_REQUEST['category_id']) : '';
     $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
-    
+    $onlyPromotions = isset($_REQUEST['onlyPromotions']) ? filter_var($_REQUEST['onlyPromotions'], FILTER_VALIDATE_BOOLEAN) : false;
+    $onlyOnSale = isset($_REQUEST['onlyOnSale']) ? filter_var($_REQUEST['onlyOnSale'], FILTER_VALIDATE_BOOLEAN) : false;
 
     $query_product = "
         SELECT 
@@ -205,6 +206,14 @@ if (isset($_REQUEST['query'])) {
 
     if (!empty($category_id)) {
         $query_product .= " AND p.product_category = '$category_id'";
+    }
+
+    if ($onlyPromotions) {
+        $query_product .= " AND p.on_promotion = '1'";
+    }
+
+    if ($onlyOnSale) {
+        $query_product .= " AND p.on_sale = '1'";
     }
 
     $query_product .= " GROUP BY p.product_id";

@@ -1519,6 +1519,9 @@ if (!isset($_SESSION['userid'])) {
   $(document).ready(function() {
     $(document).on('mouseenter', '[title]', function () {
         const $el = $(this);
+
+        if ($el.closest('.select2-container').length > 0) return;
+
         if (!$el.data('bs.tooltip')) {
             $el.tooltip({
                 trigger: 'hover',
@@ -1529,6 +1532,9 @@ if (!isset($_SESSION['userid'])) {
 
     $(document).on('mouseleave', '[title]', function () {
         const $el = $(this);
+
+        if ($el.closest('.select2-container').length > 0) return;
+
         if ($el.data('bs.tooltip')) {
             $el.tooltip('dispose');
         }

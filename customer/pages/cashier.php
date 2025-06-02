@@ -134,8 +134,27 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         <button class="btn btn-primary m-2" data-bs-toggle="modal" data-bs-target="#trim_chart_modal" type="button">
                             View Trim Chart
                         </button>
-                        <div style="color: #ffffff !important; opacity: 1;">
-                            <input type="checkbox" id="toggleActive" checked> Show only In Stock
+                        <div class="d-flex justify-content-center">
+                            <div>
+                                <div class="form-check mb-2 text-start">
+                                    <input class="form-check-input" type="checkbox" id="toggleActive" checked>
+                                    <label class="form-check-label" for="toggleActive" style="color:#fff;">
+                                        Show only In Stock
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2 text-start">
+                                    <input class="form-check-input" type="checkbox" id="onlyPromotions" value="true" data-filter="promotion" data-filter-name="On Promotions">
+                                    <label class="form-check-label" for="onlyPromotions" style="color:#fff;">
+                                        Show Promotions
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2 text-start">
+                                    <input class="form-check-input" type="checkbox" id="onlyOnSale" value="true" data-filter="on-sale" data-filter-name="On Sale">
+                                    <label class="form-check-label" for="onlyOnSale" style="color:#fff;">
+                                        Show On Sale
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="mb-9">

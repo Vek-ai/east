@@ -165,8 +165,27 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         <button class="btn btn-primary m-2" data-bs-toggle="modal" data-bs-target="#trim_chart_modal" type="button">
                             View Trim Chart
                         </button>
-                        <div style="color: #ffffff !important; opacity: 1;">
-                            <input type="checkbox" id="toggleActive" checked> Show only In Stock
+                        <div class="d-flex justify-content-center">
+                            <div>
+                                <div class="form-check mb-2 text-start">
+                                    <input class="form-check-input" type="checkbox" id="toggleActive" checked>
+                                    <label class="form-check-label" for="toggleActive" style="color:#fff;">
+                                        Show only In Stock
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2 text-start">
+                                    <input class="form-check-input" type="checkbox" id="onlyPromotions" value="true" data-filter="promotion" data-filter-name="On Promotions">
+                                    <label class="form-check-label" for="onlyPromotions" style="color:#fff;">
+                                        Show Promotions
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2 text-start">
+                                    <input class="form-check-input" type="checkbox" id="onlyOnSale" value="true" data-filter="on-sale" data-filter-name="On Sale">
+                                    <label class="form-check-label" for="onlyOnSale" style="color:#fff;">
+                                        Show On Sale
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="mb-9">
@@ -3353,6 +3372,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var profile_id = $('#select-profile').find('option:selected').val();
             var type_id = $('#select-type').find('option:selected').val();
             var onlyInStock = $('#toggleActive').prop('checked');
+            var onlyPromotions = $('#onlyPromotions').prop('checked');
+            var onlyOnSale = $('#onlyOnSale').prop('checked');
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -3364,7 +3385,9 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     category_id: category_id,
                     profile_id: profile_id,
                     type_id: type_id,
-                    onlyInStock: onlyInStock
+                    onlyInStock: onlyInStock,
+                    onlyPromotions: onlyPromotions,
+                    onlyOnSale: onlyOnSale
                 },
                 success: function(response) {
                     $('#productTableBody').html(response);
@@ -4273,28 +4296,53 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var displayDiv = $('#selected-tags');
             displayDiv.empty();
 
-            $('.filter-selection').each(function() {
-                var selectedOption = $(this).find('option:selected');
-                var selectedText = selectedOption.text().trim();
-                var filterName = $(this).data('filter-name');
+            $('.filter-selection, #onlyOnSale, #onlyPromotions').each(function() {
+                var $filter = $(this);
+                var filterName = $filter.data('filter-name');
+                var filterId = $filter.attr('id');
+                var value = $filter.val();
 
-                if ($(this).val()) {
-                    displayDiv.append(`
-                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
-                            <span class="text-dark">${filterName}: ${selectedText}</span>
-                            <button type="button" 
-                                class="btn-close btn-sm ms-1 remove-tag" 
-                                style="width: 0.75rem; height: 0.75rem;" 
-                                aria-label="Close" 
-                                data-select="#${$(this).attr('id')}">
-                            </button>
-                        </div>
-                    `);
+                if ($filter.attr('type') === 'checkbox') {
+                    if ($filter.is(':checked')) {
+                        displayDiv.append(`
+                            <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                                <span class="text-dark">${filterName}</span>
+                                <button type="button"
+                                    class="btn-close btn-sm ms-1 remove-tag"
+                                    style="width: 0.75rem; height: 0.75rem;"
+                                    aria-label="Close"
+                                    data-select="#${filterId}">
+                                </button>
+                            </div>
+                        `);
+                    }
+                } else {
+                    if (value) {
+                        var selectedOption = $filter.find('option:selected');
+                        var selectedText = selectedOption.text().trim();
+
+                        displayDiv.append(`
+                            <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                                <span class="text-dark">${filterName}: ${selectedText}</span>
+                                <button type="button"
+                                    class="btn-close btn-sm ms-1 remove-tag"
+                                    style="width: 0.75rem; height: 0.75rem;"
+                                    aria-label="Close"
+                                    data-select="#${filterId}">
+                                </button>
+                            </div>
+                        `);
+                    }
                 }
             });
 
             $('.remove-tag').on('click', function() {
-                $($(this).data('select')).val('').trigger('change');
+                var $target = $($(this).data('select'));
+                if ($target.attr('type') === 'checkbox') {
+                    $target.prop('checked', false).trigger('change');
+                } else {
+                    $target.val('').trigger('change');
+                }
                 $(this).parent().remove();
             });
         }
@@ -4340,6 +4388,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         $(document).on('click', '.reset_filters', function () {
             $('.filter-selection').val(null).trigger('change');
             $('#text-srh').val('').trigger('input');
+            $('#onlyOnSale, #onlyPromotions').prop('checked', false).trigger('change');
         });
 
         $('.filter-selection').each(function () {
@@ -4350,7 +4399,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
 
-        $(document).on('input change', '#text-srh, #select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive', function() {
+        $(document).on('input change', '#text-srh, #select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive, #onlyOnSale, #onlyPromotions', function() {
             performSearch($('#text-srh').val());
         });
 
