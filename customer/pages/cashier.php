@@ -381,78 +381,22 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
         <!-- Exposed Fasteners -->
         <h6>Exposed Fasteners</h6>
-        <div class="d-flex align-items-center">
-          <button class="btn btn-outline-secondary me-2" type="button" data-bs-target="#exposedCarousel" data-bs-slide="prev">
-            <i class="fa fa-chevron-left"></i>
-          </button>
-          <div id="exposedCarousel" class="carousel slide w-100" data-bs-ride="false">
-            <div class="carousel-inner">
-              <div class="carousel-item active">
-                <div class="row g-3">
-                  <div class="col-4">
-                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/low_rib.jpg">Low-Rib</button>
-                  </div>
-                  <div class="col-4">
-                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/hi_rib.jpg">Hi-Rib</button>
-                  </div>
-                  <div class="col-4">
-                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/corrugated.jpg">Corrugated</button>
-                  </div>
-                </div>
-              </div>
-              <div class="carousel-item">
-                <div class="row g-3">
-                  <div class="col-4">
-                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/5v.jpg">5-V</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <button class="btn btn-outline-secondary ms-2" type="button" data-bs-target="#exposedCarousel" data-bs-slide="next">
-            <i class="fa fa-chevron-right"></i>
-          </button>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/low_rib.jpg">Low-Rib</button>
+          <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/hi_rib.jpg">Hi-Rib</button>
+          <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/corrugated.jpg">Corrugated</button>
+          <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/5v.jpg">5-V</button>
         </div>
 
         <!-- Concealed Fasteners -->
-        <h6 class="mt-4">Concealed Fasteners</h6>
-        <div class="d-flex align-items-center">
-          <button class="btn btn-outline-secondary me-2" type="button" data-bs-target="#concealedCarousel" data-bs-slide="prev">
-            <i class="fa fa-chevron-left"></i>
-          </button>
-          <div id="concealedCarousel" class="carousel slide w-100" data-bs-ride="false">
-            <div class="carousel-inner">
-              <div class="carousel-item active">
-                <div class="row g-3">
-                  <div class="col-4">
-                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/board_batten.jpg">Board & Batten</button>
-                  </div>
-                  <div class="col-4">
-                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/standing_seam.jpg">Standing Seam 1.5in</button>
-                  </div>
-                  <div class="col-4">
-                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/snap_lock.jpg">Snap Lock 1.75in</button>
-                  </div>
-                </div>
-              </div>
-              <div class="carousel-item">
-                <div class="row g-3">
-                  <div class="col-4">
-                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/mechanical_seam.jpg">Mechanical Seam 2in</button>
-                  </div>
-                  <div class="col-4">
-                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/plank.jpg">Plank</button>
-                  </div>
-                  <div class="col-4">
-                    <button class="chart-btn btn btn-outline-primary w-100" data-img="../assets/images/flush_mount.jpg">Flush Mount Soffit</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <button class="btn btn-outline-secondary ms-2" type="button" data-bs-target="#concealedCarousel" data-bs-slide="next">
-            <i class="fa fa-chevron-right"></i>
-          </button>
+        <h6>Concealed Fasteners</h6>
+        <div class="d-flex flex-wrap gap-2">
+          <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/board_batten.jpg">Board & Batten</button>
+          <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/standing_seam.jpg">Standing Seam 1.5in</button>
+          <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/snap_lock.jpg">Snap Lock 1.75in</button>
+          <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/mechanical_seam.jpg">Mechanical Seam 2in</button>
+          <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/plank.jpg">Plank</button>
+          <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/flush_mount.jpg">Flush Mount Soffit</button>
         </div>
       </div>
 
@@ -462,6 +406,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     </div>
   </div>
 </div>
+
 
 <div class="modal fade" id="custom_chart_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
   <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
