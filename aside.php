@@ -192,7 +192,7 @@
           </a>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" target="_blank" href="https://roofingpassport.b2clogin.com/roofingpassport.onmicrosoft.com/b2c_1a_signin_signup_i[%E2%80%A6]wtxRIH&state=a72d1f53944a0220a2328528d4b611eff9Hpe7qwE">
+          <a class="sidebar-link" target="_blank" href="https://www.roofingpassport.com/jobs">
             <iconify-icon icon="mdi:home-roof" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Roofing Passport</span>
           </a>
