@@ -1479,6 +1479,80 @@ if (!isset($_SESSION['userid'])) {
           ?>
         </div>
       </div>
+
+      <div class="modal" id="color_chart_modal">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+          <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+              <h4 class="modal-title">Color Chart</h4>
+            </div>
+            <div class="modal-body">
+              <img id="chartImage" src="assets/images/low_rib.jpg" alt="Trim Chart" class="img-fluid mb-4">
+            </div>
+            <div class="modal-footer">
+              <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="contactInfoModal" tabindex="-1" aria-labelledby="contactInfoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+          <div class="modal-content">
+            <div class="modal-header border-0">
+              <h5 class="modal-title fw-bold fs-4" id="contactInfoLabel">Store Information</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+
+              <div class="d-flex align-items-start gap-3 mb-4">
+                <iconify-icon icon="mdi:map-marker" class="text-primary fs-7"></iconify-icon>
+                <div>
+                  <div class="fw-semibold fs-5" style="color: #ffffff !important;">Address</div>
+                  <div class="text-secondary">
+                    977 E Hal Rogers Parkway<br>
+                    London, KY 40741
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-start gap-3 mb-4">
+                <iconify-icon icon="mdi:phone" class="text-success fs-7"></iconify-icon>
+                <div>
+                  <div class="fw-semibold fs-5" style="color: #ffffff !important;">Phone</div>
+                  <a href="tel:6069999999" class="text-decoration-none text-secondary">(606) 999-9999</a><br>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-start gap-3 mb-4">
+                <iconify-icon icon="mdi:email-outline" class="text-danger fs-7"></iconify-icon>
+                <div>
+                  <div class="fw-semibold fs-5" style="color: #ffffff !important;">Email</div>
+                  <a href="mailto:johndoe@eastkentuckymetal.com" class="text-decoration-none text-secondary">
+                    johndoe@eastkentuckymetal.com
+                  </a>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-start gap-3">
+                <iconify-icon icon="mdi:clock-outline" class="text-warning fs-7"></iconify-icon>
+                <div>
+                  <div class="fw-semibold fs-5" style="color: #ffffff !important;">Operating Hours</div>
+                  <div class="text-secondary">
+                    Mon – Fri: 7:30 AM – 5:30 PM<br>
+                    Saturday: 8:00 AM – 12:00 PM<br>
+                    Sunday: Closed
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
       <script>
   function handleColorTheme(e) {
     $("html").attr("data-color-theme", e);

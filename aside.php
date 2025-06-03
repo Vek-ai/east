@@ -54,9 +54,9 @@
           </a>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=sales_list">
-            <iconify-icon icon="solar:history-linear" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Sales History</span>
+          <a class="sidebar-link" href="?page=estimate_list">
+            <iconify-icon icon="solar:document-linear" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Estimates</span>
           </a>
         </li>
         <li class="sidebar-item">
@@ -66,38 +66,21 @@
           </a>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=estimate_list">
-            <iconify-icon icon="solar:document-linear" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Estimates</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
           <a class="sidebar-link" href="estimate_list.php">
             <iconify-icon icon="solar:undo-left-round-linear" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Returns/Refunds</span>
           </a>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="discounts_promotions.php">
-            <iconify-icon icon="solar:flag-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Discounts/Promotions</span>
+          <a class="sidebar-link" href="?page=sales_list">
+            <iconify-icon icon="solar:history-linear" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Sales History</span>
           </a>
         </li>
         <li class="sidebar-item">
           <a class="sidebar-link" href="invoices.php">
             <iconify-icon icon="solar:folder-with-files-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Invoices</span>
-          </a>
-        </li>
-
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Supplier</span>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=product_supplier">
-            <iconify-icon icon="solar:pen-new-round-linear" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Suppliers</span>
           </a>
         </li>
 
@@ -120,10 +103,16 @@
             <span class="hide-menu">Product List</span>
           </a>
         </li>
-      <li class="sidebar-item">
+        <li class="sidebar-item">
           <a class="sidebar-link" href="?page=inventory">
             <iconify-icon icon="solar:smartphone-update-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Inventory</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="discounts_promotions.php">
+            <iconify-icon icon="solar:flag-outline" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Discounts/Promotions</span>
           </a>
         </li>
        <!--   <li class="sidebar-item">
@@ -145,30 +134,9 @@
             <span class="hide-menu">Print QR</span>
           </a>
         </li>
- <!-- Products -->
+        <!-- Products -->
         <!-- ---------------------------------- -->
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Products Properties</span>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=category">
-            <iconify-icon icon="solar:server-minimalistic-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Categories</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=product_line">
-            <iconify-icon icon="solar:server-linear" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Product Line</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=product_type">
-            <iconify-icon icon="octicon:dash-16" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Product Type</span>
-          </a>
-        </li>
+        
        <!-- ---------------------------------- -->
         <!-- Customers -->
         <!-- ---------------------------------- -->
@@ -182,7 +150,6 @@
             <span class="hide-menu">Customer</span>
           </a>
         </li>
-       
         <li class="sidebar-item">
           <a class="sidebar-link" href="?page=merge_customer">
             <iconify-icon icon="solar:checklist-minimalistic-outline" class="aside-icon"></iconify-icon>
@@ -195,6 +162,53 @@
             <span class="hide-menu">Loyalty Program</span>
           </a>
         </li>
+
+        <li class="nav-small-cap">
+          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <span class="hide-menu">EKM Tools</span>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#contactInfoModal">
+            <iconify-icon icon="mdi:store-outline" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Store Information</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" target="_blank" href="https://eastweb.ilearnwebtech.com/">
+            <iconify-icon icon="mdi:web" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">EKM Website</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#color_chart_modal">
+            <iconify-icon icon="mdi:palette-outline" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">EKM Color Charts</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" target="_blank" href="https://postframesolver.azurewebsites.net/Account/Login?ReturnUrl=%2F">
+            <iconify-icon icon="mdi:tools" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Smart Build</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" target="_blank" href="https://roofingpassport.b2clogin.com/roofingpassport.onmicrosoft.com/b2c_1a_signin_signup_i[%E2%80%A6]wtxRIH&state=a72d1f53944a0220a2328528d4b611eff9Hpe7qwE">
+            <iconify-icon icon="mdi:home-roof" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Roofing Passport</span>
+          </a>
+        </li>
+
+        <li class="nav-small-cap">
+          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <span class="hide-menu">Supplier</span>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="?page=product_supplier">
+            <iconify-icon icon="solar:pen-new-round-linear" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Suppliers</span>
+          </a>
+        </li>
+
         <!-- ---------------------------------- -->
         <!-- Reports -->
         <!-- ---------------------------------- -->
@@ -237,7 +251,7 @@
         <li class="sidebar-item">
           <a class="sidebar-link" href="?page=staff">
             <iconify-icon icon="solar:user-hand-up-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Add New Employee</span>
+            <span class="hide-menu">Employees</span>
           </a>
         </li>
        <!-- <li class="sidebar-item">
@@ -270,6 +284,29 @@
             <span class="hide-menu">Warehouses</span>
           </a>
         </li>
+
+        <li class="nav-small-cap">
+          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
+          <span class="hide-menu">Products Properties</span>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="?page=category">
+            <iconify-icon icon="solar:server-minimalistic-outline" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Categories</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="?page=product_line">
+            <iconify-icon icon="solar:server-linear" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Product Line</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="?page=product_type">
+            <iconify-icon icon="octicon:dash-16" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Product Type</span>
+          </a>
+        </li>
     
         <!-- ---------------------------------- -->
         <!-- Settings -->
@@ -300,12 +337,6 @@
           <a class="sidebar-link" href="receipt_templates.php">
             <iconify-icon icon="solar:bill-check-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Receipt Templates</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="store_information.php">
-            <iconify-icon icon="solar:buildings-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Store Information</span>
           </a>
         </li>
 
