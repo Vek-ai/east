@@ -12,13 +12,13 @@ if (isset($_POST['fetch_modal'])) {
     $category_details = getCategoryDetails($category);
     $image = $category_details['custom_chart_image'] ?? '';
 
-    $relativePath = '../images/chart_images/' . $image;
-    $checkPath = '../../images/chart_images/' . $image;
+    $relativePath = '../images/default_trim.png';
+    $checkPath = '../../images/default_trim.png';
 
     if ($image && file_exists($checkPath)) {
         ?>
         <img id="chartImage" src="<?= $relativePath ?>" alt="Custom Chart Image"
-             class="img-fluid w-100" style="height: auto;">
+             class="img-fluid w-100" style="height: 60vw;">
         <?php
     } else {
         ?>

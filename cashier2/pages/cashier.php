@@ -1827,7 +1827,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         let undoStack = [];
         let redoStack = [];
         let lineTypes = [];
-        const pixelsPerInch = 96;
+        let pixelsPerInch = 96;
         let currentColor = "#000000";
         let hemHeight = 15;
 
@@ -1843,12 +1843,12 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         let dragHandle = null;
 
         let isTemporaryLineActive = true;
-        const hemImages = {
+        let hemImages = {
             flat: new Image(),
             open: new Image()
         };
 
-        const arrows = [];
+        let arrows = [];
 
         let isDrawingArrow = false;
         let isDraggingArrow = false;
@@ -1876,29 +1876,50 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 ctx.fillText("Draw here", canvas.width / 2, canvas.height / 2);
             }
         };
-
         
         if (dataInput && dataInput.value) {
             isLoading = true;
             drawPlaceholderText();
+
             try {
                 let decodedData = decodeHtmlEntities(dataInput.value);
-
                 decodedData = decodedData.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                let loadedData = JSON.parse(decodedData);
 
-                const loadedData = JSON.parse(decodedData);
                 points = loadedData.points || [];
                 lengths = loadedData.lengths || [];
                 angles = loadedData.angles || [];
                 colors = loadedData.colors || [];
+                lineTypes = loadedData.lineTypes || [];
+                arrows = loadedData.arrows || [];
+
+                images = [];
+                if (Array.isArray(loadedData.images)) {
+                    for (let item of loadedData.images) {
+                        if (item && item.src) {
+                            let img = new Image();
+                            img.src = item.src;
+                            img.onload = () => redrawCanvas();
+
+                            images.push({
+                                img: img,
+                                x: item.x,
+                                y: item.y,
+                                width: item.width,
+                                height: item.height,
+                                rotation: item.rotation || 0
+                            });
+                        }
+                    }
+                }
+
                 currentStartPoint = points.length > 0 ? points[points.length - 1] : null;
             } catch (e) {
                 console.error("Invalid drawing data:", e);
             }
 
             isLoading = false;
-            drawPlaceholderText();
-        }else{
+        } else {
             isLoading = false;
             drawPlaceholderText();
         }
@@ -1982,7 +2003,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             return Math.abs(rx) <= width / 2 && Math.abs(ry) <= height / 2;
         }
 
-        function drawHemImage(p1, p2, img) {
+        function drawHemImage(p1, p2, img, flip = false) {
             if (!img.complete) return;
 
             const dx = p2.x - p1.x;
@@ -1999,8 +2020,15 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
             ctx.save();
             ctx.translate(p1.x, p1.y);
-            ctx.rotate(angle); 
-            ctx.drawImage(img, 0, -desiredHeight / 2, img.width * scaleX, imgHeight * scaleY);
+            ctx.rotate(angle);
+
+            if (flip) {
+                ctx.scale(-1, 1);
+                ctx.drawImage(img, -img.width * scaleX, -desiredHeight / 2, img.width * scaleX, imgHeight * scaleY);
+            } else {
+                ctx.drawImage(img, 0, -desiredHeight / 2, img.width * scaleX, imgHeight * scaleY);
+            }
+
             ctx.restore();
         }
 
@@ -2280,7 +2308,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
                 if (type === 'flat' || type === 'open') {
                     const img = hemImages[type];
-                    drawHemImage(p1, p2, img);
+                    const flip = (i === 1);
+                    drawHemImage(p1, p2, img, flip);
                 } else {
                     drawLine(p1, p2, colors[i - 1]);
                 }
@@ -2884,7 +2913,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     points: points,
                     lengths: lengths,
                     angles: angles,
-                    colors: colors
+                    colors: colors,
+                    lineTypes: lineTypes,
+                    arrows: arrows,
+                    images: images
                 };
 
                 const totalLength = points.reduce((sum, point, i) => {
@@ -2905,10 +2937,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 $('.drawingContainer').each(function () {
                     $(this).data("drawing", drawingDataJson);
                     $(this).attr("data-drawing", drawingDataJson);
-                    console.log(drawingDataJson)
+                    console.log(drawingDataJson);
                 });
 
-                $('#drawing_data').val(drawingDataJson); 
+                $('#drawing_data').val(drawingDataJson);
 
                 $.ajax({
                     url: 'pages/cashier_ajax.php',

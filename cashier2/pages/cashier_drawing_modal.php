@@ -11,6 +11,9 @@ if(isset($_POST['fetch_drawing'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
     $drawing_data = $_POST['drawing_data'];
+    if (is_array($drawing_data)) {
+        $drawing_data = json_encode($drawing_data, JSON_UNESCAPED_UNICODE);
+    }
     ?>
         <input type="hidden" id="initial_drawing_data" value='<?= htmlspecialchars($drawing_data, ENT_QUOTES, "UTF-8") ?>'>
         
@@ -35,7 +38,7 @@ if(isset($_POST['fetch_drawing'])){
                                     </a>
                                 </div>
 
-                                <canvas id="drawingCanvas" width="1000" height="500" class="border rounded bg-white"></canvas>
+                                <canvas id="drawingCanvas" width="1000" height="700" class="border rounded bg-white"></canvas>
                                 
                                 <div class="row mt-0">
                                     <div class="col-md-6 d-flex align-items-center gap-2">
