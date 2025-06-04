@@ -8,6 +8,8 @@ require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
 if(isset($_POST['fetch_order_list'])){
+    $customerid = mysqli_real_escape_string($conn, $_POST['customer_id']);
+    $orderid = mysqli_real_escape_string($conn, $_POST['orderid']);
     ?>
         <div class="card-body datatables">
             <div class="product-details table-responsive text-nowrap">
@@ -25,7 +27,21 @@ if(isset($_POST['fetch_order_list'])){
                     <tbody>
                         <?php 
 
-                        $query = "SELECT * FROM orders WHERE status = '1'";
+                        $query = "
+                            SELECT o.*, CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name
+                            FROM orders AS o
+                            LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
+                            WHERE 1 = 1
+                        ";
+
+                        if (!empty($customerid) && $customer_name != 'All Customers') {
+                            $query .= " AND customerid = '$customerid' ";
+                        }
+
+                        if (!empty($orderid)) {
+                            $query .= " AND orderid = '$orderid' ";
+                        }
+
                         $result = mysqli_query($conn, $query);
                     
                         if ($result && mysqli_num_rows($result) > 0) {
@@ -37,10 +53,10 @@ if(isset($_POST['fetch_order_list'])){
                                     <?php echo get_customer_name($row["customerid"]) ?>
                                 </td>
                                 <td >
-                                    $ <?php echo number_format(getOrderTotals($row["orderid"]),2) ?>
+                                    $ <?php echo number_format(floatval(getOrderTotals($row["orderid"])),2) ?>
                                 </td>
                                 <td >
-                                    $ <?php echo number_format(getOrderTotalsDiscounted($row["orderid"]),2) ?>
+                                    $ <?php echo number_format(floatval(getOrderTotalsDiscounted($row["orderid"])),2) ?>
                                 </td>
                                 <td>
                                     <?php echo date("F d, Y", strtotime($row["order_date"])); ?>
@@ -54,12 +70,6 @@ if(isset($_POST['fetch_order_list'])){
                             </tr>
                             <?php
                             }
-                        } else {
-                        ?>
-                        <tr>
-                            <td colspan="6" class="text-center">No Orders found.</td>
-                        </tr>
-                        <?php
                         }
                         ?>
                     </tbody>
@@ -70,14 +80,8 @@ if(isset($_POST['fetch_order_list'])){
         $(document).ready(function() {
             $('#order_list_tbl').DataTable({
                 language: {
-                    emptyTable: "Orders List not found"
-                },
-                autoWidth: false,
-                responsive: true
-            });
-
-            $('#view_order_list_modal').on('shown.bs.modal', function () {
-                $('#order_list_tbl').DataTable().columns.adjust().responsive.recalc();
+                    emptyTable: "No Orders found"
+                }
             });
         });
     </script>

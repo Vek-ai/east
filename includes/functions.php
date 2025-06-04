@@ -770,6 +770,26 @@ function getOrderTotals($orderid) {
     return number_format($total_actual_price, 2);
 }
 
+function getReturnTotals($orderid) {
+    global $conn;
+    $query = "
+        SELECT 
+            SUM(discounted_price * quantity) AS total_price
+        FROM 
+            product_returns
+        WHERE 
+            orderid = '$orderid'";
+
+    $result = mysqli_query($conn, $query);
+    $total_price = 0;
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $total_price = floatval($row['total_price']);
+    }
+    return number_format($total_price, 2);
+}
+
 function getOrderTotalsDiscounted($orderid) {
     global $conn;
 

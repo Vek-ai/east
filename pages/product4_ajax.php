@@ -37,6 +37,10 @@ if(isset($_REQUEST['action'])) {
             if ($key == 'retail') {
                 $fields['unit_price'] = $escapedValue;
             }
+
+            if ($key == 'color_paint') {
+                $fields['color'] = $escapedValue;
+            }
         }
         
         $checkQuery = "SELECT * FROM product WHERE product_id = '$product_id'";

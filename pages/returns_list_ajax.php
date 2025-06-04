@@ -12,15 +12,19 @@ if (isset($_POST['search_customer'])) {
 
     $query = "
         SELECT 
-            customer_id AS value, 
-            CONCAT(customer_first_name, ' ', customer_last_name) AS label
+            customer_id, 
+            customer_first_name, 
+            customer_last_name, 
+            customer_business_name
         FROM 
             customer
         WHERE 
-            (customer_first_name LIKE '%$search%' 
-            OR 
-            customer_last_name LIKE '%$search%')
-            AND status != '3'
+            (
+                customer_first_name LIKE '%$search%' 
+                OR customer_last_name LIKE '%$search%'
+                OR customer_business_name LIKE '%$search%'
+            )
+            AND status NOT IN ('0', '3')
         LIMIT 15
     ";
 
@@ -28,26 +32,39 @@ if (isset($_POST['search_customer'])) {
 
     if ($result) {
         $response = array();
-
-        $response[] = array(
-            'value' => 'all_customers',
-            'label' => 'All Customers'
-        );
-
         while ($row = mysqli_fetch_assoc($result)) {
-            $response[] = $row;
-        }
+            $fullName = $row['customer_first_name'] . ' ' . $row['customer_last_name'];
+            $label = !empty($row['customer_business_name']) 
+                ? $fullName . ' (' . $row['customer_business_name'] . ')' 
+                : $fullName;
 
+            $response[] = [
+                'value' => $row['customer_id'],
+                'label' => $label
+            ];
+        }
         echo json_encode($response);
     } else {
-        echo json_encode(array('error' => 'Query failed'));
+        echo json_encode(['error' => 'Query failed']);
     }
 }
 
 if (isset($_POST['search_returns'])) {
+    $response = [
+        'orders' => [],
+        'total_count' => 0,
+        'total_amount' => 0,
+        'error' => null
+    ];
+
     $customer_name = mysqli_real_escape_string($conn, $_POST['customer_name']);
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
+
+    $months = array_map('intval', $_POST['months'] ?? []);
+    $years = array_map('intval', $_POST['years'] ?? []);
+    $staff = mysqli_real_escape_string($conn, $_POST['staff']);
+    $tax_status = mysqli_real_escape_string($conn, $_POST['tax_status']);
 
     $query = "
         SELECT pr.*, 
@@ -67,69 +84,53 @@ if (isset($_POST['search_returns'])) {
     if (!empty($date_from) && !empty($date_to)) {
         $date_to .= ' 23:59:59';
         $query .= " AND (o.order_date >= '$date_from' AND o.order_date <= '$date_to') ";
+    } elseif (!empty($date_from)) {
+        $query .= " AND o.order_date >= '$date_from' ";
+    } elseif (!empty($date_to)) {
+        $date_to .= ' 23:59:59';
+        $query .= " AND o.order_date <= '$date_to' ";
+    }
+
+    if (!empty($months)) {
+        $months_in = implode(',', $months);
+        $query .= " AND MONTH(o.order_date) IN ($months_in)";
+    }
+
+    if (!empty($years)) {
+        $years_in = implode(',', $years);
+        $query .= " AND YEAR(o.order_date) IN ($years_in)";
+    }
+
+    if (!empty($staff)) {
+        $query .= " AND cashier = '$staff'";
+    }
+
+    if (!empty($tax_status)) {
+        $query .= " AND c.tax_status = '$tax_status'";
     }
 
     $result = mysqli_query($conn, $query);
 
     if ($result && mysqli_num_rows($result) > 0) {
-        $total_amount = 0;
-        $total_count = 0;
-
-        ?>
-        <table id="sales_table" class="table table-hover mb-0 text-md-nowrap">
-            <thead>
-                <tr>
-                    <th>Purchase Date</th>
-                    <th>Time</th>
-                    <th>Cashier</th>
-                    <th>Customer</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody>     
-            <?php
-
-            while ($row = mysqli_fetch_assoc($result)) {
-                $total_amount += $row['discounted_price'];
-                $total_count += 1;
-
-                $customerid = $row['customerid'];
-                $order_date = $row['order_date'];
-                $customer_name = $row['customer_name'];
-
-                ?>
-                <tr>
-                    <td>
-                        <?= htmlspecialchars(date("F d, Y", strtotime($order_date))) ?>
-                    </td>
-                    <td>
-                        <?= htmlspecialchars(date("h:i A", strtotime($order_date))) ?>
-                    </td>
-                    <td>
-                        <?= get_staff_name($row['cashier']) ?>
-                    </td>
-                    <td>
-                        <?= htmlspecialchars($customer_name) ?>
-                    </td>
-                    <td class="text-end">
-                        $ <?= number_format($row['discounted_price'], 2) ?>
-                    </td>
-                </tr>
-                <?php
-            }
-            ?>
-            </tbody>
-            <tfoot>
-                <td colspan="1" class="text-end">Total Returns: </td>
-                <td><?= $total_count ?></td>
-                <td colspan="2" class="text-end">Total Amount: </td>
-                <td class="text-end">$ <?= $total_amount ?></td>
-            </tfoot>
-        </table>
-        <?php
+        while ($row = mysqli_fetch_assoc($result)) {
+            $amount = getReturnTotals(number_format(floatval($row['orderid']),2));
+            $response['orders'][] = [
+                'orderid' => $row['orderid'],
+                'order_date' => $row['order_date'],
+                'formatted_date' => date("F d, Y", strtotime($row['order_date'])),
+                'formatted_time' => date("h:i A", strtotime($row['order_date'])),
+                'cashier' => get_staff_name($row['cashier']),
+                'customer_name' => $row['customer_name'],
+                'amount' => $amount,
+            ];
+            $response['total_amount'] += $amount;
+            $response['total_count']++;
+        }
     } else {
-        echo "<h4 class='text-center'>No orders found</h4>";
+        $response['error'] = 'No orders found';
     }
+
+    echo json_encode($response);
 }
 
 if(isset($_POST['fetch_order_details'])){

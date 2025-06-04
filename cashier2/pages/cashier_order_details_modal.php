@@ -101,7 +101,7 @@ if(isset($_POST['fetch_order_details'])){
                                 <td class="text-end">$ <?= $actual_price ?></td>
                                 <td class="text-end">$ <?= $discounted_price ?></td>
                                 <td>
-                                    <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="return_product" data-id="<?php echo $row["id"]; ?>" data-toggle="tooltip" data-placement="top" title="Return"><i class="fa fa-rotate-left text-success"></i></i></a>
+                                    <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="return_product" data-id="<?php echo $row["id"]; ?>" title="Return Product"><i class="fa fa-rotate-left text-success"></i></i></a>
                                 </td>
                             </tr>
                     <?php
@@ -128,9 +128,7 @@ if(isset($_POST['fetch_order_details'])){
         </div>
     </div>   
     <script>
-        $(document).ready(function() {
-            $('[data-toggle="tooltip"]').tooltip(); 
-
+        $(document).ready(function() { 
             $('#order_dtls_tbl').DataTable({
                 language: {
                     emptyTable: "Order Details not found"
@@ -143,10 +141,6 @@ if(isset($_POST['fetch_order_details'])){
                 ],
                 autoWidth: false,
                 responsive: true
-            });
-
-            $('#view_order_details_modal').on('shown.bs.modal', function () {
-                $('#order_dtls_tbl').DataTable().columns.adjust().responsive.recalc();
             });
         });
     </script>

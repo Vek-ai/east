@@ -320,9 +320,17 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     </div>
                 </div>
                 <div class="col-10">
-                    <div class="col-12 mb-3">
-                        <h5>Selected Items:</h5>
-                        <div id="selected-tags"></div>
+                    <div class="row mb-3">
+                        <div class="col-sm-12 col-md-10">
+                            <h5>Selected Items:</h5>
+                            <div id="selected-tags"></div>
+                        </div>
+                        <div class="col-sm-12 col-md-2 d-flex justify-content-sm-start justify-content-end">
+                            <button type="button" class="btn mb-2 me-2 flex-fill" id="view_order_list" style="background-color: rgb(1, 85, 187); color: white;">
+                                <i class="fa fa-undo fs-4 me-2"></i>
+                                Start Return
+                            </button>
+                        </div>
                     </div>
                     <div class="table-responsive border rounded">
                         <table id="productTable" class="table align-middle text-wrap mb-0 text-white">
@@ -540,6 +548,22 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 </button>
             </div>
             <div class="modal-body">
+                <div class="row align-items-end g-2 mb-3">
+                    <div class="col-md-5">
+                        <label for="return_order_id" class="form-label">Invoice #</label>
+                        <input type="text" class="form-control" id="return_order_id" name="return_order_id" placeholder="Enter Order ID">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="return_customer_name" class="form-label">Customer Name</label>
+                        <input type="text" class="form-control" id="return_customer_name" name="return_customer_name" placeholder="Enter Customer Name">
+                        <input type="hidden" id="return_customer_id" name="return_customer_id">
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        <button type="button" class="btn btn-primary" id="return_search_button">
+                            <i class="fa fa-search mx-2"></i> Search
+                        </button>
+                    </div>
+                </div>
                 <div id="orders-tbl">
                 </div>
             </div>
@@ -1488,10 +1512,14 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     }
 
     function loadOrderList(){
+        var orderid = $('#return_order_id').val();
+        var customer_id = $('#return_customer_id').val();
         $.ajax({
             url: 'pages/cashier_order_list_modal.php',
             type: 'POST',
             data: {
+                orderid: orderid,
+                customer_id: customer_id,
                 fetch_order_list: "fetch_order_list"
             },
             success: function(response) {
@@ -1502,6 +1530,34 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             }
         });
     }
+
+    $("#return_customer_name").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "pages/cashier_ajax.php",
+                type: 'post',
+                dataType: "json",
+                data: {
+                    search_customer: request.term
+                },
+                success: function(data) {
+                    response(data);
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error: " + xhr.responseText);
+                }
+            });
+        },
+        select: function(event, ui) {
+            $('#return_customer_name').val(ui.item.label);
+            $('#return_customer_id').val(ui.item.value);
+            return false;
+        },
+        appendTo: "#view_order_list_modal", 
+        open: function() {
+            $(".ui-autocomplete").css("z-index", 1050);
+        }
+    });
 
     function loadOrderSupplierList(){
         $.ajax({
@@ -4011,8 +4067,11 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
 
         $(document).on('click', '#view_order_list', function(event) {
-            loadOrderList();
             $('#view_order_list_modal').modal('show');
+        });
+
+        $(document).on('click', '#return_search_button', function(event) {
+            loadOrderList();
         });
 
         $(document).on('click', '#view_order_details', function(event) {

@@ -374,14 +374,13 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 </div>
                 <div class="align-items-center">
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control py-0 ps-5 select2 filter-selection" id="select-category" data-category="">
+                        <select class="form-control py-0 ps-5 select2 filter-selection" id="select-category" data-filter="category" data-filter-name="Product Category">
                             <option value="" data-category="">All Categories</option>
                             <optgroup label="Category">
                                 <?php
                                 $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
                                 $result_category = mysqli_query($conn, $query_category);
                                 while ($row_category = mysqli_fetch_array($result_category)) {
-                                    $selected = ($category_id == $row_category['product_category_id']) ? 'selected' : '';
                                 ?>
                                     <option value="<?= $row_category['product_category'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
                                 <?php
@@ -391,14 +390,13 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-system" data-category="">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-system" data-filter="system" data-filter-name="Product System">
                             <option value="" data-category="">All Product Systems</option>
                             <optgroup label="Product Type">
                                 <?php
                                 $query_system = "SELECT * FROM product_system WHERE hidden = '0' AND status = '1' ORDER BY `product_system` ASC";
                                 $result_system = mysqli_query($conn, $query_system);
                                 while ($row_system = mysqli_fetch_array($result_system)) {
-                                    $selected = ($product_system == $row_system['product_system_id']) ? 'selected' : '';
                                 ?>
                                     <option value="<?= $row_system['product_system'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
                                 <?php
@@ -408,14 +406,13 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-line" data-category="">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-line" data-filter="line" data-filter-name="Product Line">
                             <option value="" data-category="">All Product Lines</option>
                             <optgroup label="Product Type">
                                 <?php
                                 $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
                                 $result_line = mysqli_query($conn, $query_line);
                                 while ($row_line = mysqli_fetch_array($result_line)) {
-                                    $selected = ($type_id == $row_line['product_line_id']) ? 'selected' : '';
                                 ?>
                                     <option value="<?= $row_line['product_line'] ?>" data-category="<?= $row_line['product_category'] ?>" <?= $selected ?>><?= $row_line['product_line'] ?></option>
                                 <?php
@@ -425,14 +422,13 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-type" data-category="">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-type" data-filter="type" data-filter-name="Product Type">
                             <option value="" data-category="">All Product Types</option>
                             <optgroup label="Product Type">
                                 <?php
                                 $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
                                 $result_type = mysqli_query($conn, $query_type);
                                 while ($row_type = mysqli_fetch_array($result_type)) {
-                                    $selected = ($type_id == $row_type['product_type_id']) ? 'selected' : '';
                                 ?>
                                     <option value="<?= $row_type['product_type'] ?>" data-category="<?= $row_type['product_category'] ?>" <?= $selected ?>><?= $row_type['product_type'] ?></option>
                                 <?php
@@ -442,14 +438,13 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-profile" data-category="">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-profile" data-filter="profile" data-filter-name="Product Profile">
                             <option value="" data-category="">All Profile Types</option>
                             <optgroup label="Product Line">
                                 <?php
                                 $query_profile = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1' ORDER BY `profile_type` ASC";
                                 $result_profile = mysqli_query($conn, $query_profile);
                                 while ($row_profile = mysqli_fetch_array($result_profile)) {
-                                    $selected = ($profile_id == $row_profile['profile_type_id']) ? 'selected' : '';
                                 ?>
                                     <option value="<?= $row_profile['profile_type'] ?>" data-category="<?= $v['product_category'] ?>" <?= $selected ?>><?= $row_profile['profile_type'] ?></option>
                                 <?php
@@ -459,16 +454,15 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-color" data-category="">
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-color" data-filter="color" data-filter-name="Product Color">
                             <option value="" data-category="">All Colors</option>
                             <optgroup label="Product Colors">
                                 <?php
                                 $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
                                 $result_color = mysqli_query($conn, $query_color);
                                 while ($row_color = mysqli_fetch_array($result_color)) {
-                                    $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_color['paint_colors'] ?>" data-category="category" <?= $selected ?>><?= $row_color['color_name'] ?></option>
+                                    <option value="<?= $row_color['color_name'] ?>" data-category="category" <?= $selected ?>><?= $row_color['color_name'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -476,14 +470,13 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-grade" data-category="">
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-grade" data-filter="grade" data-filter-name="Product Grade">
                             <option value="" data-category="">All Grades</option>
                             <optgroup label="Product Grades">
                                 <?php
                                 $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                                 $result_grade = mysqli_query($conn, $query_grade);
                                 while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                    $selected = ($grade_id == $row_grade['product_grade_id']) ? 'selected' : '';
                                 ?>
                                     <option value="<?= $row_grade['product_grade'] ?>" data-category="grade" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
                                 <?php
@@ -493,14 +486,13 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-gauge" data-category="">
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-gauge" data-filter="gauge" data-filter-name="Product Gauge">
                             <option value="" data-category="">All Gauges</option>
                             <optgroup label="Product Gauges">
                                 <?php
                                 $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
                                 $result_gauge = mysqli_query($conn, $query_gauge);
                                 while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                                    $selected = ($gauge_id == $row_gauge['product_gauge_id']) ? 'selected' : '';
                                 ?>
                                     <option value="<?= $row_gauge['product_gauge'] ?>" data-category="gauge" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
                                 <?php
@@ -615,12 +607,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 });
             }
         });
-
-        $('#select-system, #select-line, #select-profile, #select-color, #select-grade, #select-gauge, #select-category, #select-type, #onlyInStock').on('change', filterTable);
-
-        $('#text-srh').on('keyup', filterTable);
-
-        $('#toggleActive').on('change', filterTable);
 
         $('#toggleActive').trigger('change');
 
@@ -1313,16 +1299,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         });
 
         function filterTable() {
-            var system = $('#select-system').val()?.toString() || '';
-            var line = $('#select-line').val()?.toString() || '';
-            var profile = $('#select-profile').val()?.toString() || '';
-            var profile = $('#select-profile').val()?.toString() || '';
-            var color = $('#select-color').val()?.toString() || '';
-            var grade = $('#select-grade').val()?.toString() || '';
-            var gauge = $('#select-gauge').val()?.toString() || '';
-            var category = $('#select-category').val()?.toString() || '';
-            var type = $('#select-type').val()?.toString() || '';
-            var onlyInStock = $('#onlyInStock').prop('checked') ? 1 : 0;
             var textSearch = $('#text-srh').val().toLowerCase();
             var isActive = $('#toggleActive').is(':checked');
 
@@ -1330,36 +1306,72 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
             if (textSearch) {
                 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                    var rowText = $(table.row(dataIndex).node()).text().toLowerCase();
-                    return rowText.includes(textSearch);
+                    return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
                 });
             }
 
             if (isActive) {
                 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                    var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
-                    return status === 'Active';
+                    return $(table.row(dataIndex).node()).find('a .alert').text() === 'Active';
                 });
             }
 
             $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                 var row = $(table.row(dataIndex).node());
-                if (system && system !== '/' && row.data('system').toString() !== system) return false;
-                if (line && line !== '/' && row.data('line').toString() !== line) return false;
-                if (profile && profile !== '/' && row.data('profile').toString() !== profile) return false;
-                if (color && color !== '/' && row.data('color').toString() !== color) return false;
-                if (grade && grade !== '/' && row.data('grade').toString() !== grade) return false;
-                if (gauge && gauge !== '/' && row.data('gauge').toString() !== gauge) return false;
-                if (category && category !== '/' && row.data('category').toString() !== category) return false;
-                if (type && type !== '/' && row.data('type').toString() !== type) return false;
-                if (onlyInStock && row.data('instock') != onlyInStock) return false;
+                var match = true;
 
-                return true;
+                $('.filter-selection').each(function() {
+                    var filterValue = $(this).val()?.toString().toLowerCase() || '';
+                    var rowValue = row.data($(this).data('filter'))?.toString().toLowerCase() || '';
+
+                    if (filterValue && filterValue !== '/') {
+                        if (!rowValue.includes(filterValue)) {
+                            match = false;
+                            return false;
+                        }
+                    }
+                });
+
+                return match;
             });
+
+            console.log(123);
 
             table.draw();
             updateSelectedTags();
         }
+
+        function updateSelectedTags() {
+            var displayDiv = $('#selected-tags');
+            displayDiv.empty();
+
+            $('.filter-selection').each(function() {
+                var selectedOption = $(this).find('option:selected');
+                var selectedText = selectedOption.text();
+                var filterName = $(this).data('filter-name');
+
+                if ($(this).val()) {
+                    displayDiv.append(`
+                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                            <span class="text-dark">${filterName}: ${selectedText}</span>
+                            <button type="button" 
+                                class="btn-close btn-sm ms-1 remove-tag" 
+                                style="width: 0.75rem; height: 0.75rem;" 
+                                aria-label="Close" 
+                                data-select="#${$(this).attr('id')}">
+                            </button>
+                        </div>
+                    `);
+                }
+            });
+
+            $('.remove-tag').on('click', function() {
+                $($(this).data('select')).val('').trigger('change');
+                $(this).parent().remove();
+            });
+        }
+
+        $(document).on('input change', '#text-srh, #toggleActive, #onlyInStock, .filter-selection', filterTable);
 
         $(document).on('blur', '.table_data', function() {
             let newValue;
@@ -1398,50 +1410,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 }
             });
         });
-
-        function updateSelectedTags() {
-            const sections = [
-                { id: '#select-color', title: 'Color' },
-                { id: '#select-grade', title: 'Grade' },
-                { id: '#select-gauge', title: 'Gauge' },
-                { id: '#select-category', title: 'Category' },
-                { id: '#select-profile', title: 'Profile' },
-                { id: '#select-system', title: 'System' },
-                { id: '#select-line', title: 'Line' },
-                { id: '#select-profile', title: 'Profile' },
-                { id: '#select-type', title: 'Type' },
-            ];
-
-            const displayDiv = $('#selected-tags');
-            displayDiv.empty();
-
-            sections.forEach((section) => {
-                const selectedOption = $(`${section.id} option:selected`);
-                const selectedText = selectedOption.text().trim();
-
-                if (selectedOption.val()) {
-                    displayDiv.append(`
-                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
-                            <span class="text-dark">${section.title}: ${selectedText}</span>
-                            <button type="button" 
-                                class="btn-close btn-sm ms-1 remove-tag" 
-                                style="width: 0.75rem; height: 0.75rem;" 
-                                aria-label="Close" 
-                                data-tag="${selectedText}" 
-                                data-select="${section.id}">
-                            </button>
-                        </div>
-                    `);
-                }
-            });
-
-            $('.remove-tag').on('click', function() {
-                const selectId = $(this).data('select');
-                $(selectId).val('').trigger('change');
-
-                $(this).parent().remove();
-            });
-        }
 
         $(document).on('click', '.reset_filters', function () {
             $('.filter-selection').each(function () {

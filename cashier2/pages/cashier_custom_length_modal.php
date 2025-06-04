@@ -33,12 +33,40 @@ if(isset($_POST['fetch_modal'])){
             <div class="col-6">
                 <label class="form-label">Length</label>
                 <div class="mb-3 row g-2">
-                    <div class="col">
-                        <input type="number" step="0.001" min="0" class="form-control" name="custom_length_feet" id="custom_length_feet" placeholder="Feet">
-                    </div>
-                    <div class="col">
-                        <input type="number" step="0.001" min="0" class="form-control" name="custom_length_inch" id="custom_length_inch" placeholder="Inches">
-                    </div>
+                    <select id="custom_length_select" class="form-control mb-1">
+                        <option value="0">Select Length</option>
+                        <?php
+                        $query = "SELECT * FROM product_length WHERE hidden = 0 AND status = 1 ORDER BY product_length + 0 ASC";
+                        $result = mysqli_query($conn, $query);
+
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            $length_in_feet = floatval($row['length_in_feet']);
+                            $feet = floor($length_in_feet);
+                            $inch = round(($length_in_feet - $feet) * 12);
+
+                            if ($inch === 12) {
+                                $feet += 1;
+                                $inch = 0;
+                            }
+
+                            $selected = ($feet == 1 && $inch == 0) ? 'selected' : '';
+
+                            $display = '';
+                            if ($feet > 0) {
+                                $display .= "{$feet}ft ";
+                            }
+                            if ($inch > 0) {
+                                $display .= "{$inch}in";
+                            }
+                            $display = trim($display);
+                            echo "<option value=\"$length_in_feet\" data-feet=\"$feet\" data-inch=\"$inch\" $selected>$display</option>";
+                        }
+                        ?>
+                    </select>
+
+                    <input type="hidden" id="custom_length_feet" name="custom_length_feet" class="form-control mb-1">
+                    <input type="hidden" id="custom_length_inch" name="custom_length_inch" class="form-control mb-1">
+
                 </div>
             </div>
             <div class="col-12">
@@ -77,9 +105,18 @@ if(isset($_POST['fetch_modal'])){
                     $('#price_display').text(finalPrice);
                 }
 
+                $(document).on('change', '#custom_length_select', function () {
+                    var feet = $(this).find(':selected').data('feet');
+                    var inch = $(this).find(':selected').data('inch');
+
+                    $('#custom_length_feet').val(feet || '');
+                    $('#custom_length_inch').val(inch || '');
+
+                    updatePrice();
+                });
+
+
                 $(document).on('input', '#custom_length_quantity', updatePrice);
-                $(document).on('input', '#custom_length_feet', updatePrice);
-                $(document).on('input', '#custom_length_inch', updatePrice);
 
                 updatePrice();
             });

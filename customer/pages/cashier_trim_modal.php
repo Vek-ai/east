@@ -6,7 +6,24 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
-
+$drawingData = [
+    "points" => [
+        ["x" => 885.3585815429688, "y" => 153.90420532226562],
+        ["x" => 789.3585815429688, "y" => 153.90420532226562],
+        ["x" => 721.4763305490602, "y" => 86.02195432835707],
+        ["x" => 289.4763305490602, "y" => 86.02195432835713],
+        ["x" => 289.47633054906026, "y" => 590.0219543283571],
+        ["x" => 248.178827131785, "y" => 649.0009015171645],
+    ],
+    "lengths" => [null, 1.2085129176894314, 1.0319983053617332, 5.1250547278197365, 7.859613673694906, 0.7664282548647123],
+    "angles" => [],
+    "colors" => ["#000000", "#000000", "#000000", "#000000", "#000000", "#000000"],
+    "lineTypes" => [null, "open", "normal", "normal", "normal", "open", "normal", "normal"],
+    "arrows" => [],
+    "images" => [],
+];
+$jsonDrawing = json_encode($drawingData, JSON_UNESCAPED_UNICODE);
+$drawing_str = htmlspecialchars($jsonDrawing, ENT_QUOTES, 'UTF-8');
 if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $product_details = getProductDetails($id);
@@ -141,9 +158,14 @@ if(isset($_POST['fetch_modal'])){
             </div>
         </div>  
         <div class="modal-footer d-flex justify-content-between align-items-center px-0">
-            <div class="d-flex justify-content-start">
-                <button class="btn btn-warning ripple btn-secondary" id="trim_draw" type="button">Modify Trim</button>
-            </div>
+            <button
+                class="btn btn-warning ripple btn-secondary"
+                id="trim_draw"
+                data-drawing='<?= $drawing_str ?>'
+                type="button"
+            >                        
+                Modify Trim
+            </button> 
             <div class="d-flex justify-content-center">
                 <button id="btnCustomChart" class="btn btn-warning ripple btn-secondary" type="button" data-category="<?= $category_id ?>">Trim Profile</button>
             </div>
