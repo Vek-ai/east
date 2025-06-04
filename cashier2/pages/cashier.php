@@ -165,28 +165,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         <button class="btn btn-primary m-2" data-bs-toggle="modal" data-bs-target="#trim_chart_modal" type="button">
                             View Trim Chart
                         </button>
-                        <div class="d-flex justify-content-center">
-                            <div>
-                                <div class="form-check mb-2 text-start">
-                                    <input class="form-check-input" type="checkbox" id="toggleActive" checked>
-                                    <label class="form-check-label" for="toggleActive" style="color:#fff;">
-                                        Show only In Stock
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2 text-start">
-                                    <input class="form-check-input" type="checkbox" id="onlyPromotions" value="true" data-filter="promotion" data-filter-name="On Promotions">
-                                    <label class="form-check-label" for="onlyPromotions" style="color:#fff;">
-                                        Show Promotions
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2 text-start">
-                                    <input class="form-check-input" type="checkbox" id="onlyOnSale" value="true" data-filter="on-sale" data-filter-name="On Sale">
-                                    <label class="form-check-label" for="onlyOnSale" style="color:#fff;">
-                                        Show On Sale
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                     <div class="mb-9">
                         <div class="position-relative w-100 ps-0">
@@ -311,11 +289,35 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                                     </select>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-end py-2">
-                                <button type="button" class="btn btn-outline-primary reset_filters">
-                                    <i class="fas fa-sync-alt me-1"></i> Reset Filters
-                                </button>
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 px-3 py-3">
+                                <div class="ps-2">
+                                    <div class="form-check mb-2 text-start">
+                                        <input class="form-check-input" type="checkbox" id="toggleActive" checked>
+                                        <label class="form-check-label" for="toggleActive" style="color:#fff;">
+                                            Show only In Stock
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2 text-start">
+                                        <input class="form-check-input" type="checkbox" id="onlyPromotions" value="true" data-filter="promotion" data-filter-name="On Promotions">
+                                        <label class="form-check-label" for="onlyPromotions" style="color:#fff;">
+                                            Show Promotions
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2 text-start">
+                                        <input class="form-check-input" type="checkbox" id="onlyOnSale" value="true" data-filter="on-sale" data-filter-name="On Sale">
+                                        <label class="form-check-label" for="onlyOnSale" style="color:#fff;">
+                                            Show On Sale
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="py-2">
+                                    <button type="button" class="btn btn-outline-primary reset_filters">
+                                        <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                                    </button>
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
