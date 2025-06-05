@@ -128,7 +128,7 @@ $page_title = "Return/Refund List";
                                 <th>Time</th>
                                 <th>Cashier</th>
                                 <th>Customer</th>
-                                <th>Amount</th>
+                                <th>Product Amount</th>
                                 <th>Action</th>
                             </tr>
                         </thead>

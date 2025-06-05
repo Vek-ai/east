@@ -71,7 +71,7 @@ if (isset($_POST['search_orders'])) {
                                     <?= $status_html ?>
                                 </td>
                                 <td class="text-end">
-                                    <p class="mb-0">$<?= number_format(getOrderTotalsDiscounted($row['orderid']),2) ?></p>
+                                    <p class="mb-0">$<?= getOrderTotalsDiscounted($row['orderid']) ?></p>
                                 </td>
                                 <td class="text-end">
                                     <?php

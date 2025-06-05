@@ -1573,37 +1573,54 @@ if (isset($_POST['save_drawing'])) {
 if (isset($_POST['return_product'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
+    $stock_fee_percent = floatval($_POST['stock_fee']) / 100;
 
-    $query = "SELECT * FROM order_product WHERE id = '$id'";
+    $query = "SELECT op.*, o.date AS order_date, o.originalcustomerid 
+              FROM order_product AS op
+              LEFT JOIN orders AS o ON o.orderid = op.orderid
+              WHERE op.id = '$id'";
     $result = mysqli_query($conn, $query);
-    
+
     if ($result && mysqli_num_rows($result) > 0) {
         $order = mysqli_fetch_assoc($result);
         $available_quantity = $order['quantity'];
 
         if ($quantity > $available_quantity) {
             echo "Quantity entered exceeds the purchased count!";
-        } else {
-            $insert_query = "INSERT INTO product_returns 
-                             (orderid, productid, status, quantity, custom_color, custom_width, custom_height, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, usageid)
-                             VALUES 
-                             ('{$order['orderid']}', '{$order['productid']}', 4, '$quantity', '{$order['custom_color']}', '{$order['custom_width']}', '{$order['custom_height']}', 
-                              '{$order['custom_bend']}', '{$order['custom_hem']}', '{$order['custom_length']}', '{$order['custom_length2']}', '{$order['actual_price']}', 
-                              '{$order['discounted_price']}', '{$order['product_category']}', '{$order['usageid']}')";
-            
-            if (mysqli_query($conn, $insert_query)) {
-                $new_quantity = $available_quantity - $quantity;
-                $update_query = "UPDATE order_product SET quantity = '$new_quantity' WHERE id = '$id'";
-                if (mysqli_query($conn, $update_query)) {
+            exit;
+        }
 
-                    setOrderTotals($order['orderid']);
-                    echo "success";
-                } else {
-                    echo "Error updating order quantity.";
-                }
-            } else {
-                echo "Error inserting into product_returns.";
+        $insert_query = "INSERT INTO product_returns 
+                         (orderid, productid, status, quantity, custom_color, custom_width, custom_height, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, usageid, stock_fee)
+                         VALUES 
+                         ('{$order['orderid']}', '{$order['productid']}', 4, '$quantity', '{$order['custom_color']}', '{$order['custom_width']}', '{$order['custom_height']}', 
+                          '{$order['custom_bend']}', '{$order['custom_hem']}', '{$order['custom_length']}', '{$order['custom_length2']}', '{$order['actual_price']}', 
+                          '{$order['discounted_price']}', '{$order['product_category']}', '{$order['usageid']}', '$stock_fee_percent')";
+        
+        if (mysqli_query($conn, $insert_query)) {
+            $new_quantity = $available_quantity - $quantity;
+            $update_query = "UPDATE order_product SET quantity = '$new_quantity' WHERE id = '$id'";
+            mysqli_query($conn, $update_query);
+
+            $purchase_date = new DateTime($order['order_date']);
+            $today = new DateTime();
+            $interval = $purchase_date->diff($today)->days;
+
+            if ($interval > 90) {
+                $discounted_price = floatval($order['discounted_price']);
+                $amount = $quantity * $discounted_price;
+                $stock_fee = $amount * $stock_fee_percent;
+                $amount_returned = $amount - $stock_fee;
+
+                $customer_id = $order['originalcustomerid'];
+                $update_credit_query = "UPDATE customer SET store_credit = store_credit + $amount_returned WHERE customer_id = '$customer_id'";
+                mysqli_query($conn, $update_credit_query);
             }
+
+            setOrderTotals($order['orderid']);
+            echo "success";
+        } else {
+            echo "Error inserting into product_returns.";
         }
     } else {
         echo "Error: Order not found.";

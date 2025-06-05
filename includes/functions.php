@@ -774,20 +774,24 @@ function getReturnTotals($orderid) {
     global $conn;
     $query = "
         SELECT 
-            SUM(discounted_price * quantity) AS total_price
+            SUM(discounted_price * quantity) AS total_price,
+            SUM((discounted_price * quantity) * stock_fee) AS total_fee
         FROM 
             product_returns
         WHERE 
             orderid = '$orderid'";
 
     $result = mysqli_query($conn, $query);
-    $total_price = 0;
+    $net_total = 0;
 
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
         $total_price = floatval($row['total_price']);
+        $total_fee = floatval($row['total_fee']);
+        $net_total = $total_price - $total_fee;
     }
-    return number_format($total_price, 2);
+
+    return number_format($net_total, 2);
 }
 
 function getOrderTotalsDiscounted($orderid) {
@@ -898,7 +902,7 @@ function getCustomerType($customer_type_id){
     $query = "SELECT customer_type_name FROM customer_types WHERE customer_type_id = '$customer_type_id'";
     $result = mysqli_query($conn,$query);
     $row = mysqli_fetch_array($result); 
-    $customer_type_name = $row['customer_type_name'];
+    $customer_type_name = $row['customer_type_name'] ?? '';
     return  $customer_type_name;
 }
 

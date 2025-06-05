@@ -596,6 +596,32 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     </div>
 </div>
 
+<div class="modal" id="return_stocking_fee_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Stocking Fee</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" class="form-control" id="return_id" name="return_id">
+                <input type="hidden" class="form-control" id="return_quantity" name="return_quantity">
+                <div class="col">
+                    <label for="return_stock_fee" class="form-label">Stocking Fee (%)</label>
+                    <input type="text" class="form-control" id="return_stock_fee" name="return_stock_fee" placeholder="Enter Stocking Fee(%)">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="return_finalize_btn">
+                    <i class="fa fa-undo mx-2"></i> Return
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal" id="view_estimate_modal">
     <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content modal-content-demo">
@@ -4083,37 +4109,49 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
 
         $(document).on('click', '#return_product', function(event) {
-            event.preventDefault();
+            $('#return_stocking_fee_modal').modal('toggle');
 
             var id = $(this).data('id');
             var quantity = $('#return_quantity' + id).val();
 
-            if (confirm("Are you sure you want to return this product?")) {
-                $.ajax({
-                    url: 'pages/cashier_ajax.php',
-                    type: 'POST',
-                    data: {
-                        id: id,
-                        quantity: quantity,
-                        return_product: "return_product"
-                    },
-                    success: function(response) {
-                        if (response.trim() === "success") {
-                            $('#responseHeader').text("Success");
-                            $('#responseMsg').text("Product Returned successfully.");
-                            $('#responseHeaderContainer').removeClass("bg-danger");
-                            $('#responseHeaderContainer').addClass("bg-success");
-                            $('#response_modal').modal("show");
-                            $('#response_modal').on('hide.bs.modal', function () {
-                                location.reload();
-                            });
-                        }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+            $('#return_id').val(id);
+            $('#return_quantity').val(quantity);
+        });
+
+        $(document).on('click', '#return_finalize_btn', function(event) {
+            event.preventDefault();
+
+            var id = $('#return_id').val();
+            var quantity = $('#return_quantity').val();
+            var stock_fee = $('#return_stock_fee').val();
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    quantity: quantity,
+                    stock_fee: stock_fee,
+                    return_product: "return_product"
+                },
+                success: function(response) {
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Product Returned successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response_modal').modal("show");
+                        $('#response_modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    }else{
+                        console.log(response);
                     }
-                });
-            }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
         });
 
         $(document).on('click', '#view_estimate', function(event) {

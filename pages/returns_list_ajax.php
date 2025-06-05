@@ -109,6 +109,8 @@ if (isset($_POST['search_returns'])) {
         $query .= " AND c.tax_status = '$tax_status'";
     }
 
+    $query .= " GROUP BY o.orderid";
+
     $result = mysqli_query($conn, $query);
 
     if ($result && mysqli_num_rows($result) > 0) {
@@ -121,7 +123,7 @@ if (isset($_POST['search_returns'])) {
                 'formatted_time' => date("h:i A", strtotime($row['order_date'])),
                 'cashier' => get_staff_name($row['cashier']),
                 'customer_name' => $row['customer_name'],
-                'amount' => $amount,
+                'amount' => $amount
             ];
             $response['total_amount'] += $amount;
             $response['total_count']++;
@@ -147,7 +149,7 @@ if(isset($_POST['fetch_order_details'])){
         <?php 
             $query = "SELECT * FROM product_returns WHERE orderid='$orderid'";
             $result = mysqli_query($conn, $query);
-            $totalquantity = $total_actual_price = $total_disc_price = 0;
+            $totalquantity = $total_actual_price = $total_disc_price = $total_amount_returned = $total_stock_fee = 0;
             if ($result && mysqli_num_rows($result) > 0) {
             ?>
             <div class="return-details table-responsive text-wrap mt-5">
@@ -162,7 +164,8 @@ if(isset($_POST['fetch_order_details'])){
                             <th class="text-center">Quantity</th>
                             <th class="text-center">Dimensions</th>
                             <th class="text-center">Price</th>
-                            <th class="text-center">Customer Price</th>
+                            <th class="text-center">Stocking Fee</th>
+                            <th class="text-center">Amount Returned</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -170,6 +173,9 @@ if(isset($_POST['fetch_order_details'])){
                             $response = array();
                             while ($row = mysqli_fetch_assoc($result)) {
                                 $product_id = $row['productid'];
+                                $price = $row['discounted_price'] * $row['quantity'];
+                                $stock_fee = floatval($row['stock_fee']) * $price;
+                                $amount_returned = $price - $stock_fee;
                                 if($row['quantity'] > 0){
                                 ?>
                                 <tr>
@@ -223,13 +229,15 @@ if(isset($_POST['fetch_order_details'])){
                                         }
                                         ?>
                                     </td>
-                                    <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
-                                    <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
+                                    <td class="text-end">$ <?= number_format($price,2) ?></td>
+                                    <td class="text-end">$ <?= number_format($stock_fee,2) ?></td>
+                                    <td class="text-end">$ <?= number_format($amount_returned,2) ?></td>
                                 </tr>
                         <?php
                                 $totalquantity += $row['quantity'] ;
-                                $total_actual_price += $row['actual_price'];
-                                $total_disc_price += $row['discounted_price'];
+                                $total_disc_price += $price;
+                                $total_stock_fee += $stock_fee;
+                                $total_amount_returned += $amount_returned;
                                 }
                             
                         }
@@ -241,8 +249,9 @@ if(isset($_POST['fetch_order_details'])){
                             <td colspan="4">Total</td>
                             <td><?= $totalquantity ?></td>
                             <td></td>
-                            <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
                             <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
+                            <td class="text-end">$ <?= number_format($total_stock_fee,2) ?></td>
+                            <td class="text-end">$ <?= number_format($total_amount_returned,2) ?></td>
                         </tr>
                     </tfoot>
                 </table>

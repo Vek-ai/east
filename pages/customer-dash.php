@@ -99,7 +99,7 @@ if(isset($_REQUEST['id'])){
           <div class="pro-img mb-3">
             <img src="assets/images/profile/user-2.jpg" alt="user" class="rounded-circle shadow-sm" width="112" />
           </div>
-            <h3 class="mb-1 fs-14"><?= $customer_details['customer_first_name'] ?> <?= $customer_details['customer_last_name'] ?></h3>
+            <h3 class="mb-1 fs-14"><?= get_customer_name($customer_id) ?></h3>
             <p class="fs-3 mb-4"><?= getCustomerType($customer_details['customer_type_id']) ?></p>
             <?php
             $query_order_total = "
@@ -143,7 +143,17 @@ if(isset($_REQUEST['id'])){
             } else {
                 echo "Error executing query: " . mysqli_error($conn);
             }
-          ?>
+            ?>
+            
+            <div class="card-body">
+                <div class="text-center">
+                    <div class="align-self-center">
+                        <h3 class="mb-1 fs-6">$<?= number_format($customer_details['store_credit'],2) ?></h3>
+                        <span class="text-muted">Store Credit</span>
+                    </div>
+                </div>
+            </div>
+            
           <div class="row gx-lg-4 text-center pt-4 justify-content-center border-top">
             <div class="col-4">
               <?php

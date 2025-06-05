@@ -56,10 +56,10 @@ if (isset($_POST['search_orders'])) {
                                     <p class="mb-0"><?= date("F d, Y", strtotime($row['order_date'])) ?></p>
                                 </td>
                                 <td class="text-end">
-                                    <p class="mb-0">$<?= number_format(getOrderTotals($row['orderid']),2) ?></p>
+                                    <p class="mb-0">$<?= getOrderTotals($row['orderid']) ?></p>
                                 </td>
                                 <td class="text-end">
-                                    <p class="mb-0">$<?= number_format(getOrderTotalsDiscounted($row['orderid']),2) ?></p>
+                                    <p class="mb-0">$<?= getOrderTotalsDiscounted($row['orderid']) ?></p>
                                 </td>
                                 <td>
                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
