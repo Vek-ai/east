@@ -1575,7 +1575,7 @@ if (isset($_POST['return_product'])) {
     $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
     $stock_fee_percent = floatval($_POST['stock_fee']) / 100;
 
-    $query = "SELECT op.*, o.date AS order_date, o.originalcustomerid 
+    $query = "SELECT op.*, o.order_date, o.originalcustomerid 
               FROM order_product AS op
               LEFT JOIN orders AS o ON o.orderid = op.orderid
               WHERE op.id = '$id'";
