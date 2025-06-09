@@ -608,9 +608,14 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             <div class="modal-body">
                 <input type="hidden" class="form-control" id="return_id" name="return_id">
                 <input type="hidden" class="form-control" id="return_quantity" name="return_quantity">
+                <input type="hidden" class="form-control" id="price_to_return" name="price_to_return">
                 <div class="col">
                     <label for="return_stock_fee" class="form-label">Stocking Fee (%)</label>
                     <input type="text" class="form-control" id="return_stock_fee" name="return_stock_fee" placeholder="Enter Stocking Fee(%)">
+                </div>
+                <div class="col mt-3 d-flex justify-content-between align-items-center">
+                    <p id="return_stock_fee_display"></p>
+                    <p id="return_price_display"></p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -4109,14 +4114,40 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         });
 
         $(document).on('click', '#return_product', function(event) {
-            $('#return_stocking_fee_modal').modal('toggle');
-
             var id = $(this).data('id');
             var quantity = $('#return_quantity' + id).val();
+            var price = $('#return_price' + id).text();
+
+            var price = parseFloat(price.replace(/[^0-9.-]+/g, ''));
 
             $('#return_id').val(id);
             $('#return_quantity').val(quantity);
+            $('#price_to_return').val(price);
+
+            updateReturnPrice();
+
+            $('#return_stocking_fee_modal').modal('toggle');
         });
+
+        function updateReturnPrice() {
+            let percentage = parseFloat($('#return_stock_fee').val());
+            let price = parseFloat($('#price_to_return').val());
+
+            if (!isNaN(percentage) && !isNaN(price)) {
+                let fee = (price * percentage) / 100;
+                let returnPrice = price - fee;
+
+                console.log(price);
+
+                $('#return_stock_fee_display').text(`Stocking Fee: $${fee.toFixed(2)}`);
+                $('#return_price_display').text(`Return Price: $${returnPrice.toFixed(2)}`);
+            } else {
+                $('#return_stock_fee_display').text('');
+                $('#return_price_display').text('');
+            }
+        }
+
+        $(document).on('input', '#return_stock_fee', updateReturnPrice);
 
         $(document).on('click', '#return_finalize_btn', function(event) {
             event.preventDefault();
