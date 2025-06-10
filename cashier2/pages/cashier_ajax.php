@@ -1355,7 +1355,8 @@ if (isset($_POST['search_customer'])) {
             customer_id, 
             customer_first_name, 
             customer_last_name, 
-            customer_business_name
+            customer_business_name,
+            contact_phone
         FROM 
             customer
         WHERE 
@@ -1374,9 +1375,11 @@ if (isset($_POST['search_customer'])) {
         $response = array();
         while ($row = mysqli_fetch_assoc($result)) {
             $fullName = $row['customer_first_name'] . ' ' . $row['customer_last_name'];
-            $label = !empty($row['customer_business_name']) 
-                ? $fullName . ' (' . $row['customer_business_name'] . ')' 
-                : $fullName;
+            $label = get_customer_name($row['customer_id']);
+
+            if (!empty($row['contact_phone'])) {
+                $label .= ' (' . $row['contact_phone'] . ')';
+            }
 
             $response[] = [
                 'value' => $row['customer_id'],

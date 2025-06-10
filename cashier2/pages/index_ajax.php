@@ -11,13 +11,16 @@ if(isset($_REQUEST['search_customer'])){
     $search = mysqli_real_escape_string($conn, $_POST['customer_name']);
     $query = "
         SELECT 
-            CONCAT(customer_first_name, ' ', customer_last_name) AS customer_name, customer_id
+            CONCAT(customer_first_name, ' ', customer_last_name) AS customer_name, customer_id, contact_email, contact_phone
         FROM 
             customer
         WHERE 
             (customer_first_name LIKE '%$search%' 
             OR 
-            customer_last_name LIKE '%$search%')
+            customer_last_name LIKE '%$search%'
+            OR 
+            customer_business_name LIKE '%$search%'
+            )
             AND status != '3'
         LIMIT 15
     ";
@@ -34,7 +37,22 @@ if(isset($_REQUEST['search_customer'])){
                     </span>
                     <div class="w-80">
                         <div class="d-flex align-items-center justify-content-between">
-                            <h6 class="mb-1"><?= $row['customer_name'] ?></h6>
+                            <h6 class="mb-1 text-wrap">
+                                <?= get_customer_name($row['customer_id']) ?>
+                                <?php
+                                $contact_info_to_display = '';
+
+                                if (!empty($row['contact_phone'])) {
+                                    $contact_info_to_display = $row['contact_phone'];
+                                } elseif (!empty($row['contact_email'])) {
+                                    $contact_info_to_display = $row['contact_email'];
+                                }
+
+                                if (!empty($contact_info_to_display)):
+                                ?>
+                                    (<?= $contact_info_to_display ?>)
+                                <?php endif; ?>
+                            </h6>
                         </div>
                     </div>
                 </a>
