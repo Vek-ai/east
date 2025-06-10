@@ -42,6 +42,23 @@ if(isset($_SESSION['customer_id'])){
           </div>
             <h3 class="mb-1 fs-14"><?= get_customer_name($customer_id) ?></h3>
             <p class="fs-3 mb-4"><?= getCustomerType($customer_details['customer_type_id']) ?></p>
+
+            <div class="d-flex justify-content-around align-items-center bg-white p-3 rounded shadow-sm mb-3">
+                <?php if (!empty($customer_details['contact_phone'])): ?>
+                <div class="d-flex flex-column align-items-center text-center p-2 flex-grow-1 mx-2">
+                    <i class="fas fa-phone-alt fa-2x text-primary mb-2"></i> <small class="text-muted">Contact Phone</small>
+                    <span class="fw-bold text-dark"><?= $customer_details['contact_phone'] ?></span>
+                </div>
+                <?php endif; ?>
+
+                <?php if (!empty($customer_details['contact_email'])): ?>
+                <div class="d-flex flex-column align-items-center text-center p-2 flex-grow-1 mx-2">
+                    <i class="fas fa-envelope fa-2x text-primary mb-2"></i> <small class="text-muted">Contact Email</small>
+                    <span class="fw-bold text-dark"><?= $customer_details['contact_email'] ?></span>
+                </div>
+                <?php endif; ?>
+            </div>
+
             <div class="card-body">
                 <div class="text-center">
                     <div class="align-self-center">

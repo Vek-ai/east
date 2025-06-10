@@ -269,7 +269,7 @@ $addHeaderTxt = "Add New";
                               data-pricing="<?= $row_customer['customer_pricing'] ?>"
                           >
                             <td>
-                              <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="v" class="text-decoration-none addModalBtn">
+                              <a href="javascript:void(0)" class="text-decoration-none">
                                 <span class="customer<?= $no ?><?php if ($row_customer['status'] == '0' || $row_customer['status'] == '3') {echo 'emphasize-strike';} ?>">
                                   <?php 
                                   if($row_customer['status'] == '3'){
@@ -293,13 +293,17 @@ $addHeaderTxt = "Add New";
                                   style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Archive"><i
                                     class="fa fa-box-archive text-danger"></i></a>
                               <?php } else { ?>
+                                <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="v" class="py-1 pe-1 addModalBtn"
+                                  title="View">
+                                  <i class="fa fa-eye text-light"></i>
+                                </a>
                                 <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="e" class="py-1 pe-1 addModalBtn"
                                   data-toggle="tooltip" data-placement="top" title="Edit">
-                                  <i class="fa fa-pencil text-light"></i>
+                                  <i class="fa fa-pencil text-warning"></i>
                                 </a>
                                 <a href="?page=customer-dashboard&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
                                   data-toggle="tooltip" data-placement="top" title="Dashboard"><i
-                                    class="fa fa-chart-bar text-warning"></i>
+                                    class="fa fa-chart-bar text-primary"></i>
                                 </a>
                                 <a href="?page=customer_login_creds&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
                                   data-toggle="tooltip" data-placement="top" title="Username and Password">
@@ -307,7 +311,7 @@ $addHeaderTxt = "Add New";
                                 </a>
                                 <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
                                   style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i
-                                    class="fa fa-calculator text-primary"></i>
+                                    class="fa fa-calculator text-secondary"></i>
                                 </a>
                                 <a href="?page=order_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
                                   style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Orders"><i
