@@ -30,6 +30,7 @@ $col1_x = 10;
 $col2_x = 140;
 
 $orderid = $_REQUEST['id'];
+$pricing_id = $_REQUEST['pricing_id'] ?? '';
 $current_user_id = $_SESSION['userid'];
 
 $tax = .15;
@@ -150,13 +151,20 @@ if (mysqli_num_rows($result) > 0) {
                         $productid = $row_product['productid'];
                         $product_details = getProductDetails($productid);
                         $grade_details = getGradeDetails($product_details['grade']);
+
+                        if(!empty($pricing_id)){
+                            $pricing_disc = getPricingCategory($product_details['product_category'], $pricing_id) / 100;
+                        }else{
+                            $pricing_disc = 0;
+                        }
+
+                        $price = ($product_details['unit_price'] * (1 - $discount) * (1 - $pricing_disc)) * $row_product['quantity'];
                         
-                        
-                        $total_price += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                        $total_price += $price;
                         $total_price_undisc += $product_details['unit_price'] * $row_product['quantity'];
                         $total_qty += $row_product['quantity'];
 
-                        $total_per_component += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                        $total_per_component += $price;
                         $undisc_total_per_component += $product_details['unit_price'] * $row_product['quantity'];
                         $qty_per_component += $row_product['quantity'];
                         
@@ -222,15 +230,23 @@ if (mysqli_num_rows($result) > 0) {
                     $productid = $row_product['productid'];
                     $product_details = getProductDetails($productid);
                     $grade_details = getGradeDetails($product_details['grade']);
+
+                    if(!empty($pricing_id)){
+                        $pricing_disc = getPricingCategory($product_details['product_category'], $pricing_id) / 100;
+                    }else{
+                        $pricing_disc = 0;
+                    }
+
+                    $price = ($product_details['unit_price'] * (1 - $discount) * (1 - $pricing_disc)) * $row_product['quantity'];
                     
-                    $total_price += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                    
+                    $total_price += $price;
                     $total_price_undisc += $product_details['unit_price'] * $row_product['quantity'];
                     $total_qty += $row_product['quantity'];
 
-                    $total_per_component += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                    $total_per_component += $price;
                     $undisc_total_per_component += $product_details['unit_price'] * $row_product['quantity'];
                     $qty_per_component += $row_product['quantity'];
-                    
                 }
 
                 
