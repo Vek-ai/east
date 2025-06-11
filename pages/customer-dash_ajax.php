@@ -145,7 +145,7 @@ if (isset($_POST['search_estimates'])) {
                                 <p class="mb-0"><?= $total_changes ?></p>
                             </td>
                             <td class="text-end">
-                                <p class="mb-0 fs-3">$<?= number_format(getEstimateTotalsDiscounted($row['estimateid']),2) ?></p>
+                                <p class="mb-0 fs-3">$<?= getEstimateTotalsDiscounted($row['estimateid']) ?></p>
                             </td>
                             <td>
                                 <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
