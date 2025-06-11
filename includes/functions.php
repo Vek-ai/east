@@ -1298,4 +1298,24 @@ function time_ago($timestamp) {
     }
 }
 
+function getOrderDateByProductId($productId) {
+    global $conn;
+    $productId = intval($productId);
+
+    $query = "SELECT o.order_date
+              FROM order_product op
+              INNER JOIN orders o ON op.orderid = o.orderid
+              WHERE op.id = $productId
+              LIMIT 1";
+
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['order_date'];
+    } else {
+        return null;
+    }
+}
+
 ?>

@@ -609,9 +609,14 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 <input type="hidden" class="form-control" id="return_id" name="return_id">
                 <input type="hidden" class="form-control" id="return_quantity" name="return_quantity">
                 <input type="hidden" class="form-control" id="price_to_return" name="price_to_return">
-                <div class="col">
+                <input type="hidden" class="form-control" id="is_store_credited" name="is_store_credited">
+                <div class="col position-relative text-center">
                     <label for="return_stock_fee" class="form-label">Stocking Fee (%)</label>
-                    <input type="text" class="form-control" id="return_stock_fee" name="return_stock_fee" placeholder="Enter Stocking Fee(%)">
+                    <input type="number" class="form-control" id="return_stock_fee" name="return_stock_fee"
+                        placeholder="Enter Stocking Fee(%)" min="0" max="25">
+                    <div id="fee-warning" style="display:none; font-size:1.1em; color:red; font-weight:600; margin-top:5px;">
+                        25% is the maximum allowed.
+                    </div>
                 </div>
                 <div class="col mt-3 d-flex justify-content-between align-items-center">
                     <p id="return_stock_fee_display"></p>
@@ -4117,12 +4122,14 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var id = $(this).data('id');
             var quantity = $('#return_quantity' + id).val();
             var price = $('#return_price' + id).text();
+            var store_credited = $(this).data('store-credited');
 
             var price = parseFloat(price.replace(/[^0-9.-]+/g, ''));
 
             $('#return_id').val(id);
             $('#return_quantity').val(quantity);
             $('#price_to_return').val(price);
+            $('#is_store_credited').val(store_credited);
 
             updateReturnPrice();
 
@@ -4132,20 +4139,34 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         function updateReturnPrice() {
             let percentage = parseFloat($('#return_stock_fee').val());
             let price = parseFloat($('#price_to_return').val());
+            let isStoreCredited = $('#is_store_credited').val() == "1";
 
             if (!isNaN(percentage) && !isNaN(price)) {
                 let fee = (price * percentage) / 100;
                 let returnPrice = price - fee;
 
-                console.log(price);
+                let label = isStoreCredited ? "Store Credit" : "Return Price";
 
                 $('#return_stock_fee_display').text(`Stocking Fee: $${fee.toFixed(2)}`);
-                $('#return_price_display').text(`Return Price: $${returnPrice.toFixed(2)}`);
+                $('#return_price_display').text(`${label}: $${returnPrice.toFixed(2)}`);
             } else {
                 $('#return_stock_fee_display').text('');
                 $('#return_price_display').text('');
             }
         }
+
+        $('#return_stock_fee').on('input', function () {
+            if (parseFloat($(this).val()) > 25) {
+                $(this).val(25);
+                $('#fee-warning').fadeIn();
+
+                setTimeout(function () {
+                    $('#fee-warning').fadeOut();
+                }, 2000);
+            } else {
+                $('#fee-warning').fadeOut();
+            }
+        });
 
         $(document).on('input', '#return_stock_fee', updateReturnPrice);
 

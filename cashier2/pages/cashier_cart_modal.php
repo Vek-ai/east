@@ -105,6 +105,7 @@ if(isset($_POST['fetch_cart'])){
                 $customer_details = getCustomerDetails($customer_id);
                 $credit_limit = number_format(floatval($customer_details['credit_limit'] ?? 0), 2);
                 $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
+                $store_credit = number_format(floatval($customer_details['store_credit'] ?? 0),2);
             ?>
 
             <div class="form-group row align-items-center">
@@ -125,6 +126,10 @@ if(isset($_POST['fetch_cart'])){
                     <div>
                         <span class="fw-bold">Unpaid Credit:</span><br>
                         <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
+                    </div>
+                    <div>
+                        <span class="fw-bold">Store Credit:</span><br>
+                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $store_credit ?></span>
                     </div>
                 </div>
             </div>

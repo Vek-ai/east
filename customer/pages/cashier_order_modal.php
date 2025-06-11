@@ -116,6 +116,8 @@ if(isset($_POST['fetch_order'])){
                 $customer_details['state'] ?? '',
                 $customer_details['zip'] ?? ''
             ]);
+
+            $store_credit = number_format(floatval($customer_details['store_credit'] ?? 0),2);
         ?>
         <div class="form-group row align-items-center">
             <div class="col-6">
@@ -183,6 +185,10 @@ if(isset($_POST['fetch_order'])){
                 <div>
                     <span class="fw-bold">Unpaid Credit:</span><br>
                     <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
+                </div>
+                <div>
+                    <span class="fw-bold">Store Credit:</span><br>
+                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $store_credit ?></span>
                 </div>
             </div>
         </div>
