@@ -44,8 +44,8 @@ if(isset($_POST['fetch_order_details'])){
                         while ($row = mysqli_fetch_assoc($result)) {
                             $product_id = $row['productid'];
                             if($row['quantity'] > 0){
-                                $actual_price = number_format(floatval($row['actual_price'] * $row['quantity']),2);
-                                $discounted_price = number_format(floatval($row['discounted_price'] * $row['quantity']),2);
+                                $actual_price = number_format(floatval($row['actual_price']),2);
+                                $discounted_price = number_format(floatval($row['discounted_price']),2);
 
                                 $order_date = getOrderDateByProductId($row['id']);
 
