@@ -1107,6 +1107,18 @@ if (isset($_POST['save_order'])) {
                     $response['error'] = "Insert failed: " . mysqli_error($conn);
                 }
             }
+
+            $current_stock = getProductStockTotal($product_id);
+            if($current_stock < 1){
+                $subject = "Out of stock Product has been Ordered!";
+                $product_name = getProductName($product_id);
+                $message = "Out of Stock Product $product_name has been ordered";
+                $response = sendEmail($admin_email, 'EKM', $subject, $message);
+                if ($response['success'] == true) {
+                } else {
+                    $response['error'] = "Failed to send Mail" . $conn->error;
+                }
+            }
         }
 
         if (!empty($pre_orders)) {
