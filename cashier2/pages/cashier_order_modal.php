@@ -493,7 +493,7 @@ if(isset($_POST['fetch_order'])){
                         </div>
                         <div class="card-body">
                         <div class="d-flex justify-content-between">
-                            <span>Item Subtotal (1)</span>
+                            <span>Item Subtotal (<?= $_SESSION["total_quantity"] ?? '0' ?>)</span>
                             <span>$<?= $total_customer_price ?></span>
                         </div>
                         <div class="d-flex justify-content-between">
