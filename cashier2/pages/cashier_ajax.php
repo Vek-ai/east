@@ -1110,9 +1110,67 @@ if (isset($_POST['save_order'])) {
 
             $current_stock = getProductStockTotal($product_id);
             if($current_stock < 1){
+                $out_stock_orders = [
+                    'product_item' => $product_item,
+                    'product_category' => ucwords(getProductCategoryName($product_details['product_category'])),
+                    'color' => getColorName($custom_color),
+                    'grade' => getGradeName($custom_grade),
+                    'gauge' => getGaugeName($custom_gauge)
+                ];
+
+                $list_items = '<ul style="list-style-type: none; padding-left: 0;">';
+                foreach ($out_stock_orders as $key => $value) {
+                    $label = ucfirst(str_replace('_', ' ', $key));
+                    $list_items .= "
+                        <li style='margin-bottom: 8px;'>
+                            <span style='display: inline-block; min-width: 140px; font-weight: bold; color: #333;'>$label:</span>
+                            <span style='color: #555;'>" . htmlspecialchars($value) . "</span>
+                        </li>";
+                }
+                $list_items .= '</ul>';
+
                 $subject = "Out of stock Product has been Ordered!";
-                $product_name = getProductName($product_id);
-                $message = "Out of Stock Product $product_name has been ordered";
+
+                $message = "
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                        }
+                        .container {
+                            padding: 20px;
+                            border: 1px solid #e0e0e0;
+                            background-color: #f9f9f9;
+                            width: 80%;
+                            margin: 0 auto;
+                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        }
+                        h2 {
+                            color: #0056b3;
+                            margin-bottom: 20px;
+                        }
+                        p {
+                            margin: 5px 0;
+                        }
+                        ul {
+                            padding-left: 0;
+                        }
+                        li {
+                            margin-bottom: 5px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <h2>$subject</h2>
+                        $list_items
+                    </div>
+                </body>
+                </html>";
+
                 $response = sendEmail($admin_email, 'EKM', $subject, $message);
                 if ($response['success'] == true) {
                 } else {

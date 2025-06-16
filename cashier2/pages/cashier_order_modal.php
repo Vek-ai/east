@@ -120,10 +120,12 @@ if(isset($_POST['fetch_order'])){
             ]);
 
             $store_credit = number_format(floatval($customer_details['store_credit'] ?? 0),2);
+
+            $customer_name = get_customer_name($_SESSION["customer_id"]);
         ?>
         <div class="form-group row align-items-center">
             <div class="col-6">
-                <label>Customer Name: <?= get_customer_name($_SESSION["customer_id"]); ?></label>
+                <label>Customer Name: <?= $customer_name ?></label>
                 <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="customer_change_cash">
                     <i class="fe fe-reload"></i> Change
                 </button>
@@ -219,293 +221,86 @@ if(isset($_POST['fetch_order'])){
     <?php } ?>
     </div>
     <input type='hidden' id='customer_id_cash' name="customer_id"/>
+
+    <?php 
+    $total = 0;
+    $total_customer_price = 0;
+    $totalquantity = 0;
+    $timestamp = time();
+    $no = $timestamp . 1;
+    $total_weight = 0;
+    if (!empty($_SESSION["cart"])) {
+        foreach ($_SESSION["cart"] as $keys => $values) {
+            $data_id = $values["product_id"];
+            $product = getProductDetails($data_id);
+            $totalstockquantity = $values["quantity_ttl"] + $values["quantity_in_stock"];
+            $category_id = $product["product_category"];
+            if ($totalstockquantity > 0) {
+                $stock_text = '
+                    <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
+                        <span class="text-bg-success p-1 rounded-circle"></span>
+                        <span class="ms-2">In Stock</span>
+                    </a>';
+            } else {
+                $stock_text = '
+                    <a href="javascript:void(0);" id="view_out_of_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
+                        <span class="text-bg-danger p-1 rounded-circle"></span>
+                        <span class="ms-2 fs-3">Out of Stock</span>
+                    </a>';
+            } 
+
+            $default_image = '../images/product/product.jpg';
+
+            $picture_path = !empty($product['main_image'])
+            ? "../" .$product['main_image']
+            : $default_image;
+
+            $images_directory = "../images/drawing/";
+
+            $customer_pricing = getPricingCategory($category_id, $customer_details_pricing) / 100;
+
+            $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 0;
+            $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
+
+            $total_length = $estimate_length + ($estimate_length_inch / 12);
+            $amount_discount = isset($values["amount_discount"]) && is_numeric($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
+
+            $quantity = isset($values["quantity_cart"]) && is_numeric($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
+            $unit_price = isset($values["unit_price"]) && is_numeric($values["unit_price"]) ? floatval($values["unit_price"]) : 0;
+
+            $product_price = ($quantity * $unit_price * $total_length) - $amount_discount;
+
+            if (!empty($values["is_custom"]) && $values["is_custom"] == 1) {
+                $custom_multiplier = floatval(getCustomMultiplier($category_id));
+                $product_price += $product_price * $custom_multiplier;
+            }
+
+            $color_id = $values["custom_color"];
+            if (isset($values["used_discount"])){
+                $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
+            }
+
+            $sold_by_feet = $product['sold_by_feet'];
+
+            $subtotal = $product_price;
+            $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
+        
+            $totalquantity += $values["quantity_cart"];
+            $total += $subtotal;
+            $total_customer_price += $customer_price;
+            $no++;
+            $total_weight += $values["weight"] * $values["quantity_cart"];
+        }
+    }
+    $_SESSION["total_quantity"] = $totalquantity;
+    $_SESSION["grandtotal"] = $total;
+    ?>
+
     <div class="card-body datatables">
         <form id="msform">
             <fieldset class="order-page-1">
-                <div id="product_details" class="product-details table-responsive text-nowrap">
-                    <table id="orderTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
-                        <thead>
-                            <tr>
-                                <th class="text-center small" width="5%">Image</th>
-                                <th width="10%">Description</th>
-                                <th width="5%" class="text-center">Color</th>
-                                <th width="5%" class="text-center">Grade</th>
-                                <th width="5%" class="text-center">Profile</th>
-                                <th width="25%" class="text-center pl-3">Quantity</th>
-                                <th width="30%" class="text-center">Dimensions<br>(Width x Length)</th>
-                                <th width="5%" class="text-center">Stock</th>
-                                <th width="7%" class="text-center">Price</th>
-                                <th width="7%" class="text-center small">Customer<br>Price</th>
-                                <th width="1%" class="text-center"> </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php 
-                            $total = 0;
-                            $total_customer_price = 0;
-                            $totalquantity = 0;
-                            $timestamp = time();
-                            $no = $timestamp . 1;
-                            $total_weight = 0;
-                            if (!empty($_SESSION["cart"])) {
-                                foreach ($_SESSION["cart"] as $keys => $values) {
-                                    $data_id = $values["product_id"];
-                                    $product = getProductDetails($data_id);
-                                    $totalstockquantity = $values["quantity_ttl"] + $values["quantity_in_stock"];
-                                    $category_id = $product["product_category"];
-                                    if ($totalstockquantity > 0) {
-                                        $stock_text = '
-                                            <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
-                                                <span class="text-bg-success p-1 rounded-circle"></span>
-                                                <span class="ms-2">In Stock</span>
-                                            </a>';
-                                    } else {
-                                        $stock_text = '
-                                            <a href="javascript:void(0);" id="view_out_of_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
-                                                <span class="text-bg-danger p-1 rounded-circle"></span>
-                                                <span class="ms-2 fs-3">Out of Stock</span>
-                                            </a>';
-                                    } 
-
-                                    $default_image = '../images/product/product.jpg';
-
-                                    $picture_path = !empty($product['main_image'])
-                                    ? "../" .$product['main_image']
-                                    : $default_image;
-
-                                    $images_directory = "../images/drawing/";
-
-                                    $customer_pricing = getPricingCategory($category_id, $customer_details_pricing) / 100;
-
-                                    $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 0;
-                                    $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
-
-                                    $total_length = $estimate_length + ($estimate_length_inch / 12);
-                                    $amount_discount = isset($values["amount_discount"]) && is_numeric($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
-
-                                    $quantity = isset($values["quantity_cart"]) && is_numeric($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
-                                    $unit_price = isset($values["unit_price"]) && is_numeric($values["unit_price"]) ? floatval($values["unit_price"]) : 0;
-
-                                    $product_price = ($quantity * $unit_price * $total_length) - $amount_discount;
-
-                                    if (!empty($values["is_custom"]) && $values["is_custom"] == 1) {
-                                        $custom_multiplier = floatval(getCustomMultiplier($category_id));
-                                        $product_price += $product_price * $custom_multiplier;
-                                    }
-
-                                    $color_id = $values["custom_color"];
-                                    if (isset($values["used_discount"])){
-                                        $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
-                                    }
-
-                                    $sold_by_feet = $product['sold_by_feet'];
-                                ?>
-                                    <tr class="border-bottom border-3 border-white">
-                                        <td>
-                                            <?php
-                                            if($data_id == '66'){
-                                                if(!empty($values["custom_trim_src"])){
-                                                ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
-                                                    <div class="align-items-center text-center w-100" style="background: #ffffff">
-                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
-                                                    </div>
-                                                </a>
-                                                <?php
-                                                }else{
-                                                ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-line="<?php echo $values["line"]; ?>" data-id="<?= $data_id ?>">
-                                                    Draw Here
-                                                </a>
-                                                <?php
-                                                }
-                                                ?>
-                                                
-                                            <?php }else{
-                                            ?>
-                                            <div class="align-items-center text-center w-100">
-                                                <img src="<?= $picture_path ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
-                                            </div>
-                                            <?php
-                                            } ?>
-                                        </td>
-                                        <td>
-                                            <h6 class="fw-semibold mb-0 fs-4">
-                                                <?= $values["product_item"] ?>
-                                                <?php if ($values["is_pre_order"] == 1): ?>
-                                                    <br>( PREORDER )
-                                                <?php endif; ?>
-                                            </h6>
-                                        </td>
-                                        <td>
-                                            <select id="color_order<?= $no ?>" class="form-control color-order text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
-                                                <option value="">Select Color...</option>
-                                                <?php
-                                                if (!empty($color_id)) {
-                                                    echo '<option value="' . $color_id . '" selected data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
-                                                }
-
-                                                $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$data_id'";
-                                                $result_colors = mysqli_query($conn, $query_colors);
-
-                                                if (mysqli_num_rows($result_colors) > 0) {
-                                                    while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                                        if ($color_id == $row_colors['color_id']) {
-                                                            continue;
-                                                        }
-                                                        $product_details = getProductDetails($row_colors['Product_id']);
-                                                        $disabled = $values['custom_grade'] != $product_details['grade'] ? 'disabled' : '';
-                                                        echo '<option value="' . $row_colors['color_id'] . '" data-color="' . getColorHexFromColorID($row_colors['color_id']) . '" data-grade="' . $product_details['grade'] . '"' .$disabled .'>' . getColorName($row_colors['color_id']) . '</option>';
-                                                    }
-                                                }
-                                                ?>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <div class="input-group text-start">
-                                                <select id="grade<?= $no ?>" class="form-control grade-order" name="grade" onchange="updateGrade(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
-                                                    <option value="">Select Grade...</option>
-                                                    <?php
-                                                    $query_grade = "SELECT * FROM product_grade WHERE status = 1";
-                                                    $result_grade = mysqli_query($conn, $query_grade);
-
-                                                    while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                                        $selected = ($values['custom_grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
-                                                        ?>
-                                                        <option value="<?= $row_grade['product_grade_id']; ?>" <?= $selected; ?>><?= $row_grade['product_grade']; ?></option>
-                                                        <?php
-                                                    }
-                                                    ?>
-                                                </select>
-
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <?php echo getProfileFromID($data_id); ?>
-                                        </td>
-                                        <td>
-                                            <div class="input-group">
-                                                <span class="input-group-btn">
-                                                    <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)">
-                                                        <i class="fa fa-minus"></i>
-                                                    </button>
-                                                </span> 
-                                                <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
-                                                <span class="input-group-btn">
-                                                    <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)">
-                                                        <i class="fa fa-plus"></i>
-                                                    </button>
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <?php 
-                                        if($category_id == $panel_id){ // Panels ID
-                                        ?>
-                                        <td>
-                                            <div class="d-flex flex-column align-items-center">
-                                                <input class="form-control" type="text" value="<?= $product["width"]; ?>" placeholder="W" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" <?= !empty($product["width"]) ? 'readonly' : '' ?>>
-                                                <span class="mr-3 ml-1"> X</span>
-                                                <?php
-                                                if($sold_by_feet == 1){
-                                                    ?>
-                                                    <fieldset class="border p-1 position-relative">
-                                                        <div class="input-group d-flex align-items-center">
-                                                            <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"]; ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                            <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
-                                                        </div>
-                                                    </fieldset>
-                                                <?php
-                                                }else{
-                                                ?>
-                                                    <input class="form-control" type="text" value="<?= $values["estimate_length"]; ?>" placeholder="H" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                <?php
-                                                }
-                                                ?>
-                                                
-                                            </div>
-                                        </td>
-                                        <?php
-                                        }else if($category_id == $trim_id){
-                                        ?>
-                                        <td>
-                                            <div class="d-flex flex-column align-items-center">
-                                                <input class="form-control text-center mb-1" type="text" value="<?= isset($values["estimate_width"]) ? $values["estimate_width"] : $product["width"]; ?>" placeholder="Width" size="5" style="color:#ffffff; " data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
-                                                <span class="mx-1 text-center mb-1">X</span>
-                                                <fieldset class="border p-1 position-relative">
-                                                    <div class="input-group d-flex align-items-center">
-                                                        <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"]; ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                        <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
-                                                    </div>
-                                                </fieldset>
-                                            </div>
-                                        </td>
-                                        <?php
-                                        }else{
-                                        ?>
-                                        <td class="text-center">
-                                            <fieldset class="border p-1 position-relative">
-                                                <div class="input-group d-flex align-items-center">
-                                                    <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"]; ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                    <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
-                                                </div>
-                                            </fieldset>
-                                        </td>
-                                        <?php
-                                        }
-                                        ?>
-                                        <td><?= $stock_text ?></td>
-                                        <td class="text-end pl-3">$
-                                            <?php
-                                            $subtotal = $product_price;
-                                            echo number_format($subtotal, 2);
-                                            ?>
-                                        </td>
-                                        <td class="text-end pl-3">$
-                                            <?php
-                                            $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
-                                            echo number_format($customer_price, 2);
-                                            ?>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
-                                            <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
-                                            <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["product_id"]; ?>">
-                                            <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $data_id;?>">
-                                            <input class="form-control" type="hidden" size="5" value="<?php echo $values["line"];?>" id="line<?php echo $data_id;?>">
-                                            <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $data_id;?>">
-                                        </td>
-                                    </tr>
-                            <?php
-                                    $totalquantity += $values["quantity_cart"];
-                                    $total += $subtotal;
-                                    $total_customer_price += $customer_price;
-                                    $no++;
-                                    $total_weight += $values["weight"] * $values["quantity_cart"];
-                                }
-                            }
-                            $_SESSION["total_quantity"] = $totalquantity;
-                            $_SESSION["grandtotal"] = $total;
-                            ?>
-                        </tbody>
-
-                        <tfoot>
-                            <tr>
-                                <td colspan="2" class="text-end">Total Weight</td>
-                                <td><?= number_format(floatval($total_weight), 2) ?> LBS</td>
-                                <td colspan="3" class="text-end">Total Quantity:</td>
-                                <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
-                                <td colspan="3" class="text-end">Amount Due:</td>
-                                <td colspan="1" class="text-end"><span id="ammount_due"><?= number_format($total_customer_price,2) ?> $</span></td>
-                                <td colspan="1"></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </fieldset>
-            <fieldset class="order-page-2">
                 <div id="checkout" class="row mt-3">
-                    <div class="col-md-6"></div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-2 mb-3">
                         <label for="job_name" class="mb-0">Job Name</label>
                         <div id="order_checkout">
                             <select id="order_job_name" class="form-control" name="order_job_name">
@@ -523,11 +318,15 @@ if(isset($_POST['fetch_order'])){
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    
+                    <div class="col-md-2 mb-3">
                         <label for="job_po" class="mb-0">Job PO #</label>
                         <input type="text" id="order_job_po" name="order_job_po" class="form-control" placeholder="Enter Job PO #">
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-8">
+                        
+                    </div>
+                    <div class="col-md-4">
                         <div class="card box-shadow-0">
                             <div class="card-body">
                                 <form>
@@ -535,18 +334,14 @@ if(isset($_POST['fetch_order'])){
                                         <label>Total Items:</label>
                                         <span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span>
                                     </div>
-                                    <div class="form-group">
-                                        <label>Discount (%)</label>
-                                        <input type="text" class="form-control discount_input" id="order_discount" placeholder="%" value="<?= $discount * 100 ?>">
-                                    </div>
+                                    
                                     <div class="row">
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label>Credit Amount</label>
-                                                <input type="number" class="form-control" id="order_credit" value="0.00">
-                                            </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label>Discount (%)</label>
+                                            <input type="text" class="form-control discount_input" id="order_discount" placeholder="%" value="<?= $discount * 100 ?>">
                                         </div>
-                                        <div class="col-6">
+                                        
+                                        <div class="col-md-12 mb-3">
                                             <div class="form-group">
                                                 <label>Cash Amount</label>
                                                 <input type="number" class="form-control" id="order_cash" value="<?= round($total_customer_price, 2) ?>">
@@ -557,16 +352,13 @@ if(isset($_POST['fetch_order'])){
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-3"></div>
+                    <div class="col-md-5">
                         <div class="card">
                             <div class="card-body pricing container">
                                 <div class="table-responsive">
                                     <table class="table table-sm">
                                         <tbody>
-                                            <tr>
-                                                <th class="text-right border-bottom">Total</th>
-                                                <td class="text-right border-bottom">$<span id="total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span></td>
-                                            </tr>
                                             <tr>
                                                 <th class="text-right border-bottom">Discount(-)</th>
                                                 <td class="text-right border-bottom">$<span id="total_discount"><?= number_format(floatval($total) * floatval($discount), 2) ?></span></td>
@@ -587,6 +379,10 @@ if(isset($_POST['fetch_order'])){
                                                 </td>
                                             </tr>
                                             <tr>
+                                                <th class="text-right border-bottom">Total</th>
+                                                <td class="text-right border-bottom">$<span id="total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span></td>
+                                            </tr>
+                                            <tr>
                                                 <th class="text-right border-bottom">Sales Tax</th>
                                                 <td class="text-right border-bottom">$<span id="sales_tax"><?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span></td>
                                             </tr>
@@ -604,6 +400,128 @@ if(isset($_POST['fetch_order'])){
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset class="order-page-2" style="display: none;">
+                <div class="row">
+                    <!-- Left Side -->
+                    <div class="col-lg-8">
+                    <h5 class="mb-3">Checkout</h5>
+                    <p>Welcome, <strong><?= $customer_name ?></strong></p>
+
+                    <!-- Contact Information -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <span><i class="fa fa-check-circle text-success me-2"></i>Contact Information</span>
+                        <a href="#" class="text-primary">Edit Info</a>
+                        </div>
+                        <div class="card-body">
+                        <p class="mb-1"><?= $customer_details['contact_email'] ?></p>
+                        <p class="mb-2"><?= $customer_details['contact_phone'] ?></p>
+                        <small class="text-muted">By providing the phone number above, you consent to receive automated text messages...</small>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Details -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-white">
+                        <i class="fa fa-check-circle text-success me-2"></i>Pickup Details
+                        </div>
+                        <div class="card-body">
+                        <h6 class="mb-1"><?= $customer_details['address'] ?></h6>
+                        <p class="mb-1"><?= getCustomerAddress($_SESSION["customer_id"]) ?> <a href="#" class="ms-2">(606) 330-1440</a></p>
+                        <div class="mb-3">
+                            <label class="form-label">How would you like to pick up your order?</label>
+                            <div class="form-check">
+                            <input class="form-check-input" type="radio" name="pickupOption" checked>
+                            <label class="form-check-label">Pickup</label>
+                            </div>
+                            <div class="form-check">
+                            <input class="form-check-input" type="radio" name="pickupOption">
+                            <label class="form-check-label">Delivery</label>
+                            </div>
+                            <small class="text-muted">We'll email you when your order is ready. Follow signs inside the store...</small>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-white">
+                        <span class="me-2">3</span> Payment
+                        </div>
+                        <div class="card-body">
+                        <a href="#" class="text-primary d-block mb-3">+ Add Gift Card(s) <span class="text-muted">($<?= $store_credit ?> available)</span></a>
+
+                        <div class="mb-3">
+                            <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="payMethod" checked>
+                            <label class="form-check-label"><i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="payMethod">
+                            <label class="form-check-label"><i class="fa-brands fa-apple-pay me-1"></i>Apple Pay</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="payMethod">
+                            <label class="form-check-label"><i class="fa-brands fa-paypal me-1"></i>PayPal</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <i class="fa-solid fa-wallet me-2"></i><span>Buy Now, Pay Later</span>
+                            <span class="badge bg-secondary ms-2">Credit PAyment</span>
+                            <small class="d-block text-muted">Available for orders over $50</small>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Saved Cards</label>
+                            <select class="form-select">
+                            <option>ALL</option>
+                            </select>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+
+                    <!-- Right Side (Order Summary) -->
+                    <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                        <strong>Order Summary</strong>
+                        </div>
+                        <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <span>Item Subtotal (1)</span>
+                            <span>$<?= $total_customer_price ?></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Estimated Tax</span>
+                            <span>$<?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between text-success mb-3">
+                            <span>Savings</span>
+                            <span>$<?= number_format(floatval($total) * floatval($discount)) ?></span>
+                        </div>
+                        <div class="alert alert-warning py-2">
+                            <i class="fa fa-exclamation-triangle me-2"></i>Please enter CVV at the <strong>Payment Section</strong>.
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <strong>Estimated Total</strong>
+                            <strong>$<?= number_format((floatval($total_customer_price)), 2) ?></strong>
+                        </div>
+                        <button class="btn btn-secondary w-100 mt-3" id="save_order">Place Order</button>
+                        <p class="mt-2 text-center small text-muted">
+                            By placing an order, I agree to EKM's <a href="#">Terms</a> and <a href="#">Privacy Statement</a>.
+                        </p>
+                        </div>
+                        <div class="card-footer bg-white d-flex justify-content-between">
+                        <span><i class="fa fa-gift me-1"></i>Estimated Points</span>
+                        <span><span class="badge bg-primary">+0</span></span>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </fieldset>

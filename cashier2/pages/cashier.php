@@ -464,31 +464,31 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 <div class="row mt-4">
                     <div class="col-12">
                         <div class="d-flex flex-wrap justify-content-center">
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="clear_cart" style="background-color: #dc3545; color: white;">
+                            <button type="button" class="btn mb-2 flex-fill mx-4" id="clear_cart" style="background-color: #dc3545; color: white;">
                                 <i class="fa fa-trash fs-4 me-2"></i>
                                 Clear Cart
                             </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="btnPriceGroupModal" style="background-color: #007bff; color: white;">
+                            <button type="button" class="btn mb-2 flex-fill mx-4" id="btnPriceGroupModal" style="background-color: #007bff; color: white;">
                                 <i class="fa fa-tag fs-4 me-2"></i>
                                 Change Price Group
                             </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="btnGradeModal" style="background-color: #6c757d; color: white;">
+                            <button type="button" class="btn mb-2 flex-fill mx-4" id="btnGradeModal" style="background-color: #6c757d; color: white;">
                                 <i class="fa fa-chart-line fs-4 me-2"></i>
                                 Change Grade
                             </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="btnColorModal" style="background-color: #17a2b8; color: white;">
+                            <button type="button" class="btn mb-2 flex-fill mx-4" id="btnColorModal" style="background-color: #17a2b8; color: white;">
                                 <i class="fa fa-palette fs-4 me-2"></i>
                                 Change Color
                             </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="btnApprovalModal" style="background-color: #800080; color: white;">
+                            <button type="button" class="btn mb-2 flex-fill mx-4" id="btnApprovalModal" style="background-color: #800080; color: white;">
                                 <i class="fa fa-check-circle fs-4 me-2"></i>
                                 Submit Approval
                             </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="view_estimate" style="background-color: #ffc107; color: black;">
+                            <button type="button" class="btn mb-2 flex-fill mx-4" id="view_estimate" style="background-color: #ffc107; color: black;">
                                 <i class="fa fa-calculator fs-4 me-2"></i>
                                 Estimate
                             </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="view_order" style="background-color: #28a745; color: white;">
+                            <button type="button" class="btn mb-2 flex-fill mx-4" id="view_order" style="background-color: #28a745; color: white;">
                                 <i class="fa fa-shopping-cart fs-4 me-2"></i>
                                 Order
                             </button>

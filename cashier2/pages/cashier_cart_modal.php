@@ -432,27 +432,10 @@ if(isset($_POST['fetch_cart'])){
             </table>
         </div>
         <div id="checkout" class="row mt-3">
-            <div class="col-md-6">
-                <div class="card box-shadow-0">
-                    <div class="card-body">
-                        <form>
-                            <div>
-                                <label>Total Items:</label>
-                                <span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span>
-                            </div>
-                            <div class="form-group">
-                                <label>Discount (%)</label>
-                                <input type="text" class="form-control discount_input" id="est_discount" placeholder="%" value="<?= $discount * 100 ?>">
-                            </div>
-                            <div class="form-group">
-                                <label>Amount</label>
-                                <input type="text" class="form-control" id="cash_amount" value="<?= $total_customer_price ?>">
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            <div class="col-md-7">
+                
             </div>
-            <div class="col-md-6">
+            <div class="col-md-5">
                 <div class="card">
                     <div class="card-body pricing">
                         <div class="table-responsive">
@@ -463,24 +446,12 @@ if(isset($_POST['fetch_cart'])){
                                         <td class="text-right border-bottom">$ <span id="total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span></td>
                                     </tr>
                                     <tr>
-                                        <th class="text-right border-bottom">Discount(-)</th>
-                                        <td class="text-right border-bottom">$ <span id="total_discount"><?= number_format(floatval($total_customer_price) * floatval($discount), 2) ?></span></td>
-                                    </tr>
-                                    <tr>
-                                        <th class="text-right border-bottom">Delivery</th>
-                                        <td class="text-right border-bottom">$ <span id="delivery_amt"><?= number_format(0, 2) ?></span></td>
-                                    </tr>
-                                    <tr>
                                         <th class="text-right border-bottom">Sales Tax</th>
                                         <td class="text-right border-bottom">$ <span id="sales_tax"><?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span></td>
                                     </tr>
                                     <tr>
                                         <th class="text-right border-bottom">Total Payable</th>
                                         <td class="text-right border-bottom">$ <span id="total_payable_est"><?= number_format((floatval($total_customer_price)), 2) ?></span></td>
-                                    </tr>
-                                    <tr class="bg-primary text-white" style="font-size: 1.25rem;">
-                                        <th class="text-right">Change</th>
-                                        <td class="text-right">$ 0.00</td>
                                     </tr>
                                 </tbody>
                             </table>
