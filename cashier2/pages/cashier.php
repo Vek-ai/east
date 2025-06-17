@@ -5,14 +5,17 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
-$lat = 0;
-$lng = 0;
+
 
 $panel_id = 3;
 
 $deliveryAmt = getDeliveryCost();
 $addressSettings = getSettingAddressDetails();
 $amtPerMile = getSettingAmtPerMile();
+
+$lat = !empty($addressSettings['lat']) ? $addressSettings['lat'] : 0;
+$lng = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
+
 $latSettings = !empty($addressSettings['lat']) ? $addressSettings['lat'] : 0;
 $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 ?>
@@ -463,35 +466,42 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             <div class="">
                 <div class="row mt-4">
                     <div class="col-12">
-                        <div class="d-flex flex-wrap justify-content-center">
-                            <button type="button" class="btn mb-2 flex-fill mx-4" id="clear_cart" style="background-color: #dc3545; color: white;">
-                                <i class="fa fa-trash fs-4 me-2"></i>
-                                Clear Cart
-                            </button>
-                            <button type="button" class="btn mb-2 flex-fill mx-4" id="btnPriceGroupModal" style="background-color: #007bff; color: white;">
-                                <i class="fa fa-tag fs-4 me-2"></i>
-                                Change Price Group
-                            </button>
-                            <button type="button" class="btn mb-2 flex-fill mx-4" id="btnGradeModal" style="background-color: #6c757d; color: white;">
-                                <i class="fa fa-chart-line fs-4 me-2"></i>
-                                Change Grade
-                            </button>
-                            <button type="button" class="btn mb-2 flex-fill mx-4" id="btnColorModal" style="background-color: #17a2b8; color: white;">
-                                <i class="fa fa-palette fs-4 me-2"></i>
-                                Change Color
-                            </button>
-                            <button type="button" class="btn mb-2 flex-fill mx-4" id="btnApprovalModal" style="background-color: #800080; color: white;">
-                                <i class="fa fa-check-circle fs-4 me-2"></i>
-                                Submit Approval
-                            </button>
-                            <button type="button" class="btn mb-2 flex-fill mx-4" id="view_estimate" style="background-color: #ffc107; color: black;">
-                                <i class="fa fa-calculator fs-4 me-2"></i>
-                                Estimate
-                            </button>
-                            <button type="button" class="btn mb-2 flex-fill mx-4" id="view_order" style="background-color: #28a745; color: white;">
-                                <i class="fa fa-shopping-cart fs-4 me-2"></i>
-                                Order
-                            </button>
+                        <div class="row gx-2 justify-content-between">
+                            <div class="col-auto mb-2">
+                                <button type="button" class="btn btn-danger px-3" id="clear_cart">
+                                    <i class="fa fa-trash fs-5 me-2"></i> Clear Cart
+                                </button>
+                            </div>
+                            <div class="col-auto mb-2">
+                                <button type="button" class="btn btn-primary px-3" id="btnPriceGroupModal">
+                                    <i class="fa fa-tag fs-5 me-2"></i> Change Price Group
+                                </button>
+                            </div>
+                            <div class="col-auto mb-2">
+                                <button type="button" class="btn btn-secondary px-3" id="btnGradeModal">
+                                    <i class="fa fa-chart-line fs-5 me-2"></i> Change Grade
+                                </button>
+                            </div>
+                            <div class="col-auto mb-2">
+                                <button type="button" class="btn btn-info px-3 text-white" id="btnColorModal">
+                                    <i class="fa fa-palette fs-5 me-2"></i> Change Color
+                                </button>
+                            </div>
+                            <div class="col-auto mb-2">
+                                <button type="button" class="btn px-3" id="btnApprovalModal" style="background-color: #800080; color: white;">
+                                    <i class="fa fa-check-circle fs-5 me-2"></i> Submit Approval
+                                </button>
+                            </div>
+                            <div class="col-auto mb-2">
+                                <button type="button" class="btn px-3" id="view_order" style="background-color: rgb(0, 218, 47); color: white; text-shadow: 1px 1px 2px #000;">
+                                    <i class="fa fa-shopping-cart fs-5 me-2"></i> Next
+                                </button>
+                            </div>
+                            <div class="col-auto mb-2">
+                                <button type="button" class="btn btn-danger px-3" data-bs-dismiss="modal">
+                                    <i class="fa fa-times fs-5 me-2"></i> Close
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -651,7 +661,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 <button class="btn ripple btn-primary previous d-none" type="button" id="prev_page_est">
                     <i class="fe fe-hard-drive"></i> Previous
                 </button>
-                <button class="btn ripple btn-success d-none" type="button" id="save_estimate">
+                <button class="btn ripple btn-success d-none" type="button" id="save_estimate_modal">
                     <i class="fe fe-hard-drive"></i> Save
                 </button>
                 <a href="#" class="btn ripple btn-light text-dark d-none" type="button" id="print_estimate_category" target="_blank">
@@ -689,8 +699,11 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 <div id="order-tbl"></div>
             </div>
             <div class="modal-footer">
-                <button class="btn ripple btn-primary next" type="button" id="next_page_order">
-                    <i class="fe fe-hard-drive"></i> Next
+                <button class="btn ripple btn-warning next" type="button" id="save_estimate">
+                    <i class="fe fe-hard-drive"></i> Save Estimate
+                </button>
+                <button class="btn ripple btn-success next" type="button" id="next_page_order">
+                    <i class="fe fe-hard-drive"></i> Proceed to Checkout
                 </button>
                 <button class="btn ripple btn-primary previous d-none" type="button" id="prev_page_order">
                     <i class="fe fe-hard-drive"></i> Previous
@@ -707,7 +720,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                 <a href="#" class="btn ripple btn-info d-none" type="button" id="print_deliver" target="_blank">
                     <i class="fe fe-print"></i> Print Delivery
                 </a>
-                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>
@@ -1104,6 +1116,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     function getPlaceName(lat, lng, inputId) {
         const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
 
+        console.log(lat)
+
         $.ajax({
             url: url,
             dataType: 'json',
@@ -1211,9 +1225,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     function initMaps() {
         map1 = new google.maps.Map(document.getElementById("map1"), {
             center: { lat: <?= $lat ?>, lng: <?= $lng ?> },
-            zoom: 13,
+            zoom: 16,
         });
         marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+        getPlaceName(lat1, lng1, '#searchBox1');
         google.maps.event.addListener(map1, 'click', function(event) {
             lat1 = event.latLng.lat();
             lng1 = event.latLng.lng();
@@ -1224,7 +1239,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
     function loadGoogleMapsAPI() {
         const script = document.createElement('script');
-        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDFpFbxFFK7-daOKoIk9y_GB4m512Tii8M&callback=initMaps&libraries=geometry,places';
+        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDRPyR0tSWQUm4sR0BwqDxSjVsdHXQvw7U&callback=initMaps&libraries=geometry,places';
         script.async = true;
         script.defer = true;
         document.head.appendChild(script);
@@ -1235,28 +1250,41 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     function calculateDeliveryAmount() {
         var customerLat = parseFloat($('#lat').val());
         var customerLng = parseFloat($('#lng').val());
-        var lat2Float = parseFloat(lat2);
-        var lng2Float = parseFloat(lng2);
+        var payable_amt = parseFloat($('#payable_amt').val());
+        var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
-        var deliver_method = $('#order_delivery_method').val();
+        var lat2Float = typeof lat2 !== 'undefined' ? parseFloat(lat2) : 0;
+        var lng2Float = typeof lng2 !== 'undefined' ? parseFloat(lng2) : 0;
 
-        if(deliver_method == 'pickup'){
-            $('#delivery_amt').val(0).trigger('change');
-        }else{
-            if (customerLat !== 0 && customerLng !== 0 && lat2Float !== 0 && lng2Float !== 0) {
+        let deliveryAmount = 0;
+
+        if (deliver_method === 'pickup') {
+            deliveryAmount = 0;
+        } else {
+            if (
+                !isNaN(customerLat) && !isNaN(customerLng) &&
+                !isNaN(lat2Float) && !isNaN(lng2Float) &&
+                customerLat !== 0 && customerLng !== 0 &&
+                lat2Float !== 0 && lng2Float !== 0
+            ) {
                 const point1 = new google.maps.LatLng(customerLat, customerLng);
                 const point2 = new google.maps.LatLng(lat2Float, lng2Float);
                 const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
                 const distanceInMiles = distanceInMeters / 1609.34;
-                var deliveryAmount = amtPerMile * distanceInMiles;
-                deliveryAmount = deliveryAmount.toFixed(2);
+                deliveryAmount = parseFloat((amtDeliveryDefault + (amtPerMile * distanceInMiles)).toFixed(2));
             } else {
-                deliveryAmount = amtDeliveryDefault.toFixed(2);
+                deliveryAmount = parseFloat(amtDeliveryDefault.toFixed(2));
             }
-
-            $('#delivery_amt').val(deliveryAmount).trigger('change');
         }
+
+        const total_amt = (payable_amt + deliveryAmount).toFixed(2);
+
+        $('#delivery_amt').val(deliveryAmount).trigger('change');
+        $('#order_delivery_amt').text(deliveryAmount.toFixed(2));
+        $('#order_total').text(total_amt);
+
     }
+
 
     function calculateDeliveryAmountEst() {
         var customerLat = parseFloat($('#est_lat').val());
@@ -4565,7 +4593,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             calculateDeliveryAmountEst();
         });
 
-        $(document).on('change', '#order_delivery_method', function () {
+        $(document).on('change', 'input[name="order_delivery_method"]', function () {
             calculateDeliveryAmount();
         });
     });
