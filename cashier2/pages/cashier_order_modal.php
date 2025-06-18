@@ -662,14 +662,15 @@ if(isset($_POST['fetch_order'])){
                 var next_fs = $(nextPage);
 
                 if (isNext) {
-                    console.log(isNext);
                     $('#next_page_order').addClass("d-none");
                     $('#prev_page_order').removeClass("d-none");
                     $('#save_order').removeClass("d-none");
+                    $('#save_estimate').addClass("d-none");
                 } else {
                     $('#next_page_order').removeClass("d-none");
                     $('#prev_page_order').addClass("d-none");
                     $('#save_order').addClass("d-none");
+                    $('#save_estimate').removeClass("d-none");
                 }
 
                 next_fs.show();
@@ -677,16 +678,15 @@ if(isset($_POST['fetch_order'])){
 
                 animating = false;
             }
-
+            
             $(document).on("click", "#next_page_order", function() {
                 changePage('.order-page-1', '.order-page-2', true);
-                $('#save_estimate').addClass("d-none");
             });
 
             $(document).on("click", "#prev_page_order", function() {
                 changePage('.order-page-2', '.order-page-1', false);
-                $('#save_estimate').removeClass("d-none");
             });
+
 
             $('#order_job_name').select2({
                 width: '100%',
