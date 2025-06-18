@@ -752,9 +752,17 @@ function getSupplierOrderTotals($supplier_temp_order_id) {
 
 function getOrderTotals($orderid) {
     global $conn;
+
     $query = "
         SELECT 
-            SUM(actual_price * quantity) AS total_actual_price
+            SUM(
+                quantity * unit_price * 
+                CASE 
+                    WHEN custom_length > 0 OR custom_length2 > 0 
+                    THEN (custom_length + (custom_length2 / 12))
+                    ELSE 1
+                END
+            ) AS total_actual_price
         FROM 
             order_product
         WHERE 
@@ -767,6 +775,7 @@ function getOrderTotals($orderid) {
         $row = mysqli_fetch_assoc($result);
         $total_actual_price = floatval($row['total_actual_price']);
     }
+
     return number_format($total_actual_price, 2);
 }
 
@@ -799,7 +808,14 @@ function getOrderTotalsDiscounted($orderid) {
 
     $query = "
         SELECT 
-            SUM(discounted_price * quantity) AS total_discounted_price
+            SUM(
+                quantity * discounted_price * 
+                CASE 
+                    WHEN custom_length > 0 OR custom_length2 > 0 
+                    THEN (custom_length + (custom_length2 / 12))
+                    ELSE 1
+                END
+            ) AS total_discounted_price
         FROM 
             order_product
         WHERE 
@@ -815,6 +831,7 @@ function getOrderTotalsDiscounted($orderid) {
 
     return number_format($total_discounted_price, 2);
 }
+
 
 function setOrderTotals($orderid) {
     global $conn;
@@ -856,18 +873,28 @@ function setOrderTotals($orderid) {
 function getEstimateTotals($estimateid) {
     global $conn;
 
+    $estimateid = intval($estimateid);
+
     $query = "
         SELECT 
-            SUM(actual_price * quantity) AS total_actual_price
+            SUM(
+                actual_price * quantity *
+                CASE 
+                    WHEN custom_length > 0 OR custom_length2 > 0 
+                    THEN (custom_length + (custom_length2 / 12))
+                    ELSE 1
+                END
+            ) AS total_actual_price
         FROM 
             estimate_prod
         WHERE 
-            estimateid = '$estimateid'";
+            estimateid = '$estimateid'
+    ";
 
     $result = mysqli_query($conn, $query);
     $total_actual_price = 0;
 
-    if ($result && mysqli_num_rows($result) > 0) {
+    if ($result) {
         $row = mysqli_fetch_assoc($result);
         $total_actual_price = floatval($row['total_actual_price']);
     }
@@ -875,27 +902,39 @@ function getEstimateTotals($estimateid) {
     return number_format($total_actual_price, 2);
 }
 
+
 function getEstimateTotalsDiscounted($estimateid) {
     global $conn;
 
+    $estimateid = intval($estimateid);
+
     $query = "
         SELECT 
-            SUM(discounted_price * quantity) AS total_discounted_price
+            SUM(
+                discounted_price * quantity *
+                CASE 
+                    WHEN custom_length > 0 OR custom_length2 > 0 
+                    THEN (custom_length + (custom_length2 / 12))
+                    ELSE 1
+                END
+            ) AS total_discounted_price
         FROM 
             estimate_prod
         WHERE 
-            estimateid = '$estimateid'";
+            estimateid = '$estimateid'
+    ";
 
     $result = mysqli_query($conn, $query);
     $total_discounted_price = 0;
 
-    if ($result && mysqli_num_rows($result) > 0) {
+    if ($result) {
         $row = mysqli_fetch_assoc($result);
         $total_discounted_price = floatval($row['total_discounted_price']);
     }
 
     return number_format($total_discounted_price, 2);
 }
+
 
 function getCustomerType($customer_type_id){
     global $conn;

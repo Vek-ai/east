@@ -495,6 +495,125 @@ if (isset($_POST['set_grade'])) {
     echo "grade id: $grade, Prod id: $product_id, Line: $line, Key: $key";
 }
 
+if (isset($_POST['set_estimate_data'])) {
+    $estimateId = intval($_POST['editestimate']);
+    $estimate_details = getEstimateDetails($estimateId);
+
+    $_SESSION['customer_id'] = $estimate_details['customerid'];
+
+    unset($_SESSION['cart']);
+    $_SESSION['cart'] = [];
+
+    $query = "SELECT * FROM estimate_prod WHERE estimateid = '$estimateId'";
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $item_array = array(
+                'estimate_prod_id' => $row['id'],
+                'estimateid' => $row['estimateid'],
+                'product_id' => $row['product_id'],
+                'product_item' => $row['product_item'],
+                'supplier_id' => 0,
+                'unit_price' => floatval($row['actual_price']),
+                'line' => 1,
+                'quantity_ttl' => 0,
+                'quantity_in_stock' => 0,
+                'quantity_cart' => floatval($row['quantity']),
+                'estimate_width' => $row['custom_width'],
+                'estimate_length' => $row['custom_length'],
+                'estimate_length_inch' => $row['custom_length2'],
+                'usage' => $row['usageid'],
+                'custom_color' => $row['custom_color'],
+                'panel_type' => $row['panel_type'],
+                'weight' => 0,
+                'custom_grade' => $row['custom_grade'],
+                'custom_gauge' => 0,
+                'stiff_board_batten' => $row['stiff_board_batten'],
+                'stiff_stand_seam' => $row['stiff_stand_seam'],
+                'is_pre_order' => 0
+            );
+
+            $_SESSION['cart'][] = $item_array;
+
+            echo $estimateId;
+        }
+    }
+}
+
+if (isset($_POST['edit_estimate'])) {
+    $estimate_id = intval($_POST['edit_estimate']);
+
+    if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $item) {
+            $estimate_prod_id = isset($item['estimate_prod_id']) ? intval($item['estimate_prod_id']) : 0;
+
+            $product_id = intval($item['product_id']);
+            $product_item = mysqli_real_escape_string($conn, $item['product_item']);
+            $custom_color = intval($item['custom_color']);
+            $custom_grade = intval($item['custom_grade']);
+            $custom_gauge = intval($item['custom_gauge']);
+            $quantity = intval($item['quantity_cart']);
+            $custom_width = mysqli_real_escape_string($conn, $item['estimate_width']);
+            $custom_length = mysqli_real_escape_string($conn, $item['estimate_length']);
+            $custom_length2 = mysqli_real_escape_string($conn, $item['estimate_length_inch']);
+            $custom_bend = isset($item['estimate_bend']) ? mysqli_real_escape_string($conn, $item['estimate_bend']) : '';
+            $custom_hem = isset($item['estimate_hem']) ? mysqli_real_escape_string($conn, $item['estimate_hem']) : '';
+            $usageid = intval($item['usage']);
+            $panel_type = intval($item['panel_type']);
+            $stiff_stand_seam = intval($item['stiff_stand_seam']);
+            $stiff_board_batten = intval($item['stiff_board_batten']);
+            $actual_price = floatval($item['unit_price']);
+            $discounted_price = isset($item['discounted_price']) ? floatval($item['discounted_price']) : $actual_price;
+
+            if ($estimate_prod_id > 0) {
+                $query = "
+                    UPDATE estimate_prod SET 
+                        custom_color = '$custom_color',
+                        custom_grade = '$custom_grade',
+                        custom_width = '$custom_width',
+                        custom_bend = '$custom_bend',
+                        custom_hem = '$custom_hem',
+                        custom_length = '$custom_length',
+                        custom_length2 = '$custom_length2',
+                        quantity = '$quantity',
+                        actual_price = '$actual_price',
+                        discounted_price = '$discounted_price',
+                        usageid = '$usageid',
+                        panel_type = '$panel_type',
+                        stiff_stand_seam = '$stiff_stand_seam',
+                        stiff_board_batten = '$stiff_board_batten'
+                    WHERE id = $estimate_prod_id
+                ";
+            } else {
+                $query = "
+                    INSERT INTO estimate_prod (
+                        estimateid, product_id, product_item, custom_color, custom_grade, 
+                        custom_width, custom_bend, custom_hem, custom_length, custom_length2,
+                        quantity, actual_price, discounted_price, usageid,
+                        panel_type, stiff_stand_seam, stiff_board_batten
+                    ) VALUES (
+                        '$estimate_id', '$product_id', '$product_item', '$custom_color', '$custom_grade',
+                        '$custom_width', '$custom_bend', '$custom_hem', '$custom_length', '$custom_length2',
+                        '$quantity', '$actual_price', '$discounted_price', '$usageid',
+                        '$panel_type', '$stiff_stand_seam', '$stiff_board_batten'
+                    )
+                ";
+            }
+
+            mysqli_query($conn, $query);
+        }
+
+        unset($_SESSION["cart"]);
+        unset($_SESSION["customer_id"]);
+
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['error' => "Estimate id: " .$estimate_id]);
+    }
+}
+
+
 if (isset($_POST['save_estimate'])) {
     $response = [
         'success' => false,
@@ -529,21 +648,6 @@ if (isset($_POST['save_estimate'])) {
     $customer_details = getCustomerDetails($customerid);
     $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
     $credit_total = number_format(getCustomerCreditTotal($customerid),2);
-
-    if($credit_amt > 0){
-        $credit_available = $credit_limit - $credit_total;
-        if($credit_available <= 0){
-            $response['error'] = "Cannot pay via Credit! The Customer’s credit limit has been reached";
-            echo json_encode($response);
-            exit;
-        }
-        
-        if($credit_amt > $credit_limit){
-            $response['error'] = "Credit amount cannot exceed the customer's credit limit";
-            echo json_encode($response);
-            exit;
-        }
-    }
 
     $total_actual_price = 0;
     $total_discounted_price = 0;
@@ -908,6 +1012,8 @@ if (isset($_POST['save_order'])) {
         exit;
     }
 
+    $applyStoreCredit = floatval($_POST['applyStoreCredit']);
+
     $estimateid = intval($_SESSION['estimateid']);
     $customerid = intval($_SESSION['customer_id']);
     $cashierid = intval($_SESSION['userid']);
@@ -918,21 +1024,6 @@ if (isset($_POST['save_order'])) {
     $customer_details = getCustomerDetails($customerid);
     $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
     $credit_total = number_format(getCustomerCreditTotal($customerid),2);
-
-    if($credit_amt > 0){
-        $credit_available = $credit_limit - $credit_total;
-        if($credit_available <= 0){
-            $response['error'] = "Cannot pay via Credit! The Customer’s credit limit has been reached";
-            echo json_encode($response);
-            exit;
-        }
-        
-        if($credit_amt > $credit_limit){
-            $response['error'] = "Credit amount cannot exceed the customer's credit limit";
-            echo json_encode($response);
-            exit;
-        }
-    }
 
     $total_price = 0;
     $total_discounted_price = 0;
@@ -952,13 +1043,33 @@ if (isset($_POST['save_order'])) {
         $unit_price = floatval($item['unit_price']);
         $estimate_length = floatval($item['estimate_length']);
         $estimate_length_inch = floatval($item['estimate_length_inch']);
-        $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
+        $amount_discount = !empty($item["amount_discount"]) ? floatval($item["amount_discount"]) : 0;
 
-        $actual_price = $unit_price * $quantity_cart;
+        $total_length = ($estimate_length + ($estimate_length_inch / 12));
+        $total_length = $total_length > 0 ? $total_length : 1;
+        $actual_price = $unit_price * $quantity_cart * $total_length;
+
         $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
+        $discounted_price = max(0, $discounted_price);
+
 
         $total_price += $actual_price;
         $total_discounted_price += $discounted_price;
+    }
+
+    if ($applyStoreCredit) {
+        $cash_amt = floatval($cash_amt);
+        $store_credit = floatval($customer_details['store_credit']);
+
+        $credit_to_apply = min($store_credit, $cash_amt);
+        $new_store_credit = $store_credit - $credit_to_apply;
+        $final_cash_amt = $cash_amt - $credit_to_apply;
+
+        $customer_id = intval($customer_details['id']);
+        $update_sql = "UPDATE customer SET store_credit = $new_store_credit WHERE customer_id = $customerid";
+        $conn->query($update_sql);
+
+        $cash_amt = $final_cash_amt;
     }
 
     $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_fname, deliver_lname) 
@@ -993,11 +1104,14 @@ if (isset($_POST['save_order'])) {
             $custom_grade = $item['custom_grade'];
             $custom_gauge = $item['custom_gauge'];
 
-            $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
+            $total_length = $estimate_length + ($estimate_length_inch / 12);
+            $total_length = $total_length > 0 ? $total_length : 1;
 
-            $actual_price = $unit_price;
-            $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
+            $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
             $product_category = intval($product_details['product_category']);
+            $actual_price = $unit_price * $quantity_cart * $total_length;
+            $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
+            $discounted_price = max(0, $discounted_price);
 
             $curr_discount = intval(getCustomerDiscountProfile($customerid));
             $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
@@ -1265,6 +1379,10 @@ if (isset($_POST['save_order'])) {
                 $response['order_id'] = $orderid;
 
                 unset($_SESSION['cart']);
+
+                if($applyStoreCredit){
+
+                }
 
                 $customer_total_orders = getCustomerOrderTotal($customerid);
                 $customer_details = getCustomerDetails($customerid);

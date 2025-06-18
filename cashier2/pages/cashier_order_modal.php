@@ -349,10 +349,6 @@ if(isset($_POST['fetch_order'])){
 
                     <div class="col-md-4"></div>
 
-                    <?php
-                        
-                    ?>
-
                     <div class="col-md-4">
                         <div class="card flex-grow-1">
                             <div class="card-body pricing container d-flex flex-column justify-content-center">
@@ -382,7 +378,8 @@ if(isset($_POST['fetch_order'])){
                                                     $<span id="total_payable"><?= number_format((floatval($total_customer_price)), 2) ?></span>
                                                 </td>
                                                 <input type="hidden" id="payable_amt" value="<?= number_format((floatval($total_customer_price)), 2) ?>">
-                                                <input type="hidden" id="delivery_amt" name="delivery_amt" value="0" class="text-right form-control">
+                                                <input type="hidden" id="delivery_amt" name="delivery_amt" value="0">
+                                                <input type="hidden" id="store_credit" name="store_credit" value="<?= $store_credit ?>">
                                             </tr>
                                         </tbody>
                                     </table>
@@ -448,21 +445,61 @@ if(isset($_POST['fetch_order'])){
                         </div>
                         <div class="card-body">
                         
-                        <div class="mb-3" style="color: #ffffff !important;">
+                        <div class="mb-3 text-white">
+                            <label class="form-label fw-bold">Select Payment Method</label><br>
+
                             <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="payMethod" checked>
-                            <label class="form-check-label"><i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card</label>
+                                <input class="form-check-input" type="radio" name="payMethod" id="payPickup" value="pickup">
+                                <label class="form-check-label" for="payPickup">
+                                <i class="fa-solid fa-store me-1"></i>Pay at Pick-Up
+                                </label>
                             </div>
+
                             <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="payMethod">
-                            <label class="form-check-label"><i class="fa-brands fa-apple-pay me-1"></i>Apple Pay</label>
+                                <input class="form-check-input" type="radio" name="payMethod" id="payDelivery" value="delivery">
+                                <label class="form-check-label" for="payDelivery">
+                                <i class="fa-solid fa-truck me-1"></i>Pay at Delivery
+                                </label>
                             </div>
+
                             <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="payMethod">
-                            <label class="form-check-label"><i class="fa-brands fa-paypal me-1"></i>PayPal</label>
+                                <input class="form-check-input" type="radio" name="payMethod" id="payCash" value="cash">
+                                <label class="form-check-label" for="payCash">
+                                <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payCheck" value="check">
+                                <label class="form-check-label" for="payCheck">
+                                <i class="fa-solid fa-file-invoice-dollar me-1"></i>Check
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payCard" value="card">
+                                <label class="form-check-label" for="payCard">
+                                <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payNet30" value="net30">
+                                <label class="form-check-label" for="payNet30">
+                                <i class="fa-solid fa-calendar-check me-1"></i>Charge Net 30
+                                </label>
                             </div>
                         </div>
-
+                        <?php if (floatval($customer_details['store_credit']) > 0): ?>
+                            <div class="mb-3 text-white">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="applyStoreCredit" name="applyStoreCredit" value="1">
+                                    <label class="form-check-label text-white" for="applyStoreCredit">
+                                    Apply Store Credit (Available: $<?= number_format(floatval($customer_details['store_credit']), 2) ?>)
+                                    </label>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                         </div>
                     </div>
                     </div>
@@ -490,6 +527,10 @@ if(isset($_POST['fetch_order'])){
                         <div class="d-flex justify-content-between text-success mb-3">
                             <span>Savings</span>
                             <span>$<?= number_format(floatval($total) * floatval($discount)) ?></span>
+                        </div>
+                        <div id="storeCreditDisplay" class="d-flex justify-content-between mb-3 d-none text-success">
+                            <span>Store Credit:</span>
+                            <span class="fw-bold" id="storeCreditValue"></span>
                         </div>
                         
                         <div class="d-flex justify-content-between">

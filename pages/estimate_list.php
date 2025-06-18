@@ -125,6 +125,8 @@ if(isset($_REQUEST['customer_id'])){
 
     <div class="modal fade" id="viewEstimateModal" tabindex="-1" aria-labelledby="viewEstimateModalLabel" aria-hidden="true"></div>
 
+    <div class="modal fade" id="editEstimateModal" tabindex="-1" aria-labelledby="editEstimateModalLabel" aria-hidden="true"></div>
+
     <div class="modal fade" id="viewChangesModal" tabindex="-1" aria-labelledby="viewChangesModalLabel" aria-hidden="true"></div>
     
     <div class="modal fade" id="addEstimateModal" tabindex="-1" aria-labelledby="addEstimateModalLabel" aria-hidden="true"></div>
@@ -323,10 +325,10 @@ if(isset($_REQUEST['customer_id'])){
                                             <?= ucwords(get_customer_name($row["customerid"])) ?>
                                         </td style="color: #ffffff !important;">
                                         <td style="color: #ffffff !important;">
-                                            $ <?= number_format($row["total_price"],2) ?>
+                                            $ <?= getEstimateTotals($row["estimateid"]) ?>
                                         </td>
                                         <td style="color: #ffffff !important;">
-                                            $ <?= number_format($row["discounted_price"],2) ?>
+                                            $ <?=  getEstimateTotalsDiscounted($row["estimateid"]) ?>
                                         </td>
                                         <td style="color: #ffffff !important;" 
                                             <?php if (!empty($row["estimated_date"]) && $row["estimated_date"] !== '0000-00-00 00:00:00') : ?>
@@ -819,6 +821,8 @@ if(isset($_REQUEST['customer_id'])){
 
         $('#toggleActive').trigger('change');
 
+        
+
         $(document).on('click', '#view_estimate_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
@@ -832,6 +836,36 @@ if(isset($_REQUEST['customer_id'])){
                     success: function(response) {
                         $('#viewEstimateModal').html(response);
                         $('#viewEstimateModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '#editEstimate', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id');
+
+            if (confirm('Are you sure you want to edit this estimate?')) {
+                localStorage.setItem('editEstimateId', id);
+                window.open('cashier2/?editestimate=' + encodeURIComponent(id), '_blank');
+            }
+        });
+
+        $(document).on('click', '#edit_estimate_btn', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/estimate_list_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: "fetch_edit_modal"
+                    },
+                    success: function(response) {
+                        $('#editEstimateModal').html(response);
+                        $('#editEstimateModal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -1044,33 +1078,6 @@ if(isset($_REQUEST['customer_id'])){
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
                     }
-            });
-        });
-
-        $(document).on('click', '#edit_estimate_btn', function(event) {
-            event.preventDefault(); 
-            var id = $(this).data('id');
-            loadEditModal(id);
-            $('#updateEstimateModal').modal('show');
-
-            sessionStorage.setItem('estimateid', id);
-        });
-
-        $(document).on('click', '#add_estimate_btn', function(event) {
-            event.preventDefault(); 
-            $.ajax({
-                url: 'pages/estimate_list_ajax.php',
-                type: 'POST',
-                data: {
-                    action: "fetch_add_modal"
-                },
-                success: function(response) {
-                    $('#addEstimateModal').html(response);
-                    $('#addEstimateModal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
             });
         });
 

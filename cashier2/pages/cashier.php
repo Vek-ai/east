@@ -18,6 +18,9 @@ $lng = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
 
 $latSettings = !empty($addressSettings['lat']) ? $addressSettings['lat'] : 0;
 $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
+
+$editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) : null;
+
 ?>
 <style>
     #special_trim_modal {
@@ -1251,6 +1254,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         var customerLat = parseFloat($('#lat').val());
         var customerLng = parseFloat($('#lng').val());
         var payable_amt = parseFloat($('#payable_amt').val());
+        var store_credit = parseFloat($('#store_credit').val());
+        var isapplystorecredit = $('#applyStoreCredit').is(':checked');
         var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
         var lat2Float = typeof lat2 !== 'undefined' ? parseFloat(lat2) : 0;
@@ -1277,12 +1282,25 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             }
         }
 
-        const total_amt = (payable_amt + deliveryAmount).toFixed(2);
+        var store_credit_calc = 0;
+        const totalBeforeCredit = payable_amt + deliveryAmount;
+
+        if (isapplystorecredit) {
+            store_credit_calc = Math.min(store_credit, totalBeforeCredit);
+            $('#storeCreditValue').text(`-$${store_credit_calc.toFixed(2)}`);
+            $('#storeCreditDisplay').removeClass('d-none');
+        } else {
+            $('#storeCreditDisplay').addClass('d-none');
+            $('#storeCreditValue').text('');
+            store_credit_calc = 0;
+        }
+
+        const raw_total = totalBeforeCredit - store_credit_calc;
+        const total_amt = Math.max(0, raw_total).toFixed(2);
 
         $('#delivery_amt').val(deliveryAmount).trigger('change');
         $('#order_delivery_amt').text(deliveryAmount.toFixed(2));
         $('#order_total').text(total_amt);
-
     }
 
 
@@ -3187,6 +3205,25 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
     $(document).ready(function() {
         var panel_id = '<?= $panel_id ?>';
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const editestimate = urlParams.get('editestimate');
+        if (editestimate) {
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    editestimate: editestimate,
+                    set_estimate_data: 'set_estimate_data'
+                },
+                success: function (response) {
+                    console.log(response);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + jqXHR.responseText);
+                }
+            });
+        }
+
         $(document).on('contextmenu', '#drawingCanvas', function (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -3808,54 +3845,90 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             });
         });
               
-        $(document).on('click', '#save_estimate', function(event) {
-            var discount = $('#est_discount').val();
-            var delivery_amt = $('#est_delivery_amt').val();
-            var cash_amt = $('#est_cash').val();
-            var credit_amt = $('#est_credit').val();
-            var job_name = $('#est_job_name').val();
-            var job_po = $('#est_job_po').val();
-            var deliver_address = $('#est_deliver_address').val();
-            var deliver_city = $('#est_deliver_city').val();
-            var deliver_state = $('#est_deliver_state').val();
-            var deliver_zip = $('#est_deliver_zip').val();
-            var deliver_fname = $('#est_deliver_fname').val();
-            var deliver_lname = $('#est_deliver_lname').val();
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: {
-                    cash_amt: cash_amt,
-                    credit_amt: credit_amt,
-                    discount: discount,
-                    delivery_amt: delivery_amt,
-                    job_name: job_name,
-                    job_po: job_po,
-                    deliver_address: deliver_address,
-                    deliver_city: deliver_city,
-                    deliver_state: deliver_state,
-                    deliver_zip: deliver_zip,
-                    deliver_fname: deliver_fname,
-                    deliver_lname: deliver_lname,
-                    save_estimate: 'save_estimate'
-                },
-                success: function(response) {
-                    console.log(response);
-                    if (response.success) {
-                        alert("Estimate successfully saved.");
-                        $('#print_estimate_category').attr('href', '/print_estimate_product.php?id=' + response.estimate_id);
-                        $('#print_estimate_category').removeClass('d-none');
-                        $('#print_estimate').attr('href', '/print_estimate_total.php?id=' + response.estimate_id);
-                        $('#print_estimate').removeClass('d-none');
-                    } else if (response.error) {
-                        alert("Error: " + response.error);
+        $(document).on('click', '#save_estimate', function (event) {
+            event.preventDefault();
+
+            const editEstimateId = new URLSearchParams(window.location.search).get('editestimate');
+
+            if (editEstimateId) {
+                
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        edit_estimate: editEstimateId
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            alert('Estimate updated successfully.');
+
+                            const url = new URL(window.location.href);
+                            url.searchParams.delete('editestimate');
+                            window.history.replaceState({}, document.title, url.toString());
+
+                            location.reload();
+                        } else if (response.error) {
+                            alert('Process Failed.');
+                            console.log(response);
+                        } else {
+                            alert('Unexpected response from server.');
+                            console.log(response);
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + jqXHR.responseText);
                     }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
+                });
+
+            } else {
+                var discount = $('#est_discount').val();
+                var delivery_amt = $('#est_delivery_amt').val();
+                var cash_amt = $('#est_cash').val();
+                var credit_amt = $('#est_credit').val();
+                var job_name = $('#est_job_name').val();
+                var job_po = $('#est_job_po').val();
+                var deliver_address = $('#est_deliver_address').val();
+                var deliver_city = $('#est_deliver_city').val();
+                var deliver_state = $('#est_deliver_state').val();
+                var deliver_zip = $('#est_deliver_zip').val();
+                var deliver_fname = $('#est_deliver_fname').val();
+                var deliver_lname = $('#est_deliver_lname').val();
+
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        cash_amt: cash_amt,
+                        credit_amt: credit_amt,
+                        discount: discount,
+                        delivery_amt: delivery_amt,
+                        job_name: job_name,
+                        job_po: job_po,
+                        deliver_address: deliver_address,
+                        deliver_city: deliver_city,
+                        deliver_state: deliver_state,
+                        deliver_zip: deliver_zip,
+                        deliver_fname: deliver_fname,
+                        deliver_lname: deliver_lname,
+                        save_estimate: 'save_estimate'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            alert("Estimate successfully saved.");
+                            $('#print_estimate_category').attr('href', '/print_estimate_product.php?id=' + response.estimate_id).removeClass('d-none');
+                            $('#print_estimate').attr('href', '/print_estimate_total.php?id=' + response.estimate_id).removeClass('d-none');
+                        } else if (response.error) {
+                            alert("Error: " + response.error);
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }
         });
+
 
         $(document).on('click', '#load_estimate', function(event) {
             var id = $(this).data('id');
@@ -3884,8 +3957,8 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         $(document).on('click', '#save_order', function(event) {
             var discount = $('#order_discount').val();
             var delivery_amt = $('#delivery_amt').val();
-            var cash_amt = $('#order_cash').val();
-            var credit_amt = $('#order_credit').val();
+            var cash_amt = $('#payable_amt').val();
+            var credit_amt = 0;
             var job_name = $('#order_job_name').val();
             var job_po = $('#order_job_po').val();
             var deliver_address = $('#order_deliver_address').val();
@@ -3894,7 +3967,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
             var deliver_zip = $('#order_deliver_zip').val();
             var deliver_fname = $('#order_deliver_fname').val();
             var deliver_lname = $('#order_deliver_lname').val();
-            console.log("Delivery Amt: "+delivery_amt);
+            var applyStoreCredit = $('#applyStoreCredit').is(':checked') ? $('#applyStoreCredit').val() : 0;
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -3911,6 +3984,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     deliver_zip: deliver_zip,
                     deliver_fname: deliver_fname,
                     deliver_lname: deliver_lname,
+                    applyStoreCredit: applyStoreCredit,
                     save_order: 'save_order'
                 },
                 success: function(response) {
@@ -3956,52 +4030,6 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
-        });
-
-        $(document).on('input', '#order_cash', function(event) {
-            var cash_amt = parseFloat($('#order_cash').val()) || 0;
-            var payable_amt = parseFloat($('#payable_amt').val()) || 0;
-
-            var credit_amt = (payable_amt - cash_amt).toFixed(2);
-            if (credit_amt < 0) {
-                credit_amt = 0;
-            }
-
-            $('#order_credit').val(credit_amt);
-
-            var change = (cash_amt - payable_amt).toFixed(2);
-            if (change < 0) {
-                change = 0;
-            }
-
-            $('#change').text(change);
-        });
-
-        $(document).on('input', '#order_credit', function(event) {
-            var credit_input = $('#order_credit');
-            var credit_amt = parseFloat(credit_input.val()) || 0;
-            var payable_amt = parseFloat($('#payable_amt').val()) || 0;
-
-            if (credit_amt > payable_amt) {
-                credit_amt = payable_amt;
-                credit_input.blur();
-                credit_input.val(credit_amt.toFixed(2));
-                credit_input.focus();
-            }
-
-            var cash_amt = (payable_amt - credit_amt).toFixed(2);
-            if (cash_amt < 0) {
-                cash_amt = 0;
-            }
-
-            $('#order_cash').val(cash_amt);
-
-            var change = (cash_amt - payable_amt).toFixed(2);
-            if (change < 0) {
-                change = 0;
-            }
-
-            $('#change').text(change);
         });
 
         $(document).on('click', '#clear_cart', function(event) {
@@ -4596,5 +4624,10 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
         $(document).on('change', 'input[name="order_delivery_method"]', function () {
             calculateDeliveryAmount();
         });
+
+        $(document).on('change', '#applyStoreCredit', function () {
+            calculateDeliveryAmount();
+        });
+        
     });
 </script>
