@@ -980,8 +980,6 @@ if (isset($_POST['fetch_job_modal'])) {
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
     }
-    echo "$query";
-
     ?>
         <div class="row">
             <!-- Job Name -->
