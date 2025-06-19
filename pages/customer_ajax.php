@@ -43,7 +43,8 @@ if(isset($_REQUEST['action'])) {
         $tax_exempt_number = mysqli_real_escape_string($conn, $_POST['tax_exempt_number']);
         $customer_notes = mysqli_real_escape_string($conn, $_POST['customer_notes']);
         $new_customer_type_id = mysqli_real_escape_string($conn, $_POST['customer_type']);
-        $call_status = isset($_POST['call_status']) ? mysqli_real_escape_string($conn, $_POST['call_status']) : '';
+        $call_status = isset($_POST['call_status']) ? mysqli_real_escape_string($conn, $_POST['call_status']) : 0;
+        $charge_net_30 = isset($_POST['charge_net_30']) ? mysqli_real_escape_string($conn, $_POST['charge_net_30']) : 0;
         $credit_limit = isset($_POST['credit_limit']) ? mysqli_real_escape_string($conn, $_POST['credit_limit']) : 0;
         $loyalty = isset($_POST['loyalty']) ? mysqli_real_escape_string($conn, $_POST['loyalty']) : '';
         $customer_pricing = isset($_POST['customer_pricing']) ? mysqli_real_escape_string($conn, $_POST['customer_pricing']) : 0;
@@ -81,6 +82,7 @@ if(isset($_REQUEST['action'])) {
                     tax_exempt_number = '$tax_exempt_number',
                     customer_notes = '$customer_notes',
                     call_status = '$call_status',
+                    charge_net_30 = '$charge_net_30',
                     credit_limit = '$credit_limit',
                     customer_type_id = '$new_customer_type_id',
                     loyalty = '$loyalty',
@@ -153,6 +155,7 @@ if(isset($_REQUEST['action'])) {
                     customer_notes,
                     customer_type_id,
                     call_status,
+                    charge_net_30,
                     credit_limit,
                     loyalty,
                     customer_pricing) 
@@ -180,6 +183,7 @@ if(isset($_REQUEST['action'])) {
                     '$customer_notes',
                     '$new_customer_type_id',
                     '$call_status',
+                    '$charge_net_30',
                     '$credit_limit',
                     '$loyalty',
                     '$customer_pricing')";
@@ -278,6 +282,7 @@ if(isset($_REQUEST['action'])) {
             'tax_status',
             'tax_exempt_number',
             'call_status',
+            'charge_net_30',
             'credit_limit',
             'customer_pricing'
         ];
@@ -517,6 +522,7 @@ if(isset($_REQUEST['action'])) {
                 'tax_status',
                 'tax_exempt_number',
                 'call_status',
+                'charge_net_30',
                 'credit_limit',
                 'customer_pricing'
             ];

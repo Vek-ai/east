@@ -437,6 +437,11 @@ if(isset($_REQUEST['id'])){
         <div class="d-md-flex no-block">
           <h4 class="card-title">Jobs</h4>
           <div class="ms-auto">
+            <div class="mb-2 text-end">
+                <button type="button" id="addModalBtn" class="btn btn-primary" data-id="" data-type="add">
+                    <i class="fas fa-plus me-1"></i> Add Job
+                </button>
+            </div>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -503,6 +508,58 @@ if(isset($_REQUEST['id'])){
             <div class="modal-footer">
                 <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+        <h4 id="responseHeader" class="m-0"></h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        
+        <p id="responseMsg"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="add-header">
+                    
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="jobForm" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                          <div id="add-fields" class=""></div>
+                          <div class="form-actions">
+                              <div class="border-top">
+                                  <div class="row mt-2">
+                                      <div class="col-6 text-start"></div>
+                                      <div class="col-6 text-end ">
+                                          <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -645,6 +702,7 @@ if(isset($_REQUEST['id'])){
                   search_jobs: 'search_jobs'
               },
               success: function(response) {
+                console.log(response);
                   $('#tbl-jobs').html(response);
               },
               error: function(jqXHR, textStatus, errorThrown) {
@@ -652,6 +710,53 @@ if(isset($_REQUEST['id'])){
               }
           });
       }
+
+      $(document).on('click', '#addModalBtn', function(event) {
+            event.preventDefault();
+            var job = $(this).data('job') || '';
+            var customer_id = $(this).data('customer') || '';
+            var type = $(this).data('type') || '';
+
+            if(type == 'edit'){
+            $('#add-header').html('Update Job');
+            }else{
+            $('#add-header').html('Add Job');
+            }
+
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    job : job,
+                    customer_id: customer_id,
+                    fetch_job_modal: 'fetch_job_modal'
+                },
+                success: function (response) {
+                    console.log(response);
+                    $('#add-fields').html(response);
+
+                    $(".select2-form").each(function () {
+                        $(this).select2({
+                            width: '100%',
+                            dropdownParent: $(this).parent(),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
+                    });
+
+                    $('#addModal').modal('show');
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX Error:', textStatus, errorThrown);
+                    console.error('Response:', jqXHR.responseText);
+
+                    $('#responseHeader').text("Error");
+                    $('#responseMsg').text("An error occurred while processing your request.");
+                    $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            });
+        });
 
       $(document).on('click', '#view_order_btn', function(event) {
           event.preventDefault(); 

@@ -299,257 +299,269 @@ if(isset($_POST['fetch_order'])){
 
     <div class="card-body datatables">
         <form id="msform">
-            <fieldset class="order-page-1">
-                <div id="checkout" class="row mt-3 align-items-stretch">
-                    <div class="col-md-4 d-flex flex-column h-100 fs-4">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <h5 class="mb-0 -5">Job Name</h5>
-                                <div id="order_checkout">
-                                    <select id="order_job_name" class="form-control" name="order_job_name">
-                                        <option value="">Select Job Name...</option>
-                                        <?php
-                                        $query_job_name = "SELECT * FROM job_names WHERE customer_id = '$customer_id'";
-                                        $result_job_name = mysqli_query($conn, $query_job_name);
-                                        while ($row_job_name = mysqli_fetch_array($result_job_name)) {
-                                        ?>
-                                            <option value="<?= $row_job_name['job_name']; ?>"><?= $row_job_name['job_name']; ?></option>
-                                        <?php } ?>
-                                        <option value="add_new_job_name">Add new Job Name</option>
-                                    </select>
-                                </div>
-                            </div>
+            <input type="hidden" id="payable_amt" value="<?= number_format((floatval($total_customer_price)), 2) ?>">
+            <input type="hidden" id="delivery_amt" name="delivery_amt" value="0">
+            <input type="hidden" id="store_credit" name="store_credit" value="<?= $store_credit ?>">
 
-                            <div class="col-md-6 mb-4">
-                                <h5 class="mb-0 fs-4">Job PO #</h5>
-                                <input type="text" id="order_job_po" name="order_job_po" class="form-control fs-4" placeholder="Enter Job PO #">
-                            </div>
-                        </div>
+            <div class="row text-start">
+                <div class="col-12 mb-2" style="color: #ffffff !important;">
+                    <h5 class="mb-1">Checkout</h5>
+                    <p>Welcome, <strong><?= $customer_name ?></strong></p>
+                </div>
+                <!-- Left Side -->
+                <div class="col-lg-8" style="color: #ffffff !important;">
+                
 
-                        <div class="card flex-grow-1 d-flex flex-column">
-                            <div class="card-body d-flex flex-column justify-content-between">
-                                <form>
-                                    <div class="mb-3">
-                                        <h5 class="fs-4">Total Items: <span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span></h5>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <h5 class="fs-4">Discount (%)</h5>
-                                        <input type="text" class="form-control discount_input fs-4" id="order_discount" placeholder="%" value="<?= $discount * 100 ?>">
-                                    </div>
-
-                                    <div>
-                                        <h5 class="fs-4">Cash Amount</h5>
-                                        <input type="number" class="form-control fs-4" id="order_cash" value="<?= round($total_customer_price, 2) ?>">
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+                <!-- Contact Information -->
+                <div class="card mb-3" style="color: #ffffff !important;">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <span><i class="fa fa-check-circle text-success me-2"></i>Contact Information</span>
+                    <a href="#" class="text-primary">Edit Info</a>
                     </div>
+                    <div class="card-body">
+                    <p class="mb-1"><?= $customer_details['contact_email'] ?></p>
+                    <p class="mb-2"><?= $customer_details['contact_phone'] ?></p>
+                    <h6 class="fs-2">By providing the phone number above, you consent to receive automated text messages...</h6>
+                    </div>
+                </div>
 
-                    <div class="col-md-4"></div>
+                <!-- Job Details -->
+                <div class="card mb-3" style="color: #ffffff !important;">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <span><i class="fa fa-check-circle text-success me-2"></i>Job Details</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="col-md-4 mb-3">
+                            <h6 class="mb-0">Job Name</h6>
+                            <div id="order_checkout">
+                                <select id="order_job_name" class="form-control" name="order_job_name">
+                                    <option value="">Select Job Name...</option>
+                                    <?php
+                                    $query_job_name = "SELECT * FROM jobs WHERE customer_id = '$customer_id'";
+                                    $result_job_name = mysqli_query($conn, $query_job_name);
+                                    while ($row_job_name = mysqli_fetch_array($result_job_name)) {
+                                    ?>
+                                        <option value="<?= $row_job_name['job_name']; ?>" 
+                                                data-constructor="<?= htmlspecialchars($row_job_name['constructor_name']); ?>" 
+                                                data-constructor-contact="<?= htmlspecialchars($row_job_name['constructor_contact']); ?>">
+                                            <?= htmlspecialchars($row_job_name['job_name']); ?>
+                                        </option>
+                                    <?php } ?>
+                                    <option value="add_new_job_name">Add new Job Name</option>
+                                </select>
+                            </div>
+                        </div>
 
-                    <div class="col-md-4">
-                        <div class="card flex-grow-1">
-                            <div class="card-body pricing container d-flex flex-column justify-content-center">
-                                <div class="table-responsive fs-4">
-                                    <h4 class="text-center fw-bold mb-3">Order Summary</h4>
-                                    <table class="table table-md">
-                                        <tbody>
-                                            <tr>
-                                                <th class="text-right border-bottom">Subtotal</th>
-                                                <td class="text-right border-bottom">
-                                                    $<span id="total_amt"><?= number_format($total, 2) ?></span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th class="text-right border-bottom">Sales Tax</th>
-                                                <td class="text-right border-bottom">$<span id="sales_tax"><?= number_format($total_tax,2) ?></span></td>
-                                            </tr>
-                                            <tr>
-                                                <th class="text-right border-bottom">Discount(-)</th>
-                                                <td class="text-right border-bottom">
-                                                    $<span id="total_discount"><?= number_format(floatval($total) * floatval($discount), 2) ?></span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th class="text-right border-bottom">Total Price</th>
-                                                <td class="text-right border-bottom">
-                                                    $<span id="total_payable"><?= number_format((floatval($total_customer_price)), 2) ?></span>
-                                                </td>
-                                                <input type="hidden" id="payable_amt" value="<?= number_format((floatval($total_customer_price)), 2) ?>">
-                                                <input type="hidden" id="delivery_amt" name="delivery_amt" value="0">
-                                                <input type="hidden" id="store_credit" name="store_credit" value="<?= $store_credit ?>">
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                        <div class="col-md-4 mb-3">
+                            <h6 class="mb-0">Job PO #</h6>
+                            <input type="text" id="order_job_po" name="order_job_po" class="form-control" placeholder="Enter Job PO #">
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-2">
+                                <strong>Contractor Name:</strong>
+                                <div class="ps-3" id="constructor_name"></div>
+                            </div>
+                            <div class="mb-2">
+                                <strong>Contractor Cell Phone:</strong>
+                                <div class="ps-3" id="constructor_contact"></div>
                             </div>
                         </div>
                     </div>
 
                 </div>
-            </fieldset>
-            <fieldset class="order-page-2" style="display: none;">
-                <div class="row">
-                    <!-- Left Side -->
-                    <div class="col-lg-8" style="color: #ffffff !important;">
-                    <h5 class="mb-3">Checkout</h5>
-                    <p>Welcome, <strong><?= $customer_name ?></strong></p>
 
-                    <!-- Contact Information -->
-                    <div class="card mb-3" style="color: #ffffff !important;">
-                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                        <span><i class="fa fa-check-circle text-success me-2"></i>Contact Information</span>
-                        <a href="#" class="text-primary">Edit Info</a>
-                        </div>
-                        <div class="card-body">
-                        <p class="mb-1"><?= $customer_details['contact_email'] ?></p>
-                        <p class="mb-2"><?= $customer_details['contact_phone'] ?></p>
-                        <h6 class="fs-2">By providing the phone number above, you consent to receive automated text messages...</h6>
-                        </div>
+                <!-- Pickup Details -->
+                <div class="card mb-3" style="color: #ffffff !important;">
+                    <div class="card-header bg-white">
+                    <i class="fa fa-check-circle text-success me-2"></i>Pickup Details
                     </div>
+                    <div class="card-body">
+                    <h6 class="mb-1"><?= $customer_details['address'] ?></h6>
+                    <p class="mb-1"><?= getCustomerAddress($_SESSION["customer_id"]) ?> <a href="#" class="ms-2">(606) 330-1440</a></p>
+                        <div class="mb-3">
+                            <label class="form-label">How would you like to pick up your order?</label>
 
-                    <!-- Pickup Details -->
-                    <div class="card mb-3" style="color: #ffffff !important;">
-                        <div class="card-header bg-white">
-                        <i class="fa fa-check-circle text-success me-2"></i>Pickup Details
-                        </div>
-                        <div class="card-body">
-                        <h6 class="mb-1"><?= $customer_details['address'] ?></h6>
-                        <p class="mb-1"><?= getCustomerAddress($_SESSION["customer_id"]) ?> <a href="#" class="ms-2">(606) 330-1440</a></p>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="order_delivery_method" id="pickup_option" value="pickup" checked>
+                                <label class="form-check-label" for="pickup_option">Pickup</label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="order_delivery_method" id="openMap" value="deliver">
+                                <label class="form-check-label" for="delivery_option">Delivery</label>
+                            </div>
+
                             <div class="mb-3">
-                                <label class="form-label">How would you like to pick up your order?</label>
-
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="order_delivery_method" id="pickup_option" value="pickup" checked>
-                                    <label class="form-check-label" for="pickup_option">Pickup</label>
-                                </div>
-
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="order_delivery_method" id="openMap" value="deliver">
-                                    <label class="form-check-label" for="delivery_option">Delivery</label>
-                                </div>
-
                                 <small>
                                     We'll email you when your order is ready.
                                 </small>
                             </div>
-                        </div>
-                    </div>
+                            
 
-                    <!-- Payment -->
-                    <div class="card mb-3" style="color: #ffffff !important;">
-                        <div class="card-header bg-white">
-                        <i class="fa fa-check-circle text-success me-2"></i>Pickup Details Payment
-                        </div>
-                        <div class="card-body">
-                        
-                        <div class="mb-3 text-white">
-                            <label class="form-label fw-bold">Select Payment Method</label><br>
-
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payPickup" value="pickup">
-                                <label class="form-check-label" for="payPickup">
-                                <i class="fa-solid fa-store me-1"></i>Pay at Pick-Up
-                                </label>
-                            </div>
-
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payDelivery" value="delivery">
-                                <label class="form-check-label" for="payDelivery">
-                                <i class="fa-solid fa-truck me-1"></i>Pay at Delivery
-                                </label>
-                            </div>
-
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payCash" value="cash">
-                                <label class="form-check-label" for="payCash">
-                                <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
-                                </label>
-                            </div>
-
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payCheck" value="check">
-                                <label class="form-check-label" for="payCheck">
-                                <i class="fa-solid fa-file-invoice-dollar me-1"></i>Check
-                                </label>
-                            </div>
-
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payCard" value="card">
-                                <label class="form-check-label" for="payCard">
-                                <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
-                                </label>
-                            </div>
-
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payNet30" value="net30">
-                                <label class="form-check-label" for="payNet30">
-                                <i class="fa-solid fa-calendar-check me-1"></i>Charge Net 30
-                                </label>
-                            </div>
-                        </div>
-                        <?php if (floatval($customer_details['store_credit']) > 0): ?>
-                            <div class="mb-3 text-white">
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" id="applyStoreCredit" name="applyStoreCredit" value="1">
-                                    <label class="form-check-label text-white" for="applyStoreCredit">
-                                    Apply Store Credit (Available: $<?= number_format(floatval($customer_details['store_credit']), 2) ?>)
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="ship_separate_address">
+                                    <label class="form-check-label" for="ship_separate_address">
+                                        Ship to a separate address?
                                     </label>
                                 </div>
                             </div>
-                        <?php endif; ?>
-                        </div>
-                    </div>
-                    </div>
 
-                    <!-- Right Side (Order Summary) -->
-                    <div class="col-lg-4">
-                    <div class="card" style="color: #ffffff !important;">
-                        <div class="card-header bg-white">
-                        <strong>Order Summary</strong>
+                            <!-- Hidden by default -->
+                            <div id="separate_address_section" class="d-none">
+                                <label>Address:</label>
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <input type="text" id="other_deliver_address" name="other_deliver_address" class="form-control" placeholder="Address">
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <input type="text" id="other_deliver_city" name="other_deliver_city" class="form-control" placeholder="City">
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <input type="text" id="other_deliver_state" name="other_deliver_state" class="form-control" placeholder="State">
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <input type="text" id="other_deliver_zip" name="other_deliver_zip" class="form-control" placeholder="Zip">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="delivery_driver_instructions" class="form-label">Delivery Driver Instructions</label>
+                                    <input type="text" id="delivery_driver_instructions" name="delivery_driver_instructions" class="form-control" placeholder="Instructions for the driver...">
+                                </div>
+                            </div>
+
+
+
                         </div>
-                        <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <span>Item Subtotal (<?= $_SESSION["total_quantity"] ?? '0' ?>)</span>
-                            <span>$<?= $total_customer_price ?></span>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span>Delivery</span>
-                            <p>$<span id="order_delivery_amt"><?= number_format(0, 2) ?></span></p>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span>Estimated Tax</span>
-                            <span>$<?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span>
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between text-success mb-3">
-                            <span>Savings</span>
-                            <span>$<?= number_format(floatval($total) * floatval($discount)) ?></span>
-                        </div>
-                        <div id="storeCreditDisplay" class="d-flex justify-content-between mb-3 d-none text-success">
-                            <span>Store Credit:</span>
-                            <span class="fw-bold" id="storeCreditValue"></span>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <strong>Estimated Total</strong>
-                            <p>$<strong id="order_total"><?= number_format((floatval($total_customer_price)), 2) ?></strong></p>
-                        </div>
-                        <button class="btn btn-success w-100 mt-3" id="save_order">Place Order</button>
-                        <p class="mt-2 text-center small">
-                            By placing an order, I agree to EKM's <a href="#">Terms</a> and <a href="#">Privacy Statement</a>.
-                        </p>
-                        </div>
-                        <div class="card-footer bg-white d-flex justify-content-between">
-                        <span><i class="fa fa-gift me-1"></i>Estimated Points</span>
-                        <span><span class="badge bg-primary">+0</span></span>
-                        </div>
-                    </div>
                     </div>
                 </div>
-            </fieldset>
+
+                <!-- Payment -->
+                <div class="card mb-3" style="color: #ffffff !important;">
+                    <div class="card-header bg-white">
+                    <i class="fa fa-check-circle text-success me-2"></i>Pickup Details Payment
+                    </div>
+                    <div class="card-body">
+                    
+                    <div class="mb-3 text-white">
+                        <label class="form-label fw-bold">Select Payment Method</label><br>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="payMethod" id="payPickup" value="pickup">
+                            <label class="form-check-label" for="payPickup">
+                            <i class="fa-solid fa-store me-1"></i>Pay at Pick-Up
+                            </label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="payMethod" id="payDelivery" value="delivery">
+                            <label class="form-check-label" for="payDelivery">
+                            <i class="fa-solid fa-truck me-1"></i>Pay at Delivery
+                            </label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="payMethod" id="payCash" value="cash">
+                            <label class="form-check-label" for="payCash">
+                            <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
+                            </label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="payMethod" id="payCheck" value="check">
+                            <label class="form-check-label" for="payCheck">
+                            <i class="fa-solid fa-file-invoice-dollar me-1"></i>Check
+                            </label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="payMethod" id="payCard" value="card">
+                            <label class="form-check-label" for="payCard">
+                            <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
+                            </label>
+                        </div>
+
+                        <?php if (!empty($customer_details['charge_net_30'])): ?>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payNet30" value="net30">
+                                <label class="form-check-label" for="payNet30">
+                                    <i class="fa-solid fa-calendar-check me-1"></i>Charge Net 30
+                                </label>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <?php if (floatval($customer_details['store_credit']) > 0): ?>
+                        <div class="mb-3 text-white">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="applyStoreCredit" name="applyStoreCredit" value="1">
+                                <label class="form-check-label text-white" for="applyStoreCredit">
+                                Apply Store Credit (Available: $<?= number_format(floatval($customer_details['store_credit']), 2) ?>)
+                                </label>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                    </div>
+                </div>
+                </div>
+
+                <!-- Right Side (Order Summary) -->
+                <div class="col-lg-4">
+                <div class="card" style="color: #ffffff !important;">
+                    <div class="card-header bg-white">
+                    <strong>Order Summary</strong>
+                    </div>
+                    <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center flex-column flex-sm-row mb-2">
+                        <span>Item Subtotal (<?= $_SESSION["total_quantity"] ?? '0' ?>)</span>
+                        <div class="d-flex flex-column align-items-end">
+                            <span>$<?= $total_customer_price ?></span>
+                            <div style="width: 100px; height: 2px; background-color: white; margin-top: 2px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pb-2">
+                        <span>Estimated Tax</span>
+                        <span>$<?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pb-2">
+                        <span>Delivery</span>
+                        <span>$<span id="order_delivery_amt"><?= number_format(0, 2) ?></span></span>
+                    </div>
+
+                    
+                    <hr>
+                    <div class="d-flex justify-content-between text-success mb-2">
+                        <span>Savings</span>
+                        <span>$<?= number_format(floatval($total) * floatval($discount)) ?></span>
+                    </div>
+                    <div id="storeCreditDisplay" class="d-flex justify-content-between mb-2 d-none text-success">
+                        <span>Store Credit:</span>
+                        <span class="fw-bold" id="storeCreditValue"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-end mb-3">
+                        <div style="width: 100px; height: 2px; background-color: white;"></div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <strong>Estimated Total</strong>
+                        <p>$<strong id="order_total"><?= number_format((floatval($total_customer_price)), 2) ?></strong></p>
+                    </div>
+                    <button class="btn btn-success w-100 mt-3" id="save_order">Place Order</button>
+                    <p class="mt-2 text-center small">
+                        By placing an order, I agree to EKM's <a href="#">Terms</a> and <a href="#">Privacy Statement</a>.
+                    </p>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-between">
+                    <span><i class="fa fa-gift me-1"></i>Estimated Points</span>
+                    <span><span class="badge bg-primary">+0</span></span>
+                    </div>
+                </div>
+                </div>
+            </div>
         </form>
     </div>
 
@@ -652,41 +664,14 @@ if(isset($_POST['fetch_order'])){
                 $('#order_cash').val(total_payable.toFixed(2));
             });
 
-            let animating = false;
-
-            function changePage(currentPage, nextPage, isNext) {
-                if (animating) return false;
-                animating = true;
-
-                var current_fs = $(currentPage);
-                var next_fs = $(nextPage);
-
-                if (isNext) {
-                    $('#next_page_order').addClass("d-none");
-                    $('#prev_page_order').removeClass("d-none");
-                    $('#save_order').removeClass("d-none");
-                    $('#save_estimate').addClass("d-none");
+            $(document).on('change', '#ship_separate_address', function () {
+                if ($(this).is(':checked')) {
+                    $('#separate_address_section').removeClass('d-none');
                 } else {
-                    $('#next_page_order').removeClass("d-none");
-                    $('#prev_page_order').addClass("d-none");
-                    $('#save_order').addClass("d-none");
-                    $('#save_estimate').removeClass("d-none");
+                    $('#separate_address_section').addClass('d-none');
+                    $('#separate_address_section input').val('');
                 }
-
-                next_fs.show();
-                current_fs.hide();
-
-                animating = false;
-            }
-            
-            $(document).on("click", "#next_page_order", function() {
-                changePage('.order-page-1', '.order-page-2', true);
             });
-
-            $(document).on("click", "#prev_page_order", function() {
-                changePage('.order-page-2', '.order-page-1', false);
-            });
-
 
             $('#order_job_name').select2({
                 width: '100%',
@@ -716,9 +701,19 @@ if(isset($_POST['fetch_order'])){
 
             $('#order_job_name').on('select2:select', function (e) {
                 const selectedValue = e.params.data.id;
+
                 if (selectedValue === 'add_new_job_name') {
                     $('#prompt_job_name_modal').modal('show');
                     $('#order_job_name').val(null).trigger('change');
+                    $('#constructor_name').text('');
+                    $('#constructor_contact').text('');
+                } else {
+                    const selectedOption = $(this).find('option[value="' + selectedValue + '"]');
+                    const constructorName = selectedOption.data('constructor') || '';
+                    const constructorContact = selectedOption.data('constructor-contact') || '';
+
+                    $('#constructor_name').text(constructorName);
+                    $('#constructor_contact').text(constructorContact);
                 }
             });
 

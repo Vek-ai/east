@@ -496,7 +496,7 @@ if(isset($_POST['fetch_estimate'])){
                                 <select id="est_job_name" class="form-control" name="est_job_name">
                                     <option value="">Select Job Name...</option>
                                     <?php
-                                    $query_job_name = "SELECT * FROM job_names WHERE customer_id = '$customer_id'";
+                                    $query_job_name = "SELECT * FROM jobs WHERE customer_id = '$customer_id'";
                                     $result_job_name = mysqli_query($conn, $query_job_name);
                                     while ($row_job_name = mysqli_fetch_array($result_job_name)) {
                                     ?>

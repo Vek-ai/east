@@ -756,7 +756,7 @@ function getOrderTotals($orderid) {
     $query = "
         SELECT 
             SUM(
-                quantity * unit_price * 
+                quantity * actual_price * 
                 CASE 
                     WHEN custom_length > 0 OR custom_length2 > 0 
                     THEN (custom_length + (custom_length2 / 12))

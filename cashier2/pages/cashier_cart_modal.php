@@ -108,7 +108,7 @@ if(isset($_POST['fetch_cart'])){
                 $store_credit = number_format(floatval($customer_details['store_credit'] ?? 0),2);
             ?>
 
-            <div class="form-group row align-items-center">
+            <div class="form-group row align-items-center" style="color: #ffffff !important;">
                 <div class="col-6">
                     <label class="mb-0 me-3">Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
                     <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">

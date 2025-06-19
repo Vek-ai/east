@@ -175,7 +175,7 @@ if (isset($_POST['search_jobs'])) {
     $customerid = mysqli_real_escape_string($conn, string: $_POST['customerid']);
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
-?>
+    ?>
     <div class="month-table">
         <div class="table-responsive mt-3">
             <table class="table align-middle  mb-0 no-wrap text-center">
@@ -189,83 +189,79 @@ if (isset($_POST['search_jobs'])) {
                 </thead>
                 <tbody>
                 <?php
-                    $job_names = array();
-                    $query_jobs = "SELECT DISTINCT LOWER(TRIM(job_name)) AS job_name FROM orders WHERE customerid = '$customerid'";
-                    $result_jobs = mysqli_query($conn, $query_jobs);
+                $query_jobs = "SELECT job_name, customer_id FROM jobs WHERE customer_id = '$customerid'";
+                $result_jobs = mysqli_query($conn, $query_jobs);
 
-                    if ($result_jobs && mysqli_num_rows($result_jobs) > 0) {
-                        while ($row_jobs = mysqli_fetch_assoc($result_jobs)) {
-                            $job = $row_jobs['job_name'];
+                if ($result_jobs && mysqli_num_rows($result_jobs) > 0) {
+                    while ($row_jobs = mysqli_fetch_assoc($result_jobs)) {
+                        $job_name = trim($row_jobs['job_name']);
+                        $customer_id = $row_jobs['customer_id'];
 
-                            $query_orders = "SELECT SUM(discounted_price) AS job_amt, job_po, job_name
-                                            FROM orders 
-                                            WHERE customerid = '$customerid'";
+                        $query_orders = "
+                            SELECT 
+                                GROUP_CONCAT(DISTINCT job_po ORDER BY job_po SEPARATOR ', ') AS all_pos,
+                                SUM(discounted_price) AS job_amt
+                            FROM orders
+                            WHERE customerid = '$customerid'
+                            AND job_name = '" . mysqli_real_escape_string($conn, $job_name) . "'
+                        ";
 
-                            if ($job !== '' && $job !== null) {
-                                $query_orders .= " AND job_name LIKE '%$job%'";
-                            } else {
-                                $query_orders .= " AND (job_name IS NULL OR job_name = '')";
-                            }
-
-                            if (!empty($date_from) && !empty($date_to)) {
-                                $date_to .= ' 23:59:59';
-                                $query_orders .= " AND (order_date >= '$date_from' AND order_date <= '$date_to')";
-                            }
-
-                            $query_orders .= " GROUP BY job_name, job_po ORDER BY order_date DESC";
-
-                            if (empty($date_from) || empty($date_to)) {
-                                $query_orders .= " LIMIT 10";
-                            }
-
-                            $result_orders = mysqli_query($conn, $query_orders);
-
-                            if ($result_orders && mysqli_num_rows($result_orders) > 0) {
-                                while ($row_orders = mysqli_fetch_assoc($result_orders)) {
-                                    ?>
-                                    <tr>
-                                        <td class="ps-0">
-                                            <h5 class="mb-1 text-center"><?= $row_orders['job_po'] ?></h5>
-                                        </td>
-                                        <td>
-                                            <h5 class="mb-1 text-center"><?= $row_orders['job_name'] ?></h5>
-                                        </td>
-                                        <td>
-                                            <h5 class="mb-1 text-center">$ <?= number_format($row_orders['job_amt'], 2) ?></h5>
-                                        </td>
-                                        <td>
-                                            <a href="?page=job_details&customer_id=<?=$customerid?>&job_name=<?=$row_orders['job_name']?>"
-                                                target="_blank" 
-                                                class="btn btn-danger-gradient btn-sm p-0 me-1" 
-                                                    type="button" 
-                                                    data-name="<?= $job; ?>"
-                                                    data-date-from="<?= $date_from ?? ''; ?>"
-                                                    data-date-to="<?= $date_to ?? ''; ?>">
-                                                        <i class="text-primary fa fa-eye fs-5"></i>
-                                            </a>
-                                            <!-- <button class="btn btn-danger-gradient btn-sm p-0 me-1" 
-                                                    id="view_job_dtls_btn" 
-                                                    type="button" 
-                                                    data-name="<?= $job; ?>"
-                                                    data-date-from="<?= $date_from ?? ''; ?>"
-                                                    data-date-to="<?= $date_to ?? ''; ?>">
-                                                        <i class="text-primary fa fa-eye fs-5"></i>
-                                            </button> -->
-                                        </td>
-                                    </tr>
-                                    <?php
-                                }
-                            }
+                        if (!empty($date_from) && !empty($date_to)) {
+                            $date_to_full = $date_to . ' 23:59:59';
+                            $query_orders .= " AND order_date BETWEEN '$date_from' AND '$date_to_full'";
                         }
-                    } else {
+
+                        $result_orders = mysqli_query($conn, $query_orders);
+
+                        $job_amt = 0;
+                        $all_pos = '';
+
+                        if ($result_orders && mysqli_num_rows($result_orders) > 0) {
+                            $row_orders = mysqli_fetch_assoc($result_orders);
+                            $job_amt = floatval($row_orders['job_amt']);
+                            $all_pos = $row_orders['all_pos'] ?? '';
+                        }
+
                         ?>
                         <tr>
-                            <td colspan="4">No jobs found</td>
+                            <td class="ps-0">
+                                <h5 class="mb-1 text-center"><?= htmlspecialchars($all_pos ?: '-') ?></h5>
+                            </td>
+                            <td>
+                                <h5 class="mb-1 text-center"><?= htmlspecialchars($job_name) ?></h5>
+                            </td>
+                            <td>
+                                <h5 class="mb-1 text-center">$<?= number_format($job_amt, 2) ?></h5>
+                            </td>
+                            <td class="text-center">
+                                <a href="?page=job_details&customer_id=<?= $customerid ?>&job_name=<?= urlencode($job_name) ?>"
+                                    target="_blank"
+                                    title="View Job Details"
+                                    class="btn btn-sm p-0 me-1 text-decoration-none">
+                                        <i class="fa fa-eye text-primary fs-5"></i>
+                                </a>
+
+                                <a href="#"
+                                    id="addModalBtn"
+                                    title="Edit Job"
+                                    class="btn btn-sm p-0 text-decoration-none"
+                                    data-job="<?= htmlspecialchars($job_name) ?>"
+                                    data-customer="<?= $customer_id ?>"
+                                    data-type="edit">
+                                    <i class="ti ti-pencil fs-6"></i>
+                                </a>
+                            </td>
                         </tr>
                         <?php
                     }
+                } else {
                     ?>
-
+                    <tr>
+                        <td colspan="4" class="text-center">No jobs found</td>
+                    </tr>
+                    <?php
+                }
+                ?>
                 </tbody>
             </table>
         </div>
@@ -975,3 +971,56 @@ if (isset($_POST['fetch_changes_modal'])) {
     <?php
 
 } 
+
+if (isset($_POST['fetch_job_modal'])) {
+    $job = mysqli_real_escape_string($conn, $_POST['job']);
+    $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
+    $query = "SELECT * FROM jobs WHERE job_name = '$job' AND customer_id = '$customer_id'";
+    $result = mysqli_query($conn, $query);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
+    }
+    echo "$query";
+
+    ?>
+        <div class="row">
+            <!-- Job Name -->
+            <div class="col-md-6 mb-3">
+                <label for="job_name" class="form-label">Job Name</label>
+                <input type="text" class="form-control" id="job_name" name="job_name" placeholder="Enter job name"
+                    value="<?= $row['job_name'] ?? '' ?>" required>
+            </div>
+
+            <!-- Status -->
+            <div class="col-md-6 mb-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status" required>
+                    <option value="">Select Status...</option>
+                    <option value="active" <?= (isset($row['status']) && $row['status'] === 'active') ? 'selected' : '' ?>>Active</option>
+                    <option value="completed" <?= (isset($row['status']) && $row['status'] === 'completed') ? 'selected' : '' ?>>Completed</option>
+                    <option value="cancelled" <?= (isset($row['status']) && $row['status'] === 'cancelled') ? 'selected' : '' ?>>Cancelled</option>
+                </select>
+            </div>
+
+            <!-- Location -->
+            <div class="col-12 mb-3">
+                <label for="location" class="form-label">Location</label>
+                <input type="text" class="form-control" id="location" name="location" placeholder="Enter job location" value="<?= $row['location'] ?? '' ?>" required>
+            </div>
+
+            <!-- Constructor Name -->
+            <div class="col-md-6 mb-3">
+                <label for="constructor_name" class="form-label">Constructor Name</label>
+                <input type="text" class="form-control" id="constructor_name" name="constructor_name"
+                    value="<?= $row['constructor_name'] ?? '' ?>" placeholder="Enter constructor name">
+            </div>
+
+            <!-- Constructor Contact -->
+            <div class="col-md-6 mb-3">
+                <label for="constructor_contact" class="form-label">Constructor Contact</label>
+                <input type="text" class="form-control" id="constructor_contact" name="constructor_contact"
+                    value="<?= $row['constructor_contact'] ?? '' ?>" placeholder="Enter contact number or email">
+            </div>
+        </div>
+    <?php
+}

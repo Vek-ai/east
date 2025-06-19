@@ -491,7 +491,8 @@ $addHeaderTxt = "Add New";
                   $tax_status = $row['tax_status'];
                   $tax_exempt_number = $row['tax_exempt_number'];
                   $customer_notes = $row['customer_notes'];
-                  $call_status = $row['call_status'];
+                  $call_status = $row['call_status'] ?? 0;
+                  $charge_net_30 = $row['charge_net_30'] ?? 0;
                   $credit_limit = $row['credit_limit'] ?? 0;
                   $customer_pricing = $row['customer_pricing'] ?? 0;
                   $lat = !empty($row['lat']) ? $row['lat'] : 0;
@@ -773,6 +774,11 @@ $addHeaderTxt = "Add New";
                     <label class="form-label">Customer Call Status</label>
                     <input type="checkbox" id="call_status" name="call_status" <?= $call_status ? 'checked' : '' ?>>
                   </div>
+                  <div class="col">
+                    <label class="form-label">Charge Net 30</label>
+                    <input type="checkbox" id="charge_net_30" name="charge_net_30" <?= $charge_net_30 ? 'checked' : '' ?>>
+                  </div>
+                  
               </div>
 
               <div class="form-actions toggleElements">

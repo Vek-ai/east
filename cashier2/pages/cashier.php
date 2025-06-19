@@ -705,9 +705,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 <button class="btn ripple btn-warning next" type="button" id="save_estimate">
                     <i class="fe fe-hard-drive"></i> Save Estimate
                 </button>
-                <button class="btn ripple btn-success next" type="button" id="next_page_order">
-                    <i class="fe fe-hard-drive"></i> Proceed to Checkout
-                </button>
                 <button class="btn ripple btn-primary previous d-none" type="button" id="prev_page_order">
                     <i class="fe fe-hard-drive"></i> Previous
                 </button>
@@ -1740,9 +1737,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 $('#order-tbl').html(response);
                 calculateDeliveryAmount();
                 loadCartItemsHeader();
-                $('#next_page_order').removeClass("d-none");
-                $('#prev_page_order').addClass("d-none");
-                $('#save_order').addClass("d-none");
+                $('#prev_page_order').removeClass("d-none");
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -4276,13 +4271,18 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         $(document).on('click', '#view_order', function(event) {
             $('.modal').modal('hide');
             loadOrderContents();
-            $('#next_page_order').removeClass("d-none");
             $('#prev_page_order').addClass("d-none");
             $('#save_order').addClass("d-none");
             $('#print_order_category').addClass('d-none');
             $('#print_order').addClass('d-none');
             $('#print_deliver').addClass('d-none');
             $('#cashmodal').modal('show');
+        });
+
+        $(document).on('click', '#prev_page_order', function(event) {
+            $('.modal').modal('hide');
+            loadCart();
+            $('#view_cart_modal').modal('show');
         });
 
         $(document).on('click', '#view_in_stock', function(event) {

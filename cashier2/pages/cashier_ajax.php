@@ -2392,7 +2392,7 @@ if (isset($_POST['add_job_name'])) {
     }
 
     if (!empty($customer_id) && !empty($job_name)) {
-        $insert_query = "INSERT INTO job_names (
+        $insert_query = "INSERT INTO jobs (
                             customer_id, 
                             job_name
                         ) VALUES (
