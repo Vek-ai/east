@@ -711,52 +711,96 @@ if(isset($_REQUEST['id'])){
           });
       }
 
-      $(document).on('click', '#addModalBtn', function(event) {
-            event.preventDefault();
-            var job = $(this).data('job') || '';
-            var customer_id = $(this).data('customer') || '';
-            var type = $(this).data('type') || '';
+    $(document).on('click', '#addModalBtn', function(event) {
+        event.preventDefault();
+        var job_id = $(this).data('job-id') || '';
+        var type = $(this).data('type') || '';
 
-            if(type == 'edit'){
+        if(type == 'edit'){
             $('#add-header').html('Update Job');
-            }else{
+        }else{
             $('#add-header').html('Add Job');
-            }
+        }
 
-            $.ajax({
-                url: 'pages/customer-dash_ajax.php',
-                type: 'POST',
-                data: {
-                    job : job,
-                    customer_id: customer_id,
-                    fetch_job_modal: 'fetch_job_modal'
-                },
-                success: function (response) {
-                    console.log(response);
-                    $('#add-fields').html(response);
+        $.ajax({
+            url: 'pages/customer-dash_ajax.php',
+            type: 'POST',
+            data: {
+                job_id : job_id,
+                fetch_job_modal: 'fetch_job_modal'
+            },
+            success: function (response) {
+                $('#add-fields').html(response);
 
-                    $(".select2-form").each(function () {
-                        $(this).select2({
-                            width: '100%',
-                            dropdownParent: $(this).parent(),
-                            templateResult: formatOption,
-                            templateSelection: formatOption
-                        });
+                $(".select2-form").each(function () {
+                    $(this).select2({
+                        width: '100%',
+                        dropdownParent: $(this).parent(),
+                        templateResult: formatOption,
+                        templateSelection: formatOption
                     });
+                });
 
-                    $('#addModal').modal('show');
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    console.error('AJAX Error:', textStatus, errorThrown);
-                    console.error('Response:', jqXHR.responseText);
+                $('#addModal').modal('show');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('AJAX Error:', textStatus, errorThrown);
+                console.error('Response:', jqXHR.responseText);
 
-                    $('#responseHeader').text("Error");
-                    $('#responseMsg').text("An error occurred while processing your request.");
-                    $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
-                    $('#response-modal').modal("show");
-                }
-            });
+                $('#responseHeader').text("Error");
+                $('#responseMsg').text("An error occurred while processing your request.");
+                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                $('#response-modal').modal("show");
+            }
         });
+    });
+
+    $('#jobForm').on('submit', function(event) {
+        event.preventDefault(); 
+        var formData = new FormData(this);
+        formData.append('save_job', 'save_job');
+        $.ajax({
+            url: 'pages/customer-dash_ajax.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+              $('.modal').modal("hide");
+              if (response == "success_add") {
+                  $('#responseHeader').text("Success");
+                  $('#responseMsg').text("New Job added successfully!");
+                  $('#responseHeaderContainer').removeClass("bg-danger");
+                  $('#responseHeaderContainer').addClass("bg-success");
+                  $('#response-modal').modal("show");
+
+                  $('#response-modal').on('hide.bs.modal', function () {
+                        location.reload();
+                  });
+              } else if (response == "success_update") {
+                  $('#responseHeader').text("Success");
+                  $('#responseMsg').text("Job updated successfully!");
+                  $('#responseHeaderContainer').removeClass("bg-danger");
+                  $('#responseHeaderContainer').addClass("bg-success");
+                  $('#response-modal').modal("show");
+
+                  $('#response-modal').on('hide.bs.modal', function () {
+                        location.reload();
+                  });
+              } else {
+                  $('#responseHeader').text("Failed");
+                  $('#responseMsg').text("Process Failed");
+                  console.log("Response: "+response);
+                  $('#responseHeaderContainer').removeClass("bg-success");
+                  $('#responseHeaderContainer').addClass("bg-danger");
+                  $('#response-modal').modal("show");
+              }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
 
       $(document).on('click', '#view_order_btn', function(event) {
           event.preventDefault(); 

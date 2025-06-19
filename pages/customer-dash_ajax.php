@@ -189,12 +189,13 @@ if (isset($_POST['search_jobs'])) {
                 </thead>
                 <tbody>
                 <?php
-                $query_jobs = "SELECT job_name, customer_id FROM jobs WHERE customer_id = '$customerid'";
+                $query_jobs = "SELECT job_name, customer_id, job_id FROM jobs WHERE customer_id = '$customerid'";
                 $result_jobs = mysqli_query($conn, $query_jobs);
 
                 if ($result_jobs && mysqli_num_rows($result_jobs) > 0) {
                     while ($row_jobs = mysqli_fetch_assoc($result_jobs)) {
                         $job_name = trim($row_jobs['job_name']);
+                        $job_id = trim($row_jobs['job_id']);
                         $customer_id = $row_jobs['customer_id'];
 
                         $query_orders = "
@@ -245,8 +246,7 @@ if (isset($_POST['search_jobs'])) {
                                     id="addModalBtn"
                                     title="Edit Job"
                                     class="btn btn-sm p-0 text-decoration-none"
-                                    data-job="<?= htmlspecialchars($job_name) ?>"
-                                    data-customer="<?= $customer_id ?>"
+                                    data-job-id="<?= $job_id ?>"
                                     data-type="edit">
                                     <i class="ti ti-pencil fs-6"></i>
                                 </a>
@@ -973,9 +973,8 @@ if (isset($_POST['fetch_changes_modal'])) {
 } 
 
 if (isset($_POST['fetch_job_modal'])) {
-    $job = mysqli_real_escape_string($conn, $_POST['job']);
-    $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
-    $query = "SELECT * FROM jobs WHERE job_name = '$job' AND customer_id = '$customer_id'";
+    $job_id = intval($_POST['job_id']);
+    $query = "SELECT * FROM jobs WHERE job_id = '$job_id'";
     $result = mysqli_query($conn, $query);
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
@@ -1020,5 +1019,43 @@ if (isset($_POST['fetch_job_modal'])) {
                     value="<?= $row['constructor_contact'] ?? '' ?>" placeholder="Enter contact number or email">
             </div>
         </div>
+
+        <input type="hidden" id="job_id" name="job_id" class="form-control"  value="<?= $row['job_id'] ?>"/>
     <?php
+}
+
+if (isset($_POST['save_job'])) {
+    $job_id = intval($_POST['job_id'] ?? 0);
+    $customer_id = intval($_POST['customer_id'] ?? 0);
+    $job_name = mysqli_real_escape_string($conn, $_POST['job_name'] ?? '');
+    $location = mysqli_real_escape_string($conn, $_POST['location'] ?? '');
+    $status = mysqli_real_escape_string($conn, $_POST['status'] ?? '');
+    $constructor_name = mysqli_real_escape_string($conn, $_POST['constructor_name'] ?? '');
+    $constructor_contact = mysqli_real_escape_string($conn, $_POST['constructor_contact'] ?? '');
+
+    $check_query = "SELECT * FROM jobs WHERE job_id = '$job_id' LIMIT 1";
+    $check_result = mysqli_query($conn, $check_query);
+
+    if ($check_result && mysqli_num_rows($check_result) > 0) {
+        $update = "
+            UPDATE jobs 
+            SET job_name = '$job_name',
+                location = '$location',
+                status = '$status',
+                constructor_name = '$constructor_name',
+                constructor_contact = '$constructor_contact'
+            WHERE job_id = '$job_id'
+        ";
+        $result = mysqli_query($conn, $update);
+
+        echo $result ? 'success_update' : 'error_update';
+    } else {
+        $insert = "
+            INSERT INTO jobs (customer_id, job_name, location, status, constructor_name, constructor_contact)
+            VALUES ('$customer_id', '$job_name', '$location', '$status', '$constructor_name', '$constructor_contact')
+        ";
+        $result = mysqli_query($conn, $insert);
+
+        echo $result ? 'success_add' : 'error_insert';
+    }
 }
