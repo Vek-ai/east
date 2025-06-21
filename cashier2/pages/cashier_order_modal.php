@@ -129,60 +129,6 @@ if(isset($_POST['fetch_order'])){
                 <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="customer_change_cash">
                     <i class="fe fe-reload"></i> Change
                 </button>
-                <div class="mt-1"> 
-                    <div id="defaultDeliverDetails">
-                        <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
-                        <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="address_change_cash">
-                            <i class="fe fe-reload"></i> Change
-                        </button>
-                    </div>
-                    <div class="mt-1">
-                        <div id="deliverDetails" class="row d-none">
-                            <div class="col-12">
-                                <label>Recipient:</label>
-                                <div class="row mb-3">
-                                    <div class="col-sm-6">
-                                        <input type="text" id="order_deliver_fname" name="order_deliver_fname" value="<?= $customer_details['customer_first_name'] ?>" class="form-control diffNameInput" placeholder="First Name">
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <input type="text" id="order_deliver_lname" name="order_deliver_lname" value="<?= $customer_details['customer_last_name'] ?>" class="form-control diffNameInput" placeholder="Last Name">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-12">
-                                <label>Address:</label>
-                                <div class="row mb-3">
-                                    <div class="col-sm-3">
-                                        <input type="text" id="order_deliver_address" name="order_deliver_address" value="<?= $customer_details['address'] ?>" class="form-control" placeholder="Address">
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <input type="text" id="order_deliver_city" name="order_deliver_city" value="<?= $customer_details['city'] ?>" class="form-control" placeholder="City">
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <input type="text" id="order_deliver_state" name="order_deliver_state" value="<?= $customer_details['state'] ?>" class="form-control" placeholder="State">
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <input type="text" id="order_deliver_zip" name="order_deliver_zip" value="<?= $customer_details['zip'] ?>" class="form-control" placeholder="Zip">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <input type="hidden" id="lat" name="lat" class="form-control" value="<?= $lat ?>" />
-                            <input type="hidden" id="lng" name="lng" class="form-control" value="<?= $lng ?>" />
-
-                            <div class="col-12 text-end">
-                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="openMap">
-                                    <i class="fa fa-map"></i> Open Map
-                                </button>
-                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="cancel_change_address_order" >
-                                    <i class="fa fa-rotate-left"></i> Cancel
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
             </div>
             <div class="col-6">
                 <div>
@@ -315,13 +261,40 @@ if(isset($_POST['fetch_order'])){
                 <!-- Contact Information -->
                 <div class="card mb-3" style="color: #ffffff !important;">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <span><i class="fa fa-check-circle text-success me-2"></i>Contact Information</span>
-                    <a href="#" class="text-primary">Edit Info</a>
+                        <span><i class="fa fa-check-circle text-success me-2"></i>Contact Information</span>
+                        <a href="#" id="toggle_edit_info" class="text-primary">Edit Info</a>
                     </div>
+
                     <div class="card-body">
-                    <p class="mb-1"><?= $customer_details['contact_email'] ?></p>
-                    <p class="mb-2"><?= $customer_details['contact_phone'] ?></p>
-                    <h6 class="fs-2">By providing the phone number above, you consent to receive automated text messages...</h6>
+                        <div id="display_contact_info">
+                            <p class="mb-1" id="disp_email"><?= $customer_details['contact_email'] ?></p>
+                            <p class="mb-2" id="disp_phone"><?= $customer_details['contact_phone'] ?></p>
+                            <h6 class="fs-2">By providing the phone number above, you consent to receive automated text messages...</h6>
+                        </div>
+
+                        <div id="edit_contact_info" class="d-none">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label for="order_deliver_fname" class="form-label">First Name</label>
+                                    <input type="text" id="order_deliver_fname" class="form-control" value="<?= $customer_details['customer_first_name'] ?>" placeholder="First Name">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="order_deliver_lname" class="form-label">Last Name</label>
+                                    <input type="text" id="order_deliver_lname" class="form-control" value="<?= $customer_details['customer_last_name'] ?>" placeholder="Last Name">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label for="order_deliver_phone" class="form-label">Contact Phone</label>
+                                    <input type="text" id="order_deliver_phone" class="form-control" value="<?= $customer_details['contact_phone'] ?>" placeholder="Contact Phone">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="order_deliver_email" class="form-label">Contact Email</label>
+                                    <input type="text" id="order_deliver_email" class="form-control" value="<?= $customer_details['contact_email'] ?>" placeholder="Contact Email">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -358,13 +331,26 @@ if(isset($_POST['fetch_order'])){
                         </div>
 
                         <div class="col-md-4">
-                            <div class="mb-2">
+                            <div class="mb-2 position-relative">
                                 <strong>Contractor Name:</strong>
-                                <div class="ps-3" id="constructor_name"></div>
+                                <input type="text" class="form-control" id="constructor_name" autocomplete="off">
+                                <div class="border bg-white shadow-sm position-absolute w-100 d-none" id="contractor_dropdown" style="z-index: 10; max-height: 200px; overflow-y: auto;">
+                                    <?php
+                                    $query_job_name = "SELECT DISTINCT constructor_name, constructor_contact FROM jobs WHERE customer_id = '$customer_id'";
+                                    $result_job_name = mysqli_query($conn, $query_job_name);
+                                    $contractors = [];
+                                    while ($row_job_name = mysqli_fetch_array($result_job_name)) {
+                                        $name = htmlspecialchars($row_job_name['constructor_name']);
+                                        $contact = htmlspecialchars($row_job_name['constructor_contact']);
+                                        echo "<div class='dropdown-item contractor-item' data-name='{$name}' data-contact='{$contact}' style='cursor: pointer; line-height: 38px; padding-top: 0px; padding-bottom: 0px;'>{$name}</div>";
+                                    }
+                                    ?>
+                                </div>
                             </div>
+
                             <div class="mb-2">
                                 <strong>Contractor Cell Phone:</strong>
-                                <div class="ps-3" id="constructor_contact"></div>
+                                <input type="text" class="form-control" id="constructor_contact">
                             </div>
                         </div>
                     </div>
@@ -388,7 +374,7 @@ if(isset($_POST['fetch_order'])){
                             </div>
 
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="order_delivery_method" id="openMap" value="deliver">
+                                <input class="form-check-input" type="radio" name="order_delivery_method" id="deliver_option" value="deliver">
                                 <label class="form-check-label" for="delivery_option">Delivery</label>
                             </div>
 
@@ -399,7 +385,7 @@ if(isset($_POST['fetch_order'])){
                             </div>
                             
 
-                            <div class="mb-3">
+                            <div class="mb-2">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="ship_separate_address">
                                     <label class="form-check-label" for="ship_separate_address">
@@ -408,25 +394,38 @@ if(isset($_POST['fetch_order'])){
                                 </div>
                             </div>
 
+                            
+
                             <!-- Hidden by default -->
                             <div id="separate_address_section" class="d-none">
-                                <label>Address:</label>
-                                <div class="row mb-3">
-                                    <div class="col-sm-3">
-                                        <input type="text" id="other_deliver_address" name="other_deliver_address" class="form-control" placeholder="Address">
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <input type="text" id="other_deliver_city" name="other_deliver_city" class="form-control" placeholder="City">
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <input type="text" id="other_deliver_state" name="other_deliver_state" class="form-control" placeholder="State">
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <input type="text" id="other_deliver_zip" name="other_deliver_zip" class="form-control" placeholder="Zip">
+                                <div class="col-12 mb-3">
+                                    <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="openMap">
+                                        <i class="fa fa-map"></i> Get Directions
+                                    </button>
+                                </div>
+
+                                <div class="col-12">
+                                    <label>Address:</label>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-2">
+                                            <input type="text" id="order_deliver_address" name="order_deliver_address" value="<?= $customer_details['address'] ?>" class="form-control" placeholder="Address">
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <input type="text" id="order_deliver_city" name="order_deliver_city" value="<?= $customer_details['city'] ?>" class="form-control" placeholder="City">
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <input type="text" id="order_deliver_state" name="order_deliver_state" value="<?= $customer_details['state'] ?>" class="form-control" placeholder="State">
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <input type="text" id="order_deliver_zip" name="order_deliver_zip" value="<?= $customer_details['zip'] ?>" class="form-control" placeholder="Zip">
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
+                                <input type="hidden" id="lat" name="lat" class="form-control" value="<?= $lat ?>" />
+                                <input type="hidden" id="lng" name="lng" class="form-control" value="<?= $lng ?>" />
+
+                                <div class="col-8">
                                     <label for="delivery_driver_instructions" class="form-label">Delivery Driver Instructions</label>
                                     <input type="text" id="delivery_driver_instructions" name="delivery_driver_instructions" class="form-control" placeholder="Instructions for the driver...">
                                 </div>
@@ -646,7 +645,6 @@ if(isset($_POST['fetch_order'])){
             });
             
             $(document).on('click', '#address_change_cash', function(event) {
-                $('#deliverDetails').removeClass('d-none');
                 $('#defaultDeliverDetails').addClass('d-none');
                 $('#order_deliver_fname').val('');
                 $('#order_deliver_lname').val('');
@@ -699,21 +697,80 @@ if(isset($_POST['fetch_order'])){
                 }
             });
 
+            var originalData = {
+                fname: $('#order_deliver_fname').val(),
+                lname: $('#order_deliver_lname').val(),
+                phone: $('#order_deliver_phone').val(),
+                email: $('#order_deliver_email').val()
+            };
+
+            $('#toggle_edit_info').on('click', function (e) {
+                e.preventDefault();
+
+                if ($(this).text() === 'Edit Info') {
+                    $('#edit_contact_info').removeClass('d-none');
+                    $('#display_contact_info').addClass('d-none');
+                    $(this).text('Cancel');
+                } else {
+                    $('#order_deliver_fname').val(originalData.fname);
+                    $('#order_deliver_lname').val(originalData.lname);
+                    $('#order_deliver_phone').val(originalData.phone);
+                    $('#order_deliver_email').val(originalData.email);
+
+                    $('#edit_contact_info').addClass('d-none');
+                    $('#display_contact_info').removeClass('d-none');
+                    $(this).text('Edit Info');
+                }
+            });
+
             $('#order_job_name').on('select2:select', function (e) {
                 const selectedValue = e.params.data.id;
 
                 if (selectedValue === 'add_new_job_name') {
                     $('#prompt_job_name_modal').modal('show');
                     $('#order_job_name').val(null).trigger('change');
-                    $('#constructor_name').text('');
-                    $('#constructor_contact').text('');
+                    $('#constructor_name').val('');
+                    $('#constructor_contact').val('');
                 } else {
                     const selectedOption = $(this).find('option[value="' + selectedValue + '"]');
                     const constructorName = selectedOption.data('constructor') || '';
                     const constructorContact = selectedOption.data('constructor-contact') || '';
 
-                    $('#constructor_name').text(constructorName);
-                    $('#constructor_contact').text(constructorContact);
+                    $('#constructor_name').val(constructorName);
+                    $('#constructor_contact').val(constructorContact);
+                }
+            });
+
+            $('#constructor_name').on('focus input', function () {
+                var filter = $(this).val().toLowerCase();
+                var hasMatch = false;
+
+                $('#contractor_dropdown .contractor-item').each(function () {
+                    var name = $(this).data('name').toLowerCase();
+                    var isMatch = name.includes(filter);
+                    $(this).toggle(isMatch);
+                    if (isMatch) hasMatch = true;
+                });
+
+                if (hasMatch) {
+                    $('#contractor_dropdown').removeClass('d-none');
+                } else {
+                    $('#contractor_dropdown').addClass('d-none');
+                }
+            });
+
+            $(document).on('click', '.contractor-item', function () {
+                var name = $(this).data('name');
+                var contact = $(this).data('contact');
+
+                $('#constructor_name').val(name);
+                $('#constructor_contact').val(contact);
+                $('#contractor_dropdown').addClass('d-none');
+            });
+
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('#constructor_name, #contractor_dropdown').length) {
+                    $('#contractor_dropdown').addClass('d-none');
                 }
             });
 

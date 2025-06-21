@@ -114,9 +114,6 @@ if(isset($_POST['fetch_cart'])){
                     <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">
                         <i class="fe fe-reload"></i> Change
                     </button>
-                    <div class="mt-1"> 
-                        <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
-                    </div>
                 </div>
                 <div class="col-6">
                     <div>
