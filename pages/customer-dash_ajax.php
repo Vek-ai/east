@@ -259,7 +259,7 @@ if (isset($_POST['search_jobs'])) {
 
                                 <a href="#"
                                     id="depositModalBtn"
-                                    title="Edit Job"
+                                    title="Deposit"
                                     class="btn btn-sm p-0 text-decoration-none"
                                     data-job="<?= $job_id ?>">
                                     <i class="ti ti-plus text-success fs-6"></i>
