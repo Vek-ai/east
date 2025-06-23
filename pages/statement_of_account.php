@@ -106,7 +106,25 @@ $page_title = "Statement of Accounts";
 
     <div class="widget-content searchable-container list">
 
-    <div class="modal fade" id="viewEstimateModal" tabindex="-1" aria-labelledby="viewEstimateModalLabel" aria-hidden="true"></div>
+    <div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" style="width:90% !important">
+            <div class="modal-content">
+            <div class="modal-header align-items-center modal-colored-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="viewModalContent">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+            </div>
+        </div>
+    </div>
 
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -126,49 +144,6 @@ $page_title = "Statement of Accounts";
             </div>
         </div>
     </div>
-
-    <div class="modal fade" id="shipFormModal" tabindex="-1" aria-labelledby="shipFormModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog modal-md">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="shipFormModalLabel">Shipping Form</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="shipOrderForm">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="tracking_number" class="form-label">Tracking Number</label>
-                            <input type="text" class="form-control" id="tracking_number" name="tracking_number" required>
-                        </div>
-
-                        <div>
-                        <label for="shipping_company" class="form-label">Shipping Company</label>
-                        <div class="mb-3">
-                            <select class="form-select select2" id="shipping_company" name="shipping_company" required>
-                                <option value="">Select Shipping Company...</option>
-                                <?php
-                                $query_shipping_company = "SELECT * FROM shipping_company WHERE status = '1' AND hidden = '0' ORDER BY `shipping_company` ASC";
-                                $result_shipping_company = mysqli_query($conn, $query_shipping_company);            
-                                while ($row_shipping_company = mysqli_fetch_array($result_shipping_company)) {
-                                ?>
-                                    <option value="<?= $row_shipping_company['shipping_company_id'] ?>"><?= $row_shipping_company['shipping_company'] ?></option>
-                                <?php   
-                                }
-                                ?>
-                            </select>
-                        </div>
-                        </div>
-                        
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Save</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-
 
     <div class="card card-body">
         <div class="row">
@@ -217,14 +192,11 @@ $page_title = "Statement of Accounts";
                     <div class="position-relative w-100 px-1 mb-2">
                         <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="type" data-filter-name="Type of Statement" id="select-type">
                             <option value="">All Types of Statement</option>
-                            <option value="01">Balance Due</option>
-                            <option value="02">Credit Available</option>
+                            <option value="balance">Balance Due</option>
+                            <option value="credit">Credit Available</option>
                         </select>
                     </div>
                     
-                </div>
-                <div class="px-3 mb-2"> 
-                    <input type="checkbox" id="toggleActive" checked> Show Processing Only
                 </div>
                 <div class="d-flex justify-content-end py-2">
                     <button type="button" class="btn btn-outline-primary reset_filters">
@@ -236,6 +208,19 @@ $page_title = "Statement of Accounts";
                 <div id="selected-tags" class="mb-2"></div>
                 <div class="datatables">
                     <div class="product-details table-responsive text-wrap">
+                        <?php
+                        $sql = "SELECT 
+                                    c.customer_id,
+                                    COALESCE(SUM(o.credit_amt), 0) AS balance_due,
+                                    c.credit_available
+                                FROM customer c
+                                LEFT JOIN orders o ON o.customerid = c.customer_id
+                                WHERE c.status = 1
+                                GROUP BY c.customer_id
+                                HAVING balance_due > 0 OR c.credit_available > 0";
+                        $result = $conn->query($sql);
+                        ?>
+
                         <table id="est_list_tbl" class="table table-hover mb-0 text-wrap">
                             <thead>
                                 <tr>
@@ -245,44 +230,31 @@ $page_title = "Statement of Accounts";
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php 
+                                <?php while ($row = $result->fetch_assoc()) : ?>
+                                    <?php if ($row['balance_due'] > 0) : ?>
+                                        <tr>
+                                            <td><?= get_customer_name($row['customer_id']) ?></td>
+                                            <td style="color:rgb(255, 21, 21) !important;">$<?= number_format($row['balance_due'], 2) ?></td>
+                                            <td class="text-center">
+                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_balance_due" type="button" data-customer="<?= $row["customer_id"]; ?>" data-bs-toggle="tooltip" title="View Estimate">
+                                                    <i class="text-primary fa fa-eye fs-5"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
 
-                                $query = "SELECT * FROM estimates WHERE 1";
-                                $result = mysqli_query($conn, $query);
-                            
-                                if ($result && mysqli_num_rows($result) > 0) {
-                                    $response = array();
-                                    while ($row = mysqli_fetch_assoc($result)) {
-                                        $status_code = $row['status'];
-                                        $customer_id = $row["customerid"];
-                                        $customer_details = getCustomerDetails($customer_id);
-                                
-                                    ?>
-                                    <tr
-                                        data-tax="<?= $customer_details['tax_status'] ?>"
-                                        data-month="<?= date('m', strtotime($row['estimated_date'])) ?>"
-                                        data-type="<?= '' ?>"
-                                    >
-                                        <td style="color: #ffffff !important;">
-                                            <?= ucwords(get_customer_name($row["customerid"])) ?>
-                                        </td style="color: #ffffff !important;">
-                                        <td style="color: #ffffff !important;">
-                                            $ <?=  getEstimateTotalsDiscounted($row["estimateid"]) ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_estimate_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="View Estimate">
-                                                <i class="text-primary fa fa-eye fs-5"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <?php
-                                    }
-                                } else {
-                                ?>
-                                
-                                <?php
-                                }
-                                ?>
+                                    <?php if ($row['credit_available'] > 0) : ?>
+                                        <tr>
+                                            <td><?= get_customer_name($row['customer_id']) ?></td>
+                                            <td style="color:rgb(0, 255, 136) !important;">$<?= number_format($row['credit_available'], 2) ?></td>
+                                            <td class="text-center">
+                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_credit_avail" type="button" data-customer="<?= $row["customer_id"]; ?>" data-bs-toggle="tooltip" title="View Estimate">
+                                                    <i class="text-primary fa fa-eye fs-5"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+                                <?php endwhile; ?>
                             </tbody>
                         </table>
                     </div>
@@ -318,22 +290,60 @@ $page_title = "Statement of Accounts";
             });
         });
 
-        $(document).on('click', '#view_estimate_btn', function(event) {
+        $(document).on('click', '#view_balance_due', function(event) {
             event.preventDefault(); 
-            var id = $(this).data('id');
+            var customer_id = $(this).data('customer');
             $.ajax({
                     url: 'pages/statement_of_account_ajax.php',
                     type: 'POST',
                     data: {
-                        id: id,
-                        action: "fetch_view_modal"
+                        customer_id: customer_id,
+                        action: "fetch_balance_modal"
                     },
                     success: function(response) {
-                        $('#viewEstimateModal').html(response);
-                        $('#viewEstimateModal').modal('show');
+                        $('#viewModalContent').html(response);
+
+                        $('#balance_due_tbl').DataTable({
+                            language: {
+                                emptyTable: "No Orders with Balance Due found"
+                            },
+                            responsive: true,
+                            lengthChange: false
+                        });
+
+                        $('#viewModal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                        alert('Error: ' + textStatus + ' - ' + jqXHR.responseText);
+                    }
+            });
+        });
+
+        $(document).on('click', '#view_credit_avail', function(event) {
+            event.preventDefault(); 
+            var customer_id = $(this).data('customer');
+            $.ajax({
+                    url: 'pages/statement_of_account_ajax.php',
+                    type: 'POST',
+                    data: {
+                        customer_id: customer_id,
+                        action: "fetch_balance_modal"
+                    },
+                    success: function(response) {
+                        $('#viewModalContent').html(response);
+
+                        $('#balance_due_tbl').DataTable({
+                            language: {
+                                emptyTable: "No Orders with Balance Due found"
+                            },
+                            responsive: true,
+                            lengthChange: false
+                        });
+
+                        $('#viewModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + jqXHR.responseText);
                     }
             });
         });

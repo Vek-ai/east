@@ -3950,6 +3950,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         });
 
         $(document).on('click', '#save_order', function(event) {
+            event.preventDefault();
             var discount = $('#order_discount').val();
             var delivery_amt = $('#delivery_amt').val();
             var cash_amt = $('#payable_amt').val();
@@ -3963,45 +3964,53 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var deliver_fname = $('#order_deliver_fname').val();
             var deliver_lname = $('#order_deliver_lname').val();
             var applyStoreCredit = $('#applyStoreCredit').is(':checked') ? $('#applyStoreCredit').val() : 0;
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: {
-                    cash_amt: cash_amt,
-                    credit_amt: credit_amt,
-                    discount: discount,
-                    delivery_amt: delivery_amt,
-                    job_name: job_name,
-                    job_po: job_po,
-                    deliver_address: deliver_address,
-                    deliver_city: deliver_city,
-                    deliver_state: deliver_state,
-                    deliver_zip: deliver_zip,
-                    deliver_fname: deliver_fname,
-                    deliver_lname: deliver_lname,
-                    applyStoreCredit: applyStoreCredit,
-                    save_order: 'save_order'
-                },
-                success: function(response) {
-                    console.log(response);
-                    if (response.success) {
-                        alert("Order successfully saved.");
-                        $('#print_order_category').attr('href', '/print_order_product.php?id=' + response.order_id);
-                        $('#print_order').attr('href', '/print_order_total.php?id=' + response.order_id);
-                        $('#print_deliver').attr('href', '/print_order_delivery.php?id=' + response.order_id);
-                        $('#print_order_category').removeClass('d-none');
-                        $('#print_order').removeClass('d-none');
-                        $('#print_deliver').removeClass('d-none');
-                        print_deliver
-                    } else if (response.error) {
-                        alert("Error: " + response.error);
+
+            var payment_method = $('[name="payMethod"]').val();
+
+            if(payment_method){
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        cash_amt: cash_amt,
+                        credit_amt: credit_amt,
+                        discount: discount,
+                        delivery_amt: delivery_amt,
+                        job_name: job_name,
+                        job_po: job_po,
+                        deliver_address: deliver_address,
+                        deliver_city: deliver_city,
+                        deliver_state: deliver_state,
+                        deliver_zip: deliver_zip,
+                        deliver_fname: deliver_fname,
+                        deliver_lname: deliver_lname,
+                        applyStoreCredit: applyStoreCredit,
+                        payment_method: payment_method,
+                        save_order: 'save_order'
+                    },
+                    success: function(response) {
+                        console.log(response);
+                        if (response.success) {
+                            alert("Order successfully saved.");
+                            $('#print_order_category').attr('href', '/print_order_product.php?id=' + response.order_id);
+                            $('#print_order').attr('href', '/print_order_total.php?id=' + response.order_id);
+                            $('#print_deliver').attr('href', '/print_order_delivery.php?id=' + response.order_id);
+                            $('#print_order_category').removeClass('d-none');
+                            $('#print_order').removeClass('d-none');
+                            $('#print_deliver').removeClass('d-none');
+                        } else if (response.error) {
+                            alert("Error: " + response.error);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.log('Response Text: ' + jqXHR.responseText);
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
                     }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.log('Response Text: ' + jqXHR.responseText);
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
+                });
+            }else{
+                alert("Please select payment method!");
+            }
+            
         });
 
         $(document).on('click', '#submitApprovalBtn', function(event) {

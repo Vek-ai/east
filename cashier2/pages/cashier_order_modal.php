@@ -245,7 +245,7 @@ if(isset($_POST['fetch_order'])){
 
     <div class="card-body datatables">
         <form id="msform">
-            <input type="hidden" id="payable_amt" value="<?= number_format((floatval($total_customer_price)), 2) ?>">
+            <input type="hidden" id="payable_amt" value="<?= (floatval($total_customer_price)) ?>">
             <input type="hidden" id="delivery_amt" name="delivery_amt" value="0">
             <input type="hidden" id="store_credit" name="store_credit" value="<?= $store_credit ?>">
 
@@ -515,7 +515,7 @@ if(isset($_POST['fetch_order'])){
                     <div class="d-flex justify-content-between align-items-center flex-column flex-sm-row mb-2">
                         <span>Item Subtotal (<?= $_SESSION["total_quantity"] ?? '0' ?>)</span>
                         <div class="d-flex flex-column align-items-end">
-                            <span>$<?= $total_customer_price ?></span>
+                            <span>$<?= number_format($total_customer_price,2) ?></span>
                             <div style="width: 100px; height: 2px; background-color: white; margin-top: 2px;"></div>
                         </div>
                     </div>
