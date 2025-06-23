@@ -1476,6 +1476,7 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "product_length") {include 'pages/product_length.php';}
             if ($_REQUEST['page'] == "promotions") {include 'pages/promotions.php';}
+            if ($_REQUEST['page'] == "statement_of_account") {include 'pages/statement_of_account.php';}
           ?>
         </div>
       </div>

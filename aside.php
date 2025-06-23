@@ -83,6 +83,12 @@
             <span class="hide-menu">Invoices</span>
           </a>
         </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="?page=statement_of_account">
+            <iconify-icon icon="solar:clipboard-outline" class="aside-icon"></iconify-icon>
+            <span class="hide-menu">Statement of Accounts</span>
+          </a>
+        </li>
 
         <!-- ---------------------------------- -->
         <!-- Products -->
