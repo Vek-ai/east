@@ -183,13 +183,14 @@ if (isset($_POST['search_jobs'])) {
                 <tr>
                     <th class="border-0 ps-0">Job PO #</th>
                     <th class="border-0">Job Name</th>
-                    <th class="border-0">Amount</th>
+                    <th class="border-0">Deposited Amount</th>
+                    <th class="border-0">Materials Purchased</th>
                     <th class="border-0"></th>
                 </tr>
                 </thead>
                 <tbody>
                 <?php
-                $query_jobs = "SELECT job_name, customer_id, job_id FROM jobs WHERE customer_id = '$customerid'";
+                $query_jobs = "SELECT job_name, customer_id, job_id, deposit_amount FROM jobs WHERE customer_id = '$customerid'";
                 $result_jobs = mysqli_query($conn, $query_jobs);
 
                 if ($result_jobs && mysqli_num_rows($result_jobs) > 0) {
@@ -197,6 +198,7 @@ if (isset($_POST['search_jobs'])) {
                         $job_name = trim($row_jobs['job_name']);
                         $job_id = trim($row_jobs['job_id']);
                         $customer_id = $row_jobs['customer_id'];
+                        $deposit_amount = $row_jobs['deposit_amount'];
 
                         $query_orders = "
                             SELECT 
@@ -232,6 +234,9 @@ if (isset($_POST['search_jobs'])) {
                                 <h5 class="mb-1 text-center"><?= htmlspecialchars($job_name) ?></h5>
                             </td>
                             <td>
+                                <h5 class="mb-1 text-center">$<?= number_format($deposit_amount, 2) ?></h5>
+                            </td>
+                            <td>
                                 <h5 class="mb-1 text-center">$<?= number_format($job_amt, 2) ?></h5>
                             </td>
                             <td class="text-center">
@@ -247,8 +252,17 @@ if (isset($_POST['search_jobs'])) {
                                     title="Edit Job"
                                     class="btn btn-sm p-0 text-decoration-none"
                                     data-job-id="<?= $job_id ?>"
+                                    data-customer-id="<?= $customerid ?>"
                                     data-type="edit">
                                     <i class="ti ti-pencil fs-6"></i>
+                                </a>
+
+                                <a href="#"
+                                    id="depositModalBtn"
+                                    title="Edit Job"
+                                    class="btn btn-sm p-0 text-decoration-none"
+                                    data-job="<?= $job_id ?>">
+                                    <i class="ti ti-plus text-success fs-6"></i>
                                 </a>
                             </td>
                         </tr>
@@ -974,6 +988,7 @@ if (isset($_POST['fetch_changes_modal'])) {
 
 if (isset($_POST['fetch_job_modal'])) {
     $job_id = intval($_POST['job_id']);
+    $customer_id = intval($_POST['customer_id']);
     $query = "SELECT * FROM jobs WHERE job_id = '$job_id'";
     $result = mysqli_query($conn, $query);
     if ($result && mysqli_num_rows($result) > 0) {
@@ -1021,6 +1036,7 @@ if (isset($_POST['fetch_job_modal'])) {
         </div>
 
         <input type="hidden" id="job_id" name="job_id" class="form-control"  value="<?= $row['job_id'] ?>"/>
+        <input type="hidden" id="customer_id" name="customer_id" class="form-control"  value="<?= $customer_id ?>"/>
     <?php
 }
 
@@ -1057,5 +1073,26 @@ if (isset($_POST['save_job'])) {
         $result = mysqli_query($conn, $insert);
 
         echo $result ? 'success_add' : 'error_insert';
+    }
+}
+
+if (isset($_POST['deposit_job'])) {
+    $job_id = intval($_POST['job_id'] ?? 0);
+    $deposit_amount = floatval($_POST['deposit_amount']);
+    
+    $check_query = "SELECT * FROM jobs WHERE job_id = '$job_id'";
+    $check_result = mysqli_query($conn, $check_query);
+
+    if ($check_result && mysqli_num_rows($check_result) > 0) {
+        $update = "
+            UPDATE jobs 
+            SET deposit_amount = deposit_amount + '$deposit_amount'
+            WHERE job_id = '$job_id'
+        ";
+        $result = mysqli_query($conn, $update);
+
+        echo $result ? 'success' : 'error_db';
+    } else {
+        echo 'failed';
     }
 }

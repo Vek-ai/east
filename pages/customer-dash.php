@@ -438,7 +438,7 @@ if(isset($_REQUEST['id'])){
           <h4 class="card-title">Jobs</h4>
           <div class="ms-auto">
             <div class="mb-2 text-end">
-                <button type="button" id="addModalBtn" class="btn btn-primary" data-id="" data-type="add">
+                <button type="button" id="addModalBtn" class="btn btn-primary" data-id="" data-customer-id="<?= $customer_id ?>" data-type="add">
                     <i class="fas fa-plus me-1"></i> Add Job
                 </button>
             </div>
@@ -556,6 +556,42 @@ if(isset($_REQUEST['id'])){
                                   </div>
                               </div>
                           </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="depositForm" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="deposit-fields">
+                                <input type="hidden" id="job_id" name="job_id">
+
+                                <div class="mb-3">
+                                    <label for="deposit_amount" class="form-label">Deposit Amount</label>
+                                    <input type="number" step="0.01" class="form-control" id="deposit_amount" name="deposit_amount" required>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <div class="border-top">
+                                    <div class="row mt-2">
+                                        <div class="col-6 text-start"></div>
+                                        <div class="col-6 text-end ">
+                                            <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -714,6 +750,7 @@ if(isset($_REQUEST['id'])){
     $(document).on('click', '#addModalBtn', function(event) {
         event.preventDefault();
         var job_id = $(this).data('job-id') || '';
+        var customer_id = $(this).data('customer-id') || '';
         var type = $(this).data('type') || '';
 
         if(type == 'edit'){
@@ -726,6 +763,7 @@ if(isset($_REQUEST['id'])){
             url: 'pages/customer-dash_ajax.php',
             type: 'POST',
             data: {
+                customer_id: customer_id,
                 job_id : job_id,
                 fetch_job_modal: 'fetch_job_modal'
             },
@@ -751,6 +789,50 @@ if(isset($_REQUEST['id'])){
                 $('#responseMsg').text("An error occurred while processing your request.");
                 $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
                 $('#response-modal').modal("show");
+            }
+        });
+    });
+
+    $(document).on('click', '#depositModalBtn', function(event) {
+        event.preventDefault();
+        var job_id = $(this).data('job') || '';
+        $('#job_id').val(job_id);
+        $('#depositModal').modal('show');
+    });
+
+    $('#depositForm').on('submit', function(event) {
+        event.preventDefault(); 
+        var formData = new FormData(this);
+        formData.append('deposit_job', 'deposit_job');
+        $.ajax({
+            url: 'pages/customer-dash_ajax.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                $('.modal').modal("hide");
+                if (response == "success") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("Amount Deposited successfully!");
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
+
+                    $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                    });
+                } else {
+                    $('#responseHeader').text("Failed");
+                    $('#responseMsg').text("Process Failed");
+                    console.log("Response: "+response);
+                    $('#responseHeaderContainer').removeClass("bg-success");
+                    $('#responseHeaderContainer').addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
             }
         });
     });

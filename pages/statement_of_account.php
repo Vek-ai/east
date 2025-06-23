@@ -211,13 +211,21 @@ $page_title = "Statement of Accounts";
                         <?php
                         $sql = "SELECT 
                                     c.customer_id,
-                                    COALESCE(SUM(o.credit_amt), 0) AS balance_due,
-                                    c.credit_available
+                                    COALESCE(o.total_balance_due, 0) AS balance_due,
+                                    COALESCE(j.total_credit_available, 0) AS credit_available
                                 FROM customer c
-                                LEFT JOIN orders o ON o.customerid = c.customer_id
+                                LEFT JOIN (
+                                    SELECT customerid, SUM(credit_amt) AS total_balance_due
+                                    FROM orders
+                                    GROUP BY customerid
+                                ) o ON o.customerid = c.customer_id
+                                LEFT JOIN (
+                                    SELECT customer_id, SUM(deposit_amount) AS total_credit_available
+                                    FROM jobs
+                                    GROUP BY customer_id
+                                ) j ON j.customer_id = c.customer_id
                                 WHERE c.status = 1
-                                GROUP BY c.customer_id
-                                HAVING balance_due > 0 OR c.credit_available > 0";
+                                HAVING balance_due > 0 OR credit_available > 0";
                         $result = $conn->query($sql);
                         ?>
 
@@ -236,7 +244,7 @@ $page_title = "Statement of Accounts";
                                             <td><?= get_customer_name($row['customer_id']) ?></td>
                                             <td style="color:rgb(255, 21, 21) !important;">$<?= number_format($row['balance_due'], 2) ?></td>
                                             <td class="text-center">
-                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_balance_due" type="button" data-customer="<?= $row["customer_id"]; ?>" data-bs-toggle="tooltip" title="View Estimate">
+                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_balance_due" type="button" data-customer="<?= $row["customer_id"]; ?>" data-bs-toggle="tooltip" title="View Balance Due">
                                                     <i class="text-primary fa fa-eye fs-5"></i>
                                                 </button>
                                             </td>
@@ -244,11 +252,11 @@ $page_title = "Statement of Accounts";
                                     <?php endif; ?>
 
                                     <?php if ($row['credit_available'] > 0) : ?>
-                                        <tr>
+                                        <tr data-id="<?=$row['credit_available'];?>">
                                             <td><?= get_customer_name($row['customer_id']) ?></td>
                                             <td style="color:rgb(0, 255, 136) !important;">$<?= number_format($row['credit_available'], 2) ?></td>
                                             <td class="text-center">
-                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_credit_avail" type="button" data-customer="<?= $row["customer_id"]; ?>" data-bs-toggle="tooltip" title="View Estimate">
+                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_credit_avail" type="button" data-customer="<?= $row["customer_id"]; ?>" data-bs-toggle="tooltip" title="View Credit Available">
                                                     <i class="text-primary fa fa-eye fs-5"></i>
                                                 </button>
                                             </td>
@@ -327,14 +335,14 @@ $page_title = "Statement of Accounts";
                     type: 'POST',
                     data: {
                         customer_id: customer_id,
-                        action: "fetch_balance_modal"
+                        action: "fetch_credit_modal"
                     },
                     success: function(response) {
                         $('#viewModalContent').html(response);
 
-                        $('#balance_due_tbl').DataTable({
+                        $('#credit_avail_tbl').DataTable({
                             language: {
-                                emptyTable: "No Orders with Balance Due found"
+                                emptyTable: "No Jobs found"
                             },
                             responsive: true,
                             lengthChange: false
