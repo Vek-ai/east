@@ -1357,4 +1357,23 @@ function getOrderDateByProductId($productId) {
     }
 }
 
+function getJobDepositTotal($job_id) { 
+    global $conn;
+
+    $job_id = intval($job_id);
+    $total = 0;
+
+    $sql = "SELECT SUM(deposit_amount) AS total_deposit 
+            FROM job_deposits 
+            WHERE job_id = $job_id";
+
+    $result = mysqli_query($conn, $sql);
+
+    if ($result && $row = mysqli_fetch_assoc($result)) {
+        $total = floatval($row['total_deposit']);
+    }
+
+    return $total;
+}
+
 ?>

@@ -568,32 +568,46 @@ if(isset($_REQUEST['id'])){
     <div class="modal-dialog modal-md">
         <div class="modal-content">
             <div class="modal-header d-flex align-items-center">
+                <h5 class="modal-title">Add Job Deposit</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="depositForm" class="form-horizontal">
                 <div class="modal-body">
                     <div class="card">
                         <div class="card-body">
-                            <div id="deposit-fields">
-                                <input type="hidden" id="job_id" name="job_id">
+                            <input type="hidden" id="job_id" name="job_id">
+                            <input type="hidden" id="deposited_by" name="deposited_by" value="<?= $customer_id ?>">
 
+                            <div class="mb-3">
+                                <label for="type" class="form-label">Deposit Type</label>
+                                <select class="form-select" id="type" name="type" required>
+                                    <option value="">-- Select Type --</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="check">Check</option>
+                                </select>
+                            </div>
+
+                            <div id="deposit_details_group" class="d-none">
                                 <div class="mb-3">
                                     <label for="deposit_amount" class="form-label">Deposit Amount</label>
-                                    <input type="number" step="0.01" class="form-control" id="deposit_amount" name="deposit_amount" required>
+                                    <input type="number" step="0.01" class="form-control" id="deposit_amount" name="deposit_amount" >
                                 </div>
-                            </div>
-                            <div class="form-actions">
-                                <div class="border-top">
-                                    <div class="row mt-2">
-                                        <div class="col-6 text-start"></div>
-                                        <div class="col-6 text-end ">
-                                            <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
-                                        </div>
-                                    </div>
+
+                                <div class="mb-3">
+                                    <label for="reference_no" class="form-label">Reference No</label>
+                                    <input type="text" class="form-control" id="reference_no" name="reference_no" required>
+                                </div>
+
+                                <div class="mb-3 d-none" id="check_no_group">
+                                    <label for="check_no" class="form-label">Check No</label>
+                                    <input type="text" class="form-control" id="check_no" name="check_no">
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
                 </div>
             </form>
         </div>
@@ -746,6 +760,32 @@ if(isset($_REQUEST['id'])){
               }
           });
       }
+
+    $('#depositModal').on('show.bs.modal', function () {
+        $('#deposit_details_group').addClass('d-none');
+        $('#check_no_group').addClass('d-none');
+        $('#check_no').removeAttr('required').val('');
+        $('#type').val('');
+    });
+
+    // Toggle display based on type selected
+    $(document).on('change', '#type', function () {
+        const type = $(this).val();
+
+        if (type === 'cash') {
+            $('#deposit_details_group').removeClass('d-none');
+            $('#check_no_group').addClass('d-none');
+            $('#check_no').removeAttr('required').val('');
+        } else if (type === 'check') {
+            $('#deposit_details_group').removeClass('d-none');
+            $('#check_no_group').removeClass('d-none');
+            $('#check_no').attr('required', true);
+        } else {
+            $('#deposit_details_group').addClass('d-none');
+            $('#check_no_group').addClass('d-none');
+            $('#check_no').removeAttr('required').val('');
+        }
+    });
 
     $(document).on('click', '#addModalBtn', function(event) {
         event.preventDefault();

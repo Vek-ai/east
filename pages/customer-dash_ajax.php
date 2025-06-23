@@ -198,7 +198,7 @@ if (isset($_POST['search_jobs'])) {
                         $job_name = trim($row_jobs['job_name']);
                         $job_id = trim($row_jobs['job_id']);
                         $customer_id = $row_jobs['customer_id'];
-                        $deposit_amount = $row_jobs['deposit_amount'];
+                        $deposit_amount = getJobDepositTotal($job_id);
 
                         $query_orders = "
                             SELECT 
@@ -1078,21 +1078,42 @@ if (isset($_POST['save_job'])) {
 
 if (isset($_POST['deposit_job'])) {
     $job_id = intval($_POST['job_id'] ?? 0);
-    $deposit_amount = floatval($_POST['deposit_amount']);
-    
+    $deposit_amount = floatval($_POST['deposit_amount'] ?? 0);
+    $deposited_by = trim($_POST['deposited_by'] ?? '');
+    $reference_no = trim($_POST['reference_no'] ?? '');
+    $type = $_POST['type'] ?? '';
+    $check_no = $_POST['check_no'] ?? null;
+
+    if (!$job_id || !$deposit_amount || !$deposited_by || !$reference_no || !$type) {
+        echo 'missing_fields';
+        exit;
+    }
+
     $check_query = "SELECT * FROM jobs WHERE job_id = '$job_id'";
     $check_result = mysqli_query($conn, $check_query);
 
     if ($check_result && mysqli_num_rows($check_result) > 0) {
-        $update = "
-            UPDATE jobs 
-            SET deposit_amount = deposit_amount + '$deposit_amount'
-            WHERE job_id = '$job_id'
-        ";
-        $result = mysqli_query($conn, $update);
+        $check_no_sql = $type === 'check' ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
 
-        echo $result ? 'success' : 'error_db';
+        $insert = "
+            INSERT INTO job_deposits (job_id, deposited_by, reference_no, type, check_no, deposit_amount)
+            VALUES ('$job_id', '" . mysqli_real_escape_string($conn, $deposited_by) . "', '" . mysqli_real_escape_string($conn, $reference_no) . "', '$type', $check_no_sql, '$deposit_amount')
+        ";
+
+        if (mysqli_query($conn, $insert)) {
+            $update = "
+                UPDATE jobs 
+                SET deposit_amount = deposit_amount + $deposit_amount
+                WHERE job_id = '$job_id'
+            ";
+            $update_result = mysqli_query($conn, $update);
+
+            echo $update_result ? 'success' : 'error_update';
+        } else {
+            echo 'error_insert';
+        }
     } else {
-        echo 'failed';
+        echo 'job_not_found';
     }
 }
+

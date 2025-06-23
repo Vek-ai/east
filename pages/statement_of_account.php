@@ -220,9 +220,10 @@ $page_title = "Statement of Accounts";
                                     GROUP BY customerid
                                 ) o ON o.customerid = c.customer_id
                                 LEFT JOIN (
-                                    SELECT customer_id, SUM(deposit_amount) AS total_credit_available
-                                    FROM jobs
-                                    GROUP BY customer_id
+                                    SELECT j.customer_id, SUM(d.deposit_amount) AS total_credit_available
+                                    FROM jobs j
+                                    INNER JOIN job_deposits d ON d.job_id = j.job_id
+                                    GROUP BY j.customer_id
                                 ) j ON j.customer_id = c.customer_id
                                 WHERE c.status = 1
                                 HAVING balance_due > 0 OR credit_available > 0";
