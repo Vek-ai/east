@@ -1084,11 +1084,6 @@ if (isset($_POST['deposit_job'])) {
     $type = $_POST['type'] ?? '';
     $check_no = $_POST['check_no'] ?? null;
 
-    if (!$job_id || !$deposit_amount || !$deposited_by || !$reference_no || !$type) {
-        echo 'missing_fields';
-        exit;
-    }
-
     $check_query = "SELECT * FROM jobs WHERE job_id = '$job_id'";
     $check_result = mysqli_query($conn, $check_query);
 
