@@ -245,7 +245,7 @@ if(isset($_POST['fetch_order'])){
 
     <div class="card-body datatables">
         <form id="msform">
-            <input type="hidden" id="payable_amt" value="<?= (floatval($total_customer_price)) ?>">
+            <input type="hidden" id="payable_amt" value="<?= $total_customer_price = floatval(str_replace(',', '', $total_customer_price)); ?>">
             <input type="hidden" id="delivery_amt" name="delivery_amt" value="0">
             <input type="hidden" id="store_credit" name="store_credit" value="<?= $store_credit ?>">
 

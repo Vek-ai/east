@@ -185,7 +185,9 @@ if(isset($_REQUEST['customer_id'])){
                                         </td>
                                         <td class="text-end"><?= $debit > 0 ? '$' .number_format($debit, 2) : '' ?></td>
                                         <td class="text-end"><?= $credit > 0 ? '$' .number_format($credit, 2) : '' ?></td>
-                                        <td class="text-end">$<?= number_format($balance, 2) ?></td>
+                                        <td class="text-end">
+                                            <?= ($balance < 0 ? '- $' : '$') . number_format(abs($balance), 2) ?>
+                                        </td>
                                     </tr>
                                 <?php } ?>
                             </tbody>

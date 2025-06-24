@@ -24,28 +24,30 @@ if(isset($_REQUEST['action'])) {
             AND o.customerid = '$customer_id'
         ";
         $result = mysqli_query($conn, $query);
-        
+
         if ($result && mysqli_num_rows($result) > 0) {
+            $first_row = mysqli_fetch_assoc($result);
+            $orderid = $first_row['orderid'];
+            mysqli_data_seek($result, 0); // Reset pointer
             $order_details = getOrderDetails($orderid);
-            $totalquantity = $total_actual_price = $total_disc_price = 0;
-            $status_code = $order_details['status'];
 
-            $tracking_number = $order_details['tracking_number'];
+            $totalquantity = $total_actual_price = $total_disc_price = $total_amount = 0;
+
+            $tracking_number = $order_details['tracking_number'] ?? '';
             $shipping_comp_details = getShippingCompanyDetails($order_details['shipping_company']);
-            $shipping_company = $shipping_comp_details['shipping_company'];
+            $shipping_company = $shipping_comp_details['shipping_company'] ?? '';
 
-            $response = array();
             ?>
             <style>
                 #acct_dtls_tbl {
                     width: 100% !important;
                 }
-
                 #acct_dtls_tbl td, #acct_dtls_tbl th {
                     white-space: normal !important;
                     word-wrap: break-word;
                 }
             </style>
+
             <div class="card">
                 <div class="card-body datatables">
                     <div class="order-details table-responsive text-nowrap">
@@ -56,7 +58,6 @@ if(isset($_REQUEST['action'])) {
                                 <span id="shipping-company"><?= htmlspecialchars($shipping_company) ?></span>
                             </div>
                             <?php endif; ?>
-
                             <?php if (!empty($tracking_number)) : ?>
                             <div>
                                 <strong>Tracking #:</strong>
@@ -64,6 +65,7 @@ if(isset($_REQUEST['action'])) {
                             </div>
                             <?php endif; ?>
                         </div>
+
                         <table id="acct_dtls_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
                             <thead>
                                 <tr>
@@ -75,89 +77,71 @@ if(isset($_REQUEST['action'])) {
                                     <th class="text-center">Status</th>
                                     <th class="text-center">Price</th>
                                     <th class="text-center">Customer Price</th>
-                                    <th class="text-center">Total Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php 
-                                    $is_processing = false;
-                                    while ($row = mysqli_fetch_assoc($result)) {
-                                        $orderid = $row['orderid'];
-                                        $product_details = getProductDetails($row['productid']);
-                                        
-                                        $status_prod_db = $row['status'];
+                            <?php
+                                $status_prod_labels = [
+                                    0 => ['label' => 'New', 'class' => 'badge bg-primary'],
+                                    1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+                                    2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
+                                    3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
+                                    4 => ['label' => 'Delivered', 'class' => 'badge bg-success']
+                                ];
 
-                                        $product_name = '';
-                                        if(!empty($row['product_item'])){
-                                            $product_name = $row['product_item'];
-                                        }else{
-                                            $product_name = getProductName($row['product_id']);
-                                        }
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    $product_details = getProductDetails($row['productid']);
+                                    $product_name = !empty($row['product_item']) 
+                                        ? $row['product_item'] 
+                                        : getProductName($row['productid']);
 
-                                        if($status_prod_db == '1'){
-                                            $is_processing = true;
-                                        }
+                                    $status_info = $status_prod_labels[$row['status']] ?? ['label' => 'Unknown', 'class' => 'badge bg-dark'];
 
-                                        $status_prod_labels = [
-                                            0 => ['label' => 'New', 'class' => 'badge bg-primary'],
-                                            1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
-                                            2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
-                                            3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
-                                            4 => ['label' => 'Delivered', 'class' => 'badge bg-success']
-                                        ];
+                                    $actual_price = floatval(str_replace(',', '', $row['actual_price']));
+                                    $discounted_price = floatval(str_replace(',', '', $row['discounted_price']));
+                                    $quantity = intval($row['quantity']);
 
-                                        $status_prod = $status_prod_labels[$status_prod_db];
-                                    ?> 
-                                        <tr> 
-                                            <td>
-                                                <?= $product_name ?>
-                                            </td>
-                                            <td>
-                                            <div class="d-flex mb-0 gap-8">
-                                                <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_details['color'])?>"></a>
-                                                <?= getColorFromID($product_details['color']); ?>
-                                            </div>
-                                            </td>
-                                            <td>
-                                                <?php echo getGradeName($product_details['grade']); ?>
-                                            </td>
-                                            <td>
-                                                <?php echo getProfileTypeName($product_details['profile']); ?>
-                                            </td>
-                                            <td><?= $row['quantity'] ?></td>
-                                            <td>
-                                                <span class="<?= $status_prod['class']; ?> fw-bond"><?= $status_prod['label']; ?></span>
-                                            </td>
-                                            <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
-                                            <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
-                                            <td class="text-end">$ <?= number_format(floatval($row['discounted_price'] * $row['quantity']),2) ?></td>
-                                        </tr>
-                                <?php
-                                        $totalquantity += $row['quantity'] ;
-                                        $total_actual_price += $row['actual_price'];
-                                        $total_disc_price += $row['discounted_price'];
-                                        $total_amount += floatval($row['discounted_price']) * $row['quantity'];
-                                    }
-                                
-                                ?>
+                                    $totalquantity += $quantity;
+                                    $total_actual_price += $actual_price;
+                                    $total_disc_price += $discounted_price;
+                                    $total_amount += $line_total;
+                            ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($product_name) ?></td>
+                                    <td>
+                                        <div class="d-flex mb-0 gap-8">
+                                            <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_details['color']) ?>"></a>
+                                            <?= htmlspecialchars(getColorFromID($product_details['color'])) ?>
+                                        </div>
+                                    </td>
+                                    <td><?= htmlspecialchars(getGradeName($product_details['grade'])) ?></td>
+                                    <td><?= htmlspecialchars(getProfileTypeName($product_details['profile'])) ?></td>
+                                    <td class="text-center"><?= $quantity ?></td>
+                                    <td class="text-center">
+                                        <span class="<?= $status_info['class'] ?> fw-bond"><?= $status_info['label'] ?></span>
+                                    </td>
+                                    <td class="text-end">$<?= number_format($actual_price, 2) ?></td>
+                                    <td class="text-end">$<?= number_format($discounted_price, 2) ?></td>
+                                </tr>
+                            <?php } ?>
                             </tbody>
-
                             <tfoot>
                                 <tr>
-                                    <td colspan="5" class="text-end">Total</td>
-                                    <td><?= $totalquantity ?></td>
+                                    <td colspan="3" class="text-end fw-bold">Total</td>
+                                    <td class="text-center fw-bold"><?= $totalquantity ?></td>
                                     <td></td>
                                     <td></td>
-                                    <td class="text-end">$ <?= number_format($total_amount,2) ?></td>
+                                    <td></td>
+                                    <td class="text-end fw-bold">$<?= number_format($total_disc_price, 2) ?></td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
                 </div>
             </div>
-                
+
             <script>
-                $(document).ready(function() {
+                $(document).ready(function () {
                     $('#acct_dtls_tbl').DataTable({
                         language: {
                             emptyTable: "Order Details not found"
@@ -168,10 +152,12 @@ if(isset($_REQUEST['action'])) {
                     });
                 });
             </script>
-
             <?php
+        } else {
+            echo '<p class="text-muted">No order data found for the specified job and PO number.</p>';
         }
     }
+
 
     mysqli_close($conn);
 }
