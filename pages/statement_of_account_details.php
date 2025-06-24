@@ -2,95 +2,24 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Statement of Accounts";
+$page_title = "Account Details";
 
+if(isset($_REQUEST['customer_id'])){
+  $customer_id = $_REQUEST['customer_id'];
+  $customer_details = getCustomerDetails($customer_id);
+}
 ?>
-<style>
-    .dz-preview {
-        position: relative;
-    }
-
-    .dz-remove {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: red;
-        color: white;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-decoration: none;
-        font-weight: bold;
-        font-size: 12px;
-        z-index: 9999;
-        cursor: pointer;
-    }
-
-    .tooltip-inner {
-        background-color: #f8f9fa !important;
-        color: #212529 !important;
-        border: 1px solid #ced4da;
-        font-size: 0.875rem;
-        padding: 6px 10px;
-        border-radius: 0.25rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    .tooltip.bs-tooltip-top .tooltip-arrow::before,
-    .tooltip.bs-tooltip-bottom .tooltip-arrow::before,
-    .tooltip.bs-tooltip-start .tooltip-arrow::before,
-    .tooltip.bs-tooltip-end .tooltip-arrow::before {
-        border-top-color: #f8f9fa !important;
-        border-bottom-color: #f8f9fa !important;
-        border-left-color: #f8f9fa !important;
-        border-right-color: #f8f9fa !important;
-    }
-
-    .select2-container .select2-dropdown .select2-results__options {
-        max-height: 760px !important;
-    }
-
-    .modal.custom-size .modal-dialog {
-        width: 80%;
-        max-width: none;
-        margin: 0 auto;
-        height: 100vh;
-    }
-
-    .modal.custom-size .modal-content {
-        height: 100%;
-        border-radius: 0;
-    }
-
-    .modal.custom-size .modal-body {
-        height: calc(100% - 56px);
-        overflow: hidden;
-    }
-
-    .modal.custom-size iframe {
-        width: 100%;
-        height: 80%;
-        border: none;
-    }
-</style>
 
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
     <div class="card-body px-0">
         <div class="d-flex justify-content-between align-items-center">
         <div><br>
-            <h4 class="font-weight-medium fs-14 mb-0"><?php
-            if(isset($customer_details)){
-                echo "Customer " .$customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'];
-            }
-            ?> <?= $page_title ?></h4>
+            <h4 class="font-weight-medium fs-14 mb-0"><?= $page_title ?></h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                <a class="text-muted text-decoration-none" href="?page=">Home
+                <a class="text-muted text-decoration-none" href="?page=statement_of_account">Home
                 </a>
                 </li>
                 <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
@@ -145,20 +74,6 @@ $page_title = "Statement of Accounts";
         </div>
     </div>
 
-    <div class="modal fade" id="viewOrderModal" tabindex="-1" aria-labelledby="viewOrderModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="viewOrderModalLabel">Order Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="order_modal_content">
-                <p class="text-muted">Loading...</p>
-            </div>
-            </div>
-        </div>
-    </div>
-
     <div class="card card-body">
         <div class="row">
             <div class="col-3">
@@ -166,7 +81,7 @@ $page_title = "Statement of Accounts";
                     Filter <?= $page_title ?>
                 </h3>
                 <div class="position-relative w-100 px-1 mr-0 mb-2">
-                    <input type="text" class="form-control py-2 ps-5" data-filter-name="Customer Name" id="text-srh" placeholder="All Customers">
+                    <input type="text" class="form-control py-2 ps-5" id="text-srh" placeholder="Search">
                     <i class="ti ti-user position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
                 <div class="align-items-center">
@@ -189,25 +104,10 @@ $page_title = "Statement of Accounts";
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control py-0 ps-5 select2 filter-selection" data-filter="tax" data-filter-name="Tax" id="select-tax">
-                            <option value="">All Tax Status</option>
-                            <?php
-                            $query_tax_status = "SELECT * FROM customer_tax WHERE status = 1 ORDER BY tax_status_desc ASC";
-                            $result_tax_status = mysqli_query($conn, $query_tax_status);
-                            while ($row_tax_status = mysqli_fetch_array($result_tax_status)) {
-                                ?>
-                                <option value="<?= $row_tax_status['taxid'] ?>">
-                                (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </select>
-                    </div>
-                    <div class="position-relative w-100 px-1 mb-2">
                         <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="type" data-filter-name="Type of Statement" id="select-type">
                             <option value="">All Types of Statement</option>
-                            <option value="balance">Balance Due</option>
-                            <option value="credit">Credit Available</option>
+                            <option value="deposit">Deposit</option>
+                            <option value="usage">Usage</option>
                         </select>
                     </div>
                     
@@ -221,60 +121,79 @@ $page_title = "Statement of Accounts";
             <div class="col-9">
                 <div id="selected-tags" class="mb-2"></div>
                 <div class="datatables">
+                    <h5 class="fw-bold">Ledger Data for <?= get_customer_name($customer_id) ?></h5>
                     <div class="product-details table-responsive text-wrap">
                         <?php
-                        $sql = "SELECT 
-                                    c.customer_id,
-                                    (
-                                        COALESCE(j.total_credit_available, 0) - COALESCE(j.total_credit_used, 0)
-                                    ) AS net_credit
-                                FROM customer c
-                                LEFT JOIN (
-                                    SELECT 
-                                        j.customer_id, 
-                                        SUM(CASE WHEN l.entry_type = 'deposit' THEN l.amount ELSE 0 END) AS total_credit_available,
-                                        SUM(CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE 0 END) AS total_credit_used
-                                    FROM jobs j
-                                    INNER JOIN job_ledger l ON l.job_id = j.job_id
-                                    GROUP BY j.customer_id
-                                ) j ON j.customer_id = c.customer_id
-                                WHERE c.status = 1
-                                HAVING net_credit != 0";
-                        $result = $conn->query($sql);
+                        $query = "
+                            SELECT 
+                                j.job_id,
+                                l.created_at AS date,
+                                l.description,
+                                j.job_name,
+                                l.po_number,
+                                l.entry_type,
+                                CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE NULL END AS debit,
+                                CASE WHEN l.entry_type = 'deposit' THEN l.amount ELSE NULL END AS credit
+                            FROM jobs j
+                            INNER JOIN job_ledger l ON l.job_id = j.job_id
+                            WHERE j.customer_id = '$customer_id'
+                            ORDER BY l.created_at ASC
+                        ";
+                        $result = mysqli_query($conn, $query);
+                        $balance = 0;
+
+                        if ($result && mysqli_num_rows($result) > 0){
                         ?>
 
-                        <table id="est_list_tbl" class="table table-hover mb-0 text-wrap">
+                        <table id="acct_dtls_tbl" class="table table-hover mb-0 text-wrap">
                             <thead>
                                 <tr>
-                                    <th style="color: #ffffff !important;">Customer</th>
-                                    <th style="color: #ffffff !important;">Amount</th>
-                                    <th style="color: #ffffff !important;" class="text-center">Action</th>
+                                    <th style="color: #ffffff !important;">Date</th>
+                                    <th style="color: #ffffff !important;">Description</th>
+                                    <th style="color: #ffffff !important;">Job</th>
+                                    <th style="color: #ffffff !important;">PO Number</th>
+                                    <th style="color: #ffffff !important;" class="text-end">Debit</th>
+                                    <th style="color: #ffffff !important;" class="text-end">Credit</th>
+                                    <th style="color: #ffffff !important;" class="text-end">Balance</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php while ($row = $result->fetch_assoc()) : ?>
-                                    <?php 
-                                        $amount = floatval($row['net_credit']); 
-                                        $amount_color = $amount < 0 ? 'rgb(255, 21, 21)' : 'green'; 
-                                    ?>
-                                    <tr>
-                                        <td><?= get_customer_name($row['customer_id']) ?></td>
-                                        <td style="color:<?= $amount_color ?> !important;">
-                                            $<?= number_format(abs($amount), 2) ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <a href="?page=statement_of_account_details&customer_id=<?= $row["customer_id"]; ?>" 
-                                                class="btn btn-danger-gradient btn-sm p-0 me-1" 
-                                                data-bs-toggle="tooltip" 
-                                                title="View Details">
-                                                    <i class="text-primary fa fa-eye fs-5"></i>
+                                <?php while ($row = mysqli_fetch_assoc($result)) {
+                                    $job_details = getJobDetails($row['job_id']);
+                                    $debit = $row['debit'] !== null ? floatval($row['debit']) : 0;
+                                    $credit = $row['credit'] !== null ? floatval($row['credit']) : 0;
+
+                                    if ($debit == 0 && $credit == 0) continue;
+
+                                    $balance += ($debit - $credit);
+                                ?>
+                                    <tr
+                                        data-tax="<?= $customer_details['tax_status'] ?>"
+                                        data-month="<?= date('m', strtotime($row['date'])) ?>"
+                                        data-type="<?= $row['entry_type'] ?>"
+                                    >
+                                        <td><?= date('Y-m-d', strtotime($row['date'])) ?></td>
+                                        <td><?= htmlspecialchars($row['description']) ?></td>
+                                        <td><?= htmlspecialchars($row['job_name']) ?></td>
+                                        <td>
+                                            <a href="javascript:void(0);" 
+                                            class="view-order-details" 
+                                            data-job="<?= htmlspecialchars($row['job_name']) ?>" 
+                                            data-po="<?= htmlspecialchars($row['po_number']) ?>">
+                                                <?= htmlspecialchars($row['po_number']) ?>
                                             </a>
                                         </td>
+                                        <td class="text-end"><?= $debit > 0 ? '$' .number_format($debit, 2) : '' ?></td>
+                                        <td class="text-end"><?= $credit > 0 ? '$' .number_format($credit, 2) : '' ?></td>
+                                        <td class="text-end">$<?= number_format($balance, 2) ?></td>
                                     </tr>
-                                <?php endwhile; ?>
+                                <?php } ?>
                             </tbody>
                         </table>
 
+                        <?php
+                        } 
+                        ?>
                     </div>
                 </div>
             </div>
@@ -288,10 +207,7 @@ $page_title = "Statement of Accounts";
     $(document).ready(function() {
         document.title = "<?= $page_title ?>";
 
-        var pdfUrl = '';
-        var isPrinting = false;
-
-        var table = $('#est_list_tbl').DataTable({
+        var table = $('#acct_dtls_tbl').DataTable({
             "order": [[0, "desc"]],
             "pageLength": 100,
             "columnDefs": [
@@ -299,7 +215,7 @@ $page_title = "Statement of Accounts";
             ]
         });
 
-        $('#est_list_tbl_filter').hide();
+        $('#acct_dtls_tbl_filter').hide();
 
         $(".select2").each(function () {
             $(this).select2({
@@ -308,27 +224,23 @@ $page_title = "Statement of Accounts";
             });
         });
 
-        $(document).on('click', '#view_details', function(event) {
+        $(document).on('click', '.view-order-details', function(event) {
             event.preventDefault(); 
-            var customer_id = $(this).data('customer');
+            const jobName = $(this).data('job');
+            const poNumber = $(this).data('po');
+            const customer_id = '<?= $customer_id ?>';
             $.ajax({
-                url: 'pages/statement_of_account_ajax.php',
+                url: 'pages/statement_of_account_details_ajax.php',
                 type: 'POST',
                 data: {
-                    customer_id: customer_id,
-                    action: "fetch_view_modal"
+                    job_name: jobName,
+                    po_number: poNumber,
+                    customer_id : customer_id,
+                    action: "fetch_order_details"
                 },
                 success: function(response) {
+                    console.log(response);
                     $('#viewModalContent').html(response);
-
-                    $('#job_details_tbl').DataTable({
-                        "order": [[0, "desc"]],
-                        "pageLength": 100,
-                        "columnDefs": [
-                            { targets: '_all', orderable: true }
-                        ]
-                    });
-
                     $('#viewModal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {

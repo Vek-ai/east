@@ -997,6 +997,7 @@ if (isset($_POST['save_order'])) {
 
     $credit_amt = floatval($_POST['credit_amt']);
     $cash_amt = floatval($_POST['cash_amt']);
+    $job_id = intval($_POST['job_id']);
     $job_name = mysqli_real_escape_string($conn, $_POST['job_name'] ?? '');
     $job_po = mysqli_real_escape_string($conn, $_POST['job_po'] ?? '');
     $deliver_address = mysqli_real_escape_string($conn, $_POST['deliver_address'] ?? '');
@@ -1089,6 +1090,41 @@ if (isset($_POST['save_order'])) {
 
     if ($conn->query($query) === TRUE) {
         $orderid = $conn->insert_id;
+
+        if ($payment_method == 'job_deposit') {
+            $amount = floatval($cash_amt);
+            $po_number = $job_po;
+            $created_by = $cashierid;
+            $description = 'Materials Purchased';
+            $reference_no = $orderid;
+            $job_id = intval($job_id);
+
+            $insert_ledger = "
+                INSERT INTO job_ledger (
+                    job_id,
+                    entry_type,
+                    amount,
+                    po_number,
+                    reference_no,
+                    description,
+                    created_by,
+                    created_at
+                ) VALUES (
+                    '$job_id',
+                    'usage',
+                    '$amount',
+                    '$po_number',
+                    '$reference_no',
+                    '$description',
+                    '$created_by',
+                    NOW()
+                )
+            ";
+
+            if (!mysqli_query($conn, $insert_ledger)) {
+                echo 'error_ledger_insert';
+            }
+        }
 
         $values = [];
         foreach ($cart as $item) {

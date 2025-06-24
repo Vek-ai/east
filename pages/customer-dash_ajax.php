@@ -183,8 +183,8 @@ if (isset($_POST['search_jobs'])) {
                 <tr>
                     <th class="border-0 ps-0">Job PO #</th>
                     <th class="border-0">Job Name</th>
-                    <th class="border-0">Deposited Amount</th>
-                    <th class="border-0">Materials Purchased</th>
+                    <th class="border-0 text-right">Deposited Amount</th>
+                    <th class="border-0 text-right">Materials Purchased</th>
                     <th class="border-0"></th>
                 </tr>
                 </thead>
@@ -234,10 +234,10 @@ if (isset($_POST['search_jobs'])) {
                                 <h5 class="mb-1 text-center"><?= htmlspecialchars($job_name) ?></h5>
                             </td>
                             <td>
-                                <h5 class="mb-1 text-center">$<?= number_format($deposit_amount, 2) ?></h5>
+                                <h5 class="mb-1 text-right">$<?= number_format(getJobDepositTotal($job_id),2) ?></h5>
                             </td>
                             <td>
-                                <h5 class="mb-1 text-center">$<?= number_format($job_amt, 2) ?></h5>
+                                <h5 class="mb-1 text-right">$<?= number_format(getJobUsageTotal($job_id),2) ?></h5>
                             </td>
                             <td class="text-center">
                                 <a href="?page=job_details&customer_id=<?= $customerid ?>&job_name=<?= urlencode($job_name) ?>"
@@ -1081,18 +1081,28 @@ if (isset($_POST['deposit_job'])) {
     $deposit_amount = floatval($_POST['deposit_amount'] ?? 0);
     $deposited_by = trim($_POST['deposited_by'] ?? '');
     $reference_no = trim($_POST['reference_no'] ?? '');
-    $type = $_POST['type'] ?? '';
+    $payment_method = $_POST['type'] ?? 'cash';
     $check_no = $_POST['check_no'] ?? null;
+    $description = mysqli_real_escape_string($conn, $_POST['description'] ?? 'Job deposit');
 
     $check_query = "SELECT * FROM jobs WHERE job_id = '$job_id'";
     $check_result = mysqli_query($conn, $check_query);
 
     if ($check_result && mysqli_num_rows($check_result) > 0) {
-        $check_no_sql = $type === 'check' ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
+        $check_no_sql = $payment_method === 'check' ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
 
         $insert = "
-            INSERT INTO job_deposits (job_id, deposited_by, reference_no, type, check_no, deposit_amount)
-            VALUES ('$job_id', '" . mysqli_real_escape_string($conn, $deposited_by) . "', '" . mysqli_real_escape_string($conn, $reference_no) . "', '$type', $check_no_sql, '$deposit_amount')
+            INSERT INTO job_ledger (job_id, entry_type, amount, payment_method, check_number, reference_no, description, created_by)
+            VALUES (
+                '$job_id',
+                'deposit',
+                '$deposit_amount',
+                '$payment_method',
+                $check_no_sql,
+                '" . mysqli_real_escape_string($conn, $reference_no) . "',
+                '$description',
+                '" . mysqli_real_escape_string($conn, $deposited_by) . "'
+            )
         ";
 
         if (mysqli_query($conn, $insert)) {
@@ -1111,4 +1121,5 @@ if (isset($_POST['deposit_job'])) {
         echo 'job_not_found';
     }
 }
+
 

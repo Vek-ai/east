@@ -602,6 +602,11 @@ if(isset($_REQUEST['id'])){
                                     <label for="check_no" class="form-label">Check No</label>
                                     <input type="text" class="form-control" id="check_no" name="check_no">
                                 </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                </div>
                             </div>
                         </div>
                     </div>

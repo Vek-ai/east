@@ -10,166 +10,78 @@ require '../includes/send_email.php';
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
-    if ($action == "fetch_balance_modal") {
+    if ($action == "fetch_view_modal") {
         $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
-        $customer_details = getCustomerDetails($customer_id);
-        $query = "SELECT * FROM orders WHERE credit_amt > 0 AND customerid = '$customer_id'";
-        $result = mysqli_query($conn, $query);
-        
-        if ($result && mysqli_num_rows($result) > 0) {
-            $response = array();
-            ?>
-            <div class="card">
-                <div class="card-body datatables">
-                    <h5>Balance Due for <?= get_customer_name($customer_id) ?></h5>
-                    <div class="estimate-details table-responsive text-nowrap">
-                        <table id="balance_due_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
-                            <thead>
-                                <tr>
-                                    <th>Invoice #</th>
-                                    <th>Cashier</th>
-                                    <th>Order Date</th>
-                                    <th class="text-end">Balance Due</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php 
-                                    $ttl_amount_due = 0;
-                                    while ($row = mysqli_fetch_assoc($result)) {
-                                        $orderid = $row['orderid'];
-                                        $amount_due = $row['credit_amt'];
-                                        $ttl_amount_due += $amount_due;
-                                ?> 
-                                <tr> 
-                                    <td><?= $orderid ?></td>
-                                    <td><?= get_staff_name($row['cashier']); ?></td>
-                                    <td><?= date("m d, Y", strtotime($row['order_date'])) ?></td>
-                                    <td class="text-end">$ <?= number_format($amount_due,2) ?></td>
-                                </tr>
-                                <?php
-                                    }
-                                ?>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="3" class="text-end">Total</td>
-                                    <td class="text-end">$ <?= number_format($ttl_amount_due,2) ?></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <?php
-        }
-    } 
-
-    if ($action == "fetch_credit_modal") {
-        $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
-        $customer_details = getCustomerDetails($customer_id);
-
         $query = "
             SELECT 
                 j.job_id,
+                l.created_at AS date,
+                l.description,
                 j.job_name,
-                j.location,
-                j.constructor_name,
-                j.constructor_contact,
-                d.deposit_amount,
-                d.deposited_by,
-                d.reference_no,
-                d.type,
-                d.check_no,
-                d.created_at
+                l.po_number,
+                CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE NULL END AS debit,
+                CASE WHEN l.entry_type = 'deposit' THEN l.amount ELSE NULL END AS credit
             FROM jobs j
-            INNER JOIN job_deposits d ON d.job_id = j.job_id
+            INNER JOIN job_ledger l ON l.job_id = j.job_id
             WHERE j.customer_id = '$customer_id'
-            ORDER BY j.job_id, d.created_at DESC
+            ORDER BY l.created_at ASC
         ";
-        
+
         $result = mysqli_query($conn, $query);
+        $balance = 0;
 
-        if ($result && mysqli_num_rows($result) > 0) {
-            $response = array();
+        if ($result && mysqli_num_rows($result) > 0): ?>
+            <div class="datatables">
+                <div class="product-details table-responsive text-wrap">
+                    <h5 class="fw-bold">Ledger Data for <?= get_customer_name($customer_id) ?></h5>
+                    <table id="job_details_tbl" class="table table-striped table-md text-wrap">
+                        <thead class="bg-primary text-white">
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Job</th>
+                                <th>PO Number</th>
+                                <th class="text-end">Debit</th>
+                                <th class="text-end">Credit</th>
+                                <th class="text-end">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($row = mysqli_fetch_assoc($result)) : 
+                                $job_details = getJobDetails($row['job_id']);
+                                $debit = $row['debit'] !== null ? floatval($row['debit']) : 0;
+                                $credit = $row['credit'] !== null ? floatval($row['credit']) : 0;
 
-            $jobs = [];
-            while ($row = mysqli_fetch_assoc($result)) {
-                $job_id = $row['job_id'];
-                $jobs[$job_id]['info'] = [
-                    'job_name' => $row['job_name'],
-                    'location' => $row['location'],
-                    'constructor_name' => $row['constructor_name'],
-                    'constructor_contact' => $row['constructor_contact']
-                ];
-                $jobs[$job_id]['deposits'][] = $row;
-            }
-            ?>
+                                if ($debit == 0 && $credit == 0) continue;
 
-            <div class="card">
-                <div class="card-body datatables">
-                    <h5>Credit Available for <?= get_customer_name($customer_id) ?></h5>
-
-                    <?php 
-                    $grand_total = 0;
-                    foreach ($jobs as $job_id => $job_data): ?>
-                        <div class="mb-4 border p-3 rounded">
-                            <h5>
-                                <?= $job_data['info']['job_name'] ?>
-                            </h5>
-                            <h6 class="mb-2">
-                                <strong>Contractor:</strong> <?= $job_data['info']['constructor_name'] ?> <br>
-                                <strong>Contact:</strong> <?= $job_data['info']['constructor_contact'] ?>
-                            </h6>
-
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-sm mb-0 w-100">
-                                    <thead>
-                                        <tr>
-                                            <th>Reference No</th>
-                                            <th>Type</th>
-                                            <th>Check No</th>
-                                            <th>Date</th>
-                                            <th class="text-end">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php 
-                                        $job_total = 0;
-                                        foreach ($job_data['deposits'] as $deposit):
-                                            $job_total += floatval($deposit['deposit_amount']);
-                                            $grand_total += floatval($deposit['deposit_amount']);
-                                        ?>
-                                            <tr>
-                                                <td><?= htmlspecialchars($deposit['reference_no']) ?></td>
-                                                <td><?= ucfirst($deposit['type']) ?></td>
-                                                <td><?= $deposit['type'] === 'check' ? $deposit['check_no'] : '-' ?></td>
-                                                <td><?= date('M d, Y', strtotime($deposit['created_at'])) ?></td>
-                                                <td class="text-end">$ <?= number_format($deposit['deposit_amount'], 2) ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <td colspan="4" class="text-end"><strong>Total:</strong></td>
-                                            <td class="text-end"><strong>$ <?= number_format($job_total, 2) ?></strong></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                    <?php if ($grand_total > 0): ?>
-                        <div class="mt-4 text-end border-top pt-3">
-                            <h5 class="text-success">Grand Total Credit: $ <?= number_format($grand_total, 2) ?></h5>
-                        </div>
-                    <?php endif; ?>
+                                $balance += ($debit - $credit);
+                            ?>
+                                <tr>
+                                    <td><?= date('Y-m-d', strtotime($row['date'])) ?></td>
+                                    <td><?= htmlspecialchars($row['description']) ?></td>
+                                    <td><?= htmlspecialchars($row['job_name']) ?></td>
+                                    <td>
+                                        <a href="javascript:void(0);" 
+                                        class="view-order-details" 
+                                        data-job="<?= htmlspecialchars($row['job_name']) ?>" 
+                                        data-po="<?= htmlspecialchars($row['po_number']) ?>">
+                                            <?= htmlspecialchars($row['po_number']) ?>
+                                        </a>
+                                    </td>
+                                    <td class="text-end"><?= $debit > 0 ? '$' .number_format($debit, 2) : '' ?></td>
+                                    <td class="text-end"><?= $credit > 0 ? '$' .number_format($credit, 2) : '' ?></td>
+                                    <td class="text-end">$<?= number_format($balance, 2) ?></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <?php
-        }
+        <?php else: ?>
+            <p class="text-muted">No ledger records found for this customer.</p>
+        <?php endif;
     }
 
-    
     mysqli_close($conn);
 }
 ?>

@@ -1357,15 +1357,27 @@ function getOrderDateByProductId($productId) {
     }
 }
 
+function getJobDetails($job_id) {
+    global $conn;
+    $job_id = mysqli_real_escape_string($conn, $job_id);
+    $query = "SELECT * FROM jobs WHERE job_id = '$job_id'";
+    $result = mysqli_query($conn, $query);
+    $jobs = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $jobs = $row;
+    }
+    return $jobs;
+}
+
 function getJobDepositTotal($job_id) { 
     global $conn;
 
     $job_id = intval($job_id);
     $total = 0;
 
-    $sql = "SELECT SUM(deposit_amount) AS total_deposit 
-            FROM job_deposits 
-            WHERE job_id = $job_id";
+    $sql = "SELECT SUM(amount) AS total_deposit 
+            FROM job_ledger 
+            WHERE job_id = $job_id AND entry_type = 'deposit'";
 
     $result = mysqli_query($conn, $sql);
 
@@ -1374,6 +1386,29 @@ function getJobDepositTotal($job_id) {
     }
 
     return $total;
+}
+
+function getJobUsageTotal($job_id) { 
+    global $conn;
+
+    $job_id = intval($job_id);
+    $total = 0;
+
+    $sql = "SELECT SUM(amount) AS total_usage 
+            FROM job_ledger 
+            WHERE job_id = $job_id AND entry_type = 'usage'";
+
+    $result = mysqli_query($conn, $sql);
+
+    if ($result && $row = mysqli_fetch_assoc($result)) {
+        $total = floatval($row['total_usage']);
+    }
+
+    return $total;
+}
+
+function getJobBalance($job_id) {
+    return getJobDepositTotal($job_id) - getJobUsageTotal($job_id);
 }
 
 ?>

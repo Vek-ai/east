@@ -3949,6 +3949,17 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             });
         });
 
+        $(document).on('change', '#pay_via_job_deposit', function () {
+            if ($(this).is(':checked')) {
+                $('[name="payMethod"]').prop('checked', false);
+            }
+        });
+
+        $(document).on('change', '[name="payMethod"]', function () {
+            $('#pay_via_job_deposit').prop('checked', false);
+        });
+
+
         $(document).on('click', '#save_order', function(event) {
             event.preventDefault();
             var discount = $('#order_discount').val();
@@ -3956,6 +3967,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var cash_amt = $('#payable_amt').val();
             var credit_amt = 0;
             var job_name = $('#order_job_name').val();
+            var job_id = $('#order_job_name option:selected').data('job-id');
             var job_po = $('#order_job_po').val();
             var deliver_address = $('#order_deliver_address').val();
             var deliver_city = $('#order_deliver_city').val();
@@ -3966,6 +3978,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var applyStoreCredit = $('#applyStoreCredit').is(':checked') ? $('#applyStoreCredit').val() : 0;
 
             var payment_method = $('[name="payMethod"]').val();
+            payment_method = $('#pay_via_job_deposit').is(':checked') ? 'job_deposit' : payment_method;
 
             if(payment_method){
                 $.ajax({
@@ -3976,6 +3989,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         credit_amt: credit_amt,
                         discount: discount,
                         delivery_amt: delivery_amt,
+                        job_id: job_id,
                         job_name: job_name,
                         job_po: job_po,
                         deliver_address: deliver_address,

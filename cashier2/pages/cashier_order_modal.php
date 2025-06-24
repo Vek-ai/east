@@ -313,10 +313,14 @@ if(isset($_POST['fetch_order'])){
                                     $query_job_name = "SELECT * FROM jobs WHERE customer_id = '$customer_id'";
                                     $result_job_name = mysqli_query($conn, $query_job_name);
                                     while ($row_job_name = mysqli_fetch_array($result_job_name)) {
+                                        $job_id = $row_job_name['job_id'];
                                     ?>
                                         <option value="<?= $row_job_name['job_name']; ?>" 
                                                 data-constructor="<?= htmlspecialchars($row_job_name['constructor_name']); ?>" 
-                                                data-constructor-contact="<?= htmlspecialchars($row_job_name['constructor_contact']); ?>">
+                                                data-constructor-contact="<?= htmlspecialchars($row_job_name['constructor_contact']); ?>"
+                                                data-credit="<?= htmlspecialchars(getJobBalance($job_id)); ?>"
+                                                data-job-id="<?= $job_id ?>"
+                                                >
                                             <?= htmlspecialchars($row_job_name['job_name']); ?>
                                         </option>
                                     <?php } ?>
@@ -348,11 +352,23 @@ if(isset($_POST['fetch_order'])){
                                 </div>
                             </div>
 
-                            <div class="mb-2">
+                            <div class="mb-3">
                                 <strong>Contractor Cell Phone:</strong>
                                 <input type="text" class="form-control" id="constructor_contact">
                             </div>
                         </div>
+
+                        
+                        <div class="col-md-8 mb-3 d-none align-items-end">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="pay_via_job_deposit" name="pay_via_job_deposit">
+                                <label class="form-check-label" for="pay_via_job_deposit">
+                                    Pay via Job Deposit 
+                                    <span id="job_credit_balance" class="text-success fw-semibold ms-1"></span>
+                                </label>
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
@@ -731,13 +747,26 @@ if(isset($_POST['fetch_order'])){
                     $('#order_job_name').val(null).trigger('change');
                     $('#constructor_name').val('');
                     $('#constructor_contact').val('');
+                    $('#pay_via_job_deposit').prop('checked', false);
+                    $('#pay_via_job_deposit').closest('.col-md-8').addClass('d-none');
+                    $('#job_credit_balance').text('');
                 } else {
                     const selectedOption = $(this).find('option[value="' + selectedValue + '"]');
                     const constructorName = selectedOption.data('constructor') || '';
                     const constructorContact = selectedOption.data('constructor-contact') || '';
+                    const jobBalance = parseFloat(selectedOption.data('credit')) || 0;
 
                     $('#constructor_name').val(constructorName);
                     $('#constructor_contact').val(constructorContact);
+
+                    if (jobBalance > 0) {
+                        $('#pay_via_job_deposit').closest('.col-md-8').removeClass('d-none');
+                        $('#job_credit_balance').text(`(Credit Available: $${jobBalance.toFixed(2)})`);
+                    } else {
+                        $('#pay_via_job_deposit').prop('checked', false);
+                        $('#pay_via_job_deposit').closest('.col-md-8').addClass('d-none');
+                        $('#job_credit_balance').text('');
+                    }
                 }
             });
 
