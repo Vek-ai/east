@@ -14,21 +14,17 @@ if(isset($_REQUEST['action'])) {
         $job_name = mysqli_real_escape_string($conn, $_POST['job_name']);
         $po_number = mysqli_real_escape_string($conn, $_POST['po_number']);
         $customer_id = intval($_POST['customer_id']);
+        $orderid = intval($_POST['orderid']);
 
         $query = "
-            SELECT * 
-            FROM order_product op 
-            LEFT JOIN orders o ON op.orderid = o.orderid  
-            WHERE o.job_name = '$job_name' 
-            AND o.job_po = '$po_number'
-            AND o.customerid = '$customer_id'
+            SELECT * FROM order_product WHERE orderid = '$orderid' 
         ";
         $result = mysqli_query($conn, $query);
 
         if ($result && mysqli_num_rows($result) > 0) {
             $first_row = mysqli_fetch_assoc($result);
             $orderid = $first_row['orderid'];
-            mysqli_data_seek($result, 0); // Reset pointer
+            mysqli_data_seek($result, 0);
             $order_details = getOrderDetails($orderid);
 
             $totalquantity = $total_actual_price = $total_disc_price = $total_amount = 0;

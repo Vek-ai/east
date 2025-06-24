@@ -132,6 +132,7 @@ if(isset($_REQUEST['customer_id'])){
                                 j.job_name,
                                 l.po_number,
                                 l.entry_type,
+                                l.reference_no as orderid,
                                 CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE NULL END AS debit,
                                 CASE WHEN l.entry_type = 'deposit' THEN l.amount ELSE NULL END AS credit
                             FROM jobs j
@@ -179,7 +180,8 @@ if(isset($_REQUEST['customer_id'])){
                                             <a href="javascript:void(0);" 
                                             class="view-order-details" 
                                             data-job="<?= htmlspecialchars($row['job_name']) ?>" 
-                                            data-po="<?= htmlspecialchars($row['po_number']) ?>">
+                                            data-po="<?= htmlspecialchars($row['po_number']) ?>"
+                                            data-orderid="<?= htmlspecialchars($row['orderid']) ?>">
                                                 <?= htmlspecialchars($row['po_number']) ?>
                                             </a>
                                         </td>
@@ -230,6 +232,7 @@ if(isset($_REQUEST['customer_id'])){
             event.preventDefault(); 
             const jobName = $(this).data('job');
             const poNumber = $(this).data('po');
+            const orderid = $(this).data('orderid');
             const customer_id = '<?= $customer_id ?>';
             $.ajax({
                 url: 'pages/statement_of_account_details_ajax.php',
@@ -238,6 +241,7 @@ if(isset($_REQUEST['customer_id'])){
                     job_name: jobName,
                     po_number: poNumber,
                     customer_id : customer_id,
+                    orderid: orderid,
                     action: "fetch_order_details"
                 },
                 success: function(response) {
