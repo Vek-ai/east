@@ -1067,10 +1067,6 @@ if (isset($_POST['save_order'])) {
         $new_store_credit = $store_credit - $credit_to_apply;
         $final_cash_amt = $cash_amt - $credit_to_apply;
 
-        $customer_id = intval($customer_details['id']);
-        $update_sql = "UPDATE customer SET store_credit = $new_store_credit WHERE customer_id = $customerid";
-        $conn->query($update_sql);
-
         $cash_amt = $final_cash_amt;
     }
 
@@ -1084,6 +1080,28 @@ if (isset($_POST['save_order'])) {
 
     if ($conn->query($query) === TRUE) {
         $orderid = $conn->insert_id;
+
+        if ($applyStoreCredit) {
+            $update_sql = "UPDATE customer SET store_credit = $new_store_credit WHERE customer_id = $customerid";
+            if (!mysqli_query($conn, $update_sql)) {
+                $response['error'] = 'Update Error: ' . mysqli_error($conn);
+            }
+
+            $insert_sql = "
+                INSERT INTO store_credit_history (customer_id, credit_amount, credit_type, reference_type, reference_id, created_at)
+                VALUES (
+                    $customerid,
+                    $credit_to_apply,
+                    'use',
+                    'order',
+                    $orderid,
+                    NOW()
+                )
+            ";
+            if (!mysqli_query($conn, $insert_sql)) {
+                $response['error'] = 'Ledger Insert Error: ' . mysqli_error($conn);
+            }
+        }
 
         if ($pay_type == 'delivery' || $pay_type == 'pickup') {
             $amount = floatval($credit_amt);
@@ -1859,11 +1877,28 @@ if (isset($_POST['return_product'])) {
         $insert_query = "INSERT INTO product_returns 
                          (orderid, productid, status, quantity, custom_color, custom_width, custom_height, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, usageid, stock_fee)
                          VALUES 
-                         ('{$order['orderid']}', '{$order['productid']}', 4, '$quantity', '{$order['custom_color']}', '{$order['custom_width']}', '{$order['custom_height']}', 
-                          '{$order['custom_bend']}', '{$order['custom_hem']}', '{$order['custom_length']}', '{$order['custom_length2']}', '{$order['actual_price']}', 
-                          '{$order['discounted_price']}', '{$order['product_category']}', '{$order['usageid']}', '$stock_fee_percent')";
-        
+                         (
+                            '{$order['orderid']}', 
+                            '{$order['productid']}', 
+                            4, 
+                            '$quantity', 
+                            '{$order['custom_color']}', 
+                            '{$order['custom_width']}', 
+                            '{$order['custom_height']}', 
+                            '{$order['custom_bend']}', 
+                            '{$order['custom_hem']}', 
+                            '{$order['custom_length']}', 
+                            '{$order['custom_length2']}', 
+                            '{$order['actual_price']}', 
+                            '{$order['discounted_price']}', 
+                            '{$order['product_category']}', 
+                            '{$order['usageid']}', 
+                            '$stock_fee_percent'
+                         )";
+
         if (mysqli_query($conn, $insert_query)) {
+            $return_id = mysqli_insert_id($conn);
+
             $new_quantity = $available_quantity - $quantity;
             $update_query = "UPDATE order_product SET quantity = '$new_quantity' WHERE id = '$id'";
             mysqli_query($conn, $update_query);
@@ -1879,8 +1914,30 @@ if (isset($_POST['return_product'])) {
                 $amount_returned = $amount - $stock_fee;
 
                 $customer_id = $order['originalcustomerid'];
+
                 $update_credit_query = "UPDATE customer SET store_credit = store_credit + $amount_returned WHERE customer_id = '$customer_id'";
                 mysqli_query($conn, $update_credit_query);
+
+                $insert_credit_history = "
+                    INSERT INTO store_credit_history (
+                        customer_id,
+                        credit_amount,
+                        credit_type,
+                        reference_type,
+                        reference_id,
+                        description,
+                        created_at
+                    ) VALUES (
+                        '$customer_id',
+                        $amount_returned,
+                        'add',
+                        'product_return',
+                        $return_id,
+                        'Refund (return over 90 days, less stock fee)',
+                        NOW()
+                    )
+                ";
+                mysqli_query($conn, $insert_credit_history);
             }
 
             setOrderTotals($order['orderid']);

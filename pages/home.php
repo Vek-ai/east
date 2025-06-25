@@ -581,6 +581,145 @@ $reorder_level = 1;
     </div>
   </div>
 
+  <div class="col-lg-6">
+    <div class="card h-100 my-3">
+      <div class="card-body mt-3">
+        <div class="d-flex align-items-center flex-wrap mb-9">
+          <div class="w-100">
+            <h3 class="card-title">Store Credit History</h3>
+            <div class="ms-auto align-self-center">
+              <div class="datatables">
+                <div class="table-responsive">
+                  <table id="store_credit_tbl" class="table search-table table-sm align-middle text-wrap text-center">
+                    <thead class="header-item">
+                      <tr>
+                        <th class="text-center">Customer</th>
+                        <th class="text-center">Amount</th>
+                        <th class="text-center">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php
+                      $query = "SELECT customer_id, credit_amount, credit_type, created_at, reference_id as orderid FROM store_credit_history ORDER BY created_at DESC";
+                      $result = mysqli_query($conn, $query);
+
+                      if ($result && mysqli_num_rows($result) > 0) {
+                          while ($row = mysqli_fetch_assoc($result)) {
+                              $amount = number_format(abs($row['credit_amount']), 2);
+                              $sign = $row['credit_type'] == 'add' ? '+' : '-';
+                              $color = $row['credit_type'] == 'add' ? 'green' : 'red';
+                              $orderid = $row['orderid'];
+                              ?>
+                              <tr>
+                                <td><?= get_customer_name($row['customer_id']) ?></td>
+                                <td style="color:<?= $color ?> !important"><strong><?= $sign . ' $' . $amount ?></strong></td>
+                                <td><?= date('F d, Y', strtotime($row['created_at'])) ?></td>
+                              </tr>
+                              <?php
+                          }
+                      } else {
+                          ?>
+                          <tr>
+                            <td colspan="4" class="text-center">No credit history found.</td>
+                          </tr>
+                          <?php
+                      }
+                      ?>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-centered" style="width:90% !important">
+          <div class="modal-content">
+          <div class="modal-header align-items-center modal-colored-header">
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <div id="viewModalContent">
+
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+                  Close
+              </button>
+          </div>
+          </div>
+      </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card h-100 my-3">
+      <div class="card-body mt-3">
+        <div class="d-flex align-items-center flex-wrap mb-9">
+          <div class="w-100">
+            <h3 class="card-title">Job Ledger History</h3>
+            <div class="ms-auto align-self-center">
+              <div class="datatables">
+                <div class="table-responsive">
+                  <table id="job_ledger_tbl" class="table search-table table-sm align-middle text-wrap text-center">
+                    <thead class="header-item">
+                      <tr>
+                        <th class="text-center">Customer</th>
+                        <th class="text-center">Job</th>
+                        <th class="text-center">Amount</th>
+                        <th class="text-center">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php
+                      $query = "SELECT ledger_id, job_id, amount, entry_type, created_at FROM job_ledger WHERE entry_type IN ('deposit', 'usage') ORDER BY created_at DESC";
+                      $result = mysqli_query($conn, $query);
+
+                      if ($result && mysqli_num_rows($result) > 0) {
+                          while ($row = mysqli_fetch_assoc($result)) {
+                              $job_id = $row['job_id'];
+                              $job_details = getJobDetails($job_id);
+                              $customer_id = $job_details['customer_id'];
+                              $customer_name = get_customer_name($customer_id);
+                              $job_name = $job_details['job_name'];
+                              $amount = number_format(abs($row['amount']), 2);
+                              $type = $row['entry_type'];
+                              $color = $type == 'deposit' ? 'green' : 'red';
+                              $sign = $type == 'deposit' ? '+' : '-';
+                              $ledger_id = $row['ledger_id'];
+                              ?>
+                              <tr>
+                                <td><?= $customer_name ?></td>
+                                <td><?= $job_name ?></td>
+                                <td style="color:<?= $color ?> !important"><strong><?= $sign . ' $' . $amount ?></strong></td>
+                                <td><?= date('F d, Y', strtotime($row['created_at'])) ?></td>
+                              </tr>
+                              <?php
+                          }
+                      } else {
+                          ?>
+                          <tr>
+                            <td colspan="4" class="text-center">No ledger records found.</td>
+                          </tr>
+                          <?php
+                      }
+                      ?>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <div class="col-lg-6 col-md-12">
     <!-- Column -->
     <div class="card earning-widget my-5">
@@ -1417,6 +1556,18 @@ $(document).ready(function() {
             [10, 25, 50, 100],
             [10, 25, 50, 100]
         ],
+        "dom": 'lftp',
+    });
+
+    var store_credit_tbl = $('#store_credit_tbl').DataTable({
+        "order": [[2, "asc"]],
+        "pageLength": 5,
+        "dom": 'lftp',
+    });
+
+    var job_ledger_tbl = $('#job_ledger_tbl').DataTable({
+        "order": [[3, "asc"]],
+        "pageLength": 5,
         "dom": 'lftp',
     });
 
