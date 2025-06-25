@@ -1116,7 +1116,7 @@ if (isset($_POST['save_order'])) {
             ";
 
             if (!mysqli_query($conn, $insert_ledger)) {
-                echo 'error_ledger_insert';
+                $response['error'] = 'Ledger Insert Error: ' . mysqli_error($conn);
             }
         }else{
             $amount = floatval($cash_amt);
@@ -1149,7 +1149,7 @@ if (isset($_POST['save_order'])) {
             ";
 
             if (!mysqli_query($conn, $insert_ledger)) {
-                echo 'error_ledger_insert';
+                $response['error'] = 'Ledger Insert Error: ' . mysqli_error($conn);
             }
         }
 
