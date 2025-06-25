@@ -1007,7 +1007,7 @@ if (isset($_POST['save_order'])) {
     $delivery_amt = mysqli_real_escape_string($conn, $_POST['delivery_amt'] ?? '');
     $deliver_fname = mysqli_real_escape_string($conn, $_POST['deliver_fname'] ?? '');
     $deliver_lname = mysqli_real_escape_string($conn, $_POST['deliver_lname'] ?? '');
-    $payment_method = mysqli_real_escape_string($conn, $_POST['payment_method'] ?? '');
+    $pay_type = mysqli_real_escape_string($conn, $_POST['payment_method'] ?? '');
     if (!isset($_SESSION['customer_id']) || empty($_SESSION['cart'])) {
         $response['error'] = "Customer ID or cart is not set.";
         echo json_encode($response);
@@ -1074,18 +1074,18 @@ if (isset($_POST['save_order'])) {
         $cash_amt = $final_cash_amt;
     }
 
-    if ($payment_method == 'credit') {
+    if ($pay_type == 'delivery' || $pay_type == 'pickup') {
         $credit_amt = $cash_amt;
         $cash_amt = 0;
     }
 
-    $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_fname, deliver_lname) 
-              VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt' , '$deliver_fname' , '$deliver_lname')";
+    $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_fname, deliver_lname, pay_type) 
+              VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt' , '$deliver_fname' , '$deliver_lname', '$pay_type')";
 
     if ($conn->query($query) === TRUE) {
         $orderid = $conn->insert_id;
 
-        if ($payment_method == 'credit') {
+        if ($pay_type == 'delivery' || $pay_type == 'pickup') {
             $amount = floatval($credit_amt);
             $po_number = $job_po;
             $created_by = $cashierid;

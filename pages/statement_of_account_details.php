@@ -146,13 +146,14 @@ if(isset($_REQUEST['customer_id'])){
                         if ($result && mysqli_num_rows($result) > 0){
                         ?>
 
-                        <table id="acct_dtls_tbl" class="table table-hover mb-0 text-wrap">
+                        <table id="acct_dtls_tbl" class="table table-hover mb-0 text-wrap text-center">
                             <thead>
                                 <tr>
                                     <th style="color: #ffffff !important;">Date</th>
                                     <th style="color: #ffffff !important;">Description</th>
                                     <th style="color: #ffffff !important;">Job</th>
                                     <th style="color: #ffffff !important;">PO Number</th>
+                                    <th style="color: #ffffff !important;">Type of Payment</th>
                                     <th style="color: #ffffff !important;" class="text-end">Payments</th>
                                     <th style="color: #ffffff !important;" class="text-end">Credit</th>
                                     <th style="color: #ffffff !important;" class="text-end">Balance</th>
@@ -161,6 +162,8 @@ if(isset($_REQUEST['customer_id'])){
                             <tbody>
                                 <?php while ($row = mysqli_fetch_assoc($result)) {
                                     $job_details = getJobDetails($row['job_id']);
+                                    $order_id = $row['orderid'];
+                                    $order_details = getOrderDetails($order_id);
                                     $payments = $row['payments'] !== null ? floatval($row['payments']) : 0;
                                     $credit = $row['credit'] !== null ? floatval($row['credit']) : 0;
 
@@ -181,10 +184,11 @@ if(isset($_REQUEST['customer_id'])){
                                             class="view-order-details" 
                                             data-job="<?= htmlspecialchars($row['job_name']) ?>" 
                                             data-po="<?= htmlspecialchars($row['po_number']) ?>"
-                                            data-orderid="<?= htmlspecialchars($row['orderid']) ?>">
+                                            data-orderid="<?= htmlspecialchars($order_id) ?>">
                                                 <?= htmlspecialchars($row['po_number']) ?>
                                             </a>
                                         </td>
+                                        <td><?= ucwords($order_details['pay_type']) ?></td>
                                         <td class="text-end"><?= $payments > 0 ? '$' .number_format($payments, 2) : '' ?></td>
                                         <td class="text-end"><?= $credit > 0 ? '$' .number_format($credit, 2) : '' ?></td>
                                         <td class="text-end">

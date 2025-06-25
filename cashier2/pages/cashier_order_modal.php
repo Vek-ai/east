@@ -459,19 +459,9 @@ if(isset($_POST['fetch_order'])){
                     <i class="fa fa-check-circle text-success me-2"></i>Pickup Details Payment
                     </div>
                     <div class="card-body">
-
-                    <div class="mb-3 text-white">
-                        <label class="form-label fw-bold">Select Transaction Type</label><br>
-                        <select class="form-select w-auto d-inline-block" name="transactionType" id="transactionType">
-                            <option value="" selected hidden>Select Transaction Type...</option>
-                            <option value="payment">Payment</option>
-                            <option value="credit">Credit</option>
-                        </select>
-                    </div>
                     
                     <div class="mb-3 text-white">
-                        
-                        <div id="paymentOptions" class="d-none">
+                        <div id="paymentOptions">
                             <label class="form-label fw-bold">Select Payment Method</label><br>
 
                             <div class="form-check form-check-inline">
@@ -517,17 +507,6 @@ if(isset($_POST['fetch_order'])){
                                     </label>
                                 </div>
                             <?php endif; ?>
-                        </div>
-
-                        <div class="d-none" id="payCreditWrapper">
-                            <label class="form-label fw-bold">Select Payment Method</label><br>
-
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payCredit" value="credit">
-                                <label class="form-check-label" for="payCredit">
-                                <i class="fa-brands fa-cc-visa me-1"></i>Credit Account
-                                </label>
-                            </div>
                         </div>
                     </div>
                     <?php if (floatval($customer_details['store_credit']) > 0): ?>
@@ -586,7 +565,7 @@ if(isset($_POST['fetch_order'])){
                     
                     <div class="d-flex justify-content-between">
                         <strong>Estimated Total</strong>
-                        <p>$<strong id="order_total"><?= number_format((floatval($total_customer_price)), 2) ?></strong></p>
+                        <p>$<strong id="order_total"><?= number_format($total_customer_price, 2) ?></strong></p>
                     </div>
                     <button class="btn btn-success w-100 mt-3" id="save_order">Place Order</button>
                     <p class="mt-2 text-center small">
@@ -881,23 +860,6 @@ if(isset($_POST['fetch_order'])){
                     });
                 }
             });
-
-            function togglePaymentOptions() {
-                const transactionType = $('#transactionType').val();
-
-                $('#paymentOptions').addClass('d-none');
-                $('#payCreditWrapper').addClass('d-none');
-                $('input[name="payMethod"]').prop('checked', false);
-                $('#pay_via_job_deposit').prop('checked', false);
-
-                if (transactionType === 'payment') {
-                    $('#paymentOptions').removeClass('d-none');
-                } else if (transactionType === 'credit') {
-                    $('#payCreditWrapper').removeClass('d-none');
-                }
-            }
-
-            $('#transactionType').on('change', togglePaymentOptions);
 
         });
     </script>

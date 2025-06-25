@@ -1297,7 +1297,14 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         $('#delivery_amt').val(deliveryAmount).trigger('change');
         $('#order_delivery_amt').text(deliveryAmount.toFixed(2));
-        $('#order_total').text(total_amt);
+        $('#order_total').text(number_format(total_amt));
+    }
+
+    function number_format(number) {
+        return parseFloat(number).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
 
 
