@@ -4023,12 +4023,12 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                             $('#save_estimate').addClass('d-none');
                             $('#prev_page_order').addClass('d-none');
                         } else if (response.error) {
-                            alert("Error: " + response.error);
+                            console.log("Error: " + response);
                         }
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         console.log('Response Text: ' + jqXHR.responseText);
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                        console.log('Error: ' + textStatus + ' - ' + errorThrown);
                     }
                 });
             }else{
