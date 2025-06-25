@@ -1074,15 +1074,9 @@ if (isset($_POST['save_order'])) {
         $cash_amt = $final_cash_amt;
     }
 
-    if ($payment_method == 'delivery' || $payment_method == 'pickup') {
+    if ($payment_method == 'credit') {
         $credit_amt = $cash_amt;
         $cash_amt = 0;
-
-        $update_sql = "UPDATE customer 
-                    SET balance_due = balance_due + $credit_amt 
-                    WHERE customer_id = '$customer_id'";
-
-        mysqli_query($conn, $update_sql);
     }
 
     $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_fname, deliver_lname) 
@@ -1091,7 +1085,40 @@ if (isset($_POST['save_order'])) {
     if ($conn->query($query) === TRUE) {
         $orderid = $conn->insert_id;
 
-        if ($payment_method == 'job_deposit') {
+        if ($payment_method == 'credit') {
+            $amount = floatval($credit_amt);
+            $po_number = $job_po;
+            $created_by = $cashierid;
+            $description = 'Materials Purchased';
+            $reference_no = $orderid;
+            $job_id = intval($job_id);
+
+            $insert_ledger = "
+                INSERT INTO job_ledger (
+                    job_id,
+                    entry_type,
+                    amount,
+                    po_number,
+                    reference_no,
+                    description,
+                    created_by,
+                    created_at
+                ) VALUES (
+                    '$job_id',
+                    'credit',
+                    '$amount',
+                    '$po_number',
+                    '$reference_no',
+                    '$description',
+                    '$created_by',
+                    NOW()
+                )
+            ";
+
+            if (!mysqli_query($conn, $insert_ledger)) {
+                echo 'error_ledger_insert';
+            }
+        }else{
             $amount = floatval($cash_amt);
             $po_number = $job_po;
             $created_by = $cashierid;

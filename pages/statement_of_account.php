@@ -2,6 +2,10 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
+
 $page_title = "Statement of Accounts";
 
 ?>
@@ -224,22 +228,21 @@ $page_title = "Statement of Accounts";
                     <div class="product-details table-responsive text-wrap">
                         <?php
                         $sql = "SELECT 
-                                    c.customer_id,
-                                    (
-                                        COALESCE(j.total_credit_available, 0) - COALESCE(j.total_credit_used, 0)
-                                    ) AS net_credit
+                                    total_credit,
+                                    total_payments,
+                                    c.customer_id
                                 FROM customer c
                                 LEFT JOIN (
                                     SELECT 
                                         j.customer_id, 
-                                        SUM(CASE WHEN l.entry_type = 'deposit' THEN l.amount ELSE 0 END) AS total_credit_available,
-                                        SUM(CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE 0 END) AS total_credit_used
+                                        SUM(CASE WHEN l.entry_type = 'credit' THEN l.amount ELSE 0 END) AS total_credit,
+                                        SUM(CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE 0 END) AS total_payments
                                     FROM jobs j
                                     INNER JOIN job_ledger l ON l.job_id = j.job_id
                                     GROUP BY j.customer_id
                                 ) j ON j.customer_id = c.customer_id
                                 WHERE c.status = 1
-                                HAVING net_credit != 0";
+                                HAVING total_credit > 0 OR total_payments > 0";
                         $result = $conn->query($sql);
                         ?>
 
@@ -247,20 +250,24 @@ $page_title = "Statement of Accounts";
                             <thead>
                                 <tr>
                                     <th style="color: #ffffff !important;">Customer</th>
-                                    <th style="color: #ffffff !important;">Amount</th>
+                                    <th style="color: #ffffff !important;">Total Payments</th>
+                                    <th style="color: #ffffff !important;">Total Credit</th>
                                     <th style="color: #ffffff !important;" class="text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php while ($row = $result->fetch_assoc()) : ?>
                                     <?php 
-                                        $amount = floatval($row['net_credit']); 
-                                        $amount_color = $amount < 0 ? 'rgb(255, 21, 21)' : 'green'; 
+                                        $total_payments = floatval($row['total_payments']); 
+                                        $total_credit = floatval($row['total_credit']); 
                                     ?>
                                     <tr>
                                         <td><?= get_customer_name($row['customer_id']) ?></td>
-                                        <td style="color:<?= $amount_color ?> !important;">
-                                            $<?= number_format(abs($amount), 2) ?>
+                                        <td style="color:green !important;">
+                                            $<?= number_format(abs($total_payments), 2) ?>
+                                        </td>
+                                        <td style="color:rgb(255, 21, 21) !important;">
+                                            $<?= number_format(abs($total_credit), 2) ?>
                                         </td>
                                         <td class="text-center">
                                             <a href="?page=statement_of_account_details&customer_id=<?= $row["customer_id"]; ?>" 

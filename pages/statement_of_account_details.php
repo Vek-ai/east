@@ -133,8 +133,8 @@ if(isset($_REQUEST['customer_id'])){
                                 l.po_number,
                                 l.entry_type,
                                 l.reference_no as orderid,
-                                CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE NULL END AS debit,
-                                CASE WHEN l.entry_type = 'deposit' THEN l.amount ELSE NULL END AS credit
+                                CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE NULL END AS payments,
+                                CASE WHEN l.entry_type = 'credit' THEN l.amount ELSE NULL END AS credit
                             FROM jobs j
                             INNER JOIN job_ledger l ON l.job_id = j.job_id
                             WHERE j.customer_id = '$customer_id'
@@ -153,7 +153,7 @@ if(isset($_REQUEST['customer_id'])){
                                     <th style="color: #ffffff !important;">Description</th>
                                     <th style="color: #ffffff !important;">Job</th>
                                     <th style="color: #ffffff !important;">PO Number</th>
-                                    <th style="color: #ffffff !important;" class="text-end">Debit</th>
+                                    <th style="color: #ffffff !important;" class="text-end">Payments</th>
                                     <th style="color: #ffffff !important;" class="text-end">Credit</th>
                                     <th style="color: #ffffff !important;" class="text-end">Balance</th>
                                 </tr>
@@ -161,12 +161,12 @@ if(isset($_REQUEST['customer_id'])){
                             <tbody>
                                 <?php while ($row = mysqli_fetch_assoc($result)) {
                                     $job_details = getJobDetails($row['job_id']);
-                                    $debit = $row['debit'] !== null ? floatval($row['debit']) : 0;
+                                    $payments = $row['payments'] !== null ? floatval($row['payments']) : 0;
                                     $credit = $row['credit'] !== null ? floatval($row['credit']) : 0;
 
-                                    if ($debit == 0 && $credit == 0) continue;
+                                    if ($payments == 0 && $credit == 0) continue;
 
-                                    $balance += ($debit - $credit);
+                                    $balance += ($payments - $credit);
                                 ?>
                                     <tr
                                         data-tax="<?= $customer_details['tax_status'] ?>"
@@ -185,7 +185,7 @@ if(isset($_REQUEST['customer_id'])){
                                                 <?= htmlspecialchars($row['po_number']) ?>
                                             </a>
                                         </td>
-                                        <td class="text-end"><?= $debit > 0 ? '$' .number_format($debit, 2) : '' ?></td>
+                                        <td class="text-end"><?= $payments > 0 ? '$' .number_format($payments, 2) : '' ?></td>
                                         <td class="text-end"><?= $credit > 0 ? '$' .number_format($credit, 2) : '' ?></td>
                                         <td class="text-end">
                                             <?= ($balance < 0 ? '- $' : '$') . number_format(abs($balance), 2) ?>

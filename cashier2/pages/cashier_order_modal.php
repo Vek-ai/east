@@ -459,53 +459,76 @@ if(isset($_POST['fetch_order'])){
                     <i class="fa fa-check-circle text-success me-2"></i>Pickup Details Payment
                     </div>
                     <div class="card-body">
+
+                    <div class="mb-3 text-white">
+                        <label class="form-label fw-bold">Select Transaction Type</label><br>
+                        <select class="form-select w-auto d-inline-block" name="transactionType" id="transactionType">
+                            <option value="" selected hidden>Select Transaction Type...</option>
+                            <option value="payment">Payment</option>
+                            <option value="credit">Credit</option>
+                        </select>
+                    </div>
                     
                     <div class="mb-3 text-white">
-                        <label class="form-label fw-bold">Select Payment Method</label><br>
+                        
+                        <div id="paymentOptions" class="d-none">
+                            <label class="form-label fw-bold">Select Payment Method</label><br>
 
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="payMethod" id="payPickup" value="pickup">
-                            <label class="form-check-label" for="payPickup">
-                            <i class="fa-solid fa-store me-1"></i>Pay at Pick-Up
-                            </label>
-                        </div>
-
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="payMethod" id="payDelivery" value="delivery">
-                            <label class="form-check-label" for="payDelivery">
-                            <i class="fa-solid fa-truck me-1"></i>Pay at Delivery
-                            </label>
-                        </div>
-
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="payMethod" id="payCash" value="cash">
-                            <label class="form-check-label" for="payCash">
-                            <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
-                            </label>
-                        </div>
-
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="payMethod" id="payCheck" value="check">
-                            <label class="form-check-label" for="payCheck">
-                            <i class="fa-solid fa-file-invoice-dollar me-1"></i>Check
-                            </label>
-                        </div>
-
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="payMethod" id="payCard" value="card">
-                            <label class="form-check-label" for="payCard">
-                            <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
-                            </label>
-                        </div>
-
-                        <?php if (!empty($customer_details['charge_net_30'])): ?>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payNet30" value="net30">
-                                <label class="form-check-label" for="payNet30">
-                                    <i class="fa-solid fa-calendar-check me-1"></i>Charge Net 30
+                                <input class="form-check-input" type="radio" name="payMethod" id="payPickup" value="pickup">
+                                <label class="form-check-label" for="payPickup">
+                                <i class="fa-solid fa-store me-1"></i>Pay at Pick-Up
                                 </label>
                             </div>
-                        <?php endif; ?>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payDelivery" value="delivery">
+                                <label class="form-check-label" for="payDelivery">
+                                <i class="fa-solid fa-truck me-1"></i>Pay at Delivery
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payCash" value="cash">
+                                <label class="form-check-label" for="payCash">
+                                <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payCheck" value="check">
+                                <label class="form-check-label" for="payCheck">
+                                <i class="fa-solid fa-file-invoice-dollar me-1"></i>Check
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payCard" value="card">
+                                <label class="form-check-label" for="payCard">
+                                <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
+                                </label>
+                            </div>
+
+                            <?php if (!empty($customer_details['charge_net_30'])): ?>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="payMethod" id="payNet30" value="net30">
+                                    <label class="form-check-label" for="payNet30">
+                                        <i class="fa-solid fa-calendar-check me-1"></i>Charge Net 30
+                                    </label>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="d-none" id="payCreditWrapper">
+                            <label class="form-label fw-bold">Select Payment Method</label><br>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payCredit" value="credit">
+                                <label class="form-check-label" for="payCredit">
+                                <i class="fa-brands fa-cc-visa me-1"></i>Credit Account
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     <?php if (floatval($customer_details['store_credit']) > 0): ?>
                         <div class="mb-3 text-white">
@@ -858,6 +881,24 @@ if(isset($_POST['fetch_order'])){
                     });
                 }
             });
+
+            function togglePaymentOptions() {
+                const transactionType = $('#transactionType').val();
+
+                $('#paymentOptions').addClass('d-none');
+                $('#payCreditWrapper').addClass('d-none');
+                $('input[name="payMethod"]').prop('checked', false);
+                $('#pay_via_job_deposit').prop('checked', false);
+
+                if (transactionType === 'payment') {
+                    $('#paymentOptions').removeClass('d-none');
+                } else if (transactionType === 'credit') {
+                    $('#payCreditWrapper').removeClass('d-none');
+                }
+            }
+
+            $('#transactionType').on('change', togglePaymentOptions);
+
         });
     </script>
 

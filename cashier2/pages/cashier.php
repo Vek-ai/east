@@ -3977,8 +3977,13 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var deliver_lname = $('#order_deliver_lname').val();
             var applyStoreCredit = $('#applyStoreCredit').is(':checked') ? $('#applyStoreCredit').val() : 0;
 
-            var payment_method = $('[name="payMethod"]').val();
+            var payment_method = $('[name="payMethod"]:checked').val();
             payment_method = $('#pay_via_job_deposit').is(':checked') ? 'job_deposit' : payment_method;
+
+            if(!job_id || job_id == ''){
+                alert("Please select job!");
+                return;
+            }
 
             if(payment_method){
                 $.ajax({
@@ -4003,7 +4008,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         save_order: 'save_order'
                     },
                     success: function(response) {
-                        console.log(response);
                         if (response.success) {
                             alert("Order successfully saved.");
                             $('#print_order_category').attr('href', '/print_order_product.php?id=' + response.order_id);
