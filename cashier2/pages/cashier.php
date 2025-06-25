@@ -3987,11 +3987,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var payment_method = $('[name="payMethod"]:checked').val();
             payment_method = $('#pay_via_job_deposit').is(':checked') ? 'job_deposit' : payment_method;
 
-            if(!job_id || job_id == ''){
-                alert("Please select job!");
-                return;
-            }
-
             if(payment_method){
                 $.ajax({
                     url: 'pages/cashier_ajax.php',
