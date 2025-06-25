@@ -103,13 +103,6 @@ if(isset($_REQUEST['customer_id'])){
                             <option value="12">December</option>
                         </select>
                     </div>
-                    <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="type" data-filter-name="Type of Statement" id="select-type">
-                            <option value="">All Types of Statement</option>
-                            <option value="deposit">Deposit</option>
-                            <option value="usage">Usage</option>
-                        </select>
-                    </div>
                     
                 </div>
                 <div class="d-flex justify-content-end py-2">
