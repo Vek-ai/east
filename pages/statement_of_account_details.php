@@ -150,7 +150,6 @@ if(isset($_REQUEST['customer_id'])){
                             <thead>
                                 <tr>
                                     <th style="color: #ffffff !important;">Date</th>
-                                    <th style="color: #ffffff !important;">Description</th>
                                     <th style="color: #ffffff !important;">Job</th>
                                     <th style="color: #ffffff !important;">PO Number</th>
                                     <th style="color: #ffffff !important;">Type of Payment</th>
@@ -169,7 +168,8 @@ if(isset($_REQUEST['customer_id'])){
 
                                     if ($payments == 0 && $credit == 0) continue;
 
-                                    $balance += ($payments - $credit);
+                                    $balance += $credit;
+                                    $balance = max(0, $balance);
                                 ?>
                                     <tr
                                         data-tax="<?= $customer_details['tax_status'] ?>"
@@ -177,7 +177,6 @@ if(isset($_REQUEST['customer_id'])){
                                         data-type="<?= $row['entry_type'] ?>"
                                     >
                                         <td><?= date('Y-m-d', strtotime($row['date'])) ?></td>
-                                        <td><?= htmlspecialchars($row['description']) ?></td>
                                         <td><?= htmlspecialchars($row['job_name']) ?></td>
                                         <td>
                                             <a href="javascript:void(0);" 
@@ -192,7 +191,7 @@ if(isset($_REQUEST['customer_id'])){
                                         <td class="text-end"><?= $payments > 0 ? '$' .number_format($payments, 2) : '' ?></td>
                                         <td class="text-end"><?= $credit > 0 ? '$' .number_format($credit, 2) : '' ?></td>
                                         <td class="text-end">
-                                            <?= ($balance < 0 ? '- $' : '$') . number_format(abs($balance), 2) ?>
+                                            <?= '$' . number_format($balance, 2) ?>
                                         </td>
                                     </tr>
                                 <?php } ?>
