@@ -4018,6 +4018,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                             $('#print_order_category').removeClass('d-none');
                             $('#print_order').removeClass('d-none');
                             $('#print_deliver').removeClass('d-none');
+
+                            $('#save_order').addClass('d-none');
+                            $('#save_estimate').addClass('d-none');
+                            $('#prev_page_order').addClass('d-none');
                         } else if (response.error) {
                             alert("Error: " + response.error);
                         }
