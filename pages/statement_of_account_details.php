@@ -152,7 +152,9 @@ if(isset($_REQUEST['customer_id'])){
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php while ($row = mysqli_fetch_assoc($result)) {
+                                <?php 
+                                $total_credit = 0;
+                                while ($row = mysqli_fetch_assoc($result)) {
                                     $job_details = getJobDetails($row['job_id']);
                                     $order_id = $row['orderid'];
                                     $order_details = getOrderDetails($order_id);
@@ -162,6 +164,7 @@ if(isset($_REQUEST['customer_id'])){
                                     if ($payments == 0 && $credit == 0) continue;
 
                                     $balance += $credit;
+                                    $total_credit += $credit;
                                     $balance = max(0, $balance);
                                 ?>
                                     <tr
@@ -189,6 +192,12 @@ if(isset($_REQUEST['customer_id'])){
                                     </tr>
                                 <?php } ?>
                             </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td class="text-end" colspan="6">Total Credit</td>
+                                    <td class="text-end" colspan="1">$<?= number_format($total_credit,2) ?></td>
+                                </tr>
+                            </tfoot>
                         </table>
 
                         <?php
