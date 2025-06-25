@@ -1103,71 +1103,73 @@ if (isset($_POST['save_order'])) {
             }
         }
 
-        if ($pay_type == 'delivery' || $pay_type == 'pickup') {
-            $amount = floatval($credit_amt);
-            $po_number = $job_po;
-            $created_by = $cashierid;
-            $description = 'Materials Purchased';
-            $reference_no = $orderid;
-            $job_id = intval($job_id);
+        if(!empty($job_id)){
+            if ($pay_type == 'delivery' || $pay_type == 'pickup') {
+                $amount = floatval($credit_amt);
+                $po_number = $job_po;
+                $created_by = $cashierid;
+                $description = 'Materials Purchased';
+                $reference_no = $orderid;
+                $job_id = intval($job_id);
 
-            $insert_ledger = "
-                INSERT INTO job_ledger (
-                    job_id,
-                    entry_type,
-                    amount,
-                    po_number,
-                    reference_no,
-                    description,
-                    created_by,
-                    created_at
-                ) VALUES (
-                    '$job_id',
-                    'credit',
-                    '$amount',
-                    '$po_number',
-                    '$reference_no',
-                    '$description',
-                    '$created_by',
-                    NOW()
-                )
-            ";
+                $insert_ledger = "
+                    INSERT INTO job_ledger (
+                        job_id,
+                        entry_type,
+                        amount,
+                        po_number,
+                        reference_no,
+                        description,
+                        created_by,
+                        created_at
+                    ) VALUES (
+                        '$job_id',
+                        'credit',
+                        '$amount',
+                        '$po_number',
+                        '$reference_no',
+                        '$description',
+                        '$created_by',
+                        NOW()
+                    )
+                ";
 
-            if (!mysqli_query($conn, $insert_ledger)) {
-                $response['error'] = 'Ledger Insert Error: ' . mysqli_error($conn);
-            }
-        }else{
-            $amount = floatval($cash_amt);
-            $po_number = $job_po;
-            $created_by = $cashierid;
-            $description = 'Materials Purchased';
-            $reference_no = $orderid;
-            $job_id = intval($job_id);
+                if (!mysqli_query($conn, $insert_ledger)) {
+                    $response['error'] = 'Ledger Insert Error: ' . mysqli_error($conn);
+                }
+            }else{
+                $amount = floatval($cash_amt);
+                $po_number = $job_po;
+                $created_by = $cashierid;
+                $description = 'Materials Purchased';
+                $reference_no = $orderid;
+                $job_id = intval($job_id);
 
-            $insert_ledger = "
-                INSERT INTO job_ledger (
-                    job_id,
-                    entry_type,
-                    amount,
-                    po_number,
-                    reference_no,
-                    description,
-                    created_by,
-                    created_at
-                ) VALUES (
-                    '$job_id',
-                    'usage',
-                    '$amount',
-                    '$po_number',
-                    '$reference_no',
-                    '$description',
-                    '$created_by',
-                    NOW()
-                )
-            ";
+                $insert_ledger = "
+                    INSERT INTO job_ledger (
+                        job_id,
+                        entry_type,
+                        amount,
+                        po_number,
+                        reference_no,
+                        description,
+                        created_by,
+                        created_at
+                    ) VALUES (
+                        '$job_id',
+                        'usage',
+                        '$amount',
+                        '$po_number',
+                        '$reference_no',
+                        '$description',
+                        '$created_by',
+                        NOW()
+                    )
+                ";
 
-            if (!mysqli_query($conn, $insert_ledger)) {
-                $response['error'] = 'Ledger Insert Error: ' . mysqli_error($conn);
+                if (!mysqli_query($conn, $insert_ledger)) {
+                    $response['error'] = 'Ledger Insert Error: ' . mysqli_error($conn);
+                }
             }
         }
 
