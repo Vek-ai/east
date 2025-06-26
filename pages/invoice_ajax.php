@@ -77,7 +77,6 @@ if(isset($_REQUEST['action'])) {
                                                     <th class="text-center">Dimensions</th>
                                                     <th class="text-center">Price</th>
                                                     <th class="text-center">Customer Price</th>
-                                                    <th class="text-center">Total Amount</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -149,13 +148,12 @@ if(isset($_REQUEST['action'])) {
                                                             </td>
                                                             <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
                                                             <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
-                                                            <td class="text-end">$ <?= number_format(floatval($row['discounted_price'] * $row['quantity']),2) ?></td>
                                                         </tr>
                                                 <?php
                                                         $totalquantity += $row['quantity'] ;
                                                         $total_actual_price += $row['actual_price'];
                                                         $total_disc_price += $row['discounted_price'];
-                                                        $total_amount += floatval($row['discounted_price']) * $row['quantity'];
+                                                        $total_amount += $total_disc_price;
                                                     }
                                                 
                                                 ?>
@@ -163,7 +161,7 @@ if(isset($_REQUEST['action'])) {
 
                                             <tfoot>
                                                 <tr>
-                                                    <td colspan="7" class="text-end">Total</td>
+                                                    <td colspan="6" class="text-end">Total</td>
                                                     <td><?= $totalquantity ?></td>
                                                     <td></td>
                                                     <td></td>
