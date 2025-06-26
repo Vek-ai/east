@@ -110,6 +110,37 @@ if(isset($_REQUEST['action'])) {
           echo "Error deleting setting: " . mysqli_error($conn);
       }
     }
+
+    if ($action  == 'update_order_points') {
+        $order_total = floatval($_POST['order_total']);
+        $points_gained = intval($_POST['points_gained']);
+
+        $json_data = json_encode([
+            'order_total' => $order_total,
+            'points_gained' => $points_gained
+        ]);
+
+        $json_data_escaped = mysqli_real_escape_string($conn, $json_data);
+
+        $update_sql = "UPDATE settings SET value = '$json_data_escaped' WHERE setting_name = 'points'";
+        $update_result = mysqli_query($conn, $update_sql);
+
+        if ($update_result) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Settings updated successfully.'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Database update failed.',
+                'error' => mysqli_error($conn)
+            ]);
+        }
+
+        exit;
+    }
+
     mysqli_close($conn);
 }
 ?>

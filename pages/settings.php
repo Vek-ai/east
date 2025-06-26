@@ -51,6 +51,12 @@ $addressDetails = implode(', ', [
   $addressSettings['state'] ?? '',
   $addressSettings['zip'] ?? ''
 ]);
+
+$points_details = getSetting('points');
+$data = json_decode($points_details, true);
+$points_order_total = isset($data['order_total']) ? $data['order_total'] : 0;
+$points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
+
 ?>
 <style>
         /* Ensure that the text within the notes column wraps properly */
@@ -195,13 +201,31 @@ $addressDetails = implode(', ', [
                   <td>Address</td>
                   <td>
                     <?= $addressDetails ?>
-                    </td>
+                  </td>
                   <td class="text-center" id="action-button-<?= $no ?>">
                       <a href="#" class="py-1" id="showMapsBtn" style="border-radius: 10%;" data-bs-toggle="modal" title="Edit" data-bs-target="#map1Modal"><i class="ti ti-pencil fs-7"></i></a>
                   </td>
               </tr>
+              <tr id="settings-row-<?= $no ?>">
+                  <td>Order Points</td>
+                  <td>
+                    <div class="row">
+                        <div class="col-6 text-center">
+                            Total Order Required<br>
+                            <span class="ms-3"><?= $points_order_total ?></span>
+                        </div>
+                        <div class="col-6 text-center">
+                            Points Gained<br>
+                            <span class="ms-3"><?= $points_gained ?></span>
+                        </div>
+                    </div>
+                  </td>
+                  <td class="text-center" id="action-button-<?= $no ?>">
+                      <a href="#" class="py-1" id="pointsBtn" style="border-radius: 10%;" data-bs-toggle="modal" title="Edit" data-bs-target="#orderPointsModal"><i class="ti ti-pencil fs-7"></i></a>
+                  </td>
+              </tr>
               <?php
-              $query_setting_name = "SELECT * FROM settings WHERE setting_name != 'address'";
+              $query_setting_name = "SELECT * FROM settings WHERE setting_name != 'address' AND setting_name != 'points'";
               $result_setting_name = mysqli_query($conn, $query_setting_name);            
               while ($row_setting = mysqli_fetch_array($result_setting_name)) {
                   $settingid = $row_setting['settingid'];
@@ -284,6 +308,38 @@ $addressDetails = implode(', ', [
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="orderPointsModal" tabindex="-1" aria-labelledby="orderPointsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="orderPointsForm" method="post">
+        <div class="modal-header">
+          <h5 class="modal-title" id="orderPointsModalLabel">Order Points</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        
+        <div class="modal-body">
+          <input type="hidden" name="setting_no" id="setting_no">
+
+          <div class="mb-3">
+            <label for="edit_total_order" class="form-label">Total Order Required</label>
+            <input type="number" step="0.01" class="form-control" id="edit_total_order" value="<?= $points_order_total ?>" name="order_total" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="edit_points_gained" class="form-label">Points Gained</label>
+            <input type="number" class="form-control" id="edit_points_gained" value="<?= $points_gained ?>" name="points_gained" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 
 <script>
   let map1;
@@ -423,7 +479,9 @@ $addressDetails = implode(', ', [
   });
 
   $(document).ready(function() {
-    var table = $('#display_settings').DataTable();
+    var table = $('#display_settings').DataTable({
+      order: []
+    });
     
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
@@ -579,5 +637,57 @@ $addressDetails = implode(', ', [
             }
         });
     });
+
+    $(document).on('submit', '#orderPointsForm', function (e) {
+        e.preventDefault();
+
+        const form = document.getElementById('orderPointsForm');
+        const formData = new FormData(form);
+        formData.append('action', 'update_order_points');
+
+        $.ajax({
+            url: 'pages/settings_ajax.php',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (res) {
+                $('.modal').modal("hide");
+                try {
+                    const result = JSON.parse(res);
+                    if (result.success) {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Setting updated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                        console.log(result.message);
+                    }
+                } catch (e) {
+                    $('#responseHeader').text("Failed");
+                    $('#responseMsg').text(response);
+                    $('#responseHeaderContainer').removeClass("bg-success");
+                    $('#responseHeaderContainer').addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                    console.error(res);
+                }
+            },
+            error: function () {
+                alert('AJAX request failed.');
+            }
+        });
+    });
+
 });
 </script>

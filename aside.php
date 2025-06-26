@@ -78,7 +78,7 @@
           </a>
         </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="invoices.php">
+          <a class="sidebar-link" href="?page=invoice">
             <iconify-icon icon="solar:folder-with-files-outline" class="aside-icon"></iconify-icon>
             <span class="hide-menu">Invoices</span>
           </a>
