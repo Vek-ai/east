@@ -453,7 +453,7 @@ if(isset($_REQUEST['action'])) {
                     <h2>Order Invoice</h2>
                     <p>Hi $customer_name,</p>
                     <p>Your Order Invoice is now ready. Click the button below to view your invoice.</p>
-                    <a href='$order_url' class='link' target='_blank'>View Estimate</a>
+                    <a href='$order_url' class='link' target='_blank'>View Invoice</a>
                 </div>
             </body>
         </html>";
