@@ -502,6 +502,21 @@ function getSetting($settingName) {
     return $setting;
 }
 
+function getPointsRatio() {
+    global $conn;
+    $query = "SELECT value FROM settings WHERE setting_name = 'points'";
+    $result = mysqli_query($conn, $query);
+
+    if ($row = mysqli_fetch_assoc($result)) {
+        $data = json_decode(trim($row['value']), true);
+        $order_total = isset($data['order_total']) ? $data['order_total'] : 0;
+        $points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
+        return ($order_total > 0) ? ($points_gained / $order_total) : 0;
+    }
+
+    return 0;
+}
+
 function getPaymentSetting($payment_setting_name) {
     global $conn;
     $query = "SELECT value FROM payment_settings WHERE payment_setting_name = '$payment_setting_name'";

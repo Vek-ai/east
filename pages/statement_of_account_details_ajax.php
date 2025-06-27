@@ -154,6 +154,52 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
+    if ($action == "deposit_job") {
+        $job_id = intval($_POST['job_id'] ?? 0);
+        $deposit_amount = floatval($_POST['deposit_amount'] ?? 0);
+        $deposited_by = trim($_POST['deposited_by'] ?? '');
+        $reference_no = trim($_POST['reference_no'] ?? '');
+        $payment_method = $_POST['type'] ?? 'cash';
+        $check_no = $_POST['check_no'] ?? null;
+        $description = mysqli_real_escape_string($conn, $_POST['description'] ?? 'Job deposit');
+
+        $check_query = "SELECT * FROM jobs WHERE job_id = '$job_id'";
+        $check_result = mysqli_query($conn, $check_query);
+
+        if ($check_result && mysqli_num_rows($check_result) > 0) {
+            $check_no_sql = $payment_method === 'check' ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
+
+            $insert = "
+                INSERT INTO job_ledger (job_id, entry_type, amount, payment_method, check_number, reference_no, description, created_by)
+                VALUES (
+                    '$job_id',
+                    'deposit',
+                    '$deposit_amount',
+                    '$payment_method',
+                    $check_no_sql,
+                    '" . mysqli_real_escape_string($conn, $reference_no) . "',
+                    '$description',
+                    '" . mysqli_real_escape_string($conn, $deposited_by) . "'
+                )
+            ";
+
+            if (mysqli_query($conn, $insert)) {
+                $update = "
+                    UPDATE jobs 
+                    SET deposit_amount = deposit_amount + $deposit_amount
+                    WHERE job_id = '$job_id'
+                ";
+                $update_result = mysqli_query($conn, $update);
+
+                echo $update_result ? 'success' : 'error_update';
+            } else {
+                echo 'error_insert';
+            }
+        } else {
+            echo 'job_not_found';
+        }
+    }
+
 
     mysqli_close($conn);
 }

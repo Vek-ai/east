@@ -251,7 +251,7 @@ $page_title = "Statement of Accounts";
                                 <tr>
                                     <th style="color: #ffffff !important;">Customer</th>
                                     <th style="color: #ffffff !important;">Total Payments</th>
-                                    <th style="color: #ffffff !important;">Total Credit</th>
+                                    <th style="color: #ffffff !important;">Total Receivable</th>
                                     <th style="color: #ffffff !important;" class="text-center">Action</th>
                                 </tr>
                             </thead>

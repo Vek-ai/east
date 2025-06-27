@@ -10,6 +10,13 @@ require '../../includes/functions.php';
 $trim_id = 4;
 $panel_id = 3;
 
+$points_details = getSetting('points');
+$data = json_decode($points_details, true);
+$points_order_total = isset($data['order_total']) ? $data['order_total'] : 0;
+$points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
+
+$points_ratio = getPointsRatio();
+
 if(isset($_POST['fetch_order'])){
     $discount = 0;
     $tax = 0;
@@ -241,13 +248,15 @@ if(isset($_POST['fetch_order'])){
     }
     $_SESSION["total_quantity"] = $totalquantity;
     $_SESSION["grandtotal"] = $total;
+    $total_customer_price = floatval(str_replace(',', '', $total_customer_price));
     ?>
 
     <div class="card-body datatables">
         <form id="msform">
-            <input type="hidden" id="payable_amt" value="<?= $total_customer_price = floatval(str_replace(',', '', $total_customer_price)); ?>">
+            <input type="hidden" id="order_payable_amt" value="<?= $total_customer_price ?>">
             <input type="hidden" id="delivery_amt" name="delivery_amt" value="0">
             <input type="hidden" id="store_credit" name="store_credit" value="<?= $store_credit ?>">
+            <input type="hidden" id="points_ratio" name="points_ratio" value="<?= $points_ratio ?>">
 
             <div class="row text-start">
                 <div class="col-12 mb-2" style="color: #ffffff !important;">
@@ -361,7 +370,7 @@ if(isset($_POST['fetch_order'])){
                         
                         <div class="col-md-8 mb-3 d-none align-items-end">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="pay_via_job_deposit" name="pay_via_job_deposit">
+                                <input class="form-check-input" type="checkbox" id="pay_via_job_deposit" name="pay_via_job_deposit" value="1">
                                 <label class="form-check-label" for="pay_via_job_deposit">
                                     Pay via Job Deposit 
                                     <span id="job_credit_balance" class="text-success fw-semibold ms-1"></span>
@@ -512,7 +521,7 @@ if(isset($_POST['fetch_order'])){
                     <?php if (floatval($customer_details['store_credit']) > 0): ?>
                         <div class="mb-3 text-white">
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="applyStoreCredit" name="applyStoreCredit" value="1">
+                                <input class="form-check-input" type="checkbox" id="applyStoreCredit" name="applyStoreCredit" value="1" >
                                 <label class="form-check-label text-white" for="applyStoreCredit">
                                 Apply Store Credit (Available: $<?= number_format(floatval($customer_details['store_credit']), 2) ?>)
                                 </label>
@@ -558,6 +567,10 @@ if(isset($_POST['fetch_order'])){
                         <span>Store Credit:</span>
                         <span class="fw-bold" id="storeCreditValue"></span>
                     </div>
+                    <div id="jobDepositDisplay" class="d-flex justify-content-between mb-2 d-none text-success">
+                        <span>Job Deposit:</span>
+                        <span class="fw-bold" id="jobDepositValue"></span>
+                    </div>
 
                     <div class="d-flex justify-content-end mb-3">
                         <div style="width: 100px; height: 2px; background-color: white;"></div>
@@ -565,7 +578,7 @@ if(isset($_POST['fetch_order'])){
                     
                     <div class="d-flex justify-content-between">
                         <strong>Estimated Total</strong>
-                        <p>$<strong id="order_total"><?= number_format($total_customer_price, 2) ?></strong></p>
+                        <p><strong id="order_total"></strong></p>
                     </div>
                     <button class="btn btn-success w-100 mt-3" id="save_order">Place Order</button>
                     <p class="mt-2 text-center small">
@@ -574,7 +587,7 @@ if(isset($_POST['fetch_order'])){
                     </div>
                     <div class="card-footer bg-white d-flex justify-content-between">
                     <span><i class="fa fa-gift me-1"></i>Estimated Points</span>
-                    <span><span class="badge bg-primary">+0</span></span>
+                    <span><span id="estimated_points" class="badge bg-primary">0</span></span>
                     </div>
                 </div>
                 </div>
@@ -769,6 +782,8 @@ if(isset($_POST['fetch_order'])){
                         $('#pay_via_job_deposit').closest('.col-md-8').addClass('d-none');
                         $('#job_credit_balance').text('');
                     }
+
+                    $('#pay_via_job_deposit').data('deposit', jobBalance);
                 }
             });
 
@@ -842,10 +857,8 @@ if(isset($_POST['fetch_order'])){
                     colorSelect.find('option').each(function () {
                         const grade = String($(this).data('grade'));
                         if (!selectedGrade || grade === String(selectedGrade)) {
-                            console.log('show')
                             $(this).removeAttr('disabled').show();
                         } else {
-                            console.log('hide')
                             $(this).attr('disabled', 'disabled').hide();
                         }
                     });

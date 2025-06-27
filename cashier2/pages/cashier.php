@@ -1116,8 +1116,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     function getPlaceName(lat, lng, inputId) {
         const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
 
-        console.log(lat)
-
         $.ajax({
             url: url,
             dataType: 'json',
@@ -1250,9 +1248,12 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     function calculateDeliveryAmount() {
         var customerLat = parseFloat($('#lat').val());
         var customerLng = parseFloat($('#lng').val());
-        var payable_amt = parseFloat($('#payable_amt').val());
-        var store_credit = parseFloat($('#store_credit').val());
+        var payable_amt = parseFloat($('#order_payable_amt').val().replace(/,/g, ''));
+        var store_credit = parseFloat($('#store_credit').val().replace(/,/g, ''));
+        var points_ratio = parseFloat($('#points_ratio').val().replace(/,/g, ''));
         var isapplystorecredit = $('#applyStoreCredit').is(':checked');
+        var isPayViaJobDeposit = $('#pay_via_job_deposit').is(':checked');
+        var job_deposit = parseFloat(($('#pay_via_job_deposit').data('deposit') + '').replace(/,/g, ''));
         var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
         var lat2Float = typeof lat2 !== 'undefined' ? parseFloat(lat2) : 0;
@@ -1279,7 +1280,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             }
         }
 
-        var store_credit_calc = 0;
+        let store_credit_calc = 0;
+        let job_deposit_calc = 0;
+
         const totalBeforeCredit = payable_amt + deliveryAmount;
 
         if (isapplystorecredit) {
@@ -1289,21 +1292,34 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         } else {
             $('#storeCreditDisplay').addClass('d-none');
             $('#storeCreditValue').text('');
-            store_credit_calc = 0;
         }
 
-        const raw_total = totalBeforeCredit - store_credit_calc;
-        const total_amt = Math.max(0, raw_total).toFixed(2);
+        const remaining_after_credit = totalBeforeCredit - store_credit_calc;
+
+        if (isPayViaJobDeposit) {
+            job_deposit_calc = Math.min(job_deposit, remaining_after_credit);
+            $('#jobDepositValue').text(`-$${job_deposit_calc.toFixed(2)}`);
+            $('#jobDepositDisplay').removeClass('d-none');
+        } else {
+            $('#jobDepositDisplay').addClass('d-none');
+            $('#jobDepositValue').text('');
+        }
+
+        const raw_total = totalBeforeCredit - store_credit_calc - job_deposit_calc;
+        const total_amt = Math.max(0, parseFloat(raw_total));
 
         $('#delivery_amt').val(deliveryAmount).trigger('change');
         $('#order_delivery_amt').text(deliveryAmount.toFixed(2));
-        $('#order_total').text(number_format(total_amt));
+        $('#order_total').text('$' + number_format(total_amt, 2));
+
+        const estimated_points = Math.floor(raw_total * points_ratio);
+        $('#estimated_points').text('+' + estimated_points);
     }
 
-    function number_format(number) {
+    function number_format(number, decimals = 2) {
         return parseFloat(number).toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
         });
     }
 
@@ -1419,7 +1435,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             },
             success: function(response) {
                 loadCart();
-                loadOrderContents();
                 loadEstimateContents();
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -1444,7 +1459,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             },
             success: function(response) {
                 loadCart();
-                loadOrderContents();
                 loadEstimateContents();
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -1469,7 +1483,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             },
             success: function(response) {
                 loadCart();
-                loadOrderContents();
                 loadEstimateContents();
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -1790,9 +1803,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             success: function(data) {
                 console.log(data);
                 loadCart();
-                loadOrderContents();
-                loadEstimateContents();
-                loadOrderProductCart();
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1820,9 +1830,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             },
             success: function(data) {
                 loadCart();
-                loadOrderContents();
-                loadEstimateContents();
-                loadOrderProductCart();
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1851,9 +1858,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             },
             success: function(data) {
                 loadCart();
-                loadOrderContents();
-                loadEstimateContents();
-                loadOrderProductCart();
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1882,9 +1886,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             },
             success: function(data) {
                 loadCart();
-                loadOrderContents();
-                loadEstimateContents();
-                loadOrderProductCart();
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -1909,9 +1910,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             type: "POST",
             success: function(data) {
                 loadCart();
-                loadOrderContents();
-                loadEstimateContents();
-                loadOrderProductCart();
             },
             error: function() {}
         });
@@ -1931,9 +1929,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             },
             success: function(data) {
                 loadCart();
-                loadOrderContents();
-                loadEstimateContents();
-                loadOrderProductCart();
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error:", {
@@ -3381,7 +3376,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 },
                 success: function(response) {
                     loadCart();
-                    loadEstimateContents();
                     loadOrderContents();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -3646,8 +3640,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 success: function (response) {
                     console.log(response);
                     loadCart();
-                    loadEstimateContents();
-                    loadOrderContents();
                     $('#special_trim_modal').modal("hide");
                 },
                 error: function (xhr) {
@@ -3957,21 +3949,14 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         });
 
         $(document).on('change', '#pay_via_job_deposit', function () {
-            if ($(this).is(':checked')) {
-                $('[name="payMethod"]').prop('checked', false);
-            }
+            calculateDeliveryAmount();
         });
-
-        $(document).on('change', '[name="payMethod"]', function () {
-            $('#pay_via_job_deposit').prop('checked', false);
-        });
-
 
         $(document).on('click', '#save_order', function(event) {
             event.preventDefault();
             var discount = $('#order_discount').val();
             var delivery_amt = $('#delivery_amt').val();
-            var cash_amt = $('#payable_amt').val();
+            var cash_amt = $('#order_payable_amt').val();
             var credit_amt = 0;
             var job_name = $('#order_job_name').val();
             var job_id = $('#order_job_name option:selected').data('job-id');
@@ -3983,9 +3968,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var deliver_fname = $('#order_deliver_fname').val();
             var deliver_lname = $('#order_deliver_lname').val();
             var applyStoreCredit = $('#applyStoreCredit').is(':checked') ? $('#applyStoreCredit').val() : 0;
+            var applyJobDeposit = $('#pay_via_job_deposit').is(':checked') ? $('#pay_via_job_deposit').val() : 0;
 
             var payment_method = $('[name="payMethod"]:checked').val();
-            payment_method = $('#pay_via_job_deposit').is(':checked') ? 'job_deposit' : payment_method;
 
             if(payment_method){
                 $.ajax({
@@ -4006,6 +3991,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         deliver_fname: deliver_fname,
                         deliver_lname: deliver_lname,
                         applyStoreCredit: applyStoreCredit,
+                        applyJobDeposit: applyJobDeposit,
                         payment_method: payment_method,
                         save_order: 'save_order'
                     },
@@ -4471,7 +4457,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    console.log(response);
                     $('.modal').modal("hide");
                     loadCart();
                 },
@@ -4595,7 +4580,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         function updateSearchCategory(){
             var product_category = $('#select-category').val() || '';
 
-            console.log(product_category);
             $.ajax({
                 url: "pages/cashier_ajax.php",
                 type: "POST",

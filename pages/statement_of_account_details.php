@@ -74,12 +74,85 @@ if(isset($_REQUEST['customer_id'])){
         </div>
     </div>
 
+    <div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h5 class="modal-title">Add Job Deposit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="depositForm" class="form-horizontal">
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <input type="hidden" id="deposited_by" name="deposited_by" value="<?= $customer_id ?>">
+
+                                <div class="mb-3">
+                                    <label for="type" class="form-label">Deposit Type</label>
+                                    <select class="form-select" id="type" name="type" required>
+                                        <option value="">-- Select Type --</option>
+                                        <option value="cash">Cash</option>
+                                        <option value="check">Check</option>
+                                    </select>
+                                </div>
+
+                                <div id="deposit_details_group" class="d-none">
+                                    <div class="mb-3">
+                                        <label for="type" class="form-label">Job</label>
+                                        <select class="form-select" id="job_id" name="job_id">
+                                            <option value="" hidden>-- Select Job --</option>
+                                            <?php
+                                            $query_job_name = "SELECT * FROM jobs WHERE customer_id = '$customer_id'";
+                                            $result_job_name = mysqli_query($conn, $query_job_name);
+                                            while ($row_job_name = mysqli_fetch_array($result_job_name)) {
+                                                $job_id = $row_job_name['job_id'];
+                                            ?>
+                                                <option value="<?= $row_job_name['job_id']; ?>">
+                                                    <?= htmlspecialchars($row_job_name['job_name']); ?>
+                                                </option>
+                                            <?php } ?>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="deposit_amount" class="form-label">Deposit Amount</label>
+                                        <input type="number" step="0.01" class="form-control" id="deposit_amount" name="deposit_amount" >
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="reference_no" class="form-label">Reference No</label>
+                                        <input type="text" class="form-control" id="reference_no" name="reference_no" required>
+                                    </div>
+
+                                    <div class="mb-3 d-none" id="check_no_group">
+                                        <label for="check_no" class="form-label">Check No</label>
+                                        <input type="text" class="form-control" id="check_no" name="check_no">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Description</label>
+                                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="card card-body">
         <div class="row">
             <div class="col-3">
-                <h3 class="card-title align-items-center mb-2">
-                    Filter <?= $page_title ?>
-                </h3>
+                <div class="modal-header d-flex align-items-center">
+                    <h3 class="card-title align-items-center mb-2">
+                        Filter <?= $page_title ?>
+                    </h3>
+                </div>
                 <div class="position-relative w-100 px-1 mr-0 mb-2">
                     <input type="text" class="form-control py-2 ps-5" id="text-srh" placeholder="Search">
                     <i class="ti ti-user position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
@@ -114,24 +187,30 @@ if(isset($_REQUEST['customer_id'])){
             <div class="col-9">
                 <div id="selected-tags" class="mb-2"></div>
                 <div class="datatables">
-                    <h5 class="fw-bold">Ledger Data for <?= get_customer_name($customer_id) ?></h5>
+                    <div class="modal-header d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold">Ledger Data for <?= get_customer_name($customer_id) ?></h5>
+                        <button type="button" id="depositModalBtn" title="Deposit" class="btn btn-primary py-1 px-3 text-decoration-none">
+                            <i class="fas fa-wallet me-1"></i> Deposit
+                        </button>
+                    </div>
                     <div class="product-details table-responsive text-wrap">
                         <?php
                         $query = "
                             SELECT 
-                                j.job_id,
+                                l.job_id,
                                 l.created_at AS date,
                                 l.description,
                                 j.job_name,
                                 l.po_number,
                                 l.entry_type,
-                                l.reference_no as orderid,
+                                l.reference_no AS orderid,
+                                l.payment_method,
                                 CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE NULL END AS payments,
                                 CASE WHEN l.entry_type = 'credit' THEN l.amount ELSE NULL END AS credit
-                            FROM jobs j
-                            INNER JOIN job_ledger l ON l.job_id = j.job_id
-                            WHERE j.customer_id = '$customer_id'
-                            ORDER BY l.created_at ASC
+                            FROM job_ledger l
+                            LEFT JOIN jobs j ON l.job_id = j.job_id
+                            WHERE j.customer_id = '$customer_id' OR j.customer_id IS NULL
+                            ORDER BY l.created_at DESC;
                         ";
                         $result = mysqli_query($conn, $query);
                         $balance = 0;
@@ -142,18 +221,30 @@ if(isset($_REQUEST['customer_id'])){
                         <table id="acct_dtls_tbl" class="table table-hover mb-0 text-wrap text-center">
                             <thead>
                                 <tr>
+                                    <th style="color: #ffffff !important;">Order ID</th>
                                     <th style="color: #ffffff !important;">Date</th>
                                     <th style="color: #ffffff !important;">Job</th>
                                     <th style="color: #ffffff !important;">PO Number</th>
                                     <th style="color: #ffffff !important;">Type of Payment</th>
                                     <th style="color: #ffffff !important;" class="text-end">Payments</th>
-                                    <th style="color: #ffffff !important;" class="text-end">Credit</th>
+                                    <th style="color: #ffffff !important;" class="text-end">Receivable</th>
                                     <th style="color: #ffffff !important;" class="text-end">Balance</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php 
                                 $total_credit = 0;
+
+                                $pay_labels = [
+                                    'pickup'   => ['label' => 'Pay at Pick-up'],
+                                    'delivery' => ['label' => 'Pay at Delivery'],
+                                    'cash'     => ['label' => 'Cash'],
+                                    'check'    => ['label' => 'Check'],
+                                    'card'     => ['label' => 'Credit/Debit Card'],
+                                    'net30'    => ['label' => 'Charge Net 30'],
+                                    'job_deposit'    => ['label' => 'Job Deposit'],
+                                ];
+
                                 while ($row = mysqli_fetch_assoc($result)) {
                                     $job_details = getJobDetails($row['job_id']);
                                     $order_id = $row['orderid'];
@@ -162,6 +253,9 @@ if(isset($_REQUEST['customer_id'])){
                                     $credit = $row['credit'] !== null ? floatval($row['credit']) : 0;
 
                                     if ($payments == 0 && $credit == 0) continue;
+
+                                    $pay_type_key = strtolower(trim($row['payment_method']));
+                                    $pay_type = $pay_labels[$pay_type_key]['label'] ?? ucfirst($pay_type_key);
 
                                     $balance += $credit;
                                     $total_credit += $credit;
@@ -172,6 +266,7 @@ if(isset($_REQUEST['customer_id'])){
                                         data-month="<?= date('m', strtotime($row['date'])) ?>"
                                         data-type="<?= $row['entry_type'] ?>"
                                     >
+                                        <td class="text-start"><?= htmlspecialchars($order_id) ?></td>
                                         <td><?= date('Y-m-d', strtotime($row['date'])) ?></td>
                                         <td><?= htmlspecialchars($row['job_name']) ?></td>
                                         <td>
@@ -183,7 +278,7 @@ if(isset($_REQUEST['customer_id'])){
                                                 <?= htmlspecialchars($row['po_number']) ?>
                                             </a>
                                         </td>
-                                        <td><?= ucwords($order_details['pay_type']) ?></td>
+                                        <td><?= $pay_type ?></td>
                                         <td class="text-end"><?= $payments > 0 ? '$' .number_format($payments, 2) : '' ?></td>
                                         <td class="text-end"><?= $credit > 0 ? '$' .number_format($credit, 2) : '' ?></td>
                                         <td class="text-end">
@@ -194,7 +289,7 @@ if(isset($_REQUEST['customer_id'])){
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td class="text-end" colspan="6">Total Credit</td>
+                                    <td class="text-end" colspan="7">Total Credit</td>
                                     <td class="text-end" colspan="1">$<?= number_format($total_credit,2) ?></td>
                                 </tr>
                             </tfoot>
@@ -217,7 +312,7 @@ if(isset($_REQUEST['customer_id'])){
         document.title = "<?= $page_title ?>";
 
         var table = $('#acct_dtls_tbl').DataTable({
-            "order": [[0, "desc"]],
+            "order": [],
             "pageLength": 100,
             "columnDefs": [
                 { targets: '_all', orderable: true }
@@ -230,6 +325,75 @@ if(isset($_REQUEST['customer_id'])){
             $(this).select2({
                 width: '100%',
                 dropdownParent: $(this).parent()
+            });
+        });
+
+        $('#depositModal').on('show.bs.modal', function () {
+            $('#deposit_details_group').addClass('d-none');
+            $('#check_no_group').addClass('d-none');
+            $('#check_no').removeAttr('required').val('');
+            $('#type').val('');
+        });
+
+        $(document).on('click', '#depositModalBtn', function(event) {
+            event.preventDefault();
+            var job_id = $(this).data('job') || '';
+            $('#job_id').val(job_id);
+            $('#depositModal').modal('show');
+        });
+
+        $(document).on('change', '#type', function () {
+            const type = $(this).val();
+
+            if (type === 'cash') {
+                $('#deposit_details_group').removeClass('d-none');
+                $('#check_no_group').addClass('d-none');
+                $('#check_no').removeAttr('required').val('');
+            } else if (type === 'check') {
+                $('#deposit_details_group').removeClass('d-none');
+                $('#check_no_group').removeClass('d-none');
+                $('#check_no').attr('required', true);
+            } else {
+                $('#deposit_details_group').addClass('d-none');
+                $('#check_no_group').addClass('d-none');
+                $('#check_no').removeAttr('required').val('');
+            }
+        });
+
+        $('#depositForm').on('submit', function(event) {
+            event.preventDefault(); 
+            var formData = new FormData(this);
+            formData.append('deposit_job', 'deposit_job');
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('.modal').modal("hide");
+                    if (response == "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Amount Deposited successfully!");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                                location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text("Process Failed");
+                        console.log("Response: "+response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
             });
         });
 

@@ -190,54 +190,62 @@ if (isset($_POST['search_jobs'])) {
                 </thead>
                 <tbody>
                 <?php
-                $query_jobs = "SELECT job_name, customer_id, job_id, deposit_amount FROM jobs WHERE customer_id = '$customerid'";
+                $query_jobs = "SELECT ledger_id, job_id, amount, entry_type, created_at, reference_no AS orderid FROM job_ledger WHERE entry_type IN ('deposit', 'usage') ORDER BY created_at DESC";
                 $result_jobs = mysqli_query($conn, $query_jobs);
 
                 if ($result_jobs && mysqli_num_rows($result_jobs) > 0) {
                     while ($row_jobs = mysqli_fetch_assoc($result_jobs)) {
-                        $job_name = trim($row_jobs['job_name']);
-                        $job_id = trim($row_jobs['job_id']);
-                        $customer_id = $row_jobs['customer_id'];
-                        $deposit_amount = getJobDepositTotal($job_id);
+                        $job_id = $row_jobs['job_id'];
+                        $job_details = getJobDetails($job_id);
+                        $customer_id = $job_details['customer_id'];
+                        $customer_name = get_customer_name($customer_id);
+                        $job_name = $job_details['job_name'];
 
-                        $query_orders = "
-                            SELECT 
-                                GROUP_CONCAT(DISTINCT job_po ORDER BY job_po SEPARATOR ', ') AS all_pos,
-                                SUM(discounted_price) AS job_amt
-                            FROM orders
-                            WHERE customerid = '$customerid'
-                            AND job_name = '" . mysqli_real_escape_string($conn, $job_name) . "'
-                        ";
+                        $type = $row_jobs['entry_type'];
+                        $amount = floatval($row_jobs['amount']);
+                        
+                        $order_id = $row_jobs['orderid'];
+                        $order_details = getOrderDetails($order_id);
 
-                        if (!empty($date_from) && !empty($date_to)) {
-                            $date_to_full = $date_to . ' 23:59:59';
-                            $query_orders .= " AND order_date BETWEEN '$date_from' AND '$date_to_full'";
+                        $job_po = $order_details['job_po'];
+
+                        $deposit_amount = 0;
+                        $usage_amount = 0;
+
+                        switch ($type) {
+                            case 'deposit':
+                                $deposit_amount = abs($amount);
+                                break;
+
+                            case 'usage':
+                                $usage_amount = abs($amount);
+                                break;
                         }
 
-                        $result_orders = mysqli_query($conn, $query_orders);
-
-                        $job_amt = 0;
-                        $all_pos = '';
-
-                        if ($result_orders && mysqli_num_rows($result_orders) > 0) {
-                            $row_orders = mysqli_fetch_assoc($result_orders);
-                            $job_amt = floatval($row_orders['job_amt']);
-                            $all_pos = $row_orders['all_pos'] ?? '';
-                        }
+                        $ledger_id = $row_jobs['ledger_id'];
 
                         ?>
                         <tr>
                             <td class="ps-0">
-                                <h5 class="mb-1 text-center"><?= htmlspecialchars($all_pos ?: '-') ?></h5>
+                                <h5 class="mb-1 text-center"><?= htmlspecialchars($job_po) ?></h5>
                             </td>
                             <td>
                                 <h5 class="mb-1 text-center"><?= htmlspecialchars($job_name) ?></h5>
                             </td>
                             <td>
-                                <h5 class="mb-1 text-right">$<?= number_format(getJobDepositTotal($job_id),2) ?></h5>
+                                <?php if ($deposit_amount > 0): ?>
+                                    <h5 class="mb-1 text-right" style="color: green !important;">
+                                        + $<?= number_format($deposit_amount, 2); ?>
+                                    </h5>
+                                <?php endif; ?>
                             </td>
+
                             <td>
-                                <h5 class="mb-1 text-right">$<?= number_format(getJobUsageTotal($job_id),2) ?></h5>
+                                <?php if ($usage_amount > 0): ?>
+                                    <h5 class="mb-1 text-right" style="color: red !important;">
+                                        - $<?= number_format($usage_amount, 2); ?>
+                                    </h5>
+                                <?php endif; ?>
                             </td>
                             <td class="text-center">
                                 <a href="?page=job_details&customer_id=<?= $customerid ?>&job_name=<?= urlencode($job_name) ?>"

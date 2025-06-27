@@ -766,12 +766,7 @@ if(isset($_REQUEST['id'])){
           });
       }
 
-    $('#depositModal').on('show.bs.modal', function () {
-        $('#deposit_details_group').addClass('d-none');
-        $('#check_no_group').addClass('d-none');
-        $('#check_no').removeAttr('required').val('');
-        $('#type').val('');
-    });
+    
 
     // Toggle display based on type selected
     $(document).on('change', '#type', function () {
