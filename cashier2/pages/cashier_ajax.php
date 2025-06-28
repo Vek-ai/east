@@ -640,6 +640,8 @@ if (isset($_POST['save_estimate'])) {
         exit;
     }
 
+    $cashierid = intval($_SESSION['userid']);
+
     $customerid = intval($_SESSION['customer_id']);
     $cart = $_SESSION['cart'];
     $estimated_date = date('Y-m-d H:i:s');
@@ -676,8 +678,8 @@ if (isset($_POST['save_estimate'])) {
         $total_discounted_price += $discounted_price;
     }
 
-    $query = "INSERT INTO estimates (total_price, discounted_price, discount_percent, estimated_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_fname, deliver_lname) 
-              VALUES ('$total_actual_price', '$total_discounted_price', '".($discount * 100)."', '$estimated_date', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt' , '$deliver_fname' , '$deliver_lname')";
+    $query = "INSERT INTO estimates (total_price, cashier, discounted_price, discount_percent, estimated_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_fname, deliver_lname) 
+              VALUES ('$total_actual_price', '$cashierid', '$total_discounted_price', '".($discount * 100)."', '$estimated_date', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt' , '$deliver_fname' , '$deliver_lname')";
 
     if ($conn->query($query) === TRUE) {
         $estimateid = $conn->insert_id;

@@ -174,11 +174,7 @@ if(isset($_REQUEST['action'])) {
                                 </div>
                                 <div class="d-flex justify-content-end align-items-center gap-3 p-3 flex-wrap">
                                     <div class="d-flex justify-content-end align-items-center gap-3">
-                                        <?php if ($status_code == 1): ?>
-                                            <button type="button" id="email_estimate_btn" class="btn btn-primary email_estimate_btn" data-customer="<?= $estimate_details["customerid"]; ?>" data-id="<?= $estimate_details["estimateid"]; ?>">
-                                                <i class="fa fa-envelope fs-5"></i> Send Email
-                                            </button>
-                                        <?php elseif ($status_code == 3): ?>
+                                        <?php if ($status_code == 3): ?>
                                             <button type="button" id="resendBtn" class="btn btn-warning <?= $is_edited != 1 ? 'd-none' : '' ?>" data-id="<?=$estimateid?>" data-action="submit_for_approval">Return for Approval</button>
                                             <button type="button" id="AcceptBtn" class="btn btn-success" data-id="<?=$estimateid?>" data-action="accept_estimate">Accept</button>
                                         <?php elseif ($status_code == 4): ?>
@@ -970,6 +966,8 @@ if(isset($_REQUEST['action'])) {
         $customer_phone = $customer_details['contact_phone'];
         $primary_contact = $customer_details['primary_contact'];
 
+        $send_option = mysqli_real_escape_string($conn, $_POST['send_option']);
+
         $est_key = 'EST' . substr(hash('sha256', uniqid()), 0, 10);
 
         $sql = "UPDATE estimates SET est_key = '$est_key', status = '2' WHERE estimateid = $id";
@@ -983,7 +981,12 @@ if(isset($_REQUEST['action'])) {
             ]);
         }
 
+        $est_url = "https://metal.ilearnwebtech.com/customer/index.php?page=estimate&id=$id&key=$est_key";
+
         $subject = "EKM has sent an Estimate List for Approval";
+
+        $sms_message = "Hi $customer_name,\n\n$subject\nClick this link to view your receipt:\n$est_url";
+
         $message = "
                 <html>
                 <head>
@@ -1022,70 +1025,54 @@ if(isset($_REQUEST['action'])) {
                 </html>
                 ";
 
-            if($primary_contact == 2){
-                if(!empty($customer_phone)){
-                    $response = sendPhoneMessage($customer_email, $customer_name, $subject, $message);
-                    if ($response['success'] == true) {
-                        echo json_encode([
-                            'success' => true,
-                            'msg_success' => true,
-                            'message' => "Successfully sent message to $customer_name for confirmation on orders.",
-                            'id' => $id,
-                            'key' => $est_key
-                        ]);
-                    } else {
-                        echo json_encode([
-                            'success' => true,
-                            'msg_success' => false,
-                            'message' => "Successfully saved, but message could not be sent to $customer_name.",
-                            'error' => $response['error'],
-                            'id' => $id,
-                            'key' => $est_key
-                        ]);
-                    }
-                } else {
-                    echo json_encode([
-                        'success' => true,
-                        'msg_success' => false,
-                        'message' => "Successfully saved, but message could not be sent to $customer_name.",
-                        'error' => $response['error'],
-                        'id' => $id,
-                        'key' => $est_key
-                    ]);
+        $email_success = false;
+        $sms_success = false;
+        $email_error = '';
+        $sms_error = '';
+
+        if ($send_option === 'email' || $send_option === 'both') {
+            if (!empty($customer_email)) {
+                $email_result = sendEmail($customer_email, $customer_name, $subject, $html_message);
+                $email_success = $email_result['success'];
+                $response['email_success'] = $email_success;
+
+                if (!$email_success) {
+                    $email_error = $email_result['error'] ?? 'Unknown email error';
+                    $response['email_error'] = $email_error;
                 }
-            }else{
-                if(!empty($customer_email)){
-                    $response = sendEmail($customer_email, $customer_name, $subject, $message);
-                    if ($response['success'] == true) {
-                        echo json_encode([
-                            'success' => true,
-                            'email_success' => true,
-                            'message' => "Successfully sent email to $customer_name for confirmation on orders.",
-                            'id' => $id,
-                            'key' => $est_key
-                        ]);
-                    } else {
-                        echo json_encode([
-                            'success' => true,
-                            'email_success' => false,
-                            'message' => "Successfully saved, but email could not be sent to $customer_name.",
-                            'error' => $response['error'],
-                            'id' => $id,
-                            'key' => $est_key
-                        ]);
-                    }
-    
-                }else {
-                    echo json_encode([
-                        'success' => true,
-                        'email_success' => false,
-                        'message' => "Successfully saved, but email could not be sent to $customer_name.",
-                        'error' => $response['error'],
-                        'id' => $id,
-                        'key' => $est_key
-                    ]);
-                }
+            } else {
+                $response['email_success'] = false;
+                $response['email_error'] = 'Missing email';
             }
+        }
+
+        if ($send_option === 'sms' || $send_option === 'both') {
+            if (!empty($customer_phone)) {
+                $sms_result = sendPhoneMessage($customer_phone, $customer_name, $subject, $sms_message);
+                $sms_success = $sms_result['success'];
+                $response['sms_success'] = $sms_success;
+
+                if (!$sms_success) {
+                    $sms_error = $sms_result['error'] ?? 'Unknown SMS error';
+                    $response['sms_error'] = $sms_error;
+                }
+            } else {
+                $response['sms_success'] = false;
+                $response['sms_error'] = 'Missing phone number';
+            }
+        }
+
+        if ($email_success || $sms_success) {
+            $response['message'] = "Successfully sent to $customer_name.";
+        } else {
+            $response['message'] = "Message could not be sent to $customer_name.";
+        }
+
+        $response['success'] = true;
+        $response['id'] = $id;
+        $response['key'] = $est_key;
+
+        echo json_encode($response);
     }
 
     if ($action == "update_status") {
