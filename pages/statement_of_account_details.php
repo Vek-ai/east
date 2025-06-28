@@ -74,18 +74,19 @@ if(isset($_REQUEST['customer_id'])){
         </div>
     </div>
 
-    <div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true">
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
-                    <h5 class="modal-title">Add Job Deposit</h5>
+                    <h5 class="modal-title">Add Receivable Payment</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="depositForm" class="form-horizontal">
+                <form id="paymentForm" class="form-horizontal">
                     <div class="modal-body">
                         <div class="card">
                             <div class="card-body">
-                                <input type="hidden" id="deposited_by" name="deposited_by" value="<?= $customer_id ?>">
+                                <input type="hidden" id="paid_by" name="paid_by" value="<?= $customer_id ?>">
+                                <input type="hidden" id="ledger_id" name="ledger_id" value="">
 
                                 <div class="mb-3">
                                     <label for="type" class="form-label">Deposit Type</label>
@@ -96,27 +97,10 @@ if(isset($_REQUEST['customer_id'])){
                                     </select>
                                 </div>
 
-                                <div id="deposit_details_group" class="d-none">
+                                <div id="payment_details_group" class="d-none">
                                     <div class="mb-3">
-                                        <label for="type" class="form-label">Job</label>
-                                        <select class="form-select" id="job_id" name="job_id">
-                                            <option value="" hidden>-- Select Job --</option>
-                                            <?php
-                                            $query_job_name = "SELECT * FROM jobs WHERE customer_id = '$customer_id'";
-                                            $result_job_name = mysqli_query($conn, $query_job_name);
-                                            while ($row_job_name = mysqli_fetch_array($result_job_name)) {
-                                                $job_id = $row_job_name['job_id'];
-                                            ?>
-                                                <option value="<?= $row_job_name['job_id']; ?>">
-                                                    <?= htmlspecialchars($row_job_name['job_name']); ?>
-                                                </option>
-                                            <?php } ?>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="deposit_amount" class="form-label">Deposit Amount</label>
-                                        <input type="number" step="0.01" class="form-control" id="deposit_amount" name="deposit_amount" >
+                                        <label for="payment_amount" class="form-label">Payment Amount</label>
+                                        <input type="number" step="0.01" class="form-control" id="payment_amount" name="payment_amount" >
                                     </div>
 
                                     <div class="mb-3">
@@ -141,6 +125,27 @@ if(isset($_REQUEST['customer_id'])){
                         <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="paymentHistoryModal" tabindex="-1" aria-labelledby="paymentHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentHistoryModalLabel">Payment History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body">
+                <div id="paymentHistoryBody">
+                
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
             </div>
         </div>
     </div>
@@ -187,16 +192,14 @@ if(isset($_REQUEST['customer_id'])){
             <div class="col-9">
                 <div id="selected-tags" class="mb-2"></div>
                 <div class="datatables">
-                    <div class="modal-header d-flex justify-content-between align-items-center">
+                    <div class="modal-header d-flex align-items-center">
                         <h5 class="fw-bold">Ledger Data for <?= get_customer_name($customer_id) ?></h5>
-                        <button type="button" id="depositModalBtn" title="Deposit" class="btn btn-primary py-1 px-3 text-decoration-none">
-                            <i class="fas fa-wallet me-1"></i> Deposit
-                        </button>
                     </div>
                     <div class="product-details table-responsive text-wrap">
                         <?php
                         $query = "
                             SELECT 
+                                l.ledger_id,
                                 l.job_id,
                                 l.created_at AS date,
                                 l.description,
@@ -229,6 +232,7 @@ if(isset($_REQUEST['customer_id'])){
                                     <th style="color: #ffffff !important;" class="text-end">Payments</th>
                                     <th style="color: #ffffff !important;" class="text-end">Receivable</th>
                                     <th style="color: #ffffff !important;" class="text-end">Balance</th>
+                                    <th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -246,6 +250,7 @@ if(isset($_REQUEST['customer_id'])){
                                 ];
 
                                 while ($row = mysqli_fetch_assoc($result)) {
+                                    $ledger_id = $row['ledger_id'];
                                     $job_details = getJobDetails($row['job_id']);
                                     $order_id = $row['orderid'];
                                     $order_details = getOrderDetails($order_id);
@@ -284,6 +289,22 @@ if(isset($_REQUEST['customer_id'])){
                                         <td class="text-end">
                                             <?= '$' . number_format($balance, 2) ?>
                                         </td>
+                                        <td>
+                                            <?php
+                                            if($credit > 0){
+                                                ?>
+                                                <div class="d-flex justify-content-center gap-2">
+                                                    <a id="paymentBtn" title="Payment" role="button" class="py-1" data-id="<?= $ledger_id ?>">
+                                                        <i class="fas fa-wallet text-success"></i>
+                                                    </a>
+                                                    <a id="paymentHistoryBtn" title="Payment History" role="button" class="py-1" data-id="<?= $ledger_id ?>">
+                                                        <i class="fas fa-history text-primary"></i>
+                                                    </a>
+                                                </div>
+                                                <?php
+                                            }
+                                            ?>
+                                        </td>
                                     </tr>
                                 <?php } ?>
                             </tbody>
@@ -291,6 +312,7 @@ if(isset($_REQUEST['customer_id'])){
                                 <tr>
                                     <td class="text-end" colspan="7">Total Credit</td>
                                     <td class="text-end" colspan="1">$<?= number_format($total_credit,2) ?></td>
+                                    <td></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -328,44 +350,75 @@ if(isset($_REQUEST['customer_id'])){
             });
         });
 
-        $('#depositModal').on('show.bs.modal', function () {
-            $('#deposit_details_group').addClass('d-none');
+        $('#paymentModal').on('show.bs.modal', function () {
+            $('#payment_details_group').addClass('d-none');
             $('#check_no_group').addClass('d-none');
             $('#check_no').removeAttr('required').val('');
             $('#type').val('');
         });
 
-        $(document).on('click', '#depositModalBtn', function(event) {
+        $(document).on('click', '#paymentBtn', function(event) {
             event.preventDefault();
-            var job_id = $(this).data('job') || '';
-            $('#job_id').val(job_id);
-            $('#depositModal').modal('show');
+            var ledger_id = $(this).data('id') || '';
+            $('#ledger_id').val(ledger_id);
+            $('#paymentModal').modal('show');
+        });
+
+        $(document).on('click', '#paymentHistoryBtn', function(event) {
+            event.preventDefault();
+            var ledger_id = $(this).data('id') || '';
+            $.ajax({
+                url: 'pages/statement_of_account_details_ajax.php',
+                type: 'POST',
+                data: {
+                    ledger_id: ledger_id,
+                    action: 'payment_history'
+                },
+                success: function(response) {
+                    $('#paymentHistoryBody').html('');
+                    $('#paymentHistoryBody').html(response);
+
+                    if ($.fn.DataTable.isDataTable('#payment_history_tbl')) {
+                        $('#payment_history_tbl').DataTable().clear().destroy();
+                    }
+
+                    $('#payment_history_tbl').DataTable({
+                        order: [],
+                        lengthChange: false
+                    });
+
+                    $('#paymentHistoryModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
         });
 
         $(document).on('change', '#type', function () {
             const type = $(this).val();
 
             if (type === 'cash') {
-                $('#deposit_details_group').removeClass('d-none');
+                $('#payment_details_group').removeClass('d-none');
                 $('#check_no_group').addClass('d-none');
                 $('#check_no').removeAttr('required').val('');
             } else if (type === 'check') {
-                $('#deposit_details_group').removeClass('d-none');
+                $('#payment_details_group').removeClass('d-none');
                 $('#check_no_group').removeClass('d-none');
                 $('#check_no').attr('required', true);
             } else {
-                $('#deposit_details_group').addClass('d-none');
+                $('#payment_details_group').addClass('d-none');
                 $('#check_no_group').addClass('d-none');
                 $('#check_no').removeAttr('required').val('');
             }
         });
 
-        $('#depositForm').on('submit', function(event) {
+        $('#paymentForm').on('submit', function(event) {
             event.preventDefault(); 
             var formData = new FormData(this);
-            formData.append('deposit_job', 'deposit_job');
+            formData.append('action', 'payment_receivable');
             $.ajax({
-                url: 'pages/customer-dash_ajax.php',
+                url: 'pages/statement_of_account_details_ajax.php',
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -374,7 +427,7 @@ if(isset($_REQUEST['customer_id'])){
                     $('.modal').modal("hide");
                     if (response == "success") {
                         $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Amount Deposited successfully!");
+                        $('#responseMsg').text("Payment saved successfully!");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");

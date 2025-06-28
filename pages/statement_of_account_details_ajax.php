@@ -1,4 +1,5 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -154,50 +155,101 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
-    if ($action == "deposit_job") {
-        $job_id = intval($_POST['job_id'] ?? 0);
-        $deposit_amount = floatval($_POST['deposit_amount'] ?? 0);
-        $deposited_by = trim($_POST['deposited_by'] ?? '');
+    if ($action == "payment_receivable") {
+        $ledger_id = intval($_POST['ledger_id'] ?? 0);
+        $payment_amount = floatval($_POST['payment_amount'] ?? 0);
+        $paid_by = trim($_POST['paid_by'] ?? '');
         $reference_no = trim($_POST['reference_no'] ?? '');
         $payment_method = $_POST['type'] ?? 'cash';
         $check_no = $_POST['check_no'] ?? null;
-        $description = mysqli_real_escape_string($conn, $_POST['description'] ?? 'Job deposit');
+        $description = mysqli_real_escape_string($conn, $_POST['description'] ?? '');
 
-        $check_query = "SELECT * FROM jobs WHERE job_id = '$job_id'";
+        $cashier = $_SESSION['userid'];
+
+        $check_query = "SELECT * FROM job_ledger WHERE ledger_id = '$ledger_id'";
         $check_result = mysqli_query($conn, $check_query);
 
         if ($check_result && mysqli_num_rows($check_result) > 0) {
             $check_no_sql = $payment_method === 'check' ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
 
             $insert = "
-                INSERT INTO job_ledger (job_id, entry_type, amount, payment_method, check_number, reference_no, description, created_by)
+                INSERT INTO job_payment (ledger_id, amount, payment_method, check_number, reference_no, description, created_by, cashier)
                 VALUES (
-                    '$job_id',
-                    'deposit',
-                    '$deposit_amount',
+                    '$ledger_id',
+                    '$payment_amount',
                     '$payment_method',
                     $check_no_sql,
                     '" . mysqli_real_escape_string($conn, $reference_no) . "',
                     '$description',
-                    '" . mysqli_real_escape_string($conn, $deposited_by) . "'
+                    '" . mysqli_real_escape_string($conn, $paid_by) . "',
+                    '$cashier'
                 )
             ";
 
             if (mysqli_query($conn, $insert)) {
-                $update = "
-                    UPDATE jobs 
-                    SET deposit_amount = deposit_amount + $deposit_amount
-                    WHERE job_id = '$job_id'
-                ";
-                $update_result = mysqli_query($conn, $update);
-
-                echo $update_result ? 'success' : 'error_update';
+                echo 'success';
             } else {
                 echo 'error_insert';
             }
         } else {
             echo 'job_not_found';
         }
+    }
+
+    if ($action == "payment_history") {
+        $ledger_id = intval($_POST['ledger_id'] ?? 0);
+
+        ?>
+        <div class="datatables">
+            <div class="table-responsive">
+                <table id="payment_history_tbl" class="table table-hover align-middle">
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Payment Method</th>
+                        <th>Cashier</th>
+                        <th>Reference No</th>
+                        <th>Description</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                            $total_paid = 0;
+                            $query = "SELECT * FROM job_payment WHERE ledger_id = '$ledger_id' ORDER BY created_at DESC";
+                            $result = mysqli_query($conn, $query);
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $cashier = get_staff_name($row['cashier']);
+                                $payment_method = ucfirst($row['payment_method']);
+                                $amount = number_format($row['amount'], 2);
+                                $reference_no = $row['reference_no'];
+                                $description = $row['description'];
+                                $date = date('F d,Y', strtotime($row['created_at']));
+
+                                $total_paid += $row['amount'];
+                                echo "<tr>
+                                        <td>$date</td>
+                                        <td>$payment_method</td>
+                                        <td>$cashier</td>
+                                        <td>$reference_no</td>
+                                        <td>$description</td>
+                                        <td class='text-end'>$$amount</td>
+                                    </tr>";
+                            }
+                        ?>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="5" class="text-end">Total</th>
+                            <th class="text-end">$<?= number_format($total_paid, 2) ?></th>
+                        </tr>
+                    </tfoot>
+                </table>
+                </div>
+            </div>
+        </div>
+
+        <?php
     }
 
 
