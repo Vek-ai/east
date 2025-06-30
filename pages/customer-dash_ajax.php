@@ -190,7 +190,32 @@ if (isset($_POST['search_jobs'])) {
                 </thead>
                 <tbody>
                 <?php
-                $query_jobs = "SELECT ledger_id, job_id, amount, entry_type, created_at, reference_no AS orderid FROM job_ledger WHERE entry_type IN ('deposit', 'usage') ORDER BY created_at DESC";
+                $conditions = [];
+                $conditions[] = "jl.entry_type IN ('deposit', 'usage')";
+
+                if (!empty($customerid)) {
+                    $conditions[] = "j.customer_id = '$customerid'";
+                }
+
+                if (!empty($date_from) && !empty($date_to)) {
+                    $conditions[] = "DATE(jl.created_at) BETWEEN '$date_from' AND '$date_to'";
+                }
+
+                $where_clause = implode(" AND ", $conditions);
+
+                $query_jobs = "
+                    SELECT 
+                        jl.ledger_id, 
+                        jl.job_id, 
+                        jl.amount, 
+                        jl.entry_type, 
+                        jl.created_at, 
+                        jl.reference_no AS orderid 
+                    FROM job_ledger jl
+                    INNER JOIN jobs j ON jl.job_id = j.job_id
+                    WHERE $where_clause
+                    ORDER BY jl.created_at DESC
+                ";
                 $result_jobs = mysqli_query($conn, $query_jobs);
 
                 if ($result_jobs && mysqli_num_rows($result_jobs) > 0) {
