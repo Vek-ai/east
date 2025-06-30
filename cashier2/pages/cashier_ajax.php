@@ -656,22 +656,25 @@ if (isset($_POST['save_estimate'])) {
     $pre_orders = array();
     foreach ($cart as $item) {
         $discount = 0;
-        if(isset($item['used_discount'])){
+        if (isset($item['used_discount'])) {
             $discount = $item['used_discount'] / 100;
-        }else{
+        } else {
             $discount = $discount_default;
         }
+
         $product_id = intval($item['product_id']);
         $product_details = getProductDetails($product_id);
         $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
+
         $unit_price = floatval($item['unit_price']);
         $quantity_cart = intval($item['quantity_cart']);
-        $product_details = getProductDetails($item['product_id']);
         $estimate_length = floatval($item['estimate_length']);
         $estimate_length_inch = floatval($item['estimate_length_inch']);
-        $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
+        $amount_discount = !empty($item["amount_discount"]) ? floatval($item["amount_discount"]) : 0;
 
-        $actual_price = $unit_price * $quantity_cart;
+        $total_length = $estimate_length + ($estimate_length_inch / 12);
+
+        $actual_price = $unit_price * $total_length;
         $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
 
         $total_actual_price += $actual_price;
@@ -706,15 +709,18 @@ if (isset($_POST['save_estimate'])) {
             $estimate_width = !empty($item['estimate_width']) ? floatval($item['estimate_width']) : $product_details['width'];
             $estimate_bend = floatval($item['estimate_bend']);
             $estimate_hem = floatval($item['estimate_hem']);
-            $estimate_length = floatval($item['estimate_length']);
-            $estimate_length_inch = floatval($item['estimate_length_inch']);
+            
             $custom_color = $item['custom_color'];
             $custom_grade = $item['custom_grade'];
             $custom_gauge = $item['custom_gauge'];
             $is_pre_order = $item['is_pre_order'];
             $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
 
-            $actual_price = $unit_price;
+            $estimate_length = floatval($item['estimate_length']);
+            $estimate_length_inch = floatval($item['estimate_length_inch']);
+            $total_length = $estimate_length + ($estimate_length_inch / 12);
+
+            $actual_price = $unit_price * $total_length;
             $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
 
             $curr_discount = intval(getCustomerDiscountProfile($customerid));
@@ -1051,12 +1057,10 @@ if (isset($_POST['save_order'])) {
         $amount_discount = !empty($item["amount_discount"]) ? floatval($item["amount_discount"]) : 0;
 
         $total_length = ($estimate_length + ($estimate_length_inch / 12));
-        $total_length = $total_length > 0 ? $total_length : 1;
         $actual_price = $unit_price * $quantity_cart * $total_length;
 
         $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
         $discounted_price = max(0, $discounted_price);
-
 
         $total_price += $actual_price;
         $total_discounted_price += $discounted_price;
@@ -1192,7 +1196,6 @@ if (isset($_POST['save_order'])) {
             $custom_gauge = $item['custom_gauge'];
 
             $total_length = $estimate_length + ($estimate_length_inch / 12);
-            $total_length = $total_length > 0 ? $total_length : 1;
 
             $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
             $product_category = intval($product_details['product_category']);

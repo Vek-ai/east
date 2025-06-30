@@ -985,7 +985,7 @@ if(isset($_REQUEST['action'])) {
 
         $subject = "EKM has sent an Estimate List for Approval";
 
-        $sms_message = "Hi $customer_name,\n\n$subject\nClick this link to view your receipt:\n$est_url";
+        $sms_message = "Hi $customer_name,\n\n$subject\nClick this link to view your estimate details:\n$est_url";
 
         $message = "
                 <html>

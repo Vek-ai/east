@@ -10,7 +10,8 @@ $status_labels = [
     1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
     2 => ['label' => 'Processing', 'class' => 'badge bg-warning'],
     3 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
-    4 => ['label' => 'Sent to Customer', 'class' => 'badge bg-success']
+    4 => ['label' => 'Sent to Customer', 'class' => 'badge bg-success'],
+    5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
 ];
 
 if(isset($_REQUEST['customer_id'])){
@@ -120,7 +121,30 @@ if(isset($_REQUEST['customer_id'])){
 
     <div class="widget-content searchable-container list">
 
-    <div class="modal fade" id="viewOrderModal" tabindex="-1" aria-labelledby="viewOrderModalLabel" aria-hidden="true"></div>
+    <div class="modal fade" id="viewOrderModal" tabindex="-1" aria-labelledby="viewOrderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 90%;">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        View Order
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="update_product" class="form-horizontal">
+                    <div  class="modal-body">
+                        <div id="viewOrderBody">
+
+                        </div>
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="button" id="saveEditOrderBtn" class="btn btn-success">
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -228,6 +252,22 @@ if(isset($_REQUEST['customer_id'])){
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control py-0 ps-5 select2 filter-selection" data-filter="cashier" data-filter-name="Salesperson" id="select-cashier">
+                            <option value="">All Salespersons</option>
+                            <?php
+                            $query_staff = "SELECT staff_id, staff_fname, staff_lname FROM staff WHERE status = 1 ORDER BY staff_fname ASC";
+                            $result_staff = mysqli_query($conn, $query_staff);
+                            while ($row_staff = mysqli_fetch_assoc($result_staff)) {
+                                ?>
+                                <option value="<?= $row_staff['staff_id'] ?>">
+                                    <?= htmlspecialchars($row_staff['staff_fname'] . ' ' . $row_staff['staff_lname']) ?>
+                                </option>
+                            <?php
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
                         <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="month" data-filter-name="Month" id="select-month">
                             <option value="">All Months</option>
                             <option value="01">January</option>
@@ -275,19 +315,19 @@ if(isset($_REQUEST['customer_id'])){
                             <table id="order_list_tbl" class="table table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
-                                        <th>OrderID</th>
-                                        <th>Customer</th>
-                                        <th>Total Price</th>
-                                        <th>Discounted Price</th>
-                                        <th>Order Date</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
+                                        <th style="color: #ffffff !important;">OrderID</th>
+                                        <th style="color: #ffffff !important;">Customer</th>
+                                        <th style="color: #ffffff !important;">Total Price</th>
+                                        <th style="color: #ffffff !important;">Order Date</th>
+                                        <th style="color: #ffffff !important;">Status</th>
+                                        <th style="color: #ffffff !important;">Salesperson</th>
+                                        <th style="color: #ffffff !important;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php 
 
-                                    $query = "SELECT * FROM orders";
+                                    $query = "SELECT * FROM orders ORDER BY order_date DESC";
 
                                     if (isset($customer_id) && !empty($customer_id)) {
                                         $query .= " AND customerid = '$customer_id'";
@@ -307,6 +347,7 @@ if(isset($_REQUEST['customer_id'])){
                                         <tr
                                             data-by="<?= $row['order_from'] ?>"
                                             data-tax="<?= $customer_details['tax_status'] ?>"
+                                            data-cashier="<?= $row['cashier'] ?>"
                                             data-month="<?= date('m', strtotime($row['order_date'])) ?>"
                                             data-year="<?= date('Y', strtotime($row['order_date'])) ?>"
                                             data-status="<?= $status_code ?>"
@@ -316,9 +357,6 @@ if(isset($_REQUEST['customer_id'])){
                                             </td>
                                             <td style="color: #ffffff !important;">
                                                 <?php echo get_customer_name($row["customerid"]) ?>
-                                            </td>
-                                            <td style="color: #ffffff !important;">
-                                                $ <?php echo number_format($row["total_price"],2) ?>
                                             </td>
                                             <td style="color: #ffffff !important;">
                                                 $ <?php echo number_format($row["discounted_price"],2) ?>
@@ -339,28 +377,39 @@ if(isset($_REQUEST['customer_id'])){
                                             <td class="text-center" style="color: #ffffff !important;">
                                                 <span class="estimate_status <?= $status['class']; ?> fw-bond"><?= $status['label']; ?></span>
                                             </td>
+                                            <td style="color: #ffffff !important;">
+                                                <?= ucwords(get_staff_name($row["cashier"])) ?>
+                                            </td>
                                             <td class="text-center">
-                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Order">
+                                                <button class="btn btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Order">
                                                     <i class="text-primary fa fa-eye fs-5"></i>
                                                 </button>
 
+                                                <button class="btn btn-sm p-0 me-1" id="edit_order_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Edit Order">
+                                                    <i class="text-warning fa fa-pencil fs-5"></i>
+                                                </button>
+
                                                 <?php if ($status_code == 1): ?>
-                                                    <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Email Order">
-                                                        <i class="fa fa-envelope fs-5 text-info"></i>
+                                                    <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Send Confirmation">
+                                                        <iconify-icon icon="solar:plain-linear" class="fs-6 text-info"></iconify-icon>
                                                     </a>
                                                 <?php endif; ?>
 
-                                                <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print Product">
+                                                <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
                                                     <i class="text-success fa fa-print fs-5"></i>
                                                 </a>
 
-                                                <a href="print_order_total.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print Total">
-                                                    <i class="text-white fa fa-file-lines fs-5"></i>
-                                                </a>
+                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Change History">
+                                                    <i class="text-info fa fa-clock-rotate-left fs-5"></i>
+                                                </button>
 
                                                 <a href="customer/index.php?page=order&id=<?=$row["orderid"]?>&key=<?=$row["order_key"]?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Open Customer View">
                                                     <i class="text-info fa fa-sign-in-alt fs-5"></i>
                                                 </a>
+
+                                                <button class="btn btn-sm p-0 me-1" id="hold_order_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Place on Hold">
+                                                    <iconify-icon icon="solar:shield-cross-outline" class="fs-6 text-primary"></iconify-icon>
+                                                </button>
                                             </td>
 
                                         </tr>
@@ -456,6 +505,33 @@ if(isset($_REQUEST['customer_id'])){
   </div>
 </div>
 
+<div class="modal fade" id="sendOrderModal" tabindex="-1" aria-labelledby="sendOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sendOrderModalLabel">Send Options</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <h6 class="mb-3">How would you like to send the order to the customer?</h6>
+
+                <form class="send_order_form d-flex flex-column flex-md-row align-items-center justify-content-center gap-2" method="post">
+                    <input id="send_order_id" type="hidden" name="id" value="">
+                    <input id="send_customer_id" type="hidden" name="customerid" value="">
+
+                    <select name="send_option" class="form-select form-select-sm w-auto">
+                        <option value="email">Email</option>
+                        <option value="sms">Text Message</option>
+                        <option value="both">Both</option>
+                    </select>
+
+                    <button type="submit" class="btn btn-sm btn-primary">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function isValidURL(str) {
         try {
@@ -476,7 +552,7 @@ if(isset($_REQUEST['customer_id'])){
         var isPrinting = false;
 
         var table = $('#order_list_tbl').DataTable({
-            "order": [[3, "desc"]],
+            "order": [],
             "pageLength": 100,
             "columnDefs": [
                 { targets: '_all', orderable: true }
@@ -511,6 +587,61 @@ if(isset($_REQUEST['customer_id'])){
 
         $('#toggleActive').trigger('change');
 
+        $(document).on('click', '.email_order_btn', function () {
+            const orderId = $(this).data('id');
+            const customerId = $(this).data('customer');
+
+            $('#send_order_id').val(orderId);
+            $('#send_customer_id').val(customerId);
+
+            $('#sendOrderModal').modal('show');
+        });
+
+        $(document).on('submit', '.send_order_form', function (e) {
+            e.preventDefault();
+
+            const $form = $(this);
+            const formData = new FormData(this);
+            formData.append('action', 'send_email');
+
+            $.ajax({
+                url: 'pages/order_list_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function () {
+                    $form.find('button').prop('disabled', true).text('Sending...');
+                },
+                success: function (response) {
+                    let jsonResponse;
+
+                    try {
+                        jsonResponse = (typeof response === "string") ? JSON.parse(response) : response;
+                    } catch (e) {
+                        jsonResponse = { success: false, message: "Invalid JSON response" };
+                    }
+
+                    const emailOk = jsonResponse?.email_success === true;
+                    const smsOk = jsonResponse?.sms_success === true;
+
+                    if (emailOk || smsOk) {
+                        alert(jsonResponse.message || "Message sent successfully.");
+                    } else {
+                        alert(jsonResponse.message || "Message failed to send.");
+                    }
+
+                    location.reload();
+                },
+                error: function () {
+                    alert('Failed to send message.');
+                },
+                complete: function () {
+                    $('.modal').modal('hide');
+                }
+            });
+        });
+
         $(document).on('click', '#view_order_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
@@ -522,7 +653,145 @@ if(isset($_REQUEST['customer_id'])){
                         action: "fetch_view_modal"
                     },
                     success: function(response) {
-                        $('#viewOrderModal').html(response);
+                        $('#viewOrderBody').html(response);
+
+                        if ($.fn.DataTable.isDataTable('#order_dtls_tbl')) {
+                            $('#order_dtls_tbl').DataTable().clear().destroy();
+                        }
+
+                        $('#order_dtls_tbl').DataTable({
+                            language: {
+                                emptyTable: "Order Details not found"
+                            },
+                            autoWidth: false,
+                            responsive: true,
+                            lengthChange: false
+                        });
+
+                        $('#viewOrderModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '#edit_order_btn', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/order_list_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: "fetch_edit_modal"
+                    },
+                    success: function(response) {
+                        $('#viewOrderBody').html(response);
+
+                        if ($.fn.DataTable.isDataTable('#order_dtls_tbl')) {
+                            $('#order_dtls_tbl').DataTable().clear().destroy();
+                        }
+
+                        $('#order_dtls_tbl').DataTable({
+                            language: {
+                                emptyTable: "Order Details not found"
+                            },
+                            autoWidth: false,
+                            responsive: true,
+                            lengthChange: false
+                        });
+
+                        $(".select2-edit").each(function () {
+                            if ($(this).hasClass("select2-hidden-accessible")) {
+                                $(this).select2("destroy");
+                            }
+
+                            $(this).select2({
+                                width: '200px',
+                                dropdownParent: $(this).parent()
+                            });
+                        });
+
+                        $('#viewOrderModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on("click", "#saveEditOrderBtn", function (e) {
+            e.preventDefault();
+
+            const formData = {};
+
+            $("#order_dtls_tbl tbody tr").each(function () {
+                const row = $(this);
+                const id = row.find(".delete-row").data("id");
+
+                formData[id] = {
+                    color: row.find(`[name="color[${id}]"]`).val(),
+                    grade: row.find(`[name="grade[${id}]"]`).val(),
+                    profile: row.find(`[name="profile[${id}]"]`).val(),
+                    quantity: row.find(`[name="quantity[${id}]"]`).val(),
+                    status: row.find(`[name="status[${id}]"]`).val(),
+                    width: row.find(`[name="custom_width[${id}]"]`).val(),
+                    height: row.find(`[name="custom_height[${id}]"]`).val(),
+                    discounted_price: row.find(`[name="discounted_price[${id}]"]`).val()
+                };
+            });
+
+            $.ajax({
+                url: 'pages/order_list_ajax.php',
+                type: 'POST',
+                data: {
+                    action: 'save_edited_order',
+                    order_data: JSON.stringify(formData)
+                },
+                success: function (response) {
+                    console.log("Save Response:", response);
+                    if(response.trim() == 'success'){
+                        alert("Successfully saved!");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Save Error:", {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                }
+            });
+        });
+
+
+        $(document).on('click', '#hold_order_btn', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/order_list_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: "fetch_hold_modal"
+                    },
+                    success: function(response) {
+                        $('#viewOrderBody').html(response);
+
+                        if ($.fn.DataTable.isDataTable('#order_dtls_tbl')) {
+                            $('#order_dtls_tbl').DataTable().clear().destroy();
+                        }
+
+                        $('#order_dtls_tbl').DataTable({
+                            language: {
+                                emptyTable: "Order Details not found"
+                            },
+                            autoWidth: false,
+                            responsive: true,
+                            lengthChange: false
+                        });
+
                         $('#viewOrderModal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
@@ -587,49 +856,6 @@ if(isset($_REQUEST['customer_id'])){
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        });
-
-        $(document).on('click', '.email_order_btn', function(event) {
-            event.preventDefault(); 
-
-            if (!confirm("Are you sure you want to accept and send confirmation message to customer?")) {
-                return;
-            }
-
-            var id = $(this).data("id");
-            var customerid = $(this).data("customer");
-
-            console.log(customerid);
-
-            $.ajax({
-                url: 'pages/order_list_ajax.php',
-                type: 'POST',
-                data: {
-                    id: id,
-                    customerid: customerid,
-                    action: 'send_email'
-                },
-                success: function(response) {
-                    $('.modal').modal('hide');
-                    console.log(response);
-                    try {
-                        var jsonResponse = (typeof response === "string") ? JSON.parse(response) : response;
-                    } catch (e) {
-                        var jsonResponse = { success: false, message: "Invalid JSON response" };
-                    }
-
-                    if (jsonResponse?.success === true) {
-                        alert(jsonResponse?.message);
-                        location.reload();
-                    } else {
-                        alert(jsonResponse?.message || "An unknown error occurred.");
-                        location.reload();
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
         });
 
         $(document).on("click", "#processOrderBtn", function () {

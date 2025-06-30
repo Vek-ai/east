@@ -148,44 +148,36 @@ if (mysqli_num_rows($result) > 0) {
 
                     $trim_directory = "images/drawing/";
 
-                    while($row_product = mysqli_fetch_assoc($result_product)){
+                    while ($row_product = mysqli_fetch_assoc($result_product)) {
                         $productid = $row_product['productid'];
                         $product_details = getProductDetails($productid);
                         $grade_details = getGradeDetails($product_details['grade']);
 
-                        $product_name = '';
-                        if(!empty($row_product['product_item'])){
-                            $product_name = $row_product['product_item'];
-                        }else{
-                            $product_name = $product_details['product_item'];
-                        }
+                        $product_name = !empty($row_product['product_item']) ? $row_product['product_item'] : $product_details['product_item'];
+                        $picture_path = !empty($row_product['custom_img_src']) ? $trim_directory . $row_product["custom_img_src"] : '';
 
-                        if(!empty($pricing_id)){
-                            $pricing_disc = getPricingCategory($product_details['product_category'], $pricing_id) / 100;
-                        }else{
-                            $pricing_disc = 0;
-                        }
+                        $quantity = is_numeric($row_product['quantity']) ? floatval($row_product['quantity']) : 0;
+                        $unit_price = floatval($row_product['actual_price']);
+                        $discounted_price = floatval($row_product['discounted_price']);
 
-                        $picture_path = !empty($row_product['custom_img_src']) ? $trim_directory.$row_product["custom_img_src"] : '';
-
-                        $price = ($product_details['unit_price'] * (1 - $discount) * (1 - $pricing_disc)) * $row_product['quantity'];
+                        $total_line_price = $discounted_price;
 
                         $data[] = [
-                            $row_product['quantity'],
+                            $quantity,
                             '',
                             $product_name,
                             getColorName($product_details['color']),
                             $grade_details['grade_abbreviations'] ?? '',
                             '',
                             '',
-                            '$ ' .number_format($product_details['unit_price'],2),
-                            '$ ' .number_format($product_details['unit_price'] * (1 - $discount) * (1 - $pricing_disc),2),
-                            '$ ' .number_format($price,2) ,
+                            '$ ' . number_format($unit_price, 2),
+                            '$ ' . number_format($discounted_price, 2),
+                            '$ ' . number_format($total_line_price, 2),
                             $picture_path
                         ];
 
-                        $total_price += $price;
-                        $total_qty += $row_product['quantity'];
+                        $total_price += $total_line_price;
+                        $total_qty += $quantity;
                     }
 
                     $pdf->SetFont('Arial', '', 8);

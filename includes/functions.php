@@ -1426,4 +1426,51 @@ function getJobBalance($job_id) {
     return getJobDepositTotal($job_id) - getJobUsageTotal($job_id);
 }
 
+function getOrderProductPricing($order_product_id) {
+    global $conn;
+
+    $order_product_id = mysqli_real_escape_string($conn, $order_product_id);
+
+    $query = "SELECT id, quantity, actual_price, discounted_price, custom_length, custom_length2 
+              FROM order_product 
+              WHERE id = '$order_product_id' 
+              LIMIT 1";
+
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+
+        $quantity = is_numeric($row['quantity']) ? floatval($row['quantity']) : 0;
+        $actual_price = floatval($row['actual_price']);
+        $discounted_price = floatval($row['discounted_price']);
+        $length_ft = is_numeric($row['custom_length']) ? floatval($row['custom_length']) : 0;
+        $length_in = is_numeric($row['custom_length2']) ? floatval($row['custom_length2']) : 0;
+
+        $total_length = $length_ft + ($length_in / 12);
+
+        if ($total_length > 0) {
+            $total_actual_price = $actual_price * $quantity * $total_length;
+            $total_discounted_price = $discounted_price * $quantity * $total_length;
+        } else {
+            $total_actual_price = $actual_price * $quantity;
+            $total_discounted_price = $discounted_price * $quantity;
+        }
+
+        return [
+            'quantity' => $quantity,
+            'actual_price' => $actual_price,
+            'discounted_price' => $discounted_price,
+            'custom_length_ft' => $length_ft,
+            'custom_length_in' => $length_in,
+            'total_length' => $total_length,
+            'total_actual_price' => $total_actual_price,
+            'total_discounted_price' => $total_discounted_price
+        ];
+    }
+
+    return false;
+}
+
+
 ?>
