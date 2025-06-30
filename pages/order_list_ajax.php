@@ -345,6 +345,11 @@ if(isset($_REQUEST['action'])) {
                     </div>
                 </div>
             </div>
+            <div class="d-flex justify-content-end mt-3">
+                <button type="button" id="saveEditOrderBtn" class="btn btn-success">
+                    Save Changes
+                </button>
+            </div>
             <?php
         }
     } 

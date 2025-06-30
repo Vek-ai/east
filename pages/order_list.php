@@ -135,11 +135,6 @@ if(isset($_REQUEST['customer_id'])){
                         <div id="viewOrderBody">
 
                         </div>
-                        <div class="d-flex justify-content-end mt-3">
-                            <button type="button" id="saveEditOrderBtn" class="btn btn-success">
-                                Save Changes
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
