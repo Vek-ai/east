@@ -191,7 +191,6 @@ if (isset($_POST['search_jobs'])) {
                 <tbody>
                 <?php
                 $conditions = [];
-                $conditions[] = "jl.entry_type IN ('deposit', 'usage')";
 
                 if (!empty($customerid)) {
                     $conditions[] = "j.customer_id = '$customerid'";
@@ -206,14 +205,16 @@ if (isset($_POST['search_jobs'])) {
                 $query_jobs = "
                     SELECT 
                         jl.ledger_id, 
-                        jl.job_id, 
+                        j.job_id, 
                         jl.amount, 
                         jl.entry_type, 
                         jl.created_at, 
                         jl.reference_no AS orderid 
-                    FROM job_ledger jl
-                    INNER JOIN jobs j ON jl.job_id = j.job_id
-                    WHERE $where_clause
+                    FROM jobs j
+                    LEFT JOIN job_ledger jl 
+                        ON jl.job_id = j.job_id 
+                        AND jl.entry_type IN ('deposit', 'usage')
+                    " . (!empty($where_clause) ? "WHERE $where_clause" : "") . "
                     ORDER BY jl.created_at DESC
                 ";
                 $result_jobs = mysqli_query($conn, $query_jobs);
