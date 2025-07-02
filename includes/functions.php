@@ -1024,7 +1024,7 @@ function getCustomerCreditTotal($customer_id) {
 
         $payment_result = mysqli_query($conn, $payment_query);
         if ($payment_result && $payment_row = mysqli_fetch_assoc($payment_result)) {
-            $total_credit += floatval($payment_row['total_payment']);
+            $total_credit -= floatval($payment_row['total_payment']);
         }
     }
 
