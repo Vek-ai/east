@@ -288,7 +288,7 @@ $page_title = "Statement of Accounts";
                                             $<?= $credit_limit ?>
                                         </td>
                                         <td style="color:rgb(255, 21, 21) !important;">
-                                            $<?= number_format(abs($total_credit), 2) ?>
+                                            $<?= number_format(getCustomerCreditTotal($customer_id), 2) ?>
                                         </td>
                                         <td><?= $last_payment ?></td>
                                         <td>
