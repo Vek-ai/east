@@ -176,9 +176,9 @@ if (isset($_POST['search_jobs'])) {
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
     ?>
-    <div class="month-table">
+    <div class="datatables">
         <div class="table-responsive mt-3">
-            <table class="table align-middle  mb-0 no-wrap text-center">
+            <table id="jobs-tbl" class="table align-middle  mb-0 no-wrap text-center">
                 <thead>
                 <tr>
                     <th class="border-0 ps-0">Job PO #</th>
@@ -186,131 +186,154 @@ if (isset($_POST['search_jobs'])) {
                     <th class="border-0 text-right">Deposited Amount</th>
                     <th class="border-0 text-right">Materials Purchased</th>
                     <th class="border-0"></th>
+                    <th class="border-0" style="display:none;"></th>
                 </tr>
                 </thead>
                 <tbody>
-                <?php
-                $conditions = [];
+                    <?php
+                    $job_conditions = [];
 
-                if (!empty($customerid)) {
-                    $conditions[] = "j.customer_id = '$customerid'";
-                }
+                    if (!empty($customerid)) {
+                        $job_conditions[] = "customer_id = '$customerid'";
+                    }
 
-                if (!empty($date_from) && !empty($date_to)) {
-                    $conditions[] = "DATE(jl.created_at) BETWEEN '$date_from' AND '$date_to'";
-                }
+                    $job_where = !empty($job_conditions) ? "WHERE " . implode(" AND ", $job_conditions) : "";
 
-                $where_clause = implode(" AND ", $conditions);
+                    $job_query = "SELECT * FROM jobs $job_where ORDER BY created_at DESC";
+                    $job_result = mysqli_query($conn, $job_query);
 
-                $query_jobs = "
-                    SELECT 
-                        jl.ledger_id, 
-                        j.job_id, 
-                        jl.amount, 
-                        jl.entry_type, 
-                        jl.created_at, 
-                        jl.reference_no AS orderid 
-                    FROM jobs j
-                    LEFT JOIN job_ledger jl 
-                        ON jl.job_id = j.job_id 
-                        AND jl.entry_type IN ('deposit', 'usage')
-                    " . (!empty($where_clause) ? "WHERE $where_clause" : "") . "
-                    ORDER BY jl.created_at DESC
-                ";
-                $result_jobs = mysqli_query($conn, $query_jobs);
+                    if ($job_result && mysqli_num_rows($job_result) > 0) {
+                        while ($job = mysqli_fetch_assoc($job_result)) {
+                            $job_id = $job['job_id'];
+                            $job_name = $job['job_name'];
+                            $customer_id = $job['customer_id'];
 
-                if ($result_jobs && mysqli_num_rows($result_jobs) > 0) {
-                    while ($row_jobs = mysqli_fetch_assoc($result_jobs)) {
-                        $job_id = $row_jobs['job_id'];
-                        $job_details = getJobDetails($job_id);
-                        $customer_id = $job_details['customer_id'];
-                        $customer_name = get_customer_name($customer_id);
-                        $job_name = $job_details['job_name'];
+                            $deposit_query = "
+                                SELECT * FROM job_deposits 
+                                WHERE job_id = '$job_id'
+                                " . (!empty($date_from) && !empty($date_to) ? "AND DATE(created_at) BETWEEN '$date_from' AND '$date_to'" : "") . "
+                                ORDER BY created_at ASC
+                            ";
+                            $deposit_result = mysqli_query($conn, $deposit_query);
 
-                        $type = $row_jobs['entry_type'];
-                        $amount = floatval($row_jobs['amount']);
-                        
-                        $order_id = $row_jobs['orderid'];
-                        $order_details = getOrderDetails($order_id);
+                            while ($deposit = mysqli_fetch_assoc($deposit_result)) {
+                                $order_id = $deposit['reference_no'];
+                                $order_details = getOrderDetails($order_id);
+                                $po = $order_details['job_po'] ?? '';
 
-                        $job_po = $order_details['job_po'];
+                                ?>
+                                <tr>
+                                    <td class="ps-0 text-center">
+                                        <h5 class="mb-1"><?= htmlspecialchars($po) ?></h5>
+                                    </td>
+                                    <td class="text-center">
+                                        <h5 class="mb-1"><?= htmlspecialchars($job_name) ?></h5>
+                                    </td>
+                                    <td>
+                                        <h5 class="mb-1 text-right text-success">
+                                            + $<?= number_format($deposit['deposit_amount'], 2) ?>
+                                        </h5>
+                                    </td>
+                                    <td></td>
+                                    <td class="text-center">
+                                        <a href="?page=job_details&customer_id=<?= $customer_id ?>&job_name=<?= urlencode($job_name) ?>"
+                                            target="_blank"
+                                            title="View Job Details"
+                                            class="btn btn-sm p-0 me-1 text-decoration-none">
+                                            <i class="fa fa-eye text-primary fs-5"></i>
+                                        </a>
 
-                        $deposit_amount = 0;
-                        $usage_amount = 0;
+                                        <a href="#"
+                                            id="addModalBtn"
+                                            title="Edit Job"
+                                            class="btn btn-sm p-0 text-decoration-none"
+                                            data-job-id="<?= $job_id ?>"
+                                            data-customer-id="<?= $customer_id ?>"
+                                            data-type="edit">
+                                            <i class="ti ti-pencil fs-6"></i>
+                                        </a>
 
-                        switch ($type) {
-                            case 'deposit':
-                                $deposit_amount = abs($amount);
-                                break;
+                                        <a href="#"
+                                            id="depositModalBtn"
+                                            title="Deposit"
+                                            class="btn btn-sm p-0 text-decoration-none"
+                                            data-job="<?= $job_id ?>">
+                                            <i class="ti ti-plus text-success fs-6"></i>
+                                        </a>
+                                    </td>
+                                    <td style="display:none;" class="created-at"><?= $deposit['created_at'] ?></td>
+                                </tr>
+                                <?php
+                            }
 
-                            case 'usage':
-                                $usage_amount = abs($amount);
-                                break;
+                            $usage_query = "
+                                SELECT * FROM job_ledger 
+                                WHERE job_id = '$job_id' AND entry_type = 'usage'
+                                " . (!empty($date_from) && !empty($date_to) ? "AND DATE(created_at) BETWEEN '$date_from' AND '$date_to'" : "") . "
+                                ORDER BY created_at ASC
+                            ";
+                            $usage_result = mysqli_query($conn, $usage_query);
+
+                            while ($usage = mysqli_fetch_assoc($usage_result)) {
+                                $order_id = $usage['reference_no'];
+                                $order_details = getOrderDetails($order_id);
+                                $po = $order_details['job_po'] ?? '';
+
+                                ?>
+                                <tr>
+                                    <td class="ps-0 text-center">
+                                        <h5 class="mb-1"><?= htmlspecialchars($po) ?></h5>
+                                    </td>
+                                    <td class="text-center">
+                                        <h5 class="mb-1"><?= htmlspecialchars($job_name) ?></h5>
+                                    </td>
+                                    <td></td>
+                                    <td>
+                                        <h5 class="mb-1 text-right text-danger">
+                                            - $<?= number_format($usage['amount'], 2) ?>
+                                        </h5>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="?page=job_details&customer_id=<?= $customer_id ?>&job_name=<?= urlencode($job_name) ?>"
+                                            target="_blank"
+                                            title="View Job Details"
+                                            class="btn btn-sm p-0 me-1 text-decoration-none">
+                                            <i class="fa fa-eye text-primary fs-5"></i>
+                                        </a>
+
+                                        <a href="#"
+                                            id="addModalBtn"
+                                            title="Edit Job"
+                                            class="btn btn-sm p-0 text-decoration-none"
+                                            data-job-id="<?= $job_id ?>"
+                                            data-customer-id="<?= $customer_id ?>"
+                                            data-type="edit">
+                                            <i class="ti ti-pencil fs-6"></i>
+                                        </a>
+
+                                        <a href="#"
+                                            id="depositModalBtn"
+                                            title="Deposit"
+                                            class="btn btn-sm p-0 text-decoration-none"
+                                            data-job="<?= $job_id ?>">
+                                            <i class="ti ti-plus text-success fs-6"></i>
+                                        </a>
+                                    </td>
+                                    <td style="display:none;" class="created-at"><?= $usage['created_at'] ?></td>
+                                </tr>
+                                <?php
+                            }
                         }
-
-                        $ledger_id = $row_jobs['ledger_id'];
-
+                    } else {
                         ?>
                         <tr>
-                            <td class="ps-0">
-                                <h5 class="mb-1 text-center"><?= htmlspecialchars($job_po) ?></h5>
-                            </td>
-                            <td>
-                                <h5 class="mb-1 text-center"><?= htmlspecialchars($job_name) ?></h5>
-                            </td>
-                            <td>
-                                <?php if ($deposit_amount > 0): ?>
-                                    <h5 class="mb-1 text-right" style="color: green !important;">
-                                        + $<?= number_format($deposit_amount, 2); ?>
-                                    </h5>
-                                <?php endif; ?>
-                            </td>
-
-                            <td>
-                                <?php if ($usage_amount > 0): ?>
-                                    <h5 class="mb-1 text-right" style="color: red !important;">
-                                        - $<?= number_format($usage_amount, 2); ?>
-                                    </h5>
-                                <?php endif; ?>
-                            </td>
-                            <td class="text-center">
-                                <a href="?page=job_details&customer_id=<?= $customerid ?>&job_name=<?= urlencode($job_name) ?>"
-                                    target="_blank"
-                                    title="View Job Details"
-                                    class="btn btn-sm p-0 me-1 text-decoration-none">
-                                        <i class="fa fa-eye text-primary fs-5"></i>
-                                </a>
-
-                                <a href="#"
-                                    id="addModalBtn"
-                                    title="Edit Job"
-                                    class="btn btn-sm p-0 text-decoration-none"
-                                    data-job-id="<?= $job_id ?>"
-                                    data-customer-id="<?= $customerid ?>"
-                                    data-type="edit">
-                                    <i class="ti ti-pencil fs-6"></i>
-                                </a>
-
-                                <a href="#"
-                                    id="depositModalBtn"
-                                    title="Deposit"
-                                    class="btn btn-sm p-0 text-decoration-none"
-                                    data-job="<?= $job_id ?>">
-                                    <i class="ti ti-plus text-success fs-6"></i>
-                                </a>
-                            </td>
+                            <td colspan="5" class="text-center">No jobs found</td>
                         </tr>
                         <?php
                     }
-                } else {
                     ?>
-                    <tr>
-                        <td colspan="4" class="text-center">No jobs found</td>
-                    </tr>
-                    <?php
-                }
-                ?>
-                </tbody>
+                    </tbody>
+
             </table>
         </div>
     </div>
@@ -1140,6 +1163,29 @@ if (isset($_POST['deposit_job'])) {
         ";
 
         if (mysqli_query($conn, $insert)) {
+            $insert_deposit = "
+                INSERT INTO job_deposits (
+                    job_id,
+                    deposit_amount,
+                    deposit_remaining,
+                    deposit_status,
+                    deposited_by,
+                    reference_no,
+                    type,
+                    check_no
+                ) VALUES (
+                    '$job_id',
+                    '$deposit_amount',
+                    '$deposit_amount',
+                    1,
+                    '" . mysqli_real_escape_string($conn, $deposited_by) . "',
+                    '" . mysqli_real_escape_string($conn, $reference_no) . "',
+                    '$payment_method',
+                    $check_no_sql
+                )
+            ";
+            mysqli_query($conn, $insert_deposit);
+
             $update = "
                 UPDATE jobs 
                 SET deposit_amount = deposit_amount + $deposit_amount
@@ -1155,5 +1201,6 @@ if (isset($_POST['deposit_job'])) {
         echo 'job_not_found';
     }
 }
+
 
 

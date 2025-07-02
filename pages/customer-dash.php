@@ -757,8 +757,24 @@ if(isset($_REQUEST['id'])){
                   search_jobs: 'search_jobs'
               },
               success: function(response) {
-                console.log(response);
-                  $('#tbl-jobs').html(response);
+                    $('#tbl-jobs').html(response);
+                    if ($.fn.DataTable.isDataTable('#jobs-tbl')) {
+                        $('#jobs-tbl').DataTable().destroy();
+                    }
+
+                    $('#jobs-tbl').DataTable({
+                        searching: false,
+                        lengthChange: false,
+                        pageLength: 10,
+                        order: [[5, 'desc']],
+                        columnDefs: [
+                            {
+                                targets: [5],
+                                visible: false,
+                                searchable: false
+                            }
+                        ]
+                    });
               },
               error: function(jqXHR, textStatus, errorThrown) {
                   alert('Error: ' + textStatus + ' - ' + errorThrown);

@@ -1146,6 +1146,39 @@ if (isset($_POST['save_order'])) {
                 ";
                 if (!mysqli_query($conn, $sql)) {
                     $response['error'] = 'Ledger Insert Error (usage): ' . mysqli_error($conn);
+                } else {
+                    $remaining_to_apply = $job_deposit_applied;
+
+                    $query_deposits = "
+                        SELECT deposit_id, deposit_remaining 
+                        FROM job_deposits 
+                        WHERE job_id = '$job_id' AND deposit_status = 1 AND deposit_remaining > 0 
+                        ORDER BY created_at ASC
+                    ";
+                    $result_deposits = mysqli_query($conn, $query_deposits);
+
+                    while ($row = mysqli_fetch_assoc($result_deposits)) {
+                        $deposit_id = $row['deposit_id'];
+                        $remaining = floatval($row['deposit_remaining']);
+
+                        if ($remaining_to_apply <= 0) {
+                            break;
+                        }
+
+                        $used = min($remaining, $remaining_to_apply);
+                        $new_remaining = $remaining - $used;
+                        $new_status = ($new_remaining <= 0) ? 2 : 1;
+
+                        $update_deposit = "
+                            UPDATE job_deposits
+                            SET deposit_remaining = $new_remaining,
+                                deposit_status = $new_status
+                            WHERE deposit_id = $deposit_id
+                        ";
+                        mysqli_query($conn, $update_deposit);
+
+                        $remaining_to_apply -= $used;
+                    }
                 }
             }
 

@@ -1390,9 +1390,9 @@ function getJobDepositTotal($job_id) {
     $job_id = intval($job_id);
     $total = 0;
 
-    $sql = "SELECT SUM(amount) AS total_deposit 
-            FROM job_ledger 
-            WHERE job_id = $job_id AND entry_type = 'deposit'";
+    $sql = "SELECT SUM(deposit_remaining) AS total_deposit 
+            FROM job_deposits 
+            WHERE job_id = $job_id AND deposit_status = 1";
 
     $result = mysqli_query($conn, $sql);
 
@@ -1423,7 +1423,7 @@ function getJobUsageTotal($job_id) {
 }
 
 function getJobBalance($job_id) {
-    return getJobDepositTotal($job_id) - getJobUsageTotal($job_id);
+    return getJobDepositTotal($job_id);
 }
 
 function getOrderProductPricing($order_product_id) {
