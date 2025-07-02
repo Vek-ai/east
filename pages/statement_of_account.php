@@ -228,21 +228,23 @@ $page_title = "Statement of Accounts";
                     <div class="product-details table-responsive text-wrap">
                         <?php
                         $sql = "SELECT 
-                                    total_credit,
-                                    total_payments,
-                                    c.customer_id
-                                FROM customer c
-                                LEFT JOIN (
-                                    SELECT 
-                                        j.customer_id, 
-                                        SUM(CASE WHEN l.entry_type = 'credit' THEN l.amount ELSE 0 END) AS total_credit,
-                                        SUM(CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE 0 END) AS total_payments
-                                    FROM jobs j
-                                    INNER JOIN job_ledger l ON l.job_id = j.job_id
-                                    GROUP BY j.customer_id
-                                ) j ON j.customer_id = c.customer_id
-                                WHERE c.status = 1
-                                HAVING total_credit > 0 OR total_payments > 0";
+                                j.customer_id, 
+                                SUM(CASE WHEN l.entry_type = 'credit' THEN l.amount ELSE 0 END) AS total_credit,
+                                SUM(CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE 0 END) AS total_payments,
+                                MIN(CASE WHEN l.entry_type = 'credit' THEN l.created_at ELSE NULL END) AS first_credit_date,
+                                (
+                                    SELECT MAX(jp.created_at)
+                                    FROM jobs j2
+                                    INNER JOIN job_ledger jl ON jl.job_id = j2.job_id
+                                    INNER JOIN job_payment jp ON jp.ledger_id = jl.ledger_id
+                                    WHERE j2.customer_id = j.customer_id
+                                ) AS last_payment_date
+                            FROM jobs j
+                            INNER JOIN job_ledger l ON l.job_id = j.job_id
+                            INNER JOIN customer c ON c.customer_id = j.customer_id
+                            WHERE c.status = 1
+                            GROUP BY j.customer_id
+                            HAVING total_credit > 0 OR total_payments > 0";
                         $result = $conn->query($sql);
                         ?>
 
@@ -250,8 +252,10 @@ $page_title = "Statement of Accounts";
                             <thead>
                                 <tr>
                                     <th style="color: #ffffff !important;">Customer</th>
-                                    <th style="color: #ffffff !important;">Total Payments</th>
-                                    <th style="color: #ffffff !important;">Total Receivable</th>
+                                    <th style="color: #ffffff !important;">Available Credit</th>
+                                    <th style="color: #ffffff !important;">Balance Due</th>
+                                    <th style="color: #ffffff !important;">Last Payment</th>
+                                    <th style="color: #ffffff !important;">Date Outstanding</th>
                                     <th style="color: #ffffff !important;" class="text-center">Action</th>
                                 </tr>
                             </thead>
@@ -260,14 +264,35 @@ $page_title = "Statement of Accounts";
                                     <?php 
                                         $total_payments = floatval($row['total_payments']); 
                                         $total_credit = floatval($row['total_credit']); 
+                                        $customer_id = floatval($row['customer_id']); 
+                                        $customer_details = getCustomerDetails($customer_id);
+                                        $credit_limit = number_format(floatval($customer_details['credit_limit'] ?? 0), 2);
+
+                                        $date_outstanding = '';
+
+                                        if (!empty($row['first_credit_date'])) {
+                                            $credit_date = new DateTime($row['first_credit_date']);
+                                            $today = new DateTime();
+                                            $interval = $today->diff($credit_date);
+                                            $date_outstanding = $interval->days . ' days';
+                                        }
+
+                                        $last_payment = '';
+                                        if (!empty($row['last_payment_date'])) {
+                                            $last_payment = date("M d, Y", strtotime($row['last_payment_date']));
+                                        }
                                     ?>
                                     <tr>
                                         <td><?= get_customer_name($row['customer_id']) ?></td>
                                         <td style="color:green !important;">
-                                            $<?= number_format(abs($total_payments), 2) ?>
+                                            $<?= $credit_limit ?>
                                         </td>
                                         <td style="color:rgb(255, 21, 21) !important;">
                                             $<?= number_format(abs($total_credit), 2) ?>
+                                        </td>
+                                        <td><?= $last_payment ?></td>
+                                        <td>
+                                            <?= $date_outstanding ?>
                                         </td>
                                         <td class="text-center">
                                             <a href="?page=statement_of_account_details&customer_id=<?= $row["customer_id"]; ?>" 
@@ -275,6 +300,14 @@ $page_title = "Statement of Accounts";
                                                 data-bs-toggle="tooltip" 
                                                 title="View Details">
                                                     <i class="text-primary fa fa-eye fs-5"></i>
+                                            </a>
+
+                                            <a href="javascript:void(0)" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
+                                                    <i class="text-success fa fa-print fs-5"></i>
+                                            </a>
+
+                                            <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Send Confirmation">
+                                                <iconify-icon icon="solar:plain-linear" class="fs-6 text-info"></iconify-icon>
                                             </a>
                                         </td>
                                     </tr>

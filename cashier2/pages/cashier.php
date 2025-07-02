@@ -4009,7 +4009,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                             $('#save_estimate').addClass('d-none');
                             $('#prev_page_order').addClass('d-none');
                         } else if (response.error) {
-                            console.log("Error: " + response);
+                            alert(response.error);
                         }
                     },
                     error: function(jqXHR, textStatus, errorThrown) {

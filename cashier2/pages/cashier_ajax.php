@@ -1098,6 +1098,21 @@ if (isset($_POST['save_order'])) {
         $pay_type = 'job_deposit';
     }
 
+    if($credit_amt > 0){
+        $credit_available = $credit_limit - $credit_total;
+        if($credit_available <= 0){
+            $response['error'] = "Cannot pay via Credit! The Customer’s credit limit has been reached";
+            echo json_encode($response);
+            exit;
+        }
+        
+        if($credit_amt > $credit_limit){
+            $response['error'] = "Credit amount cannot exceed the customer's credit limit";
+            echo json_encode($response);
+            exit;
+        }
+    }
+
     $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_fname, deliver_lname, pay_type) 
               VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt' , '$deliver_fname' , '$deliver_lname', '$pay_type')";
 

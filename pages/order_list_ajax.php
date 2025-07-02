@@ -1,4 +1,5 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -387,7 +388,6 @@ if(isset($_REQUEST['action'])) {
     } 
 
     if ($action === 'save_edited_order') {
-
         $order_data_json = $_POST['order_data'] ?? '';
         $order_data = json_decode($order_data_json, true);
 
@@ -398,9 +398,16 @@ if(isset($_REQUEST['action'])) {
 
         $success = true;
         $affected_orders = [];
+        $current_user = $_SESSION['userid'] ?? 'System';
 
         foreach ($order_data as $id => $data) {
             $id = intval($id);
+
+            $get_old_sql = "SELECT * FROM order_product WHERE id = '$id' LIMIT 1";
+            $old_result = mysqli_query($conn, $get_old_sql);
+            if (!$old_result || !mysqli_num_rows($old_result)) continue;
+            $old_data = mysqli_fetch_assoc($old_result);
+
             $custom_color = intval($data['color']);
             $custom_grade = intval($data['grade']);
             $profile = intval($data['profile']);
@@ -411,12 +418,34 @@ if(isset($_REQUEST['action'])) {
             $custom_length2 = mysqli_real_escape_string($conn, $data['length2']);
             $discounted_price = floatval($data['discounted_price']);
 
+            $new_data = [
+                'custom_color' => $custom_color,
+                'custom_grade' => $custom_grade,
+                'profile' => $profile,
+                'quantity' => $quantity,
+                'status' => $status,
+                'custom_width' => $custom_width,
+                'custom_length' => $custom_length,
+                'custom_length2' => $custom_length2,
+                'discounted_price' => $discounted_price
+            ];
+
+            $changes = [];
+            foreach ($new_data as $key => $new_value) {
+                $old_value = $old_data[$key];
+                if ((string)$old_value !== (string)$new_value) {
+                    $changes[$key] = [
+                        'old' => $old_value,
+                        'new' => $new_value
+                    ];
+                }
+            }
+
             $update_sql = "
                 UPDATE order_product 
                 SET 
                     custom_color = '$custom_color',
                     custom_grade = '$custom_grade',
-                    product_category = '$profile',
                     quantity = '$quantity',
                     status = '$status',
                     custom_width = '$custom_width',
@@ -431,11 +460,24 @@ if(isset($_REQUEST['action'])) {
                 break;
             }
 
-            $get_orderid_sql = "SELECT orderid FROM order_product WHERE id = '$id' LIMIT 1";
-            $orderid_result = mysqli_query($conn, $get_orderid_sql);
-            if ($orderid_row = mysqli_fetch_assoc($orderid_result)) {
-                $affected_orders[] = $orderid_row['orderid'];
+            if (!empty($changes)) {
+                $orderid = $old_data['orderid'];
+                $old_json = json_encode(array_map(fn($v) => $v['old'], $changes));
+                $new_json = json_encode(array_map(fn($v) => $v['new'], $changes));
+
+                $log_sql = "
+                    INSERT INTO order_history 
+                        (orderid, order_product_id, action_type, old_value, new_value, updated_by) 
+                    VALUES 
+                        ('$orderid', '$id', 'update_product', 
+                        '" . mysqli_real_escape_string($conn, $old_json) . "', 
+                        '" . mysqli_real_escape_string($conn, $new_json) . "', 
+                        '" . mysqli_real_escape_string($conn, $current_user) . "')
+                ";
+                mysqli_query($conn, $log_sql);
             }
+
+            $affected_orders[] = $old_data['orderid'];
         }
 
         $affected_orders = array_unique($affected_orders);
@@ -480,7 +522,6 @@ if(isset($_REQUEST['action'])) {
         echo $success ? 'success' : 'error';
         exit;
     }
-
 
     if ($action == "fetch_hold_modal") {
         $orderid = mysqli_real_escape_string($conn, $_POST['id']);
@@ -1064,6 +1105,91 @@ if(isset($_REQUEST['action'])) {
                 ]);
             }
         }
+    }
+
+    if ($action === 'fetch_order_history') {
+        $orderid = intval($_POST['id']);
+
+        $history_query = "SELECT * FROM order_history  WHERE order_product_id IN (
+                            SELECT id FROM order_product WHERE orderid = '$orderid'
+                        ) ORDER BY created_at DESC";
+
+        $history_result = mysqli_query($conn, $history_query);
+        ?>
+        <div class="modal-header">
+            <h5 class="modal-title">Change History</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <?php if (mysqli_num_rows($history_result) > 0): ?>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th style="max-width: 20%;">Product</th>
+                                <th>Action</th>
+                                <th>Changed Fields</th>
+                                <th>Updated By</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php $count = 1; ?>
+                            <?php while ($row = mysqli_fetch_assoc($history_result)): ?>
+                                <?php
+                                    $old = json_decode($row['old_value'], true);
+                                    $new = json_decode($row['new_value'], true);
+
+                                    $changes = [];
+                                    foreach ($new as $key => $new_val) {
+                                        $old_val = $old[$key] ?? '';
+
+                                        $prod_details = getOrderProdDetails($row['order_product_id']);
+                                        $product_id = $prod_details['productid'];
+                                        $product_name = getProductName($product_id);
+
+                                        switch ($key) {
+                                            case 'custom_color':
+                                                $old_val = getColorName($old_val);
+                                                $new_val = getColorName($new_val);
+                                                break;
+                                            case 'custom_grade':
+                                                $old_val = getGradeName($old_val);
+                                                $new_val = getGradeName($new_val);
+                                                break;
+                                            case 'profile':
+                                                $old_val = getProfileTypeName($old_val);
+                                                $new_val = getProfileTypeName($new_val);
+                                                break;
+                                        }
+
+                                        if ((string)$new_val !== (string)$old_val) {
+                                            $changes[] = "<strong>" . htmlspecialchars($key) . "</strong>: " .
+                                                "<span class='text-danger'>" . htmlspecialchars($old_val) . "</span> → " .
+                                                "<span class='text-success'>" . htmlspecialchars($new_val) . "</span>";
+                                        }
+                                    }
+                                ?>
+                                <tr>
+                                    <td style="max-width: 20%;"><?= $product_name ?></td>
+                                    <td>Update</td>
+                                    <td><?= !empty($changes) ? implode('<br>', $changes) : '<em>No visible changes</em>' ?></td>
+                                    <td><?= get_staff_name($row['updated_by']) ?></td>
+                                    <td><?= htmlspecialchars($row['created_at']) ?></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <p class="text-center">No change history found.</p>
+            <?php endif; ?>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+        <?php
+        exit;
     }
 
     mysqli_close($conn);

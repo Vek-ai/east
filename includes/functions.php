@@ -994,15 +994,40 @@ function getCustomerTax($customer_id) {
 function getCustomerCreditTotal($customer_id) {
     global $conn;
     $customer_id = mysqli_real_escape_string($conn, $customer_id);
+    $total_credit = 0;
 
-    $query = "SELECT SUM(credit_amt) AS total_credit FROM orders WHERE customerid = '$customer_id'";
-    $result = mysqli_query($conn, $query);
-    if ($result && mysqli_num_rows($result) > 0) {
-        $row = mysqli_fetch_assoc($result);
-        return $row['total_credit'] ?? 0;
-    } else {
-        return 0;
+    $ledger_query = "
+        SELECT ledger_id, amount 
+        FROM job_ledger 
+        WHERE entry_type = 'credit' AND job_id = '$customer_id'
+    ";
+
+    $ledger_result = mysqli_query($conn, $ledger_query);
+
+    $ledger_ids = [];
+    if ($ledger_result && mysqli_num_rows($ledger_result) > 0) {
+        while ($row = mysqli_fetch_assoc($ledger_result)) {
+            $total_credit += floatval($row['amount']);
+            $ledger_ids[] = intval($row['ledger_id']);
+        }
     }
+
+    if (!empty($ledger_ids)) {
+        $ledger_id_list = implode(',', $ledger_ids);
+
+        $payment_query = "
+            SELECT SUM(amount) AS total_payment 
+            FROM job_payment 
+            WHERE ledger_id IN ($ledger_id_list)
+        ";
+
+        $payment_result = mysqli_query($conn, $payment_query);
+        if ($payment_result && $payment_row = mysqli_fetch_assoc($payment_result)) {
+            $total_credit += floatval($payment_row['total_payment']);
+        }
+    }
+
+    return $total_credit;
 }
 
 function getCustomerDiscount($customer_id) {
