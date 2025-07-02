@@ -1472,5 +1472,24 @@ function getOrderProductPricing($order_product_id) {
     return false;
 }
 
+function getTotalJobPayments($ledger_id) {
+    global $conn;
+
+    $ledger_id = intval($ledger_id);
+    $total = 0;
+
+    $query = "SELECT SUM(amount) AS total_payment 
+              FROM job_payment
+              WHERE ledger_id = $ledger_id";
+
+    $result = mysqli_query($conn, $query);
+
+    if ($result && $row = mysqli_fetch_assoc($result)) {
+        $total = floatval($row['total_payment']);
+    }
+
+    return $total;
+}
+
 
 ?>

@@ -719,6 +719,10 @@ if(isset($_REQUEST['customer_id'])){
         $(document).on("click", "#saveEditOrderBtn", function (e) {
             e.preventDefault();
 
+            if (!confirm("Are you sure you want to save these changes?")) {
+                return;
+            }
+
             const formData = {};
 
             $("#order_dtls_tbl tbody tr").each(function () {
@@ -732,7 +736,8 @@ if(isset($_REQUEST['customer_id'])){
                     quantity: row.find(`[name="quantity[${id}]"]`).val(),
                     status: row.find(`[name="status[${id}]"]`).val(),
                     width: row.find(`[name="custom_width[${id}]"]`).val(),
-                    height: row.find(`[name="custom_height[${id}]"]`).val(),
+                    length: row.find(`[name="custom_length[${id}]"]`).val(),
+                    length2: row.find(`[name="custom_length_inch[${id}]"]`).val(),
                     discounted_price: row.find(`[name="discounted_price[${id}]"]`).val()
                 };
             });
@@ -748,6 +753,7 @@ if(isset($_REQUEST['customer_id'])){
                     console.log("Save Response:", response);
                     if(response.trim() == 'success'){
                         alert("Successfully saved!");
+                        location.reload();
                     }
                 },
                 error: function (xhr, status, error) {

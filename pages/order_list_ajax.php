@@ -321,9 +321,35 @@ if(isset($_REQUEST['action'])) {
                                                 </select>
                                             </td>
                                             <td>
-                                                <div class="d-flex flex-column">
-                                                    <input type="text" class="form-control mb-1" placeholder="Width" name="custom_width[<?= $row['id'] ?>]" value="<?= htmlspecialchars($row['custom_width']) ?>">
-                                                    <input type="text" class="form-control" placeholder="Height" name="custom_height[<?= $row['id'] ?>]" value="<?= htmlspecialchars($row['custom_height']) ?>">
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <input type="text"
+                                                        class="form-control text-center mb-1"
+                                                        name="custom_width[<?= $row['id'] ?>]"
+                                                        value="<?= htmlspecialchars($row['custom_width']) ?>"
+                                                        placeholder="Width"
+                                                        size="5">
+
+                                                    <span class="mx-1 text-center mb-1">X</span>
+
+                                                    <fieldset class="border p-1 position-relative">
+                                                        <div class="input-group d-flex align-items-center">
+                                                            <input type="number"
+                                                                class="form-control pr-0 pl-1 mr-1"
+                                                                name="custom_length[<?= $row['id'] ?>]"
+                                                                value="<?= htmlspecialchars($row['custom_length']) ?>"
+                                                                step="0.001"
+                                                                placeholder="FT"
+                                                                size="5">
+
+                                                            <input type="number"
+                                                                class="form-control pr-0 pl-1"
+                                                                name="custom_length_inch[<?= $row['id'] ?>]"
+                                                                value="<?= htmlspecialchars($row['custom_length2']) ?>"
+                                                                step="0.001"
+                                                                placeholder="IN"
+                                                                size="5">
+                                                        </div>
+                                                    </fieldset>
                                                 </div>
                                             </td>
                                             <td>
@@ -353,6 +379,235 @@ if(isset($_REQUEST['action'])) {
             <?php
         }
     } 
+
+    if ($_POST['action'] === 'save_edited_order') {
+
+        $order_data_json = $_POST['order_data'] ?? '';
+        $order_data = json_decode($order_data_json, true);
+
+        if (!is_array($order_data)) {
+            echo 'invalid_data';
+            exit;
+        }
+
+        $success = true;
+
+        foreach ($order_data as $id => $data) {
+            $id = intval($id);
+            $custom_color = intval($data['color']);
+            $custom_grade = intval($data['grade']);
+            $profile = intval($data['profile']);
+            $quantity = mysqli_real_escape_string($conn, $data['quantity']);
+            $status = intval($data['status']);
+            $custom_width = mysqli_real_escape_string($conn, $data['width']);
+            $custom_length = mysqli_real_escape_string($conn, $data['length']);
+            $custom_length2 = mysqli_real_escape_string($conn, $data['length2']);
+            $discounted_price = floatval($data['discounted_price']);
+
+            $update_sql = "
+                UPDATE order_product 
+                SET 
+                    custom_color = '$custom_color',
+                    custom_grade = '$custom_grade',
+                    product_category = '$profile',
+                    quantity = '$quantity',
+                    status = '$status',
+                    custom_width = '$custom_width',
+                    custom_length = '$custom_length',
+                    custom_length2 = '$custom_length2',
+                    discounted_price = '$discounted_price'
+                WHERE id = '$id'
+            ";
+
+            if (!mysqli_query($conn, $update_sql)) {
+                $success = false;
+                break;
+            }
+        }
+
+        echo $success ? 'success' : 'error';
+        exit;
+    }
+
+
+    if ($action == "fetch_hold_modal") {
+        $orderid = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM order_product WHERE orderid = '$orderid'";
+        $result = mysqli_query($conn, $query);
+        
+        if ($result && mysqli_num_rows($result) > 0) {
+            $order_details = getOrderDetails($orderid);
+            $totalquantity = $total_actual_price = $total_disc_price = 0;
+            $status_code = $order_details['status'];
+
+            $tracking_number = $order_details['tracking_number'];
+            $shipping_comp_details = getShippingCompanyDetails($order_details['shipping_company']);
+            $shipping_company = $shipping_comp_details['shipping_company'];
+
+            $response = array();
+            ?>
+            
+
+            <div class="card">
+                <div class="card-body datatables">
+                    <div class="order-details table-responsive text-nowrap">
+                        <div class="col-12 col-md-4 col-lg-4 text-md-start mt-3 fs-5" id="shipping-info">
+                            <?php if (!empty($shipping_company)) : ?>
+                            <div>
+                                <strong>Shipping Company:</strong>
+                                <span id="shipping-company"><?= htmlspecialchars($shipping_company) ?></span>
+                            </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($tracking_number)) : ?>
+                            <div>
+                                <strong>Tracking #:</strong>
+                                <span id="tracking-number"><?= htmlspecialchars($tracking_number) ?></span>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <table id="order_dtls_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="select_all"></th>
+                                    <th>Description</th>
+                                    <th>Color</th>
+                                    <th>Grade</th>
+                                    <th>Profile</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Dimensions</th>
+                                    <th class="text-center">Price</th>
+                                    <th class="text-center">Customer Price</th>
+                                    <th class="text-center">Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                    $is_processing = false;
+                                    while ($row = mysqli_fetch_assoc($result)) {
+                                        $orderid = $row['orderid'];
+                                        $product_details = getProductDetails($row['productid']);
+                                        
+                                        $status_prod_db = $row['status'];
+
+                                        $product_name = '';
+                                        if(!empty($row['product_item'])){
+                                            $product_name = $row['product_item'];
+                                        }else{
+                                            $product_name = getProductName($row['product_id']);
+                                        }
+
+                                        if($status_prod_db == '1'){
+                                            $is_processing = true;
+                                        }
+
+                                        $status_prod_labels = [
+                                            0 => ['label' => 'New', 'class' => 'badge bg-primary'],
+                                            1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+                                            2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
+                                            3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
+                                            4 => ['label' => 'Delivered', 'class' => 'badge bg-success'],
+                                            5 => ['label' => 'On Hold', 'class' => 'badge bg-danger']
+                                        ];
+
+                                        $status_prod = $status_prod_labels[$status_prod_db];
+                                    ?> 
+                                        <tr> 
+                                            <td class="text-center">
+                                                <input type="checkbox" class="row-checkbox" value="<?= $row['id'] ?>" data-status="">
+                                            </td>
+                                            <td>
+                                                <?= $product_name ?>
+                                            </td>
+                                            <td>
+                                            <div class="d-flex mb-0 gap-8">
+                                                <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_details['color'])?>"></a>
+                                                <?= getColorFromID($product_details['color']); ?>
+                                            </div>
+                                            </td>
+                                            <td>
+                                                <?php echo getGradeName($product_details['grade']); ?>
+                                            </td>
+                                            <td>
+                                                <?php echo getProfileTypeName($product_details['profile']); ?>
+                                            </td>
+                                            <td><?= $row['quantity'] ?></td>
+                                            <td>
+                                                <span class="<?= $status_prod['class']; ?> fw-bond"><?= $status_prod['label']; ?></span>
+                                            </td>
+                                            <td>
+                                                <?php 
+                                                $width = $row['custom_width'];
+                                                $height = $row['custom_height'];
+                                                
+                                                if (!empty($width) && !empty($height)) {
+                                                    echo htmlspecialchars($width) . " X " . htmlspecialchars($height);
+                                                } elseif (!empty($width)) {
+                                                    echo "Width: " . htmlspecialchars($width);
+                                                } elseif (!empty($height)) {
+                                                    echo "Height: " . htmlspecialchars($height);
+                                                }
+                                                ?>
+                                            </td>
+                                            <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
+                                            <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
+                                            <td class="text-end">$ <?= number_format(floatval($row['discounted_price'] * $row['quantity']),2) ?></td>
+                                        </tr>
+                                <?php
+                                        $totalquantity += $row['quantity'] ;
+                                        $total_actual_price += $row['actual_price'];
+                                        $total_disc_price += $row['discounted_price'];
+                                        $total_amount += floatval($row['discounted_price']) * $row['quantity'];
+                                    }
+                                
+                                ?>
+                            </tbody>
+
+                            <tfoot>
+                                <tr>
+                                    <td colspan="7" class="text-end">Total</td>
+                                    <td><?= $totalquantity ?></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-end">$ <?= number_format($total_amount,2) ?></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <?php if ($status_code == 2): ?>
+                        <div class="d-flex justify-content-end align-items-center gap-3 flex-wrap mt-3">
+                            <button type="button" id="shipOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-action="ship_order">Ship Order</button>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <script>
+                $(document).ready(function() {
+
+                    $('#select_all').on('change', function () {
+                        $('.row-checkbox').prop('checked', this.checked);
+                    });
+
+                    $(document).on('change', '.row-checkbox', function () {
+                        const allChecked = $('.row-checkbox').length === $('.row-checkbox:checked').length;
+                        $('#select_all').prop('checked', allChecked);
+                    });
+
+                    window.getSelectedIDs = function () {
+                        let ids = [];
+                        $('.row-checkbox:checked').each(function () {
+                            ids.push($(this).val());
+                        });
+                        return ids;
+                    };
+                });
+            </script>
+            
+
+            <?php
+        }
+    }
 
     if ($action == 'save_edited_order') {
         $rawData = $_POST['order_data'] ?? '';
