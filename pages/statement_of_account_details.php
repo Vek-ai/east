@@ -310,7 +310,7 @@ if(isset($_REQUEST['customer_id'])){
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td class="text-end" colspan="7">Total Credit</td>
+                                    <td class="text-end" colspan="7">Total Recievable </td>
                                     <td class="text-end" colspan="1">$<?= number_format($total_credit,2) ?></td>
                                     <td></td>
                                 </tr>
