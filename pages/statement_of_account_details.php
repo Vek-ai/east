@@ -250,6 +250,7 @@ if(isset($_REQUEST['customer_id'])){
                                 ];
 
                                 while ($row = mysqli_fetch_assoc($result)) {
+                                    $is_credit = false;
                                     $ledger_id = $row['ledger_id'];
                                     $job_details = getJobDetails($row['job_id']);
                                     $order_id = $row['orderid'];
@@ -261,6 +262,12 @@ if(isset($_REQUEST['customer_id'])){
 
                                     $pay_type_key = strtolower(trim($row['payment_method']));
                                     $pay_type = $pay_labels[$pay_type_key]['label'] ?? ucfirst($pay_type_key);
+
+                                    if ($credit > 0) {
+                                        $is_credit = true;
+                                        $total_payments = getTotalJobPayments($ledger_id);
+                                        $credit = max($credit - $total_payments, 0);
+                                    }
 
                                     $balance += $credit;
                                     $total_credit += $credit;
@@ -291,7 +298,7 @@ if(isset($_REQUEST['customer_id'])){
                                         </td>
                                         <td>
                                             <?php
-                                            if($credit > 0){
+                                            if($is_credit){
                                                 ?>
                                                 <div class="d-flex justify-content-center gap-2">
                                                     <a id="paymentBtn" title="Payment" role="button" class="py-1" data-id="<?= $ledger_id ?>">
