@@ -30,6 +30,9 @@ if(isset($_REQUEST['action'])) {
 
             <div class="card">
                 <div class="card-body datatables">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        View Order Details
+                    </h4>
                     <div class="order-details table-responsive text-nowrap">
                         <div class="col-12 col-md-4 col-lg-4 text-md-start mt-3 fs-5" id="shipping-info">
                             <?php if (!empty($shipping_company)) : ?>
@@ -207,6 +210,9 @@ if(isset($_REQUEST['action'])) {
             ?>
             <div class="card">
                 <div class="card-body datatables">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Edit Order
+                    </h4>
                     <div class="order-details table-responsive">
                         <table id="order_dtls_tbl" class="table table-hover mb-0 w-100">
                             <thead>
@@ -380,7 +386,7 @@ if(isset($_REQUEST['action'])) {
         }
     } 
 
-    if ($_POST['action'] === 'save_edited_order') {
+    if ($action === 'save_edited_order') {
 
         $order_data_json = $_POST['order_data'] ?? '';
         $order_data = json_decode($order_data_json, true);
@@ -391,6 +397,7 @@ if(isset($_REQUEST['action'])) {
         }
 
         $success = true;
+        $affected_orders = [];
 
         foreach ($order_data as $id => $data) {
             $id = intval($id);
@@ -423,6 +430,51 @@ if(isset($_REQUEST['action'])) {
                 $success = false;
                 break;
             }
+
+            $get_orderid_sql = "SELECT orderid FROM order_product WHERE id = '$id' LIMIT 1";
+            $orderid_result = mysqli_query($conn, $get_orderid_sql);
+            if ($orderid_row = mysqli_fetch_assoc($orderid_result)) {
+                $affected_orders[] = $orderid_row['orderid'];
+            }
+        }
+
+        $affected_orders = array_unique($affected_orders);
+
+        foreach ($affected_orders as $orderid) {
+            $get_statuses_sql = "SELECT status FROM order_product WHERE orderid = '$orderid'";
+            $status_result = mysqli_query($conn, $get_statuses_sql);
+
+            $statuses = [];
+            while ($row = mysqli_fetch_assoc($status_result)) {
+                $statuses[] = (int)$row['status'];
+            }
+
+            if (!empty($statuses)) {
+                $status_priority = [
+                    1 => 1,
+                    2 => 2,
+                    5 => 3,
+                    3 => 4,
+                    4 => 5
+                ];
+
+                $highest_status = 1;
+                $max_priority = 0;
+
+                foreach ($statuses as $s) {
+                    $priority = $status_priority[$s] ?? 0;
+                    if ($priority > $max_priority) {
+                        $max_priority = $priority;
+                        $highest_status = $s;
+                    }
+                }
+
+                $update_order_sql = "UPDATE orders SET status = '$highest_status' WHERE orderid = '$orderid'";
+                if (!mysqli_query($conn, $update_order_sql)) {
+                    $success = false;
+                    break;
+                }
+            }
         }
 
         echo $success ? 'success' : 'error';
@@ -450,6 +502,9 @@ if(isset($_REQUEST['action'])) {
 
             <div class="card">
                 <div class="card-body datatables">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Place on Hold
+                    </h4>
                     <div class="order-details table-responsive text-nowrap">
                         <div class="col-12 col-md-4 col-lg-4 text-md-start mt-3 fs-5" id="shipping-info">
                             <?php if (!empty($shipping_company)) : ?>
@@ -582,6 +637,11 @@ if(isset($_REQUEST['action'])) {
                     <?php endif; ?>
                 </div>
             </div>
+            <div class="d-flex justify-content-end mt-3">
+                <button type="button" id="holdOrderBtn" class="btn btn-success">
+                    Place on Hold
+                </button>
+            </div>
             <script>
                 $(document).ready(function() {
 
@@ -601,6 +661,40 @@ if(isset($_REQUEST['action'])) {
                         });
                         return ids;
                     };
+
+                    $(document).on('click', '#holdOrderBtn', function () {
+                        const selectedIDs = getSelectedIDs();
+
+                        if (selectedIDs.length === 0) {
+                            alert("Please select at least one product to put on hold.");
+                            return;
+                        }
+
+                        if (!confirm("Are you sure you want to place the selected items on hold?")) {
+                            return;
+                        }
+
+                        $.ajax({
+                            url: 'pages/order_list_ajax.php',
+                            type: 'POST',
+                            data: {
+                                action: 'place_on_hold',
+                                product_ids: selectedIDs
+                            },
+                            success: function (response) {
+                                if (response.trim() === 'success') {
+                                    alert("Selected items have been placed on hold.");
+                                    location.reload();
+                                } else {
+                                    alert("Failed to update: " + response);
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error("AJAX Error:", xhr.responseText);
+                                alert("An error occurred while updating the status.");
+                            }
+                        });
+                    });
                 });
             </script>
             
@@ -609,18 +703,41 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
-    if ($action == 'save_edited_order') {
-        $rawData = $_POST['order_data'] ?? '';
-        
-        $decoded = json_decode($rawData, true);
+    if ($action == "place_on_hold") {
+        $ids = $_POST['product_ids'] ?? [];
 
-        if (json_last_error() === JSON_ERROR_NONE) {
-            echo "<pre>";
-            print_r($decoded);
-            echo "</pre>";
+        if (!empty($ids) && is_array($ids)) {
+            $escaped_ids = array_map(function ($id) use ($conn) {
+                return (int) mysqli_real_escape_string($conn, $id);
+            }, $ids);
+
+            $id_list = implode(',', $escaped_ids);
+
+            $orderid_query = "SELECT DISTINCT orderid FROM order_product WHERE id IN ($id_list)";
+            $orderid_result = mysqli_query($conn, $orderid_query);
+
+            $order_ids = [];
+            while ($row = mysqli_fetch_assoc($orderid_result)) {
+                $order_ids[] = (int) $row['orderid'];
+            }
+
+            if (!empty($order_ids)) {
+                $update_products_query = "UPDATE order_product SET status = 5 WHERE id IN ($id_list)";
+                mysqli_query($conn, $update_products_query);
+
+                $escaped_order_ids = implode(',', $order_ids);
+                $update_orders_query = "UPDATE orders SET status = 5 WHERE orderid IN ($escaped_order_ids)";
+                mysqli_query($conn, $update_orders_query);
+
+                echo 'success';
+            } else {
+                echo 'No matching order IDs found';
+            }
         } else {
-            echo "Invalid JSON: " . json_last_error_msg();
+            echo 'No product IDs received';
         }
+
+        exit;
     }
     
     if ($action == "send_email") {

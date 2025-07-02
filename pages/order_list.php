@@ -125,9 +125,6 @@ if(isset($_REQUEST['customer_id'])){
         <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 90%;">
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
-                    <h4 class="modal-title" id="myLargeModalLabel">
-                        View Order
-                    </h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div id="update_product" class="form-horizontal">
