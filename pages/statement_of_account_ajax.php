@@ -25,7 +25,7 @@ if(isset($_REQUEST['action'])) {
 
         $sms_message = "Hi $customer_name,\n\n$subject\nThis is to remind you of your outstanding balance of $balance.Click this link to view additional details:\n$statement_url";
 
-        $message = "
+        $html_message = "
                 <html>
                 <head>
                     <style>
