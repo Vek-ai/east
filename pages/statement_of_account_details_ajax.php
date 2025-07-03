@@ -156,27 +156,58 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == "payment_receivable") {
-        $ledger_id = intval($_POST['ledger_id'] ?? 0);
-        $payment_amount = floatval($_POST['payment_amount'] ?? 0);
+        $ledger_ids_raw = $_POST['ledger_id'] ?? '';
+        $ledger_ids = array_filter(array_map('intval', explode(',', $ledger_ids_raw)));
+        $total_payment = floatval($_POST['payment_amount'] ?? 0);
         $paid_by = trim($_POST['paid_by'] ?? '');
         $reference_no = trim($_POST['reference_no'] ?? '');
         $payment_method = $_POST['type'] ?? 'cash';
         $check_no = $_POST['check_no'] ?? null;
         $description = mysqli_real_escape_string($conn, $_POST['description'] ?? '');
-
         $cashier = $_SESSION['userid'];
+        $check_no_sql = $payment_method === 'check' ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
 
-        $check_query = "SELECT * FROM job_ledger WHERE ledger_id = '$ledger_id'";
-        $check_result = mysqli_query($conn, $check_query);
+        if (empty($ledger_ids) || $total_payment <= 0) {
+            echo 'invalid_input';
+            return;
+        }
 
-        if ($check_result && mysqli_num_rows($check_result) > 0) {
-            $check_no_sql = $payment_method === 'check' ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
+        $ids_in_clause = implode(',', $ledger_ids);
+        $query = "
+            SELECT l.ledger_id, l.amount AS credit_amount, 
+                IFNULL(SUM(p.amount), 0) AS total_paid
+            FROM job_ledger l
+            LEFT JOIN job_payment p ON l.ledger_id = p.ledger_id
+            WHERE l.ledger_id IN ($ids_in_clause)
+            GROUP BY l.ledger_id
+            ORDER BY l.created_at ASC
+        ";
+
+        $result = mysqli_query($conn, $query);
+        if (!$result) {
+            echo 'ledger_fetch_error';
+            return;
+        }
+
+        $remaining_payment = $total_payment;
+        $success = true;
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $ledger_id = $row['ledger_id'];
+            $credit = floatval($row['credit_amount']);
+            $paid = floatval($row['total_paid']);
+            $balance = max(0, $credit - $paid);
+
+            if ($balance <= 0 || $remaining_payment <= 0) continue;
+
+            $to_pay = min($balance, $remaining_payment);
 
             $insert = "
-                INSERT INTO job_payment (ledger_id, amount, payment_method, check_number, reference_no, description, created_by, cashier)
-                VALUES (
+                INSERT INTO job_payment (
+                    ledger_id, amount, payment_method, check_number, reference_no, description, created_by, cashier
+                ) VALUES (
                     '$ledger_id',
-                    '$payment_amount',
+                    '$to_pay',
                     '$payment_method',
                     $check_no_sql,
                     '" . mysqli_real_escape_string($conn, $reference_no) . "',
@@ -185,16 +216,17 @@ if(isset($_REQUEST['action'])) {
                     '$cashier'
                 )
             ";
-
-            if (mysqli_query($conn, $insert)) {
-                echo 'success';
-            } else {
-                echo 'error_insert';
+            if (!mysqli_query($conn, $insert)) {
+                $success = false;
+                break;
             }
-        } else {
-            echo 'job_not_found';
+
+            $remaining_payment -= $to_pay;
         }
+
+        echo $success ? 'success' : 'insert_failed';
     }
+
 
     if ($action == "payment_history") {
         $ledger_id = intval($_POST['ledger_id'] ?? 0);

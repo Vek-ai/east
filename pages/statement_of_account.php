@@ -163,6 +163,59 @@ $page_title = "Statement of Accounts";
         </div>
     </div>
 
+    <div class="modal fade" id="pdfModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl modal-dialog-center" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Print/View Outputs</h5>
+                <button type="button" class="close" data-bs-dismiss="modal">
+                <span>&times;</span>
+                </button>
+            </div>
+                <div class="modal-body" style="overflow: auto;">
+                    <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
+
+                    <div class="container-fluid border rounded p-3">
+                        <h6 class="mb-3">Download Outputs</h6>
+
+                        <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
+                            <button id="printBtn" class="btn btn-success">Print</button>
+                            <button id="downloadBtn" class="btn btn-primary">Download</button>
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="sendStatementModal" tabindex="-1" aria-labelledby="sendStatementModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sendStatementModalLabel">Send Options</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <h6 class="mb-3">How would you like to send the statement of account to the customer?</h6>
+
+                    <form class="send_statement_form d-flex flex-column flex-md-row align-items-center justify-content-center gap-2" method="post">
+                        <input id="send_customer_id" type="hidden" name="customerid" value="">
+
+                        <select name="send_option" class="form-select form-select-sm w-auto">
+                            <option value="email">Email</option>
+                            <option value="sms">Text Message</option>
+                            <option value="both">Both</option>
+                        </select>
+
+                        <button type="submit" class="btn btn-sm btn-primary">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card card-body">
         <div class="row">
             <div class="col-3">
@@ -228,23 +281,23 @@ $page_title = "Statement of Accounts";
                     <div class="product-details table-responsive text-wrap">
                         <?php
                         $sql = "SELECT 
-                                j.customer_id, 
-                                SUM(CASE WHEN l.entry_type = 'credit' THEN l.amount ELSE 0 END) AS total_credit,
-                                SUM(CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE 0 END) AS total_payments,
-                                MIN(CASE WHEN l.entry_type = 'credit' THEN l.created_at ELSE NULL END) AS first_credit_date,
-                                (
-                                    SELECT MAX(jp.created_at)
-                                    FROM jobs j2
-                                    INNER JOIN job_ledger jl ON jl.job_id = j2.job_id
-                                    INNER JOIN job_payment jp ON jp.ledger_id = jl.ledger_id
-                                    WHERE j2.customer_id = j.customer_id
-                                ) AS last_payment_date
-                            FROM jobs j
-                            INNER JOIN job_ledger l ON l.job_id = j.job_id
-                            INNER JOIN customer c ON c.customer_id = j.customer_id
-                            WHERE c.status = 1
-                            GROUP BY j.customer_id
-                            HAVING total_credit > 0 OR total_payments > 0";
+                                    j.customer_id, 
+                                    SUM(CASE WHEN l.entry_type = 'credit' THEN l.amount ELSE 0 END) AS total_credit,
+                                    SUM(CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE 0 END) AS total_payments,
+                                    MIN(CASE WHEN l.entry_type = 'credit' THEN l.created_at ELSE NULL END) AS first_credit_date,
+                                    (
+                                        SELECT MAX(jp.created_at)
+                                        FROM jobs j2
+                                        INNER JOIN job_ledger jl ON jl.job_id = j2.job_id
+                                        INNER JOIN job_payment jp ON jp.ledger_id = jl.ledger_id
+                                        WHERE j2.customer_id = j.customer_id
+                                    ) AS last_payment_date
+                                FROM jobs j
+                                INNER JOIN job_ledger l ON l.job_id = j.job_id
+                                INNER JOIN customer c ON c.customer_id = j.customer_id
+                                WHERE c.status = 1
+                                GROUP BY j.customer_id
+                                HAVING total_credit > 0 OR total_payments > 0";
                         $result = $conn->query($sql);
                         ?>
 
@@ -266,7 +319,7 @@ $page_title = "Statement of Accounts";
                                         $total_credit = floatval($row['total_credit']); 
                                         $customer_id = floatval($row['customer_id']); 
                                         $customer_details = getCustomerDetails($customer_id);
-                                        $credit_limit = number_format(floatval($customer_details['credit_limit'] ?? 0), 2);
+                                        $credit_limit = number_format(floatval($customer_details['charge_net_30'] ?? 0), 2);
 
                                         $date_outstanding = '';
 
@@ -302,11 +355,11 @@ $page_title = "Statement of Accounts";
                                                     <i class="text-primary fa fa-eye fs-5"></i>
                                             </a>
 
-                                            <a href="javascript:void(0)" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
+                                            <a href="print_statement_account.php?id=<?= $customer_id; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
                                                     <i class="text-success fa fa-print fs-5"></i>
                                             </a>
 
-                                            <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Send Confirmation">
+                                            <a href="javascript:void(0)" type="button" id="email_statement_btn" class="me-1 email_statement_btn" data-customer="<?= $customer_id ?>" data-bs-toggle="tooltip" title="Send Confirmation">
                                                 <iconify-icon icon="solar:plain-linear" class="fs-6 text-info"></iconify-icon>
                                             </a>
                                         </td>
@@ -345,6 +398,100 @@ $page_title = "Statement of Accounts";
             $(this).select2({
                 width: '100%',
                 dropdownParent: $(this).parent()
+            });
+        });
+
+        $(document).on('click', '.btn-show-pdf', function(e) {
+            e.preventDefault();
+            pdfUrl = $(this).attr('href');
+            document.getElementById('pdfFrame').src = pdfUrl;
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            modal.show();
+        });
+
+        $('#printBtn').on('click', function () {
+            if (isPrinting) {
+                return;
+            }
+
+            isPrinting = true;
+            const $iframe = $('#pdfFrame');
+
+            $iframe.off('load').one('load', function () {
+                try {
+                    this.contentWindow.focus();
+                    this.contentWindow.print();
+                } catch (e) {
+                    alert("Failed to print PDF.");
+                }
+                isPrinting = false;
+            });
+
+            $iframe.attr('src', pdfUrl);
+
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            modal.show();
+        });
+
+
+        $('#downloadBtn').on('click', function () {
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.download = '';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        $(document).on('click', '.email_statement_btn', function () {
+            const customerId = $(this).data('customer');
+
+            $('#send_customer_id').val(customerId);
+            $('#sendStatementModal').modal('show');
+        });
+
+        $(document).on('submit', '.send_statement_form', function (e) {
+            e.preventDefault();
+
+            const $form = $(this);
+            const formData = new FormData(this);
+            formData.append('action', 'send_email');
+
+            $.ajax({
+                url: 'pages/statement_of_account_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function () {
+                    $form.find('button').prop('disabled', true).text('Sending...');
+                },
+                success: function (response) {
+                    let jsonResponse;
+
+                    try {
+                        jsonResponse = (typeof response === "string") ? JSON.parse(response) : response;
+                    } catch (e) {
+                        jsonResponse = { success: false, message: "Invalid JSON response" };
+                    }
+
+                    const emailOk = jsonResponse?.email_success === true;
+                    const smsOk = jsonResponse?.sms_success === true;
+
+                    if (emailOk || smsOk) {
+                        alert(jsonResponse.message || "Message sent successfully.");
+                    } else {
+                        alert(jsonResponse.message || "Message failed to send.");
+                    }
+
+                    location.reload();
+                },
+                error: function () {
+                    alert('Failed to send message.');
+                },
+                complete: function () {
+                    $('.modal').modal('hide');
+                }
             });
         });
 

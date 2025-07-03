@@ -199,8 +199,11 @@ if(isset($_REQUEST['customer_id'])){
             <div class="col-9">
                 <div id="selected-tags" class="mb-2"></div>
                 <div class="datatables">
-                    <div class="modal-header d-flex align-items-center">
+                    <div class="modal-header d-flex justify-content-between align-items-center">
                         <h5 class="fw-bold">Ledger Data for <?= get_customer_name($customer_id) ?></h5>
+                        <div class="mb-2">
+                            <button class="btn btn-primary" id="batchPaymentBtn">Batch Payment</button>
+                        </div>
                     </div>
                     <div class="product-details table-responsive text-wrap">
                         <?php
@@ -231,6 +234,7 @@ if(isset($_REQUEST['customer_id'])){
                         <table id="acct_dtls_tbl" class="table table-hover mb-0 text-wrap text-center">
                             <thead>
                                 <tr>
+                                    <th><input type="checkbox" id="selectAllCredits"></th>
                                     <th style="color: #ffffff !important;">Order ID</th>
                                     <th style="color: #ffffff !important;">Date</th>
                                     <th style="color: #ffffff !important;">Job</th>
@@ -292,12 +296,24 @@ if(isset($_REQUEST['customer_id'])){
                                     $balance += $credit;
                                     $total_credit += $credit;
                                     $balance = max(0, $balance);
-                                ?>
+                                    ?>
                                     <tr
                                         data-tax="<?= $customer_details['tax_status'] ?>"
                                         data-month="<?= date('m', strtotime($row['date'])) ?>"
                                         data-type="<?= $type ?>"
                                     >
+                                        <?php if($is_credit){
+                                            ?>
+                                            <td>
+                                                <input type="checkbox" class="credit-checkbox" value="<?= $ledger_id ?>">
+                                            </td>
+                                            <?php
+                                        }else{
+                                            ?>
+                                            <td></td>
+                                            <?php
+                                        }
+                                        ?>
                                         <td class="text-start"><?= htmlspecialchars($order_id) ?></td>
                                         <td><?= date('Y-m-d', strtotime($row['date'])) ?></td>
                                         <td><?= htmlspecialchars($row['job_name']) ?></td>
@@ -337,7 +353,7 @@ if(isset($_REQUEST['customer_id'])){
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td class="text-end" colspan="7">Total Recievable </td>
+                                    <td class="text-end" colspan="8">Total Recievable </td>
                                     <td class="text-end" colspan="1">$<?= number_format($total_credit,2) ?></td>
                                     <td></td>
                                 </tr>
@@ -368,6 +384,12 @@ if(isset($_REQUEST['customer_id'])){
             ]
         });
 
+        window.getSelectedLedgerIds = function() {
+            return $('.credit-checkbox:checked').map(function() {
+                return $(this).val();
+            }).get();
+        }
+
         $('#acct_dtls_tbl_filter').hide();
 
         $(".select2").each(function () {
@@ -375,6 +397,23 @@ if(isset($_REQUEST['customer_id'])){
                 width: '100%',
                 dropdownParent: $(this).parent()
             });
+        });
+
+        $('#selectAllCredits').on('change', function() {
+            const checked = $(this).is(':checked');
+            $('.credit-checkbox').prop('checked', checked);
+        });
+
+        $('#batchPaymentBtn').on('click', function() {
+            const selectedLedgerIds = getSelectedLedgerIds();
+
+            if (selectedLedgerIds.length === 0) {
+                alert("Please select at least one credit to process.");
+                return;
+            }
+
+            $('#ledger_id').val(selectedLedgerIds.join(','));
+            $('#paymentModal').modal('show');
         });
 
         $('#paymentModal').on('show.bs.modal', function () {
@@ -386,7 +425,7 @@ if(isset($_REQUEST['customer_id'])){
 
         $(document).on('click', '#paymentBtn', function(event) {
             event.preventDefault();
-            var ledger_id = $(this).data('id') || '';
+            const ledger_id = $(this).data('id') || '';
             $('#ledger_id').val(ledger_id);
             $('#paymentModal').modal('show');
         });

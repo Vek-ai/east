@@ -10,76 +10,105 @@ require '../includes/send_email.php';
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
-    if ($action == "fetch_view_modal") {
-        $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
-        $query = "
-            SELECT 
-                j.job_id,
-                l.created_at AS date,
-                l.description,
-                j.job_name,
-                l.po_number,
-                CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE NULL END AS debit,
-                CASE WHEN l.entry_type = 'deposit' THEN l.amount ELSE NULL END AS credit
-            FROM jobs j
-            INNER JOIN job_ledger l ON l.job_id = j.job_id
-            WHERE j.customer_id = '$customer_id'
-            ORDER BY l.created_at ASC
-        ";
+    if ($action == "send_email") {
+        $customerid = mysqli_real_escape_string($conn, $_POST['customerid']);
+        $customer_details= getCustomerDetails($customerid);
+        $customer_name = $customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'];
+        $customer_email = $customer_details['contact_email'];
+        $customer_phone = $customer_details['contact_phone'];
 
-        $result = mysqli_query($conn, $query);
-        $balance = 0;
+        $send_option = mysqli_real_escape_string($conn, $_POST['send_option']);
+        $balance = number_format(getCustomerCreditTotal($customerid),2);
+        $statement_url = "https://metal.ilearnwebtech.com/print_statement_account.php?id=$customerid";
 
-        if ($result && mysqli_num_rows($result) > 0): ?>
-            <div class="datatables">
-                <div class="product-details table-responsive text-wrap">
-                    <h5 class="fw-bold">Ledger Data for <?= get_customer_name($customer_id) ?></h5>
-                    <table id="job_details_tbl" class="table table-striped table-md text-wrap">
-                        <thead class="bg-primary text-white">
-                            <tr>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th>Job</th>
-                                <th>PO Number</th>
-                                <th class="text-end">Debit</th>
-                                <th class="text-end">Credit</th>
-                                <th class="text-end">Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while ($row = mysqli_fetch_assoc($result)) : 
-                                $job_details = getJobDetails($row['job_id']);
-                                $debit = $row['debit'] !== null ? floatval($row['debit']) : 0;
-                                $credit = $row['credit'] !== null ? floatval($row['credit']) : 0;
+        $subject = "Customer Outstanding Balance.";
 
-                                if ($debit == 0 && $credit == 0) continue;
+        $sms_message = "Hi $customer_name,\n\n$subject\nThis is to remind you of your outstanding balance of $balance.Click this link to view additional details:\n$statement_url";
 
-                                $balance += ($debit - $credit);
-                            ?>
-                                <tr>
-                                    <td><?= date('Y-m-d', strtotime($row['date'])) ?></td>
-                                    <td><?= htmlspecialchars($row['description']) ?></td>
-                                    <td><?= htmlspecialchars($row['job_name']) ?></td>
-                                    <td>
-                                        <a href="javascript:void(0);" 
-                                        class="view-order-details" 
-                                        data-job="<?= htmlspecialchars($row['job_name']) ?>" 
-                                        data-po="<?= htmlspecialchars($row['po_number']) ?>">
-                                            <?= htmlspecialchars($row['po_number']) ?>
-                                        </a>
-                                    </td>
-                                    <td class="text-end"><?= $debit > 0 ? '$' .number_format($debit, 2) : '' ?></td>
-                                    <td class="text-end"><?= $credit > 0 ? '$' .number_format($credit, 2) : '' ?></td>
-                                    <td class="text-end">$<?= number_format($balance, 2) ?></td>
-                                </tr>
-                            <?php endwhile; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        <?php else: ?>
-            <p class="text-muted">No ledger records found for this customer.</p>
-        <?php endif;
+        $message = "
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                        }
+                        .container {
+                            padding: 20px;
+                            border: 1px solid #e0e0e0;
+                            background-color: #f9f9f9;
+                            width: 80%;
+                            margin: 0 auto;
+                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        }
+                        h2 {
+                            color: #0056b3;
+                            margin-bottom: 20px;
+                        }
+                        p {
+                            margin: 5px 0;
+                        }
+                        .link {
+                            font-weight: bold;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <h2>$subject</h2>
+                        <p>This is to remind you of your outstanding balance of $balance.</p>
+                        <a href='$statement_url' class='link' target='_blank'>Click this link to view additional details</a>
+                    </div>
+                </body>
+                </html>
+                ";
+
+            $email_success = false;
+            $sms_success = false;
+            $email_error = '';
+            $sms_error = '';
+
+            if ($send_option === 'email' || $send_option === 'both') {
+                if (!empty($customer_email)) {
+                    $email_result = sendEmail($customer_email, $customer_name, $subject, $html_message);
+                    $email_success = $email_result['success'];
+                    $response['email_success'] = $email_success;
+
+                    if (!$email_success) {
+                        $email_error = $email_result['error'] ?? 'Unknown email error';
+                        $response['email_error'] = $email_error;
+                    }
+                } else {
+                    $response['email_success'] = false;
+                    $response['email_error'] = 'Missing email';
+                }
+            }
+
+            if ($send_option === 'sms' || $send_option === 'both') {
+                if (!empty($customer_phone)) {
+                    $sms_result = sendPhoneMessage($customer_phone, $customer_name, $subject, $sms_message);
+                    $sms_success = $sms_result['success'];
+                    $response['sms_success'] = $sms_success;
+
+                    if (!$sms_success) {
+                        $sms_error = $sms_result['error'] ?? 'Unknown SMS error';
+                        $response['sms_error'] = $sms_error;
+                    }
+                } else {
+                    $response['sms_success'] = false;
+                    $response['sms_error'] = 'Missing phone number';
+                }
+            }
+
+            if ($email_success || $sms_success) {
+                $response['message'] = "Successfully sent to $customer_name.";
+            } else {
+                $response['message'] = "Message could not be sent to $customer_name.";
+            }
+
+            $response['success'] = true;
+            echo json_encode($response);
     }
 
     mysqli_close($conn);

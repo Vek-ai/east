@@ -1131,6 +1131,7 @@ if (isset($_POST['save_order'])) {
         $created_by = mysqli_real_escape_string($conn, $cashierid);
         $reference_no = mysqli_real_escape_string($conn, $orderid);
         $description = 'Materials Purchased';
+        $check_number = ($payment_method === 'check' && !empty($check_no)) ? "'".mysqli_real_escape_string($conn, $check_no)."'" : "NULL";
 
         if ($pay_type == 'net30') {
             $update_sql = "UPDATE customer SET charge_net_30 = $new_charge_net_30 WHERE customer_id = $customerid";
@@ -1190,8 +1191,6 @@ if (isset($_POST['save_order'])) {
         }
 
         if (!empty($job_id)) {
-            $check_number = ($payment_method === 'check' && !empty($check_no)) ? "'".mysqli_real_escape_string($conn, $check_no)."'" : "NULL";
-
             if ($applyJobDeposit && $job_balance > 0 && $job_deposit_applied > 0) {
                 $amount = number_format($job_deposit_applied, 2, '.', '');
                 $sql = "
@@ -1238,24 +1237,24 @@ if (isset($_POST['save_order'])) {
                     }
                 }
             }
+        }
+        
+        $entry_type = ($pay_type == 'delivery' || $pay_type == 'pickup' || $pay_type == 'net30') ? 'credit' : 'usage';
+        $amount = ($entry_type === 'credit') ? floatval($credit_amt) : floatval($cash_amt);
 
-            $entry_type = ($pay_type == 'delivery' || $pay_type == 'pickup' || $pay_type == 'net30') ? 'credit' : 'usage';
-            $amount = ($entry_type === 'credit') ? floatval($credit_amt) : floatval($cash_amt);
-
-            if ($amount > 0) {
-                $amount = number_format($amount, 2, '.', '');
-                $sql = "
-                    INSERT INTO job_ledger (
-                        job_id, customer_id entry_type, amount, po_number, reference_no, description, 
-                        check_number, created_by, created_at, payment_method
-                    ) VALUES (
-                        '$job_id', '$customerid', '$entry_type', '$amount', '$po_number', '$reference_no', '$description',
-                        $check_number, '$created_by', NOW(), '$pay_type'
-                    )
-                ";
-                if (!mysqli_query($conn, $sql)) {
-                    $response['error'] = 'Ledger Insert Error ($entry_type): ' . mysqli_error($conn);
-                }
+        if ($amount > 0) {
+            $amount = number_format($amount, 2, '.', '');
+            $sql = "
+                INSERT INTO job_ledger (
+                    job_id, customer_id, entry_type, amount, po_number, reference_no, description, 
+                    check_number, created_by, created_at, payment_method
+                ) VALUES (
+                    '$job_id', '$customerid', '$entry_type', '$amount', '$po_number', '$reference_no', '$description',
+                    NULL, '$created_by', NOW(), '$pay_type'
+                )
+            ";
+            if (!mysqli_query($conn, $sql)) {
+                $response['error'] = 'Ledger Insert Error ($entry_type): ' . mysqli_error($conn);
             }
         }
 
