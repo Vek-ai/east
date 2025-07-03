@@ -323,6 +323,52 @@ if (isset($_POST['search_jobs'])) {
                                 </tr>
                                 <?php
                             }
+
+                            if (
+                                mysqli_num_rows($deposit_result) === 0 &&
+                                mysqli_num_rows($usage_result) === 0
+                            ) {
+                                ?>
+                                <tr>
+                                    <td class="ps-0 text-center">
+                                        <h5 class="mb-1">-</h5>
+                                    </td>
+                                    <td class="text-center">
+                                        <h5 class="mb-1"><?= htmlspecialchars($job_name) ?></h5>
+                                    </td>
+                                    <td colspan="2" class="text-center text-muted">
+                                        No transactions recorded.
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="?page=job_details&customer_id=<?= $customer_id ?>&job_name=<?= urlencode($job_name) ?>"
+                                            target="_blank"
+                                            title="View Job Details"
+                                            class="btn btn-sm p-0 me-1 text-decoration-none">
+                                            <i class="fa fa-eye text-primary fs-5"></i>
+                                        </a>
+
+                                        <a href="#"
+                                            id="addModalBtn"
+                                            title="Edit Job"
+                                            class="btn btn-sm p-0 text-decoration-none"
+                                            data-job-id="<?= $job_id ?>"
+                                            data-customer-id="<?= $customer_id ?>"
+                                            data-type="edit">
+                                            <i class="ti ti-pencil fs-6"></i>
+                                        </a>
+
+                                        <a href="#"
+                                            id="depositModalBtn"
+                                            title="Deposit"
+                                            class="btn btn-sm p-0 text-decoration-none"
+                                            data-job="<?= $job_id ?>">
+                                            <i class="ti ti-plus text-success fs-6"></i>
+                                        </a>
+                                    </td>
+                                    <td style="display:none;" class="created-at"><?= $job['created_at'] ?></td>
+                                </tr>
+                                <?php
+                            }
                         }
                     } else {
                         ?>
