@@ -212,7 +212,7 @@ if(isset($_REQUEST['customer_id'])){
                                 CASE WHEN l.entry_type = 'credit' THEN l.amount ELSE NULL END AS credit
                             FROM job_ledger l
                             LEFT JOIN jobs j ON l.job_id = j.job_id
-                            WHERE jl.customer_id = '$customer_id' OR j.customer_id IS NULL
+                            WHERE l.customer_id = '$customer_id' OR j.customer_id IS NULL
                             ORDER BY l.created_at DESC;
                         ";
                         $result = mysqli_query($conn, $query);
