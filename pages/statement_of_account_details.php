@@ -181,6 +181,13 @@ if(isset($_REQUEST['customer_id'])){
                             <option value="12">December</option>
                         </select>
                     </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="type" data-filter-name="Type of Record" id="select-type">
+                            <option value="">All Types</option>
+                            <option value="payment">Payments</option>
+                            <option value="receivable">Receivable</option>
+                        </select>
+                    </div>
                     
                 </div>
                 <div class="d-flex justify-content-end py-2">
@@ -228,7 +235,7 @@ if(isset($_REQUEST['customer_id'])){
                                     <th style="color: #ffffff !important;">Date</th>
                                     <th style="color: #ffffff !important;">Job</th>
                                     <th style="color: #ffffff !important;">PO Number</th>
-                                    <th style="color: #ffffff !important;">Type of Payment</th>
+                                    <th style="color: #ffffff !important;">Invoice/Credit</th>
                                     <th style="color: #ffffff !important;" class="text-end">Payments</th>
                                     <th style="color: #ffffff !important;" class="text-end">Receivable</th>
                                     <th style="color: #ffffff !important;" class="text-end">Balance</th>
@@ -239,7 +246,7 @@ if(isset($_REQUEST['customer_id'])){
                                 <?php 
                                 $total_credit = 0;
 
-                                $pay_labels = [
+                                /* $pay_labels = [
                                     'pickup'   => ['label' => 'Pay at Pick-up'],
                                     'delivery' => ['label' => 'Pay at Delivery'],
                                     'cash'     => ['label' => 'Cash'],
@@ -247,6 +254,16 @@ if(isset($_REQUEST['customer_id'])){
                                     'card'     => ['label' => 'Credit/Debit Card'],
                                     'net30'    => ['label' => 'Charge Net 30'],
                                     'job_deposit'    => ['label' => 'Job Deposit'],
+                                ]; */
+
+                                $pay_labels = [
+                                    'pickup'   => ['label' => 'Invoice'],
+                                    'delivery' => ['label' => 'Invoice'],
+                                    'cash'     => ['label' => 'Invoice'],
+                                    'check'    => ['label' => 'Invoice'],
+                                    'card'     => ['label' => 'Invoice'],
+                                    'net30'    => ['label' => 'Credit'],
+                                    'job_deposit'    => ['label' => 'Credit'],
                                 ];
 
                                 while ($row = mysqli_fetch_assoc($result)) {
@@ -263,10 +280,13 @@ if(isset($_REQUEST['customer_id'])){
                                     $pay_type_key = strtolower(trim($row['payment_method']));
                                     $pay_type = $pay_labels[$pay_type_key]['label'] ?? ucfirst($pay_type_key);
 
+                                    $type = 'payment';
+
                                     if ($credit > 0) {
                                         $is_credit = true;
                                         $total_payments = getTotalJobPayments($ledger_id);
                                         $credit = max($credit - $total_payments, 0);
+                                        $type = 'receivable';
                                     }
 
                                     $balance += $credit;
@@ -276,7 +296,7 @@ if(isset($_REQUEST['customer_id'])){
                                     <tr
                                         data-tax="<?= $customer_details['tax_status'] ?>"
                                         data-month="<?= date('m', strtotime($row['date'])) ?>"
-                                        data-type="<?= $row['entry_type'] ?>"
+                                        data-type="<?= $type ?>"
                                     >
                                         <td class="text-start"><?= htmlspecialchars($order_id) ?></td>
                                         <td><?= date('Y-m-d', strtotime($row['date'])) ?></td>
