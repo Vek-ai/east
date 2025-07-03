@@ -114,7 +114,7 @@ if(isset($_POST['fetch_order'])){
         if(!empty($_SESSION["customer_id"])){
             $customer_id = $_SESSION["customer_id"];
             $customer_details = getCustomerDetails($customer_id);
-            $credit_limit = number_format(floatval($customer_details['credit_limit'] ?? 0), 2);
+            $charge_net_30 = floatval($customer_details['charge_net_30']);
             $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
             $lat = !empty($customer_details['lat']) ? $customer_details['lat'] : 0;
             $lng = !empty($customer_details['lng']) ? $customer_details['lng'] : 0;
@@ -139,8 +139,8 @@ if(isset($_POST['fetch_order'])){
             </div>
             <div class="col-6">
                 <div>
-                    <span class="fw-bold">Credit Limit:</span><br>
-                    <span class="text-primary fs-4 fw-bold pl-3">$<?= $credit_limit ?></span>
+                    <span class="fw-bold">Charge Net 30:</span><br>
+                    <span class="text-primary fs-4 fw-bold pl-3">$<?= number_format($charge_net_30,2) ?></span>
                 </div>
                 <div>
                     <span class="fw-bold">Unpaid Credit:</span><br>
@@ -257,6 +257,7 @@ if(isset($_POST['fetch_order'])){
             <input type="hidden" id="delivery_amt" name="delivery_amt" value="0">
             <input type="hidden" id="store_credit" name="store_credit" value="<?= $store_credit ?>">
             <input type="hidden" id="points_ratio" name="points_ratio" value="<?= $points_ratio ?>">
+            <input type="hidden" id="charge_net_30" value="<?= $charge_net_30 ?>">
 
             <div class="row text-start">
                 <div class="col-12 mb-2" style="color: #ffffff !important;">
@@ -570,6 +571,10 @@ if(isset($_POST['fetch_order'])){
                     <div id="jobDepositDisplay" class="d-flex justify-content-between mb-2 d-none text-success">
                         <span>Job Deposit:</span>
                         <span class="fw-bold" id="jobDepositValue"></span>
+                    </div>
+                    <div id="net30Display" class="d-flex justify-content-between mb-2 d-none text-success">
+                        <span>Charge Net 30:</span>
+                        <span class="fw-bold" id="net30Value"></span>
                     </div>
 
                     <div class="d-flex justify-content-end mb-3">

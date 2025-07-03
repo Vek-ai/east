@@ -1253,6 +1253,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         var points_ratio = parseFloat($('#points_ratio').val().replace(/,/g, ''));
         var isapplystorecredit = $('#applyStoreCredit').is(':checked');
         var isPayViaJobDeposit = $('#pay_via_job_deposit').is(':checked');
+        var isPayNet30 = $('#payNet30').is(':checked');
+        var net30Balance = parseFloat($('#charge_net_30').val().replace(/,/g, ''));
         var job_deposit = parseFloat(($('#pay_via_job_deposit').data('deposit') + '').replace(/,/g, ''));
         var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
@@ -1282,6 +1284,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         let store_credit_calc = 0;
         let job_deposit_calc = 0;
+        let net30_calc = 0;
 
         const totalBeforeCredit = payable_amt + deliveryAmount;
 
@@ -1305,7 +1308,18 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             $('#jobDepositValue').text('');
         }
 
-        const raw_total = totalBeforeCredit - store_credit_calc - job_deposit_calc;
+        const remaining_after_deposit = remaining_after_credit - job_deposit_calc;
+
+        if (isPayNet30) {
+            net30_calc = Math.min(net30Balance, remaining_after_deposit);
+            $('#net30Value').text(`-$${net30_calc.toFixed(2)}`);
+            $('#net30Display').removeClass('d-none');
+        } else {
+            $('#net30Display').addClass('d-none');
+            $('#net30Value').text('');
+        }
+
+        const raw_total = totalBeforeCredit - store_credit_calc - job_deposit_calc - net30_calc;
         const total_amt = Math.max(0, parseFloat(raw_total));
 
         $('#delivery_amt').val(deliveryAmount).trigger('change');
@@ -4643,6 +4657,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         });
 
         $(document).on('change', '#applyStoreCredit', function () {
+            calculateDeliveryAmount();
+        });
+
+        $(document).on('change', '[name="payMethod"]', function () {
             calculateDeliveryAmount();
         });
         

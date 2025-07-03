@@ -600,7 +600,7 @@ $reorder_level = 1;
                     </thead>
                     <tbody>
                       <?php
-                      $query = "SELECT customer_id, credit_amount, credit_type, created_at, reference_id as orderid FROM store_credit_history ORDER BY created_at DESC";
+                      $query = "SELECT customer_id, credit_amount, credit_type, created_at, reference_id as orderid FROM customer_store_credit_history ORDER BY created_at DESC";
                       $result = mysqli_query($conn, $query);
 
                       if ($result && mysqli_num_rows($result) > 0) {

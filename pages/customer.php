@@ -734,7 +734,7 @@ $addHeaderTxt = "Add New";
                   </div>
                 <?php } ?>
 
-                <div class="col-6 mb-3">
+                <div class="col-6 mb-3 d-none">
                   <label class="form-label">Credit Limit</label>
                   <input class="form-control" type="text" id="credit_limit" name="credit_limit" value="<?= $credit_limit ?>">
                 </div>
@@ -760,6 +760,11 @@ $addHeaderTxt = "Add New";
                       </select>
                   </div>
                 </div>
+
+                <div class="col-6 mb-3">
+                  <label class="form-label">Charge Net 30</label>
+                  <input class="form-control" type="number" step="0.001" id="charge_net_30" name="charge_net_30" value="<?= $charge_net_30 ?>">
+                </div>
               
               </div>
 
@@ -774,10 +779,10 @@ $addHeaderTxt = "Add New";
                     <label class="form-label">Customer Call Status</label>
                     <input type="checkbox" id="call_status" name="call_status" <?= $call_status ? 'checked' : '' ?>>
                   </div>
-                  <div class="col">
+                  <!-- <div class="col">
                     <label class="form-label">Charge Net 30</label>
-                    <input type="checkbox" id="charge_net_30" name="charge_net_30" <?= $charge_net_30 ? 'checked' : '' ?>>
-                  </div>
+                    <input type="checkbox" id="charge_net_30" <?= $charge_net_30 ? 'checked' : '' ?>>
+                  </div> -->
                   
               </div>
 
@@ -1213,7 +1218,7 @@ $addHeaderTxt = "Add New";
         processData: false,
         contentType: false,
         success: function (response) {
-
+          $('.modal').modal("hide");
           if (response === "Customer updated successfully.") {
             $('#responseHeader').text("Success");
             $('#responseMsg').text(response);

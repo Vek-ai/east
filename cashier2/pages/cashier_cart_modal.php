@@ -103,9 +103,9 @@ if(isset($_POST['fetch_cart'])){
             if(!empty($_SESSION["customer_id"])){
                 $customer_id = $_SESSION["customer_id"];
                 $customer_details = getCustomerDetails($customer_id);
-                $credit_limit = number_format(floatval($customer_details['credit_limit'] ?? 0), 2);
-                $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
-                $store_credit = number_format(floatval($customer_details['store_credit'] ?? 0),2);
+                $charge_net_30 = floatval($customer_details['charge_net_30'] ?? 0);
+                $credit_total = getCustomerCreditTotal($customer_id);
+                $store_credit = floatval($customer_details['store_credit'] ?? 0);
             ?>
 
             <div class="form-group row align-items-center" style="color: #ffffff !important;">
@@ -118,15 +118,15 @@ if(isset($_POST['fetch_cart'])){
                 <div class="col-6">
                     <div>
                         <span class="fw-bold">Credit Limit:</span><br>
-                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                        <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($charge_net_30,2) ?></span>
                     </div>
                     <div>
                         <span class="fw-bold">Unpaid Credit:</span><br>
-                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
+                        <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($credit_total,2) ?></span>
                     </div>
                     <div>
                         <span class="fw-bold">Store Credit:</span><br>
-                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $store_credit ?></span>
+                        <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($store_credit,2) ?></span>
                     </div>
                 </div>
             </div>
