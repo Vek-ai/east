@@ -166,8 +166,8 @@ if(isset($_POST['fetch_order'])){
                 </div>
             </div>
             <div class="col-3">
-                <span class="fw-bold">Credit Limit:</span><br>
-                <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+                <span class="fw-bold">Charge Net 30:</span><br>
+                <span class="text-primary fw-bold ms-3">Charge Net 30: $0.00</span>
             </div>
         </div>
         

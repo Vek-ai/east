@@ -117,7 +117,7 @@ if(isset($_POST['fetch_cart'])){
                 </div>
                 <div class="col-6">
                     <div>
-                        <span class="fw-bold">Credit Limit:</span><br>
+                        <span class="fw-bold">Charge Net 30:</span><br>
                         <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($charge_net_30,2) ?></span>
                     </div>
                     <div>
@@ -142,8 +142,8 @@ if(isset($_POST['fetch_cart'])){
                     </div>
                 </div>
                 <div class="col-6">
-                    <span class="fw-bold">Credit Limit:</span><br>
-                    <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+                    <span class="fw-bold">Charge Net 30:</span><br>
+                    <span class="text-primary fw-bold ms-3">Charge Net 30: $0.00</span>
                 </div>
             </div>
         <?php } ?>
