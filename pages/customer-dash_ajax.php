@@ -336,7 +336,7 @@ if (isset($_POST['search_jobs'])) {
                                     <td class="text-center">
                                         <h5 class="mb-1"><?= htmlspecialchars($job_name) ?></h5>
                                     </td>
-                                    <td colspan="2" class="text-center text-muted">
+                                    <td colspan="3" class="text-center text-muted">
                                         No transactions recorded.
                                     </td>
                                     <td class="text-center">
