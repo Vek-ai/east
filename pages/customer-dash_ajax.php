@@ -336,9 +336,8 @@ if (isset($_POST['search_jobs'])) {
                                     <td class="text-center">
                                         <h5 class="mb-1"><?= htmlspecialchars($job_name) ?></h5>
                                     </td>
-                                    <td colspan="3" class="text-center text-muted">
-                                        No transactions recorded.
-                                    </td>
+                                    <td></td>
+                                    <td></td>
                                     <td class="text-center">
                                         <a href="?page=job_details&customer_id=<?= $customer_id ?>&job_name=<?= urlencode($job_name) ?>"
                                             target="_blank"
@@ -367,6 +366,7 @@ if (isset($_POST['search_jobs'])) {
                                     </td>
                                     <td style="display:none;" class="created-at"><?= $job['created_at'] ?></td>
                                 </tr>
+
                                 <?php
                             }
                         }
