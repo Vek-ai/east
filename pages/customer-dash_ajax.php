@@ -1135,6 +1135,7 @@ if (isset($_POST['save_job'])) {
 
 if (isset($_POST['deposit_job'])) {
     $job_id = intval($_POST['job_id'] ?? 0);
+    $customer_id = intval($_POST['customer_id'] ?? 0);
     $deposit_amount = floatval($_POST['deposit_amount'] ?? 0);
     $deposited_by = trim($_POST['deposited_by'] ?? '');
     $reference_no = trim($_POST['reference_no'] ?? '');
@@ -1149,9 +1150,10 @@ if (isset($_POST['deposit_job'])) {
         $check_no_sql = $payment_method === 'check' ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
 
         $insert = "
-            INSERT INTO job_ledger (job_id, entry_type, amount, payment_method, check_number, reference_no, description, created_by)
+            INSERT INTO job_ledger (job_id, customer_id, entry_type, amount, payment_method, check_number, reference_no, description, created_by)
             VALUES (
                 '$job_id',
+                '" . mysqli_real_escape_string($conn, $deposited_by) . "',
                 'deposit',
                 '$deposit_amount',
                 '$payment_method',

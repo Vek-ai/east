@@ -676,14 +676,14 @@ $reorder_level = 1;
                     </thead>
                     <tbody>
                       <?php
-                      $query = "SELECT ledger_id, job_id, amount, entry_type, created_at FROM job_ledger WHERE entry_type IN ('deposit', 'usage') ORDER BY created_at DESC";
+                      $query = "SELECT ledger_id, job_id, customer_id, amount, entry_type, created_at FROM job_ledger WHERE entry_type IN ('deposit', 'usage') ORDER BY created_at DESC";
                       $result = mysqli_query($conn, $query);
 
                       if ($result && mysqli_num_rows($result) > 0) {
                           while ($row = mysqli_fetch_assoc($result)) {
                               $job_id = $row['job_id'];
                               $job_details = getJobDetails($job_id);
-                              $customer_id = $job_details['customer_id'];
+                              $customer_id = $row['customer_id'];
                               $customer_name = get_customer_name($customer_id);
                               $job_name = $job_details['job_name'];
                               $amount = number_format(abs($row['amount']), 2);

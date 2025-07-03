@@ -1155,10 +1155,10 @@ if (isset($_POST['save_order'])) {
 
             $sql = "
                 INSERT INTO job_ledger (
-                    job_id, entry_type, amount, po_number, reference_no, description, 
+                    job_id, customer_id, entry_type, amount, po_number, reference_no, description, 
                     check_number, created_by, created_at, payment_method
                 ) VALUES (
-                    '$job_id', 'credit', '$net30_applied', '$po_number', '$reference_no', '$description',
+                    '$job_id', '$customerid', 'credit', '$net30_applied', '$po_number', '$reference_no', '$description',
                     NULL, '$created_by', NOW(), '$pay_type'
                 )
             ";
@@ -1196,9 +1196,9 @@ if (isset($_POST['save_order'])) {
                 $amount = number_format($job_deposit_applied, 2, '.', '');
                 $sql = "
                     INSERT INTO job_ledger (
-                        job_id, entry_type, amount, po_number, reference_no, description, check_number, created_by, created_at, payment_method
+                        job_id, customer_id, entry_type, amount, po_number, reference_no, description, check_number, created_by, created_at, payment_method
                     ) VALUES (
-                        '$job_id', 'usage', '$amount', '$po_number', '$reference_no', '$description', $check_number, '$created_by', NOW(), 'job_deposit'
+                        '$job_id', '$customerid', 'usage', '$amount', '$po_number', '$reference_no', '$description', $check_number, '$created_by', NOW(), 'job_deposit'
                     )
                 ";
                 if (!mysqli_query($conn, $sql)) {
@@ -1246,10 +1246,10 @@ if (isset($_POST['save_order'])) {
                 $amount = number_format($amount, 2, '.', '');
                 $sql = "
                     INSERT INTO job_ledger (
-                        job_id, entry_type, amount, po_number, reference_no, description, 
+                        job_id, customer_id entry_type, amount, po_number, reference_no, description, 
                         check_number, created_by, created_at, payment_method
                     ) VALUES (
-                        '$job_id', '$entry_type', '$amount', '$po_number', '$reference_no', '$description',
+                        '$job_id', '$customerid', '$entry_type', '$amount', '$po_number', '$reference_no', '$description',
                         $check_number, '$created_by', NOW(), '$pay_type'
                     )
                 ";

@@ -997,10 +997,9 @@ function getCustomerCreditTotal($customer_id) {
     $total_credit = 0;
 
     $ledger_query = "
-        SELECT jl.ledger_id, jl.amount
-        FROM job_ledger jl
-        INNER JOIN jobs j ON jl.job_id = j.job_id
-        WHERE jl.entry_type = 'credit' AND j.customer_id = '$customer_id'
+        SELECT ledger_id, amount
+        FROM job_ledger
+        WHERE entry_type = 'credit' AND customer_id = '$customer_id'
     ";
 
     $ledger_result = mysqli_query($conn, $ledger_query);
