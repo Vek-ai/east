@@ -1240,7 +1240,9 @@ if (isset($_POST['save_order'])) {
         }
         
         $entry_type = ($pay_type == 'delivery' || $pay_type == 'pickup' || $pay_type == 'net30') ? 'credit' : 'usage';
-        $amount = ($entry_type === 'credit') ? floatval($credit_amt) : floatval($cash_amt);
+        $cash_amt = floatval($cash_amt);
+        $credit_amt = floatval($credit_amt);
+        $amount = $cash_amt != 0 ? $cash_amt : $credit_amt;
 
         if ($amount > 0) {
             $amount = number_format($amount, 2, '.', '');
