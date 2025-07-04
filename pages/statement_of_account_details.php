@@ -241,14 +241,15 @@ if(isset($_REQUEST['customer_id'])){
                                     <th style="color: #ffffff !important;">PO #</th>
                                     <th style="color: #ffffff !important;">Invoice/Credit</th>
                                     <th style="color: #ffffff !important;" class="text-end">Credit Amount</th>
-                                    <th style="color: #ffffff !important;" class="text-end">Receivable</th>
+                                    <th style="color: #ffffff !important;" class="text-end">Balance Due</th>
                                     <th style="color: #ffffff !important;" class="text-end">Remaining Balance</th>
                                     <th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php 
-                                $total_credit = 0;
+                                $balance_due = 0;
+                                $avail_credit = 0;
 
                                 /* $pay_labels = [
                                     'pickup'   => ['label' => 'Pay at Pick-up'],
@@ -286,6 +287,9 @@ if(isset($_REQUEST['customer_id'])){
 
                                     $type = 'payment';
                                     $balance = 0;
+                                    if ($credit > 0) {
+                                        $avail_credit += $payments;
+                                    }
 
                                     if ($credit > 0) {
                                         $is_credit = true;
@@ -293,7 +297,7 @@ if(isset($_REQUEST['customer_id'])){
                                         $balance = max($credit - $total_payments, 0);
                                         $type = 'receivable';
                                     }
-                                    $total_credit += $balance;
+                                    $balance_due += $balance;
                                     ?>
                                     <tr
                                         data-tax="<?= $customer_details['tax_status'] ?>"
@@ -336,10 +340,10 @@ if(isset($_REQUEST['customer_id'])){
                                                 ?>
                                                 <div class="d-flex justify-content-center gap-2">
                                                     <a id="paymentBtn" title="Payment" role="button" class="py-1" data-id="<?= $ledger_id ?>">
-                                                        <i class="fas fa-wallet text-success"></i>
+                                                        <iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon>
                                                     </a>
                                                     <a id="paymentHistoryBtn" title="Payment History" role="button" class="py-1" data-id="<?= $ledger_id ?>">
-                                                        <i class="fas fa-history text-primary"></i>
+                                                        <i class="fas fa-history text-primary fs-5"></i>
                                                     </a>
                                                 </div>
                                                 <?php
@@ -351,8 +355,10 @@ if(isset($_REQUEST['customer_id'])){
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td class="text-end" colspan="8">Total Recievable </td>
-                                    <td class="text-end" colspan="1">$<?= number_format($total_credit,2) ?></td>
+                                    <td class="text-end fw-bold" colspan="5">Total Credit Available</td>
+                                    <td class="text-end fw-bold" colspan="1">$<?= number_format($avail_credit, 2) ?></td>
+                                    <td class="text-end fw-bold" colspan="2">Total Balance Due</td>
+                                    <td class="text-end fw-bold" colspan="1">$<?= number_format($balance_due, 2) ?></td>
                                     <td></td>
                                 </tr>
                             </tfoot>
