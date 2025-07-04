@@ -1072,7 +1072,7 @@ if(isset($_REQUEST['action'])) {
         $response['id'] = $id;
         $response['key'] = $est_key;
 
-        $sql = "UPDATE estimates SET status = '$newStatus', is_edited = '0' WHERE estimateid = $id";
+        $sql = "UPDATE estimates SET status = '3', is_edited = '0' WHERE estimateid = $id";
         if (!mysqli_query($conn, $sql)) {
             $response['message'] = 'Error updating order status.';
         }
