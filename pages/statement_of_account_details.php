@@ -235,14 +235,14 @@ if(isset($_REQUEST['customer_id'])){
                             <thead>
                                 <tr>
                                     <th><input type="checkbox" id="selectAllCredits"></th>
-                                    <th style="color: #ffffff !important;">Order ID</th>
+                                    <th style="color: #ffffff !important;">Invoice ID #</th>
                                     <th style="color: #ffffff !important;">Date</th>
-                                    <th style="color: #ffffff !important;">Job</th>
-                                    <th style="color: #ffffff !important;">PO Number</th>
+                                    <th style="color: #ffffff !important;">Job Name</th>
+                                    <th style="color: #ffffff !important;">PO #</th>
                                     <th style="color: #ffffff !important;">Invoice/Credit</th>
-                                    <th style="color: #ffffff !important;" class="text-end">Payments</th>
+                                    <th style="color: #ffffff !important;" class="text-end">Credit Amount</th>
                                     <th style="color: #ffffff !important;" class="text-end">Receivable</th>
-                                    <th style="color: #ffffff !important;" class="text-end">Balance</th>
+                                    <th style="color: #ffffff !important;" class="text-end">Remaining Balance</th>
                                     <th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
                                 </tr>
                             </thead>
@@ -285,17 +285,15 @@ if(isset($_REQUEST['customer_id'])){
                                     $pay_type = $pay_labels[$pay_type_key]['label'] ?? ucfirst($pay_type_key);
 
                                     $type = 'payment';
+                                    $balance = 0;
 
                                     if ($credit > 0) {
                                         $is_credit = true;
                                         $total_payments = getTotalJobPayments($ledger_id);
-                                        $credit = max($credit - $total_payments, 0);
+                                        $balance = max($credit - $total_payments, 0);
                                         $type = 'receivable';
                                     }
-
-                                    $balance += $credit;
-                                    $total_credit += $credit;
-                                    $balance = max(0, $balance);
+                                    $total_credit += $balance;
                                     ?>
                                     <tr
                                         data-tax="<?= $customer_details['tax_status'] ?>"
@@ -315,7 +313,7 @@ if(isset($_REQUEST['customer_id'])){
                                         }
                                         ?>
                                         <td class="text-start"><?= htmlspecialchars($order_id) ?></td>
-                                        <td><?= date('Y-m-d', strtotime($row['date'])) ?></td>
+                                        <td><?= date('F j, Y', strtotime($row['date'])) ?></td>
                                         <td><?= htmlspecialchars($row['job_name']) ?></td>
                                         <td>
                                             <a href="javascript:void(0);" 
@@ -330,7 +328,7 @@ if(isset($_REQUEST['customer_id'])){
                                         <td class="text-end"><?= $payments > 0 ? '$' .number_format($payments, 2) : '' ?></td>
                                         <td class="text-end"><?= $credit > 0 ? '$' .number_format($credit, 2) : '' ?></td>
                                         <td class="text-end">
-                                            <?= $credit > 0 ? '$' .number_format($balance, 2) : '' ?>
+                                            <?= number_format($balance, 2) ?>
                                         </td>
                                         <td>
                                             <?php
