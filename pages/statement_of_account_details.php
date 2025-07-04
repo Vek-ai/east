@@ -347,7 +347,7 @@ if(isset($_REQUEST['customer_id'])){
                                         <td class="text-end"><?= $payments > 0 ? '$' .number_format($payments, 2) : '' ?></td>
                                         <td class="text-end"><?= $credit > 0 ? '$' .number_format($credit, 2) : '' ?></td>
                                         <td class="text-end">
-                                            <?= $credit > 0 ? '$' .number_format($balance, 2) : '' ?>
+                                            <?= $balance > 0 ? '$' .number_format($balance, 2) : '' ?>
                                         </td>
                                         <td>
                                             <?php
