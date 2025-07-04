@@ -811,7 +811,7 @@ if(isset($_REQUEST['action'])) {
 
         $sms_message = "Hi $customer_name,\n\n$subject\nClick this link to view your order details:\n$est_url";
 
-        $message = "
+        $html_message = "
                 <html>
                 <head>
                     <style>
