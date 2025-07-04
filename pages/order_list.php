@@ -199,6 +199,28 @@ if(isset($_REQUEST['customer_id'])){
         </div>
     </div>
 
+    <div class="modal fade" id="pickupFormModal" tabindex="-1" aria-labelledby="pickupFormModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pickupFormModalLabel">Pick-Up Form</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="pickupOrderForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="pickup_name" class="form-label">Picked Up By</label>
+                            <input type="text" class="form-control" id="pickup_name" name="pickup_name" placeholder="Enter name" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -938,6 +960,19 @@ if(isset($_REQUEST['customer_id'])){
             $("#shipFormModal").modal("show");
         });
 
+        $(document).on("click", "#pickupOrderBtn", function () {
+            dataId = $(this).data("id");
+            action = $(this).data("action");
+            selected_prods = getSelectedIDs();
+
+            if (!Array.isArray(selected_prods) || selected_prods.length === 0) {
+                alert("Select at least 1 product to pickup.");
+                return;
+            }
+
+            $("#pickupFormModal").modal("show");
+        });
+
         $(document).on("submit", "#shipOrderForm", function (e) {
             e.preventDefault();
 
@@ -953,6 +988,53 @@ if(isset($_REQUEST['customer_id'])){
                     selected_prods: selected_prods,
                     tracking_number: tracking_number,
                     shipping_company: shipping_company,
+                    action: 'update_status'
+                },
+                success: function (response) {
+                    console.log(response);
+
+                    try {
+                        var jsonResponse = JSON.parse(response);
+                    } catch (e) {
+                        console.error("Invalid JSON:", e);
+                        alert("Unexpected response from server.");
+                        return;
+                    }
+
+                    if (jsonResponse.success) {
+                        alert("Status updated successfully!");
+
+                        if (jsonResponse.url && isValidURL(jsonResponse.url)) {
+                            window.open(jsonResponse.url, '_blank');
+                        }else{
+                            console.log("invalid url");
+                        }
+                    } else {
+                        alert("Failed to update");
+                    }
+
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.log("AJAX Error:", xhr.responseText);
+                    alert("An error occurred. Please try again.");
+                }
+            });
+        });
+
+        $(document).on("submit", "#pickupOrderForm", function (e) {
+            e.preventDefault();
+
+            var pickup_name = $('#pickup_name').val();
+
+            $.ajax({
+                url: 'pages/order_list_ajax.php',
+                type: 'POST',
+                data: {
+                    id: dataId,
+                    method: action,
+                    selected_prods: selected_prods,
+                    pickup_name: pickup_name,
                     action: 'update_status'
                 },
                 success: function (response) {

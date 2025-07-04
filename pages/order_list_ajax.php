@@ -161,6 +161,7 @@ if(isset($_REQUEST['action'])) {
                     </div>
                     <?php if ($status_code == 2): ?>
                         <div class="d-flex justify-content-end align-items-center gap-3 flex-wrap mt-3">
+                            <button type="button" id="pickupOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-action="pickup_order">Pickup Order</button>
                             <button type="button" id="shipOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-action="ship_order">Ship Order</button>
                         </div>
                     <?php endif; ?>
@@ -671,11 +672,6 @@ if(isset($_REQUEST['action'])) {
                             </tfoot>
                         </table>
                     </div>
-                    <?php if ($status_code == 2): ?>
-                        <div class="d-flex justify-content-end align-items-center gap-3 flex-wrap mt-3">
-                            <button type="button" id="shipOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-action="ship_order">Ship Order</button>
-                        </div>
-                    <?php endif; ?>
                 </div>
             </div>
             <div class="d-flex justify-content-end mt-3">
@@ -918,6 +914,7 @@ if(isset($_REQUEST['action'])) {
         $orderid = mysqli_real_escape_string($conn, $_POST['id']);
         $method = mysqli_real_escape_string($conn, $_POST['method']); 
 
+        $pickup_name = mysqli_real_escape_string($conn, $_POST['pickup_name'] ?? '');
         $tracking_number = mysqli_real_escape_string($conn, $_POST['tracking_number'] ?? ''); 
         $shipping_company = mysqli_real_escape_string($conn, $_POST['shipping_company'] ?? ''); 
         
@@ -946,8 +943,12 @@ if(isset($_REQUEST['action'])) {
                     $response['message'] = 'Error updating order status.';
                 }
 
-            } elseif ($method == "ship_order") {
-                $subject = "EKM has shipped your order";
+            } elseif ($method == "ship_order" || $method == "pickup_order") {
+                if($method == 'pickup_order'){
+                    $subject = "EKM has completed your order and is waiting for pickup";
+                }else{
+                    $subject = "EKM has shipped your order";
+                }
 
                 $selectedProds = $_POST['selected_prods'] ?? [];
                 $selectedProds = is_string($selectedProds) ? json_decode($selectedProds, true) : $selectedProds;
@@ -991,6 +992,12 @@ if(isset($_REQUEST['action'])) {
             if (!empty($shipping_company)) {
                 $updateParts[] = "shipping_company = '$shipping_company'";
             }
+
+            if (!empty($pickup_name)) {
+                $updateParts[] = "pickup_name = '$pickup_name'";
+            }
+
+            $updateParts[] = "delivered_date = NOW()";
             
             $sql = "UPDATE orders SET " . implode(", ", $updateParts) . " WHERE orderid = $orderid";
             

@@ -314,7 +314,13 @@ if(isset($_REQUEST['customer_id'])){
                                                 
                                             </td>
                                             <td style="color: #ffffff !important;">
-                                                
+                                                <?php 
+                                                    if (isset($row["delivered_date"]) && !empty($row["delivered_date"]) && $row["delivered_date"] !== '0000-00-00 00:00:00') {
+                                                        echo date("F d, Y", strtotime($row["delivered_date"]));
+                                                    } else {
+                                                        echo '';
+                                                    }
+                                                ?>
                                             </td>
                                             <td style="color: #ffffff !important;">
                                                 <?= ucwords(get_staff_name($row["cashier"])) ?>

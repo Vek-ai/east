@@ -207,12 +207,25 @@ if (mysqli_num_rows($result) > 0) {
         if (mysqli_num_rows($result_qr) > 0) {
             $row_qr = mysqli_fetch_assoc($result_qr);
             $image_url = 'https://delivery.ilearnsda.com/deliveryqr/qrcode' . $row_qr['id'] . '.png';
-            
-            if (@get_headers($image_url)[0] === 'HTTP/1.1 200 OK') {
-                $pdf->SetXY($col1_x, $col_y);
-                $pdf->Image($image_url, $col1_x, $col_y, 60, 60);
+
+            $headers = @get_headers($image_url, 1);
+            if (isset($headers['Content-Type']) && strpos($headers['Content-Type'], 'image/png') !== false) {
+                $image_data = @file_get_contents($image_url);
+                if ($image_data !== false) {
+                    $local_image_path = 'temp_qr_' . $row_qr['id'] . '.png';
+                    file_put_contents($local_image_path, $image_data);
+
+                    $info = @getimagesize($local_image_path);
+                    if ($info && $info['mime'] === 'image/png') {
+                        $pdf->SetXY($col1_x, $col_y);
+                        $pdf->Image($local_image_path, $col1_x, $col_y, 60, 60);
+                    }
+
+                    unlink($local_image_path);
+                }
             }
         }
+
         
         $pdf->SetFont('Arial', '', 9);
         $pdf->SetXY($col2_x, $col_y);
