@@ -1008,6 +1008,7 @@ if (isset($_POST['save_order'])) {
     $job_id = intval($_POST['job_id']);
     $job_name = mysqli_real_escape_string($conn, $_POST['job_name'] ?? '');
     $job_po = mysqli_real_escape_string($conn, $_POST['job_po'] ?? '');
+    $deliver_method = mysqli_real_escape_string($conn, $_POST['deliver_method'] ?? 'pickup');
     $deliver_address = mysqli_real_escape_string($conn, $_POST['deliver_address'] ?? '');
     $deliver_city = mysqli_real_escape_string($conn, $_POST['deliver_city'] ?? '');
     $deliver_state = mysqli_real_escape_string($conn, $_POST['deliver_state'] ?? '');
@@ -1120,8 +1121,8 @@ if (isset($_POST['save_order'])) {
     } 
     */
 
-    $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_fname, deliver_lname, pay_type) 
-              VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt' , '$deliver_fname' , '$deliver_lname', '$pay_type')";
+    $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_method, deliver_fname, deliver_lname, pay_type) 
+              VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt', '$deliver_method' , '$deliver_fname' , '$deliver_lname', '$pay_type')";
 
     if ($conn->query($query) === TRUE) {
         $orderid = $conn->insert_id;

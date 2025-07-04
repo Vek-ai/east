@@ -263,8 +263,6 @@ if(isset($_REQUEST['customer_id'])){
                                             $status_code = $row['status'];
                                             $customer_id = $row["customerid"];
                                             $customer_details = getCustomerDetails($customer_id);
-
-                                            $deliver_method = $row['delivery_amt'] > 0 ? 'delivery' : 'pickup';
                                         
                                             $pay_type = $row['pay_type'];
                                             $pay_type = strtolower(trim($pay_type));
@@ -303,7 +301,7 @@ if(isset($_REQUEST['customer_id'])){
                                                 ?>
                                             </td>
                                             <td style="color: #ffffff !important;">
-                                                <?= $deliver_method == 'delivery' ? "Delivery" : "Pick-up" ?>
+                                                <?= ucwords($row['deliver_method']); ?>
                                             </td>
                                             <td class="text-center" style="color: #ffffff !important;">
                                                 <span class="badge" style="<?= $label_info['style'] ?>">
@@ -345,6 +343,18 @@ if(isset($_REQUEST['customer_id'])){
                                                 <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" title="Send to Customer">
                                                     <iconify-icon icon="solar:streets-map-point-outline" class="fs-6 text-info"></iconify-icon>
                                                 </a>
+
+                                                <button 
+                                                    class="btn btn-danger-gradient btn-sm p-0 me-1 view-method-btn" 
+                                                    type="button"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deliveryMethodModal"
+                                                    data-orderid="<?= $row["orderid"]; ?>"
+                                                    data-delivery="<?= $row["deliver_method"]; ?>"
+                                                    data-payment="<?= $row["pay_type"]; ?>"
+                                                    title="Change Pick-up/Delivery">
+                                                    <iconify-icon icon="mdi:package-variant-closed" class="text-warning fs-7"></iconify-icon>
+                                                </button>
                                             </td>
 
                                         </tr>
@@ -529,6 +539,47 @@ if(isset($_REQUEST['customer_id'])){
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="deliveryMethodModal" tabindex="-1" aria-labelledby="deliveryMethodModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="updateDeliveryPaymentForm">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deliveryMethodModalLabel">Change Pick-up/Delivery</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="orderid" id="modal_order_id">
+
+                    <div class="mb-3">
+                        <label for="modal_delivery_method" class="form-label">Delivery Method</label>
+                        <select class="form-select" id="modal_delivery_method" name="delivery_method" required>
+                            <option value="pickup">Pick-up</option>
+                            <option value="deliver">Delivery</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modal_payment_option" class="form-label">Payment Option</label>
+                        <select class="form-select" id="modal_payment_option" name="payment_option" required>
+                            <option value="pickup">Pay at Pick-Up</option>
+                            <option value="delivery">Pay at Delivery</option>
+                            <option value="cash">Cash</option>
+                            <option value="check">Check</option>
+                            <option value="card">Credit/Debit Card</option>
+                            <option value="net30">Charge Net 30</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 <script>
     function isValidURL(str) {
@@ -792,6 +843,65 @@ if(isset($_REQUEST['customer_id'])){
                 },
                 complete: function () {
                     $('.modal').modal('hide');
+                }
+            });
+        });
+
+        $(document).on('click', '.view-method-btn', function () {
+            const orderId = $(this).data('orderid');
+            const delivery = $(this).data('delivery');
+            const payment = $(this).data('payment');
+
+            $('#modal_order_id').val(orderId);
+            $('#modal_delivery_method').val(delivery);
+            $('#modal_payment_option').val(payment);
+        });
+
+        $(document).on('submit', '#updateDeliveryPaymentForm', function (e) {
+            e.preventDefault();
+
+            const form = this;
+            const formData = new FormData(form);
+            formData.append('action', 'update_delivery_payment');
+
+            $.ajax({
+                type: 'POST',
+                url: 'pages/invoice_ajax.php',
+                data: formData,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                success: function (response) {
+                    console.log(response);
+                    $('.modal').modal('hide');
+
+                    if (response.success === true || response.status === 'success') {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Delivery method and Payment method successfully updated!");
+                        $('#responseHeaderContainer')
+                            .removeClass("bg-danger")
+                            .addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response.message || "Update failed.");
+                        $('#responseHeaderContainer')
+                            .removeClass("bg-success")
+                            .addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                },
+                error: function () {
+                    $('#responseHeader').text("Error");
+                    $('#responseMsg').text("Something went wrong. Please try again.");
+                    $('#responseHeaderContainer')
+                        .removeClass("bg-success")
+                        .addClass("bg-danger");
+                    $('#response-modal').modal("show");
                 }
             });
         });

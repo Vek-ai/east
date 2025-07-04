@@ -3985,6 +3985,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var applyJobDeposit = $('#pay_via_job_deposit').is(':checked') ? $('#pay_via_job_deposit').val() : 0;
 
             var payment_method = $('[name="payMethod"]:checked').val();
+            var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
             if(payment_method){
                 $.ajax({
@@ -3998,6 +3999,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         job_id: job_id,
                         job_name: job_name,
                         job_po: job_po,
+                        deliver_method: deliver_method,
                         deliver_address: deliver_address,
                         deliver_city: deliver_city,
                         deliver_state: deliver_state,

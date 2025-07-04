@@ -475,6 +475,39 @@ if(isset($_REQUEST['action'])) {
         echo json_encode($response);
     }
 
+    if ($action === 'update_delivery_payment') {
+        $order_id = mysqli_real_escape_string($conn, $_POST['orderid'] ?? '');
+        $delivery_method = mysqli_real_escape_string($conn, $_POST['delivery_method'] ?? '');
+        $payment_option = mysqli_real_escape_string($conn, $_POST['payment_option'] ?? '');
+
+        if (!empty($order_id)) {
+            $query = "
+                UPDATE orders 
+                SET 
+                    deliver_method = '$delivery_method', 
+                    pay_type = '$payment_option' 
+                WHERE orderid = '$order_id'
+            ";
+
+            if (mysqli_query($conn, $query)) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Order updated successfully.'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Database error: ' . mysqli_error($conn)
+                ]);
+            }
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Missing order ID'
+            ]);
+        }
+    }
+
     mysqli_close($conn);
 }
 ?>
