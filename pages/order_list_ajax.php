@@ -892,6 +892,21 @@ if(isset($_REQUEST['action'])) {
                 $response['message'] = "Message could not be sent to $customer_name.";
             }
 
+            $query = "SELECT * FROM orders WHERE orderid = '$id'";
+            $result = mysqli_query($conn, $query);
+            while ($row = mysqli_fetch_assoc($result)) {
+
+                $sql = "UPDATE order_product SET status = 1 WHERE orderid = $id";
+                if (!mysqli_query($conn, $sql)) {
+                    $response['message'] = 'Error updating order status.';
+                }
+            }
+
+            $sql = "UPDATE orders SET status = '2', is_edited = '0' WHERE orderid = $id";
+            if (!mysqli_query($conn, $sql)) {
+                $response['message'] = 'Error updating order status.';
+            }
+
             $response['success'] = true;
             $response['id'] = $id;
             $response['key'] = $est_key;
