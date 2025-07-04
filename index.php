@@ -53,6 +53,16 @@ if (!isset($_SESSION['userid'])) {
       .select2-container .select2-dropdown .select2-results__options {
           max-height: 760px !important;
       }
+
+      iconify-icon,
+      i.fa,
+      i.fas,
+      i.far,
+      i.fab {
+          vertical-align: middle;
+          line-height: 1;
+          display: inline-block;
+      }
   </style>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

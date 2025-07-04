@@ -196,7 +196,25 @@ if(isset($_REQUEST['customer_id'])){
                             <option value="net30">Charge Net 30</option>
                         </select>
                     </div>
-                    
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control py-0 ps-5 select2 filter-selection" data-filter="cashier" data-filter-name="Salesperson" id="select-cashier">
+                            <option value="">All Salespersons</option>
+                            <?php
+                            $query_staff = "SELECT staff_id, staff_fname, staff_lname FROM staff WHERE status = 1 ORDER BY staff_fname ASC";
+                            $result_staff = mysqli_query($conn, $query_staff);
+                            while ($row_staff = mysqli_fetch_assoc($result_staff)) {
+                                ?>
+                                <option value="<?= $row_staff['staff_id'] ?>">
+                                    <?= htmlspecialchars($row_staff['staff_fname'] . ' ' . $row_staff['staff_lname']) ?>
+                                </option>
+                            <?php
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="px-3 mb-2"> 
+                    <input type="checkbox" id="toggleCompleted"> Pick-up/Deliveries Completed
                 </div>
                 <div class="d-flex justify-content-end py-2">
                     <button type="button" class="btn btn-outline-primary reset_filters">
@@ -208,14 +226,19 @@ if(isset($_REQUEST['customer_id'])){
                 <div id="selected-tags" class="mb-2"></div>
                     <div class="datatables">
                         <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?></h4>
-                        <div class="product-details table-responsive text-nowrap">
-                            <table id="order_list_tbl" class="table table-hover mb-0 text-md-nowrap">
+                        <div class="product-details table-responsive">
+                            <table id="order_list_tbl" class="table table-hover mb-0">
                                 <thead>
                                     <tr>
+                                        <th>Invoice #</th>
                                         <th>Customer</th>
                                         <th style="text-align: right">Total Price</th>
-                                        <th style="text-align: center">Order Date</th>
+                                        <th class="text-nowrap" style="text-align: center">Order Date</th>
+                                        <th style="text-align: center">Pick-up/Delivery</th>
                                         <th style="text-align: center">Payment Method</th>
+                                        <th style="text-align: center">Scheduled Pick-up/Delivery Date</th>
+                                        <th style="text-align: center">Pick-up/Delivery Date Completed</th>
+                                        <th style="color: #ffffff !important;">Salesperson</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -240,6 +263,8 @@ if(isset($_REQUEST['customer_id'])){
                                             $status_code = $row['status'];
                                             $customer_id = $row["customerid"];
                                             $customer_details = getCustomerDetails($customer_id);
+
+                                            $deliver_method = $row['delivery_amt'] > 0 ? 'delivery' : 'pickup';
                                         
                                             $pay_type = $row['pay_type'];
                                             $pay_type = strtolower(trim($pay_type));
@@ -251,8 +276,13 @@ if(isset($_REQUEST['customer_id'])){
                                             data-month="<?= date('m', strtotime($row['order_date'])) ?>"
                                             data-year="<?= date('Y', strtotime($row['order_date'])) ?>"
                                             data-payment="<?= $row['pay_type'] ?>"
+                                            data-cashier="<?= $row['cashier'] ?>"
                                             data-status="<?= $status_code ?>"
+                                            data-completed="<?= $row['status'] == '4' ? '1' : '0' ?>"
                                         >
+                                            <td style="color: #ffffff !important;">
+                                                <?= $row["orderid"] ?>
+                                            </td>
                                             <td style="color: #ffffff !important;">
                                                 <?php echo get_customer_name($row["customerid"]) ?>
                                             </td>
@@ -263,7 +293,7 @@ if(isset($_REQUEST['customer_id'])){
                                                 <?php if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
                                                     data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
                                                 <?php endif; ?>
-                                            >
+                                                >
                                                 <?php 
                                                     if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
                                                         echo date("F d, Y", strtotime($row["order_date"]));
@@ -272,26 +302,42 @@ if(isset($_REQUEST['customer_id'])){
                                                     }
                                                 ?>
                                             </td>
+                                            <td style="color: #ffffff !important;">
+                                                <?= $deliver_method == 'delivery' ? "Delivery" : "Pick-up" ?>
+                                            </td>
                                             <td class="text-center" style="color: #ffffff !important;">
                                                 <span class="badge" style="<?= $label_info['style'] ?>">
                                                     <?= $label_info['label'] ?>
                                                 </span>
+                                            </td>
+                                            <td style="color: #ffffff !important;">
+                                                
+                                            </td>
+                                            <td style="color: #ffffff !important;">
+                                                
+                                            </td>
+                                            <td style="color: #ffffff !important;">
+                                                <?= ucwords(get_staff_name($row["cashier"])) ?>
                                             </td>
                                             <td class="text-center">
                                                 <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Order">
                                                     <i class="text-primary fa fa-eye fs-5"></i>
                                                 </button>
 
-                                                <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" title="Print Product">
+                                                <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" title="Print/Download">
                                                     <i class="text-success fa fa-print fs-5"></i>
-                                                </a>
-
-                                                <a href="print_order_total.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" title="Print Total">
-                                                    <i class="text-white fa fa-file-lines fs-5"></i>
                                                 </a>
 
                                                 <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" title="Send to Customer">
                                                     <iconify-icon icon="solar:plain-linear" class="fs-5 text-info"></iconify-icon>
+                                                </a>
+
+                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Change History">
+                                                    <i class="text-info fa fa-clock-rotate-left fs-5"></i>
+                                                </button>
+
+                                                <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" title="Send to Customer">
+                                                    <iconify-icon icon="solar:streets-map-point-outline" class="fs-6 text-info"></iconify-icon>
                                                 </a>
                                             </td>
 
@@ -614,6 +660,12 @@ if(isset($_REQUEST['customer_id'])){
                     }
                 });
 
+                if (!$('#toggleCompleted').is(':checked')) {
+                    if (String(row.data('completed')) === '1') {
+                        return false;
+                    }
+                }
+
                 return match;
             });
 
@@ -622,6 +674,8 @@ if(isset($_REQUEST['customer_id'])){
         }
 
         $(document).on('change', '.filter-selection', filterTable);
+
+        $(document).on('change', '#toggleCompleted', filterTable);
 
         $(document).on('input', '#text-srh', filterTable);
 
@@ -735,5 +789,7 @@ if(isset($_REQUEST['customer_id'])){
                 }
             });
         });
+
+        filterTable();
     });
 </script>
