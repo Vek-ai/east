@@ -239,6 +239,7 @@ if(isset($_REQUEST['customer_id'])){
                                     <th style="color: #ffffff !important;">Date</th>
                                     <th style="color: #ffffff !important;">Job Name</th>
                                     <th style="color: #ffffff !important;">PO #</th>
+                                    <th style="color: #ffffff !important;">Date Outstanding</th>
                                     <th style="color: #ffffff !important;">Invoice/Credit</th>
                                     <th style="color: #ffffff !important;" class="text-end">Credit Amount</th>
                                     <th style="color: #ffffff !important;" class="text-end">Balance Due</th>
@@ -328,6 +329,20 @@ if(isset($_REQUEST['customer_id'])){
                                                 <?= htmlspecialchars($row['po_number']) ?>
                                             </a>
                                         </td>
+                                        <td class="text-end">
+                                            <?php
+                                            if ($is_credit && $balance > 0) {
+                                                $created_ts = strtotime($row['date']);
+                                                $now_ts = time();
+                                                $diff_secs = $now_ts - $created_ts;
+
+                                                $days_outstanding = floor($diff_secs / 86400);
+                                                echo $days_outstanding . ' days';
+                                            } else {
+                                                echo '';
+                                            }
+                                            ?>
+                                        </td>
                                         <td><?= $pay_type ?></td>
                                         <td class="text-end"><?= $payments > 0 ? '$' .number_format($payments, 2) : '' ?></td>
                                         <td class="text-end"><?= $credit > 0 ? '$' .number_format($credit, 2) : '' ?></td>
@@ -355,7 +370,7 @@ if(isset($_REQUEST['customer_id'])){
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td class="text-end fw-bold" colspan="5">Total Credit Available</td>
+                                    <td class="text-end fw-bold" colspan="6">Total Credit Available</td>
                                     <td class="text-end fw-bold" colspan="1">$<?= number_format($avail_credit, 2) ?></td>
                                     <td class="text-end fw-bold" colspan="2">Total Balance Due</td>
                                     <td class="text-end fw-bold" colspan="1">$<?= number_format($balance_due, 2) ?></td>
