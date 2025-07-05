@@ -56,10 +56,20 @@ if (isset($_POST['search_orders'])) {
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
 
-    $months = array_map('intval', $_POST['months'] ?? []);
-    $years = array_map('intval', $_POST['years'] ?? []);
+    $months = array_map('intval', $_POST['month_select'] ?? []);
+    $years = array_map('intval', $_POST['year_select'] ?? []);
     $staff = mysqli_real_escape_string($conn, $_POST['staff']);
     $tax_status = mysqli_real_escape_string($conn, $_POST['tax_status']);
+    $paid_status = mysqli_real_escape_string($conn, $_POST['paid_status']);
+
+    $status_labels = [
+        'pickup'   => ['label' => 'Pay at Pick-up'],
+        'delivery' => ['label' => 'Pay at Delivery'],
+        'cash'     => ['label' => 'Cash'],
+        'check'    => ['label' => 'Check'],
+        'card'     => ['label' => 'Credit/Debit Card'],
+        'net30'    => ['label' => 'Charge Net 30'],
+    ];
 
     $query = "
         SELECT o.*, CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name
@@ -100,10 +110,36 @@ if (isset($_POST['search_orders'])) {
         $query .= " AND c.tax_status = '$tax_status'";
     }
 
+    $query .= " ORDER BY o.order_date DESC";
+
     $result = mysqli_query($conn, $query);
 
     if ($result && mysqli_num_rows($result) > 0) {
         while ($row = mysqli_fetch_assoc($result)) {
+            $orderid = $row['orderid'];
+            $pay_type = strtolower(trim($row['pay_type']));
+            $label = $status_labels[$pay_type]['label'] ?? ucfirst($pay_type);
+
+            $total_paid = getOrderTotalPayments($orderid);
+            $expected_amount = floatval($row['discounted_price']);
+
+            if ($total_paid <= 0) {
+                $payment_status = 'not_paid';
+                $color = 'red';
+            } elseif ($total_paid < $expected_amount) {
+                $payment_status = 'paid_in_part';
+                $color = 'orange';
+            } else {
+                $payment_status = 'paid_in_full';
+                $color = 'green';
+            }
+
+            if (!empty($paid_status) && $payment_status !== $paid_status) {
+                continue;
+            }
+
+            $status_html = '<span class="badge" style="background-color: ' . $color . ';">' . htmlspecialchars($label) . '</span>';
+
             $response['orders'][] = [
                 'orderid' => $row['orderid'],
                 'order_date' => $row['order_date'],
@@ -112,11 +148,13 @@ if (isset($_POST['search_orders'])) {
                 'cashier' => get_staff_name($row['cashier']),
                 'customer_name' => $row['customer_name'],
                 'amount' => number_format($row['discounted_price'], 2),
+                'status' => $status_html,
             ];
             $response['total_amount'] += $row['discounted_price'];
             $response['total_count']++;
         }
-    } else {
+    }
+ else {
         $response['error'] = 'No orders found';
     }
 
@@ -152,7 +190,7 @@ if(isset($_POST['fetch_order_details'])){
                 <tbody>
                     <?php 
                     $no = 0;
-                    $query = "SELECT * FROM order_product WHERE orderid='$orderid'";
+                    $query = "SELECT * FROM order_product WHERE orderid='$orderid' ";
                     $result = mysqli_query($conn, $query);
                     $totalquantity = $total_actual_price = $total_disc_price = 0;
                     if ($result && mysqli_num_rows($result) > 0) {
@@ -377,6 +415,290 @@ if(isset($_POST['fetch_order_details'])){
         });
     </script>
     <?php
+}
+
+if(isset($_REQUEST['download_excel'])) {
+    header("Content-Type: application/vnd.ms-excel");
+    header("Content-Disposition: attachment; filename=Sales_List.xls");
+
+    $pay_labels = [
+        'pickup'   => ['label' => 'Pay at Pick-up'],
+        'delivery' => ['label' => 'Pay at Delivery'],
+        'cash'     => ['label' => 'Cash'],
+        'check'    => ['label' => 'Check'],
+        'card'     => ['label' => 'Credit/Debit Card'],
+        'net30'    => ['label' => 'Charge Net 30'],
+    ];
+
+    echo "<table border='1'>";
+    echo "<thead>
+            <tr style='font-weight: bold; background-color: #f0f0f0;'>
+                <th>Invoice #</th>
+                <th>Customer</th>
+                <th>Total Price</th>
+                <th>Order Date</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Salesperson</th>
+            </tr>
+        </thead><tbody>";
+
+    $query = "SELECT * FROM orders ORDER BY order_date DESC";
+    $result = mysqli_query($conn, $query);
+    while ($row = mysqli_fetch_assoc($result)) {
+        $orderid = $row['orderid'];
+        $customer_name = get_customer_name($row["customerid"]);
+        $total_price = number_format($row['discounted_price'], 2);
+
+        $date = '';
+        $time = '';
+        if (!empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
+            $date = date("F d, Y", strtotime($row["order_date"]));
+            $time = date("h:i A", strtotime($row["order_date"]));
+        }
+
+        $pay_type_key = strtolower(trim($row['pay_type']));
+        $pay_type = $pay_labels[$pay_type_key]['label'] ?? ucfirst($pay_type_key);
+
+        $total_paid = getOrderTotalPayments($orderid);
+        $expected_amount = floatval($row['discounted_price']);
+
+        if ($total_paid <= 0) {
+            $payment_status = 'Not Paid';
+            $bg_color = '#ff4d4d';
+        } elseif ($total_paid < $expected_amount) {
+            $payment_status = 'Partially Paid';
+            $bg_color = '#ffa500';
+        } else {
+            $payment_status = 'Fully Paid';
+            $bg_color = '#4CAF50';
+        }
+
+        $cashier = get_staff_name($row['cashier']);
+
+        echo "<tr>
+                <td style='text-align: center'>" . htmlspecialchars($orderid) . "</td>
+                <td style='text-align: center'>" . htmlspecialchars($customer_name) . "</td>
+                <td style='text-align: right'>" . $total_price . "</td>
+                <td style='text-align: center'>" . $date . "</td>
+                <td style='text-align: center'>" . $time . "</td>
+                <td style='text-align: center; background-color: {$bg_color}; color: #fff;'>" . $pay_type . "</td>
+                <td style='text-align: center'>" . htmlspecialchars($cashier) . "</td>
+            </tr>";
+    }
+
+    echo "</tbody></table>";
+    exit;
+}
+
+if (isset($_REQUEST['download_pdf'])) {
+    require '../includes/fpdf/fpdf.php';
+
+    $pay_labels = [
+        'pickup'   => ['label' => 'Pay at Pick-up'],
+        'delivery' => ['label' => 'Pay at Delivery'],
+        'cash'     => ['label' => 'Cash'],
+        'check'    => ['label' => 'Check'],
+        'card'     => ['label' => 'Credit/Debit Card'],
+        'net30'    => ['label' => 'Charge Net 30'],
+    ];
+
+    $pdf = new FPDF('P', 'mm', 'Letter');
+    $pdf->AddPage();
+
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 10, 'Sales List', 0, 1, 'L');
+
+    $usableWidth = $pdf->GetPageWidth() - 20;
+    $colWidths = [
+        'Invoice'     => $usableWidth * 0.12,
+        'Customer'    => $usableWidth * 0.17,
+        'Amount'      => $usableWidth * 0.13,
+        'Date'        => $usableWidth * 0.17,
+        'Time'        => $usableWidth * 0.13,
+        'Status'      => $usableWidth * 0.15,
+        'Salesperson' => $usableWidth * 0.13
+    ];
+
+    $cellheight = 6;
+
+    $pdf->SetFont('Arial', 'B', 10);
+    foreach ($colWidths as $label => $width) {
+        $pdf->Cell($width, $cellheight, $label, 1, 0, 'C');
+    }
+    $pdf->Ln();
+
+    $query = "SELECT * FROM orders ORDER BY order_date DESC";
+    $result = mysqli_query($conn, $query);
+    $pdf->SetFont('Arial', '', 10);
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $orderid = $row['orderid'];
+        $customer_name = get_customer_name($row["customerid"]);
+        $amount = number_format(floatval($row['discounted_price']), 2);
+        $date = $time = '';
+        if (!empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
+            $date = date("F d, Y", strtotime($row["order_date"]));
+            $time = date("h:i A", strtotime($row['order_date']));
+        }
+
+        $pay_type = strtolower(trim($row['pay_type']));
+        $label = $pay_labels[$pay_type]['label'] ?? ucfirst($pay_type);
+
+        $total_paid = getOrderTotalPayments($orderid);
+        $expected = floatval($row['discounted_price']);
+
+        if ($total_paid <= 0) {
+            $status = 'Not Paid';
+            $pdf->SetFillColor(255, 77, 77);
+        } elseif ($total_paid < $expected) {
+            $status = 'Partially Paid';
+            $pdf->SetFillColor(255, 165, 0);
+        } else {
+            $status = 'Fully Paid';
+            $pdf->SetFillColor(76, 175, 80);
+        }
+
+        $cashier = get_staff_name($row['cashier']);
+
+        $pdf->Cell($colWidths['Invoice'], $cellheight, $orderid, 1, 0, 'C');
+        $pdf->Cell($colWidths['Customer'], $cellheight, $customer_name, 1, 0, 'C');
+        $pdf->Cell($colWidths['Amount'], $cellheight, '$' . $amount, 1, 0, 'R');
+        $pdf->Cell($colWidths['Date'], $cellheight, $date, 1, 0, 'C');
+        $pdf->Cell($colWidths['Time'], $cellheight, $time, 1, 0, 'C');
+        $pdf->Cell($colWidths['Status'], $cellheight, $label, 1, 0, 'C', true);
+        $pdf->Cell($colWidths['Salesperson'], $cellheight, $cashier, 1, 0, 'C');
+        $pdf->Ln();
+    }
+
+    $pdf->Output('I', 'sales_list.pdf');
+    exit;
+}
+
+if(isset($_REQUEST['print_result'])) {
+    $status_labels = [
+        'pickup'   => ['label' => 'Pay at Pick-up'],
+        'delivery' => ['label' => 'Pay at Delivery'],
+        'cash'     => ['label' => 'Cash'],
+        'check'    => ['label' => 'Check'],
+        'card'     => ['label' => 'Credit/Debit Card'],
+        'net30'    => ['label' => 'Charge Net 30'],
+    ];
+
+    $query = "SELECT * FROM orders ORDER BY order_date DESC";
+    $result = mysqli_query($conn, $query);
+    ?>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Print Orders</title>
+        <style>
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            th, td {
+                border: 1px solid #000;
+                padding: 2px;
+                padding-left: 8px;
+                
+            }
+            th {
+                background-color: #f0f0f0;
+            }
+            .badge {
+                color: #fff;
+                padding: 2px 6px;
+                border-radius: 999px; 
+                display: inline-block;
+            }
+            .badge-red {
+                background-color: red !important;
+            }
+            .badge-orange {
+                background-color: orange !important;
+            }
+            .badge-green {
+                background-color: green !important;
+            }
+
+            @media print {
+                .badge {
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+            }
+        </style>
+    </head>
+    <body onload="window.print()">
+        <h3>Sales List</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Customer</th>
+                    <th style="text-align: right">Amount</th>
+                    <th style="text-align: center">Date</th>
+                    <th style="text-align: center">Time</th>
+                    <th style="text-align: center">Status</th>
+                    <th style="text-align: center">Salesperson</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php 
+                    while ($row = mysqli_fetch_assoc($result)){ 
+                        $orderid = $row['orderid'];
+                        $customer_name = get_customer_name($row["customerid"]);
+                        $total_price = '$' .number_format(floatval($row['discounted_price']), 2);
+
+                        $date = '';
+                        if (!empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
+                            $date = date("F d, Y", strtotime($row["order_date"]));
+                            $time = date("h:i A", strtotime($row['order_date']));
+                        }
+
+                        $orderid = $row['orderid'];
+                        $pay_type = strtolower(trim($row['pay_type']));
+                        $label = $status_labels[$pay_type]['label'] ?? ucfirst($pay_type);
+
+                        $total_paid = getOrderTotalPayments($orderid);
+                        $expected_amount = floatval($row['discounted_price']);
+
+                        if ($total_paid <= 0) {
+                            $payment_status = 'not_paid';
+                            $color = 'red';
+                        } elseif ($total_paid < $expected_amount) {
+                            $payment_status = 'paid_in_part';
+                            $color = 'orange';
+                        } else {
+                            $payment_status = 'paid_in_full';
+                            $color = 'green';
+                        }
+
+                        if (!empty($paid_status) && $payment_status !== $paid_status) {
+                            continue;
+                        }
+
+                        $status_html = '<span class="badge badge-' . $color . '">' . htmlspecialchars($label) . '</span>';
+
+                        $cashier = get_staff_name($row['cashier']);
+                    ?>
+                    <tr>
+                        <td style="text-align: center"><?= $orderid ?></td>
+                        <td style="text-align: center"><?= $customer_name ?></td>
+                        <td style="text-align: right"><?= $total_price ?></td>
+                        <td style="text-align: center"><?= $date ?></td>
+                        <td style="text-align: center"><?= $time ?></td>
+                        <td style="text-align: center"><?= $status_html ?></td>
+                        <td style="text-align: center"><?= $cashier ?></td>
+                    </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+    </body>
+    </html>
+    <?php
+    exit;
 }
 
 

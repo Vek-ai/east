@@ -1553,5 +1553,29 @@ function log_order_product_changes($conn, $old_data, $new_data, $updated_by = 'S
     }
 }
 
+function getOrderTotalPayments($orderid) {
+    global $conn;
+
+    $orderid = mysqli_real_escape_string($conn, $orderid);
+    $total = 0;
+
+    $sql = "
+        SELECT ledger_id
+        FROM job_ledger
+        WHERE reference_no = '$orderid'
+          AND entry_type IN ('credit', 'usage')
+    ";
+
+    $result = mysqli_query($conn, $sql);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $ledger_id = intval($row['ledger_id']);
+            $total += getTotalJobPayments($ledger_id);
+        }
+    }
+
+    return $total;
+}
 
 ?>

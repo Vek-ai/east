@@ -53,6 +53,22 @@ $page_title = "Sales History";
 
     <div class="card card-body">
         <div class="row">
+            <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+                <button type="button" id="downloadExcelBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-file-spreadsheet text-white me-1 fs-5"></i> Excel Download
+                </button>
+                <button type="button" id="downloadPDFBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-file-text text-white me-1 fs-5"></i> PDF Download
+                </button>
+                <button type="button" id="PrintBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-printer text-white me-1 fs-5"></i> Print
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-body">
+        <div class="row">
         <div class="col-3">
             <h3 class="card-title align-items-center mb-2">
                 Search <?= $page_title ?>
@@ -74,7 +90,8 @@ $page_title = "Sales History";
 
             <div class="position-relative w-100 px-0">
                 <div class="mb-2">
-                    <select id="month_select" name="month[]" multiple class="form-select select2-month" style="width: 100%;">
+                    <select id="month_select" name="month[]" multiple class="form-select select2-month filter-selection" style="width: 100%;" data-filter="month" data-filter-name="Month">
+                        <option value="">All Months</option>
                         <option value="1">January</option>
                         <option value="2">February</option>
                         <option value="3">March</option>
@@ -93,7 +110,8 @@ $page_title = "Sales History";
 
             <div class="position-relative w-100 px-0 mb-2">
                 <div class="mb-2">
-                    <select id="year_select" name="year[]" multiple class="form-select select2-year" style="width: 100%;">
+                    <select id="year_select" name="year[]" multiple class="form-select select2-year filter-selection" style="width: 100%;" data-filter="year" data-filter-name="Year">
+                        <option value="">All Years</option>
                     </select>
                 </div>
             </div>
@@ -101,8 +119,8 @@ $page_title = "Sales History";
             <div class="align-items-center">
                 <div class="position-relative w-100 px-0 mb-2">
                     <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-staff" data-filter="staff" data-filter-name="Created by">
-                        <option value="">All Staff</option>
-                        <optgroup label="Staffs">
+                        <option value="">All Salespeople</option>
+                        <optgroup label="Salesperson">
                             <?php
                             $query_staff = "SELECT * FROM staff ORDER BY `staff_fname` ASC";
                             $result_staff = mysqli_query($conn, $query_staff);            
@@ -132,6 +150,16 @@ $page_title = "Sales History";
                         </optgroup>
                     </select>
                 </div>
+                <div class="position-relative w-100 px-0">
+                    <div class="mb-2">
+                        <select id="paid_status_select" name="paid_status" class="form-select select2 filter-selection" style="width: 100%;" data-filter="paid-status" data-filter-name="Paid Status">
+                            <option value="">All Paid Status</option>
+                            <option value="not_paid">Not Paid</option>
+                            <option value="paid_in_part">Paid in Part</option>
+                            <option value="paid_in_full">Paid in Full</option>
+                        </select>
+                    </div>
+                </div>
             </div>
             <div class="d-flex justify-content-end py-2">
                 <button type="button" class="btn btn-outline-primary reset_filters">
@@ -150,11 +178,12 @@ $page_title = "Sales History";
                                 <thead>
                                     <tr>
                                         <th>Invoice #</th>
-                                        <th>Date</th>
-                                        <th>Time</th>
-                                        <th>Cashier</th>
                                         <th>Customer</th>
                                         <th>Amount</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                        <th>Salesperson</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -347,6 +376,18 @@ $page_title = "Sales History";
             modal.show();
         });
 
+        $(document).on('click', '#downloadExcelBtn', function () {
+            window.open('pages/sales_list_ajax.php?download_excel=1', '_blank');
+        });
+
+        $(document).on('click', '#downloadPDFBtn', function () {
+            window.open('pages/sales_list_ajax.php?download_pdf=1', '_blank');
+        });
+
+        $(document).on('click', '#PrintBtn', function () {
+            window.open('pages/sales_list_ajax.php?print_result=1', '_blank');
+        });
+
         $('#printBtn').on('click', function () {
             if (isPrinting) {
                 return;
@@ -372,34 +413,54 @@ $page_title = "Sales History";
         });
 
         function updateSelectedTags() {
-            var displayDiv = $('#selected-tags');
+            const displayDiv = $('#selected-tags');
             displayDiv.empty();
 
-            $('.filter-selection').each(function() {
-                var selectedOption = $(this).find('option:selected');
-                var selectedText = selectedOption.text().trim();
-                var filterName = $(this).data('filter-name');
+            $('.filter-selection').each(function () {
+                const $select = $(this);
+                const selectedOptions = $select.find('option:selected');
+                const filterName = $select.data('filter-name');
+                const isMultiple = $select.prop('multiple');
 
-                if ($(this).val()) {
-                    displayDiv.append(`
-                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
-                            <span class="text-dark">${filterName}: ${selectedText}</span>
-                            <button type="button" 
-                                class="btn-close btn-sm ms-1 remove-tag" 
-                                style="width: 0.75rem; height: 0.75rem;" 
-                                aria-label="Close" 
-                                data-select="#${$(this).attr('id')}">
-                            </button>
-                        </div>
-                    `);
-                }
+                selectedOptions.each(function () {
+                    const selectedText = $(this).text().trim();
+                    const selectedValue = $(this).val();
+
+                    if (selectedValue) {
+                        const tagId = `${$select.attr('id')}-${selectedValue}`;
+
+                        displayDiv.append(`
+                            <div class="d-inline-block p-1 m-1 border rounded bg-light tag-item" id="${tagId}">
+                                <span class="text-dark">${filterName}: ${selectedText}</span>
+                                <button type="button" 
+                                    class="btn-close btn-sm ms-1 remove-tag" 
+                                    style="width: 0.75rem; height: 0.75rem;" 
+                                    aria-label="Close" 
+                                    data-select="#${$select.attr('id')}" 
+                                    data-value="${selectedValue}">
+                                </button>
+                            </div>
+                        `);
+                    }
+                });
             });
 
-            $('.remove-tag').on('click', function() {
-                $($(this).data('select')).val('').trigger('change');
-                $(this).parent().remove();
+            $('.remove-tag').on('click', function () {
+                const selectId = $(this).data('select');
+                const valueToRemove = $(this).data('value');
+                const $select = $(selectId);
+
+                if ($select.prop('multiple')) {
+                    $select.find(`option[value="${valueToRemove}"]`).prop('selected', false);
+                } else {
+                    $select.val('');
+                }
+
+                $select.trigger('change');
+                $(this).closest('.tag-item').remove();
             });
         }
+
         
         function performSearch() {
             const customer_name = $('#customer_search').val();
@@ -409,6 +470,7 @@ $page_title = "Sales History";
             const year_select = $('#year_select').val() || [];
             const staff = $('#filter-staff').val();
             const tax_status = $('#filter-tax').val();
+            const paid_status = $('#paid_status_select').val();
 
             $.ajax({
                 url: 'pages/sales_list_ajax.php',
@@ -422,6 +484,7 @@ $page_title = "Sales History";
                     year_select,
                     tax_status,
                     staff,
+                    paid_status,
                     search_orders: 'search_orders'
                 },
                 success: function (response) {
@@ -432,7 +495,8 @@ $page_title = "Sales History";
                     }
 
                     const table = $('#sales_table').DataTable({
-                        pageLength: 100
+                        pageLength: 100,
+                        order: []
                     });
 
                     $('#sales_table_filter').hide();
@@ -442,26 +506,27 @@ $page_title = "Sales History";
                         response.orders.forEach(order => {
                             table.row.add([
                                 order.orderid,
-                                order.formatted_date,
-                                order.formatted_time,
-                                order.cashier,
                                 order.customer_name,
                                 `$ ${parseFloat(order.amount).toFixed(2)}`,
+                                order.formatted_date,
+                                order.formatted_time,
+                                order.status,
+                                order.cashier,
                                 `
                                 <a href="javascript:void(0)" class="text-primary" id="view_order_details" data-id="${order.orderid}">
                                     <i class="fa fa-eye"></i>
                                 </a>
                                 <a href="print_order_product.php?id=${order.orderid}" 
-                                class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" 
-                                data-id="${order.orderid}" data-bs-toggle="tooltip" 
-                                title="Print Product">
-                                    <i class="text-success fa fa-print fs-5"></i>
+                                    class="btn-show-pdf btn btn-danger-gradient btn-sm p-0" 
+                                    data-id="${order.orderid}" data-bs-toggle="tooltip" 
+                                    title="Print/Download">
+                                        <i class="text-success fa fa-print fs-5"></i>
                                 </a>
-                                <a href="print_order_total.php?id=${order.orderid}" 
-                                class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" 
-                                data-id="${order.orderid}" data-bs-toggle="tooltip" 
-                                title="Print Total">
-                                    <i class="text-white fa fa-file-lines fs-5"></i>
+                                <a href="javascript:void(0)" 
+                                    class="close_out_sale btn btn-danger-gradient btn-sm p-0" 
+                                    data-id="${order.orderid}" data-bs-toggle="tooltip" 
+                                    title="Close Out Sale">
+                                        <iconify-icon icon="solar:close-circle-outline" class="text-danger fs-6"></iconify-icon>
                                 </a>
                                 `
                             ]);
@@ -471,25 +536,23 @@ $page_title = "Sales History";
 
                         $('#sales_table tfoot').html(`
                             <tr>
-                                <td colspan="2" class="text-end fw-bold">Total Orders:</td>
-                                <td>${response.total_count}</td>
                                 <td colspan="2" class="text-end fw-bold">Total Amount:</td>
-                                <td class="text-end fw-bold">$ ${parseFloat(response.total_amount).toFixed(2)}</td>
+                                <td class="fw-bold">$ ${parseFloat(response.total_amount).toFixed(2)}</td>
+                                <td colspan="3" class="text-end fw-bold">Total Orders:</td>
+                                <td>${response.total_count}</td>
                                 <td></td>
                             </tr>
                         `);
                     } else {
                         $('#sales_table tfoot').html(`
-                            <tr>
-                                <td colspan="7" class="text-center">No orders found.</td>
-                            </tr>
+                            
                         `);
                     }
 
                     updateSelectedTags();
                 },
                 error: function (xhr, status, error) {
-                    alert('Error: ' + status + ' - ' + error);
+                    alert('Error: ' + status + ' - ' + xhr.responseText);
                 }
             });
         }
