@@ -1,4 +1,5 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -480,7 +481,13 @@ if(isset($_REQUEST['action'])) {
         $delivery_method = mysqli_real_escape_string($conn, $_POST['delivery_method'] ?? '');
         $payment_option = mysqli_real_escape_string($conn, $_POST['payment_option'] ?? '');
 
+        $current_user = $_SESSION['userid'] ?? 'System';
+
         if (!empty($order_id)) {
+            $old_query = "SELECT deliver_method, pay_type FROM orders WHERE orderid = '$order_id' LIMIT 1";
+            $old_result = mysqli_query($conn, $old_query);
+            $old_data = mysqli_fetch_assoc($old_result);
+
             $query = "
                 UPDATE orders 
                 SET 
@@ -490,6 +497,38 @@ if(isset($_REQUEST['action'])) {
             ";
 
             if (mysqli_query($conn, $query)) {
+                $new_data = [
+                    'deliver_method' => $delivery_method,
+                    'pay_type' => $payment_option
+                ];
+
+                $changes = [];
+                foreach ($new_data as $key => $new_val) {
+                    $old_val = $old_data[$key] ?? '';
+                    if ((string)$new_val !== (string)$old_val) {
+                        $changes[$key] = [
+                            'old' => $old_val,
+                            'new' => $new_val
+                        ];
+                    }
+                }
+
+                if (!empty($changes)) {
+                    $old_json = json_encode(array_map(fn($v) => $v['old'], $changes));
+                    $new_json = json_encode(array_map(fn($v) => $v['new'], $changes));
+
+                    $log_sql = "
+                        INSERT INTO order_history 
+                            (orderid, action_type, old_value, new_value, updated_by) 
+                        VALUES 
+                            ('$order_id', 'update_order', 
+                            '" . mysqli_real_escape_string($conn, $old_json) . "', 
+                            '" . mysqli_real_escape_string($conn, $new_json) . "', 
+                            '" . mysqli_real_escape_string($conn, $current_user) . "')
+                    ";
+                    mysqli_query($conn, $log_sql);
+                }
+
                 echo json_encode([
                     'success' => true,
                     'message' => 'Order updated successfully.'
@@ -506,6 +545,118 @@ if(isset($_REQUEST['action'])) {
                 'error' => 'Missing order ID'
             ]);
         }
+    }
+
+    if ($action === 'fetch_order_history') {
+        $orderid = intval($_POST['id']);
+
+        $history_query = "SELECT * FROM order_history 
+                        WHERE orderid = '$orderid' 
+                        ORDER BY created_at DESC";
+
+        $history_result = mysqli_query($conn, $history_query);
+
+        $status_prod_labels = [
+            0 => ['label' => 'New', 'class' => 'badge bg-primary'],
+            1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+            2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
+            3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
+            4 => ['label' => 'Delivered', 'class' => 'badge bg-success'],
+            5 => ['label' => 'On Hold', 'class' => 'badge bg-danger']
+        ];
+        ?>
+        <div class="modal-header">
+            <h5 class="modal-title">Change History</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <?php if (mysqli_num_rows($history_result) > 0): ?>
+                <div class="datatables">
+                    <div class="table-responsive">
+                        <table id="history_tbl" class="table table-sm text-center">
+                            <thead>
+                                <tr>
+                                    <th style="max-width: 20%;">Scope</th>
+                                    <th>Action</th>
+                                    <th>Updated By</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php while ($row = mysqli_fetch_assoc($history_result)): ?>
+                                    <?php
+                                        $old = json_decode($row['old_value'], true);
+                                        $new = json_decode($row['new_value'], true);
+
+                                        $is_product = !empty($row['order_product_id']);
+                                        $scope_label = 'Order Details';
+
+                                        if ($is_product) {
+                                            $prod_details = getOrderProdDetails($row['order_product_id']);
+                                            $product_id = $prod_details['productid'];
+                                            $scope_label = getProductName($product_id);
+                                        }
+
+                                        $staff_name = get_staff_name($row['updated_by']);
+                                        $datetime = new DateTime($row['created_at']);
+                                        $date = $datetime->format('M j, Y');
+                                        $time = $datetime->format('h:i A');
+
+                                        foreach ($new as $key => $new_val):
+                                            $old_val = $old[$key] ?? '';
+
+                                            switch ($key) {
+                                                case 'custom_color':
+                                                    $old_val = getColorName($old_val);
+                                                    $new_val = getColorName($new_val);
+                                                    break;
+                                                case 'custom_grade':
+                                                    $old_val = getGradeName($old_val);
+                                                    $new_val = getGradeName($new_val);
+                                                    break;
+                                                case 'profile':
+                                                    $old_val = getProfileTypeName($old_val);
+                                                    $new_val = getProfileTypeName($new_val);
+                                                    break;
+                                                case 'status':
+                                                    $old_badge = $status_prod_labels[$old_val] ?? ['label' => $old_val, 'class' => 'badge bg-secondary'];
+                                                    $new_badge = $status_prod_labels[$new_val] ?? ['label' => $new_val, 'class' => 'badge bg-secondary'];
+                                                    $old_val = "<span class='{$old_badge['class']}'>" . htmlspecialchars($old_badge['label']) . "</span>";
+                                                    $new_val = "<span class='{$new_badge['class']}'>" . htmlspecialchars($new_badge['label']) . "</span>";
+                                                    break;
+                                            }
+
+                                            if ((string)$new_val !== (string)$old_val):
+                                                $field_name = ucwords(str_replace('_', ' ', $key));
+                                    ?>
+                                        <tr>
+                                            <td style="max-width: 20%;"><?= htmlspecialchars($scope_label) ?></td>
+                                            <td>
+                                                <strong><?= htmlspecialchars($field_name) ?>:</strong>
+                                                <?= $key === 'status' ? "$old_val → $new_val" : "<span class='text-danger'>" . htmlspecialchars($old_val) . "</span> → <span class='text-success'>" . htmlspecialchars($new_val) . "</span>" ?>
+                                            </td>
+                                            <td><?= htmlspecialchars($staff_name) ?></td>
+                                            <td><?= htmlspecialchars($date) ?></td>
+                                            <td><?= htmlspecialchars($time) ?></td>
+                                        </tr>
+                                    <?php
+                                            endif;
+                                        endforeach;
+                                    ?>
+                                <?php endwhile; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <?php else: ?>
+                <p class="text-center">No change history found.</p>
+            <?php endif; ?>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+        <?php
     }
 
     mysqli_close($conn);

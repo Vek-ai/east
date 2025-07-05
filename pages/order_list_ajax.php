@@ -1132,11 +1132,20 @@ if(isset($_REQUEST['action'])) {
     if ($action === 'fetch_order_history') {
         $orderid = intval($_POST['id']);
 
-        $history_query = "SELECT * FROM order_history  WHERE order_product_id IN (
+        $history_query = "SELECT * FROM order_history WHERE order_product_id IN (
                             SELECT id FROM order_product WHERE orderid = '$orderid'
                         ) ORDER BY created_at DESC";
 
         $history_result = mysqli_query($conn, $history_query);
+
+        $status_prod_labels = [
+            0 => ['label' => 'New', 'class' => 'badge bg-primary'],
+            1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+            2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
+            3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
+            4 => ['label' => 'Delivered', 'class' => 'badge bg-success'],
+            5 => ['label' => 'On Hold', 'class' => 'badge bg-danger']
+        ];
         ?>
         <div class="modal-header">
             <h5 class="modal-title">Change History</h5>
@@ -1150,25 +1159,27 @@ if(isset($_REQUEST['action'])) {
                             <tr>
                                 <th style="max-width: 20%;">Product</th>
                                 <th>Action</th>
-                                <th>Changed Fields</th>
                                 <th>Updated By</th>
                                 <th>Date</th>
+                                <th>Time</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php $count = 1; ?>
                             <?php while ($row = mysqli_fetch_assoc($history_result)): ?>
                                 <?php
                                     $old = json_decode($row['old_value'], true);
                                     $new = json_decode($row['new_value'], true);
 
-                                    $changes = [];
-                                    foreach ($new as $key => $new_val) {
-                                        $old_val = $old[$key] ?? '';
+                                    $prod_details = getOrderProdDetails($row['order_product_id']);
+                                    $product_id = $prod_details['productid'];
+                                    $product_name = getProductName($product_id);
+                                    $staff_name = get_staff_name($row['updated_by']);
+                                    $datetime = new DateTime($row['created_at']);
+                                    $date = $datetime->format('M j, Y');
+                                    $time = $datetime->format('h:i A');
 
-                                        $prod_details = getOrderProdDetails($row['order_product_id']);
-                                        $product_id = $prod_details['productid'];
-                                        $product_name = getProductName($product_id);
+                                    foreach ($new as $key => $new_val):
+                                        $old_val = $old[$key] ?? '';
 
                                         switch ($key) {
                                             case 'custom_color':
@@ -1183,22 +1194,31 @@ if(isset($_REQUEST['action'])) {
                                                 $old_val = getProfileTypeName($old_val);
                                                 $new_val = getProfileTypeName($new_val);
                                                 break;
+                                            case 'status':
+                                                $old_badge = $status_prod_labels[$old_val] ?? ['label' => $old_val, 'class' => 'badge bg-secondary'];
+                                                $new_badge = $status_prod_labels[$new_val] ?? ['label' => $new_val, 'class' => 'badge bg-secondary'];
+                                                $old_val = "<span class='{$old_badge['class']}'>" . htmlspecialchars($old_badge['label']) . "</span>";
+                                                $new_val = "<span class='{$new_badge['class']}'>" . htmlspecialchars($new_badge['label']) . "</span>";
+                                                break;
                                         }
 
-                                        if ((string)$new_val !== (string)$old_val) {
-                                            $changes[] = "<strong>" . htmlspecialchars($key) . "</strong>: " .
-                                                "<span class='text-danger'>" . htmlspecialchars($old_val) . "</span> → " .
-                                                "<span class='text-success'>" . htmlspecialchars($new_val) . "</span>";
-                                        }
-                                    }
+                                        if ((string)$new_val !== (string)$old_val):
+                                            $field_name = ucwords(str_replace('_', ' ', $key));
                                 ?>
-                                <tr>
-                                    <td style="max-width: 20%;"><?= $product_name ?></td>
-                                    <td>Update</td>
-                                    <td><?= !empty($changes) ? implode('<br>', $changes) : '<em>No visible changes</em>' ?></td>
-                                    <td><?= get_staff_name($row['updated_by']) ?></td>
-                                    <td><?= htmlspecialchars($row['created_at']) ?></td>
-                                </tr>
+                                    <tr>
+                                        <td style="max-width: 20%;"><?= htmlspecialchars($product_name) ?></td>
+                                        <td>
+                                            <strong><?= htmlspecialchars($field_name) ?>:</strong>
+                                            <?= $key === 'status' ? "$old_val → $new_val" : "<span class='text-danger'>" . htmlspecialchars($old_val) . "</span> → <span class='text-success'>" . htmlspecialchars($new_val) . "</span>" ?>
+                                        </td>
+                                        <td><?= htmlspecialchars($staff_name) ?></td>
+                                        <td><?= htmlspecialchars($date) ?></td>
+                                        <td><?= htmlspecialchars($time) ?></td>
+                                    </tr>
+                                <?php
+                                        endif;
+                                    endforeach;
+                                ?>
                             <?php endwhile; ?>
                         </tbody>
                     </table>
@@ -1211,7 +1231,6 @@ if(isset($_REQUEST['action'])) {
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
         <?php
-        exit;
     }
 
     mysqli_close($conn);

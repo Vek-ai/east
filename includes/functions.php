@@ -1516,5 +1516,42 @@ function getTotalJobPayments($ledger_id) {
     return $total;
 }
 
+function log_order_product_changes($conn, $old_data, $new_data, $updated_by = 'System') {
+    $changes = [];
+
+    foreach ($new_data as $key => $new_value) {
+        $old_value = $old_data[$key] ?? null;
+
+        if ((string)$old_value !== (string)$new_value) {
+            $changes[$key] = [
+                'old' => $old_value,
+                'new' => $new_value
+            ];
+        }
+    }
+
+    if (!empty($changes)) {
+        $orderid = intval($old_data['orderid']);
+        $order_product_id = intval($old_data['id']);
+
+        $old_json = json_encode(array_map(fn($v) => $v['old'], $changes));
+        $new_json = json_encode(array_map(fn($v) => $v['new'], $changes));
+
+        $old_json_escaped = mysqli_real_escape_string($conn, $old_json);
+        $new_json_escaped = mysqli_real_escape_string($conn, $new_json);
+        $updated_by_escaped = mysqli_real_escape_string($conn, $updated_by);
+
+        $log_sql = "
+            INSERT INTO order_history 
+                (orderid, order_product_id, action_type, old_value, new_value, updated_by) 
+            VALUES 
+                ('$orderid', '$order_product_id', 'update_product', 
+                 '$old_json_escaped', '$new_json_escaped', '$updated_by_escaped')
+        ";
+
+        mysqli_query($conn, $log_sql);
+    }
+}
+
 
 ?>

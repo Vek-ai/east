@@ -580,6 +580,14 @@ if(isset($_REQUEST['customer_id'])){
     </div>
 </div>
 
+<div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+        </div>
+    </div>
+</div>
+
 
 <script>
     function isValidURL(str) {
@@ -611,6 +619,38 @@ if(isset($_REQUEST['customer_id'])){
             $(this).select2({
                 width: '100%',
                 dropdownParent: $(this).parent()
+            });
+        });
+
+        $(document).on("click", "#view_changes_btn", function () {
+            const orderid = $(this).data("id");
+
+            $.ajax({
+                url: 'pages/invoice_ajax.php',
+                type: 'POST',
+                data: {
+                    action: 'fetch_order_history',
+                    id: orderid
+                },
+                success: function (response) {
+                    $("#historyModal .modal-content").html(response);
+
+                    if ($.fn.DataTable.isDataTable('#history_tbl')) {
+                        $('#history_tbl').DataTable().clear().destroy();
+                    }
+
+                    $('#history_tbl').DataTable({
+                        order: [],
+                        lengthChange: false,
+                        pageLength: 100,
+                    });
+
+                    $("#historyModal").modal("show");
+                },
+                error: function (xhr) {
+                    alert("Failed to load history.");
+                    console.error(xhr.responseText);
+                }
             });
         });
 
