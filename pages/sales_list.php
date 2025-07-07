@@ -218,6 +218,28 @@ $page_title = "Sales History";
     </div>
 </div>
 
+<div class="modal" id="close-out-details-modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content p-2">
+            <div class="modal-header">
+                <h6 class="modal-title">Close Out Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="closeOutForm">
+                <div class="modal-body">
+                    <input type="hidden" name="orderid" id="close_out_orderid">
+                    <div id="close-out-details"></div>
+                </div>
+                <div class="modal-footer">
+                    <button id="close_out_order" class="btn ripple btn-danger" type="submit">Close Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
@@ -513,15 +535,7 @@ $page_title = "Sales History";
 
                     if (response.orders.length > 0) {
                         response.orders.forEach(order => {
-                            table.row.add([
-                                order.orderid,
-                                order.customer_name,
-                                `$ ${parseFloat(order.amount).toFixed(2)}`,
-                                order.formatted_date,
-                                order.formatted_time,
-                                order.status,
-                                order.cashier,
-                                `
+                            let actionButtons = `
                                 <a href="javascript:void(0)" class="text-primary" id="view_order_details" data-id="${order.orderid}">
                                     <i class="fa fa-eye"></i>
                                 </a>
@@ -531,15 +545,31 @@ $page_title = "Sales History";
                                     title="Print/Download">
                                         <i class="text-success fa fa-print fs-5"></i>
                                 </a>
-                                <a href="javascript:void(0)" 
-                                    class="close_out_sale btn btn-danger-gradient btn-sm p-0" 
-                                    data-id="${order.orderid}" data-bs-toggle="tooltip" 
-                                    title="Close Out Sale">
-                                        <iconify-icon icon="solar:close-circle-outline" class="text-danger fs-6"></iconify-icon>
-                                </a>
-                                `
+                            `;
+
+                            if (order.payment_status === 'not_paid') {
+                                actionButtons += `
+                                    <a href="javascript:void(0)" 
+                                        class="close_out_sale btn btn-danger-gradient btn-sm p-0" 
+                                        data-id="${order.orderid}" data-bs-toggle="tooltip" 
+                                        title="Close Out Sale">
+                                            <iconify-icon icon="solar:close-circle-outline" class="text-danger fs-6"></iconify-icon>
+                                    </a>
+                                `;
+                            }
+
+                            table.row.add([
+                                order.orderid,
+                                order.customer_name,
+                                `$ ${parseFloat(order.amount).toFixed(2)}`,
+                                order.formatted_date,
+                                order.formatted_time,
+                                order.status,
+                                order.cashier,
+                                actionButtons
                             ]);
                         });
+
 
                         table.draw();
 
@@ -575,6 +605,57 @@ $page_title = "Sales History";
             var orderid = $(this).data('id');
             loadOrderDetails(orderid);
             $('#view_order_details_modal').modal('toggle');
+        });
+
+        $(document).on('click', '.close_out_sale', function(event) {
+            var orderid = $(this).data('id');
+
+            $('#close_out_orderid').val(orderid);
+
+            $.ajax({
+                url: 'pages/sales_list_ajax.php',
+                type: 'POST',
+                data: {
+                    orderid: orderid,
+                    fetch_close_details: "fetch_close_details"
+                },
+                success: function(response) {
+                    $('#close-out-details').html(response);
+                    $('#close-out-details-modal').modal('toggle');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('submit', '#closeOutForm', function(e) {
+            e.preventDefault();
+
+            const form = this;
+            const formData = new FormData(form);
+            formData.append('close_out_order', 'close_out_order');
+
+            $.ajax({
+                url: 'pages/sales_list_ajax.php',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    const trimmedResponse = response.trim();
+
+                    if (trimmedResponse === 'success') {
+                        $('#close-out-details-modal').modal('hide');
+                        alert('Order closed out successfully.');
+                    } else {
+                        alert('⚠️ Error: ' + trimmedResponse);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Submission error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
         });
 
         performSearch();

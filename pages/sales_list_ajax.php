@@ -75,7 +75,7 @@ if (isset($_POST['search_orders'])) {
         SELECT o.*, CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name
         FROM orders AS o
         LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
-        WHERE 1 = 1
+        WHERE o.status != 6
     ";
 
     if (!empty($customer_name) && $customer_name != 'All Customers') {
@@ -149,6 +149,7 @@ if (isset($_POST['search_orders'])) {
                 'customer_name' => $row['customer_name'],
                 'amount' => number_format($row['discounted_price'], 2),
                 'status' => $status_html,
+                'payment_status'  => $payment_status,
             ];
             $response['total_amount'] += $row['discounted_price'];
             $response['total_count']++;
@@ -411,6 +412,137 @@ if(isset($_POST['fetch_order_details'])){
 
             $('#view_order_details_modal').on('shown.bs.modal', function () {
                 $('#return_dtls_tbl').DataTable().columns.adjust().responsive.recalc();
+            });
+        });
+    </script>
+    <?php
+}
+
+if(isset($_POST['fetch_close_details'])){
+    $orderid = mysqli_real_escape_string($conn, $_POST['orderid']);
+    ?>
+    <style>
+        .tooltip-inner {
+            background-color: white !important;
+            color: black !important;
+            font-size: calc(0.875rem + 2px) !important;
+        }
+    </style>
+    <div class="card card-body datatables">
+        <div class="product-details table-responsive text-wrap">
+            <h4>Products Ordered</h4>
+            <table id="order_dtls_tbl" class="table table-hover mb-0 text-md-nowrap">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Color</th>
+                        <th>Grade</th>
+                        <th>Profile</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-center">Dimensions</th>
+                        <th class="text-center">Unit Price</th>
+                        <th class="text-center">Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                    $no = 0;
+                    $query = "SELECT * FROM order_product WHERE orderid='$orderid' ";
+                    $result = mysqli_query($conn, $query);
+                    $totalquantity = $total_actual_price = $total_disc_price = 0;
+                    if ($result && mysqli_num_rows($result) > 0) {
+                        $response = array();
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            $product_id = $row['productid'];
+                            if($row['quantity'] > 0){
+                            ?>
+                            <tr>
+                                <td class="text-wrap"> 
+                                    <?php echo getProductName($product_id) ?>
+                                </td>
+                                <td>
+                                <div class="d-flex mb-0 gap-8">
+                                    <span class="rounded-circle d-block p-3" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_id)?>; width: 20px; height: 20px;"></span>
+                                    <?= getColorFromID($product_id); ?>
+                                </div>
+                                </td>
+                                <td>
+                                    <?php echo getGradeFromID($product_id); ?>
+                                </td>
+                                <td>
+                                    <?php echo getProfileFromID($product_id); ?>
+                                </td>
+                                <td>
+                                    <?php echo $row['quantity']; ?>
+                                </td>
+                                <td>
+                                    <?php 
+                                    $width = $row['custom_width'];
+                                    $bend = $row['custom_bend'];
+                                    $hem = $row['custom_hem'];
+                                    $length = $row['custom_length'];
+                                    $inch = $row['custom_length2'];
+                                    
+                                    if (!empty($width)) {
+                                        echo "Width: " . htmlspecialchars($width) . "<br>";
+                                    }
+                                    
+                                    if (!empty($bend)) {
+                                        echo "Bend: " . htmlspecialchars($bend) . "<br>";
+                                    }
+                                    
+                                    if (!empty($hem)) {
+                                        echo "Hem: " . htmlspecialchars($hem) . "<br>";
+                                    }
+                                    
+                                    if (!empty($length)) {
+                                        echo "Length: " . htmlspecialchars($length) . " ft";
+                                        
+                                        if (!empty($inch)) {
+                                            echo " " . htmlspecialchars($inch) . " in";
+                                        }
+                                        echo "<br>";
+                                    } elseif (!empty($inch)) {
+                                        echo "Length: " . htmlspecialchars($inch) . " in<br>";
+                                    }
+                                    ?>
+                                </td>
+                                <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
+                                <td class="text-end">$ <?= number_format($row['discounted_price'] * $row['quantity'],2) ?></td>
+                            </tr>
+                    <?php
+                            $totalquantity += $row['quantity'] ;
+                            $total_actual_price += $row['discounted_price'];
+                            $total_disc_price += $row['discounted_price'] * $row['quantity'];
+                            }
+                        }
+                    }
+                    ?>
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td colspan="4">Total</td>
+                        <td><?= $totalquantity ?></td>
+                        <td></td>
+                        <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
+                        <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        $(document).ready(function() {
+            $('[data-toggle="tooltip"]').tooltip(); 
+
+            $('#close_dtls_tbl').DataTable({
+                language: {
+                    emptyTable: "Order Details not found"
+                },
+                autoWidth: false,
+                responsive: true
             });
         });
     </script>
@@ -701,4 +833,50 @@ if(isset($_REQUEST['print_result'])) {
     exit;
 }
 
+if (isset($_REQUEST['close_out_order'])) {
+    $orderid = intval($_POST['orderid']);
+
+    $sql = "SELECT id, productid, custom_color, quantity 
+            FROM order_product 
+            WHERE orderid = $orderid";
+    $result = mysqli_query($conn, $sql);
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $productid = intval($row['productid']);
+        $color_id = is_null($row['custom_color']) ? 'IS NULL' : '= ' . intval($row['custom_color']);
+        $quantity = intval($row['quantity']);
+        $order_product_id = intval($row['id']);
+
+        $inv_sql = "
+            SELECT Inventory_id, quantity_ttl 
+            FROM inventory 
+            WHERE Product_id = $productid AND color_id $color_id 
+            LIMIT 1";
+        $inv_result = mysqli_query($conn, $inv_sql);
+
+        if ($inv_row = mysqli_fetch_assoc($inv_result)) {
+            $inventory_id = intval($inv_row['Inventory_id']);
+            $new_qty = intval($inv_row['quantity_ttl']) + $quantity;
+
+            mysqli_query($conn, "
+                UPDATE inventory 
+                SET quantity_ttl = $new_qty 
+                WHERE Inventory_id = $inventory_id
+            ");
+        }
+
+        mysqli_query($conn, "
+            UPDATE order_product 
+            SET actual_price = 0,
+                discounted_price = 0,
+                quantity = 0,
+                status = 6
+            WHERE id = $order_product_id
+        ");
+    }
+
+    mysqli_query($conn, "UPDATE orders SET status = 6 WHERE orderid = $orderid");
+
+    echo 'success';
+}
 

@@ -254,7 +254,7 @@ if(isset($_REQUEST['customer_id'])){
                                         'net30'    => ['label' => 'Charge Net 30',       'style' => 'color: #fff; background-color: #dc3545;'],
                                     ];
 
-                                    $query = "SELECT * FROM orders ORDER BY order_date DESC";
+                                    $query = "SELECT * FROM orders WHERE status != 6 ORDER BY order_date DESC";
                                     $result = mysqli_query($conn, $query);
                                 
                                     if ($result && mysqli_num_rows($result) > 0) {

@@ -31,7 +31,7 @@ if(isset($_POST['fetch_order_list'])){
                             SELECT o.*, CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name
                             FROM orders AS o
                             LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
-                            WHERE 1 = 1
+                            WHERE 1 = 1 AND o.status != 6
                         ";
 
                         if (!empty($customerid) && $customer_name != 'All Customers') {

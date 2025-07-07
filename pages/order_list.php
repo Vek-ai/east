@@ -12,6 +12,7 @@ $status_labels = [
     3 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
     4 => ['label' => 'Sent to Customer', 'class' => 'badge bg-success'],
     5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
+    6 => ['label' => 'Archived', 'class' => 'badge bg-secondary'],
 ];
 
 if(isset($_REQUEST['customer_id'])){
@@ -350,7 +351,7 @@ if(isset($_REQUEST['customer_id'])){
                                 <tbody>
                                     <?php 
 
-                                    $query = "SELECT * FROM orders ORDER BY order_date DESC";
+                                    $query = "SELECT * FROM orders WHERE status != 6 ORDER BY order_date DESC";
 
                                     if (isset($customer_id) && !empty($customer_id)) {
                                         $query .= " AND customerid = '$customer_id'";
