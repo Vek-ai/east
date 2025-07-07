@@ -838,7 +838,7 @@ if(isset($_REQUEST['customer_id'])){
             $('#sendOrderModal').modal('show');
         });
 
-       $(document).on('submit', '.send_order_form', function (e) {
+        $(document).on('submit', '.send_order_form', function (e) {
             e.preventDefault();
 
             const $form = $(this);

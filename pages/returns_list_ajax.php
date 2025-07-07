@@ -57,33 +57,31 @@ if (isset($_POST['search_returns'])) {
         'error' => null
     ];
 
-    $customer_name = mysqli_real_escape_string($conn, $_POST['customer_name']);
-    $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
-    $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
-
+    $customer_name = mysqli_real_escape_string($conn, $_POST['customer_name'] ?? '');
+    $date_from = mysqli_real_escape_string($conn, $_POST['date_from'] ?? '');
+    $date_to = mysqli_real_escape_string($conn, $_POST['date_to'] ?? '');
     $months = array_map('intval', $_POST['months'] ?? []);
     $years = array_map('intval', $_POST['years'] ?? []);
-    $staff = mysqli_real_escape_string($conn, $_POST['staff']);
-    $tax_status = mysqli_real_escape_string($conn, $_POST['tax_status']);
+    $staff = mysqli_real_escape_string($conn, $_POST['staff'] ?? '');
+    $tax_status = mysqli_real_escape_string($conn, $_POST['tax_status'] ?? '');
 
     $query = "
         SELECT pr.*, 
-           o.*,
-           CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name,
-           c.customer_id
+               CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name,
+               c.customer_id
         FROM product_returns AS pr
         LEFT JOIN orders AS o ON o.orderid = pr.orderid
         LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
         WHERE 1 = 1
     ";
 
-    if (!empty($customer_name) && $customer_name != 'All Customers') {
+    if (!empty($customer_name) && $customer_name !== 'All Customers') {
         $query .= " AND CONCAT(c.customer_first_name, ' ', c.customer_last_name) LIKE '%$customer_name%' ";
     }
 
     if (!empty($date_from) && !empty($date_to)) {
         $date_to .= ' 23:59:59';
-        $query .= " AND (o.order_date >= '$date_from' AND o.order_date <= '$date_to') ";
+        $query .= " AND o.order_date BETWEEN '$date_from' AND '$date_to' ";
     } elseif (!empty($date_from)) {
         $query .= " AND o.order_date >= '$date_from' ";
     } elseif (!empty($date_to)) {
@@ -93,38 +91,44 @@ if (isset($_POST['search_returns'])) {
 
     if (!empty($months)) {
         $months_in = implode(',', $months);
-        $query .= " AND MONTH(o.order_date) IN ($months_in)";
+        $query .= " AND MONTH(o.order_date) IN ($months_in) ";
     }
 
     if (!empty($years)) {
         $years_in = implode(',', $years);
-        $query .= " AND YEAR(o.order_date) IN ($years_in)";
+        $query .= " AND YEAR(o.order_date) IN ($years_in) ";
     }
 
     if (!empty($staff)) {
-        $query .= " AND cashier = '$staff'";
+        $query .= " AND o.cashier = '$staff' ";
     }
 
     if (!empty($tax_status)) {
-        $query .= " AND c.tax_status = '$tax_status'";
+        $query .= " AND c.tax_status = '$tax_status' ";
     }
 
-    $query .= " GROUP BY o.orderid";
+    $query .= " GROUP BY o.orderid ";
 
     $result = mysqli_query($conn, $query);
 
     if ($result && mysqli_num_rows($result) > 0) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $amount = getReturnTotals(number_format(floatval($row['orderid']),2));
+            $order_id = $row['orderid'];
+            $amount = getReturnTotals($order_id);
+            $order_details = getOrderDetails($order_id);
+
             $response['orders'][] = [
-                'orderid' => $row['orderid'],
+                'orderid' => $order_id,
                 'order_date' => $row['order_date'],
-                'formatted_date' => date("F d, Y", strtotime($row['order_date'])),
-                'formatted_time' => date("h:i A", strtotime($row['order_date'])),
-                'cashier' => get_staff_name($row['cashier']),
+                'formatted_date' => date("F d, Y", strtotime($order_details['order_date'])),
+                'formatted_time' => date("h:i A", strtotime($order_details['order_date'])),
+                'cashier' => get_staff_name($order_details['cashier']),
                 'customer_name' => $row['customer_name'],
-                'amount' => $amount
+                'customer_id' => $order_details['customer_id'] ?? null,
+                'amount' => $amount,
+                'sql' => $query
             ];
+
             $response['total_amount'] += $amount;
             $response['total_count']++;
         }
@@ -134,6 +138,7 @@ if (isset($_POST['search_returns'])) {
 
     echo json_encode($response);
 }
+
 
 if(isset($_POST['fetch_order_details'])){
     $orderid = mysqli_real_escape_string($conn, $_POST['orderid']);
@@ -292,4 +297,82 @@ if(isset($_POST['fetch_order_details'])){
     <?php
 }
 
+if (isset($_POST['send_order'])) {
+    $orderid = mysqli_real_escape_string($conn, $_POST['send_order_id']);
+    $customer_id = mysqli_real_escape_string($conn, $_POST['send_customer_id']);
+    $customer_details= getCustomerDetails($customer_id);
+    $customer_name = get_customer_name($customer_id);
+    $customer_email = $customer_details['contact_email'];
+    $customer_phone = $customer_details['contact_phone'];
 
+    $send_option = mysqli_real_escape_string($conn, $_POST['send_option']);
+
+    $return_url = "https://metal.ilearnwebtech.com/print_return_product.php?id=" . urlencode($orderid);
+
+    $subject = "Product Returns";
+
+    $sms_message = "Hi $customer_name,\n\nYour product orders has been successfully returned.\nClick this link for details:\n$return_url";
+    
+    $html_message = "
+    <html>
+        <head>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333;
+                    background-color: #f4f4f4;
+                    padding: 30px;
+                }
+                .container {
+                    padding: 20px;
+                    border: 1px solid #e0e0e0;
+                    background-color: #ffffff;
+                    width: 80%;
+                    margin: 0 auto;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+                }
+                h2 {
+                    color: #0056b3;
+                    margin-bottom: 15px;
+                }
+                .link {
+                    display: inline-block;
+                    margin-top: 10px;
+                    padding: 10px 15px;
+                    background-color: #007bff;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 5px;
+                }
+                .link:hover {
+                    background-color: #0056b3;
+                }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <h2>Order Invoice</h2>
+                <p>Hi $customer_name,</p>
+                <p>Your product orders has been successfully returned. Click the button below for more details.</p>
+                <a href='$return_url' class='link' target='_blank'>View Details</a>
+            </div>
+        </body>
+    </html>";
+
+    if ($send_option === 'email' || $send_option === 'both') {
+        $results['email'] = sendEmail($customer_email, $customer_name, $subject, $html_message);
+    }
+
+    if ($send_option === 'sms' || $send_option === 'both') {
+        $results['sms'] = sendPhoneMessage($customer_phone, $customer_name, $subject, $sms_message);
+    }
+
+    $response = [
+        'success' => true,
+        'message' => "Successfully sent to Customer",
+        'results' => $results
+    ];
+
+    echo json_encode($response);
+}

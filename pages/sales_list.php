@@ -219,7 +219,7 @@ $page_title = "Sales History";
 </div>
 
 <div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Print/View Outputs</h5>
@@ -228,7 +228,7 @@ $page_title = "Sales History";
         </button>
       </div>
       <div class="modal-body">
-        <iframe id="pdfFrame" src=""></iframe>
+        <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
 
         <div class="container mt-3 border rounded p-3" style="width: 100%;">
         <h6 class="mb-3">Download Outputs</h6>
@@ -410,6 +410,15 @@ $page_title = "Sales History";
 
             const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
             modal.show();
+        });
+
+        $('#downloadBtn').on('click', function () {
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.download = '';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         });
 
         function updateSelectedTags() {
