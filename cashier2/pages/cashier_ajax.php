@@ -1065,11 +1065,98 @@ if (isset($_POST['save_order'])) {
 
         $total_price += $actual_price;
         $total_discounted_price += $discounted_price;
+
+        $approval_products[] = [
+            'productid' => $product_id,
+            'product_item' => $item['product_item'],
+            'quantity' => $quantity_cart,
+            'custom_color' => $item['custom_color'] ?? null,
+            'custom_grade' => $item['custom_grade'] ?? null,
+            'custom_width' => $item['custom_width'],
+            'custom_height' => $item['custom_height'] ?? null,
+            'custom_bend' => $item['custom_bend'] ?? null,
+            'custom_hem' => $item['custom_hem'] ?? null,
+            'custom_length' => $item['custom_length'] ?? null,
+            'custom_length2' => $item['custom_length2'] ?? null,
+            'actual_price' => $actual_price,
+            'discounted_price' => $discounted_price,
+            'product_category' => $product_details['product_category'],
+            'usageid' => $item['usageid'] ?? 0,
+            'current_customer_discount' => $item['current_customer_discount'] ?? 0,
+            'current_loyalty_discount' => $item['current_loyalty_discount'] ?? 0,
+            'used_discount' => $item['used_discount'] ?? 0,
+            'stiff_stand_seam' => $item['stiff_stand_seam'],
+            'stiff_board_batten' => $item['stiff_board_batten'],
+            'panel_type' => $item['panel_type'],
+        ];
     }
 
     $original_cash_amt = floatval($cash_amt);
     $store_credit = floatval($customer_details['store_credit']);
     $charge_net_30 = floatval($customer_details['charge_net_30']);
+
+    if ($charge_net_30 < $total_discounted_price) {
+        $job_po = mysqli_real_escape_string($conn, $job_po ?? '');
+        $job_name = mysqli_real_escape_string($conn, $job_name ?? '');
+        $deliver_address = mysqli_real_escape_string($conn, $deliver_address ?? '');
+        $deliver_city = mysqli_real_escape_string($conn, $deliver_city ?? '');
+        $deliver_state = mysqli_real_escape_string($conn, $deliver_state ?? '');
+        $deliver_zip = mysqli_real_escape_string($conn, $deliver_zip ?? '');
+        $delivery_amt = mysqli_real_escape_string($conn, $delivery_amt ?? '');
+        $deliver_fname = mysqli_real_escape_string($conn, $deliver_fname ?? '');
+        $deliver_lname = mysqli_real_escape_string($conn, $deliver_lname ?? '');
+
+        $insert_approval = "
+            INSERT INTO approval (
+                status, cashier, total_price, discounted_price, discount_percent,
+                cash_amt, disc_amount, submitted_date, customerid, originalcustomerid,
+                job_name, job_po, deliver_address, deliver_city, deliver_state,
+                deliver_zip, delivery_amt, deliver_fname, deliver_lname, type_approval
+            ) VALUES (
+                1, '$cashier_id', '$total_price', '$total_discounted_price', '$discount_percent',
+                '$cash_amt', '$amount_discount', NOW(), '$customerid', '$customerid',
+                '$job_name', '$job_po', '$deliver_address', '$deliver_city', '$deliver_state',
+                '$deliver_zip', '$delivery_amt', '$deliver_fname', '$deliver_lname', 2
+            )
+        ";
+
+        if (!mysqli_query($conn, $insert_approval)) {
+            die(json_encode(['success' => false, 'message' => 'Approval insert failed: ' . mysqli_error($conn)]));
+        }
+
+        $approval_id = mysqli_insert_id($conn);
+
+        foreach ($approval_products as $p) {
+            $sql = "
+                INSERT INTO approval_product (
+                    approval_id, productid, product_item, status, quantity, custom_color,
+                    custom_grade, custom_width, custom_height, custom_bend, custom_hem,
+                    custom_length, custom_length2, actual_price, discounted_price,
+                    product_category, usageid, current_customer_discount, current_loyalty_discount,
+                    used_discount, stiff_stand_seam, stiff_board_batten, panel_type
+                ) VALUES (
+                    '$approval_id', '{$p['productid']}', '" . mysqli_real_escape_string($conn, $p['product_item']) . "', 0, '{$p['quantity']}',
+                    " . ($p['custom_color'] ?? 'NULL') . ", " . ($p['custom_grade'] ?? 'NULL') . ",
+                    '" . mysqli_real_escape_string($conn, $p['custom_width']) . "', " . ($p['custom_height'] ? "'" . mysqli_real_escape_string($conn, $p['custom_height']) . "'" : "NULL") . ",
+                    " . ($p['custom_bend'] ? "'" . mysqli_real_escape_string($conn, $p['custom_bend']) . "'" : "NULL") . ",
+                    " . ($p['custom_hem'] ? "'" . mysqli_real_escape_string($conn, $p['custom_hem']) . "'" : "NULL") . ",
+                    " . ($p['custom_length'] ? "'" . mysqli_real_escape_string($conn, $p['custom_length']) . "'" : "NULL") . ",
+                    " . ($p['custom_length2'] ? "'" . mysqli_real_escape_string($conn, $p['custom_length2']) . "'" : "NULL") . ",
+                    '{$p['actual_price']}', '{$p['discounted_price']}', '{$p['product_category']}', '{$p['usageid']}',
+                    '{$p['current_customer_discount']}', '{$p['current_loyalty_discount']}', '{$p['used_discount']}',
+                    '{$p['stiff_stand_seam']}', '{$p['stiff_board_batten']}', '{$p['panel_type']}'
+                )
+            ";
+            mysqli_query($conn, $sql);
+        }
+
+        echo json_encode([
+            'success' => false,
+            'error' => 'Approval request created due to insufficient Net balance.'
+        ]);
+        exit;
+    }
+
     $job_balance = getJobDepositTotal($job_id);
 
     $credit_to_apply = 0;
@@ -1647,8 +1734,8 @@ if (isset($_POST['save_approval'])) {
         $total_discounted_price += $discounted_price;
     }
 
-    $query = "INSERT INTO approval (cashier, total_price, discounted_price, discount_percent, submitted_date, customerid, originalcustomerid) 
-              VALUES ('$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$submitted_date', '$customerid', '$customerid')";
+    $query = "INSERT INTO approval (cashier, total_price, discounted_price, discount_percent, submitted_date, customerid, originalcustomerid, type_approval) 
+              VALUES ('$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$submitted_date', '$customerid', '$customerid', '1')";
 
     if ($conn->query($query) === TRUE) {
         $approval_id = $conn->insert_id;
