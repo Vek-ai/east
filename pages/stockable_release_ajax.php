@@ -30,7 +30,7 @@ if(isset($_REQUEST['action'])) {
             FROM order_product AS op 
             LEFT JOIN product AS p ON p.product_id = op.productid 
             LEFT JOIN inventory AS i ON i.product_id = op.productid 
-            WHERE p.hidden = 0 AND op.status = 2 AND p.product_origin = 1
+            WHERE p.hidden = 0 AND op.status = 0 AND p.product_origin = 1
             GROUP BY p.product_id
         ";
         $result = mysqli_query($conn, $query);
@@ -61,6 +61,20 @@ if(isset($_REQUEST['action'])) {
                         </div>
                     </div>
                 </a>";
+
+            $action_html = '';
+    
+            if ($instock == 1) {
+                $action_html .= "
+                    <a href='javascript:void(0)' id='release_product' data-id='{$id}' title='Release' class='text-success'>
+                        <iconify-icon icon='solar:box-minimalistic-bold' class='fs-7'></iconify-icon>
+                    </a>";
+            } else {
+                $action_html .= "
+                    <a href='javascript:void(0)' id='order_product' data-id='{$id}' title='Order' class='text-danger'>
+                        <iconify-icon icon='solar:cart-large-bold' class='fs-7'></iconify-icon>
+                    </a>";
+            }
     
             $data[] = [
                 'product_name_html'   => $product_name_html,
@@ -77,13 +91,30 @@ if(isset($_REQUEST['action'])) {
                 'order_qty'           => $order_qty,
                 'instock'             => $instock,
                 'status'              => $status,
-                'status_html'         => $status_html
+                'status_html'         => $status_html,
+                'action_html'         => $action_html
             ];
     
             $no++;
         }
     
         echo json_encode(['data' => $data]);
+    }
+
+    if ($action == 'release_product') {
+        $product_id = intval($_POST['product_id']);
+        $status = intval($_POST['status']);
+
+        $sql = "UPDATE order_product SET status = $status WHERE id = $product_id";
+
+        if (mysqli_query($conn, $sql)) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'error' => mysqli_error($conn)]);
+        }
+
+        mysqli_close($conn);
+        exit;
     }
     
     mysqli_close($conn);

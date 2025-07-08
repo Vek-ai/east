@@ -8,7 +8,7 @@ require 'includes/functions.php';
 
 $picture_path = "images/product/product.jpg";
 
-$page_title = "Stockable Order Staging";
+$page_title = "Stockable Order Release";
 
 $price_per_hem = getPaymentSetting('price_per_hem');
 $price_per_bend = getPaymentSetting('price_per_bend');
@@ -276,6 +276,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             <th>Warehouse</th>
                             <th>Qty</th>
                             <th>Status</th>
+                            <th>Action</th>
                             </thead>
                             <tbody>
                             
@@ -300,7 +301,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             order: [[1, "asc"]],
             pageLength: 100,
             ajax: {
-                url: 'pages/stockable_staging_ajax.php',
+                url: 'pages/stockable_release_ajax.php',
                 type: 'POST',
                 data: { action: 'fetch_products' }
             },
@@ -311,7 +312,8 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 { data: 'product_type' },
                 { data: 'warehouse' },
                 { data: 'order_qty' },
-                { data: 'status_html' }
+                { data: 'status_html' },
+                { data: 'action_html' }
             ],
             createdRow: function (row, data, dataIndex) {
                 $(row).attr('data-category', data.product_category);
@@ -335,6 +337,31 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         $(".select2").each(function() {
             $(this).select2({
                 dropdownParent: $(this).parent()
+            });
+        });
+
+        $(document).on('click', '#release_product', function () {
+            const productId = $(this).data('id');
+
+            if (!confirm('Are you sure you want to release this product?')) {
+                return;
+            }
+
+            $.ajax({
+                url: 'pages/stockable_release_ajax.php',
+                type: 'POST',
+                data: {
+                    action: 'release_product',
+                    product_id: productId,
+                    status: 2
+                },
+                success: function (response) {
+                    alert('Product successfully released');
+                    table.ajax?.reload(null, false);
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX error:', error);
+                }
             });
         });
 

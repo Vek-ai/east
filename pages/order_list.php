@@ -208,10 +208,42 @@ if(isset($_REQUEST['customer_id'])){
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="pickupOrderForm">
+                    <input type="hidden" id="pickup_order_id" name="id" value="">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="pickup_name" class="form-label">Picked Up By</label>
                             <input type="text" class="form-control" id="pickup_name" name="pickup_name" placeholder="Enter name" required>
+                        </div>
+
+                        <div class="mb-3" id="payment_type_group">
+                            <label for="type" class="form-label">Deposit Type</label>
+                            <select class="form-select" id="payment_type" name="type" required>
+                                <option value="">-- Select Type --</option>
+                                <option value="cash">Cash</option>
+                                <option value="check">Check</option>
+                            </select>
+                        </div>
+
+                        <div id="payment_details_group" class="d-none">
+                            <div class="mb-3">
+                                <label for="payment_amount" class="form-label">Payment Amount</label>
+                                <input type="number" step="0.01" class="form-control" id="payment_amount" name="payment_amount" >
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="reference_no" class="form-label">Reference No</label>
+                                <input type="text" class="form-control" id="reference_no" name="reference_no" required>
+                            </div>
+
+                            <div class="mb-3 d-none" id="check_no_group">
+                                <label for="check_no" class="form-label">Check No</label>
+                                <input type="text" class="form-control" id="check_no" name="check_no">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -323,7 +355,7 @@ if(isset($_REQUEST['customer_id'])){
                     
                 </div>
                 <div class="px-3 mb-2"> 
-                    <input type="checkbox" id="toggleActive" checked> Show Processing Only
+                    <input type="checkbox" id="toggleActive"> Show Processing Only
                 </div>
                 <div class="d-flex justify-content-end py-2">
                     <button type="button" class="btn btn-outline-primary reset_filters">
@@ -955,11 +987,21 @@ if(isset($_REQUEST['customer_id'])){
         $(document).on("click", "#pickupOrderBtn", function () {
             dataId = $(this).data("id");
             action = $(this).data("action");
+
+            $("#pickup_order_id").val(dataId);
+
             selected_prods = getSelectedIDs();
+            const unpaid_prods = getSelectedUnpaidIDs();
 
             if (!Array.isArray(selected_prods) || selected_prods.length === 0) {
                 alert("Select at least 1 product to pickup.");
                 return;
+            }
+
+            if (unpaid_prods.length > 0) {
+                $('#payment_type_group').removeClass('d-none');
+            } else {
+                $('#payment_type_group').addClass('d-none');
             }
 
             $("#pickupFormModal").modal("show");
@@ -1014,21 +1056,41 @@ if(isset($_REQUEST['customer_id'])){
             });
         });
 
+        $(document).on('change', '#payment_type', function () {
+            const type = $(this).val();
+
+            if (type === 'cash') {
+                $('#payment_details_group').removeClass('d-none');
+                $('#check_no_group').addClass('d-none');
+                $('#check_no').removeAttr('required').val('');
+            } else if (type === 'check') {
+                $('#payment_details_group').removeClass('d-none');
+                $('#check_no_group').removeClass('d-none');
+                $('#check_no').attr('required', true);
+            } else {
+                $('#payment_details_group').addClass('d-none');
+                $('#check_no_group').addClass('d-none');
+                $('#check_no').removeAttr('required').val('');
+            }
+        });
+
         $(document).on("submit", "#pickupOrderForm", function (e) {
             e.preventDefault();
 
-            var pickup_name = $('#pickup_name').val();
+            const form = this;
+            const formData = new FormData(form);
+
+            formData.append('id', dataId);
+            formData.append('method', action);
+            formData.append('selected_prods', JSON.stringify(selected_prods));
+            formData.append('action', 'pickup_order');
 
             $.ajax({
                 url: 'pages/order_list_ajax.php',
                 type: 'POST',
-                data: {
-                    id: dataId,
-                    method: action,
-                    selected_prods: selected_prods,
-                    pickup_name: pickup_name,
-                    action: 'update_status'
-                },
+                data: formData,
+                processData: false,
+                contentType: false,
                 success: function (response) {
                     console.log(response);
 
@@ -1045,11 +1107,11 @@ if(isset($_REQUEST['customer_id'])){
 
                         if (jsonResponse.url && isValidURL(jsonResponse.url)) {
                             window.open(jsonResponse.url, '_blank');
-                        }else{
+                        } else {
                             console.log("invalid url");
                         }
                     } else {
-                        alert("Failed to update");
+                        alert("Failed to update: " + (jsonResponse.message || ''));
                     }
 
                     location.reload();
@@ -1060,6 +1122,7 @@ if(isset($_REQUEST['customer_id'])){
                 }
             });
         });
+
 
         function filterTable() {
             var textSearch = $('#text-srh').val().toLowerCase();

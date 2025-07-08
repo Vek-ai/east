@@ -68,6 +68,7 @@ if(isset($_REQUEST['action'])) {
                             <tbody>
                                 <?php 
                                     $is_pickup = false;
+                                    $is_paid = 1;
                                     while ($row = mysqli_fetch_assoc($result)) {
                                         $orderid = $row['orderid'];
                                         $product_details = getProductDetails($row['productid']);
@@ -86,6 +87,10 @@ if(isset($_REQUEST['action'])) {
 
                                         if($status_prod_db == '2'){
                                             $is_pickup = true;
+                                        }
+
+                                        if($payment_db == '0'){
+                                            $is_paid = 0;
                                         }
 
                                         $payment_labels = [
@@ -112,7 +117,7 @@ if(isset($_REQUEST['action'])) {
                                     ?> 
                                         <tr> 
                                             <td class="text-center">
-                                                <?= $is_pickup ? "<input type='checkbox' class='row-checkbox' value='{$row['id']}' data-status=''>" : "" ?>
+                                                <?= $is_pickup ? "<input type='checkbox' class='row-checkbox' value='{$row['id']}' data-status='' data-paid='$payment_db'>" : "" ?>
                                             </td>
                                             <td>
                                                 <?= $product_name ?>
@@ -177,7 +182,7 @@ if(isset($_REQUEST['action'])) {
                     </div>
                     <?php if ($is_pickup == 2): ?>
                         <div class="d-flex justify-content-end align-items-center gap-3 flex-wrap mt-3">
-                            <button type="button" id="pickupOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-action="pickup_order">Pickup Order</button>
+                            <button type="button" id="pickupOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-paid="<?=$is_paid?>" data-action="pickup_order">Pickup Order</button>
                             <button type="button" id="shipOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-action="ship_order">Ship Order</button>
                         </div>
                     <?php endif; ?>
@@ -214,6 +219,16 @@ if(isset($_REQUEST['action'])) {
                             ids.push($(this).val());
                         });
                         return ids;
+                    };
+
+                    window.getSelectedUnpaidIDs = function () {
+                        let unpaidIds = [];
+                        $('.row-checkbox:checked').each(function () {
+                            if ($(this).data('paid') == '0') {
+                                unpaidIds.push($(this).val());
+                            }
+                        });
+                        return unpaidIds;
                     };
                 });
             </script>
@@ -1272,6 +1287,125 @@ if(isset($_REQUEST['action'])) {
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
         <?php
+    }
+
+    if ($action === 'pickup_order') {
+        $orderid = mysqli_real_escape_string($conn, $_POST['id'] ?? '');
+        $order_details = getOrderDetails($orderid);
+        $pickup_name = mysqli_real_escape_string($conn, $_POST['pickup_name'] ?? '');
+        $selectedProds = $_POST['selected_prods'] ?? [];
+        $selectedProds = is_string($selectedProds) ? json_decode($selectedProds, true) : $selectedProds;
+        $cleanedProds = array_map('intval', is_array($selectedProds) ? $selectedProds : []);
+
+        if (empty($cleanedProds)) {
+            echo json_encode(['success' => false, 'message' => 'No products selected.']);
+            exit();
+        }
+
+        $idList = implode(',', $cleanedProds);
+
+        // 1. Mark selected products as Picked Up
+        $sql = "UPDATE order_product SET status = 4 WHERE id IN ($idList)";
+        if (!mysqli_query($conn, $sql)) {
+            echo json_encode(['success' => false, 'message' => 'Error updating product status.']);
+            exit();
+        }
+
+        // 2. Determine new overall order status
+        $check_sql = "SELECT COUNT(*) AS count FROM order_product WHERE status IN ('0','1') AND orderid = '$orderid'";
+        $result = mysqli_query($conn, $check_sql);
+        $newStatus = (mysqli_fetch_assoc($result)['count'] ?? 0) > 0 ? 2 : 4;
+
+        // 3. Update the order itself
+        $updateParts = [
+            "status = '$newStatus'",
+            "pickup_name = '$pickup_name'",
+            "delivered_date = NOW()",
+            "is_edited = '0'"
+        ];
+        $update_sql = "UPDATE orders SET " . implode(", ", $updateParts) . " WHERE orderid = '$orderid'";
+        if (!mysqli_query($conn, $update_sql)) {
+            echo json_encode(['success' => false, 'message' => 'Failed to update order.', 'error' => mysqli_error($conn)]);
+            exit();
+        }
+
+        // 4. Manual payment (optional)
+        $payment_amount = floatval($_POST['payment_amount'] ?? 0);
+        if ($payment_amount > 0) {
+            $payment_method = mysqli_real_escape_string($conn, $_POST['type'] ?? 'cash');
+            $reference_no = mysqli_real_escape_string($conn, $_POST['reference_no'] ?? '');
+            $check_number = mysqli_real_escape_string($conn, $_POST['check_no'] ?? '');
+            $description = mysqli_real_escape_string($conn, $_POST['description'] ?? '');
+            $paid_by = mysqli_real_escape_string($conn, $order_details['customerid']);
+            $cashier = $_SESSION['userid'] ?? 0;
+
+            // Find linked ledger ID
+            $ledger_q = mysqli_query($conn, "
+                SELECT ledger_id FROM job_ledger 
+                WHERE reference_no = '$orderid' 
+                ORDER BY created_at ASC LIMIT 1
+            ");
+            $ledger_id = mysqli_fetch_assoc($ledger_q)['ledger_id'] ?? null;
+
+            if ($ledger_id) {
+                $insert = "
+                    INSERT INTO job_payment (
+                        ledger_id, amount, payment_method, check_number,
+                        reference_no, description, created_by, cashier
+                    ) VALUES (
+                        '$ledger_id',
+                        '$payment_amount',
+                        '$payment_method',
+                        " . ($payment_method === 'check' ? "'$check_number'" : "NULL") . ",
+                        '$orderid',
+                        '$description',
+                        '$paid_by',
+                        '$cashier'
+                    )
+                ";
+                if (!mysqli_query($conn, $insert)) {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Failed to record payment.',
+                        'error' => mysqli_error($conn)
+                    ]);
+                    exit();
+                }
+
+                // heck if fully paid and update order_product paid_status
+                $order_total_query = "
+                    SELECT SUM(discounted_price * quantity) AS total_amount
+                    FROM order_product
+                    WHERE orderid = '$orderid'
+                ";
+                $order_total_result = mysqli_query($conn, $order_total_query);
+                $order_total = floatval(mysqli_fetch_assoc($order_total_result)['total_amount'] ?? 0);
+
+                $paid_query = "
+                    SELECT SUM(p.amount) AS total_paid
+                    FROM job_ledger l
+                    JOIN job_payment p ON l.ledger_id = p.ledger_id
+                    WHERE l.reference_no = '$orderid'
+                ";
+                $paid_result = mysqli_query($conn, $paid_query);
+                $total_paid = floatval(mysqli_fetch_assoc($paid_result)['total_paid'] ?? 0);
+
+                if ($total_paid >= $order_total) {
+                    mysqli_query($conn, "
+                        UPDATE order_product
+                        SET paid_status = 1
+                        WHERE orderid = '$orderid'
+                    ");
+                }
+            }
+        }
+
+        // success response
+        echo json_encode([
+            'success' => true,
+            'message' => "Order marked as picked up" . ($payment_amount > 0 ? " and payment recorded." : "."),
+            'id' => $orderid
+        ]);
     }
 
     mysqli_close($conn);

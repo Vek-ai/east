@@ -1491,6 +1491,7 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "invoice") {include 'pages/invoice.php';}
             if ($_REQUEST['page'] == "stockable_staging") {include 'pages/stockable_staging.php';}
+            if ($_REQUEST['page'] == "stockable_release") {include 'pages/stockable_release.php';}
           ?>
         </div>
       </div>
