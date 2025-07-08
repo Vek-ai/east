@@ -68,7 +68,7 @@ if(isset($_REQUEST['action'])) {
                             </thead>
                             <tbody>
                                 <?php 
-                                    $is_processing = false;
+                                    $is_pickup = false;
                                     while ($row = mysqli_fetch_assoc($result)) {
                                         $orderid = $row['orderid'];
                                         $product_details = getProductDetails($row['productid']);
@@ -84,8 +84,8 @@ if(isset($_REQUEST['action'])) {
                                             $product_name = getProductName($row['product_id']);
                                         }
 
-                                        if($status_prod_db == '1'){
-                                            $is_processing = true;
+                                        if($status_prod_db == '2'){
+                                            $is_pickup = true;
                                         }
 
                                         $status_prod_labels = [
@@ -99,6 +99,7 @@ if(isset($_REQUEST['action'])) {
 
                                         if ($is_stockable && isset($status_prod_labels[2])) {
                                             $status_prod_labels[2]['label'] = 'Ready for Pick-up';
+                                            $status_prod_labels[4]['label'] = 'Picked Up';
                                         }
 
                                         $status_prod = $status_prod_labels[$status_prod_db];
@@ -165,7 +166,7 @@ if(isset($_REQUEST['action'])) {
                             </tfoot>
                         </table>
                     </div>
-                    <?php if ($status_code == 2): ?>
+                    <?php if ($is_pickup == 2): ?>
                         <div class="d-flex justify-content-end align-items-center gap-3 flex-wrap mt-3">
                             <button type="button" id="pickupOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-action="pickup_order">Pickup Order</button>
                             <button type="button" id="shipOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-action="ship_order">Ship Order</button>
@@ -950,12 +951,6 @@ if(isset($_REQUEST['action'])) {
                 }
 
             } elseif ($method == "ship_order" || $method == "pickup_order") {
-                if($method == 'pickup_order'){
-                    $subject = "EKM has completed your order and is waiting for pickup";
-                }else{
-                    $subject = "EKM has shipped your order";
-                }
-
                 $selectedProds = $_POST['selected_prods'] ?? [];
                 $selectedProds = is_string($selectedProds) ? json_decode($selectedProds, true) : $selectedProds;
                 $selectedProds = is_array($selectedProds) ? $selectedProds : [];
@@ -965,8 +960,16 @@ if(isset($_REQUEST['action'])) {
 
                 if (!empty($cleanedProds)) {
                     $idList = implode(',', $cleanedProds);
+
+                    if($method == 'pickup_order'){
+                        $subject = "EKM has completed your order and is waiting for pickup";
+                        $order_prod_status = 4;
+                    }else{
+                        $subject = "EKM has shipped your order";
+                        $order_prod_status = 3;
+                    }
                     
-                    $sql = "UPDATE order_product SET status = 3 WHERE id IN ($idList)";
+                    $sql = "UPDATE order_product SET status = $order_prod_status WHERE id IN ($idList)";
                     if (!mysqli_query($conn, $sql)) {
                         $response['message'] = 'Error updating product status.';
                     }
@@ -1008,6 +1011,16 @@ if(isset($_REQUEST['action'])) {
             $sql = "UPDATE orders SET " . implode(", ", $updateParts) . " WHERE orderid = $orderid";
             
             if (mysqli_query($conn, $sql)) {
+
+                if($method == 'pickup_order'){
+                    echo json_encode([
+                        'success' => true,
+                        'email_success' => false,
+                        'message' => "Successfully saved"
+                    ]);
+                    exit(); //skip email
+                }
+
                 $message = "
                     <html>
                     <head>
@@ -1044,36 +1057,25 @@ if(isset($_REQUEST['action'])) {
                         </div>
                     </body>
                     </html>
-                    ";
-                    $shipping_url = '';
-                    $shipping_comp_details = getShippingCompanyDetails($shipping_company);
-                    if(!empty($shipping_comp_details['url'])){
-                        $shipping_url = $shipping_comp_details['url'];
-                    }
+                ";
+                $shipping_url = '';
+                $shipping_comp_details = getShippingCompanyDetails($shipping_company);
+                if(!empty($shipping_comp_details['url'])){
+                    $shipping_url = $shipping_comp_details['url'];
+                }
 
-                    if($primary_contact == 2){
-                        if(!empty($customer_phone)){
-                            $response = sendPhoneMessage($customer_email, $customer_name, $subject, $message);
-                            if ($response['success'] == true) {
-                                echo json_encode([
-                                    'success' => true,
-                                    'msg_success' => true,
-                                    'message' => "Successfully sent message to $customer_name for confirmation on orders.",
-                                    'id' => $orderid,
-                                    'key' => $order_key,
-                                    'url' => $shipping_url
-                                ]);
-                            } else {
-                                echo json_encode([
-                                    'success' => true,
-                                    'msg_success' => false,
-                                    'message' => "Successfully saved, but message could not be sent to $customer_name.",
-                                    'error' => $response['error'],
-                                    'id' => $orderid,
-                                    'key' => $order_key,
-                                    'url' => $shipping_url
-                                ]);
-                            }
+                if($primary_contact == 2){
+                    if(!empty($customer_phone)){
+                        $response = sendPhoneMessage($customer_email, $customer_name, $subject, $message);
+                        if ($response['success'] == true) {
+                            echo json_encode([
+                                'success' => true,
+                                'msg_success' => true,
+                                'message' => "Successfully sent message to $customer_name for confirmation on orders.",
+                                'id' => $orderid,
+                                'key' => $order_key,
+                                'url' => $shipping_url
+                            ]);
                         } else {
                             echo json_encode([
                                 'success' => true,
@@ -1085,31 +1087,30 @@ if(isset($_REQUEST['action'])) {
                                 'url' => $shipping_url
                             ]);
                         }
-                    }else{
-                        if(!empty($customer_email)){
-                            $response = sendEmail($customer_email, $customer_name, $subject, $message);
-                            if ($response['success'] == true) {
-                                echo json_encode([
-                                    'success' => true,
-                                    'email_success' => true,
-                                    'message' => "Successfully updated status and sent email confirmation to $customer_name",
-                                    'id' => $orderid,
-                                    'key' => $order_key,
-                                    'url' => $shipping_url
-                                ]);
-                            } else {
-                                echo json_encode([
-                                    'success' => true,
-                                    'email_success' => false,
-                                    'message' => "Successfully updated status, but email could not be sent to $customer_name.",
-                                    'error' => $response['error'],
-                                    'id' => $orderid,
-                                    'key' => $order_key,
-                                    'url' => $shipping_url
-                                ]);
-                            }
-            
-                        }else {
+                    } else {
+                        echo json_encode([
+                            'success' => true,
+                            'msg_success' => false,
+                            'message' => "Successfully saved, but message could not be sent to $customer_name.",
+                            'error' => $response['error'],
+                            'id' => $orderid,
+                            'key' => $order_key,
+                            'url' => $shipping_url
+                        ]);
+                    }
+                }else{
+                    if(!empty($customer_email)){
+                        $response = sendEmail($customer_email, $customer_name, $subject, $message);
+                        if ($response['success'] == true) {
+                            echo json_encode([
+                                'success' => true,
+                                'email_success' => true,
+                                'message' => "Successfully updated status and sent email confirmation to $customer_name",
+                                'id' => $orderid,
+                                'key' => $order_key,
+                                'url' => $shipping_url
+                            ]);
+                        } else {
                             echo json_encode([
                                 'success' => true,
                                 'email_success' => false,
@@ -1120,7 +1121,19 @@ if(isset($_REQUEST['action'])) {
                                 'url' => $shipping_url
                             ]);
                         }
+        
+                    }else {
+                        echo json_encode([
+                            'success' => true,
+                            'email_success' => false,
+                            'message' => "Successfully updated status, but email could not be sent to $customer_name.",
+                            'error' => $response['error'],
+                            'id' => $orderid,
+                            'key' => $order_key,
+                            'url' => $shipping_url
+                        ]);
                     }
+                }
             } else {
                 echo json_encode([
                     'success' => true,
