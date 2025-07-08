@@ -78,6 +78,8 @@ if(isset($_REQUEST['action'])) {
                                         $status_prod_db = (int)$row['status'];
                                         $payment_db = (int)$row['paid_status'];
 
+                                        $price = $row['discounted_price'];
+
                                         $product_name = '';
                                         if(!empty($row['product_item'])){
                                             $product_name = $row['product_item'];
@@ -117,7 +119,7 @@ if(isset($_REQUEST['action'])) {
                                     ?> 
                                         <tr> 
                                             <td class="text-center">
-                                                <?= $is_pickup ? "<input type='checkbox' class='row-checkbox' value='{$row['id']}' data-status='' data-paid='$payment_db'>" : "" ?>
+                                                <?= $is_pickup ? "<input type='checkbox' class='row-checkbox' value='{$row['id']}' data-amount='$price' data-paid='$payment_db'>" : "" ?>
                                             </td>
                                             <td>
                                                 <?= $product_name ?>
@@ -230,6 +232,29 @@ if(isset($_REQUEST['action'])) {
                         });
                         return unpaidIds;
                     };
+
+                    window.getSelected = function (dataAttribute = 'paid') {
+                        let filteredIds = [];
+                        $('.row-checkbox:checked').each(function () {
+                            const dataValue = $(this).data(dataAttribute);
+                            if (dataValue == '0') {
+                                filteredIds.push($(this).val());
+                            }
+                        });
+                        return filteredIds;
+                    };
+
+                    window.getSelectedAmountTotal = function () {
+                        let total = 0;
+
+                        $('.row-checkbox:checked').each(function () {
+                            const amount = parseFloat($(this).data('amount')) || 0;
+                            total += amount;
+                        });
+
+                        return total;
+                    };
+
                 });
             </script>
             

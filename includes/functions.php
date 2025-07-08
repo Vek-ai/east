@@ -689,6 +689,21 @@ function getOrderDetails($orderid) {
     return $orders;
 }
 
+function getOrderChangeCount($orderid) {
+    global $conn;
+
+    $orderid = mysqli_real_escape_string($conn, $orderid);
+
+    $query = "SELECT COUNT(*) AS total_changes FROM order_history WHERE orderid = '$orderid'";
+    $result = mysqli_query($conn, $query);
+
+    if ($result && $row = mysqli_fetch_assoc($result)) {
+        return intval($row['total_changes']);
+    }
+
+    return 0;
+}
+
 function getOrderProdDetails($id) {
     global $conn;
     $id = mysqli_real_escape_string($conn, $id);

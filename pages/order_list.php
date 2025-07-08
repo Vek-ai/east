@@ -394,11 +394,14 @@ if(isset($_REQUEST['customer_id'])){
                                     if ($result && mysqli_num_rows($result) > 0) {
                                         $response = array();
                                         while ($row = mysqli_fetch_assoc($result)) {
+                                            $orderid = $row['orderid'];
                                             $status_code = $row['status'];
                                             $customer_id = $row["customerid"];
                                             $customer_details = getCustomerDetails($customer_id);
                                         
                                             $status = $status_labels[$status_code];
+
+                                            $show_send_email = getOrderChangeCount($orderid) > 0 ? '1' : '0';
                                         ?>
                                         <tr
                                             data-by="<?= $row['order_from'] ?>"
@@ -407,6 +410,7 @@ if(isset($_REQUEST['customer_id'])){
                                             data-month="<?= date('m', strtotime($row['order_date'])) ?>"
                                             data-year="<?= date('Y', strtotime($row['order_date'])) ?>"
                                             data-status="<?= $status_code ?>"
+                                            data-show-email="<?= $show_send_email ?>"
                                         >
                                             <td style="color: #ffffff !important;">
                                                 <?= $row["orderid"]; ?>
@@ -445,7 +449,7 @@ if(isset($_REQUEST['customer_id'])){
                                                     <i class="text-warning fa fa-pencil fs-5"></i>
                                                 </button>
 
-                                                <?php if ($status_code == 1): ?>
+                                                <?php if ($show_send_email == '1'): ?>
                                                     <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Send Confirmation">
                                                         <iconify-icon icon="solar:plain-linear" class="fs-6 text-info"></iconify-icon>
                                                     </a>
@@ -991,7 +995,8 @@ if(isset($_REQUEST['customer_id'])){
             $("#pickup_order_id").val(dataId);
 
             selected_prods = getSelectedIDs();
-            const unpaid_prods = getSelectedUnpaidIDs();
+            var unpaid_prods = getSelectedUnpaidIDs();
+            var amount_to_pay = getSelectedAmountTotal();
 
             if (!Array.isArray(selected_prods) || selected_prods.length === 0) {
                 alert("Select at least 1 product to pickup.");
@@ -1003,6 +1008,8 @@ if(isset($_REQUEST['customer_id'])){
             } else {
                 $('#payment_type_group').addClass('d-none');
             }
+
+            $('#payment_amount').val(amount_to_pay);
 
             $("#pickupFormModal").modal("show");
         });
