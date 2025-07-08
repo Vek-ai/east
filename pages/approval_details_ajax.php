@@ -256,16 +256,115 @@ if(isset($_POST['chng_price'])){
     }
 }
 
-if(isset($_POST['chng_status'])){
+if (isset($_POST['chng_status'])) {
     $approval_id = mysqli_real_escape_string($conn, $_POST['id']);
     $status = mysqli_real_escape_string($conn, $_POST['status']);
 
     if (!empty($approval_id) && !empty($status)) {
-        $sql = "UPDATE approval SET status = $status WHERE approval_id = $approval_id";
-        if ($conn->query($sql) === TRUE) {
-            echo "success";
+        $update_sql = "UPDATE approval SET status = $status WHERE approval_id = $approval_id";
+
+        if ($conn->query($update_sql) === TRUE) {
+            if ($status == 2) {
+                $approval_sql = "SELECT * FROM approval WHERE approval_id = $approval_id";
+                $approval_result = $conn->query($approval_sql);
+                $approval_data = $approval_result->fetch_assoc();
+
+                if ($approval_data) {
+                    $fields = [
+                        'status' => 1,
+                        'estimateid' => 0,
+                        'cashier' => $approval_data['cashier'] ?? 'NULL',
+                        'total_price' => $approval_data['total_price'],
+                        'discounted_price' => $approval_data['discounted_price'],
+                        'discount_percent' => $approval_data['discount_percent'],
+                        'cash_amt' => $approval_data['cash_amt'],
+                        'credit_amt' => 0,
+                        'order_date' => 'NOW()',
+                        'scheduled_date' => 'NULL',
+                        'delivered_date' => 'NULL',
+                        'customerid' => $approval_data['customerid'],
+                        'originalcustomerid' => $approval_data['originalcustomerid'] ?? 'NULL',
+                        'job_name' => "'" . $conn->real_escape_string($approval_data['job_name']) . "'",
+                        'job_po' => "'" . $conn->real_escape_string($approval_data['job_po']) . "'",
+                        'deliver_address' => "'" . $conn->real_escape_string($approval_data['deliver_address']) . "'",
+                        'deliver_city' => "'" . $conn->real_escape_string($approval_data['deliver_city']) . "'",
+                        'deliver_state' => "'" . $conn->real_escape_string($approval_data['deliver_state']) . "'",
+                        'deliver_zip' => "'" . $conn->real_escape_string($approval_data['deliver_zip']) . "'",
+                        'delivery_amt' => "'" . $conn->real_escape_string($approval_data['delivery_amt']) . "'",
+                        'deliver_fname' => "'" . $conn->real_escape_string($approval_data['deliver_fname']) . "'",
+                        'deliver_lname' => "'" . $conn->real_escape_string($approval_data['deliver_lname']) . "'",
+                        'deliver_method' => "'pickup'",
+                        'is_edited' => 0,
+                        'order_from' => 1,
+                        'shipping_company' => 0,
+                        'tracking_number' => 'NULL',
+                        'pickup_name' => 'NULL',
+                        'pay_type' => 'NULL'
+                    ];
+
+                    $columns = implode(', ', array_keys($fields));
+                    $values = implode(', ', array_values($fields));
+
+                    $order_sql = "INSERT INTO orders ($columns) VALUES ($values)";
+                    if ($conn->query($order_sql)) {
+                        $new_orderid = $conn->insert_id;
+
+                        $prod_sql = "SELECT * FROM approval_product WHERE approval_id = $approval_id";
+                        $prod_result = $conn->query($prod_sql);
+
+                        while ($prod = $prod_result->fetch_assoc()) {
+                            $order_prod_sql = "
+                                INSERT INTO order_product (
+                                    orderid, productid, product_item, status, paid_status, quantity,
+                                    custom_color, custom_grade, custom_width, custom_height,
+                                    custom_bend, custom_hem, custom_length, custom_length2,
+                                    actual_price, discounted_price, product_category,
+                                    usageid, current_customer_discount, current_loyalty_discount,
+                                    used_discount, stiff_stand_seam, stiff_board_batten,
+                                    panel_type, custom_img_src
+                                ) VALUES (
+                                    '$new_orderid',
+                                    '{$prod['productid']}',
+                                    '" . $conn->real_escape_string($prod['product_item']) . "',
+                                    0,
+                                    0,
+                                    '{$prod['quantity']}',
+                                    " . ($prod['custom_color'] ?? 'NULL') . ",
+                                    " . ($prod['custom_grade'] ?? 'NULL') . ",
+                                    '" . $conn->real_escape_string($prod['custom_width']) . "',
+                                    " . ($prod['custom_height'] ? "'" . $conn->real_escape_string($prod['custom_height']) . "'" : 'NULL') . ",
+                                    " . ($prod['custom_bend'] ? "'" . $conn->real_escape_string($prod['custom_bend']) . "'" : 'NULL') . ",
+                                    " . ($prod['custom_hem'] ? "'" . $conn->real_escape_string($prod['custom_hem']) . "'" : 'NULL') . ",
+                                    " . ($prod['custom_length'] ? "'" . $conn->real_escape_string($prod['custom_length']) . "'" : 'NULL') . ",
+                                    " . ($prod['custom_length2'] ? "'" . $conn->real_escape_string($prod['custom_length2']) . "'" : 'NULL') . ",
+                                    '{$prod['actual_price']}',
+                                    '{$prod['discounted_price']}',
+                                    '{$prod['product_category']}',
+                                    '{$prod['usageid']}',
+                                    '{$prod['current_customer_discount']}',
+                                    '{$prod['current_loyalty_discount']}',
+                                    '{$prod['used_discount']}',
+                                    '{$prod['stiff_stand_seam']}',
+                                    '{$prod['stiff_board_batten']}',
+                                    '{$prod['panel_type']}',
+                                    NULL
+                                )
+                            ";
+                            $conn->query($order_prod_sql);
+                        }
+
+                        echo "success";
+                    } else {
+                        echo "Error inserting order: " . $conn->error;
+                    }
+                } else {
+                    echo "Approval not found.";
+                }
+            } else {
+                echo "success";
+            }
         } else {
-            echo "Error updating price: " . $conn->error;
+            echo "Error updating status: " . $conn->error;
         }
     } else {
         echo "Invalid input. ID: $approval_id, Status: $status";
