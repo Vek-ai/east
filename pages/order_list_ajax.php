@@ -112,7 +112,7 @@ if(isset($_REQUEST['action'])) {
                                     ?> 
                                         <tr> 
                                             <td class="text-center">
-                                                <input type="checkbox" class="row-checkbox" value="<?= $row['id'] ?>" data-status="">
+                                                <?= $is_pickup ? "<input type='checkbox' class='row-checkbox' value='{$row['id']}' data-status=''>" : "" ?>
                                             </td>
                                             <td>
                                                 <?= $product_name ?>
