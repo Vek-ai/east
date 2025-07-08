@@ -72,7 +72,9 @@ if(isset($_REQUEST['action'])) {
                                     while ($row = mysqli_fetch_assoc($result)) {
                                         $orderid = $row['orderid'];
                                         $product_details = getProductDetails($row['productid']);
-                                        
+
+                                        $is_stockable = $product_details['product_origin'] == 1;
+
                                         $status_prod_db = $row['status'];
 
                                         $product_name = '';
@@ -94,6 +96,10 @@ if(isset($_REQUEST['action'])) {
                                             4 => ['label' => 'Delivered', 'class' => 'badge bg-success'],
                                             5 => ['label' => 'On Hold', 'class' => 'badge bg-danger']
                                         ];
+
+                                        if ($is_stockable && isset($status_prod_labels[2])) {
+                                            $status_prod_labels[2]['label'] = 'Ready for Pick-up';
+                                        }
 
                                         $status_prod = $status_prod_labels[$status_prod_db];
                                     ?> 

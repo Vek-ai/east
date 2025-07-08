@@ -371,6 +371,31 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             });
         });
 
+        $(document).on('click', '#release_product', function () {
+            const productId = $(this).data('id');
+
+            if (!confirm('Are you sure you want to release this product?')) {
+                return;
+            }
+
+            $.ajax({
+                url: 'pages/stockable_staging_ajax.php',
+                type: 'POST',
+                data: {
+                    action: 'release_product',
+                    product_id: productId,
+                    status: 2
+                },
+                success: function (response) {
+                    alert('Product successfully released');
+                    table.ajax?.reload(null, false);
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX error:', error);
+                }
+            });
+        });
+
         function filterTable() {
             var textSearch = $('#text-srh').val().toLowerCase();
             var isActive = $('#toggleActive').is(':checked');
