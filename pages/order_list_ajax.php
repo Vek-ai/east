@@ -27,14 +27,12 @@ if(isset($_REQUEST['action'])) {
 
             $response = array();
             ?>
-            
-
             <div class="card">
                 <div class="card-body datatables">
                     <h4 class="modal-title" id="myLargeModalLabel">
                         View Order Details
                     </h4>
-                    <div class="order-details table-responsive text-nowrap">
+                    <div class="order-details table-responsive">
                         <div class="col-12 col-md-4 col-lg-4 text-md-start mt-3 fs-5" id="shipping-info">
                             <?php if (!empty($shipping_company)) : ?>
                             <div>
@@ -50,7 +48,7 @@ if(isset($_REQUEST['action'])) {
                             </div>
                             <?php endif; ?>
                         </div>
-                        <table id="order_dtls_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
+                        <table id="order_dtls_tbl" class="table table-hover mb-0 w-100">
                             <thead>
                                 <tr>
                                     <th><input type="checkbox" id="select_all"></th>
@@ -60,6 +58,7 @@ if(isset($_REQUEST['action'])) {
                                     <th>Profile</th>
                                     <th class="text-center">Quantity</th>
                                     <th class="text-center">Status</th>
+                                    <th class="text-center">Payment Status</th>
                                     <th class="text-center">Dimensions</th>
                                     <th class="text-center">Price</th>
                                     <th class="text-center">Customer Price</th>
@@ -75,7 +74,8 @@ if(isset($_REQUEST['action'])) {
 
                                         $is_stockable = $product_details['product_origin'] == 1;
 
-                                        $status_prod_db = $row['status'];
+                                        $status_prod_db = (int)$row['status'];
+                                        $payment_db = (int)$row['paid_status'];
 
                                         $product_name = '';
                                         if(!empty($row['product_item'])){
@@ -87,6 +87,12 @@ if(isset($_REQUEST['action'])) {
                                         if($status_prod_db == '2'){
                                             $is_pickup = true;
                                         }
+
+                                        $payment_labels = [
+                                            0 => ['label' => 'Unpaid', 'class' => 'badge bg-danger'],
+                                            1 => ['label' => 'Paid', 'class' => 'badge bg-success']
+                                        ];
+                                        $payment_prod = $payment_labels[$payment_db];
 
                                         $status_prod_labels = [
                                             0 => ['label' => 'New', 'class' => 'badge bg-primary'],
@@ -128,6 +134,9 @@ if(isset($_REQUEST['action'])) {
                                                 <span class="<?= $status_prod['class']; ?> fw-bond"><?= $status_prod['label']; ?></span>
                                             </td>
                                             <td>
+                                                <span class="<?= $payment_prod['class']; ?> fw-bond"><?= $payment_prod['label']; ?></span>
+                                            </td>
+                                            <td>
                                                 <?php 
                                                 $width = $row['custom_width'];
                                                 $height = $row['custom_height'];
@@ -157,7 +166,7 @@ if(isset($_REQUEST['action'])) {
 
                             <tfoot>
                                 <tr>
-                                    <td colspan="7" class="text-end">Total</td>
+                                    <td colspan="8" class="text-end">Total</td>
                                     <td><?= $totalquantity ?></td>
                                     <td></td>
                                     <td></td>
@@ -176,6 +185,19 @@ if(isset($_REQUEST['action'])) {
             </div>
             <script>
                 $(document).ready(function() {
+
+                    if ($.fn.DataTable.isDataTable('#order_dtls_tbl')) {
+                        $('#order_dtls_tbl').DataTable().clear().destroy();
+                    }
+
+                    $('#order_dtls_tbl').DataTable({
+                        language: {
+                            emptyTable: "Order Details not found"
+                        },
+                        autoWidth: false,
+                        responsive: true,
+                        lengthChange: false
+                    });
 
                     $('#select_all').on('change', function () {
                         $('.row-checkbox').prop('checked', this.checked);

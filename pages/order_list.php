@@ -679,18 +679,9 @@ if(isset($_REQUEST['customer_id'])){
                     success: function(response) {
                         $('#viewOrderBody').html(response);
 
-                        if ($.fn.DataTable.isDataTable('#order_dtls_tbl')) {
-                            $('#order_dtls_tbl').DataTable().clear().destroy();
-                        }
-
-                        $('#order_dtls_tbl').DataTable({
-                            language: {
-                                emptyTable: "Order Details not found"
-                            },
-                            autoWidth: false,
-                            responsive: true,
-                            lengthChange: false
-                        });
+                        setTimeout(function () {
+                            
+                        }, 10);
 
                         $('#viewOrderModal').modal('show');
                     },

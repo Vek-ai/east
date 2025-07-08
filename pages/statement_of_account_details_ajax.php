@@ -220,6 +220,48 @@ if(isset($_REQUEST['action'])) {
                 $success = false;
                 break;
             }
+            
+            if ($success) {
+                $orderids_query = "
+                    SELECT DISTINCT l.reference_no AS orderid
+                    FROM job_ledger l
+                    WHERE l.ledger_id IN ($ids_in_clause)
+                ";
+
+                $orderids_result = mysqli_query($conn, $orderids_query);
+
+                while ($order_row = mysqli_fetch_assoc($orderids_result)) {
+                    $orderid = mysqli_real_escape_string($conn, $order_row['orderid']);
+
+                    // 1. Get total order amount
+                    $order_total_query = "
+                        SELECT SUM(discounted_price) AS total_amount
+                        FROM order_product
+                        WHERE orderid = '$orderid'
+                    ";
+                    $order_total_result = mysqli_query($conn, $order_total_query);
+                    $order_total = mysqli_fetch_assoc($order_total_result)['total_amount'] ?? 0;
+
+                    // 2. Get total paid amount linked to that orderid (via job_ledger + job_payment)
+                    $paid_query = "
+                        SELECT SUM(p.amount) AS total_paid
+                        FROM job_ledger l
+                        JOIN job_payment p ON l.ledger_id = p.ledger_id
+                        WHERE l.reference_no = '$orderid'
+                    ";
+                    $paid_result = mysqli_query($conn, $paid_query);
+                    $total_paid = mysqli_fetch_assoc($paid_result)['total_paid'] ?? 0;
+
+                    // 3. If fully paid, update all order_product rows for that order
+                    if (floatval($total_paid) >= floatval($order_total)) {
+                        mysqli_query($conn, "
+                            UPDATE order_product
+                            SET paid_status = 1
+                            WHERE orderid = '$orderid'
+                        ");
+                    }
+                }
+            }
 
             $remaining_payment -= $to_pay;
         }
