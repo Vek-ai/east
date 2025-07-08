@@ -1490,6 +1490,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "statement_of_account_details") {include 'pages/statement_of_account_details.php';}
 
             if ($_REQUEST['page'] == "invoice") {include 'pages/invoice.php';}
+            if ($_REQUEST['page'] == "stockable_staging") {include 'pages/stockable_staging.php';}
           ?>
         </div>
       </div>
