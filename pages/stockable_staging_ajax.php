@@ -355,7 +355,8 @@ if(isset($_REQUEST['action'])) {
             SELECT
                 op.*,  
                 p.*, 
-                COALESCE(SUM(i.quantity_ttl), 0) AS inv_quantity 
+                COALESCE(SUM(i.quantity_ttl), 0) AS inv_quantity,
+                i.Warehouse_id as warehouse
             FROM order_product AS op 
             LEFT JOIN product AS p ON p.product_id = op.productid 
             LEFT JOIN inventory AS i ON i.product_id = op.productid 
@@ -371,6 +372,7 @@ if(isset($_REQUEST['action'])) {
             $status = $row['status'];
             $instock = $row['inv_quantity'] > 1 ? 1 : 0;
             $category_id = $row['product_category'];
+            $warehouse = $row['warehouse'];
 
             $order_qty = $row['quantity'];
 
@@ -414,6 +416,7 @@ if(isset($_REQUEST['action'])) {
                 'color'               => getColorName($row['color']),
                 'grade'               => getGradeName($row['grade']),
                 'gauge'               => getGaugeName($row['gauge']),
+                'warehouse'           => getWarehouseName($warehouse),
                 'active'              => $status,
                 'order_qty'           => $order_qty,
                 'instock'             => $instock,

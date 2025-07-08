@@ -273,6 +273,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             <th>Product Category</th>
                             <th>Product Line</th>
                             <th>Product Type</th>
+                            <th>Warehouse</th>
                             <th>Qty</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -309,6 +310,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 { data: 'product_category' },
                 { data: 'product_line' },
                 { data: 'product_type' },
+                { data: 'warehouse' },
                 { data: 'order_qty' },
                 { data: 'status_html' },
                 { data: 'action_html' }
@@ -322,6 +324,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 $(row).attr('data-color', data.color);
                 $(row).attr('data-grade', data.grade);
                 $(row).attr('data-gauge', data.gauge);
+                $(row).attr('data-warehouse', data.warehouse);
                 $(row).attr('data-active', data.active);
                 $(row).attr('data-instock', data.instock);
                 $(row).attr('data-active', data.status);
