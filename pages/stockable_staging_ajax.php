@@ -388,6 +388,8 @@ if(isset($_REQUEST['action'])) {
                         </div>
                     </div>
                 </a>";
+
+            $action_html = '';
     
             if ($instock == 1) {
                 $action_html .= "
