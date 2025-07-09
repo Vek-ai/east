@@ -31,14 +31,15 @@
                                 <i class="fa fa-check-circle fs-4 me-2"></i>
                                 Save to My Projects
                             </button>
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="view_estimate" style="background-color: #ffc107; color: black;">
-                                <i class="fa fa-calculator fs-4 me-2"></i>
-                                Save as an Estimate
-                            </button>
                             <button type="button" class="btn mb-2 me-2 flex-fill" id="view_order" style="background-color: #28a745; color: white;">
                                 <i class="fa fa-shopping-cart fs-4 me-2"></i>
-                                Place Order
+                                Next
                             </button>
+                            <div class="col-auto mb-2">
+                                <button type="button" class="btn btn-danger px-3" data-bs-dismiss="modal">
+                                    <i class="fa fa-times fs-5 me-2"></i> Close
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -85,7 +86,7 @@
     <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
-                <h6 class="modal-title">Save Order</h6>
+                <h6 class="modal-title">Checkout</h6>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -94,8 +95,8 @@
                 <div id="order-tbl"></div>
             </div>
             <div class="modal-footer">
-                <button class="btn ripple btn-primary next" type="button" id="next_page_order">
-                    <i class="fe fe-hard-drive"></i> Next
+                <button class="btn ripple btn-warning next" type="button" id="save_estimate">
+                    <i class="fe fe-hard-drive"></i> Save Estimate
                 </button>
                 <button class="btn ripple btn-primary previous d-none" type="button" id="prev_page_order">
                     <i class="fe fe-hard-drive"></i> Previous
@@ -112,7 +113,6 @@
                 <a href="#" class="btn ripple btn-info d-none" type="button" id="print_deliver" target="_blank">
                     <i class="fe fe-print"></i> Print Delivery
                 </a>
-                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>

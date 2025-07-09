@@ -13,11 +13,13 @@ $addressSettings = getSettingAddressDetails();
 $amtPerMile = getSettingAmtPerMile();
 $latSettings = !empty($addressSettings['lat']) ? $addressSettings['lat'] : 0;
 $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
+
+$editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) : null;
 ?>
 
 let map1;
 let marker1;
-let lat1 = 0, lng1 = 0;
+let lat1 = <?= $lat ?>, lng1 = <?= $lng ?>;
 let lat2 = <?= $latSettings ?>, lng2 = <?= $lngSettings ?>;
 var amtPerMile = <?= $amtPerMile ?>;
 var amtDeliveryDefault = <?= $deliveryAmt ?? 0 ?>;
@@ -167,9 +169,10 @@ function updateMarker(map, marker, lat, lng, title) {
 function initMaps() {
     map1 = new google.maps.Map(document.getElementById("map1"), {
         center: { lat: <?= $lat ?>, lng: <?= $lng ?> },
-        zoom: 13,
+        zoom: 16,
     });
     marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+    getPlaceName(lat1, lng1, '#searchBox1');
     google.maps.event.addListener(map1, 'click', function(event) {
         lat1 = event.latLng.lat();
         lng1 = event.latLng.lng();
@@ -180,7 +183,7 @@ function initMaps() {
 
 function loadGoogleMapsAPI() {
     const script = document.createElement('script');
-    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDFpFbxFFK7-daOKoIk9y_GB4m512Tii8M&callback=initMaps&libraries=geometry,places';
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDRPyR0tSWQUm4sR0BwqDxSjVsdHXQvw7U&callback=initMaps&libraries=geometry,places';
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
@@ -191,28 +194,95 @@ window.onload = loadGoogleMapsAPI;
 function calculateDeliveryAmount() {
     var customerLat = parseFloat($('#lat').val());
     var customerLng = parseFloat($('#lng').val());
-    var lat2Float = parseFloat(lat2);
-    var lng2Float = parseFloat(lng2);
+    var payable_amt = parseFloat($('#order_payable_amt').val().replace(/,/g, ''));
+    var store_credit = parseFloat($('#store_credit').val().replace(/,/g, ''));
+    var points_ratio = parseFloat($('#points_ratio').val().replace(/,/g, ''));
+    var isapplystorecredit = $('#applyStoreCredit').is(':checked');
+    var isPayViaJobDeposit = $('#pay_via_job_deposit').is(':checked');
+    var isPayNet30 = $('#payNet30').is(':checked');
+    var net30Balance = parseFloat($('#charge_net_30').val().replace(/,/g, ''));
+    var job_deposit = parseFloat(($('#pay_via_job_deposit').data('deposit') + '').replace(/,/g, ''));
+    var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
-    var deliver_method = $('#order_delivery_method').val();
+    var lat2Float = typeof lat2 !== 'undefined' ? parseFloat(lat2) : 0;
+    var lng2Float = typeof lng2 !== 'undefined' ? parseFloat(lng2) : 0;
 
-    if(deliver_method == 'pickup'){
-        $('#delivery_amt').val(0).trigger('change');
-    }else{
-        if (customerLat !== 0 && customerLng !== 0 && lat2Float !== 0 && lng2Float !== 0) {
+    let deliveryAmount = 0;
+
+    if (deliver_method === 'pickup') {
+        deliveryAmount = 0;
+    } else {
+        if (
+            !isNaN(customerLat) && !isNaN(customerLng) &&
+            !isNaN(lat2Float) && !isNaN(lng2Float) &&
+            customerLat !== 0 && customerLng !== 0 &&
+            lat2Float !== 0 && lng2Float !== 0
+        ) {
             const point1 = new google.maps.LatLng(customerLat, customerLng);
             const point2 = new google.maps.LatLng(lat2Float, lng2Float);
             const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
             const distanceInMiles = distanceInMeters / 1609.34;
-            var deliveryAmount = amtPerMile * distanceInMiles;
-            deliveryAmount = deliveryAmount.toFixed(2);
+            deliveryAmount = parseFloat((amtDeliveryDefault + (amtPerMile * distanceInMiles)).toFixed(2));
         } else {
-            deliveryAmount = amtDeliveryDefault.toFixed(2);
+            deliveryAmount = parseFloat(amtDeliveryDefault.toFixed(2));
         }
-
-        $('#delivery_amt').val(deliveryAmount).trigger('change');
     }
+
+    let store_credit_calc = 0;
+    let job_deposit_calc = 0;
+    let net30_calc = 0;
+
+    const totalBeforeCredit = payable_amt + deliveryAmount;
+
+    if (isapplystorecredit) {
+        store_credit_calc = Math.min(store_credit, totalBeforeCredit);
+        $('#storeCreditValue').text(`-$${store_credit_calc.toFixed(2)}`);
+        $('#storeCreditDisplay').removeClass('d-none');
+    } else {
+        $('#storeCreditDisplay').addClass('d-none');
+        $('#storeCreditValue').text('');
+    }
+
+    const remaining_after_credit = totalBeforeCredit - store_credit_calc;
+
+    if (isPayViaJobDeposit) {
+        job_deposit_calc = Math.min(job_deposit, remaining_after_credit);
+        $('#jobDepositValue').text(`-$${job_deposit_calc.toFixed(2)}`);
+        $('#jobDepositDisplay').removeClass('d-none');
+    } else {
+        $('#jobDepositDisplay').addClass('d-none');
+        $('#jobDepositValue').text('');
+    }
+
+    const remaining_after_deposit = remaining_after_credit - job_deposit_calc;
+
+    if (isPayNet30) {
+        net30_calc = Math.min(net30Balance, remaining_after_deposit);
+        $('#net30Value').text(`-$${net30_calc.toFixed(2)}`);
+        $('#net30Display').removeClass('d-none');
+    } else {
+        $('#net30Display').addClass('d-none');
+        $('#net30Value').text('');
+    }
+
+    const raw_total = totalBeforeCredit - store_credit_calc - job_deposit_calc - net30_calc;
+    const total_amt = Math.max(0, parseFloat(raw_total));
+
+    $('#delivery_amt').val(deliveryAmount).trigger('change');
+    $('#order_delivery_amt').text(deliveryAmount.toFixed(2));
+    $('#order_total').text('$' + number_format(total_amt, 2));
+
+    const estimated_points = Math.floor(raw_total * points_ratio);
+    $('#estimated_points').text('+' + estimated_points);
 }
+
+function number_format(number, decimals = 2) {
+    return parseFloat(number).toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+    });
+}
+
 
 function calculateDeliveryAmountEst() {
     var customerLat = parseFloat($('#est_lat').val());
@@ -325,7 +395,6 @@ function updateEstimateHem(element){
         },
         success: function(response) {
             loadCart();
-            loadOrderContents();
             loadEstimateContents();
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -350,7 +419,6 @@ function updateEstimateLength(element){
         },
         success: function(response) {
             loadCart();
-            loadOrderContents();
             loadEstimateContents();
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -375,7 +443,6 @@ function updateEstimateLengthInch(element){
         },
         success: function(response) {
             loadCart();
-            loadOrderContents();
             loadEstimateContents();
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -506,10 +573,14 @@ function loadEstimatesDetails(estimate_id){
 }
 
 function loadOrderList(){
+    var orderid = $('#return_order_id').val();
+    var customer_id = $('#return_customer_id').val();
     $.ajax({
         url: 'pages/cashier_order_list_modal.php',
         type: 'POST',
         data: {
+            orderid: orderid,
+            customer_id: customer_id,
             fetch_order_list: "fetch_order_list"
         },
         success: function(response) {
@@ -520,6 +591,34 @@ function loadOrderList(){
         }
     });
 }
+
+$("#return_customer_name").autocomplete({
+    source: function(request, response) {
+        $.ajax({
+            url: "pages/cashier_ajax.php",
+            type: 'post',
+            dataType: "json",
+            data: {
+                search_customer: request.term
+            },
+            success: function(data) {
+                response(data);
+            },
+            error: function(xhr, status, error) {
+                console.log("Error: " + xhr.responseText);
+            }
+        });
+    },
+    select: function(event, ui) {
+        $('#return_customer_name').val(ui.item.label);
+        $('#return_customer_id').val(ui.item.value);
+        return false;
+    },
+    appendTo: "#view_order_list_modal", 
+    open: function() {
+        $(".ui-autocomplete").css("z-index", 1050);
+    }
+});
 
 function loadOrderSupplierList(){
     $.ajax({
@@ -618,9 +717,7 @@ function loadOrderContents(){
             $('#order-tbl').html(response);
             calculateDeliveryAmount();
             loadCartItemsHeader();
-            $('#next_page_order').removeClass("d-none");
-            $('#prev_page_order').addClass("d-none");
-            $('#save_order').addClass("d-none");
+            $('#prev_page_order').removeClass("d-none");
         },
         error: function(jqXHR, textStatus, errorThrown) {
             alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -666,9 +763,6 @@ function addtocart(element) {
         success: function(data) {
             console.log(data);
             loadCart();
-            loadOrderContents();
-            loadEstimateContents();
-            loadOrderProductCart();
         },
         error: function(xhr, status, error) {
             console.error("AJAX Error:", {
@@ -696,9 +790,6 @@ function updatequantity(element) {
         },
         success: function(data) {
             loadCart();
-            loadOrderContents();
-            loadEstimateContents();
-            loadOrderProductCart();
         },
         error: function(xhr, status, error) {
             console.error("AJAX Error:", {
@@ -727,9 +818,6 @@ function addquantity(element) {
         },
         success: function(data) {
             loadCart();
-            loadOrderContents();
-            loadEstimateContents();
-            loadOrderProductCart();
         },
         error: function(xhr, status, error) {
             console.error("AJAX Error:", {
@@ -758,9 +846,6 @@ function deductquantity(element) {
         },
         success: function(data) {
             loadCart();
-            loadOrderContents();
-            loadEstimateContents();
-            loadOrderProductCart();
         },
         error: function(xhr, status, error) {
             console.error("AJAX Error:", {
@@ -785,9 +870,6 @@ function delete_item(element) {
         type: "POST",
         success: function(data) {
             loadCart();
-            loadOrderContents();
-            loadEstimateContents();
-            loadOrderProductCart();
         },
         error: function() {}
     });
@@ -807,9 +889,6 @@ function duplicate_item(element) {
         },
         success: function(data) {
             loadCart();
-            loadOrderContents();
-            loadEstimateContents();
-            loadOrderProductCart();
         },
         error: function(xhr, status, error) {
             console.error("AJAX Error:", {
@@ -2078,8 +2157,34 @@ $(document).on('change', '#trim_length_select', function() {
     updatePrice();
 });
 
+updatePrice();
+
 $(document).ready(function() {
     var panel_id = '<?= $panel_id ?>';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const editestimate = urlParams.get('editestimate');
+    if (editestimate) {
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: {
+                editestimate: editestimate,
+                set_estimate_data: 'set_estimate_data'
+            },
+            success: function (response) {
+                console.log(response);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + jqXHR.responseText);
+            }
+        });
+    }
+
+    $(document).on('contextmenu', '#drawingCanvas', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
 
     if (typeof $.ui === 'undefined') {
         $.getScript("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", function() {
@@ -2174,6 +2279,11 @@ $(document).ready(function() {
         });
     });
 
+    $(document).on('click', '.chart-btn', function () {
+        const newSrc = $(this).data('img');
+        $('#chartImage').attr('src', newSrc);
+    });
+
     $(document).on('click', '#save_color_change', function () {
         var orig_color = $('#orig-colors').val();
         var in_stock_color = $('#in-stock-colors').val();
@@ -2226,7 +2336,6 @@ $(document).ready(function() {
             },
             success: function(response) {
                 loadCart();
-                loadEstimateContents();
                 loadOrderContents();
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -2377,7 +2486,7 @@ $(document).ready(function() {
 
     function performSearch(query) {
         var color_id = $('#select-color').find('option:selected').val();
-        var grade_id = $('#select-grade').find('option:selected').val();
+        var grade = $('#select-grade').find('option:selected').val();
         var gauge_id = $('#select-gauge').find('option:selected').val();
         var category_id = $('#select-category').find('option:selected').val();
         var profile_id = $('#select-profile').find('option:selected').val();
@@ -2391,7 +2500,7 @@ $(document).ready(function() {
             data: {
                 query: query,
                 color_id: color_id,
-                grade_id: grade_id,
+                grade: grade,
                 gauge_id: gauge_id,
                 category_id: category_id,
                 profile_id: profile_id,
@@ -2491,8 +2600,6 @@ $(document).ready(function() {
             success: function (response) {
                 console.log(response);
                 loadCart();
-                loadEstimateContents();
-                loadOrderContents();
                 $('#special_trim_modal').modal("hide");
             },
             error: function (xhr) {
@@ -2692,45 +2799,105 @@ $(document).ready(function() {
         });
     });
             
-    $(document).on('click', '#save_estimate', function(event) {
-        var discount = $('#est_discount').val();
-        var delivery_amt = $('#est_delivery_amt').val();
-        var cash_amt = $('#est_cash').val();
-        var credit_amt = $('#est_credit').val();
-        var job_name = $('#est_job_name').val();
-        var job_po = $('#est_job_po').val();
-        var deliver_address = $('#est_deliver_address').val();
-        var deliver_city = $('#est_deliver_city').val();
-        var deliver_state = $('#est_deliver_state').val();
-        var deliver_zip = $('#est_deliver_zip').val();
-        var deliver_fname = $('#est_deliver_fname').val();
-        var deliver_lname = $('#est_deliver_lname').val();
+    $(document).on('click', '#save_estimate', function (event) {
+        event.preventDefault();
+
+        const editEstimateId = new URLSearchParams(window.location.search).get('editestimate');
+
+        if (editEstimateId) {
+            
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    edit_estimate: editEstimateId
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert('Estimate updated successfully.');
+
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete('editestimate');
+                        window.history.replaceState({}, document.title, url.toString());
+
+                        location.reload();
+                    } else if (response.error) {
+                        alert('Process Failed.');
+                        console.log(response);
+                    } else {
+                        alert('Unexpected response from server.');
+                        console.log(response);
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + jqXHR.responseText);
+                }
+            });
+
+        } else {
+            var discount = $('#est_discount').val();
+            var delivery_amt = $('#est_delivery_amt').val();
+            var cash_amt = $('#est_cash').val();
+            var credit_amt = $('#est_credit').val();
+            var job_name = $('#est_job_name').val();
+            var job_po = $('#est_job_po').val();
+            var deliver_address = $('#est_deliver_address').val();
+            var deliver_city = $('#est_deliver_city').val();
+            var deliver_state = $('#est_deliver_state').val();
+            var deliver_zip = $('#est_deliver_zip').val();
+            var deliver_fname = $('#est_deliver_fname').val();
+            var deliver_lname = $('#est_deliver_lname').val();
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    cash_amt: cash_amt,
+                    credit_amt: credit_amt,
+                    discount: discount,
+                    delivery_amt: delivery_amt,
+                    job_name: job_name,
+                    job_po: job_po,
+                    deliver_address: deliver_address,
+                    deliver_city: deliver_city,
+                    deliver_state: deliver_state,
+                    deliver_zip: deliver_zip,
+                    deliver_fname: deliver_fname,
+                    deliver_lname: deliver_lname,
+                    save_estimate: 'save_estimate'
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert("Estimate successfully saved.");
+                        $('#print_estimate_category').attr('href', '/print_estimate_product.php?id=' + response.estimate_id).removeClass('d-none');
+                        $('#print_estimate').attr('href', '/print_estimate_total.php?id=' + response.estimate_id).removeClass('d-none');
+                    } else if (response.error) {
+                        alert("Error: " + response.error);
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
+    });
+
+
+    $(document).on('click', '#load_estimate', function(event) {
+        var id = $(this).data('id');
+        console.log(id);
         $.ajax({
             url: 'pages/cashier_ajax.php',
             type: 'POST',
             data: {
-                cash_amt: cash_amt,
-                credit_amt: credit_amt,
-                discount: discount,
-                delivery_amt: delivery_amt,
-                job_name: job_name,
-                job_po: job_po,
-                deliver_address: deliver_address,
-                deliver_city: deliver_city,
-                deliver_state: deliver_state,
-                deliver_zip: deliver_zip,
-                deliver_fname: deliver_fname,
-                deliver_lname: deliver_lname,
-                save_estimate: 'save_estimate'
+                id: id,
+                load_estimate: 'load_estimate'
             },
             success: function(response) {
-                console.log(response);
                 if (response.success) {
-                    alert("Estimate successfully saved.");
-                    $('#print_estimate_category').attr('href', '/print_estimate_product.php?id=' + response.estimate_id);
-                    $('#print_estimate_category').removeClass('d-none');
-                    $('#print_estimate').attr('href', '/print_estimate_total.php?id=' + response.estimate_id);
-                    $('#print_estimate').removeClass('d-none');
+                    loadOrderContents();
+                    $('#cashmodal').modal('show');
                 } else if (response.error) {
                     alert("Error: " + response.error);
                 }
@@ -2741,12 +2908,18 @@ $(document).ready(function() {
         });
     });
 
+    $(document).on('change', '#pay_via_job_deposit', function () {
+        calculateDeliveryAmount();
+    });
+
     $(document).on('click', '#save_order', function(event) {
+        event.preventDefault();
         var discount = $('#order_discount').val();
         var delivery_amt = $('#delivery_amt').val();
-        var cash_amt = $('#order_cash').val();
-        var credit_amt = $('#order_credit').val();
+        var cash_amt = $('#order_payable_amt').val();
+        var credit_amt = 0;
         var job_name = $('#order_job_name').val();
+        var job_id = $('#order_job_name option:selected').data('job-id');
         var job_po = $('#order_job_po').val();
         var deliver_address = $('#order_deliver_address').val();
         var deliver_city = $('#order_deliver_city').val();
@@ -2754,45 +2927,62 @@ $(document).ready(function() {
         var deliver_zip = $('#order_deliver_zip').val();
         var deliver_fname = $('#order_deliver_fname').val();
         var deliver_lname = $('#order_deliver_lname').val();
-        console.log("Delivery Amt: "+delivery_amt);
-        $.ajax({
-            url: 'pages/cashier_ajax.php',
-            type: 'POST',
-            data: {
-                cash_amt: cash_amt,
-                credit_amt: credit_amt,
-                discount: discount,
-                delivery_amt: delivery_amt,
-                job_name: job_name,
-                job_po: job_po,
-                deliver_address: deliver_address,
-                deliver_city: deliver_city,
-                deliver_state: deliver_state,
-                deliver_zip: deliver_zip,
-                deliver_fname: deliver_fname,
-                deliver_lname: deliver_lname,
-                save_order: 'save_order'
-            },
-            success: function(response) {
-                console.log(response);
-                if (response.success) {
-                    alert("Order successfully saved.");
-                    $('#print_order_category').attr('href', '/print_order_product.php?id=' + response.order_id);
-                    $('#print_order').attr('href', '/print_order_total.php?id=' + response.order_id);
-                    $('#print_deliver').attr('href', '/print_order_delivery.php?id=' + response.order_id);
-                    $('#print_order_category').removeClass('d-none');
-                    $('#print_order').removeClass('d-none');
-                    $('#print_deliver').removeClass('d-none');
-                    print_deliver
-                } else if (response.error) {
-                    alert("Error: " + response.error);
+        var applyStoreCredit = $('#applyStoreCredit').is(':checked') ? $('#applyStoreCredit').val() : 0;
+        var applyJobDeposit = $('#pay_via_job_deposit').is(':checked') ? $('#pay_via_job_deposit').val() : 0;
+
+        var payment_method = $('[name="payMethod"]:checked').val();
+        var deliver_method = $('input[name="order_delivery_method"]:checked').val();
+
+        if(payment_method){
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    cash_amt: cash_amt,
+                    credit_amt: credit_amt,
+                    discount: discount,
+                    delivery_amt: delivery_amt,
+                    job_id: job_id,
+                    job_name: job_name,
+                    job_po: job_po,
+                    deliver_method: deliver_method,
+                    deliver_address: deliver_address,
+                    deliver_city: deliver_city,
+                    deliver_state: deliver_state,
+                    deliver_zip: deliver_zip,
+                    deliver_fname: deliver_fname,
+                    deliver_lname: deliver_lname,
+                    applyStoreCredit: applyStoreCredit,
+                    applyJobDeposit: applyJobDeposit,
+                    payment_method: payment_method,
+                    save_order: 'save_order'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert("Order successfully saved.");
+                        $('#print_order_category').attr('href', '/print_order_product.php?id=' + response.order_id);
+                        $('#print_order').attr('href', '/print_order_total.php?id=' + response.order_id);
+                        $('#print_deliver').attr('href', '/print_order_delivery.php?id=' + response.order_id);
+                        $('#print_order_category').removeClass('d-none');
+                        $('#print_order').removeClass('d-none');
+                        $('#print_deliver').removeClass('d-none');
+
+                        $('#save_order').addClass('d-none');
+                        $('#save_estimate').addClass('d-none');
+                        $('#prev_page_order').addClass('d-none');
+                    } else if (response.error) {
+                        alert(response.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    console.log('Error: ' + textStatus + ' - ' + errorThrown);
                 }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.log('Response Text: ' + jqXHR.responseText);
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
+            });
+        }else{
+            alert("Please select payment method!");
+        }
+        
     });
 
     $(document).on('click', '#submitApprovalBtn', function(event) {
@@ -2816,52 +3006,6 @@ $(document).ready(function() {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
             }
         });
-    });
-
-    $(document).on('input', '#order_cash', function(event) {
-        var cash_amt = parseFloat($('#order_cash').val()) || 0;
-        var payable_amt = parseFloat($('#payable_amt').val()) || 0;
-
-        var credit_amt = (payable_amt - cash_amt).toFixed(2);
-        if (credit_amt < 0) {
-            credit_amt = 0;
-        }
-
-        $('#order_credit').val(credit_amt);
-
-        var change = (cash_amt - payable_amt).toFixed(2);
-        if (change < 0) {
-            change = 0;
-        }
-
-        $('#change').text(change);
-    });
-
-    $(document).on('input', '#order_credit', function(event) {
-        var credit_input = $('#order_credit');
-        var credit_amt = parseFloat(credit_input.val()) || 0;
-        var payable_amt = parseFloat($('#payable_amt').val()) || 0;
-
-        if (credit_amt > payable_amt) {
-            credit_amt = payable_amt;
-            credit_input.blur();
-            credit_input.val(credit_amt.toFixed(2));
-            credit_input.focus();
-        }
-
-        var cash_amt = (payable_amt - credit_amt).toFixed(2);
-        if (cash_amt < 0) {
-            cash_amt = 0;
-        }
-
-        $('#order_cash').val(cash_amt);
-
-        var change = (cash_amt - payable_amt).toFixed(2);
-        if (change < 0) {
-            change = 0;
-        }
-
-        $('#change').text(change);
     });
 
     $(document).on('click', '#clear_cart', function(event) {
@@ -2993,8 +3137,11 @@ $(document).ready(function() {
     });
 
     $(document).on('click', '#view_order_list', function(event) {
-        loadOrderList();
         $('#view_order_list_modal').modal('show');
+    });
+
+    $(document).on('click', '#return_search_button', function(event) {
+        loadOrderList();
     });
 
     $(document).on('click', '#view_order_details', function(event) {
@@ -3004,37 +3151,91 @@ $(document).ready(function() {
     });
 
     $(document).on('click', '#return_product', function(event) {
-        event.preventDefault();
-
         var id = $(this).data('id');
         var quantity = $('#return_quantity' + id).val();
+        var price = $('#return_price' + id).text();
+        var store_credited = $(this).data('store-credited');
 
-        if (confirm("Are you sure you want to return this product?")) {
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: {
-                    id: id,
-                    quantity: quantity,
-                    return_product: "return_product"
-                },
-                success: function(response) {
-                    if (response.trim() === "success") {
-                        $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Product Returned successfully.");
-                        $('#responseHeaderContainer').removeClass("bg-danger");
-                        $('#responseHeaderContainer').addClass("bg-success");
-                        $('#response_modal').modal("show");
-                        $('#response_modal').on('hide.bs.modal', function () {
-                            location.reload();
-                        });
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
+        var price = parseFloat(price.replace(/[^0-9.-]+/g, ''));
+
+        $('#return_id').val(id);
+        $('#return_quantity').val(quantity);
+        $('#price_to_return').val(price);
+        $('#is_store_credited').val(store_credited);
+
+        updateReturnPrice();
+
+        $('#return_stocking_fee_modal').modal('toggle');
+    });
+
+    function updateReturnPrice() {
+        let percentage = parseFloat($('#return_stock_fee').val());
+        let price = parseFloat($('#price_to_return').val());
+        let isStoreCredited = $('#is_store_credited').val() == "1";
+
+        if (!isNaN(percentage) && !isNaN(price)) {
+            let fee = (price * percentage) / 100;
+            let returnPrice = price - fee;
+
+            let label = isStoreCredited ? "Store Credit" : "Return Price";
+
+            $('#return_stock_fee_display').text(`Stocking Fee: $${fee.toFixed(2)}`);
+            $('#return_price_display').text(`${label}: $${returnPrice.toFixed(2)}`);
+        } else {
+            $('#return_stock_fee_display').text('');
+            $('#return_price_display').text('');
         }
+    }
+
+    $('#return_stock_fee').on('input', function () {
+        if (parseFloat($(this).val()) > 25) {
+            $(this).val(25);
+            $('#fee-warning').fadeIn();
+
+            setTimeout(function () {
+                $('#fee-warning').fadeOut();
+            }, 2000);
+        } else {
+            $('#fee-warning').fadeOut();
+        }
+    });
+
+    $(document).on('input', '#return_stock_fee', updateReturnPrice);
+
+    $(document).on('click', '#return_finalize_btn', function(event) {
+        event.preventDefault();
+
+        var id = $('#return_id').val();
+        var quantity = $('#return_quantity').val();
+        var stock_fee = $('#return_stock_fee').val();
+
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: {
+                id: id,
+                quantity: quantity,
+                stock_fee: stock_fee,
+                return_product: "return_product"
+            },
+            success: function(response) {
+                if (response.trim() === "success") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("Product Returned successfully.");
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response_modal').modal("show");
+                    $('#response_modal').on('hide.bs.modal', function () {
+                        location.reload();
+                    });
+                }else{
+                    console.log(response);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
     });
 
     $(document).on('click', '#view_estimate', function(event) {
@@ -3051,13 +3252,18 @@ $(document).ready(function() {
     $(document).on('click', '#view_order', function(event) {
         $('.modal').modal('hide');
         loadOrderContents();
-        $('#next_page_order').removeClass("d-none");
         $('#prev_page_order').addClass("d-none");
         $('#save_order').addClass("d-none");
         $('#print_order_category').addClass('d-none');
         $('#print_order').addClass('d-none');
         $('#print_deliver').addClass('d-none');
         $('#cashmodal').modal('show');
+    });
+
+    $(document).on('click', '#prev_page_order', function(event) {
+        $('.modal').modal('hide');
+        loadCart();
+        $('#view_cart_modal').modal('show');
     });
 
     $(document).on('click', '#view_in_stock', function(event) {
@@ -3213,7 +3419,6 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function (response) {
-                console.log(response);
                 $('.modal').modal("hide");
                 loadCart();
             },
@@ -3337,7 +3542,6 @@ $(document).ready(function() {
     function updateSearchCategory(){
         var product_category = $('#select-category').val() || '';
 
-        console.log(product_category);
         $.ajax({
             url: "pages/cashier_ajax.php",
             type: "POST",
@@ -3375,11 +3579,7 @@ $(document).ready(function() {
     $(document).on('click', '.reset_filters', function () {
         $('.filter-selection').val(null).trigger('change');
         $('#text-srh').val('').trigger('input');
-    });
-
-    $(document).on('click', '.chart-btn', function () {
-        const newSrc = $(this).data('img');
-        $('#chartImage').attr('src', newSrc);
+        $('#onlyOnSale, #onlyPromotions').prop('checked', false).trigger('change');
     });
 
     $('.filter-selection').each(function () {
@@ -3400,7 +3600,15 @@ $(document).ready(function() {
         calculateDeliveryAmountEst();
     });
 
-    $(document).on('change', '#order_delivery_method', function () {
+    $(document).on('change', 'input[name="order_delivery_method"]', function () {
+        calculateDeliveryAmount();
+    });
+
+    $(document).on('change', '#applyStoreCredit', function () {
+        calculateDeliveryAmount();
+    });
+
+    $(document).on('change', '[name="payMethod"]', function () {
         calculateDeliveryAmount();
     });
 });

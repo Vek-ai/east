@@ -97,29 +97,26 @@ if(isset($_POST['fetch_cart'])){
                 $customer_details = getCustomerDetails($customer_id);
                 $credit_limit = number_format(floatval($customer_details['credit_limit'] ?? 0), 2);
                 $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
-
+                $charge_net_30 = floatval($customer_details['charge_net_30'] ?? 0);
                 $store_credit = number_format(floatval($customer_details['store_credit'] ?? 0),2);
             ?>
 
             <div class="form-group row align-items-center">
                 <div class="col-6">
                     <label class="mb-0 me-3">Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
-                    <div class="mt-1"> 
-                        <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
-                    </div>
                 </div>
                 <div class="col-6">
                     <div>
-                        <span class="fw-bold">Credit Limit:</span><br>
-                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                        <span class="fw-bold">Charge Net 30:</span><br>
+                        <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($charge_net_30,2) ?></span>
                     </div>
                     <div>
                         <span class="fw-bold">Unpaid Credit:</span><br>
-                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
+                        <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($credit_total,2) ?></span>
                     </div>
                     <div>
                         <span class="fw-bold">Store Credit:</span><br>
-                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $store_credit ?></span>
+                        <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($store_credit,2) ?></span>
                     </div>
                 </div>
             </div>
@@ -397,34 +394,37 @@ if(isset($_POST['fetch_cart'])){
                         <td><?= number_format(floatval($total_weight), 2) ?> LBS</td>
                         <td colspan="2" class="text-end">Total Quantity:</td>
                         <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
-                        <td colspan="3" class="text-end">Amount Due:</td>
-                        <td colspan="1" class="text-end"><span id="ammount_due"><?= number_format($total_customer_price,2) ?> $</span></td>
+                        <td colspan="3" class="text-end">Customer Savings:</td>
+                        <td colspan="1" class="text-end"><span id="ammount_due">$<?= number_format($customer_savings,2) ?></span></td>
                         <td colspan="1"></td>
                     </tr>
                 </tfoot>
             </table>
         </div>
         <div id="checkout" class="row mt-3">
-            <div class="col-md-5">
+            <div class="col-md-8">
                 
             </div>
-            <div class="col-md-7">
+            <div class="col-md-4">
                 <div class="card">
                     <div class="card-body pricing">
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <tbody>
                                     <tr>
-                                        <th class="text-right border-bottom">Total</th>
+                                        <th class="text-right border-bottom">Materials Price</th>
                                         <td class="text-right border-bottom">$ <span id="total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span></td>
+                                        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                     </tr>
                                     <tr>
                                         <th class="text-right border-bottom">Sales Tax</th>
                                         <td class="text-right border-bottom">$ <span id="sales_tax"><?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span></td>
+                                        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                     </tr>
                                     <tr>
-                                        <th class="text-right border-bottom">Total Payable</th>
+                                        <th class="text-right border-bottom">Total Due</th>
                                         <td class="text-right border-bottom">$ <span id="total_payable_est"><?= number_format((floatval($total_customer_price)), 2) ?></span></td>
+                                        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                     </tr>
                                 </tbody>
                             </table>

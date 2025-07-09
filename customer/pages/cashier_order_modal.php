@@ -10,23 +10,32 @@ require '../../includes/functions.php';
 $trim_id = 4;
 $panel_id = 3;
 
+$points_details = getSetting('points');
+$data = json_decode($points_details, true);
+$points_order_total = isset($data['order_total']) ? $data['order_total'] : 0;
+$points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
+
+$points_ratio = getPointsRatio();
+
 if(isset($_POST['fetch_order'])){
     $discount = 0;
     $tax = 0;
     $customer_details_pricing = 0;
-    $customer_id = $_SESSION['customer_id'];
-    $customer_details = getCustomerDetails($customer_id);
-    $fullAddress = trim(implode(', ', array_filter([
-        $customer_details['address'] ?? null,
-        $customer_details['city'] ?? null,
-        $customer_details['state'] ?? null,
-        $customer_details['zip'] ?? null,
-    ])));
-    $fname = $customer_details['customer_first_name'];
-    $lname = $customer_details['customer_last_name'];
-    $discount = floatval(getCustomerDiscount($customer_id)) / 100;
-    $tax = floatval(getCustomerTax($customer_id)) / 100;
-    $customer_details_pricing = $customer_details['customer_pricing'];
+    if(isset($_SESSION['customer_id'])){
+        $customer_id = $_SESSION['customer_id'];
+        $customer_details = getCustomerDetails($customer_id);
+        $fullAddress = trim(implode(', ', array_filter([
+            $customer_details['address'] ?? null,
+            $customer_details['city'] ?? null,
+            $customer_details['state'] ?? null,
+            $customer_details['zip'] ?? null,
+        ])));
+        $fname = $customer_details['customer_first_name'];
+        $lname = $customer_details['customer_last_name'];
+        $discount = floatval(getCustomerDiscount($customer_id)) / 100;
+        $tax = floatval(getCustomerTax($customer_id)) / 100;
+        $customer_details_pricing = $customer_details['customer_pricing'];
+    }
     $delivery_price = getDeliveryCost();
     ?>
     <style>
@@ -105,7 +114,7 @@ if(isset($_POST['fetch_order'])){
         if(!empty($_SESSION["customer_id"])){
             $customer_id = $_SESSION["customer_id"];
             $customer_details = getCustomerDetails($customer_id);
-            $credit_limit = number_format(floatval($customer_details['credit_limit'] ?? 0), 2);
+            $charge_net_30 = floatval($customer_details['charge_net_30']);
             $credit_total = number_format(getCustomerCreditTotal($customer_id),2);
             $lat = !empty($customer_details['lat']) ? $customer_details['lat'] : 0;
             $lng = !empty($customer_details['lng']) ? $customer_details['lng'] : 0;
@@ -118,77 +127,25 @@ if(isset($_POST['fetch_order'])){
             ]);
 
             $store_credit = number_format(floatval($customer_details['store_credit'] ?? 0),2);
+
+            $customer_name = get_customer_name($_SESSION["customer_id"]);
         ?>
-        <div class="form-group row align-items-center">
+        <div class="form-group row align-items-center" style="color: #ffffff !important;">
             <div class="col-6">
-                <label>Customer Name: <?= get_customer_name($_SESSION["customer_id"]); ?></label>
-                <div class="mt-1"> 
-                    <div id="defaultDeliverDetails">
-                        <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
-                        <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="address_change_cash">
-                            <i class="fe fe-reload"></i> Change
-                        </button>
-                    </div>
-                    <div class="mt-1">
-                        <div id="deliverDetails" class="row d-none">
-                            <div class="col-12">
-                                <label>Recipient:</label>
-                                <div class="row mb-3">
-                                    <div class="col-sm-6">
-                                        <input type="text" id="order_deliver_fname" name="order_deliver_fname" value="<?= $customer_details['customer_first_name'] ?>" class="form-control diffNameInput" placeholder="First Name">
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <input type="text" id="order_deliver_lname" name="order_deliver_lname" value="<?= $customer_details['customer_last_name'] ?>" class="form-control diffNameInput" placeholder="Last Name">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-12">
-                                <label>Address:</label>
-                                <div class="row mb-3">
-                                    <div class="col-sm-3">
-                                        <input type="text" id="order_deliver_address" name="order_deliver_address" value="<?= $customer_details['address'] ?>" class="form-control" placeholder="Address">
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <input type="text" id="order_deliver_city" name="order_deliver_city" value="<?= $customer_details['city'] ?>" class="form-control" placeholder="City">
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <input type="text" id="order_deliver_state" name="order_deliver_state" value="<?= $customer_details['state'] ?>" class="form-control" placeholder="State">
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <input type="text" id="order_deliver_zip" name="order_deliver_zip" value="<?= $customer_details['zip'] ?>" class="form-control" placeholder="Zip">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <input type="hidden" id="lat" name="lat" class="form-control" value="<?= $lat ?>" />
-                            <input type="hidden" id="lng" name="lng" class="form-control" value="<?= $lng ?>" />
-
-                            <div class="col-12 text-end">
-                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="openMap">
-                                    <i class="fa fa-map"></i> Open Map
-                                </button>
-                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="cancel_change_address_order" >
-                                    <i class="fa fa-rotate-left"></i> Cancel
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
+                <label>Customer Name: <?= $customer_name ?></label>
             </div>
             <div class="col-6">
                 <div>
-                    <span class="fw-bold">Credit Limit:</span><br>
-                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_limit ?></span>
+                    <span class="fw-bold">Charge Net 30:</span><br>
+                    <span class="text-primary fs-4 fw-bold pl-3">$<?= number_format($charge_net_30,2) ?></span>
                 </div>
                 <div>
                     <span class="fw-bold">Unpaid Credit:</span><br>
-                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
+                    <span class="text-primary fs-4 fw-bold pl-3">$<?= $credit_total ?></span>
                 </div>
                 <div>
                     <span class="fw-bold">Store Credit:</span><br>
-                    <span class="text-primary fs-5 fw-bold pl-3">$<?= $store_credit ?></span>
+                    <span class="text-primary fs-4 fw-bold pl-3">$<?= $store_credit ?></span>
                 </div>
             </div>
         </div>
@@ -196,404 +153,500 @@ if(isset($_POST['fetch_order'])){
         <?php } ?>
     </div>
     <input type='hidden' id='customer_id_cash' name="customer_id"/>
+
+    <?php 
+    $total = 0;
+    $total_customer_price = 0;
+    $totalquantity = 0;
+    $timestamp = time();
+    $no = $timestamp . 1;
+    $cart = getCartDataByCustomerId($customer_id);
+    if (!empty($cart)) {
+        foreach ($cart as $keys => $values) {
+            $data_id = $values["product_id"];
+            $product = getProductDetails($data_id);
+            $totalstockquantity = $values["quantity_ttl"] + $values["quantity_in_stock"];
+            $category_id = $product["product_category"];
+            if ($totalstockquantity > 0) {
+                $stock_text = '
+                    <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
+                        <span class="text-bg-success p-1 rounded-circle"></span>
+                        <span class="ms-2">In Stock</span>
+                    </a>';
+            } else {
+                $stock_text = '
+                    <a href="javascript:void(0);" id="view_out_of_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
+                        <span class="text-bg-danger p-1 rounded-circle"></span>
+                        <span class="ms-2 fs-3">Out of Stock</span>
+                    </a>';
+            } 
+
+            $default_image = '../images/product/product.jpg';
+
+            $picture_path = !empty($product['main_image'])
+            ? "../" .$product['main_image']
+            : $default_image;
+
+            $images_directory = "../images/drawing/";
+
+            $customer_pricing = getPricingCategory($category_id, $customer_details_pricing) / 100;
+
+            $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 0;
+            $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
+
+            $total_length = $estimate_length + ($estimate_length_inch / 12);
+            $amount_discount = isset($values["amount_discount"]) && is_numeric($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
+
+            $quantity = isset($values["quantity_cart"]) && is_numeric($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
+            $unit_price = isset($values["unit_price"]) && is_numeric($values["unit_price"]) ? floatval($values["unit_price"]) : 0;
+
+            $product_price = ($quantity * $unit_price * $total_length) - $amount_discount;
+
+            if (!empty($values["is_custom"]) && $values["is_custom"] == 1) {
+                $custom_multiplier = floatval(getCustomMultiplier($category_id));
+                $product_price += $product_price * $custom_multiplier;
+            }
+
+            $color_id = $values["custom_color"];
+            if (isset($values["used_discount"])){
+                $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
+            }
+
+            $sold_by_feet = $product['sold_by_feet'];
+
+            $subtotal = $product_price;
+            $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
+        
+            $totalquantity += $values["quantity_cart"];
+            $total += $subtotal;
+            $total_customer_price += $customer_price;
+            $total_tax = number_format((floatval($total_customer_price)) * $tax, 2);
+
+            $total_weight += $values["weight"] * $values["quantity_cart"];
+            $no++;
+        }
+    }
+    $_SESSION["total_quantity"] = $totalquantity;
+    $_SESSION["grandtotal"] = $total;
+    $total_customer_price = floatval(str_replace(',', '', $total_customer_price));
+    ?>
+
     <div class="card-body datatables">
         <form id="msform">
-            <fieldset class="order-page-1">
-                <div id="product_details" class="product-details table-responsive text-nowrap">
-                    <table id="orderTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
-                        <thead>
-                            <tr>
-                                <th class="text-center small" width="5%">Image</th>
-                                <th width="10%">Description</th>
-                                <th width="5%" class="text-center">Color</th>
-                                <th width="5%" class="text-center">Grade</th>
-                                <th width="5%" class="text-center">Profile</th>
-                                <th width="25%" class="text-center pl-3">Quantity</th>
-                                <th width="30%" class="text-center">Dimensions<br>(Width x Length)</th>
-                                <th width="5%" class="text-center">Stock</th>
-                                <th width="7%" class="text-center">Price</th>
-                                <th width="7%" class="text-center small">Customer<br>Price</th>
-                                <th width="1%" class="text-center"> </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php 
-                            $total = 0;
-                            $total_customer_price = 0;
-                            $totalquantity = 0;
-                            $timestamp = time();
-                            $no = $timestamp . 1;
-                            $total_weight = 0;
-                            $cart = getCartDataByCustomerId($customer_id);
-                            if (!empty($cart)) {
-                                foreach ($cart as $keys => $values) {
-                                    $data_id = $values["product_id"];
-                                    $product = getProductDetails($data_id);
-                                    $totalstockquantity = $values["quantity_ttl"] + $values["quantity_in_stock"];
-                                    $category_id = $product["product_category"];
-                                    if ($totalstockquantity > 0) {
-                                        $stock_text = '
-                                            <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
-                                                <span class="text-bg-success p-1 rounded-circle"></span>
-                                                <span class="ms-2">In Stock</span>
-                                            </a>';
-                                    } else {
-                                        $stock_text = '
-                                            <a href="javascript:void(0);" id="view_out_of_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
-                                                <span class="text-bg-danger p-1 rounded-circle"></span>
-                                                <span class="ms-2 fs-3">Out of Stock</span>
-                                            </a>';
-                                    } 
+            <input type="hidden" id="order_payable_amt" value="<?= $total_customer_price ?>">
+            <input type="hidden" id="delivery_amt" name="delivery_amt" value="0">
+            <input type="hidden" id="store_credit" name="store_credit" value="<?= $store_credit ?>">
+            <input type="hidden" id="points_ratio" name="points_ratio" value="<?= $points_ratio ?>">
+            <input type="hidden" id="charge_net_30" value="<?= $charge_net_30 ?>">
 
-                                    $default_image = '../images/product/product.jpg';
-
-                                    $picture_path = !empty($product['main_image'])
-                                    ? "../" .$product['main_image']
-                                    : $default_image;
-
-                                    $images_directory = "../images/drawing/";
-
-                                    $customer_pricing = getPricingCategory($category_id, $customer_details_pricing) / 100;
-
-                                    $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 0;
-                                    $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
-
-                                    $total_length = $estimate_length + ($estimate_length_inch / 12);
-                                    $amount_discount = isset($values["amount_discount"]) && is_numeric($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
-
-                                    $quantity = isset($values["quantity_cart"]) && is_numeric($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
-                                    $unit_price = isset($values["unit_price"]) && is_numeric($values["unit_price"]) ? floatval($values["unit_price"]) : 0;
-
-                                    $product_price = ($quantity * $unit_price * $total_length) - $amount_discount;
-
-                                    if (!empty($values["is_custom"]) && $values["is_custom"] == 1) {
-                                        $custom_multiplier = floatval(getCustomMultiplier($category_id));
-                                        $product_price += $product_price * $custom_multiplier;
-                                    }
-
-                                    $color_id = $values["custom_color"];
-                                    if (isset($values["used_discount"])){
-                                        $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
-                                    }
-
-                                    $sold_by_feet = $product['sold_by_feet'];
-                                ?>
-                                    <tr class="border-bottom border-3 border-white">
-                                        <td>
-                                            <?php
-                                            if($data_id == '66'){
-                                                if(!empty($values["custom_trim_src"])){
-                                                ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
-                                                    <div class="align-items-center text-center w-100" style="background: #ffffff">
-                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
-                                                    </div>
-                                                </a>
-                                                <?php
-                                                }else{
-                                                ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-line="<?php echo $values["line"]; ?>" data-id="<?= $data_id ?>">
-                                                    Draw Here
-                                                </a>
-                                                <?php
-                                                }
-                                                ?>
-                                                
-                                            <?php }else{
-                                            ?>
-                                            <div class="align-items-center text-center w-100">
-                                                <img src="<?= $picture_path ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
-                                            </div>
-                                            <?php
-                                            } ?>
-                                        </td>
-                                        <td>
-                                            <h6 class="fw-semibold mb-0 fs-4">
-                                                <?= $values["product_item"] ?>
-                                                <?php if ($values["is_pre_order"] == 1): ?>
-                                                    <br>( PREORDER )
-                                                <?php endif; ?>
-                                            </h6>
-                                        </td>
-                                        <td>
-                                            <select id="color_order<?= $no ?>" class="form-control color-order text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
-                                                <option value="">Select Color...</option>
-                                                <?php
-                                                if (!empty($color_id)) {
-                                                    echo '<option value="' . $color_id . '" selected data-color="' . getColorHexFromColorID($color_id) . '">' . getColorName($color_id) . '</option>';
-                                                }
-
-                                                $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$data_id'";
-                                                $result_colors = mysqli_query($conn, $query_colors);
-
-                                                if (mysqli_num_rows($result_colors) > 0) {
-                                                    while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                                        if ($color_id == $row_colors['color_id']) {
-                                                            continue;
-                                                        }
-                                                        $product_details = getProductDetails($row_colors['Product_id']);
-                                                        $disabled = $values['custom_grade'] != $product_details['grade'] ? 'disabled' : '';
-                                                        echo '<option value="' . $row_colors['color_id'] . '" data-color="' . getColorHexFromColorID($row_colors['color_id']) . '" data-grade="' . $product_details['grade'] . '"' .$disabled .'>' . getColorName($row_colors['color_id']) . '</option>';
-                                                    }
-                                                }
-                                                ?>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <div class="input-group text-start">
-                                                <select id="grade<?= $no ?>" class="form-control grade-order" name="grade" onchange="updateGrade(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
-                                                    <option value="">Select Grade...</option>
-                                                    <?php
-                                                    $query_grade = "SELECT * FROM product_grade WHERE status = 1";
-                                                    $result_grade = mysqli_query($conn, $query_grade);
-
-                                                    while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                                        $selected = ($values['custom_grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
-                                                        ?>
-                                                        <option value="<?= $row_grade['product_grade_id']; ?>" <?= $selected; ?>><?= $row_grade['product_grade']; ?></option>
-                                                        <?php
-                                                    }
-                                                    ?>
-                                                </select>
-
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <?php echo getProfileFromID($data_id); ?>
-                                        </td>
-                                        <td>
-                                            <div class="input-group">
-                                                <span class="input-group-btn">
-                                                    <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)">
-                                                        <i class="fa fa-minus"></i>
-                                                    </button>
-                                                </span> 
-                                                <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
-                                                <span class="input-group-btn">
-                                                    <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)">
-                                                        <i class="fa fa-plus"></i>
-                                                    </button>
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <?php 
-                                        if($category_id == $panel_id){ // Panels ID
-                                        ?>
-                                        <td>
-                                            <div class="d-flex flex-column align-items-center">
-                                                <input class="form-control" type="text" value="<?= $product["width"]; ?>" placeholder="W" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" <?= !empty($product["width"]) ? 'readonly' : '' ?>>
-                                                <span class="mr-3 ml-1"> X</span>
-                                                <?php
-                                                if($sold_by_feet == 1){
-                                                    ?>
-                                                    <fieldset class="border p-1 position-relative">
-                                                        <div class="input-group d-flex align-items-center">
-                                                            <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                            <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
-                                                        </div>
-                                                    </fieldset>
-                                                <?php
-                                                }else{
-                                                ?>
-                                                    <input class="form-control" type="text" value="<?= $values["estimate_length"]; ?>" placeholder="H" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                <?php
-                                                }
-                                                ?>
-                                                
-                                            </div>
-                                        </td>
-                                        <?php
-                                        }else if($category_id == $trim_id){
-                                        ?>
-                                        <td>
-                                            <div class="d-flex flex-column align-items-center">
-                                                <input class="form-control text-center mb-1" type="text" value="<?= isset($values["estimate_width"]) ? $values["estimate_width"] : $product["width"]; ?>" placeholder="Width" size="5" style="color:#ffffff; " data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
-                                                <span class="mx-1 text-center mb-1">X</span>
-                                                <fieldset class="border p-1 position-relative">
-                                                    <div class="input-group d-flex align-items-center">
-                                                        <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                        <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
-                                                    </div>
-                                                </fieldset>
-                                            </div>
-                                        </td>
-                                        <?php
-                                        }else{
-                                        ?>
-                                        <td class="text-center">
-                                            <fieldset class="border p-1 position-relative">
-                                                <div class="input-group d-flex align-items-center">
-                                                    <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                    <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
-                                                </div>
-                                            </fieldset>
-                                        </td>
-                                        <?php
-                                        }
-                                        ?>
-                                        <td><?= $stock_text ?></td>
-                                        <td class="text-end pl-3">$
-                                            <?php
-                                            $subtotal = $product_price;
-                                            echo number_format($subtotal, 2);
-                                            ?>
-                                        </td>
-                                        <td class="text-end pl-3">$
-                                            <?php
-                                            $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
-                                            echo number_format($customer_price, 2);
-                                            ?>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
-                                            <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
-                                            <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["product_id"]; ?>">
-                                            <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $data_id;?>">
-                                            <input class="form-control" type="hidden" size="5" value="<?php echo $values["line"];?>" id="line<?php echo $data_id;?>">
-                                            <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $data_id;?>">
-                                        </td>
-                                    </tr>
-                            <?php
-                                    $totalquantity += $values["quantity_cart"];
-                                    $total += $subtotal;
-                                    $total_customer_price += $customer_price;
-                                    $no++;
-                                    $total_weight += $values["weight"] * $values["quantity_cart"];
-                                }
-                            }
-                            ?>
-                        </tbody>
-
-                        <tfoot>
-                            <tr>
-                                <td colspan="2" class="text-end">Total Weight</td>
-                                <td><?= number_format(floatval($total_weight), 2) ?> LBS</td>
-                                <td colspan="3" class="text-end">Total Quantity:</td>
-                                <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
-                                <td colspan="3" class="text-end">Amount Due:</td>
-                                <td colspan="1" class="text-end"><span id="ammount_due"><?= number_format($total_customer_price,2) ?> $</span></td>
-                                <td colspan="1"></td>
-                            </tr>
-                        </tfoot>
-                    </table>
+            <div class="row text-start">
+                <div class="col-12 mb-2" style="color: #ffffff !important;">
+                    <h5 class="mb-1">Checkout</h5>
+                    <p>Welcome, <strong><?= $customer_name ?></strong></p>
                 </div>
-            </fieldset>
-            <fieldset class="order-page-2">
-                <div id="checkout" class="row mt-3">
-                    <div class="col-md-6"></div>
-                    <div class="col-md-3 mb-3">
-                        <label for="job_name" class="mb-0">Job Name</label>
-                        <div id="order_checkout">
-                            <select id="order_job_name" class="form-control" name="order_job_name">
-                                <option value="">Select Job Name...</option>
-                                <?php
-                                $query_job_name = "SELECT * FROM jobs WHERE customer_id = '$customer_id'";
-                                $result_job_name = mysqli_query($conn, $query_job_name);
-                                while ($row_job_name = mysqli_fetch_array($result_job_name)) {
-                                ?>
-                                    <option value="<?= $row_job_name['job_name']; ?>"><?= $row_job_name['job_name']; ?></option>
-                                <?php
-                                }
-                                ?>
-                                <option value="add_new_job_name">Add new Job Name</option>
-                            </select>
+                <!-- Left Side -->
+                <div class="col-lg-8" style="color: #ffffff !important;">
+                
+
+                <!-- Contact Information -->
+                <div class="card mb-3" style="color: #ffffff !important;">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <span><i class="fa fa-check-circle text-success me-2"></i>Contact Information</span>
+                        <a href="#" id="toggle_edit_info" class="text-primary">Edit Info</a>
+                    </div>
+
+                    <div class="card-body">
+                        <div id="display_contact_info">
+                            <p class="mb-1" id="disp_email"><?= $customer_details['contact_email'] ?></p>
+                            <p class="mb-2" id="disp_phone"><?= $customer_details['contact_phone'] ?></p>
+                            <h6 class="fs-2">By providing the phone number above, you consent to receive automated text messages...</h6>
                         </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label for="job_po" class="mb-0">Job PO #</label>
-                        <input type="text" id="order_job_po" name="order_job_po" class="form-control" placeholder="Enter Job PO #">
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card box-shadow-0">
-                            <div class="card-body">
-                                <form>
-                                    <div>
-                                        <label>Total Items:</label>
-                                        <span id="total_items"><?= $totalquantity ?? '0' ?></span>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Discount (%)</label>
-                                        <input type="text" class="form-control discount_input" id="order_discount" placeholder="%" value="<?= $discount * 100 ?>">
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label>Credit Amount</label>
-                                                <input type="number" class="form-control" id="order_credit" value="0.00">
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label>Cash Amount</label>
-                                                <input type="number" class="form-control" id="order_cash" value="<?= round($total_customer_price, 2) ?>">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </form>
+
+                        <div id="edit_contact_info" class="d-none">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label for="order_deliver_fname" class="form-label">First Name</label>
+                                    <input type="text" id="order_deliver_fname" class="form-control" value="<?= $customer_details['customer_first_name'] ?>" placeholder="First Name">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="order_deliver_lname" class="form-label">Last Name</label>
+                                    <input type="text" id="order_deliver_lname" class="form-control" value="<?= $customer_details['customer_last_name'] ?>" placeholder="Last Name">
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body pricing container">
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <tbody>
-                                            <tr>
-                                                <th class="text-right border-bottom">Total</th>
-                                                <td class="text-right border-bottom">$<span id="total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span></td>
-                                            </tr>
-                                            <tr>
-                                                <th class="text-right border-bottom">Discount(-)</th>
-                                                <td class="text-right border-bottom">$<span id="total_discount"><?= number_format(floatval($total) * floatval($discount), 2) ?></span></td>
-                                            </tr>
-                                            <tr>
-                                                <th class="text-right border-bottom">Delivery Method</th>
-                                                <td class="text-right border-bottom">
-                                                    <select id="order_delivery_method" name="order_delivery_method" class="form-control text-right p-2">
-                                                        <option value="pickup">Pickup</option>
-                                                        <option value="deliver">Deliver</option>
-                                                    </select>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th class="text-right border-bottom">Delivery($)</th>
-                                                <td class="text-right border-bottom">
-                                                    <input type="number" id="delivery_amt" name="delivery_amt" value="<?= number_format(0, 2) ?>" class="text-right form-control" placeholder="Delivery Amount">
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th class="text-right border-bottom">Sales Tax</th>
-                                                <td class="text-right border-bottom">$<span id="sales_tax"><?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span></td>
-                                            </tr>
-                                            <tr>
-                                                <th class="text-right border-bottom">Total Payable</th>
-                                                <td class="text-right border-bottom">$<span id="total_payable"><?= number_format((floatval($total_customer_price)), 2) ?></span></td>
-                                                <input type="hidden" id="payable_amt" value="<?= number_format((floatval($total_customer_price)), 2) ?>">
-                                            </tr>
-                                            <tr class="bg-primary text-white" style="font-size: 1.25rem;">
-                                                <th class="text-right">Change</th>
-                                                <td class="text-right">$<span id="change">0.00</span></td>
-                                            </tr> 
-                                        </tbody>
-                                    </table>
+
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label for="order_deliver_phone" class="form-label">Contact Phone</label>
+                                    <input type="text" id="order_deliver_phone" class="form-control" value="<?= $customer_details['contact_phone'] ?>" placeholder="Contact Phone">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="order_deliver_email" class="form-label">Contact Email</label>
+                                    <input type="text" id="order_deliver_email" class="form-control" value="<?= $customer_details['contact_email'] ?>" placeholder="Contact Email">
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </fieldset>
+
+                <!-- Job Details -->
+                <div class="card mb-3" style="color: #ffffff !important;">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <span><i class="fa fa-check-circle text-success me-2"></i>Job Details</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="col-md-4 mb-3">
+                            <h6 class="mb-0">Job Name</h6>
+                            <div id="order_checkout">
+                                <select id="order_job_name" class="form-control" name="order_job_name">
+                                    <option value="">Select Job Name...</option>
+                                    <?php
+                                    $query_job_name = "SELECT * FROM jobs WHERE customer_id = '$customer_id'";
+                                    $result_job_name = mysqli_query($conn, $query_job_name);
+                                    while ($row_job_name = mysqli_fetch_array($result_job_name)) {
+                                        $job_id = $row_job_name['job_id'];
+                                    ?>
+                                        <option value="<?= $row_job_name['job_name']; ?>" 
+                                                data-constructor="<?= htmlspecialchars($row_job_name['constructor_name']); ?>" 
+                                                data-constructor-contact="<?= htmlspecialchars($row_job_name['constructor_contact']); ?>"
+                                                data-credit="<?= htmlspecialchars(getJobBalance($job_id)); ?>"
+                                                data-job-id="<?= $job_id ?>"
+                                                >
+                                            <?= htmlspecialchars($row_job_name['job_name']); ?>
+                                        </option>
+                                    <?php } ?>
+                                    <option value="add_new_job_name">Add new Job Name</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <h6 class="mb-0">Job PO #</h6>
+                            <input type="text" id="order_job_po" name="order_job_po" class="form-control" placeholder="Enter Job PO #">
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-2 position-relative">
+                                <strong>Contractor Name:</strong>
+                                <input type="text" class="form-control" id="constructor_name" autocomplete="off">
+                                <div class="border bg-white shadow-sm position-absolute w-100 d-none" id="contractor_dropdown" style="z-index: 10; max-height: 200px; overflow-y: auto;">
+                                    <?php
+                                    $query_job_name = "SELECT DISTINCT constructor_name, constructor_contact FROM jobs WHERE customer_id = '$customer_id'";
+                                    $result_job_name = mysqli_query($conn, $query_job_name);
+                                    $contractors = [];
+                                    while ($row_job_name = mysqli_fetch_array($result_job_name)) {
+                                        $name = htmlspecialchars($row_job_name['constructor_name']);
+                                        $contact = htmlspecialchars($row_job_name['constructor_contact']);
+                                        echo "<div class='dropdown-item contractor-item' data-name='{$name}' data-contact='{$contact}' style='cursor: pointer; line-height: 38px; padding-top: 0px; padding-bottom: 0px;'>{$name}</div>";
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <strong>Contractor Cell Phone:</strong>
+                                <input type="text" class="form-control" id="constructor_contact">
+                            </div>
+                        </div>
+
+                        
+                        <div class="col-md-8 mb-3 d-none align-items-end">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="pay_via_job_deposit" name="pay_via_job_deposit" value="1">
+                                <label class="form-check-label" for="pay_via_job_deposit">
+                                    Pay via Job Deposit 
+                                    <span id="job_credit_balance" class="text-success fw-semibold ms-1"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Pickup Details -->
+                <div class="card mb-3" style="color: #ffffff !important;">
+                    <div class="card-header bg-white">
+                    <i class="fa fa-check-circle text-success me-2"></i>Pickup Details
+                    </div>
+                    <div class="card-body">
+                    <h6 class="mb-1"><?= $customer_details['address'] ?></h6>
+                    <p class="mb-1"><?= getCustomerAddress($_SESSION["customer_id"]) ?> <a href="#" class="ms-2">(606) 330-1440</a></p>
+                        <div class="mb-3">
+                            <label class="form-label">How would you like to pick up your order?</label>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="order_delivery_method" id="pickup_option" value="pickup" checked>
+                                <label class="form-check-label" for="pickup_option">Pickup</label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="order_delivery_method" id="deliver_option" value="deliver">
+                                <label class="form-check-label" for="delivery_option">Delivery</label>
+                            </div>
+
+                            <div class="mb-3">
+                                <small>
+                                    We'll email you when your order is ready.
+                                </small>
+                            </div>
+                            
+
+                            <div class="mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="ship_separate_address">
+                                    <label class="form-check-label" for="ship_separate_address">
+                                        Ship to a separate address?
+                                    </label>
+                                </div>
+                            </div>
+
+                            
+
+                            <!-- Hidden by default -->
+                            <div id="separate_address_section" class="d-none">
+                                <div class="col-12 mb-3">
+                                    <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="openMap">
+                                        <i class="fa fa-map"></i> Get Directions
+                                    </button>
+                                </div>
+
+                                <div class="col-12">
+                                    <label>Address:</label>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-2">
+                                            <input type="text" id="order_deliver_address" name="order_deliver_address" value="<?= $customer_details['address'] ?>" class="form-control" placeholder="Address">
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <input type="text" id="order_deliver_city" name="order_deliver_city" value="<?= $customer_details['city'] ?>" class="form-control" placeholder="City">
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <input type="text" id="order_deliver_state" name="order_deliver_state" value="<?= $customer_details['state'] ?>" class="form-control" placeholder="State">
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <input type="text" id="order_deliver_zip" name="order_deliver_zip" value="<?= $customer_details['zip'] ?>" class="form-control" placeholder="Zip">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" id="lat" name="lat" class="form-control" value="<?= $lat ?>" />
+                                <input type="hidden" id="lng" name="lng" class="form-control" value="<?= $lng ?>" />
+
+                                <div class="col-8">
+                                    <label for="delivery_driver_instructions" class="form-label">Delivery Driver Instructions</label>
+                                    <input type="text" id="delivery_driver_instructions" name="delivery_driver_instructions" class="form-control" placeholder="Instructions for the driver...">
+                                </div>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment -->
+                <div class="card mb-3" style="color: #ffffff !important;">
+                    <div class="card-header bg-white">
+                    <i class="fa fa-check-circle text-success me-2"></i>Pickup Details Payment
+                    </div>
+                    <div class="card-body">
+                    
+                    <div class="mb-3 text-white">
+                        <div id="paymentOptions">
+                            <label class="form-label fw-bold">Select Payment Method</label><br>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payPickup" value="pickup">
+                                <label class="form-check-label" for="payPickup">
+                                <i class="fa-solid fa-store me-1"></i>Pay at Pick-Up
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payDelivery" value="delivery">
+                                <label class="form-check-label" for="payDelivery">
+                                <i class="fa-solid fa-truck me-1"></i>Pay at Delivery
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payCard" value="card">
+                                <label class="form-check-label" for="payCard">
+                                <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
+                                </label>
+                            </div>
+
+                            <?php if (!empty($customer_details['charge_net_30'])): ?>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="payMethod" id="payNet30" value="net30">
+                                    <label class="form-check-label" for="payNet30">
+                                        <i class="fa-solid fa-calendar-check me-1"></i>Charge Net 30
+                                    </label>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php if (floatval($customer_details['store_credit']) > 0): ?>
+                        <div class="mb-3 text-white">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="applyStoreCredit" name="applyStoreCredit" value="1" >
+                                <label class="form-check-label text-white" for="applyStoreCredit">
+                                Apply Store Credit (Available: $<?= number_format(floatval($customer_details['store_credit']), 2) ?>)
+                                </label>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                    </div>
+                </div>
+                </div>
+
+                <!-- Right Side (Order Summary) -->
+                <div class="col-lg-4">
+                <div class="card" style="color: #ffffff !important;">
+                    <div class="card-header bg-white">
+                    <strong>Order Summary</strong>
+                    </div>
+                    <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center flex-column flex-sm-row mb-2">
+                        <span>Item Subtotal (<?= $_SESSION["total_quantity"] ?? '0' ?>)</span>
+                        <div class="d-flex flex-column align-items-end">
+                            <span>$<?= number_format($total_customer_price,2) ?></span>
+                            <div style="width: 100px; height: 2px; background-color: white; margin-top: 2px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pb-2">
+                        <span>Estimated Tax</span>
+                        <span>$<?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pb-2">
+                        <span>Delivery</span>
+                        <span>$<span id="order_delivery_amt"><?= number_format(0, 2) ?></span></span>
+                    </div>
+
+                    
+                    <hr>
+                    <div class="d-flex justify-content-between text-success mb-2">
+                        <span>Savings</span>
+                        <span>$<?= number_format(floatval($total) * floatval($discount)) ?></span>
+                    </div>
+                    <div id="storeCreditDisplay" class="d-flex justify-content-between mb-2 d-none text-success">
+                        <span>Store Credit:</span>
+                        <span class="fw-bold" id="storeCreditValue"></span>
+                    </div>
+                    <div id="jobDepositDisplay" class="d-flex justify-content-between mb-2 d-none text-success">
+                        <span>Job Deposit:</span>
+                        <span class="fw-bold" id="jobDepositValue"></span>
+                    </div>
+                    <div id="net30Display" class="d-flex justify-content-between mb-2 d-none text-success">
+                        <span>Charge Net 30:</span>
+                        <span class="fw-bold" id="net30Value"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-end mb-3">
+                        <div style="width: 100px; height: 2px; background-color: white;"></div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <strong>Estimated Total</strong>
+                        <p><strong id="order_total"></strong></p>
+                    </div>
+                    <button class="btn btn-success w-100 mt-3" id="save_order">Place Order</button>
+                    <p class="mt-2 text-center small">
+                        By placing an order, I agree to EKM's <a href="#">Terms</a> and <a href="#">Privacy Statement</a>.
+                    </p>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-between">
+                    <span><i class="fa fa-gift me-1"></i>Estimated Points</span>
+                    <span><span id="estimated_points" class="badge bg-primary">0</span></span>
+                    </div>
+                </div>
+                </div>
+            </div>
         </form>
     </div>
 
     <script>
+        function init_select_cash(){
+            $("#customer_select_cash").autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "pages/cashier_ajax.php",
+                        type: 'post',
+                        dataType: "json",
+                        data: {
+                            search_customer: request.term
+                        },
+                        success: function(data) {
+                            response(data);
+                        },
+                        error: function(xhr, status, error) {
+                            console.log("Error: " + xhr.responseText);
+                        }
+                    });
+                },
+                select: function(event, ui) {
+                    $('#customer_select_cash').val(ui.item.label);
+                    $('#customer_id_cash').val(ui.item.value);
+                    return false;
+                },
+                focus: function(event, ui) {
+                    $('#customer_select_cash').val(ui.item.label);
+                    return false;
+                },
+                appendTo: "#cashmodal", 
+                open: function() {
+                    $(".ui-autocomplete").css("z-index", 1050);
+                }
+            });
+        }
         $(document).ready(function() {
+            init_select_cash();
+
+            $(document).on('change', '#customer_select_cash', function(event) {
+                var customer_id = $('#customer_id_cash').val();
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        customer_id: customer_id,
+                        change_customer: "change_customer"
+                    },
+                    success: function(response) {
+                        if (response.trim() == 'success') {
+                            loadOrderContents();
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            });
+
+            $(document).on('click', '#customer_change_cash', function(event) {
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        unset_customer: "unset_customer"
+                    },
+                    success: function(response) {
+                        loadOrderContents();
+                        $('#next_page_order').removeClass("d-none");
+                        $('#prev_page_order').addClass("d-none");
+                        $('#save_order').addClass("d-none");
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            });
+            
             $(document).on('click', '#cancel_change_address_order', function(event) {
                 loadOrderContents();
             });
             
             $(document).on('click', '#address_change_cash', function(event) {
-                $('#deliverDetails').removeClass('d-none');
                 $('#defaultDeliverDetails').addClass('d-none');
                 $('#order_deliver_fname').val('');
                 $('#order_deliver_lname').val('');
@@ -611,37 +664,13 @@ if(isset($_POST['fetch_order'])){
                 $('#order_cash').val(total_payable.toFixed(2));
             });
 
-            let animating = false;
-
-            function changePage(currentPage, nextPage, isNext) {
-                if (animating) return false;
-                animating = true;
-
-                var current_fs = $(currentPage);
-                var next_fs = $(nextPage);
-
-                if (isNext) {
-                    $('#next_page_order').addClass("d-none");
-                    $('#prev_page_order').removeClass("d-none");
-                    $('#save_order').removeClass("d-none");
+            $(document).on('change', '#ship_separate_address', function () {
+                if ($(this).is(':checked')) {
+                    $('#separate_address_section').removeClass('d-none');
                 } else {
-                    $('#next_page_order').removeClass("d-none");
-                    $('#prev_page_order').addClass("d-none");
-                    $('#save_order').addClass("d-none");
+                    $('#separate_address_section').addClass('d-none');
+                    $('#separate_address_section input').val('');
                 }
-
-                next_fs.show();
-                current_fs.hide();
-
-                animating = false;
-            }
-
-            $(document).on("click", "#next_page_order", function() {
-                changePage('.order-page-1', '.order-page-2', true);
-            });
-
-            $(document).on("click", "#prev_page_order", function() {
-                changePage('.order-page-2', '.order-page-1', false);
             });
 
             $('#order_job_name').select2({
@@ -670,11 +699,95 @@ if(isset($_POST['fetch_order'])){
                 }
             });
 
+            var originalData = {
+                fname: $('#order_deliver_fname').val(),
+                lname: $('#order_deliver_lname').val(),
+                phone: $('#order_deliver_phone').val(),
+                email: $('#order_deliver_email').val()
+            };
+
+            $('#toggle_edit_info').on('click', function (e) {
+                e.preventDefault();
+
+                if ($(this).text() === 'Edit Info') {
+                    $('#edit_contact_info').removeClass('d-none');
+                    $('#display_contact_info').addClass('d-none');
+                    $(this).text('Cancel');
+                } else {
+                    $('#order_deliver_fname').val(originalData.fname);
+                    $('#order_deliver_lname').val(originalData.lname);
+                    $('#order_deliver_phone').val(originalData.phone);
+                    $('#order_deliver_email').val(originalData.email);
+
+                    $('#edit_contact_info').addClass('d-none');
+                    $('#display_contact_info').removeClass('d-none');
+                    $(this).text('Edit Info');
+                }
+            });
+
             $('#order_job_name').on('select2:select', function (e) {
                 const selectedValue = e.params.data.id;
+
                 if (selectedValue === 'add_new_job_name') {
                     $('#prompt_job_name_modal').modal('show');
                     $('#order_job_name').val(null).trigger('change');
+                    $('#constructor_name').val('');
+                    $('#constructor_contact').val('');
+                    $('#pay_via_job_deposit').prop('checked', false);
+                    $('#pay_via_job_deposit').closest('.col-md-8').addClass('d-none');
+                    $('#job_credit_balance').text('');
+                } else {
+                    const selectedOption = $(this).find('option[value="' + selectedValue + '"]');
+                    const constructorName = selectedOption.data('constructor') || '';
+                    const constructorContact = selectedOption.data('constructor-contact') || '';
+                    const jobBalance = parseFloat(selectedOption.data('credit')) || 0;
+
+                    $('#constructor_name').val(constructorName);
+                    $('#constructor_contact').val(constructorContact);
+
+                    if (jobBalance > 0) {
+                        $('#pay_via_job_deposit').closest('.col-md-8').removeClass('d-none');
+                        $('#job_credit_balance').text(`(Credit Available: $${jobBalance.toFixed(2)})`);
+                    } else {
+                        $('#pay_via_job_deposit').prop('checked', false);
+                        $('#pay_via_job_deposit').closest('.col-md-8').addClass('d-none');
+                        $('#job_credit_balance').text('');
+                    }
+
+                    $('#pay_via_job_deposit').data('deposit', jobBalance);
+                }
+            });
+
+            $('#constructor_name').on('focus input', function () {
+                var filter = $(this).val().toLowerCase();
+                var hasMatch = false;
+
+                $('#contractor_dropdown .contractor-item').each(function () {
+                    var name = $(this).data('name').toLowerCase();
+                    var isMatch = name.includes(filter);
+                    $(this).toggle(isMatch);
+                    if (isMatch) hasMatch = true;
+                });
+
+                if (hasMatch) {
+                    $('#contractor_dropdown').removeClass('d-none');
+                } else {
+                    $('#contractor_dropdown').addClass('d-none');
+                }
+            });
+
+            $(document).on('click', '.contractor-item', function () {
+                var name = $(this).data('name');
+                var contact = $(this).data('contact');
+
+                $('#constructor_name').val(name);
+                $('#constructor_contact').val(contact);
+                $('#contractor_dropdown').addClass('d-none');
+            });
+
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('#constructor_name, #contractor_dropdown').length) {
+                    $('#contractor_dropdown').addClass('d-none');
                 }
             });
 
@@ -715,10 +828,8 @@ if(isset($_POST['fetch_order'])){
                     colorSelect.find('option').each(function () {
                         const grade = String($(this).data('grade'));
                         if (!selectedGrade || grade === String(selectedGrade)) {
-                            console.log('show')
                             $(this).removeAttr('disabled').show();
                         } else {
-                            console.log('hide')
                             $(this).attr('disabled', 'disabled').hide();
                         }
                     });
@@ -733,6 +844,7 @@ if(isset($_POST['fetch_order'])){
                     });
                 }
             });
+
         });
     </script>
 
