@@ -1095,7 +1095,7 @@ if (isset($_POST['save_order'])) {
     $store_credit = floatval($customer_details['store_credit']);
     $charge_net_30 = floatval($customer_details['charge_net_30']);
 
-    if ($charge_net_30 < $total_discounted_price) {
+    if ($pay_type == 'net30' && $charge_net_30 < $total_discounted_price) {
         $job_po = mysqli_real_escape_string($conn, $job_po ?? '');
         $job_name = mysqli_real_escape_string($conn, $job_name ?? '');
         $deliver_address = mysqli_real_escape_string($conn, $deliver_address ?? '');
