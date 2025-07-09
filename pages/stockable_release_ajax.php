@@ -38,6 +38,7 @@ if(isset($_REQUEST['action'])) {
     
         while ($row = mysqli_fetch_assoc($result)) {
             $id = $row['id'];
+            $orderid = $row['orderid'];
             $product_id = $row['product_id'];
             $status = $row['status'];
             $instock = $row['inv_quantity'] > 1 ? 1 : 0;
@@ -77,6 +78,7 @@ if(isset($_REQUEST['action'])) {
             }
     
             $data[] = [
+                'orderid'   => $orderid,
                 'product_name_html'   => $product_name_html,
                 'product_category'    => getProductCategoryName($row['product_category']),
                 'product_system'      => getProductSystemName($row['product_system']),

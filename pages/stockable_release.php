@@ -269,6 +269,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                     <div class="table-responsive">
                         <table id="productList" class="table search-table align-middle text-wrap text-center">
                             <thead class="header-item">
+                            <th>Invoice #</th>
                             <th>Product Name</th>
                             <th>Product Category</th>
                             <th>Product Line</th>
@@ -306,6 +307,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 data: { action: 'fetch_products' }
             },
             columns: [
+                { data: 'orderid' },
                 { data: 'product_name_html' },
                 { data: 'product_category' },
                 { data: 'product_line' },
@@ -314,6 +316,9 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 { data: 'order_qty' },
                 { data: 'status_html' },
                 { data: 'action_html' }
+            ],
+            columnDefs: [
+                { targets: 1, width: "20%" }
             ],
             createdRow: function (row, data, dataIndex) {
                 $(row).attr('data-category', data.product_category);
