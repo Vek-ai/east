@@ -4021,12 +4021,14 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                             $('#print_order').removeClass('d-none');
                             $('#print_deliver').removeClass('d-none');
 
-                            $('#save_order').addClass('d-none');
-                            $('#save_estimate').addClass('d-none');
-                            $('#prev_page_order').addClass('d-none');
+                            
                         } else if (response.error) {
                             alert(response.error);
                         }
+
+                        $('#save_order').addClass('d-none');
+                        $('#save_estimate').addClass('d-none');
+                        $('#prev_page_order').addClass('d-none');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         console.log('Response Text: ' + jqXHR.responseText);

@@ -104,20 +104,47 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == 'release_product') {
-        $product_id = intval($_POST['product_id']);
-        $status = intval($_POST['status']);
+        $product_order_id = intval($_POST['product_id']);
+        $status = 2;
 
-        $sql = "UPDATE order_product SET status = $status WHERE id = $product_id";
+        $fetch_sql = "SELECT productid, custom_color, quantity FROM order_product WHERE id = $product_order_id LIMIT 1";
+        $fetch_result = mysqli_query($conn, $fetch_sql);
 
-        if (mysqli_query($conn, $sql)) {
-            echo json_encode(['success' => true]);
+        if ($fetch_result && mysqli_num_rows($fetch_result) > 0) {
+            $row = mysqli_fetch_assoc($fetch_result);
+            $productid = intval($row['productid']);
+            $custom_color = isset($row['custom_color']) && is_numeric($row['custom_color']) ? intval($row['custom_color']) : 0;
+
+            $quantity_cart = (isset($row['quantity']) && is_numeric($row['quantity']) && $row['quantity'] > 0) 
+                            ? intval($row['quantity']) 
+                            : 1;
+
+            $update_sql = "UPDATE order_product SET status = $status WHERE id = $product_order_id";
+
+            if (mysqli_query($conn, $update_sql)) {
+                echo json_encode(['success' => true]);
+            } else {
+                echo json_encode(['success' => false, 'error' => mysqli_error($conn)]);
+            }
+
+            $upd_inventory = "
+                UPDATE inventory 
+                SET quantity_ttl = GREATEST(quantity_ttl - $quantity_cart, 0)
+                WHERE product_id = $productid AND color_id = $custom_color
+                LIMIT 1
+            ";
+
+            if (!mysqli_query($conn, $upd_inventory)) {
+                echo "Error updating inventory: " . mysqli_error($conn);
+            }
         } else {
-            echo json_encode(['success' => false, 'error' => mysqli_error($conn)]);
+            echo json_encode(['success' => false, 'error' => 'Order product not found']);
         }
 
         mysqli_close($conn);
         exit;
     }
+
     
     mysqli_close($conn);
 }

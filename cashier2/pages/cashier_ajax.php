@@ -1111,12 +1111,12 @@ if (isset($_POST['save_order'])) {
                 status, cashier, total_price, discounted_price, discount_percent,
                 cash_amt, disc_amount, submitted_date, customerid, originalcustomerid,
                 job_name, job_po, deliver_address, deliver_city, deliver_state,
-                deliver_zip, delivery_amt, deliver_fname, deliver_lname, type_approval
+                deliver_zip, delivery_amt, deliver_fname, deliver_lname, type_approval, pay_type
             ) VALUES (
-                1, '$cashier_id', '$total_price', '$total_discounted_price', '$discount_percent',
+                1, '$cashierid', '$total_price', '$total_discounted_price', '$discount_percent',
                 '$cash_amt', '$amount_discount', NOW(), '$customerid', '$customerid',
                 '$job_name', '$job_po', '$deliver_address', '$deliver_city', '$deliver_state',
-                '$deliver_zip', '$delivery_amt', '$deliver_fname', '$deliver_lname', 2
+                '$deliver_zip', '$delivery_amt', '$deliver_fname', '$deliver_lname', 2 , '$pay_type'
             )
         ";
 
@@ -1393,14 +1393,7 @@ if (isset($_POST['save_order'])) {
 
             $values[] = "('$orderid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$custom_img_src')";
             
-            $upd_inventory = "UPDATE inventory 
-                            SET quantity = quantity - $quantity_cart, quantity_ttl = quantity_ttl - $quantity_cart 
-                            WHERE Product_id = '$product_id' AND color_id = '$custom_color' 
-                            LIMIT 1";
-
-            if (!mysqli_query($conn, $upd_inventory)) {
-                echo "Error: " . mysqli_error($conn);
-            }
+            
 
             if ($product_details['product_origin'] == 2) {
                 $query = "INSERT INTO work_order_product (
