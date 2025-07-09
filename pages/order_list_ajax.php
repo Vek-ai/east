@@ -62,7 +62,6 @@ if(isset($_REQUEST['action'])) {
                                     <th class="text-center">Dimensions</th>
                                     <th class="text-center">Price</th>
                                     <th class="text-center">Customer Price</th>
-                                    <th class="text-center">Total Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -159,13 +158,12 @@ if(isset($_REQUEST['action'])) {
                                             </td>
                                             <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
                                             <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
-                                            <td class="text-end">$ <?= number_format(floatval($row['discounted_price'] * $row['quantity']),2) ?></td>
                                         </tr>
                                 <?php
                                         $totalquantity += $row['quantity'] ;
                                         $total_actual_price += $row['actual_price'];
                                         $total_disc_price += $row['discounted_price'];
-                                        $total_amount += floatval($row['discounted_price']) * $row['quantity'];
+                                        $total_amount += floatval($row['discounted_price']);
                                     }
                                 
                                 ?>
@@ -173,7 +171,7 @@ if(isset($_REQUEST['action'])) {
 
                             <tfoot>
                                 <tr>
-                                    <td colspan="8" class="text-end">Total</td>
+                                    <td colspan="7" class="text-end">Total</td>
                                     <td><?= $totalquantity ?></td>
                                     <td></td>
                                     <td></td>
@@ -1356,32 +1354,59 @@ if(isset($_REQUEST['action'])) {
 
         // 4. Manual payment (optional)
         $payment_amount = floatval($_POST['payment_amount'] ?? 0);
+        $payment_method = mysqli_real_escape_string($conn, $_POST['type'] ?? 'cash');
+        $reference_no = mysqli_real_escape_string($conn, $_POST['reference_no'] ?? '');
+        $check_number = mysqli_real_escape_string($conn, $_POST['check_no'] ?? '');
+        $description = mysqli_real_escape_string($conn, $_POST['description'] ?? '');
+        $paid_by = mysqli_real_escape_string($conn, $order_details['customerid']);
+        $cashier = $_SESSION['userid'] ?? 0;
+        $check_no_sql = $payment_method === 'check' ? "'$check_number'" : "NULL";
+
+        $success = true;
+
+        // Handle job payment ledger
         if ($payment_amount > 0) {
-            $payment_method = mysqli_real_escape_string($conn, $_POST['type'] ?? 'cash');
-            $reference_no = mysqli_real_escape_string($conn, $_POST['reference_no'] ?? '');
-            $check_number = mysqli_real_escape_string($conn, $_POST['check_no'] ?? '');
-            $description = mysqli_real_escape_string($conn, $_POST['description'] ?? '');
-            $paid_by = mysqli_real_escape_string($conn, $order_details['customerid']);
-            $cashier = $_SESSION['userid'] ?? 0;
+            $ledger_query = "
+                SELECT l.ledger_id, l.amount AS credit_amount,
+                    IFNULL(SUM(p.amount), 0) AS total_paid
+                FROM job_ledger l
+                LEFT JOIN job_payment p ON l.ledger_id = p.ledger_id
+                WHERE l.reference_no = '$orderid'
+                GROUP BY l.ledger_id
+                ORDER BY l.created_at ASC
+            ";
+            $ledger_result = mysqli_query($conn, $ledger_query);
 
-            // Find linked ledger ID
-            $ledger_q = mysqli_query($conn, "
-                SELECT ledger_id FROM job_ledger 
-                WHERE reference_no = '$orderid' 
-                ORDER BY created_at ASC LIMIT 1
-            ");
-            $ledger_id = mysqli_fetch_assoc($ledger_q)['ledger_id'] ?? null;
+            if (!$ledger_result) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to fetch ledger entries.',
+                    'error' => mysqli_error($conn)
+                ]);
+                exit();
+            }
 
-            if ($ledger_id) {
+            $remaining_payment = $payment_amount;
+
+            while ($row = mysqli_fetch_assoc($ledger_result)) {
+                $ledger_id = $row['ledger_id'];
+                $credit = floatval($row['credit_amount']);
+                $paid = floatval($row['total_paid']);
+                $balance = max(0, $credit - $paid);
+
+                if ($balance <= 0 || $remaining_payment <= 0) continue;
+
+                $to_pay = min($balance, $remaining_payment);
+
                 $insert = "
                     INSERT INTO job_payment (
                         ledger_id, amount, payment_method, check_number,
                         reference_no, description, created_by, cashier
                     ) VALUES (
                         '$ledger_id',
-                        '$payment_amount',
+                        '$to_pay',
                         '$payment_method',
-                        " . ($payment_method === 'check' ? "'$check_number'" : "NULL") . ",
+                        $check_no_sql,
                         '$orderid',
                         '$description',
                         '$paid_by',
@@ -1389,48 +1414,58 @@ if(isset($_REQUEST['action'])) {
                     )
                 ";
                 if (!mysqli_query($conn, $insert)) {
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'Failed to record payment.',
-                        'error' => mysqli_error($conn)
-                    ]);
-                    exit();
+                    $success = false;
+                    break;
                 }
 
-                // heck if fully paid and update order_product paid_status
-                $order_total_query = "
-                    SELECT SUM(discounted_price * quantity) AS total_amount
-                    FROM order_product
-                    WHERE orderid = '$orderid'
-                ";
-                $order_total_result = mysqli_query($conn, $order_total_query);
-                $order_total = floatval(mysqli_fetch_assoc($order_total_result)['total_amount'] ?? 0);
+                $remaining_payment -= $to_pay;
+            }
 
-                $paid_query = "
-                    SELECT SUM(p.amount) AS total_paid
-                    FROM job_ledger l
-                    JOIN job_payment p ON l.ledger_id = p.ledger_id
-                    WHERE l.reference_no = '$orderid'
-                ";
-                $paid_result = mysqli_query($conn, $paid_query);
-                $total_paid = floatval(mysqli_fetch_assoc($paid_result)['total_paid'] ?? 0);
-
-                if ($total_paid >= $order_total) {
-                    mysqli_query($conn, "
-                        UPDATE order_product
-                        SET paid_status = 1
-                        WHERE orderid = '$orderid'
-                    ");
-                }
+            if (!$success) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to record payment.',
+                    'error' => mysqli_error($conn)
+                ]);
+                exit();
             }
         }
 
-        // success response
+        //query to check order product
+        $product_query = "
+            SELECT op.id, op.discounted_price
+            FROM order_product op
+            INNER JOIN orders o ON op.orderid = o.orderid
+            WHERE op.id IN ($idList)
+            ORDER BY op.discounted_price ASC, o.order_date ASC
+        ";
+        $product_result = mysqli_query($conn, $product_query);
+
+        $remaining_payment = $payment_amount;
+
+        while ($row = mysqli_fetch_assoc($product_result)) {
+            $product_id = $row['id'];
+            $price = floatval($row['discounted_price']);
+
+            if (bccomp($remaining_payment, $price, 2) >= 0) {
+                mysqli_query($conn, "
+                    UPDATE order_product
+                    SET paid_status = 1
+                    WHERE id = $product_id
+                ");
+                $remaining_payment = bcsub($remaining_payment, $price, 2); // precise subtraction
+            } else {
+                break;
+            }
+        }
+
+        // Final success response
         echo json_encode([
             'success' => true,
-            'message' => "Order marked as picked up" . ($payment_amount > 0 ? " and payment recorded." : "."),
+            'message' => "Order marked as picked up" . ($payment_amount > 0 ? " and payment recorded." : " with $0 due."),
             'id' => $orderid
         ]);
+
     }
 
     mysqli_close($conn);

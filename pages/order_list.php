@@ -1012,6 +1012,14 @@ if(isset($_REQUEST['customer_id'])){
             $('#payment_amount').val(amount_to_pay);
 
             $("#pickupFormModal").modal("show");
+
+            $('#payment_amount').off('input').on('input', function () {
+                let val = parseFloat($(this).val() || 0);
+                if (val > amount_to_pay) {
+                    alert(`Payment amount cannot exceed $${amount_to_pay.toFixed(2)}`);
+                    $(this).val(amount_to_pay.toFixed(2));
+                }
+            });
         });
 
         $(document).on("submit", "#shipOrderForm", function (e) {
