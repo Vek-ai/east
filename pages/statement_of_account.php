@@ -281,22 +281,21 @@ $page_title = "Statement of Accounts";
                     <div class="product-details table-responsive text-wrap">
                         <?php
                         $sql = "SELECT 
-                                    j.customer_id, 
-                                    SUM(CASE WHEN l.entry_type = 'credit' THEN l.amount ELSE 0 END) AS total_credit,
-                                    SUM(CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE 0 END) AS total_payments,
+                                    c.customer_id, 
+                                    COALESCE(SUM(CASE WHEN l.entry_type = 'credit' THEN l.amount ELSE 0 END), 0) AS total_credit,
+                                    COALESCE(SUM(CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE 0 END), 0) AS total_payments,
                                     MIN(CASE WHEN l.entry_type = 'credit' THEN l.created_at ELSE NULL END) AS first_credit_date,
                                     (
                                         SELECT MAX(jp.created_at)
                                         FROM jobs j2
-                                        INNER JOIN job_ledger jl ON jl.job_id = j2.job_id
-                                        INNER JOIN job_payment jp ON jp.ledger_id = jl.ledger_id
-                                        WHERE j2.customer_id = j.customer_id
+                                        LEFT JOIN job_ledger jl ON jl.job_id = j2.job_id
+                                        LEFT JOIN job_payment jp ON jp.ledger_id = jl.ledger_id
+                                        WHERE j2.customer_id = c.customer_id
                                     ) AS last_payment_date
-                                FROM jobs j
-                                INNER JOIN job_ledger l ON l.job_id = j.job_id
-                                INNER JOIN customer c ON c.customer_id = j.customer_id
+                                FROM customer c
+                                LEFT JOIN job_ledger l ON l.customer_id = c.customer_id
                                 WHERE c.status = 1
-                                GROUP BY j.customer_id
+                                GROUP BY c.customer_id
                                 HAVING total_credit > 0 OR total_payments > 0";
                         $result = $conn->query($sql);
                         ?>
