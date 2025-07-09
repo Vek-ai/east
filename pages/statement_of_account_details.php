@@ -336,13 +336,14 @@ if(isset($_REQUEST['customer_id'])){
                                                 $now_ts = time();
                                                 $diff_secs = $now_ts - $created_ts;
 
-                                                $days_outstanding = floor($diff_secs / 86400);
+                                                $days_outstanding = max(0, floor($diff_secs / 86400));
                                                 echo $days_outstanding . ' days';
                                             } else {
                                                 echo '';
                                             }
                                             ?>
                                         </td>
+
                                         <td><?= $pay_type ?></td>
                                         <td class="text-end"><?= $payments > 0 ? '$' .number_format($payments, 2) : '' ?></td>
                                         <td class="text-end"><?= $credit > 0 ? '$' .number_format($credit, 2) : '' ?></td>
