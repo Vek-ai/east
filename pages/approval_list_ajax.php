@@ -82,7 +82,8 @@ if (isset($_POST['search_approval'])) {
                     <th>Submission Time</th>
                     <th>Cashier</th>
                     <th>Customer</th>
-                    <th>Amount</th>
+                    <th class="text-center">Type of Approval</th>
+                    <th class="text-end">Amount</th>
                     <th> </th>
                 </tr>
             </thead>
@@ -92,10 +93,24 @@ if (isset($_POST['search_approval'])) {
             while ($row = mysqli_fetch_assoc($result)) {
                 $total_amount += $row['discounted_price'];
                 $total_count += 1;
-
+                $type_approval = $row['type_approval'];
                 $submitted_date = $row['submitted_date'];
                 $customer_name = $row['customer_name'];
             
+                switch ($type_approval) {
+                    case 1:
+                        $badge_html = '<span class="badge bg-warning text-dark">Discount</span>';
+                        break;
+                    case 2:
+                        $badge_html = '<span class="badge bg-danger">Net 30 Exceeded</span>';
+                        break;
+                    case 3:
+                        $badge_html = '<span class="badge bg-info text-dark">Customer Order</span>';
+                        break;
+                    default:
+                        $badge_html = '<span class="badge bg-secondary">Unknown</span>';
+                        break;
+                }
                 ?>
                 <tr>
                     <td>
@@ -112,6 +127,9 @@ if (isset($_POST['search_approval'])) {
                     </td>
                     <td>
                         <?= htmlspecialchars($customer_name) ?>
+                    </td>
+                    <td class="text-center">
+                        <?= $badge_html ?>
                     </td>
                     <td class="text-end">
                         $ <?= number_format($row['discounted_price'], 2) ?>
