@@ -53,7 +53,7 @@ if (isset($_POST['search_approval'])) {
         SELECT a.*, CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name
         FROM approval AS a
         LEFT JOIN customer AS c ON c.customer_id = a.originalcustomerid
-        WHERE 1 = 1
+        WHERE status = '1'
     ";
 
     if (!empty($customer_name) && $customer_name != 'All Customers') {
@@ -143,7 +143,7 @@ if (isset($_POST['search_approval'])) {
             ?>
             </tbody>
             <tfoot>
-                <td colspan="2" class="text-end">Total Submissions: </td>
+                <td colspan="3" class="text-end">Total Submissions: </td>
                 <td><?= $total_count ?></td>
                 <td colspan="2" class="text-end">Total Amount: </td>
                 <td class="text-end">$ <?= $total_amount ?></td>
