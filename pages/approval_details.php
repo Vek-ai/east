@@ -328,14 +328,17 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                 },
                 success: function(response) {
                     if (response.trim() == 'success') {
-                        if(status == 2){
+                        if (status == 2) {
                             alert('Submission Successfully Approved');
-                        }else if(status == 3){
+                        } else if (status == 3) {
                             alert('Submission Successfully Declined');
-                        }else{
+                        } else {
                             alert('Operation Failed');
-                            console.log("Status: " +status)
+                            console.log("Status: " + status);
+                            return;
                         }
+
+                        window.location.href = '?page=approval_list';
                     } else {
                         alert('Failed to Update!');
                         console.log(response);
