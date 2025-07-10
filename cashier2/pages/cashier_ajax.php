@@ -1718,9 +1718,7 @@ if (isset($_POST['save_approval'])) {
     $approval_products = [];
 
     foreach ($cart as $item) {
-        $discount = isset($item['used_discount']) && is_numeric($item['used_discount'])
-            ? floatval($item['used_discount']) / 100
-            : $discount_default;
+        $discount = isset($item['used_discount']) && is_numeric($item['used_discount']) ? floatval($item['used_discount']) / 100 : $discount_default;
 
         $product_id = intval($item['product_id']);
         $product_details = getProductDetails($product_id);
@@ -1744,8 +1742,8 @@ if (isset($_POST['save_approval'])) {
             'productid' => $product_id,
             'product_item' => mysqli_real_escape_string($conn, $item['product_item']),
             'quantity' => $quantity_cart,
-            'custom_color' => $item['custom_color'] ?? 'NULL',
-            'custom_grade' => $item['custom_grade'] ?? 'NULL',
+            'custom_color' => isset($item['custom_color']) ? intval($item['custom_color']) : 'NULL',
+            'custom_grade' => isset($item['custom_grade']) ? intval($item['custom_grade']) : 'NULL',
             'custom_width' => mysqli_real_escape_string($conn, $item['custom_width']),
             'custom_height' => isset($item['custom_height']) ? "'" . mysqli_real_escape_string($conn, $item['custom_height']) . "'" : 'NULL',
             'custom_bend' => isset($item['custom_bend']) ? "'" . mysqli_real_escape_string($conn, $item['custom_bend']) . "'" : 'NULL',
@@ -1756,52 +1754,48 @@ if (isset($_POST['save_approval'])) {
             'discounted_price' => $discounted_price,
             'product_category' => $product_details['product_category'],
             'usageid' => $item['usageid'] ?? 0,
-            'current_customer_discount' => $item['current_customer_discount'] ?? 0,
-            'current_loyalty_discount' => $item['current_loyalty_discount'] ?? 0,
-            'used_discount' => $item['used_discount'] ?? 0,
-            'stiff_stand_seam' => $item['stiff_stand_seam'] ?? '0',
-            'stiff_board_batten' => $item['stiff_board_batten'] ?? '0',
-            'panel_type' => $item['panel_type'] ?? '0'
+            'current_customer_discount' => $item['current_customer_discount'] ?? 'NULL',
+            'current_loyalty_discount' => $item['current_loyalty_discount'] ?? 'NULL',
+            'used_discount' => $item['used_discount'] ?? 'NULL',
+            'stiff_stand_seam' => intval($item['stiff_stand_seam'] ?? 0),
+            'stiff_board_batten' => intval($item['stiff_board_batten'] ?? 0),
+            'panel_type' => intval($item['panel_type'] ?? 0)
         ];
     }
 
     $discount_percent = $discount_default * 100;
 
     $query = "INSERT INTO approval (
-        cashier, total_price, discounted_price, discount_percent, 
+        status, cashier, total_price, discounted_price, discount_percent,
         submitted_date, customerid, originalcustomerid, type_approval
     ) VALUES (
-        '$cashierid', '$total_price', '$total_discounted_price', '$discount_percent',
-        '$submitted_date', '$customerid', '$customerid', '1'
+        1, '$cashierid', '$total_price', '$total_discounted_price', '$discount_percent',
+        '$submitted_date', '$customerid', '$customerid', 1
     )";
 
-    if ($conn->query($query) === TRUE) {
+    if ($conn->query($query)) {
         $approval_id = $conn->insert_id;
 
         $values = [];
         foreach ($approval_products as $p) {
             $values[] = "(
-                '$approval_id', '{$p['productid']}', '{$p['product_item']}', 0, '{$p['quantity']}', 
-                {$p['custom_color']}, {$p['custom_grade']}, 
-                '{$p['custom_width']}', {$p['custom_height']}, {$p['custom_bend']}, {$p['custom_hem']},
-                {$p['custom_length']}, {$p['custom_length2']},
-                '{$p['actual_price']}', '{$p['discounted_price']}', '{$p['product_category']}', '{$p['usageid']}',
-                '{$p['current_customer_discount']}', '{$p['current_loyalty_discount']}', '{$p['used_discount']}',
+                '$approval_id', '{$p['productid']}', '{$p['product_item']}', 0, '{$p['quantity']}',
+                {$p['custom_color']}, {$p['custom_grade']}, '{$p['custom_width']}', {$p['custom_height']}, {$p['custom_bend']}, {$p['custom_hem']},
+                {$p['custom_length']}, {$p['custom_length2']}, '{$p['actual_price']}', '{$p['discounted_price']}', '{$p['product_category']}',
+                '{$p['usageid']}', {$p['current_customer_discount']}, {$p['current_loyalty_discount']}, {$p['used_discount']},
                 '{$p['stiff_stand_seam']}', '{$p['stiff_board_batten']}', '{$p['panel_type']}'
             )";
         }
 
         $insert_products = "INSERT INTO approval_product (
-            approval_id, productid, product_item, status, quantity, custom_color,
-            custom_grade, custom_width, custom_height, custom_bend, custom_hem,
-            custom_length, custom_length2, actual_price, discounted_price,
+            approval_id, productid, product_item, status, quantity, custom_color, custom_grade, custom_width,
+            custom_height, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price,
             product_category, usageid, current_customer_discount, current_loyalty_discount,
             used_discount, stiff_stand_seam, stiff_board_batten, panel_type
-        ) VALUES " . implode(',', $values);
+        ) VALUES " . implode(', ', $values);
 
         if ($conn->query($insert_products)) {
-            unset($_SESSION['cart']);
-            unset($_SESSION['customer_id']);
+            unset($_SESSION['cart'], $_SESSION['customer_id']);
             $response['success'] = true;
             $response['approval_id'] = $approval_id;
         } else {
