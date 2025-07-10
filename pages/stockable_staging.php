@@ -250,13 +250,17 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             </optgroup>
                         </select>
                     </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-record-type" data-filter="record-type" data-filter-name="Type">
+                            <option value="" data-category="">All Types</option>
+                            <optgroup label="Types">
+                                <option value="order">Order</option>
+                                <option value="return">Return</option>
+                            </optgroup>
+                        </select>
+                    </div>
                 </div>
-                <div class="px-3 mb-2"> 
-                    <input type="checkbox" id="toggleActive" checked> Show Active Only
-                </div>
-                <div class="px-3 mb-2">
-                    <input type="checkbox" id="onlyInStock" <?= $onlyInStock ? 'checked' : '' ?>> Show only In Stock
-                </div>
+                
                 <div class="d-flex justify-content-end py-2">
                     <button type="button" class="btn btn-outline-primary reset_filters">
                         <i class="fas fa-sync-alt me-1"></i> Reset Filters
@@ -269,13 +273,15 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                     <div class="table-responsive">
                         <table id="productList" class="table search-table align-middle text-wrap text-center">
                             <thead class="header-item">
-                            <th>Product Name</th>
-                            <th>Product Category</th>
-                            <th>Product Line</th>
-                            <th>Product Type</th>
-                            <th>Warehouse</th>
-                            <th>Qty</th>
-                            <th>Status</th>
+                                <th>Invoice #</th>
+                                <th>Product Name</th>
+                                <th>Product Category</th>
+                                <th>Product Line</th>
+                                <th>Product Type</th>
+                                <th>Type</th>
+                                <th>Warehouse</th>
+                                <th>Qty</th>
+                                <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
                             </thead>
                             <tbody>
                             
@@ -305,13 +311,15 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 data: { action: 'fetch_products' }
             },
             columns: [
+                { data: 'orderid' },
                 { data: 'product_name_html' },
                 { data: 'product_category' },
                 { data: 'product_line' },
                 { data: 'product_type' },
+                { data: 'source_html' },
                 { data: 'warehouse' },
                 { data: 'order_qty' },
-                { data: 'status_html' }
+                { data: 'action_html' }
             ],
             createdRow: function (row, data, dataIndex) {
                 $(row).attr('data-category', data.product_category);
@@ -323,7 +331,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                 $(row).attr('data-grade', data.grade);
                 $(row).attr('data-gauge', data.gauge);
                 $(row).attr('data-warehouse', data.warehouse);
-                $(row).attr('data-active', data.active);
+                $(row).attr('data-record-type', data.type);
                 $(row).attr('data-instock', data.instock);
                 $(row).attr('data-active', data.status);
             },
@@ -338,6 +346,35 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             });
         });
 
+        $(document).on('click', '#transfer_warehouse', function () {
+            const id = $(this).data('id');
+
+            if (confirm('Are you sure you want to return this product to the warehouse?')) {
+                $.ajax({
+                    type: 'POST',
+                    url: 'pages/stockable_staging_ajax.php',
+                    data: {
+                        action: 'transfer_warehouse',
+                        id: id
+                    },
+                    success: function (response) {
+                        try {
+                            const res = JSON.parse(response);
+                            if (res.success) {
+                                alert('Product successfully transferred to warehouse.');
+                                table.ajax.reload(null, false); // reload without resetting page
+                            } else {
+                                alert('Failed: ' + res.message);
+                            }
+                        } catch (err) {
+                            console.error('Invalid JSON response', err);
+                            alert('Unexpected error occurred.');
+                        }
+                    }
+                });
+            }
+        });
+
         function filterTable() {
             var textSearch = $('#text-srh').val().toLowerCase();
             var isActive = $('#toggleActive').is(':checked');
@@ -348,18 +385,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             if (textSearch) {
                 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                     return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
-                });
-            }
-
-            if (isActive) {
-                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                    return $(table.row(dataIndex).node()).data('active') === 1;
-                });
-            }
-
-            if (onlyInStock) {
-                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                    return $(table.row(dataIndex).node()).data('instock') === 1;
                 });
             }
 

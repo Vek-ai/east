@@ -2049,7 +2049,7 @@ if (isset($_POST['return_product'])) {
                          (
                             '{$order['orderid']}', 
                             '{$order['productid']}', 
-                            4, 
+                            0, 
                             '$quantity', 
                             '{$order['custom_color']}', 
                             '{$order['custom_width']}', 
