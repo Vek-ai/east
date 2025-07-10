@@ -62,7 +62,7 @@ if(isset($_REQUEST['action'])) {
         while ($row = mysqli_fetch_assoc($result)) {
             $id = $row['id'];
             $orderid = $row['orderid'];
-            $product_id = $row['product_id'];
+            $product_id = $row['productid'];
             $instock = $row['inv_quantity'] > 0 ? 1 : 0;
             $category_id = $row['product_category'];
             $warehouse = $row['warehouse'];
