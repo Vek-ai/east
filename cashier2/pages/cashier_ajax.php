@@ -1147,20 +1147,41 @@ if (isset($_POST['save_order'])) {
                     product_category, usageid, current_customer_discount, current_loyalty_discount,
                     used_discount, stiff_stand_seam, stiff_board_batten, panel_type
                 ) VALUES (
-                    '$approval_id', '{$p['productid']}', '" . mysqli_real_escape_string($conn, $p['product_item']) . "', 0, '{$p['quantity']}',
-                    " . ($p['custom_color'] ?? 'NULL') . ", " . ($p['custom_grade'] ?? 'NULL') . ",
-                    '" . mysqli_real_escape_string($conn, $p['custom_width']) . "', " . ($p['custom_height'] ? "'" . mysqli_real_escape_string($conn, $p['custom_height']) . "'" : "NULL") . ",
-                    " . ($p['custom_bend'] ? "'" . mysqli_real_escape_string($conn, $p['custom_bend']) . "'" : "NULL") . ",
-                    " . ($p['custom_hem'] ? "'" . mysqli_real_escape_string($conn, $p['custom_hem']) . "'" : "NULL") . ",
-                    " . ($p['custom_length'] ? "'" . mysqli_real_escape_string($conn, $p['custom_length']) . "'" : "NULL") . ",
-                    " . ($p['custom_length2'] ? "'" . mysqli_real_escape_string($conn, $p['custom_length2']) . "'" : "NULL") . ",
-                    '{$p['actual_price']}', '{$p['discounted_price']}', '{$p['product_category']}', '{$p['usageid']}',
-                    '{$p['current_customer_discount']}', '{$p['current_loyalty_discount']}', '{$p['used_discount']}',
-                    '{$p['stiff_stand_seam']}', '{$p['stiff_board_batten']}', '{$p['panel_type']}'
+                    '$approval_id',
+                    '" . intval($p['productid']) . "',
+                    '" . mysqli_real_escape_string($conn, $p['product_item']) . "',
+                    0,
+                    '" . mysqli_real_escape_string($conn, $p['quantity'] ?? '0') . "',
+                    " . (isset($p['custom_color']) && $p['custom_color'] !== '' ? intval($p['custom_color']) : "NULL") . ",
+                    " . (isset($p['custom_grade']) && $p['custom_grade'] !== '' ? intval($p['custom_grade']) : "NULL") . ",
+                    '" . mysqli_real_escape_string($conn, $p['custom_width'] ?? '0') . "',
+                    " . (isset($p['custom_height']) && $p['custom_height'] !== '' ? "'" . mysqli_real_escape_string($conn, $p['custom_height']) . "'" : "NULL") . ",
+                    " . (isset($p['custom_bend']) && $p['custom_bend'] !== '' ? "'" . mysqli_real_escape_string($conn, $p['custom_bend']) . "'" : "NULL") . ",
+                    " . (isset($p['custom_hem']) && $p['custom_hem'] !== '' ? "'" . mysqli_real_escape_string($conn, $p['custom_hem']) . "'" : "NULL") . ",
+                    " . (isset($p['custom_length']) && $p['custom_length'] !== '' ? "'" . mysqli_real_escape_string($conn, $p['custom_length']) . "'" : "NULL") . ",
+                    " . (isset($p['custom_length2']) && $p['custom_length2'] !== '' ? "'" . mysqli_real_escape_string($conn, $p['custom_length2']) . "'" : "NULL") . ",
+                    '" . floatval($p['actual_price']) . "',
+                    '" . floatval($p['discounted_price']) . "',
+                    '" . intval($p['product_category']) . "',
+                    '" . intval($p['usageid'] ?? 0) . "',
+                    " . (isset($p['current_customer_discount']) ? intval($p['current_customer_discount']) : "NULL") . ",
+                    " . (isset($p['current_loyalty_discount']) ? intval($p['current_loyalty_discount']) : "NULL") . ",
+                    " . (isset($p['used_discount']) ? intval($p['used_discount']) : "NULL") . ",
+                    '" . intval($p['stiff_stand_seam']) . "',
+                    '" . intval($p['stiff_board_batten']) . "',
+                    '" . intval($p['panel_type']) . "'
                 )
             ";
-            mysqli_query($conn, $sql);
+
+            if (!mysqli_query($conn, $sql)) {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Product approval insert failed!',
+                    'error_query' => mysqli_error($conn),
+                ]);
+            }
         }
+
 
         unset($_SESSION['cart']);
 
