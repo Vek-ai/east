@@ -975,6 +975,15 @@ function getCustomerType($customer_type_id){
     return  $customer_type_name;
 }
 
+function getCustomerTaxName($taxid){
+    global $conn;
+    $query = "SELECT tax_status_desc FROM customer_tax WHERE taxid = '$taxid'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $tax_status_desc = $row['tax_status_desc'] ?? '';
+    return  $tax_status_desc;
+}
+
 function getCustomerDetails($customer_id) {
     global $conn;
     $customer_id = mysqli_real_escape_string($conn, $customer_id);
@@ -1005,6 +1014,25 @@ function getCustomerTax($customer_id) {
         return 0;
     }
 }
+
+function getCustomerTaxById($taxid) {
+    global $conn;
+    $taxid = mysqli_real_escape_string($conn, $taxid);
+
+    $query = "SELECT percentage 
+              FROM customer_tax 
+              WHERE taxid = '$taxid' 
+              LIMIT 1";
+
+    $result = mysqli_query($conn, $query);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['percentage'] ?? 0;
+    } else {
+        return 0;
+    }
+}
+
 
 function getCustomerCreditTotal($customer_id) {
     global $conn;

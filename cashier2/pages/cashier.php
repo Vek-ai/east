@@ -3981,6 +3981,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var deliver_zip = $('#order_deliver_zip').val();
             var deliver_fname = $('#order_deliver_fname').val();
             var deliver_lname = $('#order_deliver_lname').val();
+            var customer_tax = $('#customer_tax').val();
             var applyStoreCredit = $('#applyStoreCredit').is(':checked') ? $('#applyStoreCredit').val() : 0;
             var applyJobDeposit = $('#pay_via_job_deposit').is(':checked') ? $('#pay_via_job_deposit').val() : 0;
 
@@ -4006,6 +4007,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         deliver_zip: deliver_zip,
                         deliver_fname: deliver_fname,
                         deliver_lname: deliver_lname,
+                        customer_tax: customer_tax,
                         applyStoreCredit: applyStoreCredit,
                         applyJobDeposit: applyJobDeposit,
                         payment_method: payment_method,

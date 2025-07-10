@@ -119,6 +119,9 @@ if(isset($_POST['fetch_order'])){
             $lat = !empty($customer_details['lat']) ? $customer_details['lat'] : 0;
             $lng = !empty($customer_details['lng']) ? $customer_details['lng'] : 0;
 
+            $tax_status = intval($customer_details['tax_status']);
+            $tax_exempt_number = $customer_details['tax_exempt_number'];
+
             $addressDetails = implode(', ', [
                 $customer_details['address'] ?? '',
                 $customer_details['city'] ?? '',
@@ -279,7 +282,17 @@ if(isset($_POST['fetch_order'])){
                         <div id="display_contact_info">
                             <p class="mb-1" id="disp_email"><?= $customer_details['contact_email'] ?></p>
                             <p class="mb-2" id="disp_phone"><?= $customer_details['contact_phone'] ?></p>
-                            <h6 class="fs-2">By providing the phone number above, you consent to receive automated text messages...</h6>
+                            <h6 class="fs-2 mb-2">By providing the phone number above, you consent to receive automated text messages...</h6>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label class="form-label mb-0">Tax Status</label>
+                                    <div class="form-control-plaintext ms-3 py-0"><?= getCustomerTaxName($tax_status) ?></div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label mb-0">Tax Exempt Number</label>
+                                    <div class="form-control-plaintext ms-3 py-0"><?= $tax_exempt_number ?></div>
+                                </div>
+                            </div>
                         </div>
 
                         <div id="edit_contact_info" class="d-none">
@@ -302,6 +315,34 @@ if(isset($_POST['fetch_order'])){
                                 <div class="col-md-3">
                                     <label for="order_deliver_email" class="form-label">Contact Email</label>
                                     <input type="text" id="order_deliver_email" class="form-control" value="<?= $customer_details['contact_email'] ?>" placeholder="Contact Email">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label for="customer_tax" class="form-label">Tax Status</label>
+                                    <div class="mb-2">
+                                        <select class="form-control py-0 ps-5 select2" id="customer_tax">
+                                            <option value="">All Tax Status</option>
+                                            <?php
+                                                $query_tax_status = "SELECT * FROM customer_tax WHERE status = 1 ORDER BY tax_status_desc ASC";
+                                                $result_tax_status = mysqli_query($conn, $query_tax_status);
+                                                while ($row_tax_status = mysqli_fetch_array($result_tax_status)) {
+                                                    $selected = ($row_tax_status['taxid'] == $tax_status) ? 'selected' : '';
+                                                    ?>
+                                                    <option value="<?= $row_tax_status['taxid'] ?>" <?= $selected ?>>
+                                                        (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?>
+                                                    </option>
+                                                    <?php
+                                                }
+                                            ?>
+                                        </select>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-9">
+                                    <label class="form-label mb-1">Tax Exempt Number</label>
+                                    <div class="form-control-plaintext ms-3" id="tax_exempt_number"><?= $tax_exempt_number ?></div>
                                 </div>
                             </div>
                         </div>
@@ -731,6 +772,15 @@ if(isset($_POST['fetch_order'])){
                     }
                     return $.fn.select2.defaults.defaults.matcher(params, data);
                 }
+            });
+
+            $('#customer_tax').each(function () {
+                $(this).select2({
+                    width: '100%',
+                    placeholder: "Select Customer Tax...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $(this).parent()
+                });
             });
 
             var originalData = {
