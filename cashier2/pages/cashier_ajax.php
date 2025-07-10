@@ -1162,6 +1162,8 @@ if (isset($_POST['save_order'])) {
             mysqli_query($conn, $sql);
         }
 
+        unset($_SESSION['cart']);
+
         echo json_encode([
             'success' => false,
             'error' => 'Approval request created due to insufficient Net balance.'
@@ -1804,6 +1806,8 @@ if (isset($_POST['save_approval'])) {
     } else {
         $response['error'] = "Error inserting approval: " . $conn->error;
     }
+
+    unset($_SESSION['cart']);
 
     $conn->close();
     echo json_encode($response);
