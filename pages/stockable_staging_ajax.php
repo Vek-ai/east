@@ -69,6 +69,8 @@ if(isset($_REQUEST['action'])) {
             $order_qty = $row['quantity'];
             $source_type = $row['source_type'];
 
+            $product_name = getProductName($product_id);
+
             $status_html = $instock
                 ? "<span class='badge bg-success text-white'>In Stock</span>"
                 : "<span class='badge bg-danger text-white'>Out of Stock</span>";
@@ -84,7 +86,7 @@ if(isset($_REQUEST['action'])) {
                     <div class='d-flex align-items-center'>
                         <img src='{$picture_path}' class='rounded-circle' width='56' height='56'>
                         <div class='ms-3'>
-                            <h6 class='fw-semibold mb-0 fs-4'>{$row['product_item']}</h6>
+                            <h6 class='fw-semibold mb-0 fs-4'>{$product_name}</h6>
                         </div>
                     </div>
                 </a>";
