@@ -201,7 +201,7 @@ if(isset($_REQUEST['action'])) {
             $check_inv = mysqli_query($conn, $inv_query);
 
             if (mysqli_num_rows($check_inv) > 0) {
-                $update_status = mysqli_query($conn, "UPDATE order_product SET status = 6 WHERE id = $id");
+                $update_status = mysqli_query($conn, "UPDATE order_product SET status = 0 WHERE id = $id");
 
                 $update_inventory = mysqli_query($conn, "
                     UPDATE inventory 
