@@ -12,7 +12,7 @@ $status_labels = [
     3 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
     4 => ['label' => 'Sent to Customer', 'class' => 'badge bg-success'],
     5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
-    6 => ['label' => 'Archived', 'class' => 'badge bg-secondary'],
+    6 => ['label' => 'Archived/Returned', 'class' => 'badge bg-secondary'],
 ];
 
 if(isset($_REQUEST['customer_id'])){

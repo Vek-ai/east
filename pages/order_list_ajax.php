@@ -106,7 +106,8 @@ if(isset($_REQUEST['action'])) {
                                             2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
                                             3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
                                             4 => ['label' => 'Delivered', 'class' => 'badge bg-success'],
-                                            5 => ['label' => 'On Hold', 'class' => 'badge bg-danger']
+                                            5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
+                                            6 => ['label' => 'Returned', 'class' => 'badge bg-danger']
                                         ];
 
                                         if ($is_stockable && isset($status_prod_labels[2])) {
