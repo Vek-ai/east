@@ -362,7 +362,36 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                             const res = JSON.parse(response);
                             if (res.success) {
                                 alert('Product successfully transferred to warehouse.');
-                                table.ajax.reload(null, false); // reload without resetting page
+                                table.ajax.reload(null, false);
+                            } else {
+                                alert('Failed: ' + res.message);
+                            }
+                        } catch (err) {
+                            console.error('Invalid JSON response', err);
+                            alert('Unexpected error occurred.');
+                        }
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', '#transfer_warehouse_order', function () {
+            const id = $(this).data('id');
+
+            if (confirm('Are you sure you want to return this product to the warehouse?')) {
+                $.ajax({
+                    type: 'POST',
+                    url: 'pages/stockable_staging_ajax.php',
+                    data: {
+                        action: 'transfer_warehouse_order',
+                        id: id
+                    },
+                    success: function (response) {
+                        try {
+                            const res = JSON.parse(response);
+                            if (res.success) {
+                                alert('Product successfully transferred to warehouse.');
+                                table.ajax.reload(null, false); 
                             } else {
                                 alert('Failed: ' + res.message);
                             }

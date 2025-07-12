@@ -98,6 +98,11 @@ if(isset($_REQUEST['action'])) {
                     <a href='javascript:void(0)' id='transfer_warehouse' data-id='{$id}' title='Return to Warehouse' class='text-success'>
                         <iconify-icon icon='material-symbols:warehouse' class='fs-7'></iconify-icon>
                     </a>";
+            }else if ($source_type === 'order'){
+                $action_html .= "
+                    <a href='javascript:void(0)' id='transfer_warehouse_order' data-id='{$id}' title='Return to Warehouse' class='text-success'>
+                        <iconify-icon icon='material-symbols:warehouse' class='fs-7'></iconify-icon>
+                    </a>";
             }
 
             $data[] = [
@@ -129,7 +134,7 @@ if(isset($_REQUEST['action'])) {
     if ($action == 'transfer_warehouse') {
         $id = intval($_POST['id']);
 
-        $fetch = mysqli_query($conn, "SELECT * FROM product_returns WHERE id = $id AND status = 0");
+        $fetch = mysqli_query($conn, "SELECT * FROM product_returns WHERE id = $id");
         if (mysqli_num_rows($fetch) > 0) {
             $row = mysqli_fetch_assoc($fetch);
 
@@ -171,6 +176,53 @@ if(isset($_REQUEST['action'])) {
             echo json_encode(['success' => false, 'message' => 'Return already processed or invalid.']);
         }
     }
+
+    if ($action == 'transfer_warehouse_order') {
+        $id = intval($_POST['id']);
+
+        $fetch = mysqli_query($conn, "SELECT * FROM order_product WHERE id = $id");
+        if (mysqli_num_rows($fetch) > 0) {
+            $row = mysqli_fetch_assoc($fetch);
+
+            $product_id = intval($row['productid']);
+            $color_id = isset($row['custom_color']) ? intval($row['custom_color']) : 0;
+            $quantity = floatval($row['quantity']);
+
+            $color_condition = ($color_id > 0) 
+                ? "AND color_id = $color_id" 
+                : "";
+
+            $inv_query = "
+                SELECT * FROM inventory 
+                WHERE product_id = $product_id 
+                $color_condition
+                LIMIT 1
+            ";
+            $check_inv = mysqli_query($conn, $inv_query);
+
+            if (mysqli_num_rows($check_inv) > 0) {
+                $update_status = mysqli_query($conn, "UPDATE order_product SET status = 6 WHERE id = $id");
+
+                $update_inventory = mysqli_query($conn, "
+                    UPDATE inventory 
+                    SET quantity_ttl = quantity_ttl + $quantity 
+                    WHERE product_id = $product_id 
+                    $color_condition
+                ");
+
+                if ($update_status && $update_inventory) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to update inventory or order status.']);
+                }
+            } else {
+                echo json_encode(['success' => false, 'message' => 'No matching inventory record found.']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Item not in returned status or invalid.']);
+        }
+    }
+
     
     mysqli_close($conn);
 }

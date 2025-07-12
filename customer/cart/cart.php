@@ -95,8 +95,14 @@
                 <div id="order-tbl"></div>
             </div>
             <div class="modal-footer">
+                <button class="btn ripple px-3" type="button" id="btnApprovalModal" style="background-color: #800080; color: white;">
+                    Submit Approval
+                </button>
                 <button class="btn ripple btn-warning next" type="button" id="save_estimate">
-                    <i class="fe fe-hard-drive"></i> Save Estimate
+                    Save Estimate
+                </button>
+                <button class="btn ripple btn-success" type="button" id="save_order_alt">
+                    Place Order
                 </button>
                 <button class="btn ripple btn-primary previous d-none" type="button" id="prev_page_order">
                     <i class="fe fe-hard-drive"></i> Previous

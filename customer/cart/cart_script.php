@@ -2912,6 +2912,10 @@ $(document).ready(function() {
         calculateDeliveryAmount();
     });
 
+    $(document).on('click', '#save_order_alt', function(event) {
+        $('#save_order').click();
+    }); 
+
     $(document).on('click', '#save_order', function(event) {
         event.preventDefault();
         var discount = $('#order_discount').val();

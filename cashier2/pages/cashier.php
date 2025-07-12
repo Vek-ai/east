@@ -491,11 +491,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                                 </button>
                             </div>
                             <div class="col-auto mb-2">
-                                <button type="button" class="btn px-3" id="btnApprovalModal" style="background-color: #800080; color: white;">
-                                    <i class="fa fa-check-circle fs-5 me-2"></i> Submit Approval
-                                </button>
-                            </div>
-                            <div class="col-auto mb-2">
                                 <button type="button" class="btn px-3" id="view_order" style="background-color: rgb(0, 218, 47); color: white; text-shadow: 1px 1px 2px #000;">
                                     <i class="fa fa-shopping-cart fs-5 me-2"></i> Next
                                 </button>
@@ -702,14 +697,17 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 <div id="order-tbl"></div>
             </div>
             <div class="modal-footer">
+                <button class="btn ripple px-3" type="button" id="btnApprovalModal" style="background-color: #800080; color: white;">
+                    Submit Approval
+                </button>
                 <button class="btn ripple btn-warning next" type="button" id="save_estimate">
-                    <i class="fe fe-hard-drive"></i> Save Estimate
+                    Save Estimate
+                </button>
+                <button class="btn ripple btn-success" type="button" id="save_order_alt">
+                    Place Order
                 </button>
                 <button class="btn ripple btn-primary previous d-none" type="button" id="prev_page_order">
                     <i class="fe fe-hard-drive"></i> Previous
-                </button>
-                <button class="btn ripple btn-success d-none" type="button" id="save_order">
-                    <i class="fe fe-hard-drive"></i> Save
                 </button>
                 <a href="#" class="btn ripple btn-light text-dark d-none" type="button" id="print_order_category" target="_blank">
                     <i class="fe fe-print"></i> Print Details
@@ -3966,6 +3964,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             calculateDeliveryAmount();
         });
 
+        $(document).on('click', '#save_order_alt', function(event) {
+            $('#save_order').click();
+        });  
+
         $(document).on('click', '#save_order', function(event) {
             event.preventDefault();
             var discount = $('#order_discount').val();
@@ -4029,6 +4031,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         }
 
                         $('#save_order').addClass('d-none');
+                        $('#save_order_alt').addClass('d-none');
                         $('#save_estimate').addClass('d-none');
                         $('#prev_page_order').addClass('d-none');
                     },
