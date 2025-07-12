@@ -2971,7 +2971,9 @@ $(document).ready(function() {
                         $('#print_order').removeClass('d-none');
                         $('#print_deliver').removeClass('d-none');
 
+                        $('#btnApprovalModal').addClass('d-none');
                         $('#save_order').addClass('d-none');
+                        $('#save_order_alt').addClass('d-none');
                         $('#save_estimate').addClass('d-none');
                         $('#prev_page_order').addClass('d-none');
                     } else if (response.error) {
