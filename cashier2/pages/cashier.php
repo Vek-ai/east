@@ -4030,6 +4030,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                             alert(response.error);
                         }
 
+                        $('#btnApprovalModal').addClass('d-none');
                         $('#save_order').addClass('d-none');
                         $('#save_order_alt').addClass('d-none');
                         $('#save_estimate').addClass('d-none');
