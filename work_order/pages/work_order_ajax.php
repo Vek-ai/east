@@ -9,7 +9,7 @@ require '../../includes/functions.php';
 
 if(isset($_POST['fetch_available'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
-    $work_order_details = getSubmitWorkOrderDetails($id);
+    $work_order_details = getWorkOrderDetails($id);
     $assigned_coils = $work_order_details['assigned_coils'];
     $decoded_coils = json_decode($assigned_coils, true);
     ?>
@@ -94,8 +94,6 @@ if(isset($_POST['fetch_available'])){
     <div class="modal-footer">
         <?php if (!empty($work_order_details) && $work_order_details['status'] == 1): ?>
             <button id="run_work_order" class="btn ripple btn-success" type="button">Run Work Order</button>
-        <?php elseif (!empty($work_order_details) && $work_order_details['status'] == 2): ?>
-            <button id="finish_work_order" class="btn ripple btn-primary" type="button">Finish Work Order</button>
         <?php endif; ?>
     </div>
 
@@ -205,7 +203,7 @@ if(isset($_POST['fetch_available'])){
 
 if(isset($_POST['fetch_view'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
-    $work_order_details = getSubmitWorkOrderDetails($id);
+    $work_order_details = getWorkOrderDetails($id);
     $assigned_coils = $work_order_details['assigned_coils'];
     $decoded_coils = json_decode($assigned_coils, true);
     ?>
@@ -220,11 +218,17 @@ if(isset($_POST['fetch_view'])){
         <div class="product-details table-responsive text-wrap">
             <?php
                 $query = "
-                    SELECT wo.*, p.product_item, wop.type as order_type, wop.work_order_id
-                    FROM work_order AS wo
-                    LEFT JOIN work_order_product AS wop ON wo.work_order_product_id = wop.id
-                    LEFT JOIN product AS p ON p.product_id = wo.productid
-                    WHERE wop.work_order_id = '$id'
+                    SELECT 
+                        wo.*, 
+                        p.product_item, 
+                        wo.work_order_id
+                    FROM 
+                        work_order AS wo
+                    LEFT JOIN 
+                        product AS p ON 
+                            p.product_id = wo.productid
+                    WHERE 
+                        wo.work_order_id = '$id' AND wo.status = 1
                 ";
 
                 $result = mysqli_query($conn, $query);
@@ -481,7 +485,7 @@ if(isset($_POST['fetch_view'])){
 
 if(isset($_POST['fetch_assigned'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
-    $work_order_details = getSubmitWorkOrderDetails($id);
+    $work_order_details = getWorkOrderDetails($id);
     $assigned_coils = $work_order_details['assigned_coils'];
     $decoded_coils = json_decode($assigned_coils, true);
     ?>
@@ -624,7 +628,7 @@ if(isset($_POST['fetch_assigned'])){
 
 if (isset($_POST['fetch_coils'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
-    $details = getSubmitWorkOrderDetails($id);
+    $details = getWorkOrderDetails($id);
 
     $assigned_coils = json_decode($details['assigned_coils'] ?? '[]', true) ?? [];
 
@@ -721,7 +725,7 @@ if (isset($_POST['fetch_coils'])) {
         <button class="btn ripple btn-danger" type="button" data-bs-dismiss="modal">Close</button>
     </div>
 
-    <div class="modal fade" id="confirmChangeModal" tabindex="-1" aria-labelledby="confirmChangeModalLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmChangeModal" tabindex="-1" aria-labelledby="confirmChangeModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
         <div class="modal-dialog">
             <div class="modal-content p-3">
                 <div class="modal-header">
@@ -837,38 +841,51 @@ if (isset($_POST['fetch_coils'])) {
 <?php }
 
 
-if(isset($_POST['assign_coil'])){
+if (isset($_POST['assign_coil'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $wrk_ordr = getWorkOrderDetails($id);
 
-    $change_reason = $_POST['change_reason'] ?? null;
-    $change_notes = $_POST['change_notes'] ?? null;
+    $change_reason = mysqli_real_escape_string($conn, $_POST['change_reason'] ?? '');
+    $change_notes = mysqli_real_escape_string($conn, $_POST['change_notes'] ?? '');
 
     $userid = $_SESSION['userid'];
-
     $selected_coils = json_decode($_POST['selected_coils'], true);
     $coils_json = json_encode($selected_coils);
 
-    $sql = "UPDATE work_order SET assigned_coils = '$coils_json' WHERE id = $id";
-    if ($conn->query($sql) === TRUE) {
-        echo "success";
+    $update_sql = "UPDATE work_order SET assigned_coils = '$coils_json' WHERE id = $id";
+    if ($conn->query($update_sql) === TRUE) {
+
+        $orderid = $wrk_ordr['work_order_id'];
+        $order_product_id = $wrk_ordr['work_order_product_id'];
+
+        $log_sql = "
+            INSERT INTO work_order_changes (orderid, order_product_id, reason, notes, change_date, changed_by)
+            VALUES (
+                '$orderid',
+                '$order_product_id',
+                '$change_reason',
+                " . ($change_notes !== '' ? "'$change_notes'" : "NULL") . ",
+                NOW(),
+                '$userid'
+            )
+        ";
+
+        if ($conn->query($log_sql) === TRUE) {
+            echo "success";
+        } else {
+            echo "Error logging change: " . $conn->error;
+        }
+
     } else {
         echo "Error updating records: " . $conn->error;
     }
 }
 
-if (isset($_POST['search_work_order'])) {
-    $product_name = mysqli_real_escape_string($conn, $_POST['product_search']);
-    $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
-    $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
-
-    
-}
 
 if (isset($_POST['run_work_order'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
 
-    $work_order_details = getSubmitWorkOrderDetails($id);
+    $work_order_details = getWorkOrderDetails($id);
     $assigned_coils = json_decode($work_order_details['assigned_coils'], true);
 
     $length_ft = floatval($work_order_details['custom_length'] ?? 0);

@@ -209,72 +209,9 @@ if(isset($_POST['assign_coil'])){
     $selected_coils = json_decode($_POST['selected_coils'], true);
     $coils_json = json_encode($selected_coils);
 
-    $sql = "
-        INSERT INTO work_order(
-            work_order_product_id,
-            productid,
-            status,
-            quantity,
-            custom_color,
-            custom_grade,
-            custom_width,
-            custom_height,
-            custom_bend,
-            custom_hem,
-            custom_length,
-            custom_length2,
-            actual_price,
-            discounted_price,
-            product_category,
-            usageid,
-            current_customer_discount,
-            current_loyalty_discount,
-            used_discount,
-            stiff_stand_seam,
-            stiff_board_batten,
-            panel_type,
-            submitted_date,
-            assigned_coils,
-            user_id,
-            custom_img_src
-        )
-        VALUES(
-            '".$id."',
-            '".$wrk_ordr['productid']."',
-            '1',
-            '".$wrk_ordr['quantity']."',
-            '".$wrk_ordr['custom_color']."',
-            '".$wrk_ordr['custom_grade']."',
-            '".$wrk_ordr['custom_width']."',
-            '".$wrk_ordr['custom_height']."',
-            '".$wrk_ordr['custom_bend']."',
-            '".$wrk_ordr['custom_hem']."',
-            '".$wrk_ordr['custom_length']."',
-            '".$wrk_ordr['custom_length2']."',
-            '".$wrk_ordr['actual_price']."',
-            '".$wrk_ordr['discounted_price']."',
-            '".$wrk_ordr['product_category']."',
-            '".$wrk_ordr['usageid']."',
-            '".$wrk_ordr['current_customer_discount']."',
-            '".$wrk_ordr['current_loyalty_discount']."',
-            '".$wrk_ordr['used_discount']."',
-            '".$wrk_ordr['stiff_stand_seam']."',
-            '".$wrk_ordr['stiff_board_batten']."',
-            '".$wrk_ordr['panel_type']."',
-            CURRENT_TIMESTAMP(), 
-            '$coils_json',
-            '$userid',
-            '".$wrk_ordr['custom_img_src']."'
-        )
-    ";
-
+    $sql = "UPDATE work_order SET status = '1', assigned_coils = '$coils_json'  WHERE id = $id";
     if ($conn->query($sql) === TRUE) {
-        $sql = "UPDATE work_order_product SET status = '2' WHERE id = $id";
-        if ($conn->query($sql) === TRUE) {
-            echo "success";
-        } else {
-            echo "Error updating records: " . $conn->error;
-        }
+        echo "success";
     } else {
         echo "Error updating records: " . $conn->error;
     }
@@ -286,10 +223,10 @@ if (isset($_POST['search_work_order'])) {
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
 
     $query = "
-        SELECT wop.*, p.product_item
-        FROM work_order_product AS wop
-        LEFT JOIN product AS p ON p.product_id = wop.productid
-        WHERE 1 = 1
+        SELECT wo.*, p.product_item
+        FROM work_order AS wo
+        LEFT JOIN product AS p ON p.product_id = wo.productid
+        WHERE wo.status = '0'
     ";
 
     if (!empty($product_name) && $product_name != 'All Products') {
@@ -298,9 +235,9 @@ if (isset($_POST['search_work_order'])) {
 
     if (!empty($date_from) && !empty($date_to)) {
         $date_to .= ' 23:59:59';
-        $query .= " AND (wop.submitted_date >= '$date_from' AND wop.submitted_date <= '$date_to') ";
+        $query .= " AND (wo.submitted_date >= '$date_from' AND wo.submitted_date <= '$date_to') ";
     }else{
-        $query .= " AND (wop.submitted_date >= DATE_SUB(curdate(), INTERVAL 2 WEEK) AND wop.submitted_date <= NOW()) ";
+        $query .= " AND (wo.submitted_date >= DATE_SUB(curdate(), INTERVAL 2 WEEK) AND wo.submitted_date <= NOW()) ";
     }
 
     $result = mysqli_query($conn, $query);
@@ -407,13 +344,17 @@ if (isset($_POST['search_work_order'])) {
                         <?php 
                             $status = $row['status'];
                             switch ($status) {
-                                case 1:
+                                case 0:
                                     $statusText = 'New';
                                     $statusColor = 'bg-primary';
                                     break;
+                                case 1:
+                                    $statusText = 'Pending Work Order';
+                                    $statusColor = 'bg-warning';
+                                    break;
                                 case 2:
                                     $statusText = 'Processing';
-                                    $statusColor = 'bg-warning';
+                                    $statusColor = 'bg-info';
                                     break;
                                 case 3:
                                     $statusText = 'Done';

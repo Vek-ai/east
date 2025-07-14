@@ -1182,7 +1182,6 @@ if (isset($_POST['save_order'])) {
             }
         }
 
-
         unset($_SESSION['cart']);
 
         echo json_encode([
@@ -1426,14 +1425,29 @@ if (isset($_POST['save_order'])) {
             $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
             $custom_img_src = $item['custom_trim_src'];
 
-            $values[] = "('$orderid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$product_category', '$custom_color' , '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$custom_img_src')";
-            
-            
+            $query = "INSERT INTO order_product (
+                orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem,
+                custom_length, custom_length2, actual_price, discounted_price, product_category,
+                custom_color, custom_grade, current_customer_discount, current_loyalty_discount,
+                used_discount, stiff_stand_seam, stiff_board_batten, panel_type, custom_img_src
+            ) VALUES (
+                '$orderid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width',
+                '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch',
+                '$actual_price', '$discounted_price', '$product_category', '$custom_color',
+                '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount',
+                '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$custom_img_src'
+            )";
+
+            if ($conn->query($query) !== TRUE) {
+                echo "Error: " . $conn->error;
+            }
+
+            $order_prod_id = $conn->insert_id;
 
             if ($product_details['product_origin'] == 2) {
-                $query = "INSERT INTO work_order_product (
+                $query = "INSERT INTO work_order (
                             work_order_id, 
-                            type,
+                            work_order_product_id, 
                             productid, 
                             product_item,
                             quantity, 
@@ -1453,11 +1467,12 @@ if (isset($_POST['save_order'])) {
                             stiff_stand_seam, 
                             stiff_board_batten, 
                             panel_type,
-                            custom_img_src
+                            custom_img_src,
+                            user_id
                         ) 
                         VALUES (
                             '$orderid', 
-                            '2', 
+                            '$order_prod_id',
                             '$product_id', 
                             '$product_item', 
                             '$quantity_cart', 
@@ -1477,7 +1492,8 @@ if (isset($_POST['save_order'])) {
                             '$stiff_stand_seam', 
                             '$stiff_board_batten', 
                             '$panel_type', 
-                            '$custom_img_src'
+                            '$custom_img_src',
+                            '$cashierid'
                         )";
             
                 if ($conn->query($query) === TRUE) {
@@ -1654,60 +1670,54 @@ if (isset($_POST['save_order'])) {
             }
         }
 
-        $query = "INSERT INTO order_product (orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type, custom_img_src) VALUES ";
-        $query .= implode(', ', $values);
-
+        $query = "INSERT INTO order_estimate (order_estimate_id, type) VALUES ('$orderid','2')";
         if ($conn->query($query) === TRUE) {
-            $query = "INSERT INTO order_estimate (order_estimate_id, type) VALUES ('$orderid','2')";
-            if ($conn->query($query) === TRUE) {
-                $order_estimate_id = $conn->insert_id;
-                $baseUrl = "https://delivery.ilearnsda.com/test.php";
-                $prodValue = $order_estimate_id;
-                $url = $baseUrl . "?prod=" . urlencode($prodValue);
-                $ch = curl_init($url);
-                curl_setopt($ch, CURLOPT_NOBODY, true);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-                curl_setopt($ch, CURLOPT_HEADER, false);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-                curl_exec($ch);
-                curl_close($ch);
+            $order_estimate_id = $conn->insert_id;
+            $baseUrl = "https://delivery.ilearnsda.com/test.php";
+            $prodValue = $order_estimate_id;
+            $url = $baseUrl . "?prod=" . urlencode($prodValue);
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_NOBODY, true);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+            curl_exec($ch);
+            curl_close($ch);
 
-                $response['success'] = true;
-                $response['order_id'] = $orderid;
+            $response['success'] = true;
+            $response['order_id'] = $orderid;
 
-                unset($_SESSION['cart']);
+            unset($_SESSION['cart']);
 
-                if($applyStoreCredit){
+            if($applyStoreCredit){
 
-                }
+            }
 
-                $customer_total_orders = getCustomerOrderTotal($customerid);
-                $customer_details = getCustomerDetails($customerid);
-                $isLoyalty = $customer_details['loyalty'];
+            $customer_total_orders = getCustomerOrderTotal($customerid);
+            $customer_details = getCustomerDetails($customerid);
+            $isLoyalty = $customer_details['loyalty'];
 
-                if (!$isLoyalty) {
-                    $query_loyalty = "SELECT * FROM loyalty_program WHERE date_from <= CURDATE() AND date_to >= CURDATE()";
-                    $result_loyalty = $conn->query($query_loyalty);
+            if (!$isLoyalty) {
+                $query_loyalty = "SELECT * FROM loyalty_program WHERE date_from <= CURDATE() AND date_to >= CURDATE()";
+                $result_loyalty = $conn->query($query_loyalty);
 
-                    if ($result_loyalty && $result_loyalty->num_rows > 0) {
-                        while ($row_loyalty = $result_loyalty->fetch_assoc()) {
-                            $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
+                if ($result_loyalty && $result_loyalty->num_rows > 0) {
+                    while ($row_loyalty = $result_loyalty->fetch_assoc()) {
+                        $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
 
-                            if ($customer_total_orders >= $accumulated_loyalty_required) {
-                                $query_update_loyalty = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
-                                if ($conn->query($query_update_loyalty) === TRUE) {
-                                    $response['message'] = 'Added Customer to Loyalty Program';
-                                }
+                        if ($customer_total_orders >= $accumulated_loyalty_required) {
+                            $query_update_loyalty = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
+                            if ($conn->query($query_update_loyalty) === TRUE) {
+                                $response['message'] = 'Added Customer to Loyalty Program';
                             }
                         }
                     }
                 }
-            }else{
-                $response['message'] = "Error inserting order estimate records: " . $conn->error;
             }
-        } else {
-            $response['error'] = "Error inserting order products: " . $conn->error;
+        }else{
+            $response['message'] = "Error inserting order estimate records: " . $conn->error;
         }
+        
 
         unset($_SESSION['customer_id']);
     } else {

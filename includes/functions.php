@@ -139,7 +139,7 @@ function getApprovalProductDetails($id) {
 function getWorkOrderDetails($id) {
     global $conn;
     $id = mysqli_real_escape_string($conn, $id);
-    $query = "SELECT * FROM work_order_product WHERE id = '$id'";
+    $query = "SELECT * FROM work_order WHERE id = '$id'";
     $result = mysqli_query($conn, $query);
     $work_order = [];
     if ($row = mysqli_fetch_assoc($result)) {

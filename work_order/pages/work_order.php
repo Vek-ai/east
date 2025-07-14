@@ -187,13 +187,19 @@ $page_title = "Work Order";
                         <div id="tbl-work-order" class="product-details table-responsive">
                             <?php
                             $query = "
-                                SELECT wo.*, p.product_item, wop.type AS order_type, wop.id AS wop_id, wop.work_order_id
-                                FROM work_order AS wo
-                                LEFT JOIN work_order_product AS wop ON wo.work_order_product_id = wop.id
-                                LEFT JOIN product AS p ON p.product_id = wo.productid
+                                SELECT 
+                                    wo.*, 
+                                    p.product_item 
+                                FROM 
+                                    work_order AS wo
+                                LEFT JOIN 
+                                    product AS p ON p.product_id = wo.productid
                                 WHERE 
-                                (wo.submitted_date >= DATE_SUB(CURDATE(), INTERVAL 2 WEEK) AND wo.submitted_date <= NOW())
-                                ORDER BY wop.work_order_id, wo.id
+                                    wo.submitted_date >= DATE_SUB(CURDATE(), INTERVAL 2 WEEK)
+                                    AND wo.submitted_date <= NOW()
+                                    AND wo.status = 1
+                                ORDER BY 
+                                    wo.work_order_id, wo.id
                             ";
 
                             $result = mysqli_query($conn, $query);
@@ -224,8 +230,8 @@ $page_title = "Work Order";
 
                                 foreach ($grouped as $work_order_id => $items):
                                     $first = $items[0];
-                                    $order_type = $first['order_type'];
-                                    $order_no = ($order_type == 1 ? 'ES-' : 'SO-') . $work_order_id;
+
+                                    $order_no = 'SO-' . $work_order_id;
 
                                     $cashier = get_name($first['user_id']);
                                     $order_details = getOrderDetails($work_order_id);
