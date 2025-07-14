@@ -1492,6 +1492,10 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "invoice") {include 'pages/invoice.php';}
             if ($_REQUEST['page'] == "stockable_staging") {include 'pages/stockable_staging.php';}
             if ($_REQUEST['page'] == "stockable_release") {include 'pages/stockable_release.php';}
+
+            if ($_REQUEST['page'] == "work_order_run") {include 'pages/work_order_run.php';}
+            if ($_REQUEST['page'] == "work_order_finish") {include 'pages/work_order_finish.php';}
+            if ($_REQUEST['page'] == "work_order_release") {include 'pages/work_order_release.php';}
           ?>
         </div>
       </div>
