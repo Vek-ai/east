@@ -187,208 +187,99 @@ $page_title = "Work Order";
                         <div id="tbl-work-order" class="product-details table-responsive">
                             <?php
                             $query = "
-                                SELECT wo.*, p.product_item, wop.type as order_type
+                                SELECT wo.*, p.product_item, wop.type AS order_type, wop.id AS wop_id, wop.work_order_id
                                 FROM work_order AS wo
                                 LEFT JOIN work_order_product AS wop ON wo.work_order_product_id = wop.id
                                 LEFT JOIN product AS p ON p.product_id = wo.productid
                                 WHERE 
-                                (wo.submitted_date >= DATE_SUB(curdate(), INTERVAL 2 WEEK) AND wo.submitted_date <= NOW())
+                                (wo.submitted_date >= DATE_SUB(CURDATE(), INTERVAL 2 WEEK) AND wo.submitted_date <= NOW())
+                                ORDER BY wop.work_order_id, wo.id
                             ";
 
                             $result = mysqli_query($conn, $query);
 
                             if ($result && mysqli_num_rows($result) > 0) {
-                                $total_amount = 0;
-                                $total_count = 0;
+                                $grouped = [];
 
-                                ?>
-                                <table id="work_order_table" class="table table-hover mb-0 text-md-nowrap">
-                                    <thead>
-                                        <tr>
-                                            <th class="align-middle">Order #</th>
-                                            <th class="w-20 align-middle">Description</th>
-                                            <th class="text-center align-middle">Cashier</th>
-                                            <th class="text-center align-middle">Color</th>
-                                            <th class="text-center align-middle">Grade</th>
-                                            <th class="text-center align-middle">Profile</th>
-                                            <th class="text-center align-middle">Width</th>
-                                            <th class="text-center align-middle">Length</th>
-                                            <th class="text-center align-middle">Status</th>
-                                            <th class="text-center align-middle">Quantity</th>
-                                            <th class="text-center align-middle">Details</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>     
-                                    <?php
-                                    $images_directory = "../images/drawing/";
-
-                                    $default_image = '../images/product/product.jpg';
-                                    while ($row = mysqli_fetch_assoc($result)) {
-                                        $color_details = getColorDetails($row['custom_color']);
-                                        $product_id = $row['productid'];
-                                        $product_details = getProductDetails($product_id);
-                                        $width = $row['custom_width'];
-                                        $bend = $row['custom_bend'];
-                                        $hem = $row['custom_hem'];
-                                        $length = $row['custom_length'];
-                                        $inch = $row['custom_length2'];
-                                        $inventory_type = '';
-                                        $status = $row['status'];
-                                        $order_type = $row['order_type'];
-
-                                        $status = (int)$row['status'];
-                                        $statusText = '';
-
-                                        switch ($status) {
-                                            case 1:
-                                                $statusText = 'New';
-                                                break;
-                                            case 2:
-                                                $statusText = 'Processing';
-                                                break;
-                                            case 3:
-                                                $statusText = 'Done';
-                                                break;
-                                            default:
-                                                $statusText = 'Unknown';
-                                        }
-
-                                        $order_no = $row['id'];
-
-                                        if($order_type == 1){
-                                            $order_no = 'ES-'  .$order_no;
-                                        }else{
-                                            $order_no = 'SO-'  .$order_no;
-                                        }
-
-
-                                        $picture_path = !empty($row['custom_img_src']) ? $images_directory.$row["custom_img_src"] : $default_image;
-                                        ?>
-                                        <tr data-id="<?= $product_id ?>"
-                                            data-category="<?= getProductCategoryName($row['product_category']) ?>"
-                                            data-type="<?= getProductTypeName($product_details['product_type']) ?>"
-                                            data-inventory="<?= $inventory_type ?>"
-                                            data-width="<?= $width ?>"
-                                            data-grade="<?= getGradeName($row['custom_grade']) ?>"
-                                            data-gauge="<?= getGaugeName($product_details['gauge']) ?>"
-                                            data-color="<?= getColorName($row['custom_color']) ?>"
-                                            data-profile="<?= getProfileTypeName($product_details['profile']) ?>"
-                                            data-status="<?= $statusText ?>"
-                                            data-order="<?= $order_type ?>"
-
-                                        >
-                                            <td class="align-middle">
-                                                <?= $order_no ?>
-                                            </td>
-                                            <td class="align-middle text-wrap w-20"> 
-                                                <a href="javascript:void(0);" class="d-inline-flex align-items-center justify-content-start">
-                                                        <img src="<?= $picture_path ?>" style="background-color: #fff; width: 56px; height: 56px;" class="rounded-circle img-thumbnail preview-image" width="56" height="56" style="background-color: #fff;">
-                                                    <div class="mt-1 ms-2"><?= getProductName($product_id) ?></div>
-                                                </a>
-                                            </td>
-                                            <td>
-                                                <?= get_name($row['user_id']); ?>
-                                            </td>
-                                            <td>
-                                            <div class="d-inline-flex align-items-center gap-2">
-                                                <a 
-                                                    href="javascript:void(0)" 
-                                                    id="viewAvailableBtn" 
-                                                    data-app-prod-id="<?= $row['id'] ?>" 
-                                                    class="d-inline-flex align-items-center gap-2 text-decoration-none">
-                                                        <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?? '' ?>; width: 20px; height: 20px;"></span>
-                                                        <?= $color_details['color_name'] ?? '' ?>
-                                                </a>
-                                            </div>
-                                            </td>
-                                            <td>
-                                                <?php echo getGradeName($row['custom_grade']); ?>
-                                            </td>
-                                            <td>
-                                                <?php echo getProfileFromID($product_id); ?>
-                                            </td>
-                                            <td class="text-center">
-                                                <?php 
-                                                if (!empty($width)) {
-                                                    echo htmlspecialchars($width);
-                                                }
-                                                ?>
-                                            </td>
-                                            <td class="text-center">
-                                                <?php 
-                                                if (!empty($length)) {
-                                                    echo htmlspecialchars($length) . " ft";
-                                                    
-                                                    if (!empty($inch)) {
-                                                        echo " " . htmlspecialchars($inch) . " in";
-                                                    }
-                                                } elseif (!empty($inch)) {
-                                                    echo htmlspecialchars($inch) . " in";
-                                                }
-                                                ?>
-                                            </td>
-                                            <td class="text-center">
-                                                <?php
-                                                $status = (int)$row['status'];
-                                                $statusText = '';
-                                                $statusClass = '';
-
-                                                switch ($status) {
-                                                    case 1:
-                                                        $statusText = 'New';
-                                                        $statusClass = 'badge bg-primary';
-                                                        break;
-                                                    case 2:
-                                                        $statusText = 'Processing';
-                                                        $statusClass = 'badge bg-warning text-dark';
-                                                        break;
-                                                    case 3:
-                                                        $statusText = 'Done';
-                                                        $statusClass = 'badge bg-success';
-                                                        break;
-                                                    default:
-                                                        $statusText = 'Unknown';
-                                                        $statusClass = 'badge bg-secondary';
-                                                }
-                                                ?>
-                                                <span class="<?= $statusClass ?>"><?= $statusText ?></span>
-                                            </td>
-                                            <td class="text-center">
-                                                <?php echo $row['quantity']; ?>
-                                            </td>
-                                            <td class="text-center">
-                                                <?php 
-                                                if (!empty($bend)) {
-                                                    echo "Bend: " . htmlspecialchars($bend) . "<br>";
-                                                }
-                                                
-                                                if (!empty($hem)) {
-                                                    echo "Hem: " . htmlspecialchars($hem) . "<br>";
-                                                }
-                                                ?>
-                                            </td>
-                                            <td>
-                                                <div class="action-btn text-center">
-                                                    <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Run Work Order" data-app-prod-id="<?= $row['id'] ?>">
-                                                        <i class="fa fa-arrow-right-to-bracket"></i>
-                                                    </a>
-                                                    <a href="javascript:void(0)" class="text-decoration-none" id="viewBtn" title="View" data-app-prod-id="<?= $row['id'] ?>">
-                                                        <i class="fa fa-eye"></i>
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <?php
-                                    }
-                                    ?>
-                                    </tbody>
-                                </table>
-                                <?php
-                            } else {
-                                echo "<h4 class='text-center'>No Requests found</h4>";
-                            }
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    $grouped[$row['work_order_id']][] = $row;
+                                }
                             ?>
+                            <table id="work_order_table" class="table table-hover mb-0 text-md-nowrap align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Products</th>
+                                        <th>Cashier</th>
+                                        <th>Customer</th>
+                                        <th>Job Name</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <?php
+                                $images_directory = "../images/drawing/";
+                                $default_image = "../images/product/product.jpg";
+
+                                foreach ($grouped as $work_order_id => $items):
+                                    $first = $items[0];
+                                    $order_type = $first['order_type'];
+                                    $order_no = ($order_type == 1 ? 'ES-' : 'SO-') . $work_order_id;
+
+                                    $cashier = get_name($first['user_id']);
+                                    $order_details = getOrderDetails($work_order_id);
+                                    $customer_name = get_customer_name($order_details['customerid']);
+                                    $job_name = $order_details['job_name'];
+
+                                    $status = (int)$first['status'];
+                                    $statusText = 'Unknown';
+                                    $statusClass = 'badge bg-secondary';
+                                    switch ($status) {
+                                        case 1: $statusText = 'New'; $statusClass = 'badge bg-primary'; break;
+                                        case 2: $statusText = 'Processing'; $statusClass = 'badge bg-warning text-dark'; break;
+                                        case 3: $statusText = 'Done'; $statusClass = 'badge bg-success'; break;
+                                    }
+                                ?>
+                                <tr data-work-order-id="<?= $work_order_id ?>">
+                                    <td><?= $order_no ?></td>
+
+                                    <td class="text-wrap w-20">
+                                        <?php foreach ($items as $row): 
+                                            $product_id = $row['productid'];
+                                            $product_name = getProductName($product_id);
+                                            $picture_path = !empty($row['custom_img_src']) ? $images_directory . $row["custom_img_src"] : $default_image;
+                                        ?>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <img src="<?= $picture_path ?>" class="rounded-circle img-thumbnail me-2" width="40" height="40">
+                                            <div><?= htmlspecialchars($product_name) ?></div>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </td>
+
+                                    <td><?= htmlspecialchars($cashier) ?></td>
+                                    <td><?= htmlspecialchars($customer_name) ?></td>
+                                    <td><?= htmlspecialchars($job_name) ?></td>
+
+                                    <td class="text-center"><span class="<?= $statusClass ?>"><?= $statusText ?></span></td>
+
+                                    <td class="text-center">
+                                        <div class="action-btn">
+                                            <a href="javascript:void(0)" class="text-decoration-none" id="viewBtn" title="View" data-id="<?= $work_order_id ?>">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                            <?php } else { ?>
+                                <h4 class="text-center">No Requests found</h4>
+                            <?php } ?>
+
+
+
                         </div>
                     </div>
                 </div>
@@ -398,11 +289,27 @@ $page_title = "Work Order";
     </div>
 </div>
 
-<div class="modal" id="view_available_modal" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-xl" role="document">
+<div class="modal" id="view_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog" role="document" style="width: 90%; max-width: none;">
         <div class="modal-content p-2">
             <div class="modal-header">
-                <h4 class="modal-title">Assigned Coils for Work Order</h4>
+                <h4 class="modal-title">Work Order Details</h4>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="view-details"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="view_available_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog" role="document" style="width: 90%; max-width: none;">
+        <div class="modal-content p-2">
+            <div class="modal-header">
+                <h4 class="modal-title">Assigned Coils</h4>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -508,17 +415,55 @@ $page_title = "Work Order";
         });
 
         $(document).on('click', '#viewBtn', function(event) {
-            var id = $(this).data('app-prod-id');
+            var id = $(this).data('id');
 
             $.ajax({
                 url: 'pages/work_order_ajax.php',
                 type: 'POST',
                 data: {
                     id: id,
-                    fetch_details: 'fetch_details'
+                    fetch_view: 'fetch_view'
+                },
+                success: function(response) {
+                    $('#view-details').html(response);
+
+                    if ($.fn.DataTable.isDataTable('#work_order_table_dtls')) {
+                        $('#work_order_table_dtls').DataTable().clear().destroy();
+                    }
+
+                    var table = $('#work_order_table_dtls').DataTable({
+                        pageLength: 100
+                    });
+
+                    $('#view_modal').modal('toggle');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#viewAssignedBtn', function(event) {
+            var id = $(this).data('id');
+
+            $.ajax({
+                url: 'pages/work_order_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    fetch_assigned: 'fetch_assigned'
                 },
                 success: function(response) {
                     $('#available-details').html(response);
+
+                    if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
+                        $('#coil_dtls_tbl').DataTable().clear().destroy();
+                    }
+
+                    var table = $('#coil_dtls_tbl').DataTable({
+                        pageLength: 100
+                    });
+
                     $('#view_available_modal').modal('toggle');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
