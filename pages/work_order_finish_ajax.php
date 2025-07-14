@@ -453,13 +453,26 @@ if (isset($_POST['release_work_order'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
 
     $update = "UPDATE work_order SET status = 4 WHERE id = '$id'";
-    if (mysqli_query($conn, $update)) {
-        echo "success";
-    } else {
+    if (!mysqli_query($conn, $update)) {
         echo "error: " . mysqli_error($conn);
+        exit;
     }
+
+    $work_ordr_dtls = getWorkOrderDetails($id);
+    $order_product_id = intval($work_ordr_dtls['work_order_product_id']);
+
+    if ($order_product_id > 0) {
+        $update_product = "UPDATE order_product SET status = 2 WHERE id = $order_product_id";
+        if (!mysqli_query($conn, $update_product)) {
+            echo "error: " . mysqli_error($conn);
+            exit;
+        }
+    }
+
+    echo "success";
     exit;
 }
+
 
 
 
