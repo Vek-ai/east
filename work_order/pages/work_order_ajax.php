@@ -241,6 +241,9 @@ if(isset($_POST['fetch_view'])){
                     <table id="work_order_table_dtls" class="table table-hover mb-0 text-md-nowrap">
                         <thead>
                             <tr>
+                                <th class="text-center align-middle">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
                                 <th class="align-middle">Order #</th>
                                 <th class="w-20 align-middle">Description</th>
                                 <th class="text-center align-middle">Cashier</th>
@@ -258,6 +261,7 @@ if(isset($_POST['fetch_view'])){
                         <tbody>     
                         <?php
                         $images_directory = "../images/drawing/";
+                        $no = 1;
 
                         $default_image = '../images/product/product.jpg';
                         while ($row = mysqli_fetch_assoc($result)) {
@@ -271,7 +275,6 @@ if(isset($_POST['fetch_view'])){
                             $inch = $row['custom_length2'];
                             $inventory_type = '';
                             $status = $row['status'];
-                            $order_type = $row['order_type'];
 
                             $status = (int)$row['status'];
                             $statusText = '';
@@ -292,12 +295,7 @@ if(isset($_POST['fetch_view'])){
 
                             $order_no = $row['work_order_id'];
 
-                            if($order_type == 1){
-                                $order_no = 'ES-'  .$order_no;
-                            }else{
-                                $order_no = 'SO-'  .$order_no;
-                            }
-
+                            $order_no = 'SO-' .$order_no ."-$no";
 
                             $picture_path = !empty($row['custom_img_src']) ? $images_directory.$row["custom_img_src"] : $default_image;
                             ?>
@@ -314,6 +312,9 @@ if(isset($_POST['fetch_view'])){
                                 data-order="<?= $order_type ?>"
 
                             >
+                                <td class="text-center align-middle">
+                                    <input type="checkbox" class="row-check" value="<?= $row['id'] ?>">
+                                </td>
                                 <td class="align-middle">
                                     <?= $order_no ?>
                                 </td>
@@ -416,6 +417,7 @@ if(isset($_POST['fetch_view'])){
                                 </td>
                             </tr>
                             <?php
+                            $no++;
                         }
                         ?>
                         </tbody>
@@ -426,6 +428,11 @@ if(isset($_POST['fetch_view'])){
                 }
                 ?>
         </div>
+    </div>
+    <div class="d-flex justify-content-end mt-3">
+        <button type="button" class="btn btn-success" id="runSelectedBtn">
+            <i class="fa fa-play me-1"></i> Run
+        </button>
     </div>
 
     <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">
@@ -462,6 +469,45 @@ if(isset($_POST['fetch_view'])){
                 coilModal.show();
             });
 
+            $(document).on('change', '#selectAll', function () {
+                $('.row-check').prop('checked', this.checked);
+            });
+
+            $(document).on('click', '#runSelectedBtn', function () {
+                const selectedIds = $('.row-check:checked').map(function () {
+                    return $(this).val();
+                }).get();
+
+                if (selectedIds.length === 0) {
+                    alert('Please select at least one item to run.');
+                    return;
+                }
+
+                const id = <?= $id ?? 0 ?>;
+
+                $.ajax({
+                    url: 'pages/work_order_ajax.php',
+                    method: 'POST',
+                    data: {
+                        id: id,
+                        selected_ids: selectedIds,
+                        run_work_order: 'run_work_order'
+                    },
+                    success: function (res) {
+                        if (res.trim() === 'success') {
+                            alert('Work Order Completed. Coil lengths updated.');
+                            location.reload();
+                        } else {
+                            alert('Failed to update coil lengths.');
+                            console.log(res);
+                        }
+                    },
+                    error: function (xhr) {
+                        alert('An error occurred: ' + xhr.statusText);
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
 
             if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
                 $('#coil_dtls_tbl').DataTable().order([[0, 'desc'], [3, 'asc']]).draw();
@@ -883,45 +929,44 @@ if (isset($_POST['assign_coil'])) {
 
 
 if (isset($_POST['run_work_order'])) {
-    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $ids = $_POST['selected_ids'] ?? [];
 
-    $work_order_details = getWorkOrderDetails($id);
-    $assigned_coils = json_decode($work_order_details['assigned_coils'], true);
+    if (!is_array($ids) || empty($ids)) {
+        echo 'no_selection';
+        exit;
+    }
 
-    $length_ft = floatval($work_order_details['custom_length'] ?? 0);
-    $length_in = floatval($work_order_details['custom_length2'] ?? 0);
+    foreach ($ids as $id) {
+        $id = mysqli_real_escape_string($conn, $id);
 
-    $total_length_ft = $length_ft + ($length_in / 12);
-
-    if (is_array($assigned_coils)) {
-        foreach ($assigned_coils as $coil_id) {
-            $coil_id = intval($coil_id);
-            $update = "UPDATE coil_product 
-                       SET remaining_feet = GREATEST(remaining_feet - $total_length_ft, 0) 
-                       WHERE coil_id = $coil_id";
-            mysqli_query($conn, $update);
+        $work_order_details = getWorkOrderDetails($id);
+        if (!$work_order_details) {
+            continue;
         }
 
-        $status_update = "UPDATE work_order SET status = 2 WHERE id = $id";
-        mysqli_query($conn, $status_update);
+        $assigned_coils = json_decode($work_order_details['assigned_coils'], true);
 
-        echo 'success';
-    } else {
-        echo 'invalid';
+        $length_ft = floatval($work_order_details['custom_length'] ?? 0);
+        $length_in = floatval($work_order_details['custom_length2'] ?? 0);
+
+        $total_length_ft = $length_ft + ($length_in / 12);
+
+        if (is_array($assigned_coils)) {
+            foreach ($assigned_coils as $coil_id) {
+                $coil_id = intval($coil_id);
+
+                $update = "UPDATE coil_product 
+                           SET remaining_feet = GREATEST(remaining_feet - $total_length_ft, 0) 
+                           WHERE coil_id = $coil_id";
+                mysqli_query($conn, $update);
+            }
+
+            $status_update = "UPDATE work_order SET status = 2 WHERE id = $id";
+            mysqli_query($conn, $status_update);
+        }
     }
 
-    exit;
-}
-
-if (isset($_POST['finish_work_order'])) {
-    $id = mysqli_real_escape_string($conn, $_POST['id']);
-
-    $update = "UPDATE work_order SET status = 3 WHERE id = '$id'";
-    if (mysqli_query($conn, $update)) {
-        echo "success";
-    } else {
-        echo "error: " . mysqli_error($conn);
-    }
+    echo 'success';
     exit;
 }
 

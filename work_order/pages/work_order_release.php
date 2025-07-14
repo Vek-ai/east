@@ -2,7 +2,7 @@
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
-$page_title = "Work Order";
+$page_title = "Work Order Released";
 ?>
 
 <div class="container-fluid">
@@ -10,14 +10,14 @@ $page_title = "Work Order";
     <div class="card-body px-0">
         <div class="d-flex justify-content-between align-items-center">
         <div><br>
-            <h4 class="font-weight-medium fs-14 mb-0">Work Orders</h4>
+            <h4 class="font-weight-medium fs-14 mb-0"><?= $page_title ?></h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
                 <a class="text-muted text-decoration-none" href="?page=">Home
                 </a>
                 </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Work Orders</li>
+                <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
             </ol>
             </nav>
         </div>
@@ -197,7 +197,7 @@ $page_title = "Work Order";
                                 WHERE 
                                     wo.submitted_date >= DATE_SUB(CURDATE(), INTERVAL 2 WEEK)
                                     AND wo.submitted_date <= NOW()
-                                    AND wo.status = 1
+                                    AND wo.status = 4
                                 ORDER BY 
                                     wo.work_order_id, wo.id
                             ";
@@ -245,6 +245,7 @@ $page_title = "Work Order";
                                         case 1: $statusText = 'New'; $statusClass = 'badge bg-primary'; break;
                                         case 2: $statusText = 'Processing'; $statusClass = 'badge bg-warning text-dark'; break;
                                         case 3: $statusText = 'Done'; $statusClass = 'badge bg-success'; break;
+                                        case 4: $statusText = 'Released'; $statusClass = 'badge bg-success'; break;
                                     }
                                 ?>
                                 <tr data-work-order-id="<?= $work_order_id ?>">
@@ -311,38 +312,6 @@ $page_title = "Work Order";
     </div>
 </div>
 
-<div class="modal" id="view_available_modal" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog" role="document" style="width: 90%; max-width: none;">
-        <div class="modal-content p-2">
-            <div class="modal-header">
-                <h4 class="modal-title">Assigned Coils</h4>
-                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="available-details"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="view_coils_modal" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog" role="document" style="width: 90%; max-width: none;">
-        <div class="modal-content p-2">
-            <div class="modal-header">
-                <h4 class="modal-title">Coils List</h4>
-                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="coil_details"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content bg-transparent border-0" >
@@ -356,7 +325,7 @@ $page_title = "Work Order";
 <script>
     function loadWorkOrderDetails(approval_id){
         $.ajax({
-            url: 'pages/work_order_ajax.php',
+            url: 'pages/work_order_release_ajax.php',
             type: 'POST',
             data: {
                 approval_id: approval_id,
@@ -406,31 +375,11 @@ $page_title = "Work Order";
             }
         });
 
-        $(document).on('click', '#viewAvailableBtn', function(event) {
-            var id = $(this).data('app-prod-id');
-
-            $.ajax({
-                url: 'pages/work_order_ajax.php',
-                type: 'POST',
-                data: {
-                    id: id,
-                    fetch_available: 'fetch_available'
-                },
-                success: function(response) {
-                    $('#available-details').html(response);
-                    $('#view_available_modal').modal('toggle');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
-
         $(document).on('click', '#viewBtn', function(event) {
             var id = $(this).data('id');
 
             $.ajax({
-                url: 'pages/work_order_ajax.php',
+                url: 'pages/work_order_release_ajax.php',
                 type: 'POST',
                 data: {
                     id: id,
@@ -448,55 +397,6 @@ $page_title = "Work Order";
                     });
 
                     $('#view_modal').modal('toggle');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
-
-        $(document).on('click', '#viewAssignedBtn', function(event) {
-            var id = $(this).data('id');
-
-            $.ajax({
-                url: 'pages/work_order_ajax.php',
-                type: 'POST',
-                data: {
-                    id: id,
-                    fetch_assigned: 'fetch_assigned'
-                },
-                success: function(response) {
-                    $('#available-details').html(response);
-
-                    if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
-                        $('#coil_dtls_tbl').DataTable().clear().destroy();
-                    }
-
-                    var table = $('#coil_dtls_tbl').DataTable({
-                        pageLength: 100
-                    });
-
-                    $('#view_available_modal').modal('toggle');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
-
-        $(document).on('click', '#viewCoilsBtn', function(event) {
-            var id = $(this).data('id');
-
-            $.ajax({
-                url: 'pages/work_order_ajax.php',
-                type: 'POST',
-                data: {
-                    id: id,
-                    fetch_coils: 'fetch_coils'
-                },
-                success: function(response) {
-                    $('#coil_details').html(response);
-                    $('#view_coils_modal').modal('toggle');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);

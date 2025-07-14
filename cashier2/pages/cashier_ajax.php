@@ -734,62 +734,6 @@ if (isset($_POST['save_estimate'])) {
 
             $values[] = "('$estimateid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$custom_img_src')";
 
-            if ($product_details['product_origin'] == 2) {
-                $query = "INSERT INTO work_order_product (
-                            work_order_id, 
-                            type,
-                            productid, 
-                            product_item,
-                            quantity, 
-                            custom_width, 
-                            custom_bend, 
-                            custom_hem, 
-                            custom_length, 
-                            custom_length2, 
-                            actual_price, 
-                            discounted_price, 
-                            product_category, 
-                            custom_color, 
-                            custom_grade, 
-                            current_customer_discount, 
-                            current_loyalty_discount, 
-                            used_discount, 
-                            stiff_stand_seam, 
-                            stiff_board_batten, 
-                            panel_type,
-                            custom_img_src
-                        ) 
-                        VALUES (
-                            '$estimateid', 
-                            '1',
-                            '$product_id', 
-                            '$product_item', 
-                            '$quantity_cart', 
-                            '$estimate_width', 
-                            '$estimate_bend', 
-                            '$estimate_hem', 
-                            '$estimate_length', 
-                            '$estimate_length_inch', 
-                            '$actual_price', 
-                            '$discounted_price', 
-                            '$product_category', 
-                            '$custom_color', 
-                            '$custom_grade', 
-                            '$curr_discount', 
-                            '$loyalty_discount', 
-                            '$used_discount', 
-                            '$stiff_stand_seam', 
-                            '$stiff_board_batten', 
-                            '$panel_type',
-                            '$custom_img_src'
-                        )";
-            
-                if ($conn->query($query) === TRUE) {
-                } else {
-                    die("Error: " . $conn->error);
-                }
-            }
-
             $product_category = $product_details['product_category'];
 
             $is_pre_order = $item['is_pre_order'];

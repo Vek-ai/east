@@ -219,6 +219,10 @@ if (!isset($_SESSION['work_order_user_id'])) {
             if (empty($_REQUEST['page'])) {include 'pages/work_order.php';}
             if ($_REQUEST['page'] == "messages") {include 'pages/messages.php';}
             if ($_REQUEST['page'] == "inventory") {include 'pages/inventory.php';}
+
+            if ($_REQUEST['page'] == "work_order_run") {include 'pages/work_order_run.php';}
+            if ($_REQUEST['page'] == "work_order_finish") {include 'pages/work_order_finish.php';}
+            if ($_REQUEST['page'] == "work_order_release") {include 'pages/work_order_release.php';}
           ?>
         </div>
       </div>
