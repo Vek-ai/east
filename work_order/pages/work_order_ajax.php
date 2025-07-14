@@ -220,7 +220,7 @@ if(isset($_POST['fetch_view'])){
         <div class="product-details table-responsive text-wrap">
             <?php
                 $query = "
-                    SELECT wo.*, p.product_item, wop.type as order_type
+                    SELECT wo.*, p.product_item, wop.type as order_type, wop.work_order_id
                     FROM work_order AS wo
                     LEFT JOIN work_order_product AS wop ON wo.work_order_product_id = wop.id
                     LEFT JOIN product AS p ON p.product_id = wo.productid
@@ -286,7 +286,7 @@ if(isset($_POST['fetch_view'])){
                                     $statusText = 'Unknown';
                             }
 
-                            $order_no = $row['id'];
+                            $order_no = $row['work_order_id'];
 
                             if($order_type == 1){
                                 $order_no = 'ES-'  .$order_no;
@@ -495,7 +495,7 @@ if(isset($_POST['fetch_assigned'])){
     <div class="card card-body datatables">
         <div class="product-details table-responsive text-wrap">
             <h5>Coils List</h5>
-            <table id="coil_dtls_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
+            <table id="coils_selected_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
                 <thead>
                     <tr>
                         <th class="text-center">Coil</th>
@@ -505,7 +505,7 @@ if(isset($_POST['fetch_assigned'])){
                         <th class="text-center">Thickness</th>
                         <th class="text-right">Width</th>
                         <th class="text-right">Rem. Feet</th>
-                        <th class="text-right">Price/In</th>
+                        <th class="text-right"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -550,7 +550,9 @@ if(isset($_POST['fetch_assigned'])){
                                         <?= $row['remaining_feet']; ?>
                                     </td>
                                     <td class="text-right">
-                                        <?= number_format($row['price'], 2); ?>
+                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewCoilsBtn" title="Change" data-id="<?= $id ?>">
+                                            <i class="fa fa-edit text-warning"></i>
+                                        </a>
                                     </td>
                                 </tr>
                                 <?php
@@ -599,10 +601,10 @@ if(isset($_POST['fetch_assigned'])){
             });
 
 
-            if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
-                $('#coil_dtls_tbl').DataTable().order([[0, 'desc'], [3, 'asc']]).draw();
+            if ($.fn.DataTable.isDataTable('#coils_selected_tbl')) {
+                $('#coils_selected_tbl').DataTable().order([[0, 'desc'], [3, 'asc']]).draw();
             } else {
-                $('#coil_dtls_tbl').DataTable({
+                $('#coils_selected_tbl').DataTable({
                     language: {
                         emptyTable: "No Assigned Coils"
                     },
@@ -617,6 +619,242 @@ if(isset($_POST['fetch_assigned'])){
         });
     </script>
     <?php
+}
+
+
+if (isset($_POST['fetch_coils'])) {
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $details = getSubmitWorkOrderDetails($id);
+
+    $assigned_coils = json_decode($details['assigned_coils'] ?? '[]', true) ?? [];
+
+    $color_id = $details['custom_color'];
+    $grade = $details['custom_grade'];
+    $width = floatval($details['custom_width']);
+    $lengthFeet = floatval($details['custom_length'] ?? 0);
+    $lengthInch = floatval($details['custom_length2'] ?? 0);
+    $quantity = floatval($details['quantity'] ?? 1);
+
+    $total_length = ($lengthFeet + ($lengthInch / 12)) * $quantity ?: 1;
+
+    $where = "WHERE 1=1";
+    if (!empty($color_id)) $where .= " AND color_sold_as = '" . mysqli_real_escape_string($conn, $color_id) . "'";
+    if (!empty($grade)) $where .= " AND grade = '" . mysqli_real_escape_string($conn, $grade) . "'";
+    if (!empty($width)) $where .= " AND width >= $width";
+
+    $query = "SELECT * FROM coil_product $where ORDER BY date ASC";
+    $result = mysqli_query($conn, $query);
+
+    $total_length_reached = 0;
+    $weighted_sum = 0;
+    $total_weight = 0;
+    ?>
+    <style>
+        .tooltip-inner {
+            background-color: white !important;
+            color: black !important;
+            font-size: calc(0.875rem + 2px) !important;
+        }
+    </style>
+
+    <div class="card card-body datatables">
+        <div class="product-details table-responsive text-wrap">
+            <h4>Coils List</h4>
+            <table id="coils_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Coil No</th>
+                        <th class="text-center">Date</th>
+                        <th class="text-left">Color</th>
+                        <th class="text-center">Grade</th>
+                        <th class="text-center">Thickness</th>
+                        <th class="text-right">Width</th>
+                        <th class="text-right">Rem. Feet</th>
+                        <th class="text-right">Price/In</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($row = mysqli_fetch_assoc($result)):
+                        $coil_id = $row['coil_id'];
+                        $color_details = getColorDetails($row['color_sold_as']);
+
+                        $weighted_sum += $row['price'] * $row['remaining_feet'];
+                        $total_weight += $row['remaining_feet'];
+
+                        $is_checked = in_array($coil_id, $assigned_coils);
+                    ?>
+                        <tr data-id="<?= $coil_id ?>" data-length="<?= $total_length ?>">
+                            <td><?= $is_checked ? 1 : 0 ?></td>
+                            <td class="text-start">
+                                <input type="checkbox" class="row-select" data-id="<?= $coil_id ?>" <?= $is_checked ? 'checked' : '' ?>>
+                            </td>
+                            <td><?= $row['entry_no'] ?></td>
+                            <td><?= date("M d, Y", strtotime($row['date'])) ?></td>
+                            <td class="text-left">
+                                <div class="d-inline-flex align-items-center gap-2">
+                                    <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 20px; height: 20px;"></span>
+                                    <?= $color_details['color_name'] ?>
+                                </div>
+                            </td>
+                            <td><?= getGradeName($row['grade']) ?></td>
+                            <td><?= $row['thickness'] ?></td>
+                            <td class="text-right"><?= $row['width'] ?></td>
+                            <td class="text-right"><?= $row['remaining_feet'] ?></td>
+                            <td class="text-right"><?= number_format($row['price'], 2) ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="9" class="text-right"><strong>Weighted Average Price:</strong></td>
+                        <td class="text-right"><strong>$<?= number_format($total_weight > 0 ? $weighted_sum / $total_weight : 0, 2) ?></strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-footer d-flex justify-content-end">
+        <button id="save_selected_coils" class="btn ripple btn-success me-2" type="button">Change</button>
+        <button class="btn ripple btn-danger" type="button" data-bs-dismiss="modal">Close</button>
+    </div>
+
+    <div class="modal fade" id="confirmChangeModal" tabindex="-1" aria-labelledby="confirmChangeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Coil Change</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">Are you sure you want to change the coils?</p>
+                    <div class="form-check">
+                        <input class="form-check-input reason-radio" type="radio" name="change_reason" id="reason_defective" value="defective" required>
+                        <label class="form-check-label" for="reason_defective">Defective</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input reason-radio" type="radio" name="change_reason" id="reason_others" value="others">
+                        <label class="form-check-label" for="reason_others">Others</label>
+                    </div>
+                    <div class="mt-3">
+                        <label for="change_notes" class="form-label">Notes (optional):</label>
+                        <textarea class="form-control" id="change_notes" rows="3" placeholder="Enter any notes..."></textarea>
+                    </div>
+                    <div class="text-danger mt-2 d-none" id="reason_error">Please select a reason to proceed.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="confirm_change_btn" class="btn btn-success">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        $(function () {
+            let selectedCoils = [];
+
+            $('#coils_tbl').off('change', '.row-select').on('change', '.row-select', function () {
+                const id = $(this).data('id');
+                if (this.checked) selectedCoils.push(id);
+                else selectedCoils = selectedCoils.filter(i => i !== id);
+            });
+
+            $('#selectAll').off('change').on('change', function () {
+                const checked = this.checked;
+                $('#coils_tbl .row-select').prop('checked', checked).trigger('change');
+            });
+
+            $('#save_selected_coils').off('click').on('click', function () {
+                $('#reason_error').addClass('d-none');
+                $('#confirmChangeModal').modal('show');
+            });
+
+            $('#confirm_change_btn').off('click').on('click', function () {
+                const selectedReason = $('input[name="change_reason"]:checked').val();
+                const notes = $('#change_notes').val().trim();
+                const id = <?= (int) $id ?>;
+                const coils = $('#coils_tbl .row-select:checked').map((_, el) => $(el).data('id')).get();
+
+                if (!selectedReason) {
+                    $('#reason_error').removeClass('d-none');
+                    return;
+                }
+
+                $.ajax({
+                    url: 'pages/work_order_ajax.php',
+                    method: 'POST',
+                    data: {
+                        id: id,
+                        selected_coils: JSON.stringify(coils),
+                        assign_coil: 'assign_coil',
+                        change_reason: selectedReason,
+                        change_notes: notes
+                    },
+                    success: function (res) {
+                        if (res.trim() === 'success') {
+                            $('#confirmChangeModal').modal('hide');
+                            alert('Successfully Saved!');
+                            location.reload();
+                        } else {
+                            alert('Failed to Update!');
+                            console.log(res);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('AJAX error occurred: ' + error);
+                        console.error('AJAX Error:', xhr.responseText);
+                    }
+                });
+            });
+
+
+            $.fn.dataTable.ext.type.order['custom-date-pre'] = function (d) {
+                const parts = d.split(' ');
+                return new Date(parts[2], ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(parts[0]), parseInt(parts[1])).getTime();
+            };
+
+            if (!$.fn.DataTable.isDataTable('#coils_tbl')) {
+                $('#coils_tbl').DataTable({
+                    language: { emptyTable: "No Available Coils with the selected color" },
+                    autoWidth: false,
+                    responsive: true,
+                    columnDefs: [
+                        { targets: 0, visible: false },
+                        { targets: 1, width: "5%" },
+                        { targets: 3, type: 'custom-date' }
+                    ],
+                    order: [[0, 'desc'], [3, 'asc']]
+                });
+            }
+
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+<?php }
+
+
+if(isset($_POST['assign_coil'])){
+    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $wrk_ordr = getWorkOrderDetails($id);
+
+    $change_reason = $_POST['change_reason'] ?? null;
+    $change_notes = $_POST['change_notes'] ?? null;
+
+    $userid = $_SESSION['userid'];
+
+    $selected_coils = json_decode($_POST['selected_coils'], true);
+    $coils_json = json_encode($selected_coils);
+
+    $sql = "UPDATE work_order SET assigned_coils = '$coils_json' WHERE id = $id";
+    if ($conn->query($sql) === TRUE) {
+        echo "success";
+    } else {
+        echo "Error updating records: " . $conn->error;
+    }
 }
 
 if (isset($_POST['search_work_order'])) {

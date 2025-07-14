@@ -321,6 +321,22 @@ $page_title = "Work Order";
     </div>
 </div>
 
+<div class="modal" id="view_coils_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog" role="document" style="width: 90%; max-width: none;">
+        <div class="modal-content p-2">
+            <div class="modal-header">
+                <h4 class="modal-title">Coils List</h4>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="coil_details"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content bg-transparent border-0" >
@@ -465,6 +481,26 @@ $page_title = "Work Order";
                     });
 
                     $('#view_available_modal').modal('toggle');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#viewCoilsBtn', function(event) {
+            var id = $(this).data('id');
+
+            $.ajax({
+                url: 'pages/work_order_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    fetch_coils: 'fetch_coils'
+                },
+                success: function(response) {
+                    $('#coil_details').html(response);
+                    $('#view_coils_modal').modal('toggle');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
