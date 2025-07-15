@@ -361,6 +361,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                     status: 2
                 },
                 success: function (response) {
+                    console.log(response);
                     alert('Product successfully released');
                     table.ajax?.reload(null, false);
                 },
