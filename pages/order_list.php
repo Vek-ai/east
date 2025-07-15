@@ -227,7 +227,7 @@ if(isset($_REQUEST['customer_id'])){
                         <div id="payment_details_group" class="d-none">
                             <div class="mb-3">
                                 <label for="payment_amount" class="form-label">Payment Amount</label>
-                                <input type="number" step="0.01" class="form-control" id="payment_amount" name="payment_amount" >
+                                <input type="number" step="0.0001" class="form-control" id="payment_amount" name="payment_amount" >
                             </div>
 
                             <div class="mb-3">
