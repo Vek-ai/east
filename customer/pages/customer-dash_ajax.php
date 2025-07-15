@@ -355,14 +355,6 @@ if (isset($_POST['search_jobs'])) {
                                             data-type="edit">
                                             <i class="ti ti-pencil fs-6"></i>
                                         </a>
-
-                                        <a href="#"
-                                            id="depositModalBtn"
-                                            title="Deposit"
-                                            class="btn btn-sm p-0 text-decoration-none"
-                                            data-job="<?= $job_id ?>">
-                                            <i class="ti ti-plus text-success fs-6"></i>
-                                        </a>
                                     </td>
                                     <td style="display:none;" class="created-at"><?= $job['created_at'] ?></td>
                                 </tr>

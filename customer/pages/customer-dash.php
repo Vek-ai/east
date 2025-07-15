@@ -467,61 +467,6 @@ if(isset($_SESSION['customer_id'])){
     </div>
 </div>
 
-<div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content">
-            <div class="modal-header d-flex align-items-center">
-                <h5 class="modal-title">Add Job Deposit</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="depositForm" class="form-horizontal">
-                <div class="modal-body">
-                    <div class="card">
-                        <div class="card-body">
-                            <input type="hidden" id="job_id" name="job_id">
-                            <input type="hidden" id="deposited_by" name="deposited_by" value="<?= $customer_id ?>">
-
-                            <div class="mb-3">
-                                <label for="type" class="form-label">Deposit Type</label>
-                                <select class="form-select" id="type" name="type" required>
-                                    <option value="">-- Select Type --</option>
-                                    <option value="cash">Cash</option>
-                                    <option value="check">Check</option>
-                                </select>
-                            </div>
-
-                            <div id="deposit_details_group" class="d-none">
-                                <div class="mb-3">
-                                    <label for="deposit_amount" class="form-label">Deposit Amount</label>
-                                    <input type="number" step="0.01" class="form-control" id="deposit_amount" name="deposit_amount" >
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="reference_no" class="form-label">Reference No</label>
-                                    <input type="text" class="form-control" id="reference_no" name="reference_no" required>
-                                </div>
-
-                                <div class="mb-3 d-none" id="check_no_group">
-                                    <label for="check_no" class="form-label">Check No</label>
-                                    <input type="text" class="form-control" id="check_no" name="check_no">
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="description" class="form-label">Description</label>
-                                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <div class="modal fade" id="viewEstimateModal" tabindex="-1" aria-labelledby="viewEstimateModalLabel" aria-hidden="true"></div>
 
 <div class="modal fade" id="viewChangesModal" tabindex="-1" aria-labelledby="viewChangesModalLabel" aria-hidden="true"></div>
@@ -745,50 +690,6 @@ if(isset($_SESSION['customer_id'])){
                     $('#responseMsg').text("An error occurred while processing your request.");
                     $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
                     $('#response-modal').modal("show");
-                }
-            });
-        });
-
-        $(document).on('click', '#depositModalBtn', function(event) {
-            event.preventDefault();
-            var job_id = $(this).data('job') || '';
-            $('#job_id').val(job_id);
-            $('#depositModal').modal('show');
-        });
-
-        $('#depositForm').on('submit', function(event) {
-            event.preventDefault(); 
-            var formData = new FormData(this);
-            formData.append('deposit_job', 'deposit_job');
-            $.ajax({
-                url: 'pages/customer-dash_ajax.php',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    $('.modal').modal("hide");
-                    if (response == "success") {
-                        $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Amount Deposited successfully!");
-                        $('#responseHeaderContainer').removeClass("bg-danger");
-                        $('#responseHeaderContainer').addClass("bg-success");
-                        $('#response-modal').modal("show");
-
-                        $('#response-modal').on('hide.bs.modal', function () {
-                                location.reload();
-                        });
-                    } else {
-                        $('#responseHeader').text("Failed");
-                        $('#responseMsg').text("Process Failed");
-                        console.log("Response: "+response);
-                        $('#responseHeaderContainer').removeClass("bg-success");
-                        $('#responseHeaderContainer').addClass("bg-danger");
-                        $('#response-modal').modal("show");
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
         });
