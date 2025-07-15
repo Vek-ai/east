@@ -349,12 +349,6 @@ $page_title = "Work Order Released";
 
         $('#work_order_table_filter').hide();
 
-        $('#toggleActive').on('change', function() {
-            table.draw();
-        });
-
-        $('#toggleActive').trigger('change');
-
         $(".select2").each(function() {
             $(this).select2({
                 dropdownParent: $(this).parent()
@@ -363,16 +357,6 @@ $page_title = "Work Order Released";
             });
 
             $(this).next('.select2-container').find('.select2-selection__rendered').removeAttr('title');
-        });
-
-        $('#select-status').on('change', function() {
-            const selectedStatus = $(this).val();
-
-            if (selectedStatus === 'Done') {
-                $('#toggleActive').prop('checked', true);
-            } else {
-                $('#toggleActive').prop('checked', false);
-            }
         });
 
         $(document).on('click', '#viewBtn', function(event) {

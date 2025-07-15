@@ -722,7 +722,6 @@ if (isset($_POST['fetch_coils'])) {
                         <th class="text-center">Thickness</th>
                         <th class="text-right">Width</th>
                         <th class="text-right">Rem. Feet</th>
-                        <th class="text-right">Price/In</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -752,7 +751,6 @@ if (isset($_POST['fetch_coils'])) {
                             <td><?= $row['thickness'] ?></td>
                             <td class="text-right"><?= $row['width'] ?></td>
                             <td class="text-right"><?= $row['remaining_feet'] ?></td>
-                            <td class="text-right"><?= number_format($row['price'], 2) ?></td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>

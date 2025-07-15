@@ -215,6 +215,9 @@ if(isset($_POST['fetch_view'])){
                     <table id="work_order_table_dtls" class="table table-hover mb-0 text-md-nowrap">
                         <thead>
                             <tr>
+                                <th class="text-center align-middle">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
                                 <th class="align-middle">Order #</th>
                                 <th class="w-20 align-middle">Description</th>
                                 <th class="text-center align-middle">Cashier</th>
@@ -232,6 +235,7 @@ if(isset($_POST['fetch_view'])){
                         <tbody>     
                         <?php
                         $images_directory = "../images/drawing/";
+                        $no = 1;
 
                         $default_image = '../images/product/product.jpg';
                         while ($row = mysqli_fetch_assoc($result)) {
@@ -265,8 +269,7 @@ if(isset($_POST['fetch_view'])){
 
                             $order_no = $row['work_order_id'];
 
-                            $order_no = 'SO-'  .$order_no;
-
+                            $order_no = 'SO-' .$order_no ."-$no";
 
                             $picture_path = !empty($row['custom_img_src']) ? $images_directory.$row["custom_img_src"] : $default_image;
                             ?>
@@ -283,6 +286,9 @@ if(isset($_POST['fetch_view'])){
                                 data-order="<?= $order_type ?>"
 
                             >
+                                <td class="text-center align-middle">
+                                    <input type="checkbox" class="row-check" value="<?= $row['id'] ?>">
+                                </td>
                                 <td class="align-middle">
                                     <?= $order_no ?>
                                 </td>
@@ -375,13 +381,17 @@ if(isset($_POST['fetch_view'])){
                                 </td>
                                 <td>
                                     <div class="action-btn text-center">
-                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Release Work Order" data-app-prod-id="<?= $row['id'] ?>">
+                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Run Work Order" data-app-prod-id="<?= $row['id'] ?>">
                                             <i class="fa fa-arrow-right-to-bracket"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAssignedBtn" title="View" data-id="<?= $row['id'] ?>">
+                                            <i class="fa fa-eye"></i>
                                         </a>
                                     </div>
                                 </td>
                             </tr>
                             <?php
+                            $no++;
                         }
                         ?>
                         </tbody>
@@ -392,6 +402,11 @@ if(isset($_POST['fetch_view'])){
                 }
                 ?>
         </div>
+    </div>
+    <div class="d-flex justify-content-end mt-3">
+        <button type="button" class="btn btn-success" id="releaseSelectedBtn">
+            <i class="fa fa-play me-1"></i> Release
+        </button>
     </div>
 
     <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">
@@ -428,6 +443,45 @@ if(isset($_POST['fetch_view'])){
                 coilModal.show();
             });
 
+            $(document).on('change', '#selectAll', function () {
+                $('.row-check').prop('checked', this.checked);
+            });
+
+            $(document).on('click', '#releaseSelectedBtn', function () {
+                const selectedIds = $('.row-check:checked').map(function () {
+                    return $(this).val();
+                }).get();
+
+                if (selectedIds.length === 0) {
+                    alert('Please select at least one item to release.');
+                    return;
+                }
+
+                const id = <?= $id ?? 0 ?>;
+
+                $.ajax({
+                    url: 'pages/work_order_finish_ajax.php',
+                    method: 'POST',
+                    data: {
+                        id: id,
+                        selected_ids: selectedIds,
+                        release_work_order: 'release_work_order'
+                    },
+                    success: function (res) {
+                        if (res.trim() === 'success') {
+                            alert('Work Order Release. Order marked as Pick-up/Waiting for Dispatch.');
+                            location.reload();
+                        } else {
+                            alert('Failed to update coil lengths.');
+                            console.log(res);
+                        }
+                    },
+                    error: function (xhr) {
+                        alert('An error occurred: ' + xhr.statusText);
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
 
             if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
                 $('#coil_dtls_tbl').DataTable().order([[0, 'desc'], [3, 'asc']]).draw();
@@ -450,26 +504,35 @@ if(isset($_POST['fetch_view'])){
 }
 
 if (isset($_POST['release_work_order'])) {
-    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $ids = $_POST['selected_ids'] ?? [];
 
-    $update = "UPDATE work_order SET status = 4 WHERE id = '$id'";
-    if (!mysqli_query($conn, $update)) {
-        echo "error: " . mysqli_error($conn);
-        exit;
-    }
+    if (!empty($ids)) {
+        foreach ($ids as $raw_id) {
+            $id = mysqli_real_escape_string($conn, $raw_id);
 
-    $work_ordr_dtls = getWorkOrderDetails($id);
-    $order_product_id = intval($work_ordr_dtls['work_order_product_id']);
+            $update = "UPDATE work_order SET status = 4 WHERE id = '$id'";
+            if (!mysqli_query($conn, $update)) {
+                echo "error: " . mysqli_error($conn);
+                exit;
+            }
 
-    if ($order_product_id > 0) {
-        $update_product = "UPDATE order_product SET status = 2 WHERE id = $order_product_id";
-        if (!mysqli_query($conn, $update_product)) {
-            echo "error: " . mysqli_error($conn);
-            exit;
+            $work_ordr_dtls = getWorkOrderDetails($id);
+            $order_product_id = intval($work_ordr_dtls['work_order_product_id']);
+
+            if ($order_product_id > 0) {
+                $update_product = "UPDATE order_product SET status = 2 WHERE id = $order_product_id";
+                if (!mysqli_query($conn, $update_product)) {
+                    echo "error: " . mysqli_error($conn);
+                    exit;
+                }
+            }
         }
+
+        echo "success";
+    } else {
+        echo "error: No IDs selected.";
     }
 
-    echo "success";
     exit;
 }
 
