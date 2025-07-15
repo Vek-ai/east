@@ -373,7 +373,7 @@ if (isset($_POST['search_jobs'])) {
                     } else {
                         ?>
                         <tr>
-                            <td colspan="5" class="text-center">No jobs found</td>
+                            <td colspan="6" class="text-center">No jobs found</td>
                         </tr>
                         <?php
                     }
