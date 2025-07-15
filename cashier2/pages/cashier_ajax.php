@@ -648,8 +648,8 @@ if (isset($_POST['save_estimate'])) {
     $discount_default = floatval(getCustomerDiscount($customerid)) / 100;
 
     $customer_details = getCustomerDetails($customerid);
-    $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
-    $credit_total = number_format(getCustomerCreditTotal($customerid),2);
+    $credit_limit = $customer_details['credit_limit'] ?? 0;
+    $credit_total = getCustomerCreditTotal($customerid);
 
     $total_actual_price = 0;
     $total_discounted_price = 0;
@@ -990,8 +990,8 @@ if (isset($_POST['save_order'])) {
     }
 
     $tax_exempt_number = $customer_details['tax_exempt_number'];
-    $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
-    $credit_total = number_format(getCustomerCreditTotal($customerid),2);
+    $credit_limit = $customer_details['credit_limit'] ?? 0;
+    $credit_total = getCustomerCreditTotal($customerid);
 
     $total_price = 0;
     $total_discounted_price = 0;
