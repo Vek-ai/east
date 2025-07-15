@@ -300,8 +300,8 @@ if(isset($_SESSION['customer_id'])){
     </div>
   </div>
  
- <!-- Estimates -->
- <div class="col-lg-12">
+  <!-- Estimates -->
+  <div class="col-lg-12">
     <div class="card">
       <div class="card-body pb-3">
         <div class="d-md-flex no-block">
@@ -334,6 +334,45 @@ if(isset($_SESSION['customer_id'])){
       </div>
     </div>
   </div>
+
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="card-body pb-3">
+        <div class="d-md-flex no-block">
+          <h4 class="card-title">Jobs</h4>
+          <div class="ms-auto">
+            <div class="mb-2 text-end">
+                <button type="button" id="addModalBtn" class="btn btn-primary" data-id="" data-customer-id="<?= $customer_id ?>" data-type="add">
+                    <i class="fas fa-plus me-1"></i> Add Job
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="date_from" class="form-label">Date From</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" class="form-control" id="date_from_jobs">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="date_to" class="form-label">Date To</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" class="form-control" id="date_to_jobs">
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <div id="tbl-jobs"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal fade" id="view_order_details_modal">
@@ -356,198 +395,546 @@ if(isset($_SESSION['customer_id'])){
     </div>
 </div>
 
+<div class="modal fade" id="view_job_dtls_modal">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content p-2">
+            <div class="modal-header">
+                <h6 class="modal-title">Job Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="job-details">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+        <h4 id="responseHeader" class="m-0"></h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        
+        <p id="responseMsg"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="add-header">
+                    
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="jobForm" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                          <div id="add-fields" class=""></div>
+                          <div class="form-actions">
+                              <div class="border-top">
+                                  <div class="row mt-2">
+                                      <div class="col-6 text-start"></div>
+                                      <div class="col-6 text-end ">
+                                          <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h5 class="modal-title">Add Job Deposit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="depositForm" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <input type="hidden" id="job_id" name="job_id">
+                            <input type="hidden" id="deposited_by" name="deposited_by" value="<?= $customer_id ?>">
+
+                            <div class="mb-3">
+                                <label for="type" class="form-label">Deposit Type</label>
+                                <select class="form-select" id="type" name="type" required>
+                                    <option value="">-- Select Type --</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="check">Check</option>
+                                </select>
+                            </div>
+
+                            <div id="deposit_details_group" class="d-none">
+                                <div class="mb-3">
+                                    <label for="deposit_amount" class="form-label">Deposit Amount</label>
+                                    <input type="number" step="0.01" class="form-control" id="deposit_amount" name="deposit_amount" >
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="reference_no" class="form-label">Reference No</label>
+                                    <input type="text" class="form-control" id="reference_no" name="reference_no" required>
+                                </div>
+
+                                <div class="mb-3 d-none" id="check_no_group">
+                                    <label for="check_no" class="form-label">Check No</label>
+                                    <input type="text" class="form-control" id="check_no" name="check_no">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="viewEstimateModal" tabindex="-1" aria-labelledby="viewEstimateModalLabel" aria-hidden="true"></div>
 
 <div class="modal fade" id="viewChangesModal" tabindex="-1" aria-labelledby="viewChangesModalLabel" aria-hidden="true"></div>
 
 <script>
-  $(document).ready(function() {
-      $('[data-toggle="tooltip"]').tooltip(); 
+    $(document).ready(function() {
+        $('[data-toggle="tooltip"]').tooltip(); 
 
-      var currentPage = 1,
-          rowsPerPage = parseInt($('#rowsPerPage').val()),
-          totalRows = 0,
-          totalPages = 0,
-          maxPageButtons = 5,
-          stepSize = 5;
+        var currentPage = 1,
+            rowsPerPage = parseInt($('#rowsPerPage').val()),
+            totalRows = 0,
+            totalPages = 0,
+            maxPageButtons = 5,
+            stepSize = 5;
 
-      function updateTable() {
-          var $rows = $('#productTableBody tr');
-          totalRows = $rows.length;
-          totalPages = Math.ceil(totalRows / rowsPerPage);
+        function updateTable() {
+            var $rows = $('#productTableBody tr');
+            totalRows = $rows.length;
+            totalPages = Math.ceil(totalRows / rowsPerPage);
 
-          var start = (currentPage - 1) * rowsPerPage,
-              end = Math.min(currentPage * rowsPerPage, totalRows);
+            var start = (currentPage - 1) * rowsPerPage,
+                end = Math.min(currentPage * rowsPerPage, totalRows);
 
-          $rows.hide().slice(start, end).show();
+            $rows.hide().slice(start, end).show();
 
-          $('#paginationControls').html(generatePagination());
-          $('#paginationInfo').text(`${start + 1}–${end} of ${totalRows}`);
+            $('#paginationControls').html(generatePagination());
+            $('#paginationInfo').text(`${start + 1}–${end} of ${totalRows}`);
 
-          $('#paginationControls').find('a').click(function(e) {
-              e.preventDefault();
-              if ($(this).hasClass('page-link-next')) {
-                  currentPage = Math.min(currentPage + stepSize, totalPages);
-              } else if ($(this).hasClass('page-link-prev')) {
-                  currentPage = Math.max(currentPage - stepSize, 1);
-              } else {
-                  currentPage = parseInt($(this).text());
-              }
-              updateTable();
-          });
-      }
+            $('#paginationControls').find('a').click(function(e) {
+                e.preventDefault();
+                if ($(this).hasClass('page-link-next')) {
+                    currentPage = Math.min(currentPage + stepSize, totalPages);
+                } else if ($(this).hasClass('page-link-prev')) {
+                    currentPage = Math.max(currentPage - stepSize, 1);
+                } else {
+                    currentPage = parseInt($(this).text());
+                }
+                updateTable();
+            });
+        }
 
-      function generatePagination() {
-          var pagination = '';
-          var startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
-          var endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+        function generatePagination() {
+            var pagination = '';
+            var startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+            var endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
 
-          if (currentPage > 1) {
-              pagination += `<li class="page-item p-1"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center page-link-prev" href="#">‹</a></li>`;
-          }
+            if (currentPage > 1) {
+                pagination += `<li class="page-item p-1"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center page-link-prev" href="#">‹</a></li>`;
+            }
 
-          for (var i = startPage; i <= endPage; i++) {
-              pagination += `<li class="page-item p-1 ${i === currentPage ? 'active' : ''}"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center" href="#">${i}</a></li>`;
-          }
+            for (var i = startPage; i <= endPage; i++) {
+                pagination += `<li class="page-item p-1 ${i === currentPage ? 'active' : ''}"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center" href="#">${i}</a></li>`;
+            }
 
-          if (currentPage < totalPages) {
-              pagination += `<li class="page-item p-1"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center page-link-next" href="#">›</a></li>`;
-          }
+            if (currentPage < totalPages) {
+                pagination += `<li class="page-item p-1"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center page-link-next" href="#">›</a></li>`;
+            }
 
-          return pagination;
-      }
+            return pagination;
+        }
 
-      function searchProducts(query) {
-          $.ajax({
-              url: 'pages/customer-dash_ajax.php',
-              type: 'POST',
-              data: {
-                  query: query,
-                  customerid: <?= $customer_id ?>
-              },
-              success: function(response) {
-                  $('#productTableBody').html(response);
-                  currentPage = 1;
-                  updateTable();
-              },
-              error: function(jqXHR, textStatus, errorThrown) {
-                  alert('Error: ' + textStatus + ' - ' + errorThrown);
-              }
-          });
-      }
-      
-      function searchOrders() {
-          var date_from = $('#date_from_order').val();
-          var date_to = $('#date_to_order').val();
+        function searchProducts(query) {
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    query: query,
+                    customerid: <?= $customer_id ?>
+                },
+                success: function(response) {
+                    $('#productTableBody').html(response);
+                    currentPage = 1;
+                    updateTable();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
+        
+        function searchOrders() {
+            var date_from = $('#date_from_order').val();
+            var date_to = $('#date_to_order').val();
 
-          $.ajax({
-              url: 'pages/customer-dash_ajax.php',
-              type: 'POST',
-              data: {
-                  customerid: <?= $customer_id ?>,
-                  date_from: date_from,
-                  date_to: date_to,
-                  search_orders: 'search_orders'
-              },
-              success: function(response) {
-                  $('#tbl-orders').html(response);
-              },
-              error: function(jqXHR, textStatus, errorThrown) {
-                  alert('Error: ' + textStatus + ' - ' + errorThrown);
-              }
-          });
-      }
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    customerid: <?= $customer_id ?>,
+                    date_from: date_from,
+                    date_to: date_to,
+                    search_orders: 'search_orders'
+                },
+                success: function(response) {
+                    $('#tbl-orders').html(response);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
 
-      function searchEstimates() {
-          var date_from = $('#date_from_estimate').val();
-          var date_to = $('#date_to_estimate').val();
+        function searchEstimates() {
+            var date_from = $('#date_from_estimate').val();
+            var date_to = $('#date_to_estimate').val();
 
-          $.ajax({
-              url: 'pages/customer-dash_ajax.php',
-              type: 'POST',
-              data: {
-                  customerid: <?= $customer_id ?>,
-                  date_from: date_from,
-                  date_to: date_to,
-                  search_estimates: 'search_estimates'
-              },
-              success: function(response) {
-                  $('#tbl-estimates').html(response);
-              },
-              error: function(jqXHR, textStatus, errorThrown) {
-                  alert('Error: ' + textStatus + ' - ' + errorThrown);
-              }
-          });
-      }
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    customerid: <?= $customer_id ?>,
+                    date_from: date_from,
+                    date_to: date_to,
+                    search_estimates: 'search_estimates'
+                },
+                success: function(response) {
+                    $('#tbl-estimates').html(response);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
 
-      $(document).on('click', '#view_order_btn', function(event) {
-          event.preventDefault(); 
-          var orderid = $(this).data('id');
-          $.ajax({
-                  url: 'pages/customer-dash_ajax.php',
-                  type: 'POST',
-                  data: {
-                      orderid: orderid,
-                      fetch_order_details: "fetch_order_details"
-                  },
-                  success: function(response) {
-                      $('#order-details').html(response);
-                      $('#view_order_details_modal').modal('show');
-                  },
-                  error: function(jqXHR, textStatus, errorThrown) {
-                      alert('Error: ' + textStatus + ' - ' + errorThrown);
-                  }
-          });
-      });
+        function searchJobs() {
+            var date_from = $('#date_from_jobs').val();
+            var date_to = $('#date_to_jobs').val();
 
-      $(document).on('click', '#view_estimate_btn', function(event) {
-          event.preventDefault(); 
-          var id = $(this).data('id');
-          $.ajax({
-                  url: 'pages/customer-dash_ajax.php',
-                  type: 'POST',
-                  data: {
-                      id: id,
-                      fetch_estimate_details: "fetch_estimate_details"
-                  },
-                  success: function(response) {
-                      $('#viewEstimateModal').html(response);
-                      $('#viewEstimateModal').modal('show');
-                  },
-                  error: function(jqXHR, textStatus, errorThrown) {
-                      alert('Error: ' + textStatus + ' - ' + errorThrown);
-                  }
-          });
-      });
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    customerid: <?= $_SESSION['customer_id'] ?>,
+                    date_from: date_from,
+                    date_to: date_to,
+                    search_jobs: 'search_jobs'
+                },
+                success: function(response) {
+                        $('#tbl-jobs').html(response);
+                        if ($.fn.DataTable.isDataTable('#jobs-tbl')) {
+                            $('#jobs-tbl').DataTable().destroy();
+                        }
 
-      $(document).on('click', '#view_changes_btn', function(event) {
-          event.preventDefault(); 
-          var id = $(this).data('id');
-          $.ajax({
-                  url: 'pages/customer-dash_ajax.php',
-                  type: 'POST',
-                  data: {
-                      id: id,
-                      fetch_changes_modal: "fetch_changes_modal"
-                  },
-                  success: function(response) {
-                      $('#viewChangesModal').html(response);
-                      $('#viewChangesModal').modal('show');
-                  },
-                  error: function(jqXHR, textStatus, errorThrown) {
-                      alert('Error: ' + textStatus + ' - ' + errorThrown);
-                  }
-          });
-      });
+                        $('#jobs-tbl').DataTable({
+                            searching: false,
+                            lengthChange: false,
+                            pageLength: 10,
+                            order: [[5, 'desc']],
+                            columnDefs: [
+                                {
+                                    targets: [5],
+                                    visible: false,
+                                    searchable: false
+                                }
+                            ]
+                        });
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
 
-      $('#date_from_order, #date_to_order').on('change', searchOrders);
-      $('#date_from_estimate, #date_to_estimate').on('change', searchEstimates);
-      $('#text-srh').on('input', function() { searchProducts(this.value); });
+        $(document).on('change', '#type', function () {
+            const type = $(this).val();
 
-      searchOrders();
-      searchEstimates();
-      searchProducts('');
-  });
+            if (type === 'cash') {
+                $('#deposit_details_group').removeClass('d-none');
+                $('#check_no_group').addClass('d-none');
+                $('#check_no').removeAttr('required').val('');
+            } else if (type === 'check') {
+                $('#deposit_details_group').removeClass('d-none');
+                $('#check_no_group').removeClass('d-none');
+                $('#check_no').attr('required', true);
+            } else {
+                $('#deposit_details_group').addClass('d-none');
+                $('#check_no_group').addClass('d-none');
+                $('#check_no').removeAttr('required').val('');
+            }
+        });
+
+        $(document).on('click', '#addModalBtn', function(event) {
+            event.preventDefault();
+            var job_id = $(this).data('job-id') || '';
+            var customer_id = $(this).data('customer-id') || '';
+            var type = $(this).data('type') || '';
+
+            if(type == 'edit'){
+                $('#add-header').html('Update Job');
+            }else{
+                $('#add-header').html('Add Job');
+            }
+
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    customer_id: customer_id,
+                    job_id : job_id,
+                    fetch_job_modal: 'fetch_job_modal'
+                },
+                success: function (response) {
+                    $('#add-fields').html(response);
+
+                    $(".select2-form").each(function () {
+                        $(this).select2({
+                            width: '100%',
+                            dropdownParent: $(this).parent(),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
+                    });
+
+                    $('#addModal').modal('show');
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX Error:', textStatus, errorThrown);
+                    console.error('Response:', jqXHR.responseText);
+
+                    $('#responseHeader').text("Error");
+                    $('#responseMsg').text("An error occurred while processing your request.");
+                    $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            });
+        });
+
+        $(document).on('click', '#depositModalBtn', function(event) {
+            event.preventDefault();
+            var job_id = $(this).data('job') || '';
+            $('#job_id').val(job_id);
+            $('#depositModal').modal('show');
+        });
+
+        $('#depositForm').on('submit', function(event) {
+            event.preventDefault(); 
+            var formData = new FormData(this);
+            formData.append('deposit_job', 'deposit_job');
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('.modal').modal("hide");
+                    if (response == "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Amount Deposited successfully!");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                                location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text("Process Failed");
+                        console.log("Response: "+response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $('#jobForm').on('submit', function(event) {
+            event.preventDefault(); 
+            var formData = new FormData(this);
+            formData.append('save_job', 'save_job');
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                $('.modal').modal("hide");
+                if (response == "success_add") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("New Job added successfully!");
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
+
+                    $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                    });
+                } else if (response == "success_update") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("Job updated successfully!");
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
+
+                    $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                    });
+                } else {
+                    $('#responseHeader').text("Failed");
+                    $('#responseMsg').text("Process Failed");
+                    console.log("Response: "+response);
+                    $('#responseHeaderContainer').removeClass("bg-success");
+                    $('#responseHeaderContainer').addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#view_order_btn', function(event) {
+            event.preventDefault(); 
+            var orderid = $(this).data('id');
+            $.ajax({
+                    url: 'pages/customer-dash_ajax.php',
+                    type: 'POST',
+                    data: {
+                        orderid: orderid,
+                        fetch_order_details: "fetch_order_details"
+                    },
+                    success: function(response) {
+                        $('#order-details').html(response);
+                        $('#view_order_details_modal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '#view_estimate_btn', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/customer-dash_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        fetch_estimate_details: "fetch_estimate_details"
+                    },
+                    success: function(response) {
+                        $('#viewEstimateModal').html(response);
+                        $('#viewEstimateModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '#view_changes_btn', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/customer-dash_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        fetch_changes_modal: "fetch_changes_modal"
+                    },
+                    success: function(response) {
+                        $('#viewChangesModal').html(response);
+                        $('#viewChangesModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '#view_job_dtls_btn', function(event) {
+            event.preventDefault(); 
+            var job_name = $(this).data('name');
+            var date_from = $(this).data('date-from');
+            var date_to = $(this).data('date-to');
+            $.ajax({
+                    url: 'pages/customer-dash_ajax.php',
+                    type: 'POST',
+                    data: {
+                        customerid: <?= $_SESSION['customer_id'] ?>,
+                        job_name: job_name,
+                        date_from: date_from,
+                        date_to: date_to,
+                        fetch_job_details: "fetch_job_details"
+                    },
+                    success: function(response) {
+                        $('#job-details').html(response);
+                        $('#view_job_dtls_modal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $('#date_from_order, #date_to_order').on('change', searchOrders);
+        $('#date_from_estimate, #date_to_estimate').on('change', searchEstimates);
+        $('#date_from_jobs, #date_to_jobs').on('change', searchJobs);
+        $('#text-srh').on('input', function() { searchProducts(this.value); });
+
+        searchOrders();
+        searchEstimates();
+        searchJobs();
+        searchProducts('');
+    });
 </script>
 <?php
 }

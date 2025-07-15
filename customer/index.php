@@ -419,6 +419,7 @@ foreach ($cartItems as $item) {
             if ($_REQUEST['page'] == "order") {include 'pages/order.php';}
             if ($_REQUEST['page'] == "browse") {include 'pages/cashier.php';}
             if ($_REQUEST['page'] == "messages") {include 'pages/messages.php';}
+            if ($_REQUEST['page'] == "job_details") {include 'pages/job_details.php';}
           ?>
         </div>
       </div>
