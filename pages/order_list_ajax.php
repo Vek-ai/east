@@ -25,6 +25,8 @@ if(isset($_REQUEST['action'])) {
             $shipping_comp_details = getShippingCompanyDetails($order_details['shipping_company']);
             $shipping_company = $shipping_comp_details['shipping_company'];
 
+            $deliver_method = $order_details['deliver_method'];
+
             $response = array();
             ?>
             <div class="card">
@@ -86,9 +88,7 @@ if(isset($_REQUEST['action'])) {
                                             $product_name = getProductName($row['product_id']);
                                         }
 
-                                        if($status_prod_db == '2'){
-                                            $is_pickup = true;
-                                        }
+                                        
 
                                         if($payment_db == '0'){
                                             $is_paid = 0;
@@ -110,7 +110,9 @@ if(isset($_REQUEST['action'])) {
                                             6 => ['label' => 'Returned', 'class' => 'badge bg-danger']
                                         ];
 
-                                        if ($is_stockable && isset($status_prod_labels[2])) {
+                                        if($deliver_method == 'pickup'){
+                                            $is_pickup = true;
+
                                             $status_prod_labels[2]['label'] = 'Ready for Pick-up';
                                             $status_prod_labels[4]['label'] = 'Picked Up';
                                         }
