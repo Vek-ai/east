@@ -122,7 +122,7 @@ if(isset($_POST['fetch_available'])){
                     url: 'pages/work_order_ajax.php',
                     method: 'POST',
                     data: {
-                        id: id,
+                        selected_ids: id,
                         run_work_order: 'run_work_order'
                     },
                     success: function (res) {
@@ -137,29 +137,6 @@ if(isset($_POST['fetch_available'])){
                     error: function (xhr) {
                         alert('An error occurred: ' + xhr.statusText);
                         console.error(xhr.responseText);
-                    }
-                });
-            });
-
-            $('#finish_work_order').off('click').on('click', function () {
-                const id = <?= $id ?? 0 ?>;
-                if (!id) return;
-
-                $.ajax({
-                    url: 'pages/work_order_ajax.php',
-                    type: 'POST',
-                    data: {
-                        selected_ids: id,
-                        finish_work_order: true
-                    },
-                    success: function (res) {
-                        if (res.trim() === 'success') {
-                            alert('Work order marked as completed!');
-                            location.reload();
-                        } else {
-                            alert('Failed to complete work order.');
-                            console.log(res);
-                        }
                     }
                 });
             });
