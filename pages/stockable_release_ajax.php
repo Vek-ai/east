@@ -122,7 +122,11 @@ if(isset($_REQUEST['action'])) {
             $update_sql = "UPDATE order_product SET status = $status WHERE id = $product_order_id";
 
             if (mysqli_query($conn, $update_sql)) {
-                echo json_encode(['success' => true]);
+                if (mysqli_affected_rows($conn) > 0) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Update failed!']);
+                }
             } else {
                 echo json_encode(['success' => false, 'error' => mysqli_error($conn)]);
             }
