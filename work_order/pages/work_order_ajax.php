@@ -33,7 +33,6 @@ if(isset($_POST['fetch_available'])){
                         <th class="text-center">Thickness</th>
                         <th class="text-right">Width</th>
                         <th class="text-right">Rem. Feet</th>
-                        <th class="text-right">Price/In</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -76,9 +75,6 @@ if(isset($_POST['fetch_available'])){
                                     </td>
                                     <td class="text-right">
                                         <?= $row['remaining_feet']; ?>
-                                    </td>
-                                    <td class="text-right">
-                                        <?= number_format($row['price'], 2); ?>
                                     </td>
                                 </tr>
                                 <?php
@@ -754,12 +750,6 @@ if (isset($_POST['fetch_coils'])) {
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="9" class="text-right"><strong>Weighted Average Price:</strong></td>
-                        <td class="text-right"><strong>$<?= number_format($total_weight > 0 ? $weighted_sum / $total_weight : 0, 2) ?></strong></td>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>
