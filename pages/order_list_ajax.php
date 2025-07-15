@@ -70,6 +70,7 @@ if(isset($_REQUEST['action'])) {
                                 <?php 
                                     $is_pickup = false;
                                     $is_paid = 1;
+                                    $is_ready = false;
                                     while ($row = mysqli_fetch_assoc($result)) {
                                         $orderid = $row['orderid'];
                                         $product_details = getProductDetails($row['productid']);
@@ -88,7 +89,9 @@ if(isset($_REQUEST['action'])) {
                                             $product_name = getProductName($row['product_id']);
                                         }
 
-                                        
+                                        if($status_prod_db == '2'){
+                                            $is_ready = true;
+                                        }
 
                                         if($payment_db == '0'){
                                             $is_paid = 0;
@@ -121,7 +124,7 @@ if(isset($_REQUEST['action'])) {
                                     ?> 
                                         <tr> 
                                             <td class="text-center">
-                                                <?= $is_pickup ? "<input type='checkbox' class='row-checkbox' value='{$row['id']}' data-amount='$price' data-paid='$payment_db'>" : "" ?>
+                                                <?= $is_pickup && $is_ready ? "<input type='checkbox' class='row-checkbox' value='{$row['id']}' data-amount='$price' data-paid='$payment_db'>" : "" ?>
                                             </td>
                                             <td>
                                                 <?= $product_name ?>
@@ -183,7 +186,7 @@ if(isset($_REQUEST['action'])) {
                             </tfoot>
                         </table>
                     </div>
-                    <?php if ($is_pickup == 2): ?>
+                    <?php if ($is_ready): ?>
                         <div class="d-flex justify-content-end align-items-center gap-3 flex-wrap mt-3">
                             <button type="button" id="pickupOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-paid="<?=$is_paid?>" data-action="pickup_order">Pickup Order</button>
                             <button type="button" id="shipOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-action="ship_order">Ship Order</button>
