@@ -47,9 +47,6 @@ if(isset($_POST['fetch_view'])){
                     <table id="work_order_table_dtls" class="table table-hover mb-0 text-md-nowrap">
                         <thead>
                             <tr>
-                                <th class="text-center align-middle">
-                                    <input type="checkbox" id="selectAll">
-                                </th>
                                 <th class="align-middle">Order #</th>
                                 <th class="w-20 align-middle">Description</th>
                                 <th class="text-center align-middle">Cashier</th>
@@ -61,7 +58,6 @@ if(isset($_POST['fetch_view'])){
                                 <th class="text-center align-middle">Status</th>
                                 <th class="text-center align-middle">Quantity</th>
                                 <th class="text-center align-middle">Details</th>
-                                <th></th>
                             </tr>
                         </thead>
                         <tbody>     
@@ -95,6 +91,10 @@ if(isset($_POST['fetch_view'])){
                                 case 3:
                                     $statusText = 'Done';
                                     break;
+                                case 4:
+                                        $statusText = 'Released';
+                                        $statusClass = 'badge bg-success';
+                                        break;
                                 default:
                                     $statusText = 'Unknown';
                             }
@@ -118,9 +118,6 @@ if(isset($_POST['fetch_view'])){
                                 data-order="<?= $order_type ?>"
 
                             >
-                                <td class="text-center align-middle">
-                                    <input type="checkbox" class="row-check" value="<?= $row['id'] ?>">
-                                </td>
                                 <td class="align-middle">
                                     <?= $order_no ?>
                                 </td>
@@ -190,6 +187,10 @@ if(isset($_POST['fetch_view'])){
                                             $statusText = 'Done';
                                             $statusClass = 'badge bg-success';
                                             break;
+                                        case 4:
+                                            $statusText = 'Released';
+                                            $statusClass = 'badge bg-success';
+                                            break;
                                         default:
                                             $statusText = 'Unknown';
                                             $statusClass = 'badge bg-secondary';
@@ -210,16 +211,6 @@ if(isset($_POST['fetch_view'])){
                                         echo "Hem: " . htmlspecialchars($hem) . "<br>";
                                     }
                                     ?>
-                                </td>
-                                <td>
-                                    <div class="action-btn text-center">
-                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Run Work Order" data-app-prod-id="<?= $row['id'] ?>">
-                                            <i class="fa fa-arrow-right-to-bracket"></i>
-                                        </a>
-                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAssignedBtn" title="View" data-id="<?= $row['id'] ?>">
-                                            <i class="fa fa-eye"></i>
-                                        </a>
-                                    </div>
                                 </td>
                             </tr>
                             <?php
@@ -268,10 +259,6 @@ if(isset($_POST['fetch_view'])){
 
                 const coilModal = new bootstrap.Modal(document.getElementById('coilWarehouseModal'));
                 coilModal.show();
-            });
-
-            $(document).on('change', '#selectAll', function () {
-                $('.row-check').prop('checked', this.checked);
             });
 
             if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
