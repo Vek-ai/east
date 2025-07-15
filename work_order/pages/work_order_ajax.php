@@ -122,7 +122,7 @@ if(isset($_POST['fetch_available'])){
                     url: 'pages/work_order_ajax.php',
                     method: 'POST',
                     data: {
-                        selected_ids: id,
+                        selected_ids: [id],
                         run_work_order: 'run_work_order'
                     },
                     success: function (res) {
