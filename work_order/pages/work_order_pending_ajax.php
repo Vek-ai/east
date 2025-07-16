@@ -349,8 +349,8 @@ if (isset($_POST['fetch_coils'])) {
 
     $total_length = ($lengthFeet + ($lengthInch / 12)) * $quantity ?: 1;
 
-    /* 
     $where = "WHERE 1=1";
+    /* 
     if (!empty($color_id)) $where .= " AND color_sold_as = '" . mysqli_real_escape_string($conn, $color_id) . "'";
     if (!empty($grade)) $where .= " AND grade = '" . mysqli_real_escape_string($conn, $grade) . "'";
     if (!empty($width)) $where .= " AND width >= $width"; 
