@@ -176,8 +176,21 @@ $page_title = "Statement of Accounts";
                     <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
 
                     <div class="container-fluid border rounded p-3">
-                        <h6 class="mb-3">Download Outputs</h6>
+                        <div class="mb-4 p-3 rounded shadow-sm border">
+                            <h6 class="mb-3 fw-semibold">Select Date</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6 form-floating">
+                                    <input type="date" class="form-control" id="date_from" placeholder="From">
+                                    <label for="date_from">From</label>
+                                </div>
+                                <div class="col-md-6 form-floating">
+                                    <input type="date" class="form-control" id="date_to" placeholder="To">
+                                    <label for="date_to">To</label>
+                                </div>
+                            </div>
+                        </div>
 
+                        <h6 class="mb-3">Download Outputs</h6>
                         <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
                             <button id="printBtn" class="btn btn-success">Print</button>
                             <button id="downloadBtn" class="btn btn-primary">Download</button>
@@ -400,12 +413,44 @@ $page_title = "Statement of Accounts";
             });
         });
 
-        $(document).on('click', '.btn-show-pdf', function(e) {
+        function updatePdfUrlWithDates() {
+            let iframe = $('#pdfFrame');
+            let currentSrc = iframe.attr('src');
+            let from = $('#date_from').val();
+            let to = $('#date_to').val();
+
+            let [baseUrl, queryString] = currentSrc.split('?');
+            let params = new URLSearchParams(queryString || '');
+
+            if (from) {
+                params.set('date_from', from);
+            } else {
+                params.delete('date_from');
+            }
+
+            if (to) {
+                params.set('date_to', to);
+            } else {
+                params.delete('date_to');
+            }
+
+            let newUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
+
+            iframe.attr('src', newUrl);
+        }
+
+        $(document).on('click', '.btn-show-pdf', function (e) {
             e.preventDefault();
+
             pdfUrl = $(this).attr('href');
-            document.getElementById('pdfFrame').src = pdfUrl;
+            $('#pdfFrame').attr('src', pdfUrl);
+            $('#date_from, #date_to').val('');
             const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
             modal.show();
+        });
+
+        $('#date_from, #date_to').on('change', function () {
+            updatePdfUrlWithDates();
         });
 
         $('#printBtn').on('click', function () {

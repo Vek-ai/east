@@ -13,51 +13,14 @@ require 'includes/fpdf/fpdf.php';
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-class PDF extends FPDF {
-    function WriteHTML($html) {
-        $html = str_replace("\n", ' ', $html);
-        $html = html_entity_decode($html);
-
-        $tokens = preg_split('/<(.*)>/U', $html, -1, PREG_SPLIT_DELIM_CAPTURE);
-        $is_bold = false;
-        $is_italic = false;
-        $is_underline = false;
-
-        foreach ($tokens as $i => $token) {
-            if ($i % 2 == 0) {
-                if ($token !== '') {
-                    $this->Write(5, $token);
-                }
-            } else {
-                if ($token[0] == '/') {
-                    $tag = strtolower(substr($token, 1));
-                    if ($tag == 'b') $is_bold = false;
-                    elseif ($tag == 'i') $is_italic = false;
-                    elseif ($tag == 'u') $is_underline = false;
-                    $this->SetFont('', ($is_bold ? 'B' : '') . ($is_italic ? 'I' : '') . ($is_underline ? 'U' : ''));
-                } else {
-                    $tag = strtolower(preg_replace('/ .*/', '', $token));
-                    if ($tag == 'b') $is_bold = true;
-                    elseif ($tag == 'i') $is_italic = true;
-                    elseif ($tag == 'u') $is_underline = true;
-                    elseif ($tag == 'br') {
-                        $this->Ln(5);
-                        continue;
-                    }
-                    $this->SetFont('', ($is_bold ? 'B' : '') . ($is_italic ? 'I' : '') . ($is_underline ? 'U' : ''));
-                }
-            }
-        }
-    }
-}
-
-$pdf = new PDF();
+$pdf = new FPDF();
 $pdf->AddPage();
 $pdf->SetFont('Arial', '', 10);
 
 if (!empty($_REQUEST['id'])) {
     $customer_id = $_REQUEST['id'];
     $customer_name = get_customer_name($customer_id);
+    $customer_details = getCustomerDetails($customer_id);
 
     $marginLeft = 10;
     $marginRight = 10;
@@ -94,16 +57,31 @@ if (!empty($_REQUEST['id'])) {
     $pdf->SetX($rightX);
     $pdf->SetFont('Arial', '', 10);
     $pdf->Cell($rightWidth, 7, 'Statement Period', 0, 1, 'C');
-    
-    $suf = fn($d) => ($d % 100 >= 11 && $d % 100 <= 13) ? 'th' : (match($d % 10) {
+
+    $date_to = $_REQUEST['date_to'] ?? '';
+    $date_from = $_REQUEST['date_from'] ?? '';
+
+    if (!empty($date_from) && !empty($date_to)) {
+        $start = new DateTime($date_from);
+        $end = new DateTime($date_to);
+    } else {
+        $first_credit_date = getFirstCreditDate($customer_id, $conn);
+
+        if ($first_credit_date) {
+            $start = new DateTime($first_credit_date);
+        } else {
+            $start = new DateTime('first day of this month');
+        }
+
+        $end = new DateTime();
+    }
+
+    $suf = fn($d) => ($d % 100 >= 11 && $d % 100 <= 13) ? 'th' : match($d % 10) {
         1 => 'st',
         2 => 'nd',
         3 => 'rd',
         default => 'th',
-    });
-
-    $start = new DateTime('first day of this month');
-    $end = new DateTime();
+    };
 
     $str = sprintf(
         "%s %d%s, %d - %s %d%s, %d",
@@ -113,12 +91,23 @@ if (!empty($_REQUEST['id'])) {
 
     $pdf->SetX($rightX);
     $pdf->Cell($rightWidth, 7, $str, 0, 1, 'C');
+    
 
     $pdf->SetTextColor(0, 0, 0);
     $pdf->Ln(10);
 
     $mailToWidth = $usableWidth / 2;
     $mailToY =  $pdf->GetY();
+
+    $line1 = trim(implode(' ', array_filter([
+        $customer_details['address'] ?? null,
+        $customer_details['city'] ?? null,
+    ])));
+
+    $line2 = trim(implode(' ', array_filter([
+        $customer_details['state'] ?? null,
+        $customer_details['zip'] ?? null,
+    ])));
 
     $pdf->SetXY($marginLeft, $mailToY);
     $pdf->SetFillColor(...$blueColor);
@@ -131,9 +120,9 @@ if (!empty($_REQUEST['id'])) {
     $pdf->SetFont('Arial', '', 10);
     $pdf->Cell($mailToWidth, 6, $customer_name, 0, 0, 'L', true);
     $pdf->Ln(5);
-    $pdf->Cell($mailToWidth, 6, '00 Mill Creek Rd', 0, 0, 'L', true);
+    $pdf->Cell($mailToWidth, 6, $line1, 0, 0, 'L', true);
     $pdf->Ln(5);
-    $pdf->Cell($mailToWidth, 6, 'London, KY 40701', 0, 0, 'L', true);
+    $pdf->Cell($mailToWidth, 6, $line2, 0, 0, 'L', true);
 
     $pdf->SetXY($rightX, $mailToY);
     $pdf->SetFillColor(...$blueColor);
@@ -149,10 +138,10 @@ if (!empty($_REQUEST['id'])) {
     $pdf->Cell($mailToWidth, 6, $customer_name, 0, 0, 'L', true);
     $pdf->Ln(5);
     $pdf->SetX($rightX);
-    $pdf->Cell($mailToWidth, 6, '00 Mill Creek Rd', 0, 0, 'L', true);
+    $pdf->Cell($mailToWidth, 6, $line1, 0, 0, 'L', true);
     $pdf->Ln(5);
     $pdf->SetX($rightX);
-    $pdf->Cell($mailToWidth, 6, 'London, KY 40701', 0, 0, 'L', true);
+    $pdf->Cell($mailToWidth, 6, $line2, 0, 0, 'L', true);
 
     $pdf->Ln(10);
 
@@ -212,8 +201,15 @@ if (!empty($_REQUEST['id'])) {
         FROM job_ledger l
         LEFT JOIN jobs j ON l.job_id = j.job_id
         WHERE l.customer_id = '$customer_id' AND l.entry_type = 'credit'
-        ORDER BY l.created_at ASC;
     ";
+
+    if (!empty($date_from) && !empty($date_to)) {
+        $from = mysqli_real_escape_string($conn, $date_from);
+        $to = mysqli_real_escape_string($conn, $date_to);
+        $query .= " AND DATE(l.created_at) BETWEEN '$from' AND '$to'";
+    }
+
+    $query .= " ORDER BY l.created_at ASC";
 
     $result = mysqli_query($conn, $query);
 
@@ -298,6 +294,9 @@ if (!empty($_REQUEST['id'])) {
             customer_store_credit_history c
         WHERE 
             c.customer_id = '$customer_id'
+    " . ((!empty($date_from) && !empty($date_to)) ? 
+        " AND DATE(c.created_at) BETWEEN '" . mysqli_real_escape_string($conn, $date_from) . "' AND '" . mysqli_real_escape_string($conn, $date_to) . "'" 
+        : "") . "
 
         UNION ALL
 
@@ -313,14 +312,21 @@ if (!empty($_REQUEST['id'])) {
             jobs j ON jd.job_id = j.job_id
         WHERE 
             j.customer_id = '$customer_id'
+    " . ((!empty($date_from) && !empty($date_to)) ? 
+        " AND DATE(jd.created_at) BETWEEN '" . mysqli_real_escape_string($conn, $date_from) . "' AND '" . mysqli_real_escape_string($conn, $date_to) . "'" 
+        : "") . "
+
+        ORDER BY date ASC
     ";
+
 
     $result = mysqli_query($conn, $query);
 
     if ($result && mysqli_num_rows($result) > 0) {
         while ($row = mysqli_fetch_assoc($result)) {
             $date = date('M d, Y', strtotime($row['date']));
-            $id = $row['id'];
+            $source = $row['source'];
+            $id = ($source == 'job_deposit' ? 'C' : 'RC') . '-' . $row['id'];
             $job_id = $row['job_id'];
             $job_details = getJobDetails($job_id);
             $job_name = $job_details['job_name'] ?? '';
@@ -353,8 +359,8 @@ if (!empty($_REQUEST['id'])) {
     $pdf->SetFillColor(...$blueColor);
     $pdf->SetTextColor(255, 255, 255);
     $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell($usableWidth, 10, 'Remaining Balance Due (if all Credits applied)', 0, 0, 'C', true);
-    $pdf->ln(10);
+    $pdf->Cell($usableWidth, 7, 'Remaining Balance Due (if all Credits applied)', 0, 0, 'C', true);
+    $pdf->ln(7);
 
     $pdf->SetX(115);
     $pdf->SetFillColor(230, 230, 230);

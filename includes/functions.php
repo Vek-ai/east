@@ -1065,6 +1065,27 @@ function getCustomerTotalAvail($customer_id) {
     return $total;
 }
 
+function getFirstCreditDate($customer_id) {
+    global $conn;
+
+    $query = "
+        SELECT 
+            l.created_at AS first_credit_date
+        FROM job_ledger l
+        LEFT JOIN jobs j ON l.job_id = j.job_id
+        WHERE l.customer_id = '$customer_id' AND l.entry_type = 'credit'
+        ORDER BY l.created_at ASC
+        LIMIT 1;
+    ";
+
+    $result = $conn->query($query);
+
+    if ($result && $row = $result->fetch_assoc()) {
+        return $row['first_credit_date'];
+    }
+
+    return null;
+}
 
 function getCustomerCreditTotal($customer_id) {
     global $conn;
