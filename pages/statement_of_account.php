@@ -337,7 +337,7 @@ $page_title = "Statement of Accounts";
                                     <tr>
                                         <td><?= get_customer_name($row['customer_id']) ?></td>
                                         <td style="color:green !important;">
-                                            $<?= $credit_limit ?>
+                                            $<?= number_format(getCustomerTotalAvail($customer_id), 2) ?>
                                         </td>
                                         <td style="color:rgb(255, 21, 21) !important;">
                                             $<?= number_format(getCustomerCreditTotal($customer_id), 2) ?>

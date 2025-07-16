@@ -1033,6 +1033,38 @@ function getCustomerTaxById($taxid) {
     }
 }
 
+function getCustomerTotalAvail($customer_id) {
+    global $conn;
+
+    $query = "
+        SELECT c.credit_amount AS amount
+        FROM customer_store_credit_history c
+        WHERE c.customer_id = '$customer_id'
+
+        UNION ALL
+
+        SELECT jd.deposit_remaining AS amount
+        FROM job_deposits jd
+        JOIN jobs j ON jd.job_id = j.job_id
+        WHERE j.customer_id = '$customer_id'
+    ";
+
+    $result = mysqli_query($conn, $query);
+
+    $total = 0;
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $amount = (float)$row['amount'];
+            if ($amount > 0) {
+                $total += $amount;
+            }
+        }
+    }
+
+    return $total;
+}
+
 
 function getCustomerCreditTotal($customer_id) {
     global $conn;
