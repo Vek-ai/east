@@ -372,7 +372,7 @@ if(isset($_REQUEST['customer_id'])){
                             <tfoot>
                                 <tr>
                                     <td class="text-end fw-bold" colspan="6">Total Credit Available</td>
-                                    <td class="text-end fw-bold" colspan="1">$<?= number_format($avail_credit, 2) ?></td>
+                                    <td class="text-end fw-bold" colspan="1">$<?= number_format(getCustomerTotalAvail($customer_id), 2) ?></td>
                                     <td class="text-end fw-bold" colspan="2">Total Balance Due</td>
                                     <td class="text-end fw-bold" colspan="1">$<?= number_format($balance_due, 2) ?></td>
                                     <td></td>
