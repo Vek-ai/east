@@ -51,8 +51,14 @@
                </a>
             </li>
             <li class="sidebar-item">
-               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=work_order_run">
+               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=work_order_pending">
                   <iconify-icon icon="mdi:progress-clock" class="fs-7 aside-icon"></iconify-icon>
+                  <span class="hide-menu">Work Orders Pending</span>
+               </a>
+            </li>
+            <li class="sidebar-item">
+               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=work_order_run">
+                  <iconify-icon icon="mdi:wrench" class="fs-7 aside-icon"></iconify-icon>
                   <span class="hide-menu">Work Orders Processing</span>
                </a>
             </li>
