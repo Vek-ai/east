@@ -321,7 +321,8 @@ if (!empty($_REQUEST['id'])) {
         while ($row = mysqli_fetch_assoc($result)) {
             $date = date('M d, Y', strtotime($row['date']));
             $id = $row['id'];
-            $job_details = getJobDetails($id);
+            $job_id = $row['job_id'];
+            $job_details = getJobDetails($job_id);
             $job_name = $job_details['job_name'] ?? '';
 
             $available = $row['amount'] ?? '';
