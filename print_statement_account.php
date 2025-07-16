@@ -294,9 +294,6 @@ if (!empty($_REQUEST['id'])) {
             customer_store_credit_history c
         WHERE 
             c.customer_id = '$customer_id'
-    " . ((!empty($date_from) && !empty($date_to)) ? 
-        " AND DATE(c.created_at) BETWEEN '" . mysqli_real_escape_string($conn, $date_from) . "' AND '" . mysqli_real_escape_string($conn, $date_to) . "'" 
-        : "") . "
 
         UNION ALL
 
@@ -312,9 +309,6 @@ if (!empty($_REQUEST['id'])) {
             jobs j ON jd.job_id = j.job_id
         WHERE 
             j.customer_id = '$customer_id'
-    " . ((!empty($date_from) && !empty($date_to)) ? 
-        " AND DATE(jd.created_at) BETWEEN '" . mysqli_real_escape_string($conn, $date_from) . "' AND '" . mysqli_real_escape_string($conn, $date_to) . "'" 
-        : "") . "
 
         ORDER BY date ASC
     ";
