@@ -177,7 +177,7 @@ $page_title = "Statement of Accounts";
 
                     <div class="container-fluid border rounded p-3">
                         <div class="mb-4 p-3 rounded shadow-sm border">
-                            <h6 class="mb-3 fw-semibold">Select Date</h6>
+                            <h6 class="mb-3 fw-semibold">Select Period</h6>
                             <div class="row g-3">
                                 <div class="col-md-6 form-floating">
                                     <input type="date" class="form-control" id="date_from" placeholder="From">
