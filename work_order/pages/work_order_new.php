@@ -424,6 +424,7 @@ $page_title = "New Work Orders";
             const selectedIds = $('#work_order_table .row-check:checked').map(function () {
                 return $(this).val();
             }).get();
+            const selectedRollFormer = $('#rollformer_select').val();
 
             if (coils.length === 0) {
                 alert('Please select at least one coil to run.');
@@ -435,12 +436,18 @@ $page_title = "New Work Orders";
                 return;
             }
 
+            if (!selectedRollFormer) {
+                alert('Please select a Roll Former.');
+                return;
+            }
+
             $.ajax({
                 url: 'pages/work_order_new_ajax.php',
                 method: 'POST',
                 data: {
                     run_work_order: true,
                     selected_ids: selectedIds,
+                    roll_former_id: selectedRollFormer,
                     selected_coils: JSON.stringify(coils)
                 },
                 success: function (res) {

@@ -412,6 +412,19 @@ if (isset($_POST['fetch_coils'])) {
         </div>
     </div>
 
+    <?php
+    $rf_query = "SELECT roll_former_id, roll_former FROM roll_former WHERE status = 1 AND (hidden IS NULL OR hidden = 0)";
+    $rf_result = mysqli_query($conn, $rf_query);
+    ?>
+    <div class="mt-3 col-6">
+        <label for="rollformer_select" class="form-label fw-bold">Select Roll Former</label>
+        <select id="rollformer_select" class="form-select">
+            <option value="">-- Select Roll Former --</option>
+            <?php while ($rf = mysqli_fetch_assoc($rf_result)): ?>
+                <option value="<?= $rf['roll_former_id'] ?>"><?= htmlspecialchars($rf['roll_former']) ?></option>
+            <?php endwhile; ?>
+        </select>
+    </div>
     <div class="modal-footer d-flex justify-content-end">
         <button id="save_selected_coils" class="btn ripple btn-success me-2" type="button">Run</button>
     </div>
@@ -440,6 +453,7 @@ if (isset($_POST['fetch_coils'])) {
 
 if (isset($_POST['run_work_order'])) {
     $ids = $_POST['selected_ids'] ?? [];
+    $roll_former_id = intval($_POST['roll_former_id'] ?? 0);
     $selected_coils = json_decode($_POST['selected_coils'] ?? '[]', true);
 
     if (!is_array($ids) || empty($ids) || !is_array($selected_coils) || empty($selected_coils)) {
