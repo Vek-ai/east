@@ -343,6 +343,10 @@ if (isset($_POST['fetch_coils'])) {
         $total_length_needed += ($lengthFeet + ($lengthInch / 12)) * $quantity;
     }
 
+    if($total_length_needed == 0){
+        $total_length_needed = 1;
+    }
+
     $color_list = implode(",", array_map('intval', $all_colors));
     $where = "WHERE 1=1";
 
