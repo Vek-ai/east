@@ -1489,49 +1489,52 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $query);
         $rate = 50;
         ?>
-        <div class="table-responsive">
-            <table class="table table-bordered table-sm" id="timer_status_tbl">
-                <thead>
-                    <tr>
-                        <th>Roll Former</th>
-                        <th>Product</th>
-                        <th>Total Footage</th>
-                        <th>Rate (ft/min)</th>
-                        <th>Duration</th>
-                        <th>Started At</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($row = mysqli_fetch_assoc($result)):
-                        $duration_min = round($row['total_footage'] / $rate, 2);
-                        $seconds = round($duration_min * 60);
-                        $h = floor($seconds / 3600);
-                        $m = floor(($seconds % 3600) / 60);
-                        $s = $seconds % 60;
-                        $formatted = sprintf('%02dh %02dm %02ds', $h, $m, $s);
-                        ?>
-                        <tr data-id="<?= $row['assignment_id'] ?>" data-duration="<?= $seconds ?>">
-                            <td>Roll Former <?= htmlspecialchars($row['roll_former_id']) ?></td>
-                            <td><?= htmlspecialchars($row['product_name']) ?></td>
-                            <td><?= htmlspecialchars($row['total_footage']) ?></td>
-                            <td><?= $rate ?></td>
-                            <td class="duration"><?= $formatted ?></td>
-                            <td class="started"><?= $row['started_at'] ?? '-' ?></td>
-                            <td class="status"><?= ucfirst($row['status']) ?></td>
-                            <td>
-                                <?php if ($row['status'] === 'queued'): ?>
-                                    <button class="btn btn-sm btn-primary btnStartTimer" data-id="<?= $row['assignment_id'] ?>"><i class="ti ti-clock-play"></i> Start Timer</button>
-                                <?php else: ?>
-                                    <span class="text-muted">Started</span>
-                                <?php endif; ?>
-                            </td>
+        <div class="datatables">
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm" id="timer_status_tbl">
+                    <thead>
+                        <tr>
+                            <th>Roll Former</th>
+                            <th>Product</th>
+                            <th>Total Footage</th>
+                            <th>Rate (ft/min)</th>
+                            <th>Duration</th>
+                            <th>Started At</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = mysqli_fetch_assoc($result)):
+                            $duration_min = round($row['total_footage'] / $rate, 2);
+                            $seconds = round($duration_min * 60);
+                            $h = floor($seconds / 3600);
+                            $m = floor(($seconds % 3600) / 60);
+                            $s = $seconds % 60;
+                            $formatted = sprintf('%02dh %02dm %02ds', $h, $m, $s);
+                            ?>
+                            <tr data-id="<?= $row['assignment_id'] ?>" data-duration="<?= $seconds ?>">
+                                <td>Roll Former <?= htmlspecialchars($row['roll_former_id']) ?></td>
+                                <td><?= htmlspecialchars($row['product_name']) ?></td>
+                                <td><?= htmlspecialchars($row['total_footage']) ?></td>
+                                <td><?= $rate ?></td>
+                                <td class="duration"><?= $formatted ?></td>
+                                <td class="started"><?= $row['started_at'] ?? '-' ?></td>
+                                <td class="status"><?= ucfirst($row['status']) ?></td>
+                                <td>
+                                    <?php if ($row['status'] === 'queued'): ?>
+                                        <button class="btn btn-sm btn-primary btnStartTimer" data-id="<?= $row['assignment_id'] ?>"><i class="ti ti-clock-play"></i> Start Timer</button>
+                                    <?php else: ?>
+                                        <span class="text-muted">Started</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
+        
         <script>
             if ($.fn.DataTable.isDataTable('#timer_status_tbl')) {
                 $('#timer_status_tbl').DataTable().clear().destroy();
@@ -1721,62 +1724,64 @@ if(isset($_REQUEST['action'])) {
 
         $result = mysqli_query($conn, $query);
         ?>
-        <div class="table-responsive">
-            <table class="table table-bordered table-sm" id="trim_queue_tbl">
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Customer</th>
-                        <th>Trim Type</th>
-                        <th>Quantity</th>
-                        <th>Assigned Worker</th>
-                        <th>Estimated Completion Time</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($row = mysqli_fetch_assoc($result)):
-                        $orderid = $row['work_order_id'];
-                        $order_details = getOrderDetails($orderid);
-                        $customer_id = $order_details['customerid'];
-                        $customer_name = get_customer_name($customer_id);
+        <div class="datatables">
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm" id="trim_queue_tbl">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Trim Type</th>
+                            <th>Quantity</th>
+                            <th>Assigned Worker</th>
+                            <th>Estimated Completion Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = mysqli_fetch_assoc($result)):
+                            $orderid = $row['work_order_id'];
+                            $order_details = getOrderDetails($orderid);
+                            $customer_id = $order_details['customerid'];
+                            $customer_name = get_customer_name($customer_id);
 
-                        $qty = intval($row['quantity']);
-                        $duration = $qty * 2 * 60;
+                            $qty = intval($row['quantity']);
+                            $duration = $qty * 2 * 60;
 
-                        $est_display = '-';
-                        if ($row['status'] == 2 || $row['status'] == 3) {
-                            $est_display = date('h:i A, M d', strtotime($row['completed_at']));
-                        }
+                            $est_display = '-';
+                            if ($row['status'] == 2 || $row['status'] == 3) {
+                                $est_display = date('h:i A, M d', strtotime($row['completed_at']));
+                            }
 
-                        $current_result = mysqli_query($conn, "SELECT NOW() AS now_time");
-                        $current_row = mysqli_fetch_assoc($current_result);
-                        $now = $current_row['now_time'];
-                    ?>
-                    <tr data-id="<?= $row['id'] ?>" data-duration="<?= $duration ?>">
-                        <td><?= htmlspecialchars($orderid) ?></td>
-                        <td><?= htmlspecialchars($customer_name) ?></td>
-                        <td><?= htmlspecialchars($row['product_item']) ?></td>
-                        <td><?= $qty ?></td>
-                        <td></td>
-                        <td class="est-time"><?= $est_display ?></td>
-                        <td class="action-cell">
-                            <?php if (empty($row['started_at'])): ?>
-                                <button class="btn btn-sm btn-primary btnStartTrimTimer" data-id="<?= $row['id'] ?>">
-                                    <i class="ti ti-clock-play"></i> Start Timer
-                                </button>
-                            <?php elseif ($row['started_at'] <= $now && $row['completed_at'] > $now): ?>
-                                <span class="text-muted">Running</span>
-                            <?php elseif (!empty($row['completed_at']) && $row['completed_at'] <= $now): ?>
-                                <span class="text-success">Done</span>
-                            <?php endif;?>
-                        </td>
-                    </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
+                            $current_result = mysqli_query($conn, "SELECT NOW() AS now_time");
+                            $current_row = mysqli_fetch_assoc($current_result);
+                            $now = $current_row['now_time'];
+                        ?>
+                        <tr data-id="<?= $row['id'] ?>" data-duration="<?= $duration ?>">
+                            <td><?= htmlspecialchars($orderid) ?></td>
+                            <td><?= htmlspecialchars($customer_name) ?></td>
+                            <td><?= htmlspecialchars($row['product_item']) ?></td>
+                            <td><?= $qty ?></td>
+                            <td></td>
+                            <td class="est-time"><?= $est_display ?></td>
+                            <td class="action-cell">
+                                <?php if (empty($row['started_at'])): ?>
+                                    <button class="btn btn-sm btn-primary btnStartTrimTimer" data-id="<?= $row['id'] ?>">
+                                        <i class="ti ti-clock-play"></i> Start Timer
+                                    </button>
+                                <?php elseif ($row['started_at'] <= $now && $row['completed_at'] > $now): ?>
+                                    <span class="text-muted">Running</span>
+                                <?php elseif (!empty($row['completed_at']) && $row['completed_at'] <= $now): ?>
+                                    <span class="text-success">Done</span>
+                                <?php endif;?>
+                            </td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
-
+        
         <script>
         if ($.fn.DataTable.isDataTable('#trim_queue_tbl')) {
             $('#trim_queue_tbl').DataTable().clear().destroy();
