@@ -98,6 +98,7 @@ td.notes,  td.last-edit{
                     <tr>
                       <th>Roll Former Name</th>
                       <th>Description</th>
+                      <th>Rate(ft/min)</th>
                       <th>Details</th>
                       <th>Status</th>
                       <th>Action</th>
@@ -112,6 +113,7 @@ td.notes,  td.last-edit{
                       $roll_former_id = $row_roll_former['roll_former_id'];
                       $roll_former = $row_roll_former['roll_former'];
                       $description = $row_roll_former['description'];
+                      $rate = $row_roll_former['rate'];
                       $db_status = $row_roll_former['status'];
 
                       $date = new DateTime($row_roll_former['last_edit']);
@@ -138,6 +140,7 @@ td.notes,  td.last-edit{
                   <tr id="product-row-<?= $no ?>">
                       <td><span class="product<?= $no ?> <?php if ($row_roll_former['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $roll_former ?></span></td>
                       <td class="notes" style="width:30%;"><?= $description ?></td>
+                      <td><?= $rate ?>/min</td>
                       <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                       <td><?= $status ?></td>
                       <td class="text-center" id="action-button-<?= $no ?>">

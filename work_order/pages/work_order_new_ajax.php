@@ -467,7 +467,7 @@ if (isset($_POST['run_work_order'])) {
         $id = mysqli_real_escape_string($conn, $id);
 
         // Save assigned coils first
-        $update_sql = "UPDATE work_order SET assigned_coils = '$coils_json' WHERE id = $id";
+        $update_sql = "UPDATE work_order SET assigned_coils = '$coils_json', roll_former_id = '$roll_former_id' WHERE id = $id";
         $conn->query($update_sql); // Optional: handle error if needed
 
         $work_order_details = getWorkOrderDetails($id);

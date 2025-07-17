@@ -21,6 +21,7 @@ if(isset($_REQUEST['action'])) {
     if ($action == "add_update") {
         $roll_former_id = mysqli_real_escape_string($conn, $_POST['roll_former_id']);
         $roll_former = mysqli_real_escape_string($conn, $_POST['roll_former']);
+        $rate = mysqli_real_escape_string($conn, $_POST['rate']);
         $description = mysqli_real_escape_string($conn, $_POST['description']);
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
@@ -30,14 +31,14 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE roll_former SET roll_former = '$roll_former', description = '$description', last_edit = NOW(), edited_by = '$userid'  WHERE roll_former_id = '$roll_former_id'";
+            $updateQuery = "UPDATE roll_former SET roll_former = '$roll_former', rate = '$rate', description = '$description', last_edit = NOW(), edited_by = '$userid'  WHERE roll_former_id = '$roll_former_id'";
             if (mysqli_query($conn, $updateQuery)) {
                 echo "success_update";
             } else {
                 echo "Error updating Roll Former: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO roll_former (roll_former, description, added_date, added_by) VALUES ('$roll_former', '$description', NOW(), '$userid')";
+            $insertQuery = "INSERT INTO roll_former (roll_former, rate, description, added_date, added_by) VALUES ('$roll_former', '$rate', '$description', NOW(), '$userid')";
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";
             } else {
@@ -80,6 +81,7 @@ if(isset($_REQUEST['action'])) {
             $row = mysqli_fetch_array($result);
             $roll_former_id = $row['roll_former_id'];
             $roll_former = $row['roll_former'];
+            $rate = $row['rate'];
             $description = $row['description'];
         }
 
@@ -89,6 +91,15 @@ if(isset($_REQUEST['action'])) {
                 <div class="mb-3">
                     <label class="form-label">Roll Former Name</label>
                     <input type="text" id="roll_former" name="roll_former" class="form-control"  value="<?= $roll_former ?>"/>
+                </div>
+                </div>
+            </div>
+
+            <div class="row pt-3">
+                <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Rate (Items per Minute)</label>
+                    <input type="text" id="rate" name="rate" class="form-control"  value="<?= $rate ?>"/>
                 </div>
                 </div>
             </div>
@@ -109,6 +120,7 @@ if(isset($_REQUEST['action'])) {
         $includedColumns = [ 
             'roll_former_id',
             'roll_former',
+            'rate',
             'description'
         ];
 
@@ -325,6 +337,7 @@ if(isset($_REQUEST['action'])) {
             $includedColumns = [ 
                 'roll_former_id',
                 'roll_former',
+                'rate',
                 'description'
             ];
     

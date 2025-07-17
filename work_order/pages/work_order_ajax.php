@@ -87,6 +87,19 @@ if(isset($_POST['fetch_available'])){
             </table>
         </div>
     </div>
+    <?php
+    $rf_query = "SELECT roll_former_id, roll_former FROM roll_former WHERE status = 1 AND (hidden IS NULL OR hidden = 0)";
+    $rf_result = mysqli_query($conn, $rf_query);
+    ?>
+    <div class="mt-3 col-6">
+        <label for="rollformer_select" class="form-label fw-bold">Select Roll Former</label>
+        <select id="rollformer_select" class="form-select">
+            <option value="">-- Select Roll Former --</option>
+            <?php while ($rf = mysqli_fetch_assoc($rf_result)): ?>
+                <option value="<?= $rf['roll_former_id'] ?>"><?= htmlspecialchars($rf['roll_former']) ?></option>
+            <?php endwhile; ?>
+        </select>
+    </div>
     <div class="modal-footer">
         <?php if (!empty($work_order_details) && $work_order_details['status'] == 1): ?>
             <button id="run_work_order" class="btn ripple btn-success" type="button">Run Work Order</button>
@@ -117,12 +130,19 @@ if(isset($_POST['fetch_available'])){
         $(document).ready(function() {
             $('#run_work_order').off('click').on('click', function () {
                 const id = <?= $id ?? 0 ?>;
+                const selectedRollFormer = $('#rollformer_select').val();
+
+                if (!selectedRollFormer) {
+                    alert('Please select a Roll Former.');
+                    return;
+                }
 
                 $.ajax({
                     url: 'pages/work_order_ajax.php',
                     method: 'POST',
                     data: {
                         selected_ids: [id],
+                        roll_former_id: selectedRollFormer,
                         run_work_order: 'run_work_order'
                     },
                     success: function (res) {
@@ -402,6 +422,19 @@ if(isset($_POST['fetch_view'])){
                 ?>
         </div>
     </div>
+    <?php
+    $rf_query = "SELECT roll_former_id, roll_former FROM roll_former WHERE status = 1 AND (hidden IS NULL OR hidden = 0)";
+    $rf_result = mysqli_query($conn, $rf_query);
+    ?>
+    <div class="mt-3 col-6">
+        <label for="rollformer_select_batch" class="form-label fw-bold">Select Roll Former</label>
+        <select id="rollformer_select_batch" class="form-select">
+            <option value="">-- Select Roll Former --</option>
+            <?php while ($rf = mysqli_fetch_assoc($rf_result)): ?>
+                <option value="<?= $rf['roll_former_id'] ?>"><?= htmlspecialchars($rf['roll_former']) ?></option>
+            <?php endwhile; ?>
+        </select>
+    </div>
     <div class="d-flex justify-content-end mt-3">
         <button type="button" class="btn btn-success" id="runSelectedBtn">
             <i class="fa fa-play me-1"></i> Run
@@ -451,6 +484,13 @@ if(isset($_POST['fetch_view'])){
                     return $(this).val();
                 }).get();
 
+                const selectedRollFormer = $('#rollformer_select_batch').val();
+
+                if (!selectedRollFormer) {
+                    alert('Please select a Roll Former.');
+                    return;
+                }
+
                 if (selectedIds.length === 0) {
                     alert('Please select at least one item to run.');
                     return;
@@ -464,6 +504,7 @@ if(isset($_POST['fetch_view'])){
                     data: {
                         id: id,
                         selected_ids: selectedIds,
+                        roll_former_id: selectedRollFormer,
                         run_work_order: 'run_work_order'
                     },
                     success: function (res) {
@@ -895,6 +936,7 @@ if (isset($_POST['assign_coil'])) {
 
 if (isset($_POST['run_work_order'])) {
     $ids = $_POST['selected_ids'] ?? [];
+    $roll_former_id = intval($_POST['roll_former_id'] ?? 0);
 
     if (!is_array($ids) || empty($ids)) {
         echo 'no_selection';
@@ -926,7 +968,7 @@ if (isset($_POST['run_work_order'])) {
                 mysqli_query($conn, $update);
             }
 
-            $status_update = "UPDATE work_order SET status = 2 WHERE id = $id";
+            $status_update = "UPDATE work_order SET status = 2, roll_former_id = '$roll_former_id' WHERE id = $id";
             mysqli_query($conn, $status_update);
         }
     }
