@@ -122,6 +122,60 @@ if(isset($_REQUEST['customer_id'])){
 
     <div class="widget-content searchable-container list">
 
+    <div class="modal fade" id="viewTimerStatusModal" tabindex="-1" aria-labelledby="viewTimerStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 90%;">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h5 class="modal-title" id="viewTrimQueueModalLabel">Timer Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="update_product" class="form-horizontal">
+                    <div  class="modal-body">
+                        <div id="viewTimerStatusBody">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="viewPanelsQueueModal" tabindex="-1" aria-labelledby="viewPanelsQueueModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 90%;">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h5 class="modal-title" id="viewTrimQueueModalLabel">Panel Queue</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="update_product" class="form-horizontal">
+                    <div  class="modal-body">
+                        <div id="viewPanelsQueueBody">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="viewTrimQueueModal" tabindex="-1" aria-labelledby="viewTrimQueueModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 90%;">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h5 class="modal-title" id="viewTrimQueueModalLabel">Trim Queue</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="update_product" class="form-horizontal">
+                    <div  class="modal-body">
+                        <div id="viewTrimQueueBody">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="viewOrderModal" tabindex="-1" aria-labelledby="viewOrderModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 90%;">
             <div class="modal-content">
@@ -262,6 +316,19 @@ if(isset($_REQUEST['customer_id'])){
         </div>
     </div>
 
+    <div class="card card-body">
+        <div class="text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+            <button type="button" id="btnTimerStatus" class="btn btn-primary d-flex align-items-center" data-id="">
+                <i class="ti ti-clock text-white me-1 fs-5"></i> Timer Status
+            </button>
+            <button type="button" id="btnViewPanelsQueue" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-list-details text-white me-1 fs-5"></i> View Panels in Queue
+            </button>
+            <button type="button" id="btnViewTrimQueue" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-cut text-white me-1 fs-5"></i> View Trim in Queue
+            </button>
+        </div>
+    </div>
 
     <div class="card card-body">
         <div class="row">
@@ -702,6 +769,61 @@ if(isset($_REQUEST['customer_id'])){
             });
         });
 
+        $(document).on('click', '#btnTimerStatus', function(event) {
+            event.preventDefault(); 
+            $.ajax({
+                url: 'pages/order_list_ajax.php',
+                type: 'POST',
+                data: {
+                    action: "fetch_timer_status"
+                },
+                success: function(response) {
+                    $('#viewTimerStatusBody').html(response);
+                    $('#viewTimerStatusModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#btnViewPanelsQueue', function(event) {
+            event.preventDefault(); 
+            $.ajax({
+                url: 'pages/order_list_ajax.php',
+                type: 'POST',
+                data: {
+                    action: "fetch_panels_queue"
+                },
+                success: function(response) {
+                    $('#viewPanelsQueueBody').html(response);
+                    $('#viewPanelsQueueModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#btnViewTrimQueue', function(event) {
+            event.preventDefault(); 
+            $.ajax({
+                url: 'pages/order_list_ajax.php',
+                type: 'POST',
+                data: {
+                    action: "fetch_trim_queue"
+                },
+                success: function(response) {
+                    console.log();
+                    $('#viewTrimQueueBody').html(response);
+                    $('#viewTrimQueueModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
         $(document).on('click', '#view_order_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
@@ -714,11 +836,6 @@ if(isset($_REQUEST['customer_id'])){
                     },
                     success: function(response) {
                         $('#viewOrderBody').html(response);
-
-                        setTimeout(function () {
-                            
-                        }, 10);
-
                         $('#viewOrderModal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {

@@ -1333,19 +1333,16 @@ if(isset($_REQUEST['action'])) {
 
         $idList = implode(',', $cleanedProds);
 
-        // 1. Mark selected products as Picked Up
         $sql = "UPDATE order_product SET status = 4 WHERE id IN ($idList)";
         if (!mysqli_query($conn, $sql)) {
             echo json_encode(['success' => false, 'message' => 'Error updating product status.']);
             exit();
         }
 
-        // 2. Determine new overall order status
         $check_sql = "SELECT COUNT(*) AS count FROM order_product WHERE status IN ('0','1') AND orderid = '$orderid'";
         $result = mysqli_query($conn, $check_sql);
         $newStatus = (mysqli_fetch_assoc($result)['count'] ?? 0) > 0 ? 2 : 4;
 
-        // 3. Update the order itself
         $updateParts = [
             "status = '$newStatus'",
             "pickup_name = '$pickup_name'",
@@ -1472,6 +1469,403 @@ if(isset($_REQUEST['action'])) {
             'id' => $orderid
         ]);
 
+    }
+
+    if ($action === 'fetch_timer_status') {
+        $query = "
+            SELECT 
+                p.product_item AS product_name,
+                SUM(rf.footage) AS total_footage,
+                rf.id AS assignment_id,
+                rf.roll_former_id,
+                rf.status,
+                rf.started_at
+            FROM roll_former_assignments rf
+            LEFT JOIN order_product op ON op.id = rf.order_product_id
+            LEFT JOIN product p ON p.product_id = op.productid
+            GROUP BY rf.roll_former_id, rf.status, rf.started_at, p.product_item, rf.id
+        ";
+
+        $result = mysqli_query($conn, $query);
+        $rate = 50;
+        ?>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm" id="timer_status_tbl">
+                <thead>
+                    <tr>
+                        <th>Roll Former</th>
+                        <th>Product</th>
+                        <th>Total Footage</th>
+                        <th>Rate (ft/min)</th>
+                        <th>Duration</th>
+                        <th>Started At</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($row = mysqli_fetch_assoc($result)):
+                        $duration_min = round($row['total_footage'] / $rate, 2);
+                        $seconds = round($duration_min * 60);
+                        $h = floor($seconds / 3600);
+                        $m = floor(($seconds % 3600) / 60);
+                        $s = $seconds % 60;
+                        $formatted = sprintf('%02dh %02dm %02ds', $h, $m, $s);
+                        ?>
+                        <tr data-id="<?= $row['assignment_id'] ?>" data-duration="<?= $seconds ?>">
+                            <td>Roll Former <?= htmlspecialchars($row['roll_former_id']) ?></td>
+                            <td><?= htmlspecialchars($row['product_name']) ?></td>
+                            <td><?= htmlspecialchars($row['total_footage']) ?></td>
+                            <td><?= $rate ?></td>
+                            <td class="duration"><?= $formatted ?></td>
+                            <td class="started"><?= $row['started_at'] ?? '-' ?></td>
+                            <td class="status"><?= ucfirst($row['status']) ?></td>
+                            <td>
+                                <?php if ($row['status'] === 'queued'): ?>
+                                    <button class="btn btn-sm btn-primary btnStartTimer" data-id="<?= $row['assignment_id'] ?>"><i class="ti ti-clock-play"></i> Start Timer</button>
+                                <?php else: ?>
+                                    <span class="text-muted">Started</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+        <script>
+            if ($.fn.DataTable.isDataTable('#timer_status_tbl')) {
+                $('#timer_status_tbl').DataTable().clear().destroy();
+            }
+
+            $('#timer_status_tbl').DataTable({
+                order: [],
+                pageLength: 100,
+                lengthChange: false,
+                searching: true,
+                info: true
+            });
+
+            $(document).on('click', '.btnStartTimer', function () {
+                const $btn = $(this);
+                const $row = $btn.closest('tr');
+                const id = $btn.data('id');
+                const duration = parseInt($row.data('duration'), 10);
+                const startedAt = new Date();
+                const completedAt = new Date(startedAt.getTime() + duration * 1000);
+
+                $.ajax({
+                    url: 'pages/order_list_ajax.php',
+                    type: 'POST',
+                    data: {
+                        action: 'start_roll_former_timer',
+                        id: id,
+                        started_at: startedAt.toISOString().slice(0, 19).replace('T', ' '),
+                        completed_at: completedAt.toISOString().slice(0, 19).replace('T', ' ')
+                    },
+                    success: function (res) {
+                        if (res === 'success') {
+                            $row.find('.started').text(startedAt.toLocaleString());
+                            $row.find('.status').text('Running');
+                            $btn.replaceWith('<span class="text-success">Running</span>');
+
+                            let remaining = duration;
+                            const $durationCell = $row.find('.duration');
+
+                            const timer = setInterval(() => {
+                                if (remaining <= 0) {
+                                    clearInterval(timer);
+                                    $row.find('.status').text('Done');
+                                    $durationCell.text('00h 00m 00s');
+
+                                    $.ajax({
+                                        url: 'pages/order_list_ajax.php',
+                                        type: 'POST',
+                                        data: {
+                                            action: 'mark_timer_done',
+                                            id: id
+                                        }
+                                    });
+
+                                    return;
+                                }
+
+                                const h = Math.floor(remaining / 3600);
+                                const m = Math.floor((remaining % 3600) / 60);
+                                const s = remaining % 60;
+
+                                $durationCell.text(
+                                    `${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`
+                                );
+
+                                remaining--;
+                            }, 1000);
+                        } else {
+                            alert('Failed to start timer.');
+                        }
+                    }
+                });
+            });
+        </script>
+        <?php
+    }
+
+    if ($action === 'start_roll_former_timer') {
+        $id = intval($_POST['id']);
+        $started_at = mysqli_real_escape_string($conn, $_POST['started_at']);
+        $completed_at = mysqli_real_escape_string($conn, $_POST['completed_at']);
+
+        $update = "
+            UPDATE roll_former_assignments
+            SET status = 'running',
+                started_at = '$started_at',
+                completed_at = '$completed_at'
+            WHERE id = $id
+        ";
+
+        echo mysqli_query($conn, $update) ? 'success' : 'error';
+    }
+
+    if ($action === 'mark_timer_done') {
+        $id = intval($_POST['id']);
+
+        $update = "
+            UPDATE roll_former_assignments
+            SET status = 'done'
+            WHERE id = $id
+        ";
+
+        echo mysqli_query($conn, $update) ? 'success' : 'error';
+    }
+
+    if ($action === 'fetch_panels_queue') {
+        $query = "
+            SELECT 
+                op.id AS order_product_id,
+                op.orderid,
+                c.customer_id,
+                p.product_item AS product_name,
+                rf.footage,
+                rf.status,
+                rf.roll_former_id
+            FROM order_product op
+            LEFT JOIN orders o ON o.orderid = op.orderid
+            LEFT JOIN customer c ON c.customer_id = o.customerid
+            LEFT JOIN product p ON p.product_id = op.productid
+            LEFT JOIN roll_former_assignments rf ON rf.order_product_id = op.id
+            WHERE p.product_category = 3
+            ORDER BY op.id DESC
+        ";
+
+        $result = mysqli_query($conn, $query);
+        ?>
+        <div class="datatables">
+            <div class="table-responsive">
+                <table id="panels_queue" class="table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Product</th>
+                            <th>Total Footage</th>
+                            <th>Status</th>
+                            <th>Assigned Roll Former</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($row['orderid']) ?></td>
+                                <td><?= get_customer_name($row['customer_id']) ?></td>
+                                <td><?= htmlspecialchars($row['product_name']) ?></td>
+                                <td><?= htmlspecialchars($row['footage']) ?></td>
+                                <td><?= ucfirst($row['status']) ?></td>
+                                <td>
+                                    <?= $row['roll_former_id'] ? 'Roll Former ' . htmlspecialchars($row['roll_former_id']) : '-' ?>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <script>
+        $(document).ready(function () {
+            if ($.fn.DataTable.isDataTable('#panels_queue')) {
+                $('#panels_queue').DataTable().clear().destroy();
+            }
+
+            $('#panels_queue').DataTable({
+                order: [],
+                pageLength: 100,
+                lengthChange: false,
+                searching: true,
+                info: true
+            });
+        });
+        </script>
+        <?php
+    }
+
+    if ($action === 'fetch_trim_queue') {
+        $query = "
+            SELECT 
+                wo.*, 
+                p.product_item 
+            FROM work_order AS wo
+            LEFT JOIN product AS p ON p.product_id = wo.productid
+            WHERE wo.submitted_date >= DATE_SUB(CURDATE(), INTERVAL 2 WEEK)
+            AND wo.submitted_date <= NOW()
+            AND wo.status IN (2, 3)
+            ORDER BY wo.work_order_id, wo.id
+        ";
+
+        $result = mysqli_query($conn, $query);
+        ?>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm" id="trim_queue_tbl">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Trim Type</th>
+                        <th>Quantity</th>
+                        <th>Assigned Worker</th>
+                        <th>Estimated Completion Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($row = mysqli_fetch_assoc($result)):
+                        $orderid = $row['work_order_id'];
+                        $order_details = getOrderDetails($orderid);
+                        $customer_id = $order_details['customerid'];
+                        $customer_name = get_customer_name($customer_id);
+
+                        $qty = intval($row['quantity']);
+                        $duration = $qty * 2 * 60; // 2 mins per item in seconds
+
+                        $est_display = '-';
+                        if ($row['status'] == 2 || $row['status'] == 3) {
+                            $est_display = date('h:i A, M d', strtotime($row['completed_at']));
+                        }
+
+                        date_default_timezone_set('America/New_York');
+                        $now = date('Y-m-d H:i:s');
+                        $now = strtotime($now);
+                    ?>
+                    <tr data-id="<?= $row['id'] ?>" data-duration="<?= $duration ?>">
+                        <td><?= htmlspecialchars($orderid) ?></td>
+                        <td><?= htmlspecialchars($customer_name) ?></td>
+                        <td><?= htmlspecialchars($row['product_item']) ?></td>
+                        <td><?= $qty ?></td>
+                        <td></td>
+                        <td class="est-time"><?= $est_display ?></td>
+                        <td class="action-cell">
+                            <?php if (empty($row['started_at'])): ?>
+                                <button class="btn btn-sm btn-primary btnStartTrimTimer" data-id="<?= $row['id'] ?>">
+                                    <i class="ti ti-clock-play"></i> Start Timer
+                                </button>
+                            <?php elseif ($row['started_at'] <= $now && $row['completed_at'] > $now): ?>
+                                <span class="text-muted">Running</span>
+                            <?php elseif (!empty($row['completed_at']) && $row['completed_at'] <= $now): ?>
+                                <span class="text-success">Done</span>
+                            <?php endif;?>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <script>
+        if ($.fn.DataTable.isDataTable('#trim_queue_tbl')) {
+            $('#trim_queue_tbl').DataTable().clear().destroy();
+        }
+
+        $('#trim_queue_tbl').DataTable({
+            order: [],
+            pageLength: 100,
+            lengthChange: false,
+            searching: true,
+            info: true
+        });
+
+        $(document).on('click', '.btnStartTrimTimer', function () {
+            const $btn = $(this);
+            const $row = $btn.closest('tr');
+            const id = $btn.data('id');
+            const duration = parseInt($row.data('duration'), 10);
+            const startedAt = new Date();
+            const completedAt = new Date(startedAt.getTime() + duration * 1000);
+
+            $.ajax({
+                url: 'pages/order_list_ajax.php',
+                type: 'POST',
+                data: {
+                    action: 'start_trim_timer',
+                    id: id,
+                    started_at: startedAt.toISOString().slice(0, 19).replace('T', ' '),
+                    completed_at: completedAt.toISOString().slice(0, 19).replace('T', ' ')
+                },
+                success: function (res) {
+                    if (res === 'success') {
+                        const opts = { hour: '2-digit', minute: '2-digit', hour12: true };
+                        const dateOpts = { month: 'short', day: '2-digit' };
+                        const timePart = completedAt.toLocaleTimeString(undefined, opts);
+                        const datePart = completedAt.toLocaleDateString(undefined, dateOpts);
+                        $row.find('.est-time').text(`${timePart}, ${datePart}`);
+
+                        $row.find('.action-cell').html('<span class="text-muted">Running</span>');
+
+                        let remaining = duration;
+                        const timer = setInterval(() => {
+                            if (remaining <= 0) {
+                                clearInterval(timer);
+                                $row.find('.action-cell').html('<span class="text-muted">Done</span>');
+
+                                $.ajax({
+                                    url: 'pages/order_list_ajax.php',
+                                    type: 'POST',
+                                    data: {
+                                        action: 'mark_trim_timer_done',
+                                        id: id
+                                    }
+                                });
+                                return;
+                            }
+                            remaining--;
+                        }, 1000);
+                    } else {
+                        alert('Failed to start timer.');
+                    }
+                }
+            });
+        });
+        </script>
+        <?php
+    }
+
+    if ($action === 'start_trim_timer') {
+        $id = intval($_POST['id']);
+        $started_at = mysqli_real_escape_string($conn, $_POST['started_at']);
+        $completed_at = mysqli_real_escape_string($conn, $_POST['completed_at']);
+
+        $update = "
+            UPDATE work_order
+            SET started_at = '$started_at',
+                completed_at = '$completed_at'
+            WHERE id = $id
+        ";
+
+        echo mysqli_query($conn, $update) ? 'success' : 'error';
+        exit;
+    }
+
+    if ($action === 'mark_trim_timer_done') {
+        $id = intval($_POST['id']);
+        $update = "UPDATE work_order SET status = 3 WHERE id = $id";
+        mysqli_query($conn, $update);
+        exit;
     }
 
     mysqli_close($conn);
