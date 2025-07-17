@@ -220,7 +220,7 @@ if (!isset($_SESSION['work_order_user_id'])) {
             if ($_REQUEST['page'] == "messages") {include 'pages/messages.php';}
             if ($_REQUEST['page'] == "inventory") {include 'pages/inventory.php';}
 
-            if ($_REQUEST['page'] == "work_order_pending") {include 'pages/work_order_pending.php';}
+            if ($_REQUEST['page'] == "work_order_new") {include 'pages/work_order_new.php';}
             if ($_REQUEST['page'] == "work_order_run") {include 'pages/work_order_run.php';}
             if ($_REQUEST['page'] == "work_order_finish") {include 'pages/work_order_finish.php';}
             if ($_REQUEST['page'] == "work_order_release") {include 'pages/work_order_release.php';}

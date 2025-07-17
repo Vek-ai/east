@@ -51,27 +51,27 @@
                </a>
             </li>
             <li class="sidebar-item">
-               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=work_order_pending">
+               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=work_order_new">
                   <iconify-icon icon="mdi:progress-clock" class="fs-7 aside-icon"></iconify-icon>
-                  <span class="hide-menu">Work Orders Pending</span>
+                  <span class="hide-menu">New Work Orders</span>
                </a>
             </li>
             <li class="sidebar-item">
                <a class="sidebar-link d-flex align-items-center gap-2" href="?page=work_order_run">
                   <iconify-icon icon="mdi:wrench" class="fs-7 aside-icon"></iconify-icon>
-                  <span class="hide-menu">Work Orders Processing</span>
+                  <span class="hide-menu">Processing Work Orders</span>
                </a>
             </li>
             <li class="sidebar-item">
                <a class="sidebar-link d-flex align-items-center gap-2" href="?page=work_order_finish">
                   <iconify-icon icon="mdi:check-circle-outline" class="fs-7 aside-icon"></iconify-icon>
-                  <span class="hide-menu">Work Orders Finished</span>
+                  <span class="hide-menu">Finished Work Orders</span>
                </a>
             </li>
             <li class="sidebar-item">
                <a class="sidebar-link d-flex align-items-center gap-2" href="?page=work_order_release">
                   <iconify-icon icon="mdi:truck-outline" class="fs-7 aside-icon"></iconify-icon>
-                  <span class="hide-menu">Work Orders Release</span>
+                  <span class="hide-menu">Released Work Orders</span>
                </a>
             </li>
 

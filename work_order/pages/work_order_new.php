@@ -2,7 +2,7 @@
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
-$page_title = "Work Orders Pending";
+$page_title = "New Work Orders";
 ?>
 
 <div class="container-fluid">
@@ -56,7 +56,7 @@ $page_title = "Work Orders Pending";
                         </div>
                     </div>
                     <div class="px-3 mb-2"> 
-                        <input type="checkbox" id="toggleBatch"> Toggle Batch Selection
+                        <input type="checkbox" id="toggleBatch" checked> Toggle Batch Selection
                     </div>
                     <div class="d-flex justify-content-end py-2">
                         <button type="button" class="btn btn-outline-primary reset_filters">
@@ -237,7 +237,7 @@ $page_title = "Work Orders Pending";
             </div>
         </div>
         <div class="modal-footer">
-            <button id="bulk_run_work_order" class="btn ripple btn-success" type="button">Bulk Run</button>
+            <button id="bulk_run_work_order" class="btn ripple btn-success" type="button">Run Work Order</button>
         </div>
     </div>
 </div>
@@ -303,7 +303,7 @@ $page_title = "Work Orders Pending";
 <script>
     function loadWorkOrderDetails(approval_id){
         $.ajax({
-            url: 'pages/work_order_pending_ajax.php',
+            url: 'pages/work_order_new_ajax.php',
             type: 'POST',
             data: {
                 approval_id: approval_id,
@@ -337,8 +337,6 @@ $page_title = "Work Orders Pending";
             $(this).next('.select2-container').find('.select2-selection__rendered').removeAttr('title');
         });
 
-        $('#selectAll, .row-check, #bulk_run_work_order').closest('th, td, .modal-footer').hide();
-
         $('#toggleBatch').on('change', function () {
             const showBatch = $(this).is(':checked');
 
@@ -368,7 +366,7 @@ $page_title = "Work Orders Pending";
             }
 
             $.ajax({
-                url: 'pages/work_order_pending_ajax.php',
+                url: 'pages/work_order_new_ajax.php',
                 type: 'POST',
                 data: {
                     id: JSON.stringify(selectedIds),
@@ -389,7 +387,7 @@ $page_title = "Work Orders Pending";
             const ids = Array.isArray(id) ? id : [id];
 
             $.ajax({
-                url: 'pages/work_order_pending_ajax.php',
+                url: 'pages/work_order_new_ajax.php',
                 type: 'POST',
                 data: {
                     id: JSON.stringify(ids),
@@ -438,7 +436,7 @@ $page_title = "Work Orders Pending";
             }
 
             $.ajax({
-                url: 'pages/work_order_pending_ajax.php',
+                url: 'pages/work_order_new_ajax.php',
                 method: 'POST',
                 data: {
                     run_work_order: true,

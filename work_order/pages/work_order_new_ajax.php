@@ -119,7 +119,7 @@ if(isset($_POST['fetch_available'])){
                 const id = <?= $id ?? 0 ?>;
 
                 $.ajax({
-                    url: 'pages/work_order_pending_ajax.php',
+                    url: 'pages/work_order_new_ajax.php',
                     method: 'POST',
                     data: {
                         selected_ids: [id],
@@ -319,61 +319,45 @@ if(isset($_POST['fetch_assigned'])){
 if (isset($_POST['fetch_coils'])) {
     $ids = json_decode($_POST['id'], true) ?? [];
 
-    if (!is_array($ids)) {
-        $ids = [$ids];
-    }
-
+    if (!is_array($ids)) $ids = [$ids];
     if (empty($ids)) {
         echo "No valid work order IDs provided.";
         exit;
     }
 
-    $all_assigned_coils = [];
+    $all_colors = [];
+    $total_length_needed = 0;
+
     foreach ($ids as $id) {
         $id = mysqli_real_escape_string($conn, $id);
         $details = getWorkOrderDetails($id);
 
-        $coils = json_decode($details['assigned_coils'] ?? '[]', true);
-        if (is_array($coils)) {
-            $all_assigned_coils = array_merge($all_assigned_coils, $coils);
+        $color = $details['custom_color'];
+        if (!empty($color)) {
+            $all_colors[] = intval($color);
         }
+
+        $lengthFeet = floatval($details['custom_length'] ?? 0);
+        $lengthInch = floatval($details['custom_length2'] ?? 0);
+        $quantity = floatval($details['quantity'] ?? 1);
+        $total_length_needed += ($lengthFeet + ($lengthInch / 12)) * $quantity;
     }
-    $assigned_coils = array_unique($all_assigned_coils);
 
-    $color_id = $details['custom_color'];
-    $grade = $details['custom_grade'];
-    $width = floatval($details['custom_width']);
-    $lengthFeet = floatval($details['custom_length'] ?? 0);
-    $lengthInch = floatval($details['custom_length2'] ?? 0);
-    $quantity = floatval($details['quantity'] ?? 1);
-
-    $total_length = ($lengthFeet + ($lengthInch / 12)) * $quantity ?: 1;
-
+    $color_list = implode(",", array_map('intval', $all_colors));
     $where = "WHERE 1=1";
-    /* 
-    if (!empty($color_id)) $where .= " AND color_sold_as = '" . mysqli_real_escape_string($conn, $color_id) . "'";
-    if (!empty($grade)) $where .= " AND grade = '" . mysqli_real_escape_string($conn, $grade) . "'";
-    if (!empty($width)) $where .= " AND width >= $width"; 
-    */
+
+    if (!empty($color_list)) {
+        $where .= " AND color_sold_as IN ($color_list)";
+    }
 
     $query = "SELECT * FROM coil_product $where ORDER BY date ASC";
     $result = mysqli_query($conn, $query);
 
-    $total_length_reached = 0;
-    $weighted_sum = 0;
-    $total_weight = 0;
+    $total_selected_length = 0;
     ?>
-    <style>
-        .tooltip-inner {
-            background-color: white !important;
-            color: black !important;
-            font-size: calc(0.875rem + 2px) !important;
-        }
-    </style>
-
     <div class="card card-body datatables">
         <div class="product-details table-responsive text-wrap">
-            <h4>Coils List</h4>
+            <h4><?=$query?></h4>
             <table id="coils_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
                 <thead>
                     <tr>
@@ -392,30 +376,32 @@ if (isset($_POST['fetch_coils'])) {
                     <?php while ($row = mysqli_fetch_assoc($result)):
                         $coil_id = $row['coil_id'];
                         $color_details = getColorDetails($row['color_sold_as']);
+                        $remaining = floatval($row['remaining_feet']);
 
-                        $weighted_sum += $row['price'] * $row['remaining_feet'];
-                        $total_weight += $row['remaining_feet'];
-
-                        $is_checked = in_array($coil_id, $assigned_coils);
+                        $select = false;
+                        if ($total_selected_length < $total_length_needed) {
+                            $select = true;
+                            $total_selected_length += $remaining;
+                        }
                     ?>
-                        <tr data-id="<?= $coil_id ?>" data-length="<?= $total_length ?>">
-                            <td><?= $is_checked ? 1 : 0 ?></td>
-                            <td class="text-start">
-                                <input type="checkbox" class="row-select" data-id="<?= $coil_id ?>" <?= $is_checked ? 'checked' : '' ?>>
-                            </td>
-                            <td><?= $row['entry_no'] ?></td>
-                            <td><?= date("M d, Y", strtotime($row['date'])) ?></td>
-                            <td class="text-left">
-                                <div class="d-inline-flex align-items-center gap-2">
-                                    <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 20px; height: 20px;"></span>
-                                    <?= $color_details['color_name'] ?>
-                                </div>
-                            </td>
-                            <td><?= getGradeName($row['grade']) ?></td>
-                            <td><?= $row['thickness'] ?></td>
-                            <td class="text-right"><?= $row['width'] ?></td>
-                            <td class="text-right"><?= $row['remaining_feet'] ?></td>
-                        </tr>
+                    <tr data-id="<?= $coil_id ?>" data-length="<?= $remaining ?>">
+                        <td><?= $select ? 1 : 0 ?></td>
+                        <td class="text-start">
+                            <input type="checkbox" class="row-select" data-id="<?= $coil_id ?>" <?= $select ? 'checked' : '' ?>>
+                        </td>
+                        <td><?= $row['entry_no'] ?></td>
+                        <td><?= date("M d, Y", strtotime($row['date'])) ?></td>
+                        <td class="text-left">
+                            <div class="d-inline-flex align-items-center gap-2">
+                                <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 20px; height: 20px;"></span>
+                                <?= $color_details['color_name'] ?>
+                            </div>
+                        </td>
+                        <td><?= getGradeName($row['grade']) ?></td>
+                        <td><?= $row['thickness'] ?></td>
+                        <td class="text-right"><?= $row['width'] ?></td>
+                        <td class="text-right"><?= $row['remaining_feet'] ?></td>
+                    </tr>
                     <?php endwhile; ?>
                 </tbody>
             </table>
@@ -428,11 +414,6 @@ if (isset($_POST['fetch_coils'])) {
 
     <script>
         $(function () {
-            $.fn.dataTable.ext.type.order['custom-date-pre'] = function (d) {
-                const parts = d.split(' ');
-                return new Date(parts[2], ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(parts[0]), parseInt(parts[1])).getTime();
-            };
-
             if (!$.fn.DataTable.isDataTable('#coils_tbl')) {
                 $('#coils_tbl').DataTable({
                     language: { emptyTable: "No Available Coils with the selected color" },
@@ -450,7 +431,8 @@ if (isset($_POST['fetch_coils'])) {
             $('[data-toggle="tooltip"]').tooltip();
         });
     </script>
-<?php }
+    <?php
+}
 
 if (isset($_POST['run_work_order'])) {
     $ids = $_POST['selected_ids'] ?? [];
