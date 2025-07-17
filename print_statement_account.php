@@ -174,7 +174,7 @@ if (!empty($_REQUEST['id'])) {
     $pdf->SetTextColor(0, 0, 0);
 
     $total_credit = 0;
-    $balance = 0;
+    
 
     $pay_labels = [
         'pickup'   => ['label' => 'Pay at Pick-up'],
@@ -214,6 +214,7 @@ if (!empty($_REQUEST['id'])) {
     $result = mysqli_query($conn, $query);
 
     if ($result && mysqli_num_rows($result) > 0) {
+        $balance = 0;
         while ($row = mysqli_fetch_assoc($result)) {
             $orderid = $row['orderid'];
             $date = date('M d, Y', strtotime($row['date']));
@@ -252,36 +253,7 @@ if (!empty($_REQUEST['id'])) {
     
     $pdf->Ln(10);
 
-    $pdf->SetFont('Arial', 'B', 12);
-    $pdf->SetFillColor(230, 230, 230);
-    $pdf->SetTextColor(0, 0, 0);
-    $pdf->MultiCell(0, 5, "Available Credits", 1, 'C', true);
-
-    $pdf->SetFillColor(230, 240, 255);
-    $pdf->SetFont('Arial', 'B', 10);
-
-    $scale = $usableWidth / 135;
-    $w1 = 25 * $scale;
-    $w2 = 25 * $scale;
-    $w3 = 30 * $scale;
-    $w4 = 30 * $scale;
-    $w5 = 25 * $scale;
-
-    $pdf->SetTextColor(255, 255, 255);
-    $pdf->SetFillColor(...$blueColor);
-
-    $pdf->Cell($w1, 7, 'Date', 1, 0, 'C', true);
-    $pdf->Cell($w2, 7, 'Credit #', 1, 0, 'C', true);
-    $pdf->Cell($w3, 7, 'Job Name', 1, 0, 'C', true);
-    $pdf->Cell($w4, 7, 'PO #', 1, 0, 'C', true);
-    $pdf->Cell($w5, 7, 'Amount', 1, 1, 'C', true);
-
-    $pdf->SetFont('Arial', '', 10);
-    $pdf->SetFillColor(255, 255, 255);
-    $pdf->SetTextColor(0, 0, 0);
-
-    $total_available = 0;
-    $available = 0;
+    
 
     $query = "
         SELECT 
@@ -313,11 +285,40 @@ if (!empty($_REQUEST['id'])) {
         ORDER BY date ASC
     ";
 
+    $total_available = 0;
+    $result_available = mysqli_query($conn, $query);
+    if ($result_available && mysqli_num_rows($result_available) > 0) {
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->SetFillColor(230, 230, 230);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->MultiCell(0, 5, "Available Credits", 1, 'C', true);
 
-    $result = mysqli_query($conn, $query);
+        $pdf->SetFillColor(230, 240, 255);
+        $pdf->SetFont('Arial', 'B', 10);
 
-    if ($result && mysqli_num_rows($result) > 0) {
-        while ($row = mysqli_fetch_assoc($result)) {
+        $scale = $usableWidth / 135;
+        $w1 = 25 * $scale;
+        $w2 = 25 * $scale;
+        $w3 = 30 * $scale;
+        $w4 = 30 * $scale;
+        $w5 = 25 * $scale;
+
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->SetFillColor(...$blueColor);
+
+        $pdf->Cell($w1, 7, 'Date', 1, 0, 'C', true);
+        $pdf->Cell($w2, 7, 'Credit #', 1, 0, 'C', true);
+        $pdf->Cell($w3, 7, 'Job Name', 1, 0, 'C', true);
+        $pdf->Cell($w4, 7, 'PO #', 1, 0, 'C', true);
+        $pdf->Cell($w5, 7, 'Amount', 1, 1, 'C', true);
+
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->SetFillColor(255, 255, 255);
+        $pdf->SetTextColor(0, 0, 0);
+
+        
+        $available = 0;
+        while ($row = mysqli_fetch_assoc($result_available)) {
             $date = date('M d, Y', strtotime($row['date']));
             $source = $row['source'];
             $id = ($source == 'job_deposit' ? 'C' : 'RC') . '-' . $row['id'];
@@ -337,18 +338,20 @@ if (!empty($_REQUEST['id'])) {
 
             $total_available += $available;
         }
+
+        $pdf->Ln(3);
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->SetX(115);
+        $pdf->SetFillColor(230, 230, 230);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(50, 7, 'Total Available Credits:', 1, 0, 'R', true);
+        $pdf->SetFillColor(255, 255, 255);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell($w5, 7, '$' . number_format($total_available, 2), 1, 1, 'R', true);
+        $pdf->Ln(5);
     }
 
-    $pdf->Ln(3);
-    $pdf->SetFont('Arial', 'B', 10);
-    $pdf->SetX(115);
-    $pdf->SetFillColor(230, 230, 230);
-    $pdf->SetTextColor(0, 0, 0);
-    $pdf->Cell(50, 7, 'Total Available Credits:', 1, 0, 'R', true);
-    $pdf->SetFillColor(255, 255, 255);
-    $pdf->SetTextColor(0, 0, 0);
-    $pdf->Cell($w5, 7, '$' . number_format($total_available, 2), 1, 1, 'R', true);
-    $pdf->Ln(5);
+    
 
     $pdf->SetFillColor(...$blueColor);
     $pdf->SetTextColor(255, 255, 255);
@@ -365,13 +368,15 @@ if (!empty($_REQUEST['id'])) {
     $pdf->SetTextColor(0, 0, 0);
     $pdf->Cell($w5, 5, '$' . number_format($total_credit, 2), 1, 1, 'R', true);
 
-    $pdf->SetX(115);
-    $pdf->SetFillColor(230, 230, 230);
-    $pdf->SetTextColor(0, 0, 0);
-    $pdf->Cell(50, 5, 'Total Available Credits:', 1, 0, 'R', true);
-    $pdf->SetFillColor(255, 255, 255);
-    $pdf->SetTextColor(0, 0, 0);
-    $pdf->Cell($w5, 5, '$' . number_format($total_available, 2), 1, 1, 'R', true);
+    if ($result_available && mysqli_num_rows($result_available) > 0) {
+        $pdf->SetX(115);
+        $pdf->SetFillColor(230, 230, 230);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(50, 5, 'Total Available Credits:', 1, 0, 'R', true);
+        $pdf->SetFillColor(255, 255, 255);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell($w5, 5, '$' . number_format($total_available, 2), 1, 1, 'R', true);
+    }
 
     $pdf->SetX(115);
     $pdf->SetFillColor(255, 0, 0);
