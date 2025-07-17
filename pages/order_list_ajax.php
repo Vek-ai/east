@@ -1742,16 +1742,16 @@ if(isset($_REQUEST['action'])) {
                         $customer_name = get_customer_name($customer_id);
 
                         $qty = intval($row['quantity']);
-                        $duration = $qty * 2 * 60; // 2 mins per item in seconds
+                        $duration = $qty * 2 * 60;
 
                         $est_display = '-';
                         if ($row['status'] == 2 || $row['status'] == 3) {
                             $est_display = date('h:i A, M d', strtotime($row['completed_at']));
                         }
 
-                        date_default_timezone_set('America/New_York');
-                        $now = date('Y-m-d H:i:s');
-                        $now = strtotime($now);
+                        $current_result = mysqli_query($conn, "SELECT NOW() AS now_time");
+                        $current_row = mysqli_fetch_assoc($current_result);
+                        $now = $current_row['now_time'];
                     ?>
                     <tr data-id="<?= $row['id'] ?>" data-duration="<?= $duration ?>">
                         <td><?= htmlspecialchars($orderid) ?></td>
