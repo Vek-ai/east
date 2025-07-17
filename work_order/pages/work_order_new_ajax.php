@@ -357,7 +357,7 @@ if (isset($_POST['fetch_coils'])) {
     ?>
     <div class="card card-body datatables">
         <div class="product-details table-responsive text-wrap">
-            <h4><?=$query?></h4>
+            <h4>Coils List</h4>
             <table id="coils_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
                 <thead>
                     <tr>
