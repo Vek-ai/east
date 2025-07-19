@@ -148,6 +148,18 @@ function getWorkOrderDetails($id) {
     return $work_order;
 }
 
+function getRollFormerDetails($roll_former_id) {
+    global $conn;
+    $roll_former_id = mysqli_real_escape_string($conn, $roll_former_id);
+    $query = "SELECT * FROM roll_former WHERE roll_former_id = '$roll_former_id'";
+    $result = mysqli_query($conn, $query);
+    $roll_former = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $roll_former = $row;
+    }
+    return $roll_former;
+}
+
 function getSubmitWorkOrderDetails($id) {
     global $conn;
     $id = mysqli_real_escape_string($conn, $id);
@@ -1672,6 +1684,22 @@ function getOrderTotalPayments($orderid) {
     }
 
     return $total;
+}
+
+function checkTimer() {
+    global $conn;
+
+    $sql = "
+        UPDATE work_order
+        SET status = 3 -- Done
+        WHERE 
+            status = 2
+            AND started_at IS NOT NULL
+            AND completed_at IS NOT NULL
+            AND NOW() >= completed_at
+    ";
+
+    mysqli_query($conn, $sql);
 }
 
 ?>

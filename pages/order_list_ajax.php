@@ -1472,6 +1472,7 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action === 'fetch_timer_status') {
+        checkTimer();
         $query = "
             SELECT 
                 wo.id AS work_order_id,
@@ -1700,7 +1701,6 @@ if(isset($_REQUEST['action'])) {
         echo mysqli_query($conn, $update) ? 'success' : 'error';
     }
 
-
     if ($action === 'mark_timer_done') {
         $id = intval($_POST['id']);
 
@@ -1713,24 +1713,22 @@ if(isset($_REQUEST['action'])) {
         echo mysqli_query($conn, $update) ? 'success' : 'error';
     }
 
-
     if ($action === 'fetch_panels_queue') {
+        checkTimer();
         $query = "
             SELECT 
-                op.id AS order_product_id,
-                op.orderid,
-                c.customer_id,
-                p.product_item AS product_name,
-                rf.footage,
-                rf.status,
-                rf.roll_former_id
-            FROM order_product op
+                wo.id AS work_order_id,
+                wo.product_item,
+                wo.quantity,
+                wo.status,
+                wo.roll_former_id,
+                o.orderid,
+                o.customerid
+            FROM work_order wo
+            LEFT JOIN order_product op ON op.id = wo.work_order_product_id
             LEFT JOIN orders o ON o.orderid = op.orderid
-            LEFT JOIN customer c ON c.customer_id = o.customerid
-            LEFT JOIN product p ON p.product_id = op.productid
-            LEFT JOIN roll_former_assignments rf ON rf.order_product_id = op.id
-            WHERE p.product_category = 3
-            ORDER BY op.id DESC
+            WHERE wo.product_category = 3 AND wo.status IN (1, 2, 3)
+            ORDER BY wo.id DESC
         ";
 
         $result = mysqli_query($conn, $query);
@@ -1743,28 +1741,40 @@ if(isset($_REQUEST['action'])) {
                             <th>Order ID</th>
                             <th>Customer</th>
                             <th>Product</th>
-                            <th>Total Footage</th>
+                            <th>Quantity</th>
                             <th>Status</th>
                             <th>Assigned Roll Former</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                        <?php while ($row = mysqli_fetch_assoc($result)){
+                            $roll_former_id = $row['roll_former_id'];
+                            $roll_former = getRollFormerDetails($roll_former_id);
+                            ?>
                             <tr>
                                 <td><?= htmlspecialchars($row['orderid']) ?></td>
-                                <td><?= get_customer_name($row['customer_id']) ?></td>
-                                <td><?= htmlspecialchars($row['product_name']) ?></td>
-                                <td><?= htmlspecialchars($row['footage']) ?></td>
-                                <td><?= ucfirst($row['status']) ?></td>
+                                <td><?= get_customer_name($row['customerid']) ?></td>
+                                <td><?= htmlspecialchars($row['product_item']) ?></td>
+                                <td><?= htmlspecialchars($row['quantity']) ?></td>
                                 <td>
-                                    <?= $row['roll_former_id'] ? 'Roll Former ' . htmlspecialchars($row['roll_former_id']) : '-' ?>
+                                    <?= match ((int)$row['status']) {
+                                        0 => 'Pending',
+                                        1 => 'Approved',
+                                        2 => 'Processing',
+                                        3 => 'Done',
+                                        default => 'Unknown'
+                                    }; ?>
+                                </td>
+                                <td>
+                                    <?= $roll_former['roll_former'] ?>
                                 </td>
                             </tr>
-                        <?php endwhile; ?>
+                        <?php } ?>
                     </tbody>
                 </table>
             </div>
         </div>
+
         <script>
         $(document).ready(function () {
             if ($.fn.DataTable.isDataTable('#panels_queue')) {
@@ -1925,6 +1935,7 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action === 'start_trim_timer') {
+        checkTimer();
         $id = intval($_POST['id']);
         $started_at = mysqli_real_escape_string($conn, $_POST['started_at']);
         $completed_at = mysqli_real_escape_string($conn, $_POST['completed_at']);
