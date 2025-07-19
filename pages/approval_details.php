@@ -121,8 +121,8 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                                                             id="viewAvailableBtn" 
                                                             data-app-prod-id="<?= $row['id'] ?>" 
                                                             class="d-inline-flex align-items-center gap-2 text-decoration-none">
-                                                                <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 20px; height: 20px;"></span>
-                                                                <?= $color_details['color_name'] ?>
+                                                                <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?? '' ?>; width: 20px; height: 20px;"></span>
+                                                                <?= $color_details['color_name'] ?? '' ?>
                                                         </a>
                                                     </div>
                                                     </td>

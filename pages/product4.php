@@ -651,9 +651,10 @@ $price_per_bend = getPaymentSetting('price_per_bend');
                         $('#add-fields').html(response);
 
                         let selectedCategory = $('#product_category').val() || '';
-                        //this hides select options that are not the selected category
-                        $('.add-category option').each(function() {
-                            let match = String($(this).data('category')) === String(product_category);
+
+                        $('.add-category option').each(function () {
+                            let categoryAttr = String($(this).data('category') || '');
+                            let match = categoryAttr.includes(selectedCategory);
                             $(this).toggle(match);
                         });
                         

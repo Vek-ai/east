@@ -325,12 +325,16 @@ if (isset($_POST['fetch_coils'])) {
         exit;
     }
 
+    $profiles = array();
     $all_colors = [];
     $total_length_needed = 0;
 
     foreach ($ids as $id) {
         $id = mysqli_real_escape_string($conn, $id);
         $details = getWorkOrderDetails($id);
+
+        $product_id = $details['productid'];
+        $product_details = getProductDetails($product_id);
 
         $color = $details['custom_color'];
         if (!empty($color)) {
@@ -341,7 +345,12 @@ if (isset($_POST['fetch_coils'])) {
         $lengthInch = floatval($details['custom_length2'] ?? 0);
         $quantity = floatval($details['quantity'] ?? 1);
         $total_length_needed += ($lengthFeet + ($lengthInch / 12)) * $quantity;
+
+        $profiles[] = $product_details['profile'];
     }
+
+    $profiles = array_unique($profiles);
+    $profiles = array_filter($profiles, fn($val) => $val !== 0 && $val !== '0');
 
     if($total_length_needed == 0){
         $total_length_needed = 1;
@@ -413,21 +422,48 @@ if (isset($_POST['fetch_coils'])) {
     </div>
 
     <?php
-    $rf_query = "SELECT roll_former_id, roll_former FROM roll_former WHERE status = 1 AND (hidden IS NULL OR hidden = 0)";
+    $rf_query = "
+        SELECT roll_former_id, roll_former 
+        FROM roll_former 
+        WHERE status = 1 AND hidden = 0
+    ";
+
+    if (!empty($profiles)) {
+        if (!is_array($profiles)) {
+            $profiles = [$profiles];
+        }
+        $profile_list = "'" . implode("','", $profiles) . "'";
+        $rf_query .= " AND profile IN ($profile_list)";
+    }
+
     $rf_result = mysqli_query($conn, $rf_query);
+    $roll_formers = [];
+    while ($rf = mysqli_fetch_assoc($rf_result)) {
+        $roll_formers[] = $rf;
+    }
     ?>
-    <div class="mt-3 col-6">
-        <label for="rollformer_select" class="form-label fw-bold">Select Roll Former</label>
-        <select id="rollformer_select" class="form-select">
-            <option value="">-- Select Roll Former --</option>
-            <?php while ($rf = mysqli_fetch_assoc($rf_result)): ?>
-                <option value="<?= $rf['roll_former_id'] ?>"><?= htmlspecialchars($rf['roll_former']) ?></option>
-            <?php endwhile; ?>
-        </select>
-    </div>
-    <div class="modal-footer d-flex justify-content-end">
-        <button id="save_selected_coils" class="btn ripple btn-success me-2" type="button">Run</button>
-    </div>
+
+    <?php if (count($roll_formers) === 1) { ?>
+        <div class="mt-3 col-6">
+            <label class="form-label fw-bold">Assigned Roll Former</label>
+            <input type="hidden" name="rollformer_select" value="<?= $roll_formers[0]['roll_former_id'] ?>">
+            <div class="fw-bold ms-3">
+                <?= htmlspecialchars($roll_formers[0]['roll_former']) ?>
+            </div>
+        </div>
+    <?php } else { ?>
+        <div class="mt-3 col-6">
+            <label for="rollformer_select" class="form-label fw-bold">Select Roll Former</label>
+            <select id="rollformer_select" name="rollformer_select" class="form-select">
+                <option value="">-- Select Roll Former --</option>
+                <?php foreach ($roll_formers as $rf) { ?>
+                    <option value="<?= $rf['roll_former_id'] ?>">
+                        <?= htmlspecialchars($rf['roll_former']) ?>
+                    </option>
+                <?php } ?>
+            </select>
+        </div>
+    <?php } ?>
 
     <script>
         $(function () {
@@ -466,9 +502,8 @@ if (isset($_POST['run_work_order'])) {
     foreach ($ids as $id) {
         $id = mysqli_real_escape_string($conn, $id);
 
-        // Save assigned coils first
         $update_sql = "UPDATE work_order SET assigned_coils = '$coils_json', roll_former_id = '$roll_former_id' WHERE id = $id";
-        $conn->query($update_sql); // Optional: handle error if needed
+        $conn->query($update_sql);
 
         $work_order_details = getWorkOrderDetails($id);
         if (!$work_order_details) {

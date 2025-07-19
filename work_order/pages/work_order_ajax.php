@@ -12,6 +12,7 @@ if(isset($_POST['fetch_available'])){
     $work_order_details = getWorkOrderDetails($id);
     $assigned_coils = $work_order_details['assigned_coils'];
     $decoded_coils = json_decode($assigned_coils, true);
+    $profiles = $work_order_details['custom_profile'];
     ?>
     <style>
         .tooltip-inner {
@@ -22,7 +23,7 @@ if(isset($_POST['fetch_available'])){
     </style>
     <div class="card card-body datatables">
         <div class="product-details table-responsive text-wrap">
-            <h5>Coils List</h5>
+            <h5>Assigned Coils</h5>
             <table id="coil_dtls_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
                 <thead>
                     <tr>
@@ -88,18 +89,49 @@ if(isset($_POST['fetch_available'])){
         </div>
     </div>
     <?php
-    $rf_query = "SELECT roll_former_id, roll_former FROM roll_former WHERE status = 1 AND (hidden IS NULL OR hidden = 0)";
+    $rf_query = "
+        SELECT roll_former_id, roll_former 
+        FROM roll_former 
+        WHERE status = 1 AND hidden = 0
+    ";
+
+    if (!empty($profiles)) {
+        if (!is_array($profiles)) {
+            $profiles = [$profiles];
+        }
+        $profile_list = "'" . implode("','", $profiles) . "'";
+        $rf_query .= " AND profile IN ($profile_list)";
+    }
+
     $rf_result = mysqli_query($conn, $rf_query);
+    $roll_formers = [];
+    while ($rf = mysqli_fetch_assoc($rf_result)) {
+        $roll_formers[] = $rf;
+    }
     ?>
-    <div class="mt-3 col-6">
-        <label for="rollformer_select" class="form-label fw-bold">Select Roll Former</label>
-        <select id="rollformer_select" class="form-select">
-            <option value="">-- Select Roll Former --</option>
-            <?php while ($rf = mysqli_fetch_assoc($rf_result)): ?>
-                <option value="<?= $rf['roll_former_id'] ?>"><?= htmlspecialchars($rf['roll_former']) ?></option>
-            <?php endwhile; ?>
-        </select>
-    </div>
+
+    <?php if (count($roll_formers) === 1) { ?>
+        <div class="mt-3 col-6">
+            <label class="form-label fw-bold">Assigned Roll Former</label>
+            <input type="hidden" name="rollformer_select" value="<?= $roll_formers[0]['roll_former_id'] ?>">
+            <div class="fw-bold ms-3">
+                <?= htmlspecialchars($roll_formers[0]['roll_former']) ?>
+            </div>
+        </div>
+    <?php } else { ?>
+        <div class="mt-3 col-6">
+            <label for="rollformer_select" class="form-label fw-bold">Select Roll Former</label>
+            <select id="rollformer_select" name="rollformer_select" class="form-select">
+                <option value="">-- Select Roll Former --</option>
+                <?php foreach ($roll_formers as $rf) { ?>
+                    <option value="<?= $rf['roll_former_id'] ?>">
+                        <?= htmlspecialchars($rf['roll_former']) ?>
+                    </option>
+                <?php } ?>
+            </select>
+        </div>
+    <?php } ?>
+
     <div class="modal-footer">
         <?php if (!empty($work_order_details) && $work_order_details['status'] == 1): ?>
             <button id="run_work_order" class="btn ripple btn-success" type="button">Run Work Order</button>
@@ -199,6 +231,7 @@ if(isset($_POST['fetch_view'])){
     $work_order_details = getWorkOrderDetails($id);
     $assigned_coils = $work_order_details['assigned_coils'];
     $decoded_coils = json_decode($assigned_coils, true);
+    $profiles = array();
     ?>
     <style>
         .tooltip-inner {
@@ -268,6 +301,8 @@ if(isset($_POST['fetch_view'])){
                             $inch = $row['custom_length2'];
                             $inventory_type = '';
                             $status = $row['status'];
+
+                            $profiles[] = $product_details['profile'];
 
                             $status = (int)$row['status'];
                             $statusText = '';
@@ -400,7 +435,7 @@ if(isset($_POST['fetch_view'])){
                                 </td>
                                 <td>
                                     <div class="action-btn text-center">
-                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Run Work Order" data-app-prod-id="<?= $row['id'] ?>">
+                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Run Work Order" data-id="<?= $row['id'] ?>">
                                             <i class="fa fa-arrow-right-to-bracket"></i>
                                         </a>
                                         <a href="javascript:void(0)" class="text-decoration-none" id="viewAssignedBtn" title="View" data-id="<?= $row['id'] ?>">
@@ -412,6 +447,9 @@ if(isset($_POST['fetch_view'])){
                             <?php
                             $no++;
                         }
+
+                        $profiles = array_unique($profiles);
+                        $profiles = array_filter($profiles, fn($val) => $val !== 0 && $val !== '0');
                         ?>
                         </tbody>
                     </table>
@@ -423,23 +461,46 @@ if(isset($_POST['fetch_view'])){
         </div>
     </div>
     <?php
-    $rf_query = "SELECT roll_former_id, roll_former FROM roll_former WHERE status = 1 AND (hidden IS NULL OR hidden = 0)";
+    $rf_query = "
+        SELECT roll_former_id, roll_former 
+        FROM roll_former 
+        WHERE status = 1 AND hidden = 0
+    ";
+
+    if (!empty($profiles)) {
+        $profile_list = "'" . implode("','", $profiles) . "'";
+        $rf_query .= " AND profile IN ($profile_list)";
+    }
+
     $rf_result = mysqli_query($conn, $rf_query);
+    $roll_formers = [];
+    while ($rf = mysqli_fetch_assoc($rf_result)) {
+        $roll_formers[] = $rf;
+    }
     ?>
-    <div class="mt-3 col-6">
-        <label for="rollformer_select_batch" class="form-label fw-bold">Select Roll Former</label>
-        <select id="rollformer_select_batch" class="form-select">
-            <option value="">-- Select Roll Former --</option>
-            <?php while ($rf = mysqli_fetch_assoc($rf_result)): ?>
-                <option value="<?= $rf['roll_former_id'] ?>"><?= htmlspecialchars($rf['roll_former']) ?></option>
-            <?php endwhile; ?>
-        </select>
-    </div>
-    <div class="d-flex justify-content-end mt-3">
-        <button type="button" class="btn btn-success" id="runSelectedBtn">
-            <i class="fa fa-play me-1"></i> Run
-        </button>
-    </div>
+
+    <?php if (count($roll_formers) === 1) { ?>
+        <div class="mt-3 col-6">
+            <label class="form-label fw-bold">Assigned Roll Former</label>
+            <input type="hidden" name="rollformer_select" value="<?= $roll_formers[0]['roll_former_id'] ?>">
+            <div class="fw-bold ms-3">
+                <?= htmlspecialchars($roll_formers[0]['roll_former']) ?>
+            </div>
+        </div>
+    <?php } else { ?>
+        <div class="mt-3 col-6">
+            <label for="rollformer_select" class="form-label fw-bold">Select Roll Former</label>
+            <select id="rollformer_select" name="rollformer_select" class="form-select">
+                <option value="">-- Select Roll Former --</option>
+                <?php foreach ($roll_formers as $rf) { ?>
+                    <option value="<?= $rf['roll_former_id'] ?>">
+                        <?= htmlspecialchars($rf['roll_former']) ?>
+                    </option>
+                <?php } ?>
+            </select>
+        </div>
+    <?php } ?>
+
 
     <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

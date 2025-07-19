@@ -22,6 +22,7 @@ if(isset($_REQUEST['action'])) {
         $roll_former_id = mysqli_real_escape_string($conn, $_POST['roll_former_id']);
         $roll_former = mysqli_real_escape_string($conn, $_POST['roll_former']);
         $rate = mysqli_real_escape_string($conn, $_POST['rate']);
+        $profile = mysqli_real_escape_string($conn, $_POST['profile']);
         $description = mysqli_real_escape_string($conn, $_POST['description']);
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
@@ -31,14 +32,14 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE roll_former SET roll_former = '$roll_former', rate = '$rate', description = '$description', last_edit = NOW(), edited_by = '$userid'  WHERE roll_former_id = '$roll_former_id'";
+            $updateQuery = "UPDATE roll_former SET roll_former = '$roll_former', rate = '$rate', profile = '$profile', description = '$description', last_edit = NOW(), edited_by = '$userid'  WHERE roll_former_id = '$roll_former_id'";
             if (mysqli_query($conn, $updateQuery)) {
                 echo "success_update";
             } else {
                 echo "Error updating Roll Former: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO roll_former (roll_former, rate, description, added_date, added_by) VALUES ('$roll_former', '$rate', '$description', NOW(), '$userid')";
+            $insertQuery = "INSERT INTO roll_former (roll_former, rate, profile, description, added_date, added_by) VALUES ('$roll_former', '$rate', '$profile', '$description', NOW(), '$userid')";
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";
             } else {
@@ -82,6 +83,7 @@ if(isset($_REQUEST['action'])) {
             $roll_former_id = $row['roll_former_id'];
             $roll_former = $row['roll_former'];
             $rate = $row['rate'];
+            $profile = $row['profile'];
             $description = $row['description'];
         }
 
@@ -97,15 +99,30 @@ if(isset($_REQUEST['action'])) {
 
             <div class="row pt-3">
                 <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label">Rate (Items per Minute)</label>
-                    <input type="text" id="rate" name="rate" class="form-control"  value="<?= $rate ?>"/>
+                    <div class="mb-3">
+                        <label class="form-label">Rate (Items per Minute)</label>
+                        <input type="text" id="rate" name="rate" class="form-control"  value="<?= $rate ?>"/>
+                    </div>
                 </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Profile</label>
+                        <select class="form-control" name="profile" id="profile">
+                            <option value="">-- Select Profile --</option>
+                            <?php
+                            $res = mysqli_query($conn, "SELECT profile_type_id, profile_type FROM profile_type WHERE hidden = 0 AND status = 1 ORDER BY profile_type ASC");
+                            while ($p = mysqli_fetch_assoc($res)):
+                                $selected = ($profile == $p['profile_type_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $p['profile_type_id'] ?>" <?= $selected ?>><?= htmlspecialchars($p['profile_type']) ?></option>
+                            <?php endwhile; ?>
+                        </select>
+                    </div>
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Role Description</label>
+                <label class="form-label">Description</label>
                 <textarea class="form-control" id="description" name="description" rows="5"><?= $description ?></textarea>
             </div>
 
@@ -121,6 +138,7 @@ if(isset($_REQUEST['action'])) {
             'roll_former_id',
             'roll_former',
             'rate',
+            'profile',
             'description'
         ];
 
@@ -338,6 +356,7 @@ if(isset($_REQUEST['action'])) {
                 'roll_former_id',
                 'roll_former',
                 'rate',
+                'profile',
                 'description'
             ];
     

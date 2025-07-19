@@ -407,7 +407,7 @@ $page_title = "Work Order";
         });
 
         $(document).on('click', '#viewAvailableBtn', function(event) {
-            var id = $(this).data('app-prod-id');
+            var id = $(this).data('id');
 
             $.ajax({
                 url: 'pages/work_order_ajax.php',

@@ -94,7 +94,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'usage' => 0,
                 'custom_color' => $row['color'],
                 'weight' => $weight,
-                'custom_grade' => intval($row['grade'])
+                'custom_grade' => intval($row['grade']),
+                'custom_profile' => intval($row['profile'])
             );
         
             $_SESSION["cart"][] = $item_array;
@@ -153,7 +154,8 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
                 'custom_color' => $row['color'],
                 'weight' => $weight,
                 'supplier_id' => $row['supplier_id'],
-                'custom_grade' => intval($row['grade'])
+                'custom_grade' => intval($row['grade']),
+                'custom_profile' => intval($row['profile'])
             );
 
             $_SESSION["cart"][] = $item_array;
@@ -528,6 +530,7 @@ if (isset($_POST['set_estimate_data'])) {
                 'panel_type' => $row['panel_type'],
                 'weight' => 0,
                 'custom_grade' => $row['custom_grade'],
+                'custom_profile' => $row['custom_profile'],
                 'custom_gauge' => 0,
                 'stiff_board_batten' => $row['stiff_board_batten'],
                 'stiff_stand_seam' => $row['stiff_stand_seam'],
@@ -552,6 +555,7 @@ if (isset($_POST['edit_estimate'])) {
             $product_item = mysqli_real_escape_string($conn, $item['product_item']);
             $custom_color = intval($item['custom_color']);
             $custom_grade = intval($item['custom_grade']);
+            $custom_profile = intval($item['custom_profile']);
             $custom_gauge = intval($item['custom_gauge']);
             $quantity = intval($item['quantity_cart']);
             $custom_width = mysqli_real_escape_string($conn, $item['estimate_width']);
@@ -571,6 +575,7 @@ if (isset($_POST['edit_estimate'])) {
                     UPDATE estimate_prod SET 
                         custom_color = '$custom_color',
                         custom_grade = '$custom_grade',
+                        custom_profile = '$custom_profile',
                         custom_width = '$custom_width',
                         custom_bend = '$custom_bend',
                         custom_hem = '$custom_hem',
@@ -588,12 +593,12 @@ if (isset($_POST['edit_estimate'])) {
             } else {
                 $query = "
                     INSERT INTO estimate_prod (
-                        estimateid, product_id, product_item, custom_color, custom_grade, 
+                        estimateid, product_id, product_item, custom_color, custom_grade, custom_profile,
                         custom_width, custom_bend, custom_hem, custom_length, custom_length2,
                         quantity, actual_price, discounted_price, usageid,
                         panel_type, stiff_stand_seam, stiff_board_batten
                     ) VALUES (
-                        '$estimate_id', '$product_id', '$product_item', '$custom_color', '$custom_grade',
+                        '$estimate_id', '$product_id', '$product_item', '$custom_color', '$custom_grade', '$custom_profile',
                         '$custom_width', '$custom_bend', '$custom_hem', '$custom_length', '$custom_length2',
                         '$quantity', '$actual_price', '$discounted_price', '$usageid',
                         '$panel_type', '$stiff_stand_seam', '$stiff_board_batten'
@@ -712,6 +717,7 @@ if (isset($_POST['save_estimate'])) {
             
             $custom_color = $item['custom_color'];
             $custom_grade = $item['custom_grade'];
+            $custom_profile = $item['custom_profile'];
             $custom_gauge = $item['custom_gauge'];
             $is_pre_order = $item['is_pre_order'];
             $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
@@ -732,7 +738,7 @@ if (isset($_POST['save_estimate'])) {
             $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
             $custom_img_src = $item['custom_trim_src'];
 
-            $values[] = "('$estimateid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$custom_img_src')";
+            $values[] = "('$estimateid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width', '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch', '$actual_price', '$discounted_price', '$custom_color', '$custom_grade', '$custom_profile', '$curr_discount', '$loyalty_discount', '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$custom_img_src')";
 
             $product_category = $product_details['product_category'];
 
@@ -834,7 +840,7 @@ if (isset($_POST['save_estimate'])) {
             }
         }
 
-        $query = "INSERT INTO estimate_prod (estimateid, product_id, product_item, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type, custom_img_src) VALUES ";
+        $query = "INSERT INTO estimate_prod (estimateid, product_id, product_item, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade, custom_profile, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type, custom_img_src) VALUES ";
         $query .= implode(', ', $values);
 
         if ($conn->query($query) === TRUE) {
@@ -1028,6 +1034,7 @@ if (isset($_POST['save_order'])) {
             'quantity' => $quantity_cart,
             'custom_color' => $item['custom_color'] ?? null,
             'custom_grade' => $item['custom_grade'] ?? null,
+            'custom_profile' => $item['custom_profile'] ?? null,
             'custom_width' => $item['custom_width'],
             'custom_height' => $item['custom_height'] ?? null,
             'custom_bend' => $item['custom_bend'] ?? null,
@@ -1086,7 +1093,7 @@ if (isset($_POST['save_order'])) {
             $sql = "
                 INSERT INTO approval_product (
                     approval_id, productid, product_item, status, quantity, custom_color,
-                    custom_grade, custom_width, custom_height, custom_bend, custom_hem,
+                    custom_grade, custom_profile, custom_width, custom_height, custom_bend, custom_hem,
                     custom_length, custom_length2, actual_price, discounted_price,
                     product_category, usageid, current_customer_discount, current_loyalty_discount,
                     used_discount, stiff_stand_seam, stiff_board_batten, panel_type
@@ -1098,6 +1105,7 @@ if (isset($_POST['save_order'])) {
                     '" . mysqli_real_escape_string($conn, $p['quantity'] ?? '0') . "',
                     " . (isset($p['custom_color']) && $p['custom_color'] !== '' ? intval($p['custom_color']) : "NULL") . ",
                     " . (isset($p['custom_grade']) && $p['custom_grade'] !== '' ? intval($p['custom_grade']) : "NULL") . ",
+                    " . (isset($p['custom_profile']) && $p['custom_profile'] !== '' ? intval($p['custom_profile']) : "NULL") . ",
                     '" . mysqli_real_escape_string($conn, $p['custom_width'] ?? '0') . "',
                     " . (isset($p['custom_height']) && $p['custom_height'] !== '' ? "'" . mysqli_real_escape_string($conn, $p['custom_height']) . "'" : "NULL") . ",
                     " . (isset($p['custom_bend']) && $p['custom_bend'] !== '' ? "'" . mysqli_real_escape_string($conn, $p['custom_bend']) . "'" : "NULL") . ",
@@ -1350,6 +1358,7 @@ if (isset($_POST['save_order'])) {
             $estimate_length_inch = floatval($item['estimate_length_inch']);
             $custom_color = $item['custom_color'];
             $custom_grade = $item['custom_grade'];
+            $custom_profile = $item['custom_profile'];
             $custom_gauge = $item['custom_gauge'];
 
             $total_length = $estimate_length + ($estimate_length_inch / 12);
@@ -1372,13 +1381,13 @@ if (isset($_POST['save_order'])) {
             $query = "INSERT INTO order_product (
                 orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem,
                 custom_length, custom_length2, actual_price, discounted_price, product_category,
-                custom_color, custom_grade, current_customer_discount, current_loyalty_discount,
+                custom_color, custom_grade, custom_profile, current_customer_discount, current_loyalty_discount,
                 used_discount, stiff_stand_seam, stiff_board_batten, panel_type, custom_img_src
             ) VALUES (
                 '$orderid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width',
                 '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch',
                 '$actual_price', '$discounted_price', '$product_category', '$custom_color',
-                '$custom_grade', '$curr_discount', '$loyalty_discount', '$used_discount',
+                '$custom_grade', '$custom_profile', '$curr_discount', '$loyalty_discount', '$used_discount',
                 '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$custom_img_src'
             )";
 
@@ -1405,6 +1414,7 @@ if (isset($_POST['save_order'])) {
                             product_category, 
                             custom_color, 
                             custom_grade, 
+                            custom_profile,
                             current_customer_discount, 
                             current_loyalty_discount, 
                             used_discount, 
@@ -1430,6 +1440,7 @@ if (isset($_POST['save_order'])) {
                             '$product_category', 
                             '$custom_color', 
                             '$custom_grade', 
+                            '$custom_profile', 
                             '$curr_discount', 
                             '$loyalty_discount', 
                             '$used_discount', 
@@ -1721,6 +1732,7 @@ if (isset($_POST['save_approval'])) {
             'quantity' => $quantity_cart,
             'custom_color' => isset($item['custom_color']) ? intval($item['custom_color']) : 'NULL',
             'custom_grade' => isset($item['custom_grade']) ? intval($item['custom_grade']) : 'NULL',
+            'custom_profile' => isset($item['custom_profile']) ? intval($item['custom_profile']) : 'NULL',
             'custom_width' => mysqli_real_escape_string($conn, $item['custom_width']),
             'custom_height' => isset($item['custom_height']) ? "'" . mysqli_real_escape_string($conn, $item['custom_height']) . "'" : 'NULL',
             'custom_bend' => isset($item['custom_bend']) ? "'" . mysqli_real_escape_string($conn, $item['custom_bend']) . "'" : 'NULL',
@@ -1757,7 +1769,7 @@ if (isset($_POST['save_approval'])) {
         foreach ($approval_products as $p) {
             $values[] = "(
                 '$approval_id', '{$p['productid']}', '{$p['product_item']}', 0, '{$p['quantity']}',
-                {$p['custom_color']}, {$p['custom_grade']}, '{$p['custom_width']}', {$p['custom_height']}, {$p['custom_bend']}, {$p['custom_hem']},
+                {$p['custom_color']}, {$p['custom_grade']}, {$p['custom_profile']}, '{$p['custom_width']}', {$p['custom_height']}, {$p['custom_bend']}, {$p['custom_hem']},
                 {$p['custom_length']}, {$p['custom_length2']}, '{$p['actual_price']}', '{$p['discounted_price']}', '{$p['product_category']}',
                 '{$p['usageid']}', {$p['current_customer_discount']}, {$p['current_loyalty_discount']}, {$p['used_discount']},
                 '{$p['stiff_stand_seam']}', '{$p['stiff_board_batten']}', '{$p['panel_type']}'
@@ -1765,7 +1777,7 @@ if (isset($_POST['save_approval'])) {
         }
 
         $insert_products = "INSERT INTO approval_product (
-            approval_id, productid, product_item, status, quantity, custom_color, custom_grade, custom_width,
+            approval_id, productid, product_item, status, quantity, custom_color, custom_grade, custom_profile, custom_width,
             custom_height, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price,
             product_category, usageid, current_customer_discount, current_loyalty_discount,
             used_discount, stiff_stand_seam, stiff_board_batten, panel_type
@@ -1886,6 +1898,7 @@ if (isset($_POST['save_trim'])) {
         $_SESSION["cart"][$key]['drawing_data'] = $drawing_data;
         $_SESSION["cart"][$key]['custom_color'] = $color;
         $_SESSION["cart"][$key]['custom_grade'] = $grade;
+        $_SESSION["cart"][$key]['custom_profile'] = $grade;
         $_SESSION["cart"][$key]['custom_gauge'] = $gauge;
         $_SESSION["cart"][$key]['is_pre_order'] = $is_pre_order;
         $_SESSION["cart"][$key]['is_custom'] = $is_pre_order;
@@ -1920,6 +1933,7 @@ if (isset($_POST['save_trim'])) {
                 'weight' => 0,
                 'supplier_id' => '',
                 'custom_grade' => $grade,
+                'custom_profile' => $row['profile'],
                 'custom_gauge' => $gauge,
                 'is_pre_order' => $is_pre_order,
                 'is_custom' => $is_custom,
@@ -1979,6 +1993,7 @@ if (isset($_POST['save_custom_length'])) {
             'weight' => 0,
             'supplier_id' => '',
             'custom_grade' => '',
+            'custom_profile' => 0,
             'custom_gauge' => ''
         );
 
@@ -2506,10 +2521,11 @@ if (isset($_POST['add_to_cart'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
     $is_pre_order = mysqli_real_escape_string($conn, $_POST['is_pre_order'] ?? 0);
     $panel_type = mysqli_real_escape_string($conn, $_POST['panel_type']);
-    $color = mysqli_real_escape_string($conn, $_POST['color']);
-    $grade = mysqli_real_escape_string($conn, $_POST['grade']);
-    $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
-    $panel_drip_stop = mysqli_real_escape_string($conn, $_POST['panel_drip_stop']);
+    $color = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
+    $grade = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
+    $gauge = mysqli_real_escape_string($conn, $_POST['gauge'] ?? '');
+    $profile = mysqli_real_escape_string($conn, $_POST['profile'] ?? '');
+    $panel_drip_stop = mysqli_real_escape_string($conn, $_POST['panel_drip_stop'] ?? '');
     $stiff_board_batten = isset($_POST['stiff_board_batten']) ? mysqli_real_escape_string($conn, $_POST['stiff_board_batten']) : '';
     $stiff_stand_seam = isset($_POST['stiff_stand_seam']) ? mysqli_real_escape_string($conn, $_POST['stiff_stand_seam']) : '';
     $bend_product = isset($_POST['bend_product']) ? floatval($_POST['bend_product']) : 0;
@@ -2573,6 +2589,7 @@ if (isset($_POST['add_to_cart'])) {
                     'weight' => $weight,
                     'custom_grade' => !empty($grade) ? $grade : $row['grade'],
                     'custom_gauge' => !empty($gauge) ? $gauge : $row['gauge'],
+                    'custom_profile' => !empty($profile) ? $profile : $row['profile'],
                     'stiff_board_batten' => $stiff_board_batten,
                     'stiff_stand_seam' => $stiff_stand_seam,
                     'is_pre_order' => $is_pre_order
@@ -2583,9 +2600,6 @@ if (isset($_POST['add_to_cart'])) {
         }
         $line++;
     }
-
-    
-
     echo 'success';
 }
 
