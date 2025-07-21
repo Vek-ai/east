@@ -1498,6 +1498,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "work_order_release") {include 'pages/work_order_release.php';}
 
             if ($_REQUEST['page'] == "roll_former") {include 'pages/roll_former.php';}
+            if ($_REQUEST['page'] == "coils_defective") {include 'pages/coils_defective.php';}
           ?>
         </div>
       </div>

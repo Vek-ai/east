@@ -964,15 +964,14 @@ if (isset($_POST['fetch_coils'])) {
     </script>
 <?php }
 
-
 if (isset($_POST['assign_coil'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $wrk_ordr = getWorkOrderDetails($id);
 
     $change_reason = mysqli_real_escape_string($conn, $_POST['change_reason'] ?? '');
     $change_notes = mysqli_real_escape_string($conn, $_POST['change_notes'] ?? '');
-
     $userid = $_SESSION['userid'];
+
     $selected_coils = json_decode($_POST['selected_coils'], true);
     $coils_json = json_encode($selected_coils);
 
@@ -983,8 +982,9 @@ if (isset($_POST['assign_coil'])) {
         $order_product_id = $wrk_ordr['work_order_product_id'];
 
         $log_sql = "
-            INSERT INTO work_order_changes (orderid, order_product_id, reason, notes, change_date, changed_by)
-            VALUES (
+            INSERT INTO work_order_changes (
+                orderid, order_product_id, reason, notes, change_date, changed_by
+            ) VALUES (
                 '$orderid',
                 '$order_product_id',
                 '$change_reason',
@@ -995,6 +995,23 @@ if (isset($_POST['assign_coil'])) {
         ";
 
         if ($conn->query($log_sql) === TRUE) {
+            if (strtolower($change_reason) === 'defective') {
+                foreach ($selected_coils as $coil_id) {
+                    $coil_id = intval($coil_id);
+                    $tag_note = $change_notes !== '' ? "'$change_notes'" : "NULL";
+
+                    $defect_sql = "
+                        UPDATE coil_product
+                        SET 
+                            tagged_defective = 1,
+                            tagged_date = NOW(),
+                            tagged_note = $tag_note
+                        WHERE coil_id = $coil_id
+                    ";
+                    $conn->query($defect_sql);
+                }
+            }
+
             echo "success";
         } else {
             echo "Error logging change: " . $conn->error;
@@ -1004,7 +1021,6 @@ if (isset($_POST['assign_coil'])) {
         echo "Error updating records: " . $conn->error;
     }
 }
-
 
 if (isset($_POST['run_work_order'])) {
     $ids = $_POST['selected_ids'] ?? [];
