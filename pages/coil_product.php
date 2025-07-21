@@ -71,7 +71,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
 
     <div class="card card-body">
         <div class="row">
-            <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
+            <div class="col-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
                 <button type="button" id="addCoilModalLabel" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addCoilModal">
                     <i class="ti ti-users text-white me-1 fs-5"></i> Add Coil
                 </button>
