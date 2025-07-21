@@ -308,7 +308,7 @@ if(isset($_POST['fetch_view'])){
                             $inventory_type = '';
                             $status = $row['status'];
 
-                            $profiles[] = $product_details['profile'];
+                            $profiles[] = $row['custom_profile'];
 
                             $status = (int)$row['status'];
                             $statusText = '';

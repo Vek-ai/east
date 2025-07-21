@@ -346,7 +346,7 @@ if (isset($_POST['fetch_coils'])) {
         $quantity = floatval($details['quantity'] ?? 1);
         $total_length_needed += ($lengthFeet + ($lengthInch / 12)) * $quantity;
 
-        $profiles[] = $product_details['profile'];
+        $profiles[] = $details['custom_profile'];
     }
 
     $profiles = array_unique($profiles);
