@@ -22,31 +22,46 @@ if(isset($_REQUEST['action'])) {
         $roll_former_id = mysqli_real_escape_string($conn, $_POST['roll_former_id']);
         $roll_former = mysqli_real_escape_string($conn, $_POST['roll_former']);
         $rate = mysqli_real_escape_string($conn, $_POST['rate']);
-        $profile = mysqli_real_escape_string($conn, $_POST['profile']);
-        $description = mysqli_real_escape_string($conn, $_POST['description']);
+        
+        $profileArray = $_POST['profile'] ?? [];
+        $profileJson = json_encode($profileArray);
 
+        $description = mysqli_real_escape_string($conn, $_POST['description']);
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
-        // SQL query to check if the record exists
         $checkQuery = "SELECT * FROM roll_former WHERE roll_former_id = '$roll_former_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE roll_former SET roll_former = '$roll_former', rate = '$rate', profile = '$profile', description = '$description', last_edit = NOW(), edited_by = '$userid'  WHERE roll_former_id = '$roll_former_id'";
+            $updateQuery = "
+                UPDATE roll_former 
+                SET roll_former = '$roll_former', 
+                    rate = '$rate', 
+                    profile = '$profileJson', 
+                    description = '$description', 
+                    last_edit = NOW(), 
+                    edited_by = '$userid'  
+                WHERE roll_former_id = '$roll_former_id'
+            ";
             if (mysqli_query($conn, $updateQuery)) {
                 echo "success_update";
             } else {
                 echo "Error updating Roll Former: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO roll_former (roll_former, rate, profile, description, added_date, added_by) VALUES ('$roll_former', '$rate', '$profile', '$description', NOW(), '$userid')";
+            $insertQuery = "
+                INSERT INTO roll_former 
+                    (roll_former, rate, profile, description, added_date, added_by) 
+                VALUES 
+                    ('$roll_former', '$rate', '$profileJson', '$description', NOW(), '$userid')
+            ";
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";
             } else {
                 echo "Error adding Roll Former: " . mysqli_error($conn);
             }
         }
-    } 
+    }
     
     if ($action == "change_status") {
         $roll_former_id = mysqli_real_escape_string($conn, $_POST['roll_former_id']);
@@ -75,6 +90,7 @@ if(isset($_REQUEST['action'])) {
         $id = '';
         $roll_former = '';
         $description = '';
+        $rate = '';
         $id = mysqli_real_escape_string($conn, $_POST['id']);
         $query = "SELECT * FROM $table WHERE $main_primary_key = '$id'";
         $result = mysqli_query($conn, $query);
@@ -83,7 +99,7 @@ if(isset($_REQUEST['action'])) {
             $roll_former_id = $row['roll_former_id'];
             $roll_former = $row['roll_former'];
             $rate = $row['rate'];
-            $profile = $row['profile'];
+            $profile = json_decode($row['profile'], true);
             $description = $row['description'];
         }
 
@@ -105,16 +121,17 @@ if(isset($_REQUEST['action'])) {
                     </div>
                 </div>
                 <div class="col-md-6">
+                    <label class="form-label">Profile</label>
                     <div class="mb-3">
-                        <label class="form-label">Profile</label>
-                        <select class="form-control" name="profile" id="profile">
-                            <option value="">-- Select Profile --</option>
+                        <select class="form-control select2-form" name="profile[]" id="profile" multiple>
                             <?php
                             $res = mysqli_query($conn, "SELECT profile_type_id, profile_type FROM profile_type WHERE hidden = 0 AND status = 1 ORDER BY profile_type ASC");
                             while ($p = mysqli_fetch_assoc($res)):
-                                $selected = ($profile == $p['profile_type_id']) ? 'selected' : '';
+                                $selected = (is_array($profile) && in_array($p['profile_type_id'], $profile)) ? 'selected' : '';
                             ?>
-                                <option value="<?= $p['profile_type_id'] ?>" <?= $selected ?>><?= htmlspecialchars($p['profile_type']) ?></option>
+                                <option value="<?= $p['profile_type_id'] ?>" <?= $selected ?>>
+                                    <?= htmlspecialchars($p['profile_type']) ?>
+                                </option>
                             <?php endwhile; ?>
                         </select>
                     </div>

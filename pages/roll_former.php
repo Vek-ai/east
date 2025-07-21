@@ -93,7 +93,7 @@ td.notes,  td.last-edit{
             <div class="card-body">
                 <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
               <div class="table-responsive">
-                <table id="display_roll_former" class="table table-striped table-bordered text-nowrap align-middle">
+                <table id="display_roll_former" class="table table-striped table-bordered align-middle">
                   <thead>
                     <tr>
                       <th>Roll Former Name</th>
@@ -111,18 +111,33 @@ td.notes,  td.last-edit{
                   $query_roll_former = "SELECT * FROM roll_former WHERE hidden = 0";
                   $result_roll_former = mysqli_query($conn, $query_roll_former);            
                   while ($row_roll_former = mysqli_fetch_array($result_roll_former)) {
-                      $roll_former_id = $row_roll_former['roll_former_id'];
-                      $roll_former = $row_roll_former['roll_former'];
-                      $description = $row_roll_former['description'];
-                      $profile = getProfileTypeName($row_roll_former['profile']);
-                      $rate = $row_roll_former['rate'];
-                      $db_status = $row_roll_former['status'];
+                        $roll_former_id = $row_roll_former['roll_former_id'];
+                        $roll_former = $row_roll_former['roll_former'];
+                        $description = $row_roll_former['description'];
+                        $profile_ids = json_decode($row_roll_former['profile'], true);
+                        $names = [];
 
-                      $date = new DateTime($row_roll_former['last_edit']);
-                      $last_edit = $date->format('m-d-Y');
+                        if (is_array($profile_ids)) {
+                            for ($i = 0; $i < count($profile_ids); $i++) {
+                                $id = intval($profile_ids[$i]);
+                                $name = getProfileTypeName($id);
 
-                      $added_by = $row_roll_former['added_by'];
-                      $edited_by = $row_roll_former['edited_by'];
+                                if (!empty($name)) {
+                                    $names[] = $name;
+                                }
+                            }
+                        }
+
+                        $profile = implode(', ', $names);
+
+                        $rate = $row_roll_former['rate'];
+                        $db_status = $row_roll_former['status'];
+
+                        $date = new DateTime($row_roll_former['last_edit']);
+                        $last_edit = $date->format('m-d-Y');
+
+                        $added_by = $row_roll_former['added_by'];
+                        $edited_by = $row_roll_former['edited_by'];
 
                       
                       if($edited_by != "0"){
@@ -141,7 +156,7 @@ td.notes,  td.last-edit{
                   ?>
                   <tr id="product-row-<?= $no ?>">
                       <td><span class="product<?= $no ?> <?php if ($row_roll_former['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $roll_former ?></span></td>
-                      <td class="notes" style="width:30%;"><?= $description ?></td>
+                      <td class="notes"><?= $description ?></td>
                       <td><?= $profile ?></td>
                       <td><?= $rate ?>/min</td>
                       <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
@@ -624,9 +639,9 @@ td.notes,  td.last-edit{
                 $(".select2-form").each(function () {
                     $(this).select2({
                         width: '100%',
-                        dropdownParent: $(this).parent(),
-                        templateResult: formatOption,
-                        templateSelection: formatOption
+                        dropdownParent: $(this).closest('.modal'),
+                        placeholder: "Select Profile",
+                        allowClear: true
                     });
                 });
 

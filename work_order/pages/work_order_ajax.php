@@ -99,8 +99,14 @@ if(isset($_POST['fetch_available'])){
         if (!is_array($profiles)) {
             $profiles = [$profiles];
         }
-        $profile_list = "'" . implode("','", $profiles) . "'";
-        $rf_query .= " AND profile IN ($profile_list)";
+
+        $conditions = [];
+        foreach ($profiles as $p) {
+            $p = mysqli_real_escape_string($conn, $p);
+            $conditions[] = "JSON_CONTAINS(profile, '\"$p\"')";
+        }
+
+        $rf_query .= " AND (" . implode(' OR ', $conditions) . ")";
     }
 
     $rf_result = mysqli_query($conn, $rf_query);
@@ -468,8 +474,13 @@ if(isset($_POST['fetch_view'])){
     ";
 
     if (!empty($profiles)) {
-        $profile_list = "'" . implode("','", $profiles) . "'";
-        $rf_query .= " AND profile IN ($profile_list)";
+        $conditions = [];
+        foreach ($profiles as $p) {
+            $p = mysqli_real_escape_string($conn, $p);
+            $conditions[] = "JSON_CONTAINS(profile, '\"$p\"')";
+        }
+
+        $rf_query .= " AND (" . implode(' OR ', $conditions) . ")";
     }
 
     $rf_result = mysqli_query($conn, $rf_query);
