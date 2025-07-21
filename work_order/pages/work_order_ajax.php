@@ -975,43 +975,50 @@ if (isset($_POST['assign_coil'])) {
     $selected_coils = json_decode($_POST['selected_coils'], true);
     $coils_json = json_encode($selected_coils);
 
+    $previous_coils = json_decode($wrk_ordr['assigned_coils'] ?? '[]', true);
+    if (!is_array($previous_coils)) $previous_coils = [];
+
+    $defective_coils = array_values(array_diff($previous_coils, $selected_coils));
+
     $update_sql = "UPDATE work_order SET assigned_coils = '$coils_json' WHERE id = $id";
     if ($conn->query($update_sql) === TRUE) {
 
+        if (strtolower($change_reason) === 'defective' && !empty($defective_coils)) {
+            foreach ($defective_coils as $coil_id) {
+                $coil_id = intval($coil_id);
+                $tag_note = $change_notes !== '' ? "'$change_notes'" : "NULL";
+
+                $defect_sql = "
+                    UPDATE coil_product
+                    SET 
+                        tagged_defective = 1,
+                        tagged_date = NOW(),
+                        tagged_note = $tag_note
+                    WHERE coil_id = $coil_id
+                ";
+                $conn->query($defect_sql);
+            }
+        }
+
         $orderid = $wrk_ordr['work_order_id'];
         $order_product_id = $wrk_ordr['work_order_product_id'];
+        $defective_json = json_encode($defective_coils);
 
         $log_sql = "
             INSERT INTO work_order_changes (
-                orderid, order_product_id, reason, notes, change_date, changed_by
+                orderid, order_product_id, reason, notes, change_date, changed_by, defective_coils
             ) VALUES (
                 '$orderid',
                 '$order_product_id',
                 '$change_reason',
                 " . ($change_notes !== '' ? "'$change_notes'" : "NULL") . ",
                 NOW(),
-                '$userid'
+                '$userid',
+                '$defective_json'
             )
         ";
 
         if ($conn->query($log_sql) === TRUE) {
-            if (strtolower($change_reason) === 'defective') {
-                foreach ($selected_coils as $coil_id) {
-                    $coil_id = intval($coil_id);
-                    $tag_note = $change_notes !== '' ? "'$change_notes'" : "NULL";
-
-                    $defect_sql = "
-                        UPDATE coil_product
-                        SET 
-                            tagged_defective = 1,
-                            tagged_date = NOW(),
-                            tagged_note = $tag_note
-                        WHERE coil_id = $coil_id
-                    ";
-                    $conn->query($defect_sql);
-                }
-            }
-
             echo "success";
         } else {
             echo "Error logging change: " . $conn->error;
