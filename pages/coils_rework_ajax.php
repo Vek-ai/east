@@ -10,7 +10,7 @@ require '../includes/functions.php';
 if(isset($_REQUEST['action'])){
    $action = $_REQUEST['action'];
 
-   if($action == 'coil_tag_rework'){
+   if($action == 'coil_tag_done'){
         $coil_defective_id = intval($_POST['coil_defective_id']);
 
         if ($coil_defective_id <= 0) {
@@ -22,7 +22,7 @@ if(isset($_REQUEST['action'])){
         if (mysqli_num_rows($check) > 0) {
             $update = "
                 UPDATE coil_defective 
-                SET status = 1 
+                SET status = 2 
                 WHERE coil_defective_id = $coil_defective_id
             ";
             if (mysqli_query($conn, $update)) {

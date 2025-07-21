@@ -986,7 +986,7 @@ if (isset($_POST['assign_coil'])) {
         if (strtolower($change_reason) === 'defective' && !empty($defective_coils)) {
             foreach ($defective_coils as $coil_id) {
                 $coil_id = intval($coil_id);
-                $tag_note = $change_notes !== '' ? "'$change_notes'" : "NULL";
+                $tag_note = $change_notes !== '' ? "'" . mysqli_real_escape_string($conn, $change_notes) . "'" : "NULL";
 
                 $defect_sql = "
                     UPDATE coil_product
@@ -997,6 +997,48 @@ if (isset($_POST['assign_coil'])) {
                     WHERE coil_id = $coil_id
                 ";
                 $conn->query($defect_sql);
+
+                $coil_res = mysqli_query($conn, "SELECT * FROM coil_product WHERE coil_id = $coil_id");
+                if ($coil_res && mysqli_num_rows($coil_res) > 0) {
+                    $coil_data = mysqli_fetch_assoc($coil_res);
+
+                    $cols = [
+                        'coil_id', 'entry_no', 'warehouse', 'color_family', 'color_abbreviation', 'paint_supplier',
+                        'paint_code', 'stock_availability', 'multiplier_category', 'actual_color', 'color_close',
+                        'coil_no', 'date', 'supplier', 'supplier_name', 'color_sold_as', 'color_sold_name',
+                        'product_id', 'og_length', 'weight', 'thickness', 'width', 'grade', 'coating', 'tag_no',
+                        'invoice_no', 'remaining_feet', 'last_inventory_count', 'coil_class', 'gauge', 'grade_no',
+                        'year', 'month', 'extracting_price', 'price', 'avg_by_color', 'total', 'current_weight',
+                        'lb_per_ft', 'contract_ppf', 'contract_ppcwg', 'invoice_price', 'round_width',
+                        'status', 'hidden', 'main_image', 'supplier_tag', 'tagged_defective', 'tagged_date', 'tagged_note'
+                    ];
+
+                    $columns = implode(", ", $cols);
+                    $values = [];
+
+                    foreach ($cols as $col) {
+                        if ($col === 'status') {
+                            $values[] = 0;
+                        } elseif ($col === 'tagged_defective') {
+                            $values[] = 1;
+                        } elseif ($col === 'tagged_date') {
+                            $values[] = "NOW()";
+                        } elseif ($col === 'tagged_note') {
+                            $values[] = $tag_note;
+                        } else {
+                            $val = $coil_data[$col] ?? null;
+                            $values[] = is_null($val) ? "NULL" : "'" . mysqli_real_escape_string($conn, $val) . "'";
+                        }
+                    }
+
+                    $values_str = implode(", ", $values);
+
+                    $insert_sql = "
+                        INSERT INTO coil_defective ($columns)
+                        VALUES ($values_str)
+                    ";
+                    $conn->query($insert_sql);
+                }
             }
         }
 

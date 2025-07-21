@@ -2,7 +2,7 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Defective Coils";
+$page_title = "Coils Transferred to Inventory";
 ?>
 
 <div class="container-fluid">
@@ -53,7 +53,7 @@ $page_title = "Defective Coils";
                 <div class="datatables">
                     <div class="table-responsive">
                         <div id="tbl-work-order" class="product-details table-responsive">
-                            <table id="defectiveCoilsList" class="table search-table align-middle text-nowrap">
+                            <table id="reworkCoilsList" class="table search-table align-middle text-nowrap">
                                 <thead class="header-item">
                                 <th>Coil #</th>
                                 <th>Color</th>
@@ -61,7 +61,6 @@ $page_title = "Defective Coils";
                                 <th>Remaining Feet</th>
                                 <th>Date Tagged Defective</th>
                                 <th>Note</th>
-                                <th>Action</th>
                                 </thead>
                                 <tbody>
                                 <?php
@@ -73,7 +72,7 @@ $page_title = "Defective Coils";
                                             coil_defective
                                         WHERE 
                                             hidden = '0'
-                                            AND status = '0'
+                                            AND status = '3'
                                         ORDER BY 
                                             tagged_date
                                     ";  
@@ -124,14 +123,6 @@ $page_title = "Defective Coils";
                                             <td><?= $remaining_feet ?></td>
                                             <td><?= $tagged_date_formatted ?></td>
                                             <th><?= $row_coil['tagged_note'] ?></th>
-                                            <td>
-                                                <div class="action-btn text-center">
-                                                    <a href="#" role="button" class="tag-rework-btn" data-id="<?= $row_coil['coil_defective_id'] ?>" title="Tag as For Rework">
-                                                        <iconify-icon class="fs-7" icon="mdi:tools"></iconify-icon>
-                                                    </a>
-                                                </div>
-                                            </td>
-                                           
                                         </tr>
                                     <?php 
                                     $no++;
@@ -209,11 +200,11 @@ $page_title = "Defective Coils";
     $(document).ready(function() {
         document.title = "<?= $page_title ?>";
 
-        var table = $('#defectiveCoilsList').DataTable({
+        var table = $('#reworkCoilsList').DataTable({
             pageLength: 100
         });
 
-        $('#defectiveCoilsList_filter').hide();
+        $('#reworkCoilsList_filter').hide();
 
         $(".select2").each(function() {
             $(this).select2({
@@ -229,38 +220,6 @@ $page_title = "Defective Coils";
             var imgSrc = $(this).attr('src');
             $('#modalImage').attr('src', imgSrc);
             $('#imageModal').modal('show');
-        });
-
-        $(document).on('click', '.tag-rework-btn', function (e) {
-            e.preventDefault();
-            const coil_defective_id = $(this).data('id');
-            if (!coil_defective_id) {
-                alert('Invalid coil.');
-                return;
-            }
-            if (!confirm('Tag this coil as For Rework?')) return;
-
-            $.ajax({
-                url: 'pages/coils_defective_ajax.php',
-                type: 'POST',
-                data: {
-                    action: 'coil_tag_rework',
-                    coil_defective_id: coil_defective_id
-                },
-                success: function (response) {
-                    if (response.trim() === 'success') {
-                        alert('Coil tagged as For Rework.');
-                        location.reload();
-                    } else {
-                        alert('An Error occurred');
-                        console.log('Error: ' + response);
-                    }
-                },
-                error: function () {
-                    alert('An Error occurred');
-                    console.log('AJAX request failed.');
-                }
-            });
         });
 
         function filterTable() {
