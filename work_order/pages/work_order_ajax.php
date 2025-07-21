@@ -991,6 +991,7 @@ if (isset($_POST['assign_coil'])) {
                 $defect_sql = "
                     UPDATE coil_product
                     SET 
+                        status = 3,
                         tagged_defective = 1,
                         tagged_date = NOW(),
                         tagged_note = $tag_note
