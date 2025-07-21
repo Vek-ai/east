@@ -131,6 +131,8 @@ $page_title = "New Work Orders";
 
                                             $order_no = 'SO-' .$order_no;
 
+                                            $profile = $row['custom_profile'];
+
                                             $picture_path = !empty($row['custom_img_src']) ? $images_directory.$row["custom_img_src"] : $default_image;
                                             ?>
                                             <tr data-id="<?= $product_id ?>"
@@ -176,7 +178,7 @@ $page_title = "New Work Orders";
                                                     <?php echo getGradeName($row['custom_grade']); ?>
                                                 </td>
                                                 <td>
-                                                    <?php echo getProfileFromID($product_id); ?>
+                                                    <?= getProfileTypeName($profile) ?>
                                                 </td>
                                                 <td class="text-center">
                                                     <?php 

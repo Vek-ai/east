@@ -377,7 +377,7 @@ if(isset($_POST['fetch_view'])){
                                     <?php echo getGradeName($row['custom_grade']); ?>
                                 </td>
                                 <td>
-                                    <?php echo getProfileFromID($product_id); ?>
+                                    <?= getProfileTypeName($row['custom_profile']) ?>
                                 </td>
                                 <td class="text-center">
                                     <?php 
