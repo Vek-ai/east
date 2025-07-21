@@ -2,6 +2,8 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
+$page_title = "Coils";
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -50,62 +52,30 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
     <div class="card-body px-0">
         <div class="d-flex justify-content-between align-items-center">
         <div><br>
-            <h4 class="font-weight-medium fs-14 mb-0"> Coils</h4>
+            <h4 class="font-weight-medium fs-14 mb-0"> <?= $page_title ?></h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
                 <a class="text-muted text-decoration-none" href="">Home
                 </a>
                 </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Coils</li>
+                <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
             </ol>
             </nav>
-        </div>
-        <div>
-            <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
-            <div class="d-flex gap-2">
-                <div class="">
-                <small>This Month</small>
-                <h4 class="text-primary mb-0 ">$58,256</h4>
-                </div>
-                <div class="">
-                <div class="breadbar"></div>
-                </div>
-            </div>
-            <div class="d-flex gap-2">
-                <div class="">
-                <small>Last Month</small>
-                <h4 class="text-secondary mb-0 ">$58,256</h4>
-                </div>
-                <div class="">
-                <div class="breadbar2"></div>
-                </div>
-            </div>
-            </div>
         </div>
         </div>
     </div>
     </div>
 
     <div class="widget-content searchable-container list">
+
     <div class="card card-body">
         <div class="row">
-        <div class="col-md-4 col-xl-3">
-            <!-- <form class="position-relative">
-            <input type="text" class="form-control product-search ps-5" id="input-search" placeholder="Search Contacts..." />
-            <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
-            </form> -->
-        </div>
-        <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
-            <div class="action-btn show-btn">
-            <a href="javascript:void(0)" class="delete-multiple bg-danger-subtle btn me-2 text-danger d-flex align-items-center ">
-                <i class="ti ti-trash me-1 fs-5"></i> Delete All Row
-            </a>
+            <div class="col-md-8 col-xl-9 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
+                <button type="button" id="addCoilModalLabel" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addCoilModal">
+                    <i class="ti ti-users text-white me-1 fs-5"></i> Add Coil
+                </button>
             </div>
-            <button type="button" id="addCoilModalLabel" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addCoilModal">
-                <i class="ti ti-users text-white me-1 fs-5"></i> Add Coil
-            </button>
-        </div>
         </div>
     </div>
 
@@ -114,7 +84,7 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
                     <h4 class="modal-title" id="myLargeModalLabel">
-                        Add Coil
+                        Add <?= $page_title ?>
                     </h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -483,7 +453,6 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             </div>
             <!-- /.modal-content -->
         </div>
-    <!-- /.modal-dialog -->
     </div>
 
     <div class="modal fade" id="updateProductModal" tabindex="-1" role="dialog" aria-labelledby="updateProductModal" aria-hidden="true"></div>
@@ -508,239 +477,195 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
         </div>
     </div>
 
-    
     <div class="card card-body">
-        <div class="table-responsive">
-        <h3 class="card-title d-flex justify-content-between align-items-center">
-            Coils List
-            <div class="px-3"> 
-                <input type="checkbox" id="toggleActive" checked> Show Active Only
-            </div>
-            <div class="p-2 text-right">
-                <input type="checkbox" id="onlyInStock" <?= $onlyInStock ? 'checked' : '' ?>> Show only In Stock
-            </div>
-        </h3>
-        
-        <div class="d-flex justify-content-between align-items-center mb-9">
-            <div class="position-relative w-100 col-6 px-0 mr-0">
-                <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Coil #">
-                <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
-            </div>
-            <div class="col-6 d-flex justify-content-between align-items-center">
-                <div class="position-relative w-100 px-1 col-6">
-                    <select class="form-control search-chat py-0 ps-5" id="select-color" data-category="">
-                        <option value="" data-category="">All Colors</option>
-                        <optgroup label="Coil Colors">
-                            <?php
-                            $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
-                            $result_color = mysqli_query($conn, $query_color);
-                            while ($row_color = mysqli_fetch_array($result_color)) {
-                                $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
-                            ?>
-                                <option value="<?= $row_color['color_id'] ?>" data-category="category" <?= $selected ?>><?= $row_color['color_name'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
+        <div class="row">
+            <div class="col-3">
+                <h3 class="card-title align-items-center mb-2">
+                    Filter <?= $page_title ?>
+                </h3>
+                <div class="position-relative w-100 px-1 mr-0 mb-2">
+                    <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search">
+                    <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
-                <div class="position-relative w-100 px-1 col-6">
-                    <select class="form-control search-chat py-0 ps-5" id="select-grade" data-category="">
-                        <option value="" data-category="">All Grades</option>
-                        <optgroup label="Coil Grades">
-                            <?php
-                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
-                            $result_grade = mysqli_query($conn, $query_grade);
-                            while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                $selected = ($grade_id == $row_grade['product_grade_id']) ? 'selected' : '';
-                            ?>
-                                <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-            </div>
-        </div>
-        <div class="datatables">
-            <div class="table-responsive">
-                <table id="productList" class="table search-table align-middle text-nowrap">
-                    <thead class="header-item">
-                    <th>Entry #</th>
-                    <th>Color</th>
-                    <th>Grade</th>
-                    <th>Remaining Feet</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                    </thead>
-                    <tbody>
-                    <?php
-                        $no = 1;
-                        $query_coil = "
-                            SELECT 
-                                *
-                            FROM 
-                                coil_product
-                            WHERE 
-                                hidden = '0'
-                        ";
-
-                        if (!empty($color_id)) {
-                            $query_coil .= " AND color_family = '$color_id'";
-                        }
-
-                        if (!empty($grade_id)) {
-                            $query_coil .= " AND grade = '$grade_id'";
-                        }
-
-                        if ($onlyInStock) {
-                            $query_coil .= " AND remaining_feet > 0";
-                        }
-
-                        $result_coil = mysqli_query($conn, $query_coil);            
-                        while ($row_coil = mysqli_fetch_array($result_coil)) {
-                            $coil_id = $row_coil['coil_id'];
-                            $db_status = $row_coil['status'];
-                            $remaining_feet = $row_coil['remaining_feet'] ?? 0;
-
-                            if ($db_status == '0') {
-                                $status_icon = "text-danger ti ti-trash";
-                                $status = "<a href='#'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                            } else {
-                                $status_icon = "text-warning ti ti-reload";
-                                $status = "<a href='#'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                            }
-
-                            if(!empty($row_coil['main_image'])){
-                                $picture_path = $row_coil['main_image'];
-                            }else{
-                                $picture_path = "images/coils/product.jpg";
-                            }
-
-                            $color_details = getColorDetails($row_coil['color_sold_as']);
-        
-                        ?>
-                            <!-- start row -->
-                            <tr class="search-items">
-                                <td>
-                                    <a href="javascript:void(0)">
-                                        <div class="d-flex align-items-center">
-                                            <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
-                                            <div class="ms-3">
-                                                <h6 class="fw-semibold mb-0 fs-4"><?= $row_coil['entry_no'] ?></h6>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </td>
-                                <td>
-                                    <div class="d-inline-flex align-items-center gap-2">
-                                        <a href="javascript:void(0)" id="viewAvailableBtn" class="d-inline-flex align-items-center gap-2 text-decoration-none">
-                                            <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 30px; height: 30px;"></span>
-                                            <?= $color_details['color_name'] ?>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td><?= getGradeName($row_coil['grade']) ?></td>
-                                <td><?= $remaining_feet ?></td>
-                                <td><?= $status ?></td>
-                                <td>
-                                    <div class="action-btn text-center">
-                                        <a href="#" title="Edit" id="edit_product_btn" class="edit" data-id="<?= $row_coil['coil_id'] ?>">
-                                            <i class="ti ti-pencil fs-7"></i>
-                                        </a>
-                                        <a href="#" title="Archive" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $coil_id ?>" data-status='<?= $db_status ?>'>
-                                            <i class="text-danger ti ti-trash fs-7"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php 
-                        $no++;
-                        } ?>
-                    </tbody>
-                    <script>
-                        $(document).ready(function() {
-                            $(document).on('click', '.changeStatus', function(event) {
-                                var confirmed = confirm("Are you sure you want to change the status of this Coil?");
-                                
-                                if (confirmed) {
-                                    var coil_id = $(this).data('id');
-                                    var status = $(this).data('status');
-                                    var no = $(this).data('no');
-                                    
-                                    $.ajax({
-                                        url: 'pages/coil_product_ajax.php',
-                                        type: 'POST',
-                                        data: {
-                                            coil_id: coil_id,
-                                            status: status,
-                                            action: 'change_status'
-                                        },
-                                        success: function(response) {
-                                            if (response == 'success') {
-                                                var newStatus = (status == 1) ? 0 : 1;
-                                                var newStatusText = (status == 1) ? 'Inactive' : 'Active';
-                                                var newStatusClass = (status == 1) ? 'alert-danger bg-danger' : 'alert-success bg-success';
-                                                var newIconClass = (status == 1) ? 'text-danger ti ti-reload' : 'text-danger ti ti-trash';
-                                                var newButtonText = (status == 1) ? 'Archive' : 'Edit';
-                                                
-                                                $('#status-alert' + no)
-                                                    .removeClass()
-                                                    .addClass('alert ' + newStatusClass + ' text-white border-0 text-center py-1 px-2 my-0')
-                                                    .text(newStatusText);
-                                                
-                                                $(".changeStatus[data-no='" + no + "']").data('status', newStatus);
-                                                $('.product' + no).toggleClass('emphasize-strike', newStatus == 0);
-                                                
-                                                $('#action-button-' + no).html('<a href="#" class="btn ' + (newStatus == 1 ? 'btn-light' : 'btn-primary') + ' py-1" data-id="' + coil_id + '" data-row="' + no + '" style="border-radius: 10%;">' + newButtonText + '</a>');
-                                                
-                                                $('#delete_product_btn_' + no).find('i').removeClass().addClass(newIconClass + ' fs-7');
-
-                                                $('#toggleActive').trigger('change');
-                                            } else {
-                                                alert('Failed to change status.');
-                                            }
-                                        },
-                                        error: function(jqXHR, textStatus, errorThrown) {
-                                            alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                        }
-                                    });
+                <div class="align-items-center">
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-chat py-0 ps-5 filter-selection" id="select-color" data-filter="color" data-filter-name="Color">
+                            <option value="" data-category="">All Colors</option>
+                            <optgroup label="Coil Colors">
+                                <?php
+                                $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
+                                $result_color = mysqli_query($conn, $query_color);
+                                while ($row_color = mysqli_fetch_array($result_color)) {
+                                    $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_color['color_id'] ?>" data-category="category" <?= $selected ?>><?= $row_color['color_name'] ?></option>
+                                <?php
                                 }
-                            });
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-chat py-0 ps-5 filter-selection" id="select-grade" data-filter="grade" data-filter-name="Grade">
+                            <option value="" data-category="">All Grades</option>
+                            <optgroup label="Coil Grades">
+                                <?php
+                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
+                                $result_grade = mysqli_query($conn, $query_grade);
+                                while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                    $selected = ($grade_id == $row_grade['product_grade_id']) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                <?php
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end py-2">
+                    <button type="button" class="btn btn-outline-primary reset_filters">
+                        <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                    </button>
+                </div>
+            </div>
+            <div class="col-9">
+                <div id="selected-tags" class="mb-2"></div>
+                <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
+                <div class="datatables">
+                    <div class="table-responsive">
+                        <table id="productList" class="table search-table align-middle text-nowrap">
+                            <thead class="header-item">
+                            <th>Entry #</th>
+                            <th>Color</th>
+                            <th>Grade</th>
+                            <th>Remaining Feet</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                            </thead>
+                            <tbody>
+                            <?php
+                                $no = 1;
+                                $query_coil = "
+                                    SELECT 
+                                        *
+                                    FROM 
+                                        coil_product
+                                    WHERE 
+                                        hidden = '0'
+                                ";
+                                $result_coil = mysqli_query($conn, $query_coil);            
+                                while ($row_coil = mysqli_fetch_array($result_coil)) {
+                                    $color = $row_coil['color_sold_as'];
+                                    $grade = $row_coil['grade'];
+                                    $coil_id = $row_coil['coil_id'];
+                                    $db_status = $row_coil['status'];
+                                    $remaining_feet = $row_coil['remaining_feet'] ?? 0;
+                                    $instock = $remaining_feet > 0 ? '1' : '0';
 
+                                    switch ($db_status) {
+                                        case '0': // Available
+                                            $status_icon = "text-success ti ti-check-circle";
+                                            $status = "<a href='#'>
+                                                <div id='status-alert$no' style='background-color: #28a745; color: white; text-align: center; padding: 4px 8px; border-radius: 5%; font-weight: bold;'>
+                                                    Available
+                                                </div>
+                                            </a>";
+                                            break;
 
+                                        case '1': // Used
+                                            $status_icon = "text-primary ti ti-package";
+                                            $status = "<a href='#'>
+                                                <div id='status-alert$no' style='background-color: #007bff; color: white; text-align: center; padding: 4px 8px; border-radius: 5%; font-weight: bold;'>
+                                                    Used
+                                                </div>
+                                            </a>";
+                                            break;
 
-                            $(document).on('click', '.hideProduct', function(event) {
-                                event.preventDefault();
-                                var coil_id = $(this).data('id');
-                                var rowId = $(this).data('row');
-                                $.ajax({
-                                    url: 'pages/coil_product_ajax.php',
-                                    type: 'POST',
-                                    data: {
-                                        coil_id: coil_id,
-                                        action: 'hide_product'
-                                    },
-                                    success: function(response) {
-                                        if (response == 'success') {
-                                            $('#product-row-' + rowId).remove();
-                                        } else {
-                                            alert('Failed to hide coil.');
-                                        }
-                                    },
-                                    error: function(jqXHR, textStatus, errorThrown) {
-                                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                                        case '3': // Defective
+                                            $status_icon = "text-warning ti ti-alert-circle";
+                                            $status = "<a href='#'>
+                                                <div id='status-alert$no' style='background-color: #ffc107; color: #212529; text-align: center; padding: 4px 8px; border-radius: 5%; font-weight: bold;'>
+                                                    Defective
+                                                </div>
+                                            </a>";
+                                            break;
+
+                                        case '4': // Archived
+                                            $status_icon = "text-muted ti ti-archive";
+                                            $status = "<a href='#'>
+                                                <div id='status-alert$no' style='background-color: #6c757d; color: white; text-align: center; padding: 4px 8px; border-radius: 5%; font-weight: bold;'>
+                                                    Archived
+                                                </div>
+                                            </a>";
+                                            break;
+
+                                        default: // Unknown
+                                            $status_icon = "text-dark ti ti-question-mark";
+                                            $status = "<a href='#'>
+                                                <div id='status-alert$no' style='background-color: #343a40; color: white; text-align: center; padding: 4px 8px; border-radius: 5%; font-weight: bold;'>
+                                                    Unknown
+                                                </div>
+                                            </a>";
+                                            break;
                                     }
-                                });
-                            });
-                        });
-                    </script>
-                </table>
+
+                                    if(!empty($row_coil['main_image'])){
+                                        $picture_path = $row_coil['main_image'];
+                                    }else{
+                                        $picture_path = "images/coils/product.jpg";
+                                    }
+
+                                    $color_details = getColorDetails($row_coil['color_sold_as']);
+                
+                                ?>
+                                    <tr class="search-items"
+                                        data-no="<?= $no ?>"
+                                        data-color="<?= $color ?>"
+                                        data-grade="<?= $grade ?>"
+                                        data-instock="<?= $instock ?>"
+                                    >
+                                        <td>
+                                            <a href="javascript:void(0)">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
+                                                    <div class="ms-3">
+                                                        <h6 class="fw-semibold mb-0 fs-4"><?= $row_coil['entry_no'] ?></h6>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="d-inline-flex align-items-center gap-2">
+                                                <a href="javascript:void(0)" id="viewAvailableBtn" class="d-inline-flex align-items-center gap-2 text-decoration-none">
+                                                    <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 30px; height: 30px;"></span>
+                                                    <?= $color_details['color_name'] ?>
+                                                </a>
+                                            </div>
+                                        </td>
+                                        <td><?= getGradeName($row_coil['grade']) ?></td>
+                                        <td><?= $remaining_feet ?></td>
+                                        <td><?= $status ?></td>
+                                        <td>
+                                            <div class="action-btn text-center">
+                                                <a href="#" title="Edit" id="edit_product_btn" class="edit" data-id="<?= $row_coil['coil_id'] ?>">
+                                                    <i class="ti ti-pencil fs-7"></i>
+                                                </a>
+                                                <a href="#" title="Archive" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $coil_id ?>" data-status='<?= $db_status ?>'>
+                                                    <i class="text-danger ti ti-trash fs-7"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php 
+                                $no++;
+                                } ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-        </div>
-    </div>
     </div>
 </div>
 
@@ -892,26 +817,6 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             "dom": 'lftp',
         });
 
-        $('#text-srh').on('keyup', function () {
-            table.search(this.value).draw();
-        });
-
-        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
-            var isActive = $('#toggleActive').is(':checked');
-
-            if (!isActive || status === 'Active') {
-                return true;
-            }
-            return false;
-        });
-
-        $('#toggleActive').on('change', function() {
-            table.draw();
-        });
-
-        $('#toggleActive').trigger('change');
-
         $(".select2-add").each(function () {
             $(this).select2({
                 width: '100%',
@@ -921,7 +826,36 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             });
         });
 
-        // Show the Edit Product modal and log the product ID
+        $(document).on('click', '.changeStatus', function(event) {
+            var confirmed = confirm("Are you sure you want to Archive this Coil?");
+            
+            if (confirmed) {
+                var coil_id = $(this).data('id');
+                var status = $(this).data('status');
+                var no = $(this).data('no');
+
+                $.ajax({
+                    url: 'pages/coil_product_ajax.php',
+                    type: 'POST',
+                    data: {
+                        coil_id: coil_id,
+                        action: 'change_status'
+                    },
+                    success: function(response) {
+                        if (response == 'success') {
+                            table.row($('tr[data-no="' + no + '"]')).remove().draw();
+                        } else {
+                            alert('Failed to archive.');
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }
+        });
+
+
         $(document).on('click', '#edit_product_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
@@ -1025,34 +959,82 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
 
         $('#select-color').select2();
         $('#select-grade').select2();
-        
 
-        $('#select-color').on('change', function() {
-            updateURLParam('color_id', $(this).val());
-        });
+        function filterTable() {
+            var textSearch = $('#text-srh').val().toLowerCase();
 
-        $('#select-grade').on('change', function() {
-            updateURLParam('grade_id', $(this).val());
-        });
+            $.fn.dataTable.ext.search = [];
 
-        $('#onlyInStock').on('change', function() {
-            var checked = $(this).prop('checked') ? 1 : 0;
-            var url = new URL(window.location.href);
-            url.searchParams.set('onlyInStock', checked);
-            window.history.replaceState({}, '', url.toString());
-            window.location.reload();
-        });
-
-        function updateURLParam(param, value) {
-            var url = new URL(window.location.href);
-            if (value === 0 || value === '') {
-                url.searchParams.delete(param);
-            } else {
-                url.searchParams.set(param, value);
+            if (textSearch) {
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                    return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
+                });
             }
-            window.history.replaceState({}, '', url.toString());
-            window.location.reload();
+
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                var row = $(table.row(dataIndex).node());
+                var match = true;
+
+                $('.filter-selection').each(function() {
+                    var filterValue = $(this).val()?.toString() || '';
+                    var rowValue = row.data($(this).data('filter'))?.toString() || '';
+
+                    if (filterValue && filterValue !== '/' && rowValue !== filterValue) {
+                        match = false;
+                        return false;
+                    }
+                });
+
+                return match;
+            });
+
+            table.draw();
+            updateSelectedTags();
         }
+
+        function updateSelectedTags() {
+            var displayDiv = $('#selected-tags');
+            displayDiv.empty();
+
+            $('.filter-selection').each(function() {
+                var selectedOption = $(this).find('option:selected');
+                var selectedText = selectedOption.text().trim();
+                var filterName = $(this).data('filter-name');
+
+                if ($(this).val()) {
+                    displayDiv.append(`
+                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                            <span class="text-dark">${filterName}: ${selectedText}</span>
+                            <button type="button" 
+                                class="btn-close btn-sm ms-1 remove-tag" 
+                                style="width: 0.75rem; height: 0.75rem;" 
+                                aria-label="Close" 
+                                data-select="#${$(this).attr('id')}">
+                            </button>
+                        </div>
+                    `);
+                }
+            });
+
+            $('.remove-tag').on('click', function() {
+                $($(this).data('select')).val('').trigger('change');
+                $(this).parent().remove();
+            });
+        }
+
+        $(document).on('input change', '#text-srh, #toggleActive, .filter-selection', filterTable);
+
+        $(document).on('click', '.reset_filters', function () {
+            $('.filter-selection').each(function () {
+                $(this).val(null).trigger('change.select2');
+            });
+
+            $('#text-srh').val('');
+
+            filterTable();
+        });
+        
+        filterTable();
 
     });
 </script>

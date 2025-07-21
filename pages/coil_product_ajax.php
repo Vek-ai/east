@@ -782,26 +782,15 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "change_status") {
         $coil_id = mysqli_real_escape_string($conn, $_POST['coil_id']);
-        $status = mysqli_real_escape_string($conn, $_POST['status']);
-        $new_status = ($status == '0') ? '1' : '0';
 
-        $statusQuery = "UPDATE coil_product SET status = '$new_status' WHERE coil_id = '$coil_id'";
-        if (mysqli_query($conn, $statusQuery)) {
+        $hideQuery = "UPDATE coil_product SET hidden = '1' WHERE coil_id = '$coil_id'";
+        if (mysqli_query($conn, $hideQuery)) {
             echo "success";
         } else {
-            echo "Error updating status: " . mysqli_error($conn);
+            echo "Error updating hidden flag: " . mysqli_error($conn);
         }
     }
 
-    if ($action == 'hide_category') {
-        $coil_id = mysqli_real_escape_string($conn, $_POST['coil_id']);
-        $query = "UPDATE coil_product SET hidden='1' WHERE coil_id='$coil_id'";
-        if (mysqli_query($conn, $query)) {
-            echo 'success';
-        } else {
-            echo 'error';
-        }
-    }
 
     if ($action == 'fetch_product_fields') {
         $product_category_id = mysqli_real_escape_string($conn, $_POST['product_category_id']);
