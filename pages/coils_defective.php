@@ -138,9 +138,15 @@ $page_title = "Defective Coils";
                                                     <a href="#" role="button" class="tag-rework-btn" data-id="<?= $row_coil['coil_defective_id'] ?>" title="Tag as For Rework">
                                                         <iconify-icon class="fs-7 text-warning" icon="mdi:tools"></iconify-icon>
                                                     </a>
+                                                    <?php 
+                                                    if ($tagged_defective == 2) {
+                                                    ?>
                                                     <a href="#" role="button" class="tag-approve-btn" data-id="<?= $row_coil['coil_defective_id'] ?>" title="Approve Coil for Work Order">
                                                         <iconify-icon class="fs-7 text-success" icon="mdi:check-circle"></iconify-icon>
                                                     </a>
+                                                    <?php
+                                                    }
+                                                    ?>
                                                 </div>
                                             </td>
                                            
