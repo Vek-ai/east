@@ -40,7 +40,7 @@ if(isset($_REQUEST['action'])){
     if ($action == 'coil_tag_approve') {
         $defective_id = intval($_POST['coil_defective_id']);
 
-        $res = mysqli_query($conn, "SELECT coil_id FROM coil_defective WHERE id = $defective_id AND status != 4");
+        $res = mysqli_query($conn, "SELECT coil_id FROM coil_defective WHERE coil_defective_id = $defective_id AND status != 4");
         if ($res && mysqli_num_rows($res) > 0) {
             $row = mysqli_fetch_assoc($res);
             $coil_id = intval($row['coil_id']);
