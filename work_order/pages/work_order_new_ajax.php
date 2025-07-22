@@ -383,6 +383,7 @@ if (isset($_POST['fetch_coils'])) {
                         <th class="text-center">Thickness</th>
                         <th class="text-right">Width</th>
                         <th class="text-right">Rem. Feet</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -414,6 +415,16 @@ if (isset($_POST['fetch_coils'])) {
                         <td><?= $row['thickness'] ?></td>
                         <td class="text-right"><?= $row['width'] ?></td>
                         <td class="text-right"><?= $row['remaining_feet'] ?></td>
+                        <td class="text-center">
+                            <a href="javascript:void(0)" 
+                                class="text-decoration-none" 
+                                id="tagDefectiveBtn" 
+                                title="Tag as Defective" 
+                                data-id='<?= htmlspecialchars(json_encode($ids), ENT_QUOTES, 'UTF-8') ?>'
+                                data-coil-id="<?=$row['coil_id']?>">
+                                <iconify-icon class="fs-7 text-danger" icon="mdi:tools"></iconify-icon>
+                            </a>
+                        </td>
                     </tr>
                     <?php endwhile; ?>
                 </tbody>
@@ -491,6 +502,119 @@ if (isset($_POST['fetch_coils'])) {
         });
     </script>
     <?php
+}
+
+if (isset($_POST['tag_coil_defective'])) {
+    $userid = $_SESSION['userid'];
+    $selected_coil = intval($_POST['coil_id']);
+    $change_reason = 'defective';
+    $tagged_defective_value = 2;
+
+    $defect_sql = "
+        UPDATE coil_product
+        SET 
+            status = 3,
+            tagged_defective = $tagged_defective_value,
+            tagged_date = NOW(),
+            tagged_note = NULL
+        WHERE coil_id = $selected_coil
+    ";
+    $conn->query($defect_sql);
+
+    $coil_res = mysqli_query($conn, "SELECT * FROM coil_product WHERE coil_id = $selected_coil");
+    if ($coil_res && mysqli_num_rows($coil_res) > 0) {
+        $coil_data = mysqli_fetch_assoc($coil_res);
+
+        $cols = [
+            'coil_id', 'entry_no', 'warehouse', 'color_family', 'color_abbreviation', 'paint_supplier',
+            'paint_code', 'stock_availability', 'multiplier_category', 'actual_color', 'color_close',
+            'coil_no', 'date', 'supplier', 'supplier_name', 'color_sold_as', 'color_sold_name',
+            'product_id', 'og_length', 'weight', 'thickness', 'width', 'grade', 'coating', 'tag_no',
+            'invoice_no', 'remaining_feet', 'last_inventory_count', 'coil_class', 'gauge', 'grade_no',
+            'year', 'month', 'extracting_price', 'price', 'avg_by_color', 'total', 'current_weight',
+            'lb_per_ft', 'contract_ppf', 'contract_ppcwg', 'invoice_price', 'round_width',
+            'status', 'hidden', 'main_image', 'supplier_tag', 'tagged_defective', 'tagged_date', 'tagged_note'
+        ];
+
+        $columns = implode(", ", $cols);
+        $values = [];
+
+        foreach ($cols as $col) {
+            if ($col === 'status') {
+                $values[] = 0;
+            } elseif ($col === 'tagged_defective') {
+                $values[] = $tagged_defective_value;
+            } elseif ($col === 'tagged_date') {
+                $values[] = "NOW()";
+            } elseif ($col === 'tagged_note') {
+                $values[] = "NULL";
+            } else {
+                $val = $coil_data[$col] ?? null;
+                $values[] = is_null($val) ? "NULL" : "'" . mysqli_real_escape_string($conn, $val) . "'";
+            }
+        }
+
+        $values_str = implode(", ", $values);
+
+        $insert_sql = "
+            INSERT INTO coil_defective ($columns)
+            VALUES ($values_str)
+        ";
+        $conn->query($insert_sql);
+    }
+
+    $actorId = $_SESSION['work_order_user_id'];
+    $actor_name = get_staff_name($actorId);
+    $actionType = 'coil_defective';
+    $coil_details = getCoilProductDetails($selected_coil);
+    $targetId = $coil_details['entry_no'];
+    $targetType = 'Coil';
+    $message = "$actor_name tagged Coil #$targetId as defective.";
+    $url = '?page=coils_defective';
+    $recipientIds = getAdminIDs();
+    createNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientIds, $url);
+
+    if ($notificationId === false) {
+        die("Error: Failed to create notification.");
+    }
+
+    $ids = json_decode($_POST['id'], true);
+    $change_reason = 'defective';
+    $userid = $_SESSION['userid'];
+    $defective_json = json_encode([$selected_coil]);
+
+    if (!is_array($ids) || count($ids) === 0) {
+        die("Invalid work order IDs");
+    }
+
+    foreach ($ids as $id) {
+        $id = intval($id);
+        $wrk_ordr = getWorkOrderDetails($id);
+
+        if (!$wrk_ordr) continue;
+
+        $orderid = $wrk_ordr['work_order_id'];
+        $order_product_id = $wrk_ordr['work_order_product_id'];
+
+        $log_sql = "
+            INSERT INTO work_order_changes (
+                orderid, order_product_id, reason, notes, change_date, changed_by, defective_coils
+            ) VALUES (
+                '$orderid',
+                '$order_product_id',
+                '$change_reason',
+                NULL,
+                NOW(),
+                '$userid',
+                '$defective_json'
+            )
+        ";
+
+        if (!$conn->query($log_sql)) {
+            echo "Error logging change for ID $id: " . $conn->error;
+            exit;
+        }
+    }
 }
 
 if (isset($_POST['run_work_order'])) {

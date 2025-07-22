@@ -405,6 +405,41 @@ $page_title = "New Work Orders";
             });
         });
 
+        $(document).on('click', '#tagDefectiveBtn', function (event) {
+            event.preventDefault();
+
+            var id = $(this).data('id');
+            var coil_id = $(this).data('coil-id');
+
+            if (confirm('Are you sure you want to tag these coils as defective?')) {
+                $.ajax({
+                    url: 'pages/work_order_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        coil_id: coil_id,
+                        tag_coil_defective: 'tag_coil_defective'
+                    },
+                    success: function (response) {
+                        if (response.trim() === 'success') {
+                            alert('Successfully tagged as defective.');
+                            location.reload();
+                        } else {
+                            alert('Failed to tag as defective.');
+                            console.log('Response:', response);
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        alert('AJAX Error.');
+                        console.log('Error:', errorThrown);
+                        console.log('Response Text:', jqXHR.responseText);
+                    }
+                });
+            }
+        });
+
+
+
         let selectedCoils = [];
 
         $(document).on('change', '#coils_tbl .row-select', function () {

@@ -1,5 +1,6 @@
 <?php
 include "calculate_price.php";
+include "notifications.php";
 function get_userid(){
     if (isset($_COOKIE['userid'])) {
         $userId = $_COOKIE['userid'];
@@ -104,6 +105,18 @@ function getCoilDetails($coil_id) {
     global $conn;
     $coil_id = mysqli_real_escape_string($conn, $coil_id);
     $query = "SELECT * FROM coil WHERE coil_id = '$coil_id'";
+    $result = mysqli_query($conn, $query);
+    $coil = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $coil = $row;
+    }
+    return $coil;
+}
+
+function getCoilProductDetails($coil_id) {
+    global $conn;
+    $coil_id = mysqli_real_escape_string($conn, $coil_id);
+    $query = "SELECT * FROM coil_product WHERE coil_id = '$coil_id'";
     $result = mysqli_query($conn, $query);
     $coil = [];
     if ($row = mysqli_fetch_assoc($result)) {
@@ -1701,5 +1714,65 @@ function checkTimer() {
 
     mysqli_query($conn, $sql);
 }
+
+function getCustomerIDs() {
+    global $conn;
+
+    $query = "SELECT customer_id FROM customer WHERE status = 1";
+    $result = mysqli_query($conn, $query);
+
+    $ids = [];
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $ids[] = $row['customer_id'];
+        }
+    }
+
+    return $ids;
+}
+
+function getAdminIDs() {
+    global $conn;
+    $ids = [];
+
+    $query = "SELECT staff_id FROM staff WHERE status = 1 AND role = 6";
+    $result = mysqli_query($conn, $query);
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $ids[] = $row['staff_id'];
+    }
+
+    return $ids;
+}
+
+function getCashierIDs() {
+    global $conn;
+    $ids = [];
+
+    $query = "SELECT staff_id FROM staff WHERE status = 1 AND role = 5";
+    $result = mysqli_query($conn, $query);
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $ids[] = $row['staff_id'];
+    }
+
+    return $ids;
+}
+
+function getWorkOrderIDs() {
+    global $conn;
+    $ids = [];
+
+    $query = "SELECT staff_id FROM staff WHERE status = 1 AND role = 11";
+    $result = mysqli_query($conn, $query);
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $ids[] = $row['staff_id'];
+    }
+
+    return $ids;
+}
+
 
 ?>

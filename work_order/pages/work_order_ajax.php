@@ -1087,6 +1087,17 @@ if (isset($_POST['assign_coil'])) {
                     ";
                     $conn->query($insert_sql);
                 }
+
+                $actorId = $_SESSION['work_order_user_id'];
+                $actor_name = get_staff_name($actorId);
+                $actionType = 'coil_defective';
+                $coil_details = getCoilProductDetails($coil_id);
+                $targetId = $coil_details['entry_no'];
+                $targetType = 'Coil';
+                $message = "$actor_name tagged Coil #$targetId as defective.";
+                $url = '?page=coils_defective';
+                $recipientIds = getAdminIDs();
+                createNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientIds, $url);
             }
         }
 
@@ -1179,6 +1190,21 @@ if (isset($_POST['tag_coil_defective'])) {
             VALUES ($values_str)
         ";
         $conn->query($insert_sql);
+    }
+
+    $actorId = $_SESSION['work_order_user_id'];
+    $actor_name = get_staff_name($actorId);
+    $actionType = 'coil_defective';
+    $coil_details = getCoilProductDetails($selected_coil);
+    $targetId = $coil_details['entry_no'];
+    $targetType = 'Coil';
+    $message = "$actor_name tagged Coil #$targetId as defective.";
+    $url = '?page=coils_defective';
+    $recipientIds = getAdminIDs();
+    createNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientIds, $url);
+
+    if ($notificationId === false) {
+        die("Error: Failed to create notification.");
     }
 
     $orderid = $wrk_ordr['work_order_id'];
