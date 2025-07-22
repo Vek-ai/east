@@ -61,6 +61,7 @@ $page_title = "Defective Coils";
                                 <th>Remaining Feet</th>
                                 <th>Date Tagged Defective</th>
                                 <th>Note</th>
+                                <th>Status Tagged</th>
                                 <th>Action</th>
                                 </thead>
                                 <tbody>
@@ -72,8 +73,7 @@ $page_title = "Defective Coils";
                                         FROM 
                                             coil_defective
                                         WHERE 
-                                            hidden = '0'
-                                            AND status = '0'
+                                            status = '0'
                                         ORDER BY 
                                             tagged_date
                                     ";  
@@ -91,6 +91,14 @@ $page_title = "Defective Coils";
                                         }
 
                                         $color_details = getColorDetails($row_coil['color_sold_as']);
+                                        $tagged_defective = $row_coil['tagged_defective'];
+
+                                        $tag_html = '';
+                                        if ($tagged_defective == 1) {
+                                            $tag_html = '<span class="badge" style="background-color: #28a745; color: #fff;">Defective + Replaced</span>';
+                                        } elseif ($tagged_defective == 2) {
+                                            $tag_html = '<span class="badge" style="background-color: #dc3545; color: #fff;">Defective Only</span>';
+                                        }
 
                                         $tagged_date_raw = $row_coil['tagged_date'] ?? '';
 
@@ -124,10 +132,14 @@ $page_title = "Defective Coils";
                                             <td><?= $remaining_feet ?></td>
                                             <td><?= $tagged_date_formatted ?></td>
                                             <th><?= $row_coil['tagged_note'] ?></th>
+                                            <th><?= $tag_html ?></th>
                                             <td>
-                                                <div class="action-btn text-center">
+                                                <div class="action-btn d-flex align-items-center gap-2 text-center">
                                                     <a href="#" role="button" class="tag-rework-btn" data-id="<?= $row_coil['coil_defective_id'] ?>" title="Tag as For Rework">
-                                                        <iconify-icon class="fs-7" icon="mdi:tools"></iconify-icon>
+                                                        <iconify-icon class="fs-7 text-warning" icon="mdi:tools"></iconify-icon>
+                                                    </a>
+                                                    <a href="#" role="button" class="tag-approve-btn" data-id="<?= $row_coil['coil_defective_id'] ?>" title="Approve Coil for Work Order">
+                                                        <iconify-icon class="fs-7 text-success" icon="mdi:check-circle"></iconify-icon>
                                                     </a>
                                                 </div>
                                             </td>
@@ -250,6 +262,38 @@ $page_title = "Defective Coils";
                 success: function (response) {
                     if (response.trim() === 'success') {
                         alert('Coil tagged as For Rework.');
+                        location.reload();
+                    } else {
+                        alert('An Error occurred');
+                        console.log('Error: ' + response);
+                    }
+                },
+                error: function () {
+                    alert('An Error occurred');
+                    console.log('AJAX request failed.');
+                }
+            });
+        });
+
+        $(document).on('click', '.tag-approve-btn', function (e) {
+            e.preventDefault();
+            const coil_defective_id = $(this).data('id');
+            if (!coil_defective_id) {
+                alert('Invalid coil.');
+                return;
+            }
+            if (!confirm('Approve this coil for work order?')) return;
+
+            $.ajax({
+                url: 'pages/coils_defective_ajax.php',
+                type: 'POST',
+                data: {
+                    action: 'coil_tag_approve',
+                    coil_defective_id: coil_defective_id
+                },
+                success: function (response) {
+                    if (response.trim() === 'success') {
+                        alert('Coil approved for work order.');
                         location.reload();
                     } else {
                         alert('An Error occurred');

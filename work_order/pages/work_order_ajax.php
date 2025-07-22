@@ -440,12 +440,12 @@ if(isset($_POST['fetch_view'])){
                                     ?>
                                 </td>
                                 <td>
-                                    <div class="action-btn text-center">
-                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Run Work Order" data-id="<?= $row['id'] ?>">
-                                            <i class="fa fa-arrow-right-to-bracket"></i>
-                                        </a>
+                                    <div class="action-btn d-flex align-items-center gap-2 text-center">
                                         <a href="javascript:void(0)" class="text-decoration-none" id="viewAssignedBtn" title="View" data-id="<?= $row['id'] ?>">
-                                            <i class="fa fa-eye"></i>
+                                            <i class="fa fa-eye fs-6"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Run Work Order" data-id="<?= $row['id'] ?>">
+                                            <i class="fa fa-arrow-right-to-bracket fs-6"></i>
                                         </a>
                                     </div>
                                 </td>
@@ -687,7 +687,10 @@ if(isset($_POST['fetch_assigned'])){
                                     </td>
                                     <td class="text-right">
                                         <a href="javascript:void(0)" class="text-decoration-none" id="viewCoilsBtn" title="Change" data-id="<?= $id ?>">
-                                            <i class="fa fa-edit text-warning"></i>
+                                            <iconify-icon class="fs-7 text-warning" icon="mdi:pencil"></iconify-icon>
+                                        </a>
+                                        <a href="javascript:void(0)" class="text-decoration-none" id="tagDefectiveBtn" title="Tag as Defective" data-id="<?= $id ?>" data-coil-id="<?=$row['coil_id']?>">
+                                            <iconify-icon class="fs-7 text-danger" icon="mdi:tools"></iconify-icon>
                                         </a>
                                     </td>
                                 </tr>
@@ -1069,6 +1072,93 @@ if (isset($_POST['assign_coil'])) {
 
     } else {
         echo "Error updating records: " . $conn->error;
+    }
+}
+
+if (isset($_POST['tag_coil_defective'])) {
+    $id = intval($_POST['id']);
+    $wrk_ordr = getWorkOrderDetails($id);
+
+    $userid = $_SESSION['userid'];
+    $selected_coil = intval($_POST['coil_id']);
+    $change_reason = 'defective';
+    $tagged_defective_value = 2;
+
+    $defect_sql = "
+        UPDATE coil_product
+        SET 
+            status = 3,
+            tagged_defective = $tagged_defective_value,
+            tagged_date = NOW(),
+            tagged_note = NULL
+        WHERE coil_id = $selected_coil
+    ";
+    $conn->query($defect_sql);
+
+    $coil_res = mysqli_query($conn, "SELECT * FROM coil_product WHERE coil_id = $selected_coil");
+    if ($coil_res && mysqli_num_rows($coil_res) > 0) {
+        $coil_data = mysqli_fetch_assoc($coil_res);
+
+        $cols = [
+            'coil_id', 'entry_no', 'warehouse', 'color_family', 'color_abbreviation', 'paint_supplier',
+            'paint_code', 'stock_availability', 'multiplier_category', 'actual_color', 'color_close',
+            'coil_no', 'date', 'supplier', 'supplier_name', 'color_sold_as', 'color_sold_name',
+            'product_id', 'og_length', 'weight', 'thickness', 'width', 'grade', 'coating', 'tag_no',
+            'invoice_no', 'remaining_feet', 'last_inventory_count', 'coil_class', 'gauge', 'grade_no',
+            'year', 'month', 'extracting_price', 'price', 'avg_by_color', 'total', 'current_weight',
+            'lb_per_ft', 'contract_ppf', 'contract_ppcwg', 'invoice_price', 'round_width',
+            'status', 'hidden', 'main_image', 'supplier_tag', 'tagged_defective', 'tagged_date', 'tagged_note'
+        ];
+
+        $columns = implode(", ", $cols);
+        $values = [];
+
+        foreach ($cols as $col) {
+            if ($col === 'status') {
+                $values[] = 0;
+            } elseif ($col === 'tagged_defective') {
+                $values[] = $tagged_defective_value;
+            } elseif ($col === 'tagged_date') {
+                $values[] = "NOW()";
+            } elseif ($col === 'tagged_note') {
+                $values[] = "NULL";
+            } else {
+                $val = $coil_data[$col] ?? null;
+                $values[] = is_null($val) ? "NULL" : "'" . mysqli_real_escape_string($conn, $val) . "'";
+            }
+        }
+
+        $values_str = implode(", ", $values);
+
+        $insert_sql = "
+            INSERT INTO coil_defective ($columns)
+            VALUES ($values_str)
+        ";
+        $conn->query($insert_sql);
+    }
+
+    $orderid = $wrk_ordr['work_order_id'];
+    $order_product_id = $wrk_ordr['work_order_product_id'];
+    $defective_json = json_encode([$selected_coil]);
+
+    $log_sql = "
+        INSERT INTO work_order_changes (
+            orderid, order_product_id, reason, notes, change_date, changed_by, defective_coils
+        ) VALUES (
+            '$orderid',
+            '$order_product_id',
+            '$change_reason',
+            NULL,
+            NOW(),
+            '$userid',
+            '$defective_json'
+        )
+    ";
+
+    if ($conn->query($log_sql) === TRUE) {
+        echo "success";
+    } else {
+        echo "Error logging change: " . $conn->error;
     }
 }
 

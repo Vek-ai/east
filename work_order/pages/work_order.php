@@ -373,6 +373,7 @@ $page_title = "Work Order";
 
     $(document).ready(function() {
         document.title = "<?= $page_title ?>";
+        let work_order_id = null; // id from work_order
 
         var table = $('#work_order_table').DataTable({
             pageLength: 100
@@ -406,29 +407,38 @@ $page_title = "Work Order";
             }
         });
 
-        $(document).on('click', '#viewAvailableBtn', function(event) {
-            var id = $(this).data('id');
-
+        function fetchAvailableDetails() {
             $.ajax({
                 url: 'pages/work_order_ajax.php',
                 type: 'POST',
                 data: {
-                    id: id,
+                    id: work_order_id,
                     fetch_available: 'fetch_available'
                 },
                 success: function(response) {
                     $('#available-details').html(response);
-                    $('#view_available_modal').modal('toggle');
+                    
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    console.log('AJAX Error Details:', {
+                        status: textStatus,
+                        error: errorThrown,
+                        response: jqXHR.responseText
+                    });
                 }
             });
+        }
+
+        $(document).on('click', '#viewAvailableBtn', function(event) {
+            event.preventDefault();
+            work_order_id = $(this).data('id');
+            fetchAvailableDetails();
+            $('#view_available_modal').modal('toggle');
         });
 
         $(document).on('click', '#viewBtn', function(event) {
             var id = $(this).data('id');
-
             $.ajax({
                 url: 'pages/work_order_ajax.php',
                 type: 'POST',
@@ -455,14 +465,12 @@ $page_title = "Work Order";
             });
         });
 
-        $(document).on('click', '#viewAssignedBtn', function(event) {
-            var id = $(this).data('id');
-
+        function fetchAssignedDetails() {
             $.ajax({
                 url: 'pages/work_order_ajax.php',
                 type: 'POST',
                 data: {
-                    id: id,
+                    id: work_order_id,
                     fetch_assigned: 'fetch_assigned'
                 },
                 success: function(response) {
@@ -472,36 +480,87 @@ $page_title = "Work Order";
                         $('#coil_dtls_tbl').DataTable().clear().destroy();
                     }
 
-                    var table = $('#coil_dtls_tbl').DataTable({
+                    $('#coil_dtls_tbl').DataTable({
                         pageLength: 100
                     });
-
-                    $('#view_available_modal').modal('toggle');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    console.log('AJAX Error Details:', {
+                        error: errorThrown,
+                        response: jqXHR.responseText
+                    });
                 }
             });
+        }
+
+        $(document).on('click', '#viewAssignedBtn', function(event) {
+            event.preventDefault();
+            work_order_id = $(this).data('id');
+            fetchAssignedDetails();
+            $('#view_available_modal').modal('toggle');
         });
 
-        $(document).on('click', '#viewCoilsBtn', function(event) {
-            var id = $(this).data('id');
-
+        function fetchCoilDetails() {
             $.ajax({
                 url: 'pages/work_order_ajax.php',
                 type: 'POST',
                 data: {
-                    id: id,
+                    id: work_order_id,
                     fetch_coils: 'fetch_coils'
                 },
                 success: function(response) {
                     $('#coil_details').html(response);
-                    $('#view_coils_modal').modal('toggle');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    console.log('AJAX Error Details:', {
+                        status: textStatus,
+                        error: errorThrown,
+                        response: jqXHR.responseText
+                    });
                 }
             });
+        }
+
+        $(document).on('click', '#viewCoilsBtn', function(event) {
+            event.preventDefault();
+            work_order_id = $(this).data('id');
+            fetchCoilDetails();
+            $('#view_coils_modal').modal('toggle');
+        });
+
+        $(document).on('click', '#tagDefectiveBtn', function(event) {
+            event.preventDefault();
+
+            var id = $(this).data('id');
+            var coil_id = $(this).data('coil-id');
+
+            if (confirm('Are you sure you want to tag this coil as defective?')) {
+                $.ajax({
+                    url: 'pages/work_order_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        coil_id: coil_id,
+                        tag_coil_defective: 'tag_coil_defective'
+                    },
+                    success: function(response) {
+                        if (response.trim() === 'success') {
+                            alert('Successfully tagged as defective.');
+                            fetchAvailableDetails();
+                        } else {
+                            alert('Failed to tag as defective.');
+                            console.log('Response:', response);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Failed to tag as defective.');
+                        console.log('Error:', errorThrown);
+                        console.log('Response Text:', jqXHR.responseText);
+                    }
+                });
+            }
         });
 
         $(document).on('click', '.preview-image', function () {
