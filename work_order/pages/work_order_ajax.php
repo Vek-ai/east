@@ -41,7 +41,7 @@ if(isset($_POST['fetch_available'])){
                     if (is_array($decoded_coils)) {
                         $coils_string = implode(',', $decoded_coils);
 
-                        $query = "SELECT * FROM coil_product WHERE coil_id IN ($coils_string) ORDER BY date ASC";
+                        $query = "SELECT * FROM coil_product WHERE coil_id IN ($coils_string) AND status = '0' ORDER BY date ASC";
                         $result = mysqli_query($conn, $query);
                         if ($result && mysqli_num_rows($result) > 0) {
                             while ($row = mysqli_fetch_assoc($result)) {
@@ -649,7 +649,7 @@ if(isset($_POST['fetch_assigned'])){
                     if (is_array($decoded_coils)) {
                         $coils_string = implode(',', $decoded_coils);
 
-                        $query = "SELECT * FROM coil_product WHERE coil_id IN ($coils_string) ORDER BY date ASC";
+                        $query = "SELECT * FROM coil_product WHERE coil_id IN ($coils_string) AND status = '0' ORDER BY date ASC";
                         $result = mysqli_query($conn, $query);
                         if ($result && mysqli_num_rows($result) > 0) {
                             while ($row = mysqli_fetch_assoc($result)) {
@@ -776,7 +776,7 @@ if (isset($_POST['fetch_coils'])) {
 
     $total_length = ($lengthFeet + ($lengthInch / 12)) * $quantity ?: 1;
 
-    $where = "WHERE 1=1";
+    $where = "WHERE status = '0'";
     if (!empty($color_id)) $where .= " AND color_sold_as = '" . mysqli_real_escape_string($conn, $color_id) . "'";
     if (!empty($grade)) $where .= " AND grade = '" . mysqli_real_escape_string($conn, $grade) . "'";
     if (!empty($width)) $where .= " AND width >= $width";
