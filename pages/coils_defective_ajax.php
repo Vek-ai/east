@@ -10,7 +10,7 @@ require '../includes/functions.php';
 if(isset($_REQUEST['action'])){
    $action = $_REQUEST['action'];
 
-    if($action == 'coil_tag_rework'){
+    if ($action == 'coil_tag_rework') {
         $coil_defective_id = intval($_POST['coil_defective_id']);
 
         if ($coil_defective_id <= 0) {
@@ -18,24 +18,35 @@ if(isset($_REQUEST['action'])){
             exit;
         }
 
-        $check = mysqli_query($conn, "SELECT * FROM coil_defective WHERE coil_defective_id = $coil_defective_id");
-        if (mysqli_num_rows($check) > 0) {
-            $update = "
+        $check = mysqli_query($conn, "SELECT coil_id FROM coil_defective WHERE coil_defective_id = $coil_defective_id");
+        if ($check && mysqli_num_rows($check) > 0) {
+            $row = mysqli_fetch_assoc($check);
+            $coil_id = intval($row['coil_id']);
+
+            // update coil_defective status to 1 (rework start)
+            $update_defective = "
                 UPDATE coil_defective 
                 SET status = 1 
                 WHERE coil_defective_id = $coil_defective_id
             ";
-            if (mysqli_query($conn, $update)) {
+
+            // update coil_product status to 2 (Reworked)
+            $update_product = "
+                UPDATE coil_product 
+                SET status = 2 
+                WHERE coil_id = $coil_id
+            ";
+
+            if (mysqli_query($conn, $update_defective) && mysqli_query($conn, $update_product)) {
                 echo "success";
             } else {
-                echo "Error updating status: " . mysqli_error($conn);
+                echo "Error updating: " . mysqli_error($conn);
             }
         } else {
             echo "Coil not found in defective list.";
         }
-
-        exit;
     }
+
 
     if ($action == 'coil_tag_approve') {
         $defective_id = intval($_POST['coil_defective_id']);

@@ -41,9 +41,12 @@ if(isset($_POST['fetch_available'])){
                     if (is_array($decoded_coils)) {
                         $coils_string = implode(',', $decoded_coils);
 
+                        $is_reworked = false;
+                        $coil_count = 0;
                         $query = "SELECT * FROM coil_product WHERE coil_id IN ($coils_string) AND status = '0' ORDER BY date ASC";
                         $result = mysqli_query($conn, $query);
                         if ($result && mysqli_num_rows($result) > 0) {
+                            $coil_count = mysqli_num_rows($result);
                             while ($row = mysqli_fetch_assoc($result)) {
                                 $color_details = getColorDetails($row['color_sold_as']);
                                 ?>
@@ -81,7 +84,15 @@ if(isset($_POST['fetch_available'])){
                                 <?php
                                 $no++;
                             }
+                        }else {
+                        $rework_query = "SELECT * FROM coil_product WHERE coil_id IN ($coils_string) AND status = '2' ORDER BY date ASC";
+                        $rework_result = mysqli_query($conn, $rework_query);
+
+                        if ($rework_result && mysqli_num_rows($rework_result) > 0) {
+                            $is_reworked = true;
                         }
+                    }
+
                     }
                     ?>
                 </tbody>
@@ -139,8 +150,11 @@ if(isset($_POST['fetch_available'])){
     <?php } ?>
 
     <div class="modal-footer">
-        <?php if (!empty($work_order_details) && $work_order_details['status'] == 1): ?>
-            <button id="run_work_order" class="btn ripple btn-success" type="button">Run Work Order</button>
+        <?php if (!empty($work_order_details) && $work_order_details['status'] == 1 && $coil_count > 0): ?>
+            <button id="run_work_order" class="btn ripple btn-success" data-id="<?= $id ?>" type="button">Run Work Order</button>
+        <?php endif; ?>
+        <?php if ($is_reworked): ?>
+            <button class="btn ripple btn-warning change_assigned_coils" data-id="<?= $id ?>" type="button">Change Coils</button>
         <?php endif; ?>
     </div>
 
@@ -167,7 +181,7 @@ if(isset($_POST['fetch_available'])){
     <script>
         $(document).ready(function() {
             $('#run_work_order').off('click').on('click', function () {
-                const id = <?= $id ?? 0 ?>;
+                const id = $(this).data('id');
                 const selectedRollFormer = $('#rollformer_select').val();
 
                 if (!selectedRollFormer) {
@@ -217,7 +231,7 @@ if(isset($_POST['fetch_available'])){
             } else {
                 $('#coil_dtls_tbl').DataTable({
                     language: {
-                        emptyTable: "No Assigned Coils"
+                        emptyTable: '<div style="font-size: 1.1rem; font-weight: bold; color: #ff9800;">Waiting for Admin Approval</div>'
                     },
                     autoWidth: false,
                     responsive: true,
@@ -600,7 +614,7 @@ if(isset($_POST['fetch_view'])){
             } else {
                 $('#coil_dtls_tbl').DataTable({
                     language: {
-                        emptyTable: "No Assigned Coils"
+                        emptyTable: '<div style="font-size: 1.1rem; font-weight: bold; color: #ff9800;">⚠️ Waiting for Admin Approval</div>'
                     },
                     autoWidth: false,
                     responsive: true,
@@ -649,6 +663,7 @@ if(isset($_POST['fetch_assigned'])){
                     if (is_array($decoded_coils)) {
                         $coils_string = implode(',', $decoded_coils);
 
+                        $is_reworked = false;
                         $query = "SELECT * FROM coil_product WHERE coil_id IN ($coils_string) AND status = '0' ORDER BY date ASC";
                         $result = mysqli_query($conn, $query);
                         if ($result && mysqli_num_rows($result) > 0) {
@@ -697,12 +712,25 @@ if(isset($_POST['fetch_assigned'])){
                                 <?php
                                 $no++;
                             }
+                        }else {
+                            $rework_query = "SELECT * FROM coil_product WHERE coil_id IN ($coils_string) AND status = '2' ORDER BY date ASC";
+                            $rework_result = mysqli_query($conn, $rework_query);
+
+                            if ($rework_result && mysqli_num_rows($rework_result) > 0) {
+                                $is_reworked = true;
+                            }
                         }
                     }
                     ?>
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="modal-footer">
+        <?php if ($is_reworked): ?>
+            <button class="btn ripple btn-warning change_assigned_coils" data-id="<?= $id ?>" type="button">Change Coils</button>
+        <?php endif; ?>
     </div>
 
     <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">
@@ -745,7 +773,7 @@ if(isset($_POST['fetch_assigned'])){
             } else {
                 $('#coils_selected_tbl').DataTable({
                     language: {
-                        emptyTable: "No Assigned Coils"
+                        emptyTable: '<div style="font-size: 1.1rem; font-weight: bold; color: #ff9800;">Waiting for Admin Approval</div>'
                     },
                     autoWidth: false,
                     responsive: true,
@@ -763,6 +791,7 @@ if(isset($_POST['fetch_assigned'])){
 
 if (isset($_POST['fetch_coils'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $is_reworked = isset($_POST['is_reworked']) ? intval($_POST['is_reworked']) : 0;
     $details = getWorkOrderDetails($id);
 
     $assigned_coils = json_decode($details['assigned_coils'] ?? '[]', true) ?? [];
@@ -798,7 +827,7 @@ if (isset($_POST['fetch_coils'])) {
 
     <div class="card card-body datatables">
         <div class="product-details table-responsive text-wrap">
-            <h4>Coils List</h4>
+            <h4>Coils List: <?= $id ?></h4>
             <table id="coils_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
                 <thead>
                     <tr>
@@ -886,7 +915,21 @@ if (isset($_POST['fetch_coils'])) {
 
     <script>
         $(function () {
+            var isReworked = <?= $is_reworked ? 'true' : 'false' ?>;
+            console.log(isReworked)
             let selectedCoils = [];
+
+            if (isReworked) {
+                $('#reason_others').prop('checked', true);
+                $('.reason-radio').closest('.form-check').hide();
+                $('#change_notes').closest('.mt-3').hide();
+                $('#change_notes').val('').prop('disabled', true);
+                $('#reason_error').addClass('d-none');
+            } else {
+                $('.reason-radio').closest('.form-check').show();
+                $('#change_notes').closest('.mt-3').show();
+                $('#change_notes').prop('disabled', false);
+            }
 
             $('#coils_tbl').off('change', '.row-select').on('change', '.row-select', function () {
                 const id = $(this).data('id');
@@ -926,6 +969,7 @@ if (isset($_POST['fetch_coils'])) {
                         change_notes: notes
                     },
                     success: function (res) {
+                        console.log(res);
                         if (res.trim() === 'success') {
                             $('#confirmChangeModal').modal('hide');
                             alert('Successfully Saved!');

@@ -501,12 +501,13 @@ $page_title = "Work Order";
             $('#view_available_modal').modal('toggle');
         });
 
-        function fetchCoilDetails() {
+        function fetchCoilDetails(is_reworked = false) {
             $.ajax({
                 url: 'pages/work_order_ajax.php',
                 type: 'POST',
                 data: {
                     id: work_order_id,
+                    is_reworked: is_reworked ? 1 : 0,
                     fetch_coils: 'fetch_coils'
                 },
                 success: function(response) {
@@ -527,6 +528,13 @@ $page_title = "Work Order";
             event.preventDefault();
             work_order_id = $(this).data('id');
             fetchCoilDetails();
+            $('#view_coils_modal').modal('toggle');
+        });
+
+        $(document).on('click', '.change_assigned_coils', function(event) {
+            event.preventDefault();
+            work_order_id = $(this).data('id');
+            fetchCoilDetails(true);
             $('#view_coils_modal').modal('toggle');
         });
 
