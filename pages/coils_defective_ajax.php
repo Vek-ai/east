@@ -55,7 +55,7 @@ if(isset($_REQUEST['action'])){
             $archive_sql = "
                 UPDATE coil_defective
                 SET status = 4
-                WHERE id = $defective_id
+                WHERE coil_defective_id = $defective_id
             ";
             mysqli_query($conn, $archive_sql);
 
