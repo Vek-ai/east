@@ -47,4 +47,34 @@ function createNotification($actorId, $actionType, $targetId, $targetType, $mess
         return false;
     }
 }
+
+function getUserNotifications($userId) {
+    global $conn;
+
+    $sql = "
+        SELECT 
+            n.id,
+            n.message,
+            n.url,
+            n.created_at,
+            r.is_read,
+            r.read_at
+        FROM notification_recipients r
+        JOIN notifications n ON r.notification_id = n.id
+        WHERE r.recipient_id = $userId
+        ORDER BY n.created_at DESC
+    ";
+
+    $result = mysqli_query($conn, $sql);
+    $notifications = [];
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $notifications[] = $row;
+        }
+    }
+
+    return $notifications;
+}
+
 ?>

@@ -165,6 +165,62 @@ if (isset($_POST['reject_customer'])) {
     }
 }
 
+/* 
+if (isset($_POST['fetch_notifications'])) {
+    $userId = $_SESSION['userid'];
+    $html = '';
+    $count = 0;
+
+    $notifications = getUserNotifications($userId);
+
+    if (!empty($notifications)) {
+        foreach (array_slice($notifications, 0, 5) as $row) {
+            $count++;
+
+            $msg = htmlspecialchars($row['message']);
+            $time = date("h:i A", strtotime($row['created_at']));
+            $url = htmlspecialchars($row['url'] ?? 'javascript:void(0)');
+            $type = $row['action_type'] ?? '';
+
+            $title = "New Activity";
+            $icon = "solar:bell-line-duotone";
+            $iconColor = "text-primary";
+            $iconBg = "bg-primary-subtle";
+
+            switch ($type) {
+                case 'coil_defective':
+                    $title = "Coil Tagged as Defective";
+                    $icon = "solar:danger-triangle-line-duotone";
+                    $iconColor = "text-danger";
+                    $iconBg = "bg-danger-subtle";
+                    break;
+            }
+
+            $html .= "
+            <a href='{$url}' class='p-3 d-flex align-items-center dropdown-item gap-3 border-bottom'>
+                <span class='flex-shrink-0 {$iconBg} rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 {$iconColor}'>
+                    <iconify-icon icon='{$icon}'></iconify-icon>
+                </span>
+                <div class='w-80'>
+                    <div class='d-flex align-items-center justify-content-between'>
+                        <h6 class='mb-1'>{$title}</h6>
+                        <span class='fs-2 d-block text-muted '>{$time}</span>
+                    </div>
+                    <span class='fs-2 d-block text-truncate text-muted'>{$msg}</span>
+                </div>
+            </a>";
+        }
+    } else {
+        $html = "<div class='p-3 text-center text-muted'>No notifications found.</div>";
+    }
+
+    echo json_encode([
+        'count' => $count,
+        'html' => $html
+    ]);
+} 
+*/
+
 if (isset($_POST['fetch_notifications'])) {
     $userId = $_SESSION['userid'];
     $html = '';
@@ -174,7 +230,6 @@ if (isset($_POST['fetch_notifications'])) {
         SELECT n.*, nr.is_read 
         FROM notifications n
         JOIN notification_recipients nr ON n.id = nr.notification_id
-        WHERE nr.recipient_id = $userId
         ORDER BY n.created_at DESC
         LIMIT 5
     ";
@@ -227,6 +282,5 @@ if (isset($_POST['fetch_notifications'])) {
         'html' => $html
     ]);
 }
-
 
 ?>
