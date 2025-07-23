@@ -10,71 +10,253 @@ require '../includes/functions.php';
 if(isset($_REQUEST['action'])){
    $action = $_REQUEST['action'];
 
-    if ($action == 'coil_tag_rework') {
-        $coil_defective_id = intval($_POST['coil_defective_id']);
+    if ($action == 'fetch_coil_defective') {
+        $query = "
+            SELECT * FROM coil_defective
+            ORDER BY tagged_date DESC
+        ";
 
-        if ($coil_defective_id <= 0) {
-            echo "Invalid coil ID";
+        $result = mysqli_query($conn, $query);
+        $data = [];
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $color_details = getColorDetails($row['color_sold_as']);
+            $grade = getGradeName($row['grade']);
+            $remaining_feet = $row['remaining_feet'] ?? 0;
+
+            $picture = !empty($row['main_image']) ? $row['main_image'] : "images/coils/product.jpg";
+            $entry_no = $row['entry_no'];
+            $supplier_name = getSupplierName($row['supplier']);
+
+            $tagged_date = '';
+            if (!empty($row['tagged_date']) && strtotime($row['tagged_date'])) {
+                $tagged_date = date('F j, Y', strtotime($row['tagged_date']));
+            }
+
+            $tag_html = '';
+            if ($row['tagged_defective'] == 1) {
+                $tag_html = '<span class="badge" style="background-color: #28a745; color: #fff;">Defective + Replaced</span>';
+            } elseif ($row['tagged_defective'] == 2) {
+                $tag_html = '<span class="badge" style="background-color: #dc3545; color: #fff;">Defective Only</span>';
+            }
+
+            $actions = '<div class="action-btn d-flex justify-content-center flex-wrap gap-2 text-center">';
+
+            $actions .= '<a href="#" role="button" class="view-notes-btn" data-id="' . $row['coil_defective_id'] . '" title="View Notes">
+                <i class="text-primary fa fa-eye fs-6"></i>
+            </a>';
+            $actions .= '<a href="#" role="button" class="print-coil-btn" data-id="' . $row['coil_defective_id'] . '" title="Print/Download">
+                <i class="fa fa-print fs-6"></i>
+            </a>';
+            $actions .= '<a href="#" role="button" class="view-history-btn" data-id="' . $row['coil_defective_id'] . '" title="View Coil History">
+                <iconify-icon class="fs-7" style="color: #00ffbfff;" icon="solar:history-outline"></iconify-icon>
+            </a>';
+            $actions .= '<a href="#" role="button" class="tag-review-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="review" title="Tag Coil for EKM Review">
+                <iconify-icon class="fs-7" style="color: #ffd700;" icon="solar:tag-outline"></iconify-icon>
+            </a>';
+            $actions .= '<a href="#" role="button" class="tag-quarantine-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="quarantine" title="Quarantine Coil">
+                <iconify-icon class="fs-7" style="color: #ffa500;" icon="solar:danger-triangle-outline"></iconify-icon>
+            </a>';
+            $actions .= '<a href="#" role="button" class="tag-return-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="return" title="Flag Coil for Return to Supplier">
+                <iconify-icon class="fs-7" style="color: #ff0000;" icon="solar:box-outline"></iconify-icon>
+            </a>';
+            $actions .= '<a href="#" role="button" class="tag-transfer-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="transfer" title="Add Coil to Inventory">
+                <iconify-icon class="fs-7" style="color: #28a745;" icon="solar:verified-check-outline"></iconify-icon>
+            </a>';
+
+            $actions .= '</div>';
+
+
+            $status = (int)$row['status'];
+            $status_badge = '';
+
+            if ($status === 0) {
+                $status_badge = '<span class="badge py-2" style="background-color: #add8e6; color: #000; white-space: normal;">New Defective</span>';
+            } elseif ($status === 1) {
+                $status_badge = '<span class="badge py-2" style="background-color: #ffd700; color: #000; white-space: normal;">Under Review</span>';
+            } elseif ($status === 2) {
+                $status_badge = '<span class="badge py-2" style="background-color: #ffa500; color: #000; white-space: normal;">Quarantined<br>Coil</span>';
+            } elseif ($status === 3) {
+                $status_badge = '<span class="badge py-2" style="background-color: #ff0000; color: #fff; white-space: normal;">Return to Supplier</span>';
+            } elseif ($status === 4) {
+                $status_badge = '<span class="badge py-2" style="background-color: #28a745; color: #fff; white-space: normal;">Awaiting Approval</span>';
+            } else {
+                $status_badge = '<span class="badge py-2 bg-secondary" style="white-space: normal;">Unknown</span>';
+            }
+
+
+            $data[] = [
+                'row' => [
+                    '<div class="d-flex align-items-center">
+                        <img src="' . $picture . '" class="rounded-circle preview-image" alt="materialpro-img" width="56" height="56">
+                        <div class="ms-3"><h6 class="fw-semibold mb-0 fs-4">' . $entry_no . '</h6></div>
+                    </div>',
+                    '<div class="d-inline-flex align-items-center gap-2">
+                        <span class="rounded-circle d-block" style="background-color:' . $color_details['color_code'] . '; width: 30px; height: 30px;"></span>
+                        ' . $color_details['color_name'] . '
+                    </div>',
+                    $grade,
+                    $remaining_feet,
+                    $status_badge,
+                    $tagged_date,
+                    $supplier_name,
+                    $actions
+                ],
+                'color' => $color_details['color_name'],
+                'grade' => $grade,
+                'supplier' => $supplier_name
+            ];
+        }
+
+        echo json_encode(['data' => $data]);
+    }
+    
+    if ($action == 'update_coil_status') {
+        $coil_defective_id = intval($_POST['coil_id'] ?? 0);
+        $change_action = $_POST['change_action'] ?? '';
+
+        if ($coil_defective_id <= 0 || empty($change_action)) {
+            echo "Invalid request.";
             exit;
         }
 
-        $check = mysqli_query($conn, "SELECT coil_id FROM coil_defective WHERE coil_defective_id = $coil_defective_id");
-        if ($check && mysqli_num_rows($check) > 0) {
-            $row = mysqli_fetch_assoc($check);
-            $coil_id = intval($row['coil_id']);
+        $check = mysqli_query($conn, "SELECT * FROM coil_defective WHERE coil_defective_id = $coil_defective_id");
+        if (!$check || mysqli_num_rows($check) == 0) {
+            echo "Coil not found in defective list.";
+            exit;
+        }
 
-            // update coil_defective status to 1 (rework start)
-            $update_defective = "
-                UPDATE coil_defective 
-                SET status = 1 
-                WHERE coil_defective_id = $coil_defective_id
-            ";
+        $coil = mysqli_fetch_assoc($check);
+        $coil_id = intval($coil['coil_id']);
 
-            // update coil_product status to 2 (Reworked)
-            $update_product = "
-                UPDATE coil_product 
-                SET status = 2 
-                WHERE coil_id = $coil_id
-            ";
+        $status_map = [
+            'review'     => 1,
+            'quarantine' => 2,
+            'return'     => 3,
+            'transfer'   => 4
+        ];
+
+        $status = $status_map[$change_action] ?? null;
+        if (!isset($status)) {
+            echo "Unknown action.";
+            exit;
+        }
+
+        if ($change_action === 'review') {
+            $update_defective = "UPDATE coil_defective SET status = 1 WHERE coil_defective_id = $coil_defective_id";
+            $update_product   = "UPDATE coil_product SET status = 2 WHERE coil_id = $coil_id";
 
             if (mysqli_query($conn, $update_defective) && mysqli_query($conn, $update_product)) {
                 echo "success";
             } else {
                 echo "Error updating: " . mysqli_error($conn);
             }
-        } else {
-            echo "Coil not found in defective list.";
+            exit;
         }
-    }
 
+        if ($change_action === 'transfer') {
+            $update_defective = "UPDATE coil_defective SET status = 4 WHERE coil_defective_id = $coil_defective_id";
 
-    if ($action == 'coil_tag_approve') {
-        $defective_id = intval($_POST['coil_defective_id']);
+            if (mysqli_query($conn, $update_defective)) {
+                $cols = [
+                    'entry_no', 'warehouse', 'color_family', 'color_abbreviation', 'paint_supplier',
+                    'paint_code', 'stock_availability', 'multiplier_category', 'actual_color', 'color_close',
+                    'coil_no', 'date', 'supplier', 'supplier_name', 'color_sold_as', 'color_sold_name',
+                    'product_id', 'og_length', 'weight', 'thickness', 'width', 'grade', 'coating', 'tag_no',
+                    'invoice_no', 'remaining_feet', 'last_inventory_count', 'coil_class', 'gauge', 'grade_no',
+                    'year', 'month', 'extracting_price', 'price', 'avg_by_color', 'total', 'current_weight',
+                    'lb_per_ft', 'contract_ppf', 'contract_ppcwg', 'invoice_price', 'round_width',
+                    'hidden', 'main_image', 'supplier_tag'
+                ];
 
-        $res = mysqli_query($conn, "SELECT coil_id FROM coil_defective WHERE coil_defective_id = $defective_id AND status != 4");
-        if ($res && mysqli_num_rows($res) > 0) {
-            $row = mysqli_fetch_assoc($res);
-            $coil_id = intval($row['coil_id']);
+                $columns = implode(", ", $cols) . ", tagged_defective, tagged_date, tagged_note, status";
+                $values = [];
 
-            $update_coil_sql = "
-                UPDATE coil_product
-                SET status = 0
-                WHERE coil_id = $coil_id
-            ";
-            mysqli_query($conn, $update_coil_sql);
+                foreach ($cols as $col) {
+                    $val = $coil[$col] ?? null;
+                    $values[] = is_null($val) ? "NULL" : "'" . mysqli_real_escape_string($conn, $val) . "'";
+                }
 
-            $archive_sql = "
-                UPDATE coil_defective
-                SET status = 4
-                WHERE coil_defective_id = $defective_id
-            ";
-            mysqli_query($conn, $archive_sql);
+                $values[] = 0;
+                $values[] = "NULL";
+                $values[] = "NULL";
+                $values[] = 0;
 
+                $values_str = implode(", ", $values);
+                $insert_sql = "INSERT INTO coil_product ($columns) VALUES ($values_str)";
+
+                if (mysqli_query($conn, $insert_sql)) {
+                    echo "success";
+                } else {
+                    echo "Error inserting into coil_product: " . mysqli_error($conn);
+                }
+            } else {
+                echo "Error updating status: " . mysqli_error($conn);
+            }
+            exit;
+        }
+
+        $update = "UPDATE coil_defective SET status = '$status' WHERE coil_defective_id = $coil_defective_id";
+        if (mysqli_query($conn, $update)) {
             echo "success";
         } else {
-            echo "Invalid or already archived coil_defective_id";
+            echo "Error updating status: " . mysqli_error($conn);
         }
+        exit;
     }
+
+    if ($action == 'fetch_coil_notes') {
+        $coil_defective_id = intval($_POST['coil_defective_id']);
+        $notes = [];
+
+        $query = "
+            SELECT 
+                cn.note_text, 
+                DATE_FORMAT(cn.created_at, '%M %e, %Y %l:%i %p') AS created_at,
+                CONCAT(s.staff_fname, ' ', s.staff_lname) AS staff_name
+            FROM 
+                coil_notes cn
+            LEFT JOIN 
+                staff s ON cn.created_by = s.staff_id
+            WHERE 
+                cn.coil_defective_id = $coil_defective_id
+            ORDER BY 
+                cn.created_at DESC
+        ";
+        $res = mysqli_query($conn, $query);
+
+        while ($row = mysqli_fetch_assoc($res)) {
+            $notes[] = $row;
+        }
+
+        echo json_encode($notes);
+        exit;
+    }
+
+    if ($action == 'add_coil_note') {
+        $coil_defective_id = intval($_POST['coil_defective_id']);
+        $note_text = mysqli_real_escape_string($conn, $_POST['note_text']);
+        $staff_id = $_SESSION['userid'] ?? null;
+
+        $getCoilQuery = "SELECT coil_id FROM coil_defective WHERE coil_defective_id = $coil_defective_id LIMIT 1";
+        $result = mysqli_query($conn, $getCoilQuery);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $coil_id = intval($row['coil_id']);
+
+            $insert = "
+                INSERT INTO coil_notes (coil_defective_id, coil_id, note_text, created_by)
+                VALUES ($coil_defective_id, $coil_id, '$note_text', " . ($staff_id ?: "NULL") . ")
+            ";
+
+            echo mysqli_query($conn, $insert) ? 'success' : 'error';
+        } else {
+            echo 'invalid';
+        }
+
+        exit;
+    }
+
 }
 
 
