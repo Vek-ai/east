@@ -87,7 +87,9 @@ $page_title = "Defective Coils";
                         </select>
                     </div>
                 </div>
-
+                <div class="px-3 mb-2"> 
+                    <input type="checkbox" id="toggleArchived"> Show Approved/Transferred
+                </div>
                 <div class="d-flex justify-content-end py-2">
                     <button type="button" class="btn btn-outline-primary reset_filters">
                         <i class="fas fa-sync-alt me-1"></i> Reset Filters
@@ -214,6 +216,48 @@ $page_title = "Defective Coils";
   </div>
 </div>
 
+<div class="modal fade" id="coilActionModal" tabindex="-1" aria-labelledby="coilActionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="coilActionModalLabel">Confirm Coil Action</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="coilActionMessage"></p>
+
+        <div class="mb-3" id="coilGradeGroup">
+            <label for="coilGrade" class="form-label">Change Grade</label>
+            <select class="form-select " id="coilGrade" name="coilGrade">
+                <option value="">Select new grade (optional)</option>
+                <?php
+                $grades_q = "SELECT product_grade_id, product_grade FROM product_grade WHERE status = 1 AND hidden = 0 ORDER BY product_grade ASC";
+                $grades_res = mysqli_query($conn, $grades_q);
+                while ($grade_row = mysqli_fetch_assoc($grades_res)) {
+                    $grade = htmlspecialchars($grade_row['product_grade']);
+                    $grade_id = htmlspecialchars($grade_row['product_grade_id']);
+                    echo "<option value=\"$grade_id\">$grade</option>";
+                }
+                ?>
+            </select>
+        </div>
+
+        <div class="mb-3" id="coilNoteGroup">
+            <label for="coilNote" class="form-label">Add Note</label>
+            <textarea class="form-control" id="coilNote" rows="3" placeholder="Enter a note (optional)"></textarea>
+        </div>
+
+        <input type="hidden" id="coilActionId">
+        <input type="hidden" id="coilActionType">
+        </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="confirmCoilActionBtn" class="btn btn-success">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
     $(document).ready(function() {
@@ -236,6 +280,7 @@ $page_title = "Defective Coils";
                 $(row).attr('data-color', item.color || '');
                 $(row).attr('data-grade', item.grade || '');
                 $(row).attr('data-supplier', item.supplier || '');
+                $(row).attr('data-status', item.status || '');
             }
         });
 
@@ -335,10 +380,33 @@ $page_title = "Defective Coils";
 
         $(document).on('click', '.change_status', function (e) {
             e.preventDefault();
+
             const coilId = $(this).data('id');
             const action = $(this).data('action');
-            const displayAction = action.charAt(0).toUpperCase() + action.slice(1).replace(/_/g, ' ');
-            if (!confirm(`Are you sure you want to ${displayAction} this coil?`)) return;
+
+            $('#coilActionId').val(coilId);
+            $('#coilActionType').val(action);
+            $('#coilActionMessage').text(`Are you sure you want to ${action} this coil?`);
+
+            if (action === 'approve' || action === 'transfer') {
+                $('#coilGradeGroup').show();
+                $('#coilNoteGroup').show();
+            } else {
+                $('#coilGradeGroup').hide();
+                $('#coilNoteGroup').hide();
+            }
+
+            $('#coilGrade').val('');
+            $('#coilNote').val('');
+
+            $('#coilActionModal').modal('show');
+        });
+
+        $('#confirmCoilActionBtn').on('click', function () {
+            const coilId = $('#coilActionId').val();
+            const action = $('#coilActionType').val();
+            const grade = $('#coilGrade').val();
+            const note = $('#coilNote').val();
 
             $.ajax({
                 url: 'pages/coils_defective_ajax.php',
@@ -346,21 +414,30 @@ $page_title = "Defective Coils";
                 data: {
                     action: 'update_coil_status',
                     coil_id: coilId,
-                    change_action: action
+                    change_action: action,
+                    new_grade: grade,
+                    note_text: note
                 },
-                success: function (response) {
-                    console.log(response);
-                    reloadTable();
+                success: function(response) {
+                    $('#coilActionModal').modal('hide');
+                    if (response.trim() === 'success') {
+                        alert('Action successful');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response);
+                    }
                 },
-                error: function () {
-                    alert('Error processing request.');
+                error: function(xhr) {
+                    alert('AJAX request failed');
+                    console.log(xhr.responseText);
                 }
             });
         });
 
+
         function filterTable() {
             var textSearch = $('#text-srh').val().toLowerCase();
-            var isActive = $('#toggleActive').is(':checked');
+            var isArchived = $('#toggleArchived').is(':checked');
 
             $.fn.dataTable.ext.search = [];
 
@@ -373,6 +450,11 @@ $page_title = "Defective Coils";
             $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                 var row = $(table.row(dataIndex).node());
                 var match = true;
+
+                var status = row.data('status');
+                if (!isArchived && status == 4) {
+                    return false;
+                }
 
                 $('.filter-selection').each(function() {
                     var filterValue = $(this).val()?.toString() || '';
@@ -389,6 +471,7 @@ $page_title = "Defective Coils";
 
             table.draw();
         }
+
 
         function updateSearchCategory() {
             let selectedCategory = $('#select-category option:selected').data('category');
@@ -430,7 +513,7 @@ $page_title = "Defective Coils";
             $('.category_selection').toggleClass('d-none', !hasCategory);
         }
 
-        $(document).on('input change', '#text-srh, #toggleActive, .filter-selection', filterTable);
+        $(document).on('input change', '#text-srh, #toggleArchived, .filter-selection', filterTable);
 
         $(document).on('click', '.reset_filters', function () {
             $('.filter-selection').each(function () {

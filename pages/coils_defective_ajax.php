@@ -51,6 +51,9 @@ if(isset($_REQUEST['action'])){
             $actions .= '<a href="#" role="button" class="view-history-btn" data-id="' . $row['coil_defective_id'] . '" title="View Coil History">
                 <iconify-icon class="fs-7" style="color: #00ffbfff;" icon="solar:history-outline"></iconify-icon>
             </a>';
+            $actions .= '<a href="#" role="button" class="tag-approve-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="approve" title="Approve Coil as Good">
+                <iconify-icon class="fs-7" style="color: #90ee90;" icon="solar:like-bold"></iconify-icon>
+            </a>';
             $actions .= '<a href="#" role="button" class="tag-review-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="review" title="Tag Coil for EKM Review">
                 <iconify-icon class="fs-7" style="color: #ffd700;" icon="solar:tag-outline"></iconify-icon>
             </a>';
@@ -104,6 +107,7 @@ if(isset($_REQUEST['action'])){
                 ],
                 'color' => $color_details['color_name'],
                 'grade' => $grade,
+                'status' => $status,
                 'supplier' => $supplier_name
             ];
         }
@@ -111,9 +115,64 @@ if(isset($_REQUEST['action'])){
         echo json_encode(['data' => $data]);
     }
     
+    if ($action == 'fetch_coil_notes') {
+        $coil_defective_id = intval($_POST['coil_defective_id']);
+        $notes = [];
+
+        $query = "
+            SELECT 
+                cn.note_text, 
+                DATE_FORMAT(cn.created_at, '%M %e, %Y %l:%i %p') AS created_at,
+                CONCAT(s.staff_fname, ' ', s.staff_lname) AS staff_name
+            FROM 
+                coil_notes cn
+            LEFT JOIN 
+                staff s ON cn.created_by = s.staff_id
+            WHERE 
+                cn.coil_defective_id = $coil_defective_id
+            ORDER BY 
+                cn.created_at DESC
+        ";
+        $res = mysqli_query($conn, $query);
+
+        while ($row = mysqli_fetch_assoc($res)) {
+            $notes[] = $row;
+        }
+
+        echo json_encode($notes);
+        exit;
+    }
+
+    if ($action == 'add_coil_note') {
+        $coil_defective_id = intval($_POST['coil_defective_id']);
+        $note_text = mysqli_real_escape_string($conn, $_POST['note_text']);
+        $staff_id = $_SESSION['userid'] ?? null;
+
+        $getCoilQuery = "SELECT coil_id FROM coil_defective WHERE coil_defective_id = $coil_defective_id LIMIT 1";
+        $result = mysqli_query($conn, $getCoilQuery);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $coil_id = intval($row['coil_id']);
+
+            $insert = "
+                INSERT INTO coil_notes (coil_defective_id, coil_id, note_text, created_by)
+                VALUES ($coil_defective_id, $coil_id, '$note_text', " . ($staff_id ?: "NULL") . ")
+            ";
+
+            echo mysqli_query($conn, $insert) ? 'success' : 'error';
+        } else {
+            echo 'invalid';
+        }
+
+        exit;
+    }
+
     if ($action == 'update_coil_status') {
         $coil_defective_id = intval($_POST['coil_id'] ?? 0);
         $change_action = $_POST['change_action'] ?? '';
+        $new_grade = mysqli_real_escape_string($conn, $_POST['new_grade'] ?? '');
+        $note_text = mysqli_real_escape_string($conn, $_POST['note_text'] ?? '');
+        $staff_id = $_SESSION['staff_id'] ?? null;
 
         if ($coil_defective_id <= 0 || empty($change_action)) {
             echo "Invalid request.";
@@ -133,13 +192,27 @@ if(isset($_REQUEST['action'])){
             'review'     => 1,
             'quarantine' => 2,
             'return'     => 3,
-            'transfer'   => 4
+            'transfer'   => 4,
+            'approve'    => 4
         ];
 
         $status = $status_map[$change_action] ?? null;
         if (!isset($status)) {
             echo "Unknown action.";
             exit;
+        }
+
+        if (!empty($new_grade)) {
+            mysqli_query($conn, "UPDATE coil_defective SET grade = '$new_grade' WHERE coil_defective_id = $coil_defective_id");
+            mysqli_query($conn, "UPDATE coil_product SET grade = '$new_grade' WHERE coil_id = $coil_id");
+        }
+
+        if (!empty($note_text)) {
+            $staff_id = $_SESSION['userid'];
+            mysqli_query($conn, "
+                INSERT INTO coil_notes (coil_defective_id, coil_id, note_text, created_by)
+                VALUES ($coil_defective_id, $coil_id, '$note_text', '$staff_id')
+            ");
         }
 
         if ($change_action === 'review') {
@@ -196,6 +269,25 @@ if(isset($_REQUEST['action'])){
             exit;
         }
 
+        if ($change_action === 'approve') {
+            $res = mysqli_query($conn, "SELECT coil_id FROM coil_defective WHERE coil_defective_id = $coil_defective_id AND status != 4");
+            if ($res && mysqli_num_rows($res) > 0) {
+                $row = mysqli_fetch_assoc($res);
+                $coil_id = intval($row['coil_id']);
+
+                $update_coil_sql = "UPDATE coil_product SET status = 0 WHERE coil_id = $coil_id";
+                mysqli_query($conn, $update_coil_sql);
+
+                $archive_sql = "UPDATE coil_defective SET status = 4 WHERE coil_defective_id = $coil_defective_id";
+                mysqli_query($conn, $archive_sql);
+
+                echo "success";
+            } else {
+                echo "Invalid or already archived coil_defective_id";
+            }
+            exit;
+        }
+
         $update = "UPDATE coil_defective SET status = '$status' WHERE coil_defective_id = $coil_defective_id";
         if (mysqli_query($conn, $update)) {
             echo "success";
@@ -205,57 +297,6 @@ if(isset($_REQUEST['action'])){
         exit;
     }
 
-    if ($action == 'fetch_coil_notes') {
-        $coil_defective_id = intval($_POST['coil_defective_id']);
-        $notes = [];
-
-        $query = "
-            SELECT 
-                cn.note_text, 
-                DATE_FORMAT(cn.created_at, '%M %e, %Y %l:%i %p') AS created_at,
-                CONCAT(s.staff_fname, ' ', s.staff_lname) AS staff_name
-            FROM 
-                coil_notes cn
-            LEFT JOIN 
-                staff s ON cn.created_by = s.staff_id
-            WHERE 
-                cn.coil_defective_id = $coil_defective_id
-            ORDER BY 
-                cn.created_at DESC
-        ";
-        $res = mysqli_query($conn, $query);
-
-        while ($row = mysqli_fetch_assoc($res)) {
-            $notes[] = $row;
-        }
-
-        echo json_encode($notes);
-        exit;
-    }
-
-    if ($action == 'add_coil_note') {
-        $coil_defective_id = intval($_POST['coil_defective_id']);
-        $note_text = mysqli_real_escape_string($conn, $_POST['note_text']);
-        $staff_id = $_SESSION['userid'] ?? null;
-
-        $getCoilQuery = "SELECT coil_id FROM coil_defective WHERE coil_defective_id = $coil_defective_id LIMIT 1";
-        $result = mysqli_query($conn, $getCoilQuery);
-        if ($result && mysqli_num_rows($result) > 0) {
-            $row = mysqli_fetch_assoc($result);
-            $coil_id = intval($row['coil_id']);
-
-            $insert = "
-                INSERT INTO coil_notes (coil_defective_id, coil_id, note_text, created_by)
-                VALUES ($coil_defective_id, $coil_id, '$note_text', " . ($staff_id ?: "NULL") . ")
-            ";
-
-            echo mysqli_query($conn, $insert) ? 'success' : 'error';
-        } else {
-            echo 'invalid';
-        }
-
-        exit;
-    }
 
 }
 
