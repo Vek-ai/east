@@ -6,6 +6,24 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
+require '../../includes/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+
+function addSheet($spreadsheet, $sheetName, $data, $isFirst = false) {
+    $sheet = $isFirst ? $spreadsheet->getActiveSheet() : $spreadsheet->createSheet();
+    $sheet->setTitle(substr($sheetName, 0, 31));
+
+    foreach ($data as $r => $row) {
+        foreach ($row as $c => $value) {
+            $colLetter = Coordinate::stringFromColumnIndex($c + 1);
+            $cell = $colLetter . ($r + 1);
+            $sheet->setCellValue($cell, $value);
+        }
+    }
+}
 
 if(isset($_POST['fetch_available'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
@@ -228,12 +246,19 @@ if(isset($_POST['fetch_available'])){
                         run_work_order: 'run_work_order'
                     },
                     success: function (res) {
-                        if (res.trim() === 'success') {
-                            alert('Work Order Completed. Coil lengths updated.');
-                            location.reload();
-                        } else {
-                            alert('Failed to update coil lengths.');
-                            console.log(res);
+                        try {
+                            const response = JSON.parse(res);
+                            if (response.status === 'success' && response.url) {
+                                alert('Work Order Run Started.');
+                                window.open(response.url, '_blank');
+                                location.reload();
+                            } else {
+                                alert('Failed');
+                                console.log(res);
+                            }
+                        } catch (e) {
+                            alert('Invalid server response.');
+                            console.error(res);
                         }
                     },
                     error: function (xhr) {
@@ -658,12 +683,19 @@ if(isset($_POST['fetch_view'])){
                         run_work_order: 'run_work_order'
                     },
                     success: function (res) {
-                        if (res.trim() === 'success') {
-                            alert('Work Order Completed. Coil lengths updated.');
-                            location.reload();
-                        } else {
-                            alert('Failed to update coil lengths.');
-                            console.log(res);
+                        try {
+                            const response = JSON.parse(res);
+                            if (response.status === 'success' && response.url) {
+                                alert('Work Order Run Started.');
+                                window.open(response.url, '_blank');
+                                location.reload();
+                            } else {
+                                alert('Failed');
+                                console.log(res);
+                            }
+                        } catch (e) {
+                            alert('Invalid server response.');
+                            console.error(res);
                         }
                     },
                     error: function (xhr) {
@@ -671,6 +703,8 @@ if(isset($_POST['fetch_view'])){
                         console.error(xhr.responseText);
                     }
                 });
+
+
             });
 
             if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
@@ -1305,7 +1339,7 @@ if (isset($_POST['run_work_order'])) {
         exit;
     }
 
-    foreach ($ids as $id) {
+    /* foreach ($ids as $id) {
         $id = mysqli_real_escape_string($conn, $id);
 
         $work_order_details = getWorkOrderDetails($id);
@@ -1333,9 +1367,83 @@ if (isset($_POST['run_work_order'])) {
             $status_update = "UPDATE work_order SET status = 2, roll_former_id = '$roll_former_id' WHERE id = $id";
             mysqli_query($conn, $status_update);
         }
+    } */
+
+    $materialRows = [
+        ['#L', 'MATERIAL', 'GAUGE', 'GRADE', 'THICKNESS', 'WIDTH', 'COLOR', 'DENSITY', 'DESCRIPTION'],
+        ['L', 'TEST MATERIAL', '26', 'GRADE-HERE', '0.0125', '42', 'WHITE', '1.5', 'WHITE TEST MATERIAL'],
+    ];
+
+    $profileRows = [
+        ['#F', 'PROFILE', 'DESCRIPTION'],
+        ['#H', 'MACHINE'],
+        ['F', 'TEST PROFILE - (Low Rib)', 'TESTING DESCRIPTION', '10', '100', '1', '12', '2'],
+        ['H', 'Example Machine - Roll former 1'],
+    ];
+
+    $coilRows = [
+        ['#C', 'COIL', 'LOCATION', 'MATERIAL', 'RECEIVED', 'STATUS', 'VENDOR', 'WEIGHT', 'COST', 'LENGTH', 'GRADE', 'NOTES'],
+        ['C', 'TEST COIL - coil #', 'Example Location', 'TEST MATERIAL', '3/31/22', 'AVAILABLE', 'VENDOR1', '2000 - Weight', '1000 - cost', '5000- Length', 'PREMIUM - grade', 'NotesHere'],
+    ];
+
+    $partOpRows = [
+        ['#P', 'PART', 'DESCRIPTION'],
+        ['#O', 'OPERATION', 'POSITION', 'REFERENCE', 'YPOS'],
+        ['P', 'TEST PART', 'TEST PART'],
+        ['O', 'TEST OPERATION', '1', 'LEADING EDGE', '2'],
+        ['O', 'TEST OPERATION 2', '2', 'LEADING EDGE', '-2'],
+        ['O', 'TEST OPERATION 3', '4', 'LEADING EDGE', '2'],
+        ['O', 'TEST OPERATION 4', '8', 'LEADING EDGE', '-2'],
+    ];
+
+    $jobBatchRows = [
+        ['#J', 'JOB', 'MACHINE', 'PROFILE', 'MATERIAL', 'USER 1', 'USER 2', 'USER 3', 'USER 4', 'USER 5'],
+        ['#B', 'BATCH', 'QUANTITY', 'LENGTH', 'PART', 'USER 1', 'USER 2', 'USER 3', 'USER 4', 'USER 5'],
+        ['J', 'TEST JOB - Job name if available', 'Roll former 1', 'Low Rib', 'TEST MATERIAL', 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5'],
+        ['B', '1', '10', '120', 'SHEAR ONLY', 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5'],
+    ];
+
+    $folderRows = [
+        ['#FOLDER_PART', 'NAME', 'DESCRIPTION', 'CLAMP_PRESSURE', 'OVERBEND', 'MATERIAL_THICKNESS', 'PAINT_DIRECTION'],
+        ['#FOLDER_OPERATION', 'STEP', 'BACKGAUGE2', 'BACKGAUGE', 'CLAMP_PRESSURE', 'BEND_ANGLE', 'OVERBEND', 'UPPER_JAW', 'BUMP_BEND_ANGLE', 'BUMP_BEND_RADIUS', 'BUMP_BEND_ITERATIONS', 'ROTARY_SHEAR', 'FLIP', 'HELI_ROTATE', 'PROP ROTATE', 'BG ADJUST'],
+        ['FOLDER_PART', 'CANOPY-PANEL', 'TEST PART', '1500', '8', '0.03998', 'UP'],
+        ['FOLDER_OPERATION', '0', '18.99994', '18.99994', '0', '0', '0', '0.7', '0', '0', '0', '200', 'NO', 'NO', 'NO', '0'],
+        ['FOLDER_OPERATION', '1', '18.24994', '18.24994', '0', '90', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+        ['FOLDER_OPERATION', '2', '17.19994', '17.19994', '0', '90', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+        ['FOLDER_OPERATION', '3', '14.36995', '14.36995', '0', '95', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'YES', '0'],
+        ['FOLDER_OPERATION', '4', '1.54999', '1.54999', '0', '90', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+        ['FOLDER_OPERATION', '5', '0.59998', '0.59998', '0', '85', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+        ['FOLDER_OPERATION', '6', '2.81998', '2.81998', '0', '90', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+    ];
+
+    $spreadsheet = new Spreadsheet();
+
+    addSheet($spreadsheet, 'Material', $materialRows, true);
+    addSheet($spreadsheet, 'Profile', $profileRows);
+    addSheet($spreadsheet, 'Coil', $coilRows);
+    addSheet($spreadsheet, 'Part_Operation', $partOpRows);
+    addSheet($spreadsheet, 'Job_Batch', $jobBatchRows);
+    addSheet($spreadsheet, 'FolderOps', $folderRows);
+
+    $timestamp = time();
+    $filename = "import_template_{$timestamp}.xlsx";
+    $filepath = __DIR__ . "/temp_exports/$filename";
+
+    if (!file_exists(__DIR__ . "/temp_exports")) {
+        mkdir(__DIR__ . "/temp_exports", 0777, true);
     }
 
-    echo 'success';
+    $writer = new Xlsx($spreadsheet);
+    $writer->save($filepath);
+
+    $baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
+    $downloadUrl = $baseUrl . "/temp_exports/$filename";
+
+    echo json_encode([
+        'status' => 'success',
+        'url' => $downloadUrl
+    ]);
+
     exit;
 }
 
