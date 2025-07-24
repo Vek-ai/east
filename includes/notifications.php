@@ -22,21 +22,46 @@ function createNotification($actorId, $actionType, $targetId, $targetType, $mess
     try {
         $pdo->beginTransaction();
 
+        $audienceScope = null;
+
+        // Check if recipientIds is a string representing a group
+        if (is_string($recipientIds)) {
+            switch (strtolower($recipientIds)) {
+                case 'admin':
+                    $audienceScope = 0;
+                    break;
+                case 'cashier':
+                    $audienceScope = 1;
+                    break;
+                case 'work_order':
+                    $audienceScope = 2;
+                    break;
+                default:
+                    $audienceScope = null;
+            }
+            // No need to insert into notification_recipients — role-based
+            $recipientIds = [];
+        }
+
+        // Insert notification with audience_scope
         $stmt = $pdo->prepare("
-            INSERT INTO notifications (actor_id, action_type, target_id, target_type, message, url, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, NOW())
+            INSERT INTO notifications (actor_id, action_type, target_id, target_type, message, url, audience_scope, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
         ");
-        $stmt->execute([$actorId, $actionType, $targetId, $targetType, $message, $url]);
+        $stmt->execute([$actorId, $actionType, $targetId, $targetType, $message, $url, $audienceScope]);
 
         $notificationId = $pdo->lastInsertId();
 
-        $stmt = $pdo->prepare("
-            INSERT INTO notification_recipients (notification_id, recipient_id, is_read)
-            VALUES (?, ?, 0)
-        ");
+        // Add recipients if provided (individual staff IDs)
+        if (!empty($recipientIds)) {
+            $stmt = $pdo->prepare("
+                INSERT INTO notification_recipients (notification_id, recipient_id, is_read)
+                VALUES (?, ?, 0)
+            ");
 
-        foreach ($recipientIds as $recipientId) {
-            $stmt->execute([$notificationId, $recipientId]);
+            foreach ($recipientIds as $recipientId) {
+                $stmt->execute([$notificationId, $recipientId]);
+            }
         }
 
         $pdo->commit();
@@ -48,8 +73,10 @@ function createNotification($actorId, $actionType, $targetId, $targetType, $mess
     }
 }
 
-function getUserNotifications($userId) {
+function getUserNotifications($staffId) {
     global $conn;
+
+    $staffId = intval($staffId);
 
     $sql = "
         SELECT 
@@ -61,8 +88,45 @@ function getUserNotifications($userId) {
             r.read_at
         FROM notification_recipients r
         JOIN notifications n ON r.notification_id = n.id
-        WHERE r.recipient_id = $userId
+        WHERE r.recipient_id = $staffId
         ORDER BY n.created_at DESC
+    ";
+
+    $result = mysqli_query($conn, $sql);
+    $notifications = [];
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $notifications[] = $row;
+        }
+    }
+
+    return $notifications;
+}
+
+function getRoleNotifications($role) {
+    global $conn;
+
+    $roleMap = [
+        'admin'      => 0,
+        'cashier'    => 1,
+        'work_order' => 2
+    ];
+
+    if (!isset($roleMap[$role])) return [];
+
+    $scope = $roleMap[$role];
+
+    $sql = "
+        SELECT 
+            id,
+            action_type,
+            message,
+            url,
+            created_at
+        FROM notifications
+        WHERE audience_scope = $scope
+        ORDER BY created_at DESC
     ";
 
     $result = mysqli_query($conn, $sql);

@@ -200,20 +200,33 @@ if (isset($_POST['fetch_available'])) {
     </script>
 <?php }
 
-if(isset($_POST['assign_coil'])){
-    $id = mysqli_real_escape_string($conn, $_POST['id']);
+if (isset($_POST['assign_coil'])) {
+    $id = intval($_POST['id']);
     $wrk_ordr = getWorkOrderDetails($id);
+    $userid = $_SESSION['userid'] ?? 0;
 
-    $userid = $_SESSION['userid'];
+    $orderid = $wrk_ordr['work_order_id'];
 
     $selected_coils = json_decode($_POST['selected_coils'], true);
     $coils_json = json_encode($selected_coils);
 
-    $sql = "UPDATE work_order SET status = '1', assigned_coils = '$coils_json'  WHERE id = $id";
+    $sql = "UPDATE work_order SET status = '1', assigned_coils = '$coils_json' WHERE id = $id";
+
     if ($conn->query($sql) === TRUE) {
         echo "success";
+
+        $actorId = $userid;
+        $actor_name = get_staff_name($actorId);
+        $actionType = 'new_work_order';
+        $targetId = $id;
+        $targetType = 'New Work Order';
+        $message = "New Work Order SO-$orderid added by $actor_name.";
+        $url = '?page=';
+        $recipientRole = 'work_order';
+
+        createNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientRole, $url);
     } else {
-        echo "Error updating records: " . $conn->error;
+        echo "Error updating record: " . $conn->error;
     }
 }
 

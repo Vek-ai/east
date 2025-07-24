@@ -225,6 +225,17 @@ if(isset($_REQUEST['action'])){
             $update_product   = "UPDATE coil_product SET status = 2 WHERE coil_id = $coil_id";
 
             if (mysqli_query($conn, $update_defective) && mysqli_query($conn, $update_product)) {
+                $actorId = $_SESSION['userid'] ?? 0;
+                $actor_name = get_staff_name($actorId);
+                $actionType = 'review_coil';
+                $targetId = $coil_id;
+                $targetType = 'Coil Review';
+                $message = "Coil #$targetId tagged as Under Review by $actor_name";
+                $url = '?page=';
+                $recipientRole = 'work_order';
+
+                createNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientRole, $url);
+
                 echo "success";
             } else {
                 echo "Error updating: " . mysqli_error($conn);
@@ -285,6 +296,17 @@ if(isset($_REQUEST['action'])){
 
                 $archive_sql = "UPDATE coil_defective SET status = 4 WHERE coil_defective_id = $coil_defective_id";
                 mysqli_query($conn, $archive_sql);
+
+                $actorId = $_SESSION['userid'] ?? 0;
+                $actor_name = get_staff_name($actorId);
+                $actionType = 'approve_coil';
+                $targetId = $coil_id;
+                $targetType = 'Coil Approved';
+                $message = "Coil #$targetId tagged as approved to use by $actor_name";
+                $url = '?page=';
+                $recipientRole = 'work_order';
+
+                createNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientRole, $url);
 
                 echo "success";
             } else {
