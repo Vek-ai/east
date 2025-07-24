@@ -1422,9 +1422,11 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "roll_former") {include 'pages/roll_former.php';}
             if ($_REQUEST['page'] == "coils_defective") {include 'pages/coils_defective.php';}
-            if ($_REQUEST['page'] == "coils_rework") {include 'pages/coils_rework.php';}
+            if ($_REQUEST['page'] == "coils_rework") {include 'pages/coils_claim.php';}
             if ($_REQUEST['page'] == "coils_rework_done") {include 'pages/coils_rework_done.php';}
             if ($_REQUEST['page'] == "coils_released") {include 'pages/coils_released.php';}
+
+            if ($_REQUEST['page'] == "coils_claim") {include 'pages/coils_claim.php';}
           ?>
         </div>
       </div>

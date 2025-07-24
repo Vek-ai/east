@@ -2,7 +2,7 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Coils For Rework";
+$page_title = "Coil Claims";
 ?>
 
 <div class="container-fluid">
@@ -53,91 +53,66 @@ $page_title = "Coils For Rework";
                 <div class="datatables">
                     <div class="table-responsive">
                         <div id="tbl-work-order" class="product-details table-responsive">
-                            <table id="reworkCoilsList" class="table search-table align-middle text-nowrap">
+                            <table id="coilClaimsTable" class="table search-table align-middle text-nowrap">
                                 <thead class="header-item">
-                                <th>Coil #</th>
-                                <th>Color</th>
-                                <th>Grade</th>
-                                <th>Remaining Feet</th>
-                                <th>Date Tagged Defective</th>
-                                <th>Note</th>
-                                <th>Action</th>
+                                    <th>Coil #</th>
+                                    <th>Color</th>
+                                    <th>Grade</th>
+                                    <th>Remaining Feet</th>
+                                    <th>Claim Type</th>
+                                    <th>Date Submitted</th>
+                                    <th>Claim Notes</th>
+                                    <th>Action</th>
                                 </thead>
                                 <tbody>
                                 <?php
-                                    $no = 1;
-                                    $query_coil = "
-                                        SELECT 
-                                            *
-                                        FROM 
-                                            coil_defective
-                                        WHERE 
-                                            hidden = '0'
-                                            AND status = '1'
-                                        ORDER BY 
-                                            tagged_date
-                                    ";  
+                                    $query = "
+                                        SELECT cd.*, cc.claim_type, cc.notes AS claim_notes, cc.submitted_at
+                                        FROM coil_defective cd
+                                        LEFT JOIN coil_claim cc ON cd.coil_defective_id = cc.coil_defective_id
+                                        WHERE cd.hidden = 0 AND cd.status = 5
+                                        ORDER BY cc.submitted_at DESC
+                                    ";
 
-                                    $result_coil = mysqli_query($conn, $query_coil);            
-                                    while ($row_coil = mysqli_fetch_array($result_coil)) {
-                                        $coil_id = $row_coil['coil_id'];
-                                        $db_status = $row_coil['status'];
-                                        $remaining_feet = $row_coil['remaining_feet'] ?? 0;
+                                    $result = mysqli_query($conn, $query);
+                                    while ($row = mysqli_fetch_array($result)) {
+                                        $remaining_feet = $row['remaining_feet'] ?? 0;
+                                        $color_details = getColorDetails($row['color_sold_as']);
+                                        $submitted_date = !empty($row['submitted_at']) ? date('F j, Y', strtotime($row['submitted_at'])) : '';
+                                ?>
+                                    <tr>
+                                        <td>
+                                            <span class="fw-semibold"><?= htmlspecialchars($row['entry_no']) ?></span>
+                                        </td>
+                                        <td>
+                                            <div class="d-inline-flex align-items-center gap-2">
+                                                <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 30px; height: 30px;"></span>
+                                                <?= $color_details['color_name'] ?>
+                                            </div>
+                                        </td>
 
-                                        if(!empty($row_coil['main_image'])){
-                                            $picture_path = $row_coil['main_image'];
-                                        }else{
-                                            $picture_path = "images/coils/product.jpg";
-                                        }
+                                        <td><?= getGradeName($row['grade']) ?></td>
 
-                                        $color_details = getColorDetails($row_coil['color_sold_as']);
+                                        <td><?= $remaining_feet ?></td>
 
-                                        $tagged_date_raw = $row_coil['tagged_date'] ?? '';
+                                        <td>
+                                            <?= htmlspecialchars($row['claim_type']) ?>
+                                        </td>
 
-                                        if (!empty($tagged_date_raw) && strtotime($tagged_date_raw)) {
-                                            $tagged_date_formatted = date('F j, Y', strtotime($tagged_date_raw));
-                                        } else {
-                                            $tagged_date_formatted = '';
-                                        }
-                                    ?>
-                                        <tr class="search-items">
-                                            <td>
-                                                <a href="javascript:void(0)">
-                                                    <div class="d-flex align-items-center">
-                                                        <img src="<?= $picture_path ?>" class="rounded-circle preview-image" alt="materialpro-img" width="56" height="56">
-                                                        <div class="ms-3">
-                                                            <h6 class="fw-semibold mb-0 fs-4"><?= $row_coil['entry_no'] ?></h6>
-                                                        </div>
-                                                    </div>
-                                                </a>
-                                            </td>
-                                            <td>
-                                                <div class="d-inline-flex align-items-center gap-2">
-                                                    <a href="javascript:void(0)" id="viewAvailableBtn" class="d-inline-flex align-items-center gap-2 text-decoration-none">
-                                                        <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 30px; height: 30px;"></span>
-                                                        <?= $color_details['color_name'] ?>
-                                                    </a>
-                                                </div>
-                                            </td>
-                                            <td><?= getGradeName($row_coil['grade']) ?></td>
-                                            
-                                            <td><?= $remaining_feet ?></td>
-                                            <td><?= $tagged_date_formatted ?></td>
-                                            <th><?= $row_coil['tagged_note'] ?></th>
-                                            <td>
-                                                <div class="action-btn text-center">
-                                                    <a href="#" role="button" class="tag-rework-btn" data-id="<?= $row_coil['coil_defective_id'] ?>" title="Tag as Done Rework">
-                                                        <iconify-icon class="fs-7" icon="mdi:tools"></iconify-icon>
-                                                    </a>
-                                                </div>
-                                            </td>
-                                           
-                                        </tr>
-                                    <?php 
-                                    $no++;
-                                    } ?>
+                                        <td><?= $submitted_date ?></td>
+
+                                        <td><?= nl2br(htmlspecialchars($row['claim_notes'])) ?></td>
+
+                                        <td class="text-center">
+                                            <a href="#" class="view-notes-btn" data-id="<?= $row['coil_defective_id'] ?>" title="View Claim Notes">
+                                                <i class="text-primary fa fa-eye fs-6"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php } ?>
                                 </tbody>
                             </table>
+
                         </div>
                     </div>
                 </div>
@@ -205,15 +180,47 @@ $page_title = "Coils For Rework";
   </div>
 </div>
 
+<div class="modal fade" id="coilNotesModal" tabindex="-1" aria-labelledby="coilNotesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="coilNotesModalLabel">Coil Notes</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="newNote" class="form-label">Add a Note:</label>
+          <textarea id="newNote" class="form-control" rows="3" placeholder="Write your note here..."></textarea>
+          <div class="text-end mt-2">
+            <button class="btn btn-sm btn-primary" id="saveNoteBtn">Save Note</button>
+        </div>
+        </div>
+
+        <table class="table table-bordered table-striped mt-3" id="notesTable">
+          <thead>
+            <tr>
+              <th>Staff</th>
+              <th>Note</th>
+              <th>Date/Time</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
     $(document).ready(function() {
         document.title = "<?= $page_title ?>";
 
-        var table = $('#reworkCoilsList').DataTable({
+        var table = $('#coilClaimsTable').DataTable({
             pageLength: 100
         });
 
-        $('#reworkCoilsList_filter').hide();
+        $('#coilClaimsTable_filter').hide();
 
         $(".select2").each(function() {
             $(this).select2({
@@ -241,7 +248,7 @@ $page_title = "Coils For Rework";
             if (!confirm('Tag this coil as Rework Done?')) return;
 
             $.ajax({
-                url: 'pages/coils_rework_ajax.php',
+                url: 'pages/coils_claim_ajax.php',
                 type: 'POST',
                 data: {
                     action: 'coil_tag_done',
@@ -259,6 +266,48 @@ $page_title = "Coils For Rework";
                 error: function () {
                     alert('An Error occurred');
                     console.log('AJAX request failed.');
+                }
+            });
+        });
+
+        $(document).on('click', '.view-notes-btn', function (e) {
+            e.preventDefault();
+            selectedDefectiveId = $(this).data('id');
+            $('#newNote').val('');
+            $('#notesTable tbody').empty();
+
+            $.ajax({
+                url: 'pages/coils_defective_ajax.php',
+                type: 'POST',
+                data: {
+                    action: 'fetch_coil_notes',
+                    coil_defective_id: selectedDefectiveId
+                },
+                success: function (response) {
+                    const notes = JSON.parse(response);
+
+                    if (Array.isArray(notes) && notes.length > 0) {
+                        notes.forEach(note => {
+                            $('#notesTable tbody').append(`
+                                <tr>
+                                    <td>${note.staff_name ?? 'Unknown'}</td>
+                                    <td>${note.note_text}</td>
+                                    <td>${note.created_at}</td>
+                                </tr>
+                            `);
+                        });
+                    } else {
+                        $('#notesTable tbody').append(`
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No notes added</td>
+                            </tr>
+                        `);
+                    }
+
+                    $('#coilNotesModal').modal('show');
+                },
+                error: function () {
+                    alert('Failed to load notes.');
                 }
             });
         });

@@ -90,6 +90,9 @@ $page_title = "Defective Coils";
                 <div class="px-3 mb-2"> 
                     <input type="checkbox" id="toggleArchived"> Show Approved/Transferred
                 </div>
+                <div class="px-3 mb-2"> 
+                    <input type="checkbox" id="toggleClaim"> Show Submitted for Claim
+                </div>
                 <div class="d-flex justify-content-end py-2">
                     <button type="button" class="btn btn-outline-primary reset_filters">
                         <i class="fas fa-sync-alt me-1"></i> Reset Filters
@@ -258,6 +261,45 @@ $page_title = "Defective Coils";
   </div>
 </div>
 
+<div class="modal fade" id="submitClaimModal" tabindex="-1" aria-labelledby="submitClaimModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="submitClaimModalLabel">Submit Coil Claim</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="coilClaimForm">
+          <input type="hidden" name="coil_defective_id" id="coil_defective_id">
+
+          <div class="mb-3">
+            <label for="claim_type" class="form-label">Claim Type</label>
+            <select class="form-select" name="claim_type" id="claim_type" required>
+              <option value="">Select Claim Type</option>
+              <option value="Wrong Color">Wrong Color</option>
+              <option value="Damaged Coil">Damaged Coil</option>
+              <option value="Wrong Grade">Wrong Grade</option>
+              <option value="Rust">Rust</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="claim_notes" class="form-label">Notes</label>
+            <textarea class="form-control" name="notes" id="claim_notes" rows="3" placeholder="Add any notes..."></textarea>
+          </div>
+
+          <div class="modal-footer p-0 pt-3">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit Claim</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
     $(document).ready(function() {
@@ -402,7 +444,49 @@ $page_title = "Defective Coils";
             $('#coilActionModal').modal('show');
         });
 
-        $('#confirmCoilActionBtn').on('click', function () {
+        $(document).on('click', '.tag-claim-btn', function (e) {
+            e.preventDefault();
+            const coilId = $(this).data('id');
+            $('#coil_defective_id').val(coilId);
+            $('#submitClaimModal').modal('show');
+        });
+
+        $(document).on('submit', '#coilClaimForm', function (e) {
+            e.preventDefault();
+            const formData = {
+                coil_defective_id: $('#coil_defective_id').val(),
+                claim_type: $('#claim_type').val(),
+                notes: $('#claim_notes').val(),
+                action: 'submit_claim'
+            };
+            $.ajax({
+                url: 'pages/coils_defective_ajax.php',
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    console.log('AJAX Success Response:', response);
+
+                    if (response.trim() === 'success') {
+                        $('#submitClaimModal').modal('hide');
+                        alert('Successfully submitted claim against coil');
+                        reloadTable();
+                    } else {
+                        alert('An error occured!');
+                        console.error('Detailed error from server:', response);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('An error occured!');
+                    console.error('AJAX Error Details:', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                }
+            });
+        });
+
+        $(document).on('click', '#confirmCoilActionBtn', function () {
             const coilId = $('#coilActionId').val();
             const action = $('#coilActionType').val();
             const grade = $('#coilGrade').val();
@@ -421,23 +505,28 @@ $page_title = "Defective Coils";
                 success: function(response) {
                     $('#coilActionModal').modal('hide');
                     if (response.trim() === 'success') {
-                        alert('Action successful');
-                        location.reload();
+                        alert('Successfully saved');
+                        reloadTable();
                     } else {
                         alert('Error: ' + response);
+                        console.error('Update error response:', response);
                     }
                 },
-                error: function(xhr) {
+                error: function(xhr, status, error) {
                     alert('AJAX request failed');
-                    console.log(xhr.responseText);
+                    console.error('AJAX Error:', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
                 }
             });
         });
 
-
         function filterTable() {
             var textSearch = $('#text-srh').val().toLowerCase();
             var isArchived = $('#toggleArchived').is(':checked');
+            var isClaim = $('#toggleClaim').is(':checked');
 
             $.fn.dataTable.ext.search = [];
 
@@ -453,6 +542,11 @@ $page_title = "Defective Coils";
 
                 var status = row.data('status');
                 if (!isArchived && status == 4) {
+                    return false;
+                }
+
+                var status = row.data('status');
+                if (!isClaim && status == 5) {
                     return false;
                 }
 
@@ -513,7 +607,7 @@ $page_title = "Defective Coils";
             $('.category_selection').toggleClass('d-none', !hasCategory);
         }
 
-        $(document).on('input change', '#text-srh, #toggleArchived, .filter-selection', filterTable);
+        $(document).on('input change', '#text-srh, #toggleArchived, #toggleClaim, .filter-selection', filterTable);
 
         $(document).on('click', '.reset_filters', function () {
             $('.filter-selection').each(function () {

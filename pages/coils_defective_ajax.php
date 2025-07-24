@@ -63,6 +63,9 @@ if(isset($_REQUEST['action'])){
             $actions .= '<a href="#" role="button" class="tag-return-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="return" title="Flag Coil for Return to Supplier">
                 <iconify-icon class="fs-7" style="color: #ff0000;" icon="solar:box-outline"></iconify-icon>
             </a>';
+            $actions .= '<a href="#" role="button" class="tag-claim-btn" data-id="' . $row['coil_defective_id'] . '" data-action="claim" title="Submit Claim against Coil"> 
+                <iconify-icon class="fs-7" style="color: #ffffff;" icon="solar:clipboard-text-outline"></iconify-icon>
+            </a>';
             $actions .= '<a href="#" role="button" class="tag-transfer-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="transfer" title="Add Coil to Inventory">
                 <iconify-icon class="fs-7" style="color: #28a745;" icon="solar:verified-check-outline"></iconify-icon>
             </a>';
@@ -83,6 +86,8 @@ if(isset($_REQUEST['action'])){
                 $status_badge = '<span class="badge py-2" style="background-color: #ff0000; color: #fff; white-space: normal;">Return to Supplier</span>';
             } elseif ($status === 4) {
                 $status_badge = '<span class="badge py-2" style="background-color: #28a745; color: #fff; white-space: normal;">Awaiting Approval</span>';
+            } elseif ($status === 5) {
+                $status_badge = '<span class="badge py-2" style="background-color: #ffffff; color: #000; white-space: normal;">Claim Submitted</span>';
             } else {
                 $status_badge = '<span class="badge py-2 bg-secondary" style="white-space: normal;">Unknown</span>';
             }
@@ -297,7 +302,49 @@ if(isset($_REQUEST['action'])){
         exit;
     }
 
+    if ($action === 'submit_claim') {
+        $coil_defective_id = intval($_POST['coil_defective_id']);
+        $claim_type = mysqli_real_escape_string($conn, $_POST['claim_type']);
+        $note_text = mysqli_real_escape_string($conn, $_POST['notes']);
+        $staff_id = $_SESSION['userid'] ?? null;
 
+        $getCoilQuery = "SELECT coil_id FROM coil_defective WHERE coil_defective_id = $coil_defective_id LIMIT 1";
+        $result = mysqli_query($conn, $getCoilQuery);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $coil_id = intval($row['coil_id']);
+
+            $insertClaim = "
+                INSERT INTO coil_claim (coil_defective_id, claim_type, notes, status)
+                VALUES ($coil_defective_id, '$claim_type', '$note_text', 0)
+            ";
+
+            $updateCoil = "
+                UPDATE coil_defective
+                SET status = 5
+                WHERE coil_defective_id = $coil_defective_id
+            ";
+
+            $insertNote = "
+                INSERT INTO coil_notes (coil_defective_id, coil_id, note_text, created_by)
+                VALUES ($coil_defective_id, $coil_id, '$note_text', " . ($staff_id ?: "NULL") . ")
+            ";
+
+            if (
+                mysqli_query($conn, $insertClaim) &&
+                mysqli_query($conn, $updateCoil) &&
+                mysqli_query($conn, $insertNote)
+            ) {
+                echo 'success';
+            } else {
+                echo 'error: ' . mysqli_error($conn);
+            }
+
+        } else {
+            echo 'invalid';
+        }
+    }
 }
 
 
