@@ -45,7 +45,7 @@ if(isset($_REQUEST['action'])){
             $actions .= '<a href="#" role="button" class="view-notes-btn" data-id="' . $row['coil_defective_id'] . '" title="View Notes">
                 <i class="text-primary fa fa-eye fs-6"></i>
             </a>';
-            $actions .= '<a href="#" role="button" class="print-coil-btn" data-id="' . $row['coil_defective_id'] . '" title="Print/Download">
+            $actions .= '<a href="print_coil.php?id=' . $row['coil_id'] . '" role="button" class="print-coil-btn btn-show-pdf" data-id="' . $row['coil_defective_id'] . '" title="Print/Download">
                 <i class="fa fa-print fs-6"></i>
             </a>';
             $actions .= '<a href="#" role="button" class="view-history-btn" data-id="' . $row['coil_defective_id'] . '" title="View Coil History">

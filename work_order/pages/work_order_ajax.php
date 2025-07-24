@@ -127,32 +127,55 @@ if(isset($_POST['fetch_available'])){
     }
     ?>
 
-    <?php if (count($roll_formers) === 1) { ?>
-        <div class="mt-3 col-6">
-            <label class="form-label fw-bold">Assigned Roll Former</label>
-            <input type="hidden" name="rollformer_select" value="<?= $roll_formers[0]['roll_former_id'] ?>">
-            <div class="fw-bold ms-3">
-                <?= htmlspecialchars($roll_formers[0]['roll_former']) ?>
+    <div class="mt-3 col-6">
+        <label class="form-label fw-bold">Assigned Roll Former</label>
+
+        <input type="hidden" id="indvl_rollformer" name="rollformer_selected_final"
+            value="<?= count($roll_formers) === 1 ? $roll_formers[0]['roll_former_id'] : '' ?>">
+
+        <div id="rollformer_text_display" class="<?= count($roll_formers) === 1 ? '' : 'd-none' ?> fw-bold ms-3">
+            <?= count($roll_formers) === 1 ? htmlspecialchars($roll_formers[0]['roll_former']) : '' ?>
+        </div>
+    </div>
+
+    <div class="modal fade" id="runSingleWorkOrderModal" tabindex="-1" aria-labelledby="runWorkOrderModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered ?>">
+            <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="runWorkOrderModalLabel">Confirm Run</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <p>Are you sure you want to run this work order?</p>
+                <?php if (count($roll_formers) > 1): ?>
+                <div class="mb-2">
+                    <label for="indvl_rollformer_select" class="form-label fw-bold">Select Roll Former</label>
+                    <select id="indvl_rollformer_select"
+                            class="form-select <?= count($roll_formers) > 1 ? '' : 'd-none' ?>">
+                        <option value="">-- Select Roll Former --</option>
+                        <?php foreach ($roll_formers as $rf): ?>
+                            <option value="<?= $rf['roll_former_id'] ?>">
+                                <?= htmlspecialchars($rf['roll_former']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmRunSingleBtn" type="button" class="btn btn-success">Run</button>
+            </div>
             </div>
         </div>
-    <?php } else { ?>
-        <div class="mt-3 col-6">
-            <label for="rollformer_select" class="form-label fw-bold">Select Roll Former</label>
-            <select id="rollformer_select" name="rollformer_select" class="form-select">
-                <option value="">-- Select Roll Former --</option>
-                <?php foreach ($roll_formers as $rf) { ?>
-                    <option value="<?= $rf['roll_former_id'] ?>">
-                        <?= htmlspecialchars($rf['roll_former']) ?>
-                    </option>
-                <?php } ?>
-            </select>
-        </div>
-    <?php } ?>
+    </div>
 
     <div class="modal-footer">
         <?php if (!empty($work_order_details) && $work_order_details['status'] == 1 && $coil_count > 0): ?>
-            <button id="run_work_order" class="btn ripple btn-success" data-id="<?= $id ?>" type="button">Run Work Order</button>
-        <?php endif; ?>
+            <button id="openSingleRunWorkOrderModal" class="btn ripple btn-success" data-id="<?= $id ?>" type="button">Run Work Order</button>
+            <?php endif; ?>
         <?php if ($is_reworked): ?>
             <button class="btn ripple btn-warning change_assigned_coils" data-id="<?= $id ?>" type="button">Change Coils</button>
         <?php endif; ?>
@@ -180,14 +203,21 @@ if(isset($_POST['fetch_available'])){
        
     <script>
         $(document).ready(function() {
-            $('#run_work_order').off('click').on('click', function () {
-                const id = $(this).data('id');
-                const selectedRollFormer = $('#rollformer_select').val();
+
+            $('#indvl_rollformer_select').on('change', function () {
+                const selectedVal = $(this).val();
+                $('#indvl_rollformer').val(selectedVal);
+            });
+
+            $(document).on('click', '#confirmRunSingleBtn', function () {
+                const selectedRollFormer = $('#indvl_rollformer').val();
 
                 if (!selectedRollFormer) {
                     alert('Please select a Roll Former.');
                     return;
                 }
+
+                const id = <?= json_encode($id) ?>;
 
                 $.ajax({
                     url: 'pages/work_order_ajax.php',
@@ -211,6 +241,10 @@ if(isset($_POST['fetch_available'])){
                         console.error(xhr.responseText);
                     }
                 });
+            });
+
+            $(document).on('click', '#openSingleRunWorkOrderModal', function () {
+                $('#runSingleWorkOrderModal').modal('toggle');
             });
 
             $('.coil-entry').off('click').on('click', function () {
@@ -507,25 +541,47 @@ if(isset($_POST['fetch_view'])){
     <?php if (count($roll_formers) === 1) { ?>
         <div class="mt-3 col-6">
             <label class="form-label fw-bold">Assigned Roll Former</label>
-            <input type="hidden" name="rollformer_select" value="<?= $roll_formers[0]['roll_former_id'] ?>">
+            <input type="hidden" name="rollformer_select_batch" value="<?= $roll_formers[0]['roll_former_id'] ?>">
             <div class="fw-bold ms-3">
                 <?= htmlspecialchars($roll_formers[0]['roll_former']) ?>
             </div>
         </div>
-    <?php } else { ?>
-        <div class="mt-3 col-6">
-            <label for="rollformer_select" class="form-label fw-bold">Select Roll Former</label>
-            <select id="rollformer_select" name="rollformer_select" class="form-select">
-                <option value="">-- Select Roll Former --</option>
-                <?php foreach ($roll_formers as $rf) { ?>
-                    <option value="<?= $rf['roll_former_id'] ?>">
-                        <?= htmlspecialchars($rf['roll_former']) ?>
-                    </option>
-                <?php } ?>
-            </select>
-        </div>
     <?php } ?>
 
+    <div class="modal-footer">
+        <button id="openRunWorkOrderModal" class="btn ripple btn-success" type="button">Run Work Order</button>
+    </div>
+
+    <div class="modal fade" id="runWorkOrderModal" tabindex="-1" aria-labelledby="runWorkOrderModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered ?>">
+            <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="runWorkOrderModalLabel">Confirm Run</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <p>Are you sure you want to run this work order?</p>
+                <?php if (count($roll_formers) > 1): ?>
+                <div class="mb-2">
+                    <label for="modal_rollformer_select" class="form-label fw-bold">Select Roll Former</label>
+                    <select id="modal_rollformer_select" class="form-select">
+                    <option value="">-- Select --</option>
+                    <?php foreach ($roll_formers as $rf): ?>
+                        <option value="<?= $rf['roll_former_id'] ?>"><?= htmlspecialchars($rf['roll_former']) ?></option>
+                    <?php endforeach; ?>
+                    </select>
+                </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmRunWorkOrderBtn" type="button" class="btn btn-success">Run</button>
+            </div>
+            </div>
+        </div>
+    </div>
 
     <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -565,24 +621,32 @@ if(isset($_POST['fetch_view'])){
                 $('.row-check').prop('checked', this.checked);
             });
 
-            $(document).on('click', '#runSelectedBtn', function () {
+            $(document).on('click', '#openRunWorkOrderModal', function () {
                 const selectedIds = $('.row-check:checked').map(function () {
                     return $(this).val();
                 }).get();
-
-                const selectedRollFormer = $('#rollformer_select_batch').val();
-
-                if (!selectedRollFormer) {
-                    alert('Please select a Roll Former.');
-                    return;
-                }
 
                 if (selectedIds.length === 0) {
                     alert('Please select at least one item to run.');
                     return;
                 }
 
-                const id = <?= $id ?? 0 ?>;
+                $('#runWorkOrderModal').modal('toggle');
+            });
+
+            $(document).on('click', '#confirmRunWorkOrderBtn', function () {
+                const selectedIds = $('.row-check:checked').map(function () {
+                    return $(this).val();
+                }).get();
+
+                const selectedRollFormer = <?= count($roll_formers) === 1 ? json_encode($roll_formers[0]['roll_former_id']) : "$('#modal_rollformer_select').val()" ?>;
+
+                if (!selectedRollFormer) {
+                    alert('Please select a Roll Former.');
+                    return;
+                }
+
+                const id = <?= json_encode($id) ?>;
 
                 $.ajax({
                     url: 'pages/work_order_ajax.php',

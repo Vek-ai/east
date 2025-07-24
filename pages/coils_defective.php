@@ -300,10 +300,40 @@ $page_title = "Defective Coils";
   </div>
 </div>
 
+<div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document" style="width: 100%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Print/View Outputs</h5>
+        <button type="button" class="close" data-bs-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+        <div class="modal-body" style="overflow: auto;">
+            <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
+
+            <div class="container-fluid border rounded p-3">
+                <h6 class="mb-3">Download Outputs</h6>
+
+                <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
+                    <button id="printBtn" class="btn btn-success">Print</button>
+                    <button id="downloadBtn" class="btn btn-primary">Download</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
     $(document).ready(function() {
         document.title = "<?= $page_title ?>";
+
+        var pdfUrl = '';
+        var isPrinting = false;
 
         var table = $('#defectiveCoilsList').DataTable({
             ajax: {
@@ -521,6 +551,44 @@ $page_title = "Defective Coils";
                     });
                 }
             });
+        });
+
+        $(document).on('click', '.btn-show-pdf', function(e) {
+            e.preventDefault();
+            pdfUrl = $(this).attr('href');
+            document.getElementById('pdfFrame').src = pdfUrl;
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            modal.show();
+        });
+
+        $('#printBtn').on('click', function () {
+            if (isPrinting) {
+                return;
+            }
+            isPrinting = true;
+            const $iframe = $('#pdfFrame');
+            $iframe.off('load').one('load', function () {
+                try {
+                    this.contentWindow.focus();
+                    this.contentWindow.print();
+                } catch (e) {
+                    alert("Failed to print PDF.");
+                }
+                isPrinting = false;
+            });
+            $iframe.attr('src', pdfUrl);
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            modal.show();
+        });
+
+
+        $('#downloadBtn').on('click', function () {
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.download = '';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         });
 
         function filterTable() {
