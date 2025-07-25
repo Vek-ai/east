@@ -1785,6 +1785,4 @@ function getWorkOrderIDs() {
 
     return $ids;
 }
-
-
 ?>

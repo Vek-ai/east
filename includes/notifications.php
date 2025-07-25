@@ -84,12 +84,14 @@ function getUserNotifications($staffId) {
             n.message,
             n.url,
             n.created_at,
+            n.action_type,
             r.is_read,
             r.read_at
         FROM notification_recipients r
         JOIN notifications n ON r.notification_id = n.id
         WHERE r.recipient_id = $staffId
         ORDER BY n.created_at DESC
+        LIMIT 10
     ";
 
     $result = mysqli_query($conn, $sql);
@@ -139,6 +141,48 @@ function getRoleNotifications($role) {
     }
 
     return $notifications;
+}
+
+//call to add notifications given userid and scope (0=admin/1=cashier/2=work_order)
+function assignMissingNotif($staffId, $audienceScope) {
+    global $conn;
+    $staffId = intval($staffId);
+    $audienceScope = intval($audienceScope);
+
+    $sql = "
+        SELECT n.id
+        FROM notifications n
+        LEFT JOIN notification_recipients r
+            ON n.id = r.notification_id AND r.recipient_id = $staffId
+        WHERE n.audience_scope = '$audienceScope'
+          AND r.notification_id IS NULL
+    ";
+
+    $result = mysqli_query($conn, $sql);
+    if (!$result) {
+        error_log("Query failed: " . mysqli_error($conn));
+        return false;
+    }
+
+    $notifIds = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $notifIds[] = (int)$row['id'];
+    }
+
+    if (empty($notifIds)) {
+        return 0;
+    }
+
+    foreach ($notifIds as $notifId) {
+        $insertSql = "
+            INSERT INTO notification_recipients (notification_id, recipient_id, is_read)
+            VALUES ($notifId, $staffId, 0)
+        ";
+        if (mysqli_query($conn, $insertSql)) {
+        } else {
+            error_log("Insert failed for notif $notifId: " . mysqli_error($conn));
+        }
+    }
 }
 
 ?>

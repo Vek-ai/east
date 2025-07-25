@@ -174,7 +174,7 @@ if (!isset($_SESSION['work_order_user_id'])) {
                         <div class="mb-0 fs-6 fw-medium text-white">Notifications</div>
                         <div class="mb-0 fs-2 fw-medium text-white" id="notifCountLabel">You have 4 Notifications</div>
                       </div>
-                      <div class="message-body" data-simplebar id="notificationsContainer">
+                      <div class="message-body" data-simplebar id="notificationsContainer" style="max-height: 300px; overflow-y: auto;">
                         <!-- Notifications will be injected here -->
                       </div>
                       <div class="p-3">
@@ -208,6 +208,7 @@ if (!isset($_SESSION['work_order_user_id'])) {
             if ($_REQUEST['page'] == "work_order_run") {include 'pages/work_order_run.php';}
             if ($_REQUEST['page'] == "work_order_finish") {include 'pages/work_order_finish.php';}
             if ($_REQUEST['page'] == "work_order_release") {include 'pages/work_order_release.php';}
+            if ($_REQUEST['page'] == "notifications") {include 'pages/notifications_list.php';}
           ?>
         </div>
       </div>
@@ -341,6 +342,35 @@ if (!isset($_SESSION['work_order_user_id'])) {
     $(document).on('click', '.notificationsContainerIcon', function () {
       fetchNotifications();
     });
+
+    $(document).on('click', '.notification-link', function (e) {
+        e.preventDefault();
+
+        const notifId = $(this).data('id');
+        const targetUrl = $(this).data('url');
+
+        $.ajax({
+            url: 'pages/index_ajax.php',
+            method: 'POST',
+            data: { 
+              notification_id: notifId,
+              read_notification: "read_notification"
+            },
+            success: function () {
+                window.location.href = targetUrl;
+            },
+            error: function (xhr, status, error) {
+                alert('An error occurred while marking the notification as read. See console for details.');
+                console.error('AJAX Error:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText
+                });
+            }
+
+        });
+    });
+
 
     fetchNotifications();
   });
