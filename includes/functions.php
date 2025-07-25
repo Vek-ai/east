@@ -448,6 +448,18 @@ function getProfileTypeName($profile_type_id){
     return  $profile_type;
 }
 
+function getProfileTypeDetails($profile_type_id) {
+    global $conn;
+    $profile_type_id = mysqli_real_escape_string($conn, $profile_type_id);
+    $query = "SELECT * FROM profile_type WHERE profile_type_id = '$profile_type_id'";
+    $result = mysqli_query($conn, $query);
+    $profile_type = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $profile_type = $row;
+    }
+    return $profile_type;
+}
+
 function getProfileFromID($product_id){
     global $conn;
     $query = "SELECT profile FROM product WHERE product_id  = '$product_id'";

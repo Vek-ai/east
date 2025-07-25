@@ -105,7 +105,7 @@ $page_title = "Defective Coils";
                 <div class="datatables">
                     <div class="table-responsive">
                         <div id="tbl-work-order" class="product-details table-responsive">
-                            <table id="defectiveCoilsList" class="table search-table align-middle ">
+                            <table id="defectiveCoilsList" class="table search-table align-middle " style="width: 100%;">
                                 <thead class="header-item">
                                     <tr>
                                         <th>Coil #</th>
@@ -346,6 +346,8 @@ $page_title = "Defective Coils";
                     });
                 }
             },
+            responsive: true,
+            autoWidth: false,
             pageLength: 100,
             createdRow: function (row, data, dataIndex) {
                 var item = table.ajax.json().data[dataIndex];

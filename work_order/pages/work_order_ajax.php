@@ -703,8 +703,6 @@ if(isset($_POST['fetch_view'])){
                         console.error(xhr.responseText);
                     }
                 });
-
-
             });
 
             if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
@@ -712,7 +710,7 @@ if(isset($_POST['fetch_view'])){
             } else {
                 $('#coil_dtls_tbl').DataTable({
                     language: {
-                        emptyTable: '<div style="font-size: 1.1rem; font-weight: bold; color: #ff9800;">⚠️ Waiting for Admin Approval</div>'
+                        emptyTable: '<div style="font-size: 1.1rem; font-weight: bold; color: #ff9800;"> Waiting for Admin Approval</div>'
                     },
                     autoWidth: false,
                     responsive: true,
@@ -1339,7 +1337,7 @@ if (isset($_POST['run_work_order'])) {
         exit;
     }
 
-    /* foreach ($ids as $id) {
+    foreach ($ids as $id) {
         $id = mysqli_real_escape_string($conn, $id);
 
         $work_order_details = getWorkOrderDetails($id);
@@ -1347,14 +1345,41 @@ if (isset($_POST['run_work_order'])) {
             continue;
         }
 
-        $assigned_coils = json_decode($work_order_details['assigned_coils'], true);
+        $materialRows = [
+            ['#L', 'MATERIAL', 'GAUGE', 'GRADE', 'THICKNESS', 'WIDTH', 'COLOR', 'DENSITY', 'DESCRIPTION'],
+        ];
 
+        $productid = $work_order_details['productid'];
+        $product_name = getProductName($productid);
+        $product_details = getProductDetails($productid);
+        $color_id = $work_order_details['custom_color'];
+        $materialRows[] = ['L', $product_name, $product_details['gauge'], $work_order_details['custom_grade'], $product_details['thickness'], $work_order_details['custom_width'], getColorName($color_id), '0', ''];
+
+        $profileRows = [
+            ['#F', 'PROFILE', 'DESCRIPTION'],
+            ['#H', 'MACHINE']
+        ];
+
+        $profile_type_id = $work_order_details['custom_profile'];
+        $profile_details = getProfileTypeDetails($profile_type_id);
+        $profile = $profile_details['profile_type'];
+        $profileRows[] = ['F', $profile, $profile_details['notes'], '', '', '', '', ''];
+
+        $rollformer_details = getRollFormerDetails($roll_former_id);
+        $rollformer_name = $rollformer_details['roll_former'];
+        $profileRows[] = ['H', $rollformer_details['roll_former']];
+        
+        
+        $assigned_coils = json_decode($work_order_details['assigned_coils'], true);
         $length_ft = floatval($work_order_details['custom_length'] ?? 0);
         $length_in = floatval($work_order_details['custom_length2'] ?? 0);
 
         $total_length_ft = $length_ft + ($length_in / 12);
 
         if (is_array($assigned_coils)) {
+            $coilRows = [
+                ['#C', 'COIL', 'LOCATION', 'MATERIAL', 'RECEIVED', 'STATUS', 'VENDOR', 'WEIGHT', 'COST', 'LENGTH', 'GRADE', 'NOTES']
+            ];
             foreach ($assigned_coils as $coil_id) {
                 $coil_id = intval($coil_id);
 
@@ -1362,29 +1387,50 @@ if (isset($_POST['run_work_order'])) {
                            SET remaining_feet = GREATEST(remaining_feet - $total_length_ft, 0) 
                            WHERE coil_id = $coil_id";
                 mysqli_query($conn, $update);
+
+                $coil_details = getCoilProductDetails($coil_id);
+                $entry_no = $coil_details['entry_no'];
+                $warehouse_id = $coil_details['warehouse'];
+                $warehouse_name = getWarehouseName($warehouse_id);
+                $material = '';
+                $received_date = date('m/d/Y', strtotime($coil_details['date']));
+                $status_id = $coil_details['status'];
+                $status_label = '';
+                switch ($coil_details['status']) {
+                    case 0:
+                        $status_label = 'AVAILABLE';
+                        break;
+                    case 1:
+                        $status_label = 'USED';
+                        break;
+                    case 2:
+                        $status_label = 'REWORK';
+                        break;
+                    case 3:
+                        $status_label = 'DEFECTIVE';
+                        break;
+                    case 4:
+                        $status_label = 'ARCHIVED';
+                        break;
+                    default:
+                        $status_label = 'UNKNOWN';
+                        break;
+                }
+                $supplier_id = $coil_details['supplier'];
+                $supplier_name = getSupplierName($supplier_id);
+                $weight = floatval($coil_details['weight']);
+                $cost = floatval($coil_details['price']);
+                $length = floatval($coil_details['remaining_feet']);
+                $grade_id = $coil_details['grade'];
+                $grade_name = getGradeName($grade_id);
+
+                $coilRows[] = ['C', $entry_no, $warehouse_name, $material, $received_date, $status_label, $supplier_name, $weight, $cost, $length, $grade_name, 'NotesHere'];
             }
 
             $status_update = "UPDATE work_order SET status = 2, roll_former_id = '$roll_former_id' WHERE id = $id";
             mysqli_query($conn, $status_update);
         }
-    } */
-
-    $materialRows = [
-        ['#L', 'MATERIAL', 'GAUGE', 'GRADE', 'THICKNESS', 'WIDTH', 'COLOR', 'DENSITY', 'DESCRIPTION'],
-        ['L', 'TEST MATERIAL', '26', 'GRADE-HERE', '0.0125', '42', 'WHITE', '1.5', 'WHITE TEST MATERIAL'],
-    ];
-
-    $profileRows = [
-        ['#F', 'PROFILE', 'DESCRIPTION'],
-        ['#H', 'MACHINE'],
-        ['F', 'TEST PROFILE - (Low Rib)', 'TESTING DESCRIPTION', '10', '100', '1', '12', '2'],
-        ['H', 'Example Machine - Roll former 1'],
-    ];
-
-    $coilRows = [
-        ['#C', 'COIL', 'LOCATION', 'MATERIAL', 'RECEIVED', 'STATUS', 'VENDOR', 'WEIGHT', 'COST', 'LENGTH', 'GRADE', 'NOTES'],
-        ['C', 'TEST COIL - coil #', 'Example Location', 'TEST MATERIAL', '3/31/22', 'AVAILABLE', 'VENDOR1', '2000 - Weight', '1000 - cost', '5000- Length', 'PREMIUM - grade', 'NotesHere'],
-    ];
+    }
 
     $partOpRows = [
         ['#P', 'PART', 'DESCRIPTION'],
@@ -1398,10 +1444,19 @@ if (isset($_POST['run_work_order'])) {
 
     $jobBatchRows = [
         ['#J', 'JOB', 'MACHINE', 'PROFILE', 'MATERIAL', 'USER 1', 'USER 2', 'USER 3', 'USER 4', 'USER 5'],
-        ['#B', 'BATCH', 'QUANTITY', 'LENGTH', 'PART', 'USER 1', 'USER 2', 'USER 3', 'USER 4', 'USER 5'],
-        ['J', 'TEST JOB - Job name if available', 'Roll former 1', 'Low Rib', 'TEST MATERIAL', 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5'],
-        ['B', '1', '10', '120', 'SHEAR ONLY', 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5'],
+        ['#B', 'BATCH', 'QUANTITY', 'LENGTH', 'PART', 'USER 1', 'USER 2', 'USER 3', 'USER 4', 'USER 5']
     ];
+
+    $orderid = $work_order_details['work_order_id'];
+    $order_details = getOrderDetails($orderid);
+    $job_name = $order_details['job_name'];
+    $jobBatchRows[] =
+        ['J', $job_name, $rollformer_name, $profile, $product_name, 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5']
+    ;
+
+    $jobBatchRows[] =
+        ['B', '1', '10', '120', 'SHEAR ONLY', 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5']
+    ;
 
     $folderRows = [
         ['#FOLDER_PART', 'NAME', 'DESCRIPTION', 'CLAMP_PRESSURE', 'OVERBEND', 'MATERIAL_THICKNESS', 'PAINT_DIRECTION'],
