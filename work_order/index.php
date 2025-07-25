@@ -178,7 +178,7 @@ if (!isset($_SESSION['work_order_user_id'])) {
                         <!-- Notifications will be injected here -->
                       </div>
                       <div class="p-3">
-                        <a class="d-flex btn btn-primary  align-items-center justify-content-center gap-2" href="javascript:void(0);">
+                        <a class="d-flex btn btn-primary  align-items-center justify-content-center gap-2" href="?page=notifications">
                           <span>Check all Notifications</span>
                           <iconify-icon icon="solar:alt-arrow-right-outline" class="iconify-sm"></iconify-icon>
                         </a>
