@@ -1481,7 +1481,7 @@ if (isset($_POST['run_work_order'])) {
     addSheet($spreadsheet, 'FolderOps', $folderRows);
 
     $timestamp = time();
-    $filename = "import_template_{$timestamp}.xlsx";
+    $filename = "Wrok Order_SO_$orderid.xlsx";
     $filepath = __DIR__ . "/temp_exports/$filename";
 
     if (!file_exists(__DIR__ . "/temp_exports")) {
