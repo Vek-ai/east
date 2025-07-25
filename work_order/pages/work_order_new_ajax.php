@@ -6,314 +6,23 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
+require '../../includes/vendor/autoload.php';
 
-if(isset($_POST['fetch_available'])){
-    $id = mysqli_real_escape_string($conn, $_POST['id']);
-    $work_order_details = getWorkOrderDetails($id);
-    $assigned_coils = $work_order_details['assigned_coils'];
-    $decoded_coils = json_decode($assigned_coils, true);
-    ?>
-    <style>
-        .tooltip-inner {
-            background-color: white !important;
-            color: black !important;
-            font-size: calc(0.875rem + 2px) !important;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+
+function addSheet($spreadsheet, $sheetName, $data, $isFirst = false) {
+    $sheet = $isFirst ? $spreadsheet->getActiveSheet() : $spreadsheet->createSheet();
+    $sheet->setTitle(substr($sheetName, 0, 31));
+
+    foreach ($data as $r => $row) {
+        foreach ($row as $c => $value) {
+            $colLetter = Coordinate::stringFromColumnIndex($c + 1);
+            $cell = $colLetter . ($r + 1);
+            $sheet->setCellValue($cell, $value);
         }
-    </style>
-    <div class="card card-body datatables">
-        <div class="product-details table-responsive text-wrap">
-            <h5>Coils List</h5>
-            <table id="coil_dtls_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
-                <thead>
-                    <tr>
-                        <th class="text-center">Coil</th>
-                        <th class="text-center">Date</th>
-                        <th class="text-left">Color</th>
-                        <th class="text-center">Grade</th>
-                        <th class="text-center">Thickness</th>
-                        <th class="text-right">Width</th>
-                        <th class="text-right">Rem. Feet</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php 
-                    if (is_array($decoded_coils)) {
-                        $coils_string = implode(',', $decoded_coils);
-
-                        $query = "SELECT * FROM coil_product WHERE coil_id IN ($coils_string) ORDER BY date ASC";
-                        $result = mysqli_query($conn, $query);
-                        if ($result && mysqli_num_rows($result) > 0) {
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                $color_details = getColorDetails($row['color_sold_as']);
-                                ?>
-                                <tr data-id="<?= $row['coil_id'] ?>">
-                                    <td class="text-wrap">
-                                        <a href="javascript:void(0)" 
-                                        class="coil-entry" 
-                                        data-entry="<?= htmlspecialchars($row['entry_no']) ?>" 
-                                        data-warehouse="<?= $row['warehouse'] ?>">
-                                            <?= htmlspecialchars($row['entry_no']) ?>
-                                        </a>
-                                    </td>
-                                    <td class="text-wrap"> 
-                                        <?= date("M d, Y", strtotime($row['date'])) ?>
-                                    </td>
-                                    <td class="text-left">
-                                        <div class="d-inline-flex align-items-center gap-2">
-                                            <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 20px; height: 20px;"></span>
-                                            <?= $color_details['color_name'] ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <?= getGradeName($row['grade']); ?>
-                                    </td>
-                                    <td>
-                                        <?= $row['thickness']; ?>
-                                    </td>
-                                    <td class="text-right">
-                                        <?= $row['width']; ?>
-                                    </td>
-                                    <td class="text-right">
-                                        <?= $row['remaining_feet']; ?>
-                                    </td>
-                                </tr>
-                                <?php
-                                $no++;
-                            }
-                        }
-                    }
-                    ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <?php if (!empty($work_order_details) && $work_order_details['status'] == 1): ?>
-            <button id="run_work_order" class="btn ripple btn-success" type="button">Run Work Order</button>
-        <?php endif; ?>
-    </div>
-
-    <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="coilWarehouseModalLabel">Coil Warehouse Info</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center">
-                <h6>Coil Name:</h6>
-                <p id="modalEntryNo" class="fw-bold fs-5"></p>
-                <h6>Warehouse Location:</h6>
-                <p id="modalWarehouse" class="fw-bold text-primary fs-5"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-            </div>
-        </div>
-    </div>
-       
-    <script>
-        $(document).ready(function() {
-            $('#run_work_order').off('click').on('click', function () {
-                const id = <?= $id ?? 0 ?>;
-
-                $.ajax({
-                    url: 'pages/work_order_new_ajax.php',
-                    method: 'POST',
-                    data: {
-                        selected_ids: [id],
-                        run_work_order: 'run_work_order'
-                    },
-                    success: function (res) {
-                        if (res.trim() === 'success') {
-                            alert('Work Order Completed. Coil lengths updated.');
-                            location.reload();
-                        } else {
-                            alert('Failed to update coil lengths.');
-                            console.log(res);
-                        }
-                    },
-                    error: function (xhr) {
-                        alert('An error occurred: ' + xhr.statusText);
-                        console.error(xhr.responseText);
-                    }
-                });
-            });
-
-            $('.coil-entry').off('click').on('click', function () {
-                const entryNo = $(this).data('entry');
-                const warehouse = $(this).data('warehouse');
-
-                $('#modalEntryNo').text(entryNo);
-                $('#modalWarehouse').text(warehouse);
-
-                const coilModal = new bootstrap.Modal(document.getElementById('coilWarehouseModal'));
-                coilModal.show();
-            });
-
-            $('[data-toggle="tooltip"]').tooltip(); 
-
-            if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
-                $('#coil_dtls_tbl').DataTable().order([[0, 'desc'], [3, 'asc']]).draw();
-            } else {
-                $('#coil_dtls_tbl').DataTable({
-                    language: {
-                        emptyTable: "No Assigned Coils"
-                    },
-                    autoWidth: false,
-                    responsive: true,
-                    order: [
-                        [0, 'desc'],
-                        [3, 'asc']
-                    ]
-                });
-            }
-        });
-    </script>
-    <?php
-}
-
-if(isset($_POST['fetch_assigned'])){
-    $id = mysqli_real_escape_string($conn, $_POST['id']);
-    $work_order_details = getWorkOrderDetails($id);
-    $assigned_coils = $work_order_details['assigned_coils'];
-    $decoded_coils = json_decode($assigned_coils, true);
-    ?>
-    <style>
-        .tooltip-inner {
-            background-color: white !important;
-            color: black !important;
-            font-size: calc(0.875rem + 2px) !important;
-        }
-    </style>
-    <div class="card card-body datatables">
-        <div class="product-details table-responsive text-wrap">
-            <h5>Coils List</h5>
-            <table id="coils_selected_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
-                <thead>
-                    <tr>
-                        <th class="text-center">Coil</th>
-                        <th class="text-center">Date</th>
-                        <th class="text-left">Color</th>
-                        <th class="text-center">Grade</th>
-                        <th class="text-center">Thickness</th>
-                        <th class="text-right">Width</th>
-                        <th class="text-right">Rem. Feet</th>
-                        <th class="text-right"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php 
-                    if (is_array($decoded_coils)) {
-                        $coils_string = implode(',', $decoded_coils);
-
-                        $query = "SELECT * FROM coil_product WHERE coil_id IN ($coils_string) ORDER BY date ASC";
-                        $result = mysqli_query($conn, $query);
-                        if ($result && mysqli_num_rows($result) > 0) {
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                $color_details = getColorDetails($row['color_sold_as']);
-                                ?>
-                                <tr data-id="<?= $row['coil_id'] ?>">
-                                    <td class="text-wrap">
-                                        <a href="javascript:void(0)" 
-                                        class="coil-entry" 
-                                        data-entry="<?= htmlspecialchars($row['entry_no']) ?>" 
-                                        data-warehouse="<?= $row['warehouse'] ?>">
-                                            <?= htmlspecialchars($row['entry_no']) ?>
-                                        </a>
-                                    </td>
-                                    <td class="text-wrap"> 
-                                        <?= date("M d, Y", strtotime($row['date'])) ?>
-                                    </td>
-                                    <td class="text-left">
-                                        <div class="d-inline-flex align-items-center gap-2">
-                                            <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 20px; height: 20px;"></span>
-                                            <?= $color_details['color_name'] ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <?= getGradeName($row['grade']); ?>
-                                    </td>
-                                    <td>
-                                        <?= $row['thickness']; ?>
-                                    </td>
-                                    <td class="text-right">
-                                        <?= $row['width']; ?>
-                                    </td>
-                                    <td class="text-right">
-                                        <?= $row['remaining_feet']; ?>
-                                    </td>
-                                    <td class="text-right">
-                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewCoilsBtn" title="Change" data-id="<?= $id ?>">
-                                            <i class="fa fa-edit text-warning"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <?php
-                                $no++;
-                            }
-                        }
-                    }
-                    ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="coilWarehouseModalLabel">Coil Warehouse Info</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center">
-                <h6>Coil Name:</h6>
-                <p id="modalEntryNo" class="fw-bold fs-5"></p>
-                <h6>Warehouse Location:</h6>
-                <p id="modalWarehouse" class="fw-bold text-primary fs-5"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-            </div>
-        </div>
-    </div>
-       
-    <script>
-        $(document).ready(function() {
-
-            $('.coil-entry').off('click').on('click', function () {
-                const entryNo = $(this).data('entry');
-                const warehouse = $(this).data('warehouse');
-
-                $('#modalEntryNo').text(entryNo);
-                $('#modalWarehouse').text(warehouse);
-
-                const coilModal = new bootstrap.Modal(document.getElementById('coilWarehouseModal'));
-                coilModal.show();
-            });
-
-
-            if ($.fn.DataTable.isDataTable('#coils_selected_tbl')) {
-                $('#coils_selected_tbl').DataTable().order([[0, 'desc'], [3, 'asc']]).draw();
-            } else {
-                $('#coils_selected_tbl').DataTable({
-                    language: {
-                        emptyTable: "No Assigned Coils"
-                    },
-                    autoWidth: false,
-                    responsive: true,
-                    order: [
-                        [0, 'desc'],
-                        [3, 'asc']
-                    ]
-                });
-            }
-        });
-    </script>
-    <?php
+    }
 }
 
 if (isset($_POST['fetch_coils'])) {
@@ -460,30 +169,109 @@ if (isset($_POST['fetch_coils'])) {
     }
     ?>
 
-    <?php if (count($roll_formers) === 1) { ?>
-        <div class="mt-3 col-6">
-            <label class="form-label fw-bold">Assigned Roll Former</label>
-            <input type="hidden" name="rollformer_select" value="<?= $roll_formers[0]['roll_former_id'] ?>">
-            <div class="fw-bold ms-3">
-                <?= htmlspecialchars($roll_formers[0]['roll_former']) ?>
+    <div class="mt-3 col-6">
+        <label class="form-label fw-bold">Assigned Roll Former</label>
+
+        <input type="hidden" id="indvl_rollformer" name="rollformer_selected_final"
+            value="<?= count($roll_formers) === 1 ? $roll_formers[0]['roll_former_id'] : '' ?>">
+
+        <div id="rollformer_text_display" class="<?= count($roll_formers) === 1 ? '' : 'd-none' ?> fw-bold ms-3">
+            <?= count($roll_formers) === 1 ? htmlspecialchars($roll_formers[0]['roll_former']) : '' ?>
+        </div>
+    </div>
+
+    <div class="modal fade" id="runSingleWorkOrderModal" tabindex="-1" aria-labelledby="runWorkOrderModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered ?>">
+            <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="runWorkOrderModalLabel">Confirm Run</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <p>Are you sure you want to run this work order?</p>
+                <?php if (count($roll_formers) > 1): ?>
+                <div class="mb-2">
+                    <label for="indvl_rollformer_select" class="form-label fw-bold">Select Roll Former</label>
+                    <select id="indvl_rollformer_select"
+                            class="form-select <?= count($roll_formers) > 1 ? '' : 'd-none' ?>">
+                        <option value="">-- Select Roll Former --</option>
+                        <?php foreach ($roll_formers as $rf): ?>
+                            <option value="<?= $rf['roll_former_id'] ?>">
+                                <?= htmlspecialchars($rf['roll_former']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmRunSingleBtn" type="button" class="btn btn-success">Run</button>
+            </div>
             </div>
         </div>
-    <?php } else { ?>
-        <div class="mt-3 col-6">
-            <label for="rollformer_select" class="form-label fw-bold">Select Roll Former</label>
-            <select id="rollformer_select" name="rollformer_select" class="form-select">
-                <option value="">-- Select Roll Former --</option>
-                <?php foreach ($roll_formers as $rf) { ?>
-                    <option value="<?= $rf['roll_former_id'] ?>">
-                        <?= htmlspecialchars($rf['roll_former']) ?>
-                    </option>
-                <?php } ?>
-            </select>
-        </div>
-    <?php } ?>
+    </div>
+
+    <div class="modal-footer">
+        <button id="openSingleRunWorkOrderModal" class="btn ripple btn-success" data-id="<?= $id ?>" type="button">Run Work Order</button>
+    </div>
 
     <script>
         $(function () {
+            $('#indvl_rollformer_select').on('change', function () {
+                const selectedVal = $(this).val();
+                $('#indvl_rollformer').val(selectedVal);
+            });
+
+            $(document).on('click', '#confirmRunSingleBtn', function () {
+                const selectedRollFormer = $('#indvl_rollformer').val();
+                const coils = $('#coils_tbl .row-select:checked').map((_, el) => $(el).data('id')).get();
+
+                if (!selectedRollFormer) {
+                    alert('Please select a Roll Former.');
+                    return;
+                }
+
+                const id = <?= json_encode($ids) ?>;
+
+                $.ajax({
+                    url: 'pages/work_order_new_ajax.php',
+                    method: 'POST',
+                    data: {
+                        selected_ids: id,
+                        selected_coils: JSON.stringify(coils),
+                        roll_former_id: selectedRollFormer,
+                        run_work_order: 'run_work_order'
+                    },
+                    success: function (res) {
+                        try {
+                            const response = JSON.parse(res);
+                            if (response.status === 'success' && response.url) {
+                                alert('Work Order Run Started.');
+                                window.open(response.url, '_blank');
+                                location.reload();
+                            } else {
+                                alert('Failed');
+                                console.log(res);
+                            }
+                        } catch (e) {
+                            alert('Invalid server response.');
+                            console.error(res);
+                        }
+                    },
+                    error: function (xhr) {
+                        alert('An error occurred: ' + xhr.statusText);
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
+
+            $(document).on('click', '#openSingleRunWorkOrderModal', function () {
+                $('#runSingleWorkOrderModal').modal('toggle');
+            });
+
             if (!$.fn.DataTable.isDataTable('#coils_tbl')) {
                 $('#coils_tbl').DataTable({
                     language: { emptyTable: "No Available Coils with the selected color" },
@@ -640,10 +428,37 @@ if (isset($_POST['run_work_order'])) {
             continue;
         }
 
+        $materialRows = [
+            ['#L', 'MATERIAL', 'GAUGE', 'GRADE', 'THICKNESS', 'WIDTH', 'COLOR', 'DENSITY', 'DESCRIPTION'],
+        ];
+
+        $productid = $work_order_details['productid'];
+        $product_name = getProductName($productid);
+        $product_details = getProductDetails($productid);
+        $color_id = $work_order_details['custom_color'];
+        $materialRows[] = ['L', $product_name, $product_details['gauge'], $work_order_details['custom_grade'], $product_details['thickness'], $work_order_details['custom_width'], getColorName($color_id), '0', ''];
+
+        $profileRows = [
+            ['#F', 'PROFILE', 'DESCRIPTION'],
+            ['#H', 'MACHINE']
+        ];
+
+        $profile_type_id = $work_order_details['custom_profile'];
+        $profile_details = getProfileTypeDetails($profile_type_id);
+        $profile = $profile_details['profile_type'];
+        $profileRows[] = ['F', $profile, $profile_details['notes'], '', '', '', '', ''];
+
+        $rollformer_details = getRollFormerDetails($roll_former_id);
+        $rollformer_name = $rollformer_details['roll_former'];
+        $profileRows[] = ['H', $rollformer_details['roll_former']];
+
         $length_ft = floatval($work_order_details['custom_length'] ?? 0);
         $length_in = floatval($work_order_details['custom_length2'] ?? 0);
         $total_length_ft = $length_ft + ($length_in / 12);
 
+        $coilRows = [
+            ['#C', 'COIL', 'LOCATION', 'MATERIAL', 'RECEIVED', 'STATUS', 'VENDOR', 'WEIGHT', 'COST', 'LENGTH', 'GRADE', 'NOTES']
+        ];
         foreach ($selected_coils as $coil_id) {
             $coil_id = intval($coil_id);
 
@@ -651,13 +466,116 @@ if (isset($_POST['run_work_order'])) {
                        SET remaining_feet = GREATEST(remaining_feet - $total_length_ft, 0) 
                        WHERE coil_id = $coil_id";
             mysqli_query($conn, $update);
+
+            $coil_details = getCoilProductDetails($coil_id);
+            $entry_no = $coil_details['entry_no'];
+            $warehouse_id = $coil_details['warehouse'];
+            $warehouse_name = getWarehouseName($warehouse_id);
+            $material = '';
+            $received_date = date('m/d/Y', strtotime($coil_details['date']));
+            $status_id = $coil_details['status'];
+            $status_label = '';
+            switch ($coil_details['status']) {
+                case 0:
+                    $status_label = 'AVAILABLE';
+                    break;
+                case 1:
+                    $status_label = 'USED';
+                    break;
+                case 2:
+                    $status_label = 'REWORK';
+                    break;
+                case 3:
+                    $status_label = 'DEFECTIVE';
+                    break;
+                case 4:
+                    $status_label = 'ARCHIVED';
+                    break;
+                default:
+                    $status_label = 'UNKNOWN';
+                    break;
+            }
+            $supplier_id = $coil_details['supplier'];
+            $supplier_name = getSupplierName($supplier_id);
+            $weight = floatval($coil_details['weight']);
+            $cost = floatval($coil_details['price']);
+            $length = floatval($coil_details['remaining_feet']);
+            $grade_id = $coil_details['grade'];
+            $grade_name = getGradeName($grade_id);
+
+            $coilRows[] = ['C', $entry_no, $warehouse_name, $material, $received_date, $status_label, $supplier_name, $weight, $cost, $length, $grade_name, 'NotesHere'];
         }
 
         $status_update = "UPDATE work_order SET status = 2 WHERE id = $id";
         mysqli_query($conn, $status_update);
     }
 
-    echo 'success';
+    $partOpRows = [
+        ['#P', 'PART', 'DESCRIPTION'],
+        ['#O', 'OPERATION', 'POSITION', 'REFERENCE', 'YPOS'],
+        ['P', 'TEST PART', 'TEST PART'],
+        ['O', 'TEST OPERATION', '1', 'LEADING EDGE', '2'],
+        ['O', 'TEST OPERATION 2', '2', 'LEADING EDGE', '-2'],
+        ['O', 'TEST OPERATION 3', '4', 'LEADING EDGE', '2'],
+        ['O', 'TEST OPERATION 4', '8', 'LEADING EDGE', '-2'],
+    ];
+
+    $jobBatchRows = [
+        ['#J', 'JOB', 'MACHINE', 'PROFILE', 'MATERIAL', 'USER 1', 'USER 2', 'USER 3', 'USER 4', 'USER 5'],
+        ['#B', 'BATCH', 'QUANTITY', 'LENGTH', 'PART', 'USER 1', 'USER 2', 'USER 3', 'USER 4', 'USER 5']
+    ];
+
+    $orderid = $work_order_details['work_order_id'];
+    $order_details = getOrderDetails($orderid);
+    $job_name = $order_details['job_name'];
+    $jobBatchRows[] =
+        ['J', $job_name, $rollformer_name, $profile, $product_name, 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5']
+    ;
+
+    $jobBatchRows[] =
+        ['B', '1', '10', '120', 'SHEAR ONLY', 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5']
+    ;
+
+    $folderRows = [
+        ['#FOLDER_PART', 'NAME', 'DESCRIPTION', 'CLAMP_PRESSURE', 'OVERBEND', 'MATERIAL_THICKNESS', 'PAINT_DIRECTION'],
+        ['#FOLDER_OPERATION', 'STEP', 'BACKGAUGE2', 'BACKGAUGE', 'CLAMP_PRESSURE', 'BEND_ANGLE', 'OVERBEND', 'UPPER_JAW', 'BUMP_BEND_ANGLE', 'BUMP_BEND_RADIUS', 'BUMP_BEND_ITERATIONS', 'ROTARY_SHEAR', 'FLIP', 'HELI_ROTATE', 'PROP ROTATE', 'BG ADJUST'],
+        ['FOLDER_PART', 'CANOPY-PANEL', 'TEST PART', '1500', '8', '0.03998', 'UP'],
+        ['FOLDER_OPERATION', '0', '18.99994', '18.99994', '0', '0', '0', '0.7', '0', '0', '0', '200', 'NO', 'NO', 'NO', '0'],
+        ['FOLDER_OPERATION', '1', '18.24994', '18.24994', '0', '90', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+        ['FOLDER_OPERATION', '2', '17.19994', '17.19994', '0', '90', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+        ['FOLDER_OPERATION', '3', '14.36995', '14.36995', '0', '95', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'YES', '0'],
+        ['FOLDER_OPERATION', '4', '1.54999', '1.54999', '0', '90', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+        ['FOLDER_OPERATION', '5', '0.59998', '0.59998', '0', '85', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+        ['FOLDER_OPERATION', '6', '2.81998', '2.81998', '0', '90', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+    ];
+
+    $spreadsheet = new Spreadsheet();
+
+    addSheet($spreadsheet, 'Material', $materialRows, true);
+    addSheet($spreadsheet, 'Profile', $profileRows);
+    addSheet($spreadsheet, 'Coil', $coilRows);
+    addSheet($spreadsheet, 'Part_Operation', $partOpRows);
+    addSheet($spreadsheet, 'Job_Batch', $jobBatchRows);
+    addSheet($spreadsheet, 'FolderOps', $folderRows);
+
+    $timestamp = time();
+    $filename = "Wrok Order_SO_$orderid.xlsx";
+    $filepath = __DIR__ . "/temp_exports/$filename";
+
+    if (!file_exists(__DIR__ . "/temp_exports")) {
+        mkdir(__DIR__ . "/temp_exports", 0777, true);
+    }
+
+    $writer = new Xlsx($spreadsheet);
+    $writer->save($filepath);
+
+    $baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
+    $downloadUrl = $baseUrl . "/temp_exports/$filename";
+
+    echo json_encode([
+        'status' => 'success',
+        'url' => $downloadUrl
+    ]);
     exit;
 }
 
