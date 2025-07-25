@@ -101,7 +101,12 @@ $page_title = "Notifications";
                             <td><?= $date ?></td>
                             <td><?= $time ?></td>
                             <td class="text-center">
-                            <a href="<?= $url ?>" target="_blank" title="View Notification">
+                            <a href='javascript:void(0)'
+                                class='notification-link'
+                                data-id='<?= $row['id']?>'
+                                data-url='<?= $url ?>'
+                                target="_blank" 
+                                title="View Notification">
                                 <i class="fa fa-eye fs-5 text-primary"></i>
                             </a>
                             </td>
