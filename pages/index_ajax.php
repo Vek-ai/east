@@ -271,6 +271,13 @@ if (isset($_POST['fetch_notifications'])) {
                     $iconColor = "text-info";
                     $iconBg = "bg-info-subtle";
                     break;
+
+                case 'work_order_done':
+                    $title = "Work Order Completed";
+                    $icon = "solar:clipboard-check-line-duotone";
+                    $iconColor = "text-purple";
+                    $iconBg = "bg-purple-subtle";
+                    break;
             }
 
             $isRead = (int)$row['is_read'] === 1;

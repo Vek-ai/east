@@ -1193,7 +1193,7 @@ if (isset($_POST['assign_coil'])) {
                 $message = "$actor_name tagged Coil #$targetId as defective.";
                 $url = '?page=coils_defective';
                 $recipientIds = getAdminIDs();
-                createNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientIds, $url);
+                createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
             }
         }
 
@@ -1297,7 +1297,7 @@ if (isset($_POST['tag_coil_defective'])) {
     $message = "$actor_name tagged Coil #$targetId as defective.";
     $url = '?page=coils_defective';
     $recipientIds = getAdminIDs();
-    createNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientIds, $url);
+    createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
 
     if ($notificationId === false) {
         die("Error: Failed to create notification.");

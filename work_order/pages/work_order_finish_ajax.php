@@ -522,6 +522,19 @@ if (isset($_POST['release_work_order'])) {
                     exit;
                 }
             }
+
+            $wrk_ordr = getWorkOrderDetails($id);
+            $orderid = $wrk_ordr['work_order_id'];
+            $order_product_id = $wrk_ordr['work_order_product_id'];
+            $actorId = $_SESSION['work_order_user_id'];
+            $actor_name = get_staff_name($actorId);
+            $actionType = 'work_order_done';
+            $targetId = $id;
+            $targetType = 'Work Order';
+            $message = "Order #$orderid for customer item #$order_product_id has finished production.";
+            $url = '?page=order_list';
+            $recipientIds = getAdminIDs();
+            createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
         }
 
         echo "success";
