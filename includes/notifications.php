@@ -73,10 +73,16 @@ function createNotification($actorId, $actionType, $targetId, $targetType, $mess
     }
 }
 
-function getUserNotifications($staffId) {
+function getUserNotifications($staffId, $audience = null) {
     global $conn;
 
     $staffId = intval($staffId);
+    $audienceFilter = '';
+
+    if ($audience !== null) {
+        $audience = intval($audience);
+        $audienceFilter = "AND (n.audience_scope = $audience OR n.audience_scope IS NULL OR n.audience_scope = '')";
+    }
 
     $sql = "
         SELECT 
@@ -90,6 +96,7 @@ function getUserNotifications($staffId) {
         FROM notification_recipients r
         JOIN notifications n ON r.notification_id = n.id
         WHERE r.recipient_id = $staffId
+        $audienceFilter
         ORDER BY n.created_at DESC
         LIMIT 10
     ";

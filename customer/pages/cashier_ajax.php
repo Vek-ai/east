@@ -691,44 +691,54 @@ if (isset($_POST['save_estimate'])) {
                 $subject = "Out of stock Product has been Ordered!";
 
                 $message = "
-                <html>
-                <head>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            line-height: 1.6;
-                            color: #333;
-                        }
-                        .container {
-                            padding: 20px;
-                            border: 1px solid #e0e0e0;
-                            background-color: #f9f9f9;
-                            width: 80%;
-                            margin: 0 auto;
-                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                        }
-                        h2 {
-                            color: #0056b3;
-                            margin-bottom: 20px;
-                        }
-                        p {
-                            margin: 5px 0;
-                        }
-                        ul {
-                            padding-left: 0;
-                        }
-                        li {
-                            margin-bottom: 5px;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class='container'>
-                        <h2>$subject</h2>
-                        $list_items
-                    </div>
-                </body>
+                    <html>
+                    <head>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                            }
+                            .container {
+                                padding: 20px;
+                                border: 1px solid #e0e0e0;
+                                background-color: #f9f9f9;
+                                width: 80%;
+                                margin: 0 auto;
+                                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                            }
+                            h2 {
+                                color: #0056b3;
+                                margin-bottom: 20px;
+                            }
+                            p {
+                                margin: 5px 0;
+                            }
+                            ul {
+                                padding-left: 0;
+                            }
+                            li {
+                                margin-bottom: 5px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='container'>
+                            <h2>$subject</h2>
+                            $list_items
+                        </div>
+                    </body>
                 </html>";
+
+                $actorId = $cashierid;
+                $actor_name = get_staff_name($actorId);
+                $actionType = 'no_stock_order';
+                $targetId = $estimateid;
+                $targetType = "No Stock Order";
+                $message = "Estimate #$estimateid has out-of-stock items ordered";
+                $url = '?page=estimate_list';
+                $recipientIds = getAdminIDs();
+                createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
                 
                 $response = sendEmail($admin_email, 'EKM', $subject, $message);
                 if ($response['success'] == true) {
@@ -795,12 +805,32 @@ if (isset($_POST['save_estimate'])) {
                 </html>
             ";
 
+            $actorId = $cashierid;
+            $actor_name = get_staff_name($actorId);
+            $actionType = 'pre_order';
+            $targetId = $estimateid;
+            $targetType = "Pre-Order";
+            $message = "Estimate #$estimateid has items preordered";
+            $url = '?page=estimate_list';
+            $recipientIds = getAdminIDs();
+            createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
+
             $response = sendEmail($admin_email, 'EKM', $subject, $message);
             if ($response['success'] == true) {
             } else {
                 $response['error'] = "Failed to send Mail" . $conn->error;
             }
         }
+
+        $actorId = $customerid;
+        $actor_name = get_staff_name($actorId);
+        $actionType = 'estimate_request';
+        $targetId = $estimateid;
+        $targetType = "Estimate Submission(Customer)";
+        $message = "Estimate #$targetId requested by Customer $actor_name";
+        $url = '?page=estimate_list';
+        $recipientIds = getAdminIDs();
+        createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
 
         $query = "INSERT INTO estimate_prod (estimateid, product_id, product_item, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type) VALUES ";
         $query .= implode(', ', $values);
@@ -992,6 +1022,16 @@ if (isset($_POST['save_order'])) {
         ";
         mysqli_query($conn, $sql);
     }
+
+    $actorId = $customerid;
+    $actor_name = get_customer_name($actorId);
+    $actionType = 'request_approval';
+    $targetId = $approval_id;
+    $targetType = "Request Approval(Customer)";
+    $message = "Approval #$targetId requested by $actor_name";
+    $url = '?page=approval_list';
+    $recipientIds = getAdminIDs();
+    createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
 
     echo json_encode([
         'success' => false,

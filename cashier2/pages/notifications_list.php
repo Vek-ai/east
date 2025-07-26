@@ -42,9 +42,9 @@ $page_title = "Notifications";
                 <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
               <div class="table-responsive">
                 <?php
-                $userId = intval($_SESSION['userid']);
+                $userId = intval($_SESSION['work_order_user_id']);
 
-                $notifications = getUserNotifications($userId, '2');
+                $notifications = getUserNotifications($userId, '1');
                 ?>
 
                 <table id="notif_table" class="table table-striped table-bordered text-nowrap align-middle">

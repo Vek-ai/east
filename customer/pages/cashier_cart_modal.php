@@ -108,15 +108,15 @@ if(isset($_POST['fetch_cart'])){
                 <div class="col-6">
                     <div>
                         <span class="fw-bold">Charge Net 30:</span><br>
-                        <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($charge_net_30,2) ?></span>
+                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $charge_net_30 ?></span>
                     </div>
                     <div>
                         <span class="fw-bold">Unpaid Credit:</span><br>
-                        <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($credit_total,2) ?></span>
+                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $credit_total ?></span>
                     </div>
                     <div>
                         <span class="fw-bold">Store Credit:</span><br>
-                        <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($store_credit,2) ?></span>
+                        <span class="text-primary fs-5 fw-bold pl-3">$<?= $store_credit ?></span>
                     </div>
                 </div>
             </div>

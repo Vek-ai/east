@@ -13,7 +13,7 @@ if (isset($_POST['fetch_notifications'])) {
     $count = 0;
 
     assignMissingNotif($userId, '2');
-    $notifications = getUserNotifications($userId);
+    $notifications = getUserNotifications($userId, '2');
 
     if (!empty($notifications)) {
         foreach ($notifications as $row) {

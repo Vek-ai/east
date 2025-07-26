@@ -833,12 +833,32 @@ if (isset($_POST['save_estimate'])) {
                 </html>
             ";
 
+            $actorId = $cashierid;
+            $actor_name = get_staff_name($actorId);
+            $actionType = 'no_stock_pre_order';
+            $targetId = $estimateid;
+            $targetType = "Pre-Order";
+            $message = "Estimate #$estimateid has out-of-stock items preordered";
+            $url = '?page=estimate_list';
+            $recipientIds = getAdminIDs();
+            createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
+
             $response = sendEmail($admin_email, 'EKM', $subject, $message);
             if ($response['success'] == true) {
             } else {
                 $response['error'] = "Failed to send Mail" . $conn->error;
             }
         }
+
+        $actorId = $cashierid;
+        $actor_name = get_staff_name($actorId);
+        $actionType = 'estimate_request';
+        $targetId = $estimateid;
+        $targetType = "Estimate Submission(Staff)";
+        $message = "Estimate #$targetId requested by Staff $actor_name";
+        $url = '?page=estimate_list';
+        $recipientIds = getAdminIDs();
+        createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
 
         $query = "INSERT INTO estimate_prod (estimateid, product_id, product_item, quantity, custom_width, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, custom_color, custom_grade, custom_profile, current_customer_discount, current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, panel_type, custom_img_src) VALUES ";
         $query .= implode(', ', $values);
@@ -1133,6 +1153,16 @@ if (isset($_POST['save_order'])) {
                 ]);
             }
         }
+
+        $actorId = $cashierid;
+        $actor_name = get_staff_name($actorId);
+        $actionType = 'request_approval';
+        $targetId = $approval_id;
+        $targetType = "Request Approval(Net Balance)";
+        $message = "Approval #$targetId requested due to insufficient Net balance";
+        $url = '?page=approval_list';
+        $recipientIds = getAdminIDs();
+        createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
 
         unset($_SESSION['cart']);
 
@@ -1553,6 +1583,16 @@ if (isset($_POST['save_order'])) {
                 </body>
                 </html>";
 
+                $actorId = $cashierid;
+                $actor_name = get_staff_name($actorId);
+                $actionType = 'no_stock_order';
+                $targetId = $orderid;
+                $targetType = "No Stock Order";
+                $message = "Order #$orderid has out-of-stock items ordered";
+                $url = '?page=order_list';
+                $recipientIds = getAdminIDs();
+                createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
+
                 $response = sendEmail($admin_email, 'EKM', $subject, $message);
                 if ($response['success'] == true) {
                 } else {
@@ -1617,6 +1657,16 @@ if (isset($_POST['save_order'])) {
                 </body>
                 </html>
             ";
+
+            $actorId = $cashierid;
+            $actor_name = get_staff_name($actorId);
+            $actionType = 'pre_order';
+            $targetId = $orderid;
+            $targetType = "Pre-Order";
+            $message = "Order #$orderid has items pre-ordered";
+            $url = '?page=order_list';
+            $recipientIds = getAdminIDs();
+            createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
 
             $response = sendEmail($admin_email, 'EKM', $subject, $message);
             if ($response['success'] == true) {
@@ -1793,6 +1843,16 @@ if (isset($_POST['save_approval'])) {
     } else {
         $response['error'] = "Error inserting approval: " . $conn->error;
     }
+
+    $actorId = $cashierid;
+    $actor_name = get_staff_name($actorId);
+    $actionType = 'request_approval';
+    $targetId = $approval_id;
+    $targetType = "Request Approval(Discount)";
+    $message = "Approval #$targetId requested for Discount Purposes";
+    $url = '?page=approval_list';
+    $recipientIds = getAdminIDs();
+    createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
 
     unset($_SESSION['cart']);
 
