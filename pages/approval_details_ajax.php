@@ -353,6 +353,17 @@ if (isset($_POST['chng_status'])) {
                             $conn->query($order_prod_sql);
                         }
 
+                        $cashierid = intval($_SESSION['userid']);
+                        $actorId = $cashierid;
+                        $actor_name = get_staff_name($actorId);
+                        $actionType = 'approval_granted';
+                        $targetId = $approval_id;
+                        $targetType = "Request for Approval Granted";
+                        $message = "Approval #$targetId requested by $actor_name";
+                        $url = '?page=approved_list';
+                        $recipientIds = getAdminIDs();
+                        createNotification($actorId, $actionType, $targetId, $targetType, $message, 'cashier', $url);
+
                         echo "success";
                     } else {
                         echo "Error inserting order: " . $conn->error;
