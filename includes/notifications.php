@@ -192,4 +192,78 @@ function assignMissingNotif($staffId, $audienceScope) {
     }
 }
 
+function getNotifDetails($type) {
+    $actions = [
+        'coil_defective' => [
+            'title' => 'Coil Tagged as Defective',
+            'icon' => 'solar:danger-triangle-line-duotone',
+            'iconColor' => '#dc3545',
+            'iconBg' => '#f8d7da',
+        ],
+        'new_work_order' => [
+            'title' => 'New Work Order',
+            'icon' => 'solar:document-add-line-duotone',
+            'iconColor' => '#198754',
+            'iconBg' => '#d1e7dd',
+        ],
+        'review_coil' => [
+            'title' => 'Coil Under Review',
+            'icon' => 'solar:archive-check-line-duotone',
+            'iconColor' => '#ffc107',
+            'iconBg' => '#fff3cd',
+        ],
+        'approve_coil' => [
+            'title' => 'Coil Approved for Use',
+            'icon' => 'solar:check-circle-line-duotone',
+            'iconColor' => '#0dcaf0',
+            'iconBg' => '#cff4fc',
+        ],
+        'work_order_done' => [
+            'title' => 'Work Order Completed',
+            'icon' => 'solar:clipboard-check-line-duotone',
+            'iconColor' => '#6f42c1',
+            'iconBg' => '#e2d9f3',
+        ],
+
+        'approval_granted' => [
+            'title' => 'Approval Granted',
+            'icon' => 'solar:shield-check-line-duotone',
+            'iconColor' => '#28a745',
+            'iconBg' => '#d4edda',
+        ],
+        'request_approval' => [
+            'title' => 'Approval Requested',
+            'icon' => 'solar:hand-money-line-duotone',
+            'iconColor' => '#fd7e14',
+            'iconBg' => '#ffe5d0',
+        ],
+        'pre_order' => [
+            'title' => 'Pre-Order Created',
+            'icon' => 'solar:cart-large-line-duotone',
+            'iconColor' => '#0d6efd',
+            'iconBg' => '#d0e2ff',
+        ],
+        'no_stock_order' => [
+            'title' => 'Out-of-Stock Order',
+            'icon' => 'solar:box-minimalistic-line-duotone',
+            'iconColor' => '#dc3545',
+            'iconBg' => '#f8d7da',
+        ],
+        'estimate_request' => [
+            'title' => 'Estimate Request Submitted',
+            'icon' => 'solar:document-line-duotone',
+            'iconColor' => '#6610f2',
+            'iconBg' => '#e6e0f8',
+        ]
+    ];
+
+    return $actions[$type] ?? [
+        'title' => 'New Activity',
+        'icon' => 'solar:bell-line-duotone',
+        'iconColor' => '#0d6efd',
+        'iconBg' => '#cfe2ff',
+    ];
+}
+
+
 ?>

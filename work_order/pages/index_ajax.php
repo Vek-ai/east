@@ -24,48 +24,11 @@ if (isset($_POST['fetch_notifications'])) {
             $url = htmlspecialchars($row['url'] ?? 'javascript:void(0)');
             $type = $row['action_type'] ?? '';
 
-            $title = "New Activity";
-            $icon = "solar:bell-line-duotone";
-            $iconColor = "text-primary";
-            $iconBg = "bg-primary-subtle";
-
-            switch ($type) {
-                case 'coil_defective':
-                    $title = "Coil Tagged as Defective";
-                    $icon = "solar:danger-triangle-line-duotone";
-                    $iconColor = "text-danger";
-                    $iconBg = "bg-danger-subtle";
-                    break;
-
-                case 'new_work_order':
-                    $title = "New Work Order";
-                    $icon = "solar:document-add-line-duotone";
-                    $iconColor = "text-success";
-                    $iconBg = "bg-success-subtle";
-                    break;
-
-                case 'review_coil':
-                    $title = "Coil Under Review";
-                    $icon = "solar:archive-check-line-duotone";
-                    $iconColor = "text-warning";
-                    $iconBg = "bg-warning-subtle";
-                    break;
-
-                case 'approve_coil':
-                    $title = "Coil Approved for Use";
-                    $icon = "solar:check-circle-line-duotone";
-                    $iconColor = "text-info";
-                    $iconBg = "bg-info-subtle";
-                    break;
-
-                case 'work_order_done':
-                    $title = "Work Order Completed";
-                    $icon = "solar:clipboard-check-line-duotone";
-                    $iconColor = "text-purple";
-                    $iconBg = "bg-purple-subtle";
-                    break;
-            }
-
+            $details = getNotifDetails($type);
+            $title = $details['title'];
+            $icon = $details['icon'];
+            $iconColor = $details['iconColor'];
+            $iconBg = $details['iconBg'];
 
             $isRead = (int)$row['is_read'] === 1;
             $textClass = $isRead ? 'text-muted fw-normal' : 'fw-bold';
@@ -76,7 +39,8 @@ if (isset($_POST['fetch_notifications'])) {
                 class='notification-link p-3 d-flex align-items-center dropdown-item gap-3 border-bottom'
                 data-id='{$row['id']}'
                 data-url='{$url}'>
-                <span class='flex-shrink-0 {$iconBg} rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 {$iconColor}'>
+                <span class='flex-shrink-0 rounded-circle round-40 d-flex align-items-center justify-content-center fs-6'
+                    style='background-color: {$iconBg}; color: {$iconColor};'>
                     <iconify-icon icon='{$icon}'></iconify-icon>
                 </span>
                 <div class='w-80'>

@@ -835,7 +835,7 @@ if (isset($_POST['save_estimate'])) {
 
             $actorId = $cashierid;
             $actor_name = get_staff_name($actorId);
-            $actionType = 'no_stock_pre_order';
+            $actionType = 'pre_order';
             $targetId = $estimateid;
             $targetType = "Pre-Order";
             $message = "Estimate #$estimateid has out-of-stock items preordered";

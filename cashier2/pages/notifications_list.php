@@ -42,7 +42,7 @@ $page_title = "Notifications";
                 <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
               <div class="table-responsive">
                 <?php
-                $userId = intval($_SESSION['work_order_user_id']);
+                $userId = intval($_SESSION['userid']);
 
                 $notifications = getUserNotifications($userId, '1');
                 ?>
@@ -60,24 +60,7 @@ $page_title = "Notifications";
                     <tbody>
                         <?php foreach ($notifications as $row) : ?>
                         <?php
-                            $title = "New Activity";
-                            switch ($row['action_type']) {
-                                case 'coil_defective':
-                                    $title = "Coil Tagged as Defective";
-                                    break;
-                                case 'new_work_order':
-                                    $title = "New Work Order";
-                                    break;
-                                case 'review_coil':
-                                    $title = "Coil Under Review";
-                                    break;
-                                case 'approve_coil':
-                                    $title = "Coil Approved for Use";
-                                    break;
-                                case 'work_order_done':
-                                    $title = "Work Order Completed";
-                                    break;
-                            }
+                            $title = getNotifDetails($row['action_type'])['title'];
 
                             $time = date("h:i A", strtotime($row['created_at']));
                             $date = date("m/d/Y", strtotime($row['created_at']));

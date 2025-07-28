@@ -74,24 +74,7 @@ $page_title = "Notifications";
                     <tbody>
                         <?php while ($row = mysqli_fetch_assoc($result)) : ?>
                         <?php
-                            $title = "New Activity";
-                            switch ($row['action_type']) {
-                                case 'coil_defective':
-                                    $title = "Coil Tagged as Defective";
-                                    break;
-                                case 'new_work_order':
-                                    $title = "New Work Order";
-                                    break;
-                                case 'review_coil':
-                                    $title = "Coil Under Review";
-                                    break;
-                                case 'approve_coil':
-                                    $title = "Coil Approved for Use";
-                                    break;
-                                case 'work_order_done':
-                                    $title = "Work Order Completed";
-                                    break;
-                            }
+                            $title = getNotifDetails($row['action_type'])['title'];
 
                             $time = date("h:i A", strtotime($row['created_at']));
                             $date = date("m/d/Y", strtotime($row['created_at']));
