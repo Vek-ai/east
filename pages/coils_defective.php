@@ -101,13 +101,19 @@ $page_title = "Defective Coils";
             </div>
             <div class="col-9">
                 <div id="selected-tags" class="mb-2"></div>
-                <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="card-title mb-0"><?= $page_title ?> List</h4>
+                    <button id="btnPrintSelected" class="btn btn-primary">
+                        <i class="fa fa-print"></i> Print Selected
+                    </button>
+                </div>
                 <div class="datatables">
                     <div class="table-responsive">
                         <div id="tbl-work-order" class="product-details table-responsive">
                             <table id="defectiveCoilsList" class="table search-table align-middle " style="width: 100%;">
                                 <thead class="header-item">
                                     <tr>
+                                        <th><input type="checkbox" id="selectAll" /></th>
                                         <th>Coil #</th>
                                         <th>Color</th>
                                         <th>Grade</th>
@@ -363,6 +369,7 @@ $page_title = "Defective Coils";
             responsive: true,
             autoWidth: false,
             pageLength: 100,
+            order: [],
             createdRow: function (row, data, dataIndex) {
                 var item = table.ajax.json().data[dataIndex];
                 $(row).attr('data-color', item.color || '');
@@ -458,6 +465,17 @@ $page_title = "Defective Coils";
                     alert('Error saving note.');
                 }
             });
+        });
+
+        $('#defectiveCoilsList').on('change', '#selectAll', function () {
+            const checked = this.checked;
+            $('#defectiveCoilsList .row-check').prop('checked', checked);
+        });
+
+        $('#defectiveCoilsList').on('change', '.row-check', function () {
+            const all = $('.row-check').length;
+            const checked = $('.row-check:checked').length;
+            $('#selectAll').prop('checked', all === checked);
         });
 
         $(document).on('click', '.preview-image', function () {
@@ -602,6 +620,23 @@ $page_title = "Defective Coils";
             e.preventDefault();
             pdfUrl = $(this).attr('href');
             document.getElementById('pdfFrame').src = pdfUrl;
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            modal.show();
+        });
+
+        $('#btnPrintSelected').on('click', function () {
+            const selectedIds = table.$('.row-check:checked').map(function () {
+                return $(this).data('id');
+            }).get();
+
+            if (selectedIds.length === 0) {
+                alert('Please select at least one coil to print.');
+                return;
+            }
+
+            const url = 'print_coil.php?id=' + selectedIds.join(',');
+
+            document.getElementById('pdfFrame').src = url;
             const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
             modal.show();
         });

@@ -65,16 +65,6 @@ if (isset($_POST['fetch_coils'])) {
         $total_length_needed = 1;
     }
 
-    $color_list = implode(",", array_map('intval', $all_colors));
-    $where = "WHERE 1=1";
-
-    if (!empty($color_list)) {
-        $where .= " AND color_sold_as IN ($color_list)";
-    }
-
-    $query = "SELECT * FROM coil_product $where ORDER BY date ASC";
-    $result = mysqli_query($conn, $query);
-
     $total_selected_length = 0;
     ?>
     <div class="card card-body datatables">
@@ -96,7 +86,9 @@ if (isset($_POST['fetch_coils'])) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($row = mysqli_fetch_assoc($result)):
+                    <?php 
+                    $coils = getAvailableCoils($all_colors);
+                    foreach ($coils as $row) {
                         $coil_id = $row['coil_id'];
                         $color_details = getColorDetails($row['color_sold_as']);
                         $remaining = floatval($row['remaining_feet']);
@@ -135,7 +127,7 @@ if (isset($_POST['fetch_coils'])) {
                             </a>
                         </td>
                     </tr>
-                    <?php endwhile; ?>
+                    <?php } ?>
                 </tbody>
             </table>
         </div>
@@ -215,7 +207,7 @@ if (isset($_POST['fetch_coils'])) {
     </div>
 
     <div class="modal-footer">
-        <button id="openSingleRunWorkOrderModal" class="btn ripple btn-success" data-id="<?= $id ?>" type="button">Finish Work Order</button>
+        <button id="openSingleRunWorkOrderModal" class="btn ripple btn-success" data-id="<?= $id ?>" type="button">Run Work Order</button>
     </div>
 
     <script>
@@ -561,7 +553,7 @@ if (isset($_POST['run_work_order'])) {
     addSheet($spreadsheet, 'FolderOps', $folderRows);
 
     $timestamp = time();
-    $filename = "Wrok Order_SO_$orderid.xlsx";
+    $filename = "Work Order_SO_$orderid.xlsx";
     $filepath = __DIR__ . "/temp_exports/$filename";
 
     if (!file_exists(__DIR__ . "/temp_exports")) {

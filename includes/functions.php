@@ -1803,4 +1803,67 @@ function logCoilDefectiveChange($coil_defective_id, $action_type, $change_text) 
         mysqli_query($conn, $sql);
     }
 }
+
+function getAvailableCoils($color_id = '', $grade = '', $width = '') {
+    global $conn;
+
+    $assigned_ids = [];
+    $res = mysqli_query($conn, "SELECT assigned_coils FROM work_order WHERE assigned_coils IS NOT NULL AND assigned_coils != ''");
+    while ($row = mysqli_fetch_assoc($res)) {
+        $decoded = json_decode($row['assigned_coils'], true);
+        if (is_array($decoded)) {
+            foreach ($decoded as $id) {
+                $id = intval($id);
+                if ($id > 0) $assigned_ids[$id] = true;
+            }
+        }
+    }
+
+    $where = "WHERE status = 0";
+
+    if (!empty($color_id)) {
+        if (is_array($color_id)) {
+            $safe_ids = array_filter(array_map('intval', $color_id));
+            if (!empty($safe_ids)) {
+                $where .= " AND color_sold_as IN (" . implode(",", $safe_ids) . ")";
+            }
+        } else {
+            $where .= " AND color_sold_as = '" . mysqli_real_escape_string($conn, $color_id) . "'";
+        }
+    }
+
+    if (!empty($grade)) {
+        if (is_array($grade)) {
+            $safe_grades = array_map(function($g) use ($conn) {
+                return "'" . mysqli_real_escape_string($conn, $g) . "'";
+            }, array_filter($grade));
+            if (!empty($safe_grades)) {
+                $where .= " AND grade IN (" . implode(",", $safe_grades) . ")";
+            }
+        } else {
+            $where .= " AND grade = '" . mysqli_real_escape_string($conn, $grade) . "'";
+        }
+    }
+
+    if (!empty($width)) {
+        $w = floatval($width);
+        if ($w > 0) {
+            $where .= " AND width >= $w";
+        }
+    }
+
+    $sql = "SELECT * FROM coil_product $where ORDER BY date ASC";
+    $res = mysqli_query($conn, $sql);
+
+    $result = [];
+    while ($row = mysqli_fetch_assoc($res)) {
+        $coil_id = intval($row['coil_id']);
+        if (!isset($assigned_ids[$coil_id])) {
+            $result[] = $row;
+        }
+    }
+
+    return $result;
+}
+
 ?>

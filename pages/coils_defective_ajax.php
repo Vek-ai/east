@@ -45,7 +45,7 @@ if(isset($_REQUEST['action'])){
             $actions .= '<a href="#" role="button" class="view-notes-btn" data-id="' . $row['coil_defective_id'] . '" title="View Notes">
                 <i class="text-primary fa fa-eye fs-6"></i>
             </a>';
-            $actions .= '<a href="print_coil.php?id=' . $row['coil_id'] . '" role="button" class="print-coil-btn btn-show-pdf" data-id="' . $row['coil_defective_id'] . '" title="Print/Download">
+            $actions .= '<a href="print_coil.php?id=' . $row['coil_defective_id'] . '" role="button" class="print-coil-btn btn-show-pdf" data-id="' . $row['coil_defective_id'] . '" title="Print/Download">
                 <i class="fa fa-print fs-6"></i>
             </a>';
             $actions .= '<a href="#" role="button" class="view-history-btn" data-id="' . $row['coil_defective_id'] . '" title="View Coil History">
@@ -95,6 +95,7 @@ if(isset($_REQUEST['action'])){
 
             $data[] = [
                 'row' => [
+                    '<input type="checkbox" class="row-check" data-id="' . $row['coil_defective_id'] . '">',
                     '<div class="d-flex align-items-center">
                         <img src="' . $picture . '" class="rounded-circle preview-image" alt="materialpro-img" width="56" height="56">
                         <div class="ms-3"><h6 class="fw-semibold mb-0 fs-4">' . $entry_no . '</h6></div>

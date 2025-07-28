@@ -901,14 +901,6 @@ if (isset($_POST['fetch_coils'])) {
 
     $total_length = ($lengthFeet + ($lengthInch / 12)) * $quantity ?: 1;
 
-    $where = "WHERE status = '0'";
-    if (!empty($color_id)) $where .= " AND color_sold_as = '" . mysqli_real_escape_string($conn, $color_id) . "'";
-    if (!empty($grade)) $where .= " AND grade = '" . mysqli_real_escape_string($conn, $grade) . "'";
-    if (!empty($width)) $where .= " AND width >= $width";
-
-    $query = "SELECT * FROM coil_product $where ORDER BY date ASC";
-    $result = mysqli_query($conn, $query);
-
     $total_length_reached = 0;
     $weighted_sum = 0;
     $total_weight = 0;
@@ -939,7 +931,9 @@ if (isset($_POST['fetch_coils'])) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($row = mysqli_fetch_assoc($result)):
+                    <?php 
+                    $coils = getAvailableCoils($color_id, $grade, $width);
+                    foreach ($coils as $row) {
                         $coil_id = $row['coil_id'];
                         $color_details = getColorDetails($row['color_sold_as']);
 
@@ -966,7 +960,7 @@ if (isset($_POST['fetch_coils'])) {
                             <td class="text-right"><?= $row['width'] ?></td>
                             <td class="text-right"><?= $row['remaining_feet'] ?></td>
                         </tr>
-                    <?php endwhile; ?>
+                    <?php } ?>
                 </tbody>
             </table>
         </div>
@@ -1015,6 +1009,23 @@ if (isset($_POST['fetch_coils'])) {
             console.log(isReworked)
             let selectedCoils = [];
 
+            let table;
+            if ($.fn.DataTable.isDataTable('#coils_tbl')) {
+                table = $('#coils_tbl').DataTable();
+            } else {
+                table = $('#coils_tbl').DataTable({
+                    language: { emptyTable: "No Available Coils with the selected color" },
+                    autoWidth: false,
+                    responsive: true,
+                    columnDefs: [
+                        { targets: 0, visible: false },
+                        { targets: 1, width: "5%" },
+                        { targets: 3, type: 'custom-date' }
+                    ],
+                    order: [[0, 'desc'], [3, 'asc']]
+                });
+            }
+
             if (isReworked) {
                 $('#reason_others').prop('checked', true);
                 $('.reason-radio').closest('.form-check').hide();
@@ -1047,7 +1058,9 @@ if (isset($_POST['fetch_coils'])) {
                 const selectedReason = $('input[name="change_reason"]:checked').val();
                 const notes = $('#change_notes').val().trim();
                 const id = <?= (int) $id ?>;
-                const coils = $('#coils_tbl .row-select:checked').map((_, el) => $(el).data('id')).get();
+                const coils = $('input.row-select:checked', table.rows().nodes()).map(function () {
+                    return $(this).data('id');
+                }).get();
 
                 if (!selectedReason) {
                     $('#reason_error').removeClass('d-none');
@@ -1087,20 +1100,6 @@ if (isset($_POST['fetch_coils'])) {
                 const parts = d.split(' ');
                 return new Date(parts[2], ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(parts[0]), parseInt(parts[1])).getTime();
             };
-
-            if (!$.fn.DataTable.isDataTable('#coils_tbl')) {
-                $('#coils_tbl').DataTable({
-                    language: { emptyTable: "No Available Coils with the selected color" },
-                    autoWidth: false,
-                    responsive: true,
-                    columnDefs: [
-                        { targets: 0, visible: false },
-                        { targets: 1, width: "5%" },
-                        { targets: 3, type: 'custom-date' }
-                    ],
-                    order: [[0, 'desc'], [3, 'asc']]
-                });
-            }
 
             $('[data-toggle="tooltip"]').tooltip();
         });
@@ -1485,7 +1484,7 @@ if (isset($_POST['run_work_order'])) {
     addSheet($spreadsheet, 'FolderOps', $folderRows);
 
     $timestamp = time();
-    $filename = "Wrok Order_SO_$orderid.xlsx";
+    $filename = "Work Order_SO_$orderid.xlsx";
     $filepath = __DIR__ . "/temp_exports/$filename";
 
     if (!file_exists(__DIR__ . "/temp_exports")) {

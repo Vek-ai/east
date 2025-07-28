@@ -55,14 +55,6 @@ if (isset($_POST['fetch_available'])) {
 
     $total_length = ($lengthFeet + ($lengthInch / 12)) * $quantity ?: 1;
 
-    $where = "WHERE 1=1";
-    if (!empty($color_id)) $where .= " AND color_sold_as = '" . mysqli_real_escape_string($conn, $color_id) . "'";
-    if (!empty($grade)) $where .= " AND grade = '" . mysqli_real_escape_string($conn, $grade) . "'";
-    if (!empty($width)) $where .= " AND width >= $width";
-
-    $query = "SELECT * FROM coil_product $where ORDER BY date ASC";
-    $result = mysqli_query($conn, $query);
-
     $total_length_reached = 0;
     $weighted_sum = 0;
     $total_weight = 0;
@@ -90,7 +82,9 @@ if (isset($_POST['fetch_available'])) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($row = mysqli_fetch_assoc($result)):
+                    <?php 
+                    $coils = getAvailableCoils($color_id, $grade, $width);
+                    foreach ($coils as $row) {
                         $color_details = getColorDetails($row['color_sold_as']);
 
                         $weighted_sum += $row['price'] * $row['remaining_feet'];
@@ -121,7 +115,7 @@ if (isset($_POST['fetch_available'])) {
                             <td class="text-right"><?= $row['remaining_feet'] ?></td>
                             <td class="text-right"><?= number_format($row['price'], 2) ?></td>
                         </tr>
-                    <?php endwhile; ?>
+                    <?php } ?>
                 </tbody>
                 <tfoot>
                     <tr>
@@ -150,7 +144,10 @@ if (isset($_POST['fetch_available'])) {
 
             $('#saveSelection').off('click').on('click', function () {
                 const id = <?= $id ?? 0 ?>;
-                const coils = $('#coil_dtls_tbl .row-select:checked').map((_, el) => $(el).data('id')).get();
+                const table = $('#coil_dtls_tbl').DataTable();
+                const coils = $('input.row-select:checked', table.rows().nodes()).map(function () {
+                    return $(this).data('id');
+                }).get();
 
                 $.ajax({
                     url: 'pages/work_order_list_ajax.php',
