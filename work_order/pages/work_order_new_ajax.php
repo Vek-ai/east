@@ -215,7 +215,7 @@ if (isset($_POST['fetch_coils'])) {
     </div>
 
     <div class="modal-footer">
-        <button id="openSingleRunWorkOrderModal" class="btn ripple btn-success" data-id="<?= $id ?>" type="button">Run Work Order</button>
+        <button id="openSingleRunWorkOrderModal" class="btn ripple btn-success" data-id="<?= $id ?>" type="button">Finish Work Order</button>
     </div>
 
     <script>

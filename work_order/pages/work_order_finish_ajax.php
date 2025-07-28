@@ -377,7 +377,7 @@ if(isset($_POST['fetch_view'])){
                                 </td>
                                 <td>
                                     <div class="action-btn text-center">
-                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Run Work Order" data-app-prod-id="<?= $row['id'] ?>">
+                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Release Work Order" data-app-prod-id="<?= $row['id'] ?>">
                                             <i class="fa fa-arrow-right-to-bracket"></i>
                                         </a>
                                         <a href="javascript:void(0)" class="text-decoration-none" id="viewAssignedBtn" title="View" data-id="<?= $row['id'] ?>">
