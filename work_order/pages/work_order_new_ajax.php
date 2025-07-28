@@ -349,6 +349,8 @@ if (isset($_POST['tag_coil_defective'])) {
             VALUES ($values_str)
         ";
         $conn->query($insert_sql);
+        $inserted_id = mysqli_insert_id($conn);
+        logCoilDefectiveChange($inserted_id, 'add', "Coil tagged as defective");
     }
 
     $actorId = $_SESSION['work_order_user_id'];
