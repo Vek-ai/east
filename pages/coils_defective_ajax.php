@@ -51,7 +51,7 @@ if(isset($_REQUEST['action'])){
             $actions .= '<a href="#" role="button" class="view-history-btn" data-id="' . $row['coil_defective_id'] . '" title="View Coil History">
                 <iconify-icon class="fs-7" style="color: #00ffbfff;" icon="solar:history-outline"></iconify-icon>
             </a>';
-            $actions .= '<a href="#" role="button" class="tag-approve-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="approve" title="Approve Coil as Good">
+            $actions .= '<a href="#" role="button" class="tag-approve-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="approve" data-grade="'.$row['grade'].'" title="Approve Coil as Good">
                 <iconify-icon class="fs-7" style="color: #90ee90;" icon="solar:like-bold"></iconify-icon>
             </a>';
             $actions .= '<a href="#" role="button" class="tag-review-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="review" title="Tag Coil for EKM Review">
@@ -66,7 +66,7 @@ if(isset($_REQUEST['action'])){
             $actions .= '<a href="#" role="button" class="tag-claim-btn" data-id="' . $row['coil_defective_id'] . '" data-action="claim" title="Submit Claim against Coil"> 
                 <iconify-icon class="fs-7" style="color: #ffffff;" icon="solar:clipboard-text-outline"></iconify-icon>
             </a>';
-            $actions .= '<a href="#" role="button" class="tag-transfer-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="transfer" title="Add Coil to Inventory">
+            $actions .= '<a href="#" role="button" class="tag-transfer-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="transfer" data-grade="'.$row['grade'].'" title="Add Coil to Inventory">
                 <iconify-icon class="fs-7" style="color: #28a745;" icon="solar:verified-check-outline"></iconify-icon>
             </a>';
 
@@ -165,6 +165,10 @@ if(isset($_REQUEST['action'])){
             ";
 
             echo mysqli_query($conn, $insert) ? 'success' : 'error';
+
+            $action_type = 'update';
+            $change_text = 'Added note: ' .$note_text;
+            logCoilDefectiveChange($coil_defective_id, $action_type, $change_text);
         } else {
             echo 'invalid';
         }
@@ -178,6 +182,8 @@ if(isset($_REQUEST['action'])){
         $new_grade = mysqli_real_escape_string($conn, $_POST['new_grade'] ?? '');
         $note_text = mysqli_real_escape_string($conn, $_POST['note_text'] ?? '');
         $staff_id = $_SESSION['staff_id'] ?? null;
+
+        $change_text = '';
 
         if ($coil_defective_id <= 0 || empty($change_action)) {
             echo "Invalid request.";
@@ -210,6 +216,7 @@ if(isset($_REQUEST['action'])){
         if (!empty($new_grade)) {
             mysqli_query($conn, "UPDATE coil_defective SET grade = '$new_grade' WHERE coil_defective_id = $coil_defective_id");
             mysqli_query($conn, "UPDATE coil_product SET grade = '$new_grade' WHERE coil_id = $coil_id");
+            logCoilDefectiveChange($coil_defective_id, 'update', "Grade changed to '" .getGradeName($new_grade) ."'");
         }
 
         if (!empty($note_text)) {
@@ -218,6 +225,7 @@ if(isset($_REQUEST['action'])){
                 INSERT INTO coil_notes (coil_defective_id, coil_id, note_text, created_by)
                 VALUES ($coil_defective_id, $coil_id, '$note_text', '$staff_id')
             ");
+            logCoilDefectiveChange($coil_defective_id, 'update', "Note added: $note_text");
         }
 
         if ($change_action === 'review') {
@@ -234,6 +242,7 @@ if(isset($_REQUEST['action'])){
                 $url = '?page=';
                 $recipientRole = 'work_order';
 
+                logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Under Review');
                 createNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientRole, $url);
 
                 echo "success";
@@ -247,6 +256,7 @@ if(isset($_REQUEST['action'])){
             $update_defective = "UPDATE coil_defective SET status = 4 WHERE coil_defective_id = $coil_defective_id";
 
             if (mysqli_query($conn, $update_defective)) {
+                logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Transfer / Added to Inventory');
                 $cols = [
                     'entry_no', 'warehouse', 'color_family', 'color_abbreviation', 'paint_supplier',
                     'paint_code', 'stock_availability', 'multiplier_category', 'actual_color', 'color_close',
@@ -307,12 +317,21 @@ if(isset($_REQUEST['action'])){
                 $recipientRole = 'work_order';
 
                 createNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientRole, $url);
+                logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Approved');
 
                 echo "success";
             } else {
                 echo "Invalid or already archived coil_defective_id";
             }
             exit;
+        }
+
+        if ($change_action === 'quarantine') {
+            logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Quarantined');
+        }
+
+        if ($change_action === 'return') {
+            logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Return to Supplier');
         }
 
         $update = "UPDATE coil_defective SET status = '$status' WHERE coil_defective_id = $coil_defective_id";
@@ -348,16 +367,19 @@ if(isset($_REQUEST['action'])){
                 WHERE coil_defective_id = $coil_defective_id
             ";
 
-            $insertNote = "
-                INSERT INTO coil_notes (coil_defective_id, coil_id, note_text, created_by)
-                VALUES ($coil_defective_id, $coil_id, '$note_text', " . ($staff_id ?: "NULL") . ")
-            ";
+            $success = mysqli_query($conn, $insertClaim) && mysqli_query($conn, $updateCoil);
 
-            if (
-                mysqli_query($conn, $insertClaim) &&
-                mysqli_query($conn, $updateCoil) &&
-                mysqli_query($conn, $insertNote)
-            ) {
+            if (!empty($note_text)) {
+                $insertNote = "
+                    INSERT INTO coil_notes (coil_defective_id, coil_id, note_text, created_by)
+                    VALUES ($coil_defective_id, $coil_id, '$note_text', " . ($staff_id ?: "NULL") . ")
+                ";
+                $success = $success && mysqli_query($conn, $insertNote);
+                logCoilDefectiveChange($coil_defective_id, 'note', "Note added with claim: $note_text");
+            }
+
+            if ($success) {
+                logCoilDefectiveChange($coil_defective_id, 'claim', "Claim submitted with type '$claim_type'");
                 echo 'success';
             } else {
                 echo 'error: ' . mysqli_error($conn);
@@ -366,6 +388,62 @@ if(isset($_REQUEST['action'])){
         } else {
             echo 'invalid';
         }
+    }
+
+    if ($action === 'fetch_coil_history') {
+        $coil_defective_id = intval($_POST['coil_defective_id'] ?? 0);
+        if ($coil_defective_id <= 0) {
+            echo "<p class='text-danger'>Invalid coil ID.</p>";
+            exit;
+        }
+
+        $sql = "SELECT * FROM coil_defective_history 
+                WHERE coil_defective_id = $coil_defective_id
+                ORDER BY changed_at DESC";
+        $res = mysqli_query($conn, $sql);
+
+        if (!$res || mysqli_num_rows($res) == 0) {
+            echo "<p class='text-muted'>No history found for this coil.</p>";
+            exit;
+        }
+
+        echo "
+        <div class='table-responsive'>
+            <table class='table table-bordered table-striped'>
+                <thead>
+                    <tr>
+                        <th>Staff</th>
+                        <th>Action</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+        ";
+
+        while ($row = mysqli_fetch_assoc($res)) {
+            $timestamp = strtotime($row['changed_at']);
+            $date = date("M d, Y", $timestamp);
+            $time = date("h:i A", $timestamp);
+            $actor_id = intval($row['changed_by']);
+            $actor = htmlspecialchars(get_staff_name($actor_id) ?? 'Unknown');
+            $text = nl2br(htmlspecialchars($row['change_text']));
+
+            echo "
+                <tr>
+                    <td>$actor</td>
+                    <td>$text</td>
+                    <td>$date</td>
+                    <td>$time</td>
+                </tr>
+            ";
+        }
+
+        echo "
+                </tbody>
+            </table>
+        </div>
+        ";
     }
 }
 

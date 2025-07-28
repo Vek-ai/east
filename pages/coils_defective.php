@@ -230,9 +230,9 @@ $page_title = "Defective Coils";
         <p id="coilActionMessage"></p>
 
         <div class="mb-3" id="coilGradeGroup">
-            <label for="coilGrade" class="form-label">Change Grade</label>
+            <label for="coilGrade" class="form-label">Grade</label>
             <select class="form-select " id="coilGrade" name="coilGrade">
-                <option value="">Select new grade (optional)</option>
+                <option value="">Select Grade</option>
                 <?php
                 $grades_q = "SELECT product_grade_id, product_grade FROM product_grade WHERE status = 1 AND hidden = 0 ORDER BY product_grade ASC";
                 $grades_res = mysqli_query($conn, $grades_q);
@@ -323,6 +323,20 @@ $page_title = "Defective Coils";
             </div>
         </div>
 
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="coilHistoryModal" tabindex="-1" aria-labelledby="coilHistoryLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="coilHistoryLabel">Coil History</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="coil-history-body">
+        <p class="text-muted">Loading history...</p>
       </div>
     </div>
   </div>
@@ -457,7 +471,9 @@ $page_title = "Defective Coils";
 
             const coilId = $(this).data('id');
             const action = $(this).data('action');
+            const grade = $(this).data('grade') || '';
 
+            $('#coilGrade').val(grade);
             $('#coilActionId').val(coilId);
             $('#coilActionType').val(action);
             $('#coilActionMessage').text(`Are you sure you want to ${action} this coil?`);
@@ -470,9 +486,7 @@ $page_title = "Defective Coils";
                 $('#coilNoteGroup').hide();
             }
 
-            $('#coilGrade').val('');
             $('#coilNote').val('');
-
             $('#coilActionModal').modal('show');
         });
 
@@ -546,6 +560,35 @@ $page_title = "Defective Coils";
                 },
                 error: function(xhr, status, error) {
                     alert('AJAX request failed');
+                    console.error('AJAX Error:', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                }
+            });
+        });
+
+        $(document).on('click', '.view-history-btn', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+
+            $('#coil-history-body').html('<p class="text-muted">Loading history...</p>');
+            $('#coilHistoryModal').modal('show');
+
+            $.ajax({
+                url: 'pages/coils_defective_ajax.php',
+                method: 'POST',
+                data: { 
+                    coil_defective_id: id,
+                    action: 'fetch_coil_history'
+                },
+                success: function (response) {
+                    console.log(response);
+                    $('#coil-history-body').html(response);
+                },
+                error: function (xhr, status, error) {
+                    $('#coil-history-body').html('<p class="text-danger">Failed to fetch coil history.</p>');
                     console.error('AJAX Error:', {
                         status: status,
                         error: error,
@@ -634,47 +677,6 @@ $page_title = "Defective Coils";
             });
 
             table.draw();
-        }
-
-
-        function updateSearchCategory() {
-            let selectedCategory = $('#select-category option:selected').data('category');
-            let hasCategory = !!selectedCategory;
-
-            $('.search-category').each(function () {
-                let $select2Element = $(this);
-
-                if (!$select2Element.data('all-options')) {
-                    $select2Element.data('all-options', $select2Element.find('option').clone(true));
-                }
-
-                let allOptions = $select2Element.data('all-options');
-
-                $select2Element.empty();
-
-                if (hasCategory) {
-                    allOptions.each(function () {
-                        let optionCategory = $(this).data('category');
-                        if (String(optionCategory) === String(selectedCategory)) {
-                            $select2Element.append($(this).clone(true));
-                        }
-                    });
-                } else {
-                    allOptions.each(function () {
-                        $select2Element.append($(this).clone(true));
-                    });
-                }
-
-                $select2Element.select2('destroy');
-
-                let parentContainer = $select2Element.parent();
-                $select2Element.select2({
-                    width: '100%',
-                    dropdownParent: parentContainer
-                });
-            });
-
-            $('.category_selection').toggleClass('d-none', !hasCategory);
         }
 
         $(document).on('input change', '#text-srh, #toggleArchived, #toggleClaim, .filter-selection', filterTable);

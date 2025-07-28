@@ -81,7 +81,7 @@ function getUserNotifications($staffId, $audience = null) {
 
     if ($audience !== null) {
         $audience = intval($audience);
-        $audienceFilter = "AND (n.audience_scope = $audience OR n.audience_scope IS NULL OR n.audience_scope = '')";
+        $audienceFilter = "AND (n.audience_scope = $audience)";
     }
 
     $sql = "
