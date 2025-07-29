@@ -42,9 +42,7 @@ if(isset($_REQUEST['action'])){
 
             $actions = '<div class="action-btn d-flex justify-content-center flex-wrap gap-2 text-center">';
 
-            $actions .= '<a href="#" role="button" class="view-notes-btn" data-id="' . $row['coil_defective_id'] . '" title="View Notes">
-                <i class="text-primary fa fa-eye fs-6"></i>
-            </a>';
+            
             $actions .= '<a href="print_coil.php?id=' . $row['coil_defective_id'] . '" role="button" class="print-coil-btn btn-show-pdf" data-id="' . $row['coil_defective_id'] . '" title="Print/Download">
                 <i class="fa fa-print fs-6"></i>
             </a>';
@@ -56,9 +54,6 @@ if(isset($_REQUEST['action'])){
             </a>';
             $actions .= '<a href="#" role="button" class="tag-review-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="review" title="Tag Coil for EKM Review">
                 <iconify-icon class="fs-7" style="color: #ffd700;" icon="solar:tag-outline"></iconify-icon>
-            </a>';
-            $actions .= '<a href="#" role="button" class="tag-quarantine-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="quarantine" title="Quarantine Coil">
-                <iconify-icon class="fs-7" style="color: #ffa500;" icon="solar:danger-triangle-outline"></iconify-icon>
             </a>';
             $actions .= '<a href="#" role="button" class="tag-return-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="return" title="Flag Coil for Return to Supplier">
                 <iconify-icon class="fs-7" style="color: #ff0000;" icon="solar:box-outline"></iconify-icon>
@@ -217,16 +212,7 @@ if(isset($_REQUEST['action'])){
         if (!empty($new_grade)) {
             mysqli_query($conn, "UPDATE coil_defective SET grade = '$new_grade' WHERE coil_defective_id = $coil_defective_id");
             mysqli_query($conn, "UPDATE coil_product SET grade = '$new_grade' WHERE coil_id = $coil_id");
-            logCoilDefectiveChange($coil_defective_id, 'update', "Grade changed to '" .getGradeName($new_grade) ."'");
-        }
-
-        if (!empty($note_text)) {
-            $staff_id = $_SESSION['userid'];
-            mysqli_query($conn, "
-                INSERT INTO coil_notes (coil_defective_id, coil_id, note_text, created_by)
-                VALUES ($coil_defective_id, $coil_id, '$note_text', '$staff_id')
-            ");
-            logCoilDefectiveChange($coil_defective_id, 'update', "Note added: $note_text");
+            logCoilDefectiveChange($coil_defective_id, 'update', "Grade changed to '" .getGradeName($new_grade) ."'", $note_text);
         }
 
         if ($change_action === 'review') {
@@ -243,7 +229,7 @@ if(isset($_REQUEST['action'])){
                 $url = '?page=';
                 $recipientRole = 'work_order';
 
-                logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Under Review');
+                logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Under Review', $note_text);
                 createNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientRole, $url);
 
                 echo "success";
@@ -257,7 +243,7 @@ if(isset($_REQUEST['action'])){
             $update_defective = "UPDATE coil_defective SET status = 4 WHERE coil_defective_id = $coil_defective_id";
 
             if (mysqli_query($conn, $update_defective)) {
-                logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Transfer / Added to Inventory');
+                logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Transfer / Added to Inventory', $note_text);
                 $cols = [
                     'entry_no', 'warehouse', 'color_family', 'color_abbreviation', 'paint_supplier',
                     'paint_code', 'stock_availability', 'multiplier_category', 'actual_color', 'color_close',
@@ -318,7 +304,7 @@ if(isset($_REQUEST['action'])){
                 $recipientRole = 'work_order';
 
                 createNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientRole, $url);
-                logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Approved');
+                logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Approved', $note_text);
 
                 echo "success";
             } else {
@@ -328,15 +314,16 @@ if(isset($_REQUEST['action'])){
         }
 
         if ($change_action === 'quarantine') {
-            logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Quarantined');
+            logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Quarantined', $note_text);
         }
 
         if ($change_action === 'return') {
-            logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Return to Supplier');
+            logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Return to Supplier', $note_text);
         }
 
         $update = "UPDATE coil_defective SET status = '$status' WHERE coil_defective_id = $coil_defective_id";
-        if (mysqli_query($conn, $update)) {
+        $update_product   = "UPDATE coil_product SET status = 2 WHERE coil_id = $coil_id";
+        if (mysqli_query($conn, $update) && mysqli_query($conn, $update_product)) {
             echo "success";
         } else {
             echo "Error updating status: " . mysqli_error($conn);
@@ -370,17 +357,8 @@ if(isset($_REQUEST['action'])){
 
             $success = mysqli_query($conn, $insertClaim) && mysqli_query($conn, $updateCoil);
 
-            if (!empty($note_text)) {
-                $insertNote = "
-                    INSERT INTO coil_notes (coil_defective_id, coil_id, note_text, created_by)
-                    VALUES ($coil_defective_id, $coil_id, '$note_text', " . ($staff_id ?: "NULL") . ")
-                ";
-                $success = $success && mysqli_query($conn, $insertNote);
-                logCoilDefectiveChange($coil_defective_id, 'note', "Note added with claim: $note_text");
-            }
-
             if ($success) {
-                logCoilDefectiveChange($coil_defective_id, 'claim', "Claim submitted with type '$claim_type'");
+                logCoilDefectiveChange($coil_defective_id, 'claim', "Claim submitted with type '$claim_type'", $note_text);
                 echo 'success';
             } else {
                 echo 'error: ' . mysqli_error($conn);
@@ -413,8 +391,9 @@ if(isset($_REQUEST['action'])){
             <table class='table table-bordered table-striped'>
                 <thead>
                     <tr>
-                        <th>Staff</th>
                         <th>Action</th>
+                        <th>Note</th>
+                        <th>By</th>
                         <th>Date</th>
                         <th>Time</th>
                     </tr>
@@ -428,12 +407,15 @@ if(isset($_REQUEST['action'])){
             $time = date("h:i A", $timestamp);
             $actor_id = intval($row['changed_by']);
             $actor = htmlspecialchars(get_staff_name($actor_id) ?? 'Unknown');
-            $text = nl2br(htmlspecialchars($row['change_text']));
 
+            $change_text = htmlspecialchars($row['change_text']);
+            $note = nl2br(htmlspecialchars($row['note'] ?? ''));
+            
             echo "
                 <tr>
+                    <td>$change_text</td>
+                    <td>$note</td>
                     <td>$actor</td>
-                    <td>$text</td>
                     <td>$date</td>
                     <td>$time</td>
                 </tr>

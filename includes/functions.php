@@ -1786,7 +1786,7 @@ function getWorkOrderIDs() {
     return $ids;
 }
 
-function logCoilDefectiveChange($coil_defective_id, $action_type, $change_text) {
+function logCoilDefectiveChange($coil_defective_id, $action_type, $change_text, $note = '') {
     global $conn;
     $coil_defective_id = intval($coil_defective_id);
     $user_id = intval($_SESSION['userid']);
@@ -1796,10 +1796,12 @@ function logCoilDefectiveChange($coil_defective_id, $action_type, $change_text) 
         $coil_id = intval($r['coil_id']);
         $change_text_escaped = mysqli_real_escape_string($conn, $change_text);
         $action_type_escaped = mysqli_real_escape_string($conn, $action_type);
+        $note_escaped = mysqli_real_escape_string($conn, $note);
 
         $sql = "INSERT INTO coil_defective_history 
-                (coil_defective_id, coil_id, action_type, change_text, changed_by)
-                VALUES ($coil_defective_id, $coil_id, '$action_type_escaped', '$change_text_escaped', $user_id)";
+                    (coil_defective_id, coil_id, action_type, change_text, note, changed_by)
+                VALUES 
+                    ($coil_defective_id, $coil_id, '$action_type_escaped', '$change_text_escaped', '$note_escaped', $user_id)";
         mysqli_query($conn, $sql);
     }
 }

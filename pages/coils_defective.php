@@ -498,10 +498,8 @@ $page_title = "Defective Coils";
 
             if (action === 'approve' || action === 'transfer') {
                 $('#coilGradeGroup').show();
-                $('#coilNoteGroup').show();
             } else {
                 $('#coilGradeGroup').hide();
-                $('#coilNoteGroup').hide();
             }
 
             $('#coilNote').val('');
