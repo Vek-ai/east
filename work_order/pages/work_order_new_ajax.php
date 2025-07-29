@@ -467,28 +467,14 @@ if (isset($_POST['run_work_order'])) {
             $warehouse_name = getWarehouseName($warehouse_id);
             $material = '';
             $received_date = date('m/d/Y', strtotime($coil_details['date']));
-            $status_id = $coil_details['status'];
-            $status_label = '';
-            switch ($coil_details['status']) {
-                case 0:
-                    $status_label = 'AVAILABLE';
-                    break;
-                case 1:
-                    $status_label = 'USED';
-                    break;
-                case 2:
-                    $status_label = 'REWORK';
-                    break;
-                case 3:
-                    $status_label = 'DEFECTIVE';
-                    break;
-                case 4:
-                    $status_label = 'ARCHIVED';
-                    break;
-                default:
-                    $status_label = 'UNKNOWN';
-                    break;
-            }
+            $status_label = match ($coil_details['status']) {
+                0 => 'AVAILABLE',
+                1 => 'USED',
+                2 => 'REWORK',
+                3 => 'DEFECTIVE',
+                4 => 'ARCHIVED',
+                default => 'UNKNOWN',
+            };
             $supplier_id = $coil_details['supplier'];
             $supplier_name = getSupplierName($supplier_id);
             $weight = floatval($coil_details['weight']);
@@ -522,13 +508,14 @@ if (isset($_POST['run_work_order'])) {
     $orderid = $work_order_details['work_order_id'];
     $order_details = getOrderDetails($orderid);
     $job_name = $order_details['job_name'];
-    $jobBatchRows[] =
-        ['J', $job_name, $rollformer_name, $profile, $product_name, 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5']
-    ;
+    $part_no = $product_details['coil_part_no'];
+    $quantity = $work_order_details['quantity'];
+    $custom_length = $work_order_details['custom_length'];
+    $custom_length2 = $work_order_details['custom_length2'];
+    $decimal_length = floatval($custom_length) + (floatval($custom_length2) / 12);
 
-    $jobBatchRows[] =
-        ['B', '1', '10', '120', 'SHEAR ONLY', 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5']
-    ;
+    $jobBatchRows[] = ['J', $job_name, $rollformer_name, $profile, $product_name, 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5'];
+    $jobBatchRows[] = ['B', '1', $quantity, $decimal_length, $part_no, 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5'];
 
     $folderRows = [
         ['#FOLDER_PART', 'NAME', 'DESCRIPTION', 'CLAMP_PRESSURE', 'OVERBEND', 'MATERIAL_THICKNESS', 'PAINT_DIRECTION'],
@@ -543,25 +530,34 @@ if (isset($_POST['run_work_order'])) {
         ['FOLDER_OPERATION', '6', '2.81998', '2.81998', '0', '90', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
     ];
 
-    $spreadsheet = new Spreadsheet();
-
-    addSheet($spreadsheet, 'Material', $materialRows, true);
-    addSheet($spreadsheet, 'Profile', $profileRows);
-    addSheet($spreadsheet, 'Coil', $coilRows);
-    addSheet($spreadsheet, 'Part_Operation', $partOpRows);
-    addSheet($spreadsheet, 'Job_Batch', $jobBatchRows);
-    addSheet($spreadsheet, 'FolderOps', $folderRows);
+    $csvData = array_merge(
+        $materialRows,
+        [[]],
+        $profileRows,
+        [[]],
+        $coilRows,
+        [[]],
+        $partOpRows,
+        [[]],
+        $jobBatchRows,
+        [[]],
+        $folderRows
+    );
 
     $timestamp = time();
-    $filename = "Work Order_SO_$orderid.xlsx";
-    $filepath = __DIR__ . "/temp_exports/$filename";
+    $filename = "Work_Order_SO_{$orderid}_$timestamp.csv";
+    $folderPath = __DIR__ . "/temp_exports";
+    $filepath = "$folderPath/$filename";
 
-    if (!file_exists(__DIR__ . "/temp_exports")) {
-        mkdir(__DIR__ . "/temp_exports", 0777, true);
+    if (!file_exists($folderPath)) {
+        mkdir($folderPath, 0777, true);
     }
 
-    $writer = new Xlsx($spreadsheet);
-    $writer->save($filepath);
+    $fp = fopen($filepath, 'w');
+    foreach ($csvData as $row) {
+        fputcsv($fp, $row);
+    }
+    fclose($fp);
 
     $baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
     $downloadUrl = $baseUrl . "/temp_exports/$filename";
@@ -572,6 +568,7 @@ if (isset($_POST['run_work_order'])) {
     ]);
     exit;
 }
+
 
 
 

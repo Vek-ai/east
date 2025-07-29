@@ -1340,6 +1340,8 @@ if (isset($_POST['run_work_order'])) {
         exit;
     }
 
+    $allRows = [];
+
     foreach ($ids as $id) {
         $id = mysqli_real_escape_string($conn, $id);
 
@@ -1348,151 +1350,128 @@ if (isset($_POST['run_work_order'])) {
             continue;
         }
 
-        $materialRows = [
-            ['#L', 'MATERIAL', 'GAUGE', 'GRADE', 'THICKNESS', 'WIDTH', 'COLOR', 'DENSITY', 'DESCRIPTION'],
-        ];
-
         $productid = $work_order_details['productid'];
         $product_name = getProductName($productid);
         $product_details = getProductDetails($productid);
         $color_id = $work_order_details['custom_color'];
-        $materialRows[] = ['L', $product_name, $product_details['gauge'], $work_order_details['custom_grade'], $product_details['thickness'], $work_order_details['custom_width'], getColorName($color_id), '0', ''];
 
-        $profileRows = [
-            ['#F', 'PROFILE', 'DESCRIPTION'],
-            ['#H', 'MACHINE']
+        $materialRows = [
+            ['#L', 'MATERIAL', 'GAUGE', 'GRADE', 'THICKNESS', 'WIDTH', 'COLOR', 'DENSITY', 'DESCRIPTION'],
+            ['L', $product_name, $product_details['gauge'], $work_order_details['custom_grade'], $product_details['thickness'], $work_order_details['custom_width'], getColorName($color_id), '0', '']
         ];
+        $allRows = array_merge($allRows, $materialRows, [[]]);
 
         $profile_type_id = $work_order_details['custom_profile'];
         $profile_details = getProfileTypeDetails($profile_type_id);
         $profile = $profile_details['profile_type'];
-        $profileRows[] = ['F', $profile, $profile_details['notes'], '', '', '', '', ''];
 
-        $rollformer_details = getRollFormerDetails($roll_former_id);
-        $rollformer_name = $rollformer_details['roll_former'];
-        $profileRows[] = ['H', $rollformer_details['roll_former']];
-        
-        
+        $profileRows = [
+            ['#F', 'PROFILE', 'DESCRIPTION'],
+            ['#H', 'MACHINE'],
+            ['F', $profile, $profile_details['notes']],
+            ['H', getRollFormerDetails($roll_former_id)['roll_former']]
+        ];
+        $allRows = array_merge($allRows, $profileRows, [[]]);
+
         $assigned_coils = json_decode($work_order_details['assigned_coils'], true);
         $length_ft = floatval($work_order_details['custom_length'] ?? 0);
         $length_in = floatval($work_order_details['custom_length2'] ?? 0);
-
         $total_length_ft = $length_ft + ($length_in / 12);
 
         if (is_array($assigned_coils)) {
             $coilRows = [
                 ['#C', 'COIL', 'LOCATION', 'MATERIAL', 'RECEIVED', 'STATUS', 'VENDOR', 'WEIGHT', 'COST', 'LENGTH', 'GRADE', 'NOTES']
             ];
+
             foreach ($assigned_coils as $coil_id) {
                 $coil_id = intval($coil_id);
-
-                $update = "UPDATE coil_product 
-                           SET remaining_feet = GREATEST(remaining_feet - $total_length_ft, 0) 
-                           WHERE coil_id = $coil_id";
-                mysqli_query($conn, $update);
+                mysqli_query($conn, "UPDATE coil_product SET remaining_feet = GREATEST(remaining_feet - $total_length_ft, 0) WHERE coil_id = $coil_id");
 
                 $coil_details = getCoilProductDetails($coil_id);
-                $entry_no = $coil_details['entry_no'];
-                $warehouse_id = $coil_details['warehouse'];
-                $warehouse_name = getWarehouseName($warehouse_id);
-                $material = '';
-                $received_date = date('m/d/Y', strtotime($coil_details['date']));
-                $status_id = $coil_details['status'];
-                $status_label = '';
-                switch ($coil_details['status']) {
-                    case 0:
-                        $status_label = 'AVAILABLE';
-                        break;
-                    case 1:
-                        $status_label = 'USED';
-                        break;
-                    case 2:
-                        $status_label = 'REWORK';
-                        break;
-                    case 3:
-                        $status_label = 'DEFECTIVE';
-                        break;
-                    case 4:
-                        $status_label = 'ARCHIVED';
-                        break;
-                    default:
-                        $status_label = 'UNKNOWN';
-                        break;
-                }
-                $supplier_id = $coil_details['supplier'];
-                $supplier_name = getSupplierName($supplier_id);
-                $weight = floatval($coil_details['weight']);
-                $cost = floatval($coil_details['price']);
-                $length = floatval($coil_details['remaining_feet']);
-                $grade_id = $coil_details['grade'];
-                $grade_name = getGradeName($grade_id);
-
-                $coilRows[] = ['C', $entry_no, $warehouse_name, $material, $received_date, $status_label, $supplier_name, $weight, $cost, $length, $grade_name, 'NotesHere'];
+                $coilRows[] = [
+                    'C',
+                    $coil_details['entry_no'],
+                    getWarehouseName($coil_details['warehouse']),
+                    '',
+                    date('m/d/Y', strtotime($coil_details['date'])),
+                    match($coil_details['status']) {
+                        0 => 'AVAILABLE',
+                        1 => 'USED',
+                        2 => 'REWORK',
+                        3 => 'DEFECTIVE',
+                        4 => 'ARCHIVED',
+                        default => 'UNKNOWN'
+                    },
+                    getSupplierName($coil_details['supplier']),
+                    floatval($coil_details['weight']),
+                    floatval($coil_details['price']),
+                    floatval($coil_details['remaining_feet']),
+                    getGradeName($coil_details['grade']),
+                    'NotesHere'
+                ];
             }
 
-            $status_update = "UPDATE work_order SET status = 2, roll_former_id = '$roll_former_id' WHERE id = $id";
-            mysqli_query($conn, $status_update);
+            $allRows = array_merge($allRows, $coilRows, [[]]);
+            mysqli_query($conn, "UPDATE work_order SET status = 2, roll_former_id = '$roll_former_id' WHERE id = $id");
         }
+
+        $partOpRows = [
+            ['#P', 'PART', 'DESCRIPTION'],
+            ['#O', 'OPERATION', 'POSITION', 'REFERENCE', 'YPOS'],
+            ['P', 'TEST PART', 'TEST PART'],
+            ['O', 'TEST OPERATION', '1', 'LEADING EDGE', '2'],
+            ['O', 'TEST OPERATION 2', '2', 'LEADING EDGE', '-2'],
+            ['O', 'TEST OPERATION 3', '4', 'LEADING EDGE', '2'],
+            ['O', 'TEST OPERATION 4', '8', 'LEADING EDGE', '-2'],
+        ];
+        $allRows = array_merge($allRows, $partOpRows, [[]]);
+
+        $orderid = $work_order_details['work_order_id'];
+        $order_details = getOrderDetails($orderid);
+        $job_name = $order_details['job_name'];
+        $rollformer_name = getRollFormerDetails($roll_former_id)['roll_former'];
+        $part_no = $product_details['coil_part_no'];
+        $quantity = $work_order_details['quantity'];
+        $custom_length = $work_order_details['custom_length'];
+        $custom_length2 = $work_order_details['custom_length2'];
+
+        $decimal_length = floatval($custom_length) + (floatval($custom_length2) / 12);
+
+        $jobBatchRows = [
+            ['#J', 'JOB', 'MACHINE', 'PROFILE', 'MATERIAL', 'USER 1', 'USER 2', 'USER 3', 'USER 4', 'USER 5'],
+            ['#B', 'BATCH', 'QUANTITY', 'LENGTH', 'PART', 'USER 1', 'USER 2', 'USER 3', 'USER 4', 'USER 5'],
+            ['J', $job_name, $rollformer_name, $profile, $product_name, 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5'],
+            ['B', '1', $quantity, $decimal_length, $part_no, 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5'],
+        ];
+        $allRows = array_merge($allRows, $jobBatchRows, [[]]);
+
+        $folderRows = [
+            ['#FOLDER_PART', 'NAME', 'DESCRIPTION', 'CLAMP_PRESSURE', 'OVERBEND', 'MATERIAL_THICKNESS', 'PAINT_DIRECTION'],
+            ['#FOLDER_OPERATION', 'STEP', 'BACKGAUGE2', 'BACKGAUGE', 'CLAMP_PRESSURE', 'BEND_ANGLE', 'OVERBEND', 'UPPER_JAW', 'BUMP_BEND_ANGLE', 'BUMP_BEND_RADIUS', 'BUMP_BEND_ITERATIONS', 'ROTARY_SHEAR', 'FLIP', 'HELI_ROTATE', 'PROP ROTATE', 'BG ADJUST'],
+            ['FOLDER_PART', 'CANOPY-PANEL', 'TEST PART', '1500', '8', '0.03998', 'UP'],
+            ['FOLDER_OPERATION', '0', '18.99994', '18.99994', '0', '0', '0', '0.7', '0', '0', '0', '200', 'NO', 'NO', 'NO', '0'],
+            ['FOLDER_OPERATION', '1', '18.24994', '18.24994', '0', '90', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+            ['FOLDER_OPERATION', '2', '17.19994', '17.19994', '0', '90', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+            ['FOLDER_OPERATION', '3', '14.36995', '14.36995', '0', '95', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'YES', '0'],
+            ['FOLDER_OPERATION', '4', '1.54999', '1.54999', '0', '90', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+            ['FOLDER_OPERATION', '5', '0.59998', '0.59998', '0', '85', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+            ['FOLDER_OPERATION', '6', '2.81998', '2.81998', '0', '90', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
+        ];
+        $allRows = array_merge($allRows, $folderRows, [[]]);
     }
 
-    $partOpRows = [
-        ['#P', 'PART', 'DESCRIPTION'],
-        ['#O', 'OPERATION', 'POSITION', 'REFERENCE', 'YPOS'],
-        ['P', 'TEST PART', 'TEST PART'],
-        ['O', 'TEST OPERATION', '1', 'LEADING EDGE', '2'],
-        ['O', 'TEST OPERATION 2', '2', 'LEADING EDGE', '-2'],
-        ['O', 'TEST OPERATION 3', '4', 'LEADING EDGE', '2'],
-        ['O', 'TEST OPERATION 4', '8', 'LEADING EDGE', '-2'],
-    ];
-
-    $jobBatchRows = [
-        ['#J', 'JOB', 'MACHINE', 'PROFILE', 'MATERIAL', 'USER 1', 'USER 2', 'USER 3', 'USER 4', 'USER 5'],
-        ['#B', 'BATCH', 'QUANTITY', 'LENGTH', 'PART', 'USER 1', 'USER 2', 'USER 3', 'USER 4', 'USER 5']
-    ];
-
-    $orderid = $work_order_details['work_order_id'];
-    $order_details = getOrderDetails($orderid);
-    $job_name = $order_details['job_name'];
-    $jobBatchRows[] =
-        ['J', $job_name, $rollformer_name, $profile, $product_name, 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5']
-    ;
-
-    $jobBatchRows[] =
-        ['B', '1', '10', '120', 'SHEAR ONLY', 'UDF1', 'UDF2', 'UDF3', 'UDF4', 'UDF5']
-    ;
-
-    $folderRows = [
-        ['#FOLDER_PART', 'NAME', 'DESCRIPTION', 'CLAMP_PRESSURE', 'OVERBEND', 'MATERIAL_THICKNESS', 'PAINT_DIRECTION'],
-        ['#FOLDER_OPERATION', 'STEP', 'BACKGAUGE2', 'BACKGAUGE', 'CLAMP_PRESSURE', 'BEND_ANGLE', 'OVERBEND', 'UPPER_JAW', 'BUMP_BEND_ANGLE', 'BUMP_BEND_RADIUS', 'BUMP_BEND_ITERATIONS', 'ROTARY_SHEAR', 'FLIP', 'HELI_ROTATE', 'PROP ROTATE', 'BG ADJUST'],
-        ['FOLDER_PART', 'CANOPY-PANEL', 'TEST PART', '1500', '8', '0.03998', 'UP'],
-        ['FOLDER_OPERATION', '0', '18.99994', '18.99994', '0', '0', '0', '0.7', '0', '0', '0', '200', 'NO', 'NO', 'NO', '0'],
-        ['FOLDER_OPERATION', '1', '18.24994', '18.24994', '0', '90', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
-        ['FOLDER_OPERATION', '2', '17.19994', '17.19994', '0', '90', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
-        ['FOLDER_OPERATION', '3', '14.36995', '14.36995', '0', '95', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'YES', '0'],
-        ['FOLDER_OPERATION', '4', '1.54999', '1.54999', '0', '90', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
-        ['FOLDER_OPERATION', '5', '0.59998', '0.59998', '0', '85', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
-        ['FOLDER_OPERATION', '6', '2.81998', '2.81998', '0', '90', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
-    ];
-
-    $spreadsheet = new Spreadsheet();
-
-    addSheet($spreadsheet, 'Material', $materialRows, true);
-    addSheet($spreadsheet, 'Profile', $profileRows);
-    addSheet($spreadsheet, 'Coil', $coilRows);
-    addSheet($spreadsheet, 'Part_Operation', $partOpRows);
-    addSheet($spreadsheet, 'Job_Batch', $jobBatchRows);
-    addSheet($spreadsheet, 'FolderOps', $folderRows);
-
-    $timestamp = time();
-    $filename = "Work Order_SO_$orderid.xlsx";
+    $filename = "Work_Order_SO_{$orderid}.csv";
     $filepath = __DIR__ . "/temp_exports/$filename";
 
     if (!file_exists(__DIR__ . "/temp_exports")) {
         mkdir(__DIR__ . "/temp_exports", 0777, true);
     }
 
-    $writer = new Xlsx($spreadsheet);
-    $writer->save($filepath);
+    $fp = fopen($filepath, 'w');
+    foreach ($allRows as $fields) {
+        fputcsv($fp, $fields);
+    }
+    fclose($fp);
 
     $baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
     $downloadUrl = $baseUrl . "/temp_exports/$filename";
@@ -1501,9 +1480,9 @@ if (isset($_POST['run_work_order'])) {
         'status' => 'success',
         'url' => $downloadUrl
     ]);
-
     exit;
 }
+
 
 
 

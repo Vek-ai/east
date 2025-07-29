@@ -42,21 +42,11 @@ if(isset($_REQUEST['action'])){
 
             $actions = '<div class="action-btn d-flex justify-content-center flex-wrap gap-2 text-center">';
 
-            
-            $actions .= '<a href="print_coil.php?id=' . $row['coil_defective_id'] . '" role="button" class="print-coil-btn btn-show-pdf" data-id="' . $row['coil_defective_id'] . '" title="Print/Download">
-                <i class="fa fa-print fs-6"></i>
-            </a>';
             $actions .= '<a href="#" role="button" class="view-history-btn" data-id="' . $row['coil_defective_id'] . '" title="View Coil History">
                 <iconify-icon class="fs-7" style="color: #00ffbfff;" icon="solar:history-outline"></iconify-icon>
             </a>';
-            $actions .= '<a href="#" role="button" class="tag-approve-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="approve" data-grade="'.$row['grade'].'" title="Approve Coil as Good">
-                <iconify-icon class="fs-7" style="color: #90ee90;" icon="solar:like-bold"></iconify-icon>
-            </a>';
             $actions .= '<a href="#" role="button" class="tag-review-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="review" title="Tag Coil for EKM Review">
                 <iconify-icon class="fs-7" style="color: #ffd700;" icon="solar:tag-outline"></iconify-icon>
-            </a>';
-            $actions .= '<a href="#" role="button" class="tag-return-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="return" title="Flag Coil for Return to Supplier">
-                <iconify-icon class="fs-7" style="color: #ff0000;" icon="solar:box-outline"></iconify-icon>
             </a>';
             $actions .= '<a href="#" role="button" class="tag-claim-btn" data-id="' . $row['coil_defective_id'] . '" data-action="claim" title="Submit Claim against Coil"> 
                 <iconify-icon class="fs-7" style="color: #ffffff;" icon="solar:clipboard-text-outline"></iconify-icon>
@@ -311,14 +301,6 @@ if(isset($_REQUEST['action'])){
                 echo "Invalid or already archived coil_defective_id";
             }
             exit;
-        }
-
-        if ($change_action === 'quarantine') {
-            logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Quarantined', $note_text);
-        }
-
-        if ($change_action === 'return') {
-            logCoilDefectiveChange($coil_defective_id, 'update', 'Status set to Return to Supplier', $note_text);
         }
 
         $update = "UPDATE coil_defective SET status = '$status' WHERE coil_defective_id = $coil_defective_id";

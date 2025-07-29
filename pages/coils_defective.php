@@ -235,6 +235,15 @@ $page_title = "Defective Coils";
       <div class="modal-body">
         <p id="coilActionMessage"></p>
 
+        <div class="mb-3" id="coilActionGroup">
+            <label for="selectApprovalAction" class="form-label">Approve or Transfer?</label>
+            <select class="form-select " id="selectApprovalAction" name="selectApprovalAction">
+                <option value="" hidden>Select One</option>
+                <option value="approve">Approve</option>
+                <option value="transfer">Transfer to Inventory</option>
+            </select>
+        </div>
+
         <div class="mb-3" id="coilGradeGroup">
             <label for="coilGrade" class="form-label">Grade</label>
             <select class="form-select " id="coilGrade" name="coilGrade">
@@ -498,8 +507,10 @@ $page_title = "Defective Coils";
 
             if (action === 'approve' || action === 'transfer') {
                 $('#coilGradeGroup').show();
+                $('#coilActionGroup').show();
             } else {
                 $('#coilGradeGroup').hide();
+                $('#coilActionGroup').show();
             }
 
             $('#coilNote').val('');
@@ -550,9 +561,18 @@ $page_title = "Defective Coils";
 
         $(document).on('click', '#confirmCoilActionBtn', function () {
             const coilId = $('#coilActionId').val();
-            const action = $('#coilActionType').val();
+            var action = $('#coilActionType').val();
             const grade = $('#coilGrade').val();
             const note = $('#coilNote').val();
+
+            if(action == 'transfer'){
+                action = $('#selectApprovalAction').val();
+            }
+
+            if(!action){
+                alert("Select Approve or Transfer!");
+                return;
+            }
 
             $.ajax({
                 url: 'pages/coils_defective_ajax.php',
