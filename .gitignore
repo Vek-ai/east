@@ -2,3 +2,4 @@
 includes/dbconn.php
 *.png
 *.jpg
+*.webp

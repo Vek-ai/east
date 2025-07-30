@@ -154,6 +154,67 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
+    if ($action == 'upload_payment_screenshot') {
+        $payment_id = intval($_POST['payment_id'] ?? 0);
+        $ledger_id = intval($_POST['ledger_id'] ?? 0);
+        $amount = floatval($_POST['amount'] ?? 0);
+        $upload_dir = '../../uploads/payment_proofs/';
+        $created_by = $_SESSION['customer_id'] ?? 'guest';
+
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+
+        $uploaded_files = [];
+
+        if (!empty($_FILES['screenshots']['name'][0])) {
+            foreach ($_FILES['screenshots']['name'] as $key => $name) {
+                $tmp_name = $_FILES['screenshots']['tmp_name'][$key];
+                $ext = pathinfo($name, PATHINFO_EXTENSION);
+                $safe_name = uniqid('proof_', true) . '.' . $ext;
+
+                if (move_uploaded_file($tmp_name, $upload_dir . $safe_name)) {
+                    $uploaded_files[] = $safe_name;
+                }
+            }
+
+            if (!empty($uploaded_files)) {
+                $screenshots_json = json_encode($uploaded_files);
+
+                if ($payment_id === 0 && $ledger_id !== 0) {
+                    $insert_sql = "
+                        INSERT INTO job_payment (ledger_id, amount, payment_method, created_by, created_at, status)
+                        VALUES ($ledger_id, $amount, 'wire', '$created_by', NOW(), 0)
+                    ";
+
+                    if (mysqli_query($conn, $insert_sql)) {
+                        $payment_id = mysqli_insert_id($conn);
+                    } else {
+                        echo json_encode(['status' => 'error', 'message' => 'Failed to create new payment.']);
+                        exit;
+                    }
+                }
+
+                $update_sql = "
+                    UPDATE job_payment 
+                    SET screenshots = '$screenshots_json'
+                    WHERE payment_id = $payment_id
+                    LIMIT 1
+                ";
+
+                if (mysqli_query($conn, $update_sql)) {
+                    echo json_encode(['status' => 'success', 'payment_id' => $payment_id]);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Failed to update payment record.']);
+                }
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Upload failed.']);
+            }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'No files received.']);
+        }
+    }
+
     if ($action == "payment_history") {
         $ledger_id = intval($_POST['ledger_id'] ?? 0);
 
@@ -162,44 +223,62 @@ if(isset($_REQUEST['action'])) {
             <div class="table-responsive">
                 <table id="payment_history_tbl" class="table table-hover align-middle">
                     <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Payment Method</th>
-                        <th>Cashier</th>
-                        <th>Reference No</th>
-                        <th>Description</th>
-                        <th class="text-end">Amount</th>
-                    </tr>
+                        <tr>
+                            <th>Date</th>
+                            <th>Payment Method</th>
+                            <th>Cashier</th>
+                            <th>Reference No</th>
+                            <th>Description</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end">Amount</th>
+                            <th class="text-center">Action</th>
+                        </tr>
                     </thead>
                     <tbody>
                         <?php
-                            $total_paid = 0;
-                            $query = "SELECT * FROM job_payment WHERE ledger_id = '$ledger_id' ORDER BY created_at DESC";
-                            $result = mysqli_query($conn, $query);
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                $cashier = get_staff_name($row['cashier']);
-                                $payment_method = ucfirst($row['payment_method']);
-                                $amount = number_format($row['amount'], 2);
-                                $reference_no = $row['reference_no'];
-                                $description = $row['description'];
-                                $date = date('F d,Y', strtotime($row['created_at']));
+                        $total_paid = 0;
+                        $query = "SELECT * FROM job_payment WHERE ledger_id = '$ledger_id' ORDER BY created_at DESC";
+                        $result = mysqli_query($conn, $query);
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            $cashier = get_staff_name($row['cashier']);
+                            $payment_method = ucfirst($row['payment_method']);
+                            $amount = number_format($row['amount'], 2);
+                            $reference_no = $row['reference_no'];
+                            $description = $row['description'];
+                            $date = date('F d,Y', strtotime($row['created_at']));
+                            $payment_id = $row['payment_id'];
 
-                                $total_paid += $row['amount'];
-                                echo "<tr>
-                                        <td>$date</td>
-                                        <td>$payment_method</td>
-                                        <td>$cashier</td>
-                                        <td>$reference_no</td>
-                                        <td>$description</td>
-                                        <td class='text-end'>$$amount</td>
-                                    </tr>";
-                            }
+                            $status = intval($row['status']);
+                            $badge = $status === 1
+                                ? "<span class='badge bg-success'>Paid</span>"
+                                : "<span class='badge bg-warning text-dark'>Pending</span>";
+
+                            $total_paid += $row['amount'];
+                            echo "<tr>
+                                    <td>$date</td>
+                                    <td>$payment_method</td>
+                                    <td>$cashier</td>
+                                    <td>$reference_no</td>
+                                    <td>$description</td>
+                                    <td class='text-center'>$badge</td>
+                                    <td class='text-end'>$$amount</td>
+                                    <td class='text-center'>
+                                        <a type='button' class='btnViewProofRow' title='View Proof of Payment' data-payment-id='$payment_id'>
+                                            <iconify-icon icon='mdi:eye' class='fs-7 text-primary'></iconify-icon>
+                                        </a>
+                                        <a type='button' class='btnUploadProofRow' title='Upload Proof of Payment' data-payment-id='$payment_id'>
+                                            <iconify-icon icon='mdi:upload' class='fs-7 text-warning'></iconify-icon>
+                                        </a>
+                                    </td>
+                                </tr>";
+                        }
                         ?>
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="5" class="text-end">Total</th>
+                            <th colspan="6" class="text-end">Total</th>
                             <th class="text-end">$<?= number_format($total_paid, 2) ?></th>
+                            <th></th>
                         </tr>
                     </tfoot>
                 </table>
@@ -207,8 +286,62 @@ if(isset($_REQUEST['action'])) {
             </div>
         </div>
 
+        <div class="modal-footer px-0">
+            <button type="button" class="btn btn-outline-primary btnUploadProof" data-id="<?= $ledger_id ?>">
+                Upload Payment Screenshots
+            </button>
+            <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Close</button>
+        </div>
+
         <?php
     }
+
+    if ($action == 'view_payment_proof') {
+        $payment_id = intval($_POST['payment_id'] ?? 0);
+        $query = "SELECT screenshots FROM job_payment WHERE payment_id = $payment_id LIMIT 1";
+        $result = mysqli_query($conn, $query);
+
+        if ($row = mysqli_fetch_assoc($result)) {
+            $screenshots = json_decode($row['screenshots'] ?? '[]', true);
+
+            if (!empty($screenshots)) {
+                ?>
+                <div id="proofCarousel" class="carousel slide" data-bs-ride="false">
+                    <div class="carousel-inner">
+                        <?php foreach ($screenshots as $index => $filename): ?>
+                            <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                                <img 
+                                    src="../uploads/payment_proofs/<?= htmlspecialchars($filename) ?>" 
+                                    class="d-block w-100 preview-click" 
+                                    style="max-height:500px;object-fit:contain;cursor: zoom-in;" 
+                                    data-src="../uploads/payment_proofs/<?= htmlspecialchars($filename) ?>" 
+                                    alt="Proof <?= $index + 1 ?>">
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#proofCarousel" data-bs-slide="prev"
+                            style="width: 60px; background: rgba(0,0,0,0.5); border: none;">
+                        <span class="carousel-control-prev-icon" style="filter: invert(1); width: 2rem; height: 2rem;"></span>
+                        <span class="visually-hidden fw-bold text-white">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#proofCarousel" data-bs-slide="next"
+                            style="width: 60px; background: rgba(0,0,0,0.5); border: none;">
+                        <span class="carousel-control-next-icon" style="filter: invert(1); width: 2rem; height: 2rem;"></span>
+                        <span class="visually-hidden fw-bold text-white">Next</span>
+                    </button>
+                </div>
+                <?php
+            } else {
+                echo "<p class='text-center'>No screenshots found for this payment.</p>";
+            }
+        } else {
+            echo "<p class='text-danger'>Invalid payment ID.</p>";
+        }
+        exit;
+    }
+
+
+    
 
     mysqli_close($conn);
 }

@@ -7,6 +7,59 @@ if(isset($_REQUEST['customer_id'])){
 }
 ?>
 
+<style>
+    /* Dark themed modal */
+    #wireTransferModal .modal-content {
+        background-color: #1e1e1e;
+        color: #ffffff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+        padding: 16px;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    #wireTransferModal .modal-header {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    #wireTransferModal .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #ffffff;
+    }
+
+    #wireTransferModal .modal-body {
+        padding-top: 8px;
+        font-size: 0.95rem;
+        color: #ffffff;
+    }
+
+    #wireTransferModal ul {
+        padding-left: 20px;
+        margin-bottom: 1rem;
+    }
+
+    #wireTransferModal ul li {
+        margin-bottom: 6px;
+    }
+
+    #wireTransferModal strong {
+        color: #ffffff;
+    }
+
+    #wireTransferModal p {
+        margin-bottom: 10px;
+        line-height: 1.6;
+        color: #ffffff;
+    }
+
+    #wireTransferModal .btn-close {
+        filter: invert(1);
+    }
+</style>
+
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
     <div class="card-body px-0">
@@ -71,26 +124,126 @@ if(isset($_REQUEST['customer_id'])){
         </div>
     </div>
 
-    <div class="modal fade" id="paymentHistoryModal" tabindex="-1" aria-labelledby="paymentHistoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
             <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="paymentHistoryModalLabel">Payment History</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            
-            <div class="modal-body">
-                <div id="paymentHistoryBody">
-                
+                <div class="modal-header d-flex align-items-center">
+                    <h5 class="modal-title">Add Payment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            </div>
-            
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
+                <div class="modal-body text-center">
+                    <button type="button" class="btn btn-primary me-2" id="btnWire">Wire Transfer</button>
+                    <button type="button" class="btn btn-secondary" id="btnCredit">Credit Card</button>
+                </div>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="wireTransferModal" tabindex="-1" aria-labelledby="wireTransferModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="wireTransferModalLabel">Wire Transfer Instructions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Please use the following bank details to complete your wire transfer:</p>
+                    <ul>
+                        <li><strong>Bank Name:</strong> ABC Bank</li>
+                        <li><strong>Account Name:</strong> East Kentucky Metal</li>
+                        <li><strong>Account Number:</strong> 123456789</li>
+                    </ul>
+                    <p>After making the payment, please upload screenshots as proof of payments.</p>
+
+                    <div class="text-center mb-3">
+                        <button type="button" class="btn btn-outline-primary btnUploadProof">
+                            Upload Payment Screenshots
+                        </button>
+                    </div>
+
+                    <p>You may also upload your payment screenshots later in the payment history section on this page.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="paymentHistoryModal" tabindex="-1" aria-labelledby="paymentHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentHistoryModalLabel">Payment History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div id="paymentHistoryBody">
+                    
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="uploadScreenshotModal" tabindex="-1" aria-labelledby="uploadScreenshotModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Payment Screenshots</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="uploadScreenshotForm" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <input type="hidden" name="payment_id" id="upload_payment_id">
+                        <input type="hidden" name="ledger_id" id="upload_ledger_id">
+
+                        <div class="mb-3 text-center">
+                            <input type="file" id="payment_screenshots" name="screenshots[]" multiple accept="image/*" class="d-none">
+                            <button type="button" class="btn btn-primary mb-3" id="uploadTriggerBtn">
+                                <iconify-icon icon="mdi:upload" class="me-1" style="vertical-align: -2px;"></iconify-icon>
+                                Upload Screenshots
+                            </button>
+
+                            <div class="form-text">You can upload multiple JPG, PNG, or PDF files.</div>
+                        </div>
+
+                        <div id="uploadedPreview" class="d-flex flex-wrap gap-3"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="viewProofModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Payment Screenshots</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="viewProofBody">
+                    <div class="text-center text-muted">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="width: 80%; max-width: none; height: 80%;">
+            <div class="modal-content bg-dark text-white" style="height: 100%;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="imagePreviewModalLabel">Preview</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center d-flex justify-content-center align-items-center" style="height: calc(100% - 56px);">
+                    <img id="modalPreviewImage" src="" class="img-fluid rounded shadow" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <div class="card card-body">
         <div class="row">
@@ -292,6 +445,9 @@ if(isset($_REQUEST['customer_id'])){
                                             if($is_credit){
                                                 ?>
                                                 <div class="d-flex justify-content-center gap-2">
+                                                    <a id="paymentBtn" title="Payment" role="button" class="py-1" data-id="<?= $ledger_id ?>">
+                                                        <iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon>
+                                                    </a>
                                                     <a id="paymentHistoryBtn" title="Payment History" role="button" class="py-1" data-id="<?= $ledger_id ?>">
                                                         <i class="fas fa-history text-primary fs-5"></i>
                                                     </a>
@@ -330,6 +486,9 @@ if(isset($_REQUEST['customer_id'])){
     $(document).ready(function() {
         document.title = "<?= $page_title ?>";
 
+        let uploadedImages = [];
+        var active_ledger_id = '';
+
         var table = $('#acct_dtls_tbl').DataTable({
             "order": [],
             "pageLength": 100,
@@ -356,6 +515,31 @@ if(isset($_REQUEST['customer_id'])){
         $('#selectAllCredits').on('change', function() {
             const checked = $(this).is(':checked');
             $('.credit-checkbox').prop('checked', checked);
+        });
+
+        $(document).on('click', '#paymentBtn', function(event) {
+            event.preventDefault();
+            active_ledger_id = $(this).data('id');
+            $('#paymentModal').modal('show');
+        });
+
+        $('#btnWire').on('click', function() {
+            $('#wireTransferModal').modal('show');
+        });
+
+        $(document).on('click', '.btnUploadProof', function () {
+            var ledger_id = $(this).data('id');
+
+            if(!ledger_id){
+                ledger_id = active_ledger_id;
+            }
+
+            $('#upload_ledger_id').val(ledger_id);
+            $('#uploadScreenshotModal').modal('show');
+
+            $('#payment_screenshots').val('');
+            $('#uploadedPreview').empty();
+            uploadedImages = [];
         });
 
         $(document).on('click', '#paymentHistoryBtn', function(event) {
@@ -387,6 +571,120 @@ if(isset($_REQUEST['customer_id'])){
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
+        });
+
+        $(document).on('click', '#uploadTriggerBtn', function () {
+            $('#payment_screenshots').click();
+        });
+
+        $(document).on('click', '.btnUploadProofRow', function () {
+            const paymentId = $(this).data('payment-id');
+            $('#upload_payment_id').val(paymentId);
+            $('#uploadScreenshotModal').modal('show');
+
+            $('#payment_screenshots').val('');
+            $('#uploadedPreview').empty();
+            uploadedImages = [];
+        });
+
+        $(document).on('change', '#payment_screenshots', function (e) {
+            const files = Array.from(e.target.files);
+            uploadedImages = uploadedImages.concat(files);
+            renderImagePreviews();
+        });
+
+        function renderImagePreviews() {
+            $('#uploadedPreview').empty();
+
+            uploadedImages.forEach((file, index) => {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const preview = $(`
+                        <div class="position-relative" style="width: 120px; cursor: pointer;">
+                            <img src="${e.target.result}" class="img-thumbnail preview-click" data-src="${e.target.result}" style="height: 100px; object-fit: cover;">
+                            <button class="btn btn-sm btn-danger position-absolute top-0 end-0" data-index="${index}" style="border-radius: 50%; padding: 2px 6px;">&times;</button>
+                        </div>
+                    `);
+                    $('#uploadedPreview').append(preview);
+                };
+
+                reader.readAsDataURL(file);
+            });
+        }
+
+        $(document).on('click', '#uploadedPreview .btn-danger', function () {
+            const index = $(this).data('index');
+            uploadedImages.splice(index, 1);
+            renderImagePreviews();
+        });
+
+        $(document).on('click', '.btnViewProofRow', function () {
+            const paymentId = $(this).data('payment-id');
+
+            $('#viewProofBody').html("<div class='text-center text-muted py-5'>Loading...</div>");
+            $('#viewProofModal').modal('show');
+
+            $.ajax({
+                url: 'pages/statement_of_account_ajax.php',
+                type: 'POST',
+                data: {
+                    action: 'view_payment_proof',
+                    payment_id: paymentId
+                },
+                success: function (response) {
+                    $('#viewProofBody').html(response);
+                },
+                error: function (xhr, status, error) {
+                    $('#viewProofBody').html("<div class='text-danger text-center'>Failed to load screenshots.</div>");
+                    console.error("View Proof Error:", xhr.responseText);
+                }
+            });
+        });
+
+
+        $(document).on('submit', '#uploadScreenshotForm', function (e) {
+            e.preventDefault();
+
+            const form = $(this)[0];
+            const formData = new FormData(form);
+            formData.append('action', 'upload_payment_screenshot');
+
+            $.ajax({
+                url: 'pages/statement_of_account_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    try {
+                        const res = JSON.parse(response);
+
+                        if (res.status === 'success') {
+                            alert('Upload successful!');
+                            console.log(res);
+                            $('#uploadScreenshotModal').modal('hide');
+                        } else {
+                            alert('Upload failed: ' + (res.message || 'Unknown error'));
+                            console.log(res);
+                        }
+                    } catch (err) {
+                        alert('Unexpected response format.');
+                        console.error(response);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('Upload failed due to server error.');
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+
+
+        $(document).on('click', '.preview-click', function () {
+            const src = $(this).data('src');
+            $('#modalPreviewImage').attr('src', src);
+            $('#imagePreviewModal').modal('show');
         });
         
         $(document).on('click', '.view-order-details', function(event) {
