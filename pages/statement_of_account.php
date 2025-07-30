@@ -303,7 +303,7 @@ $page_title = "Statement of Accounts";
                                         FROM jobs j2
                                         LEFT JOIN job_ledger jl ON jl.job_id = j2.job_id
                                         LEFT JOIN job_payment jp ON jp.ledger_id = jl.ledger_id
-                                        WHERE j2.customer_id = c.customer_id
+                                        WHERE j2.customer_id = c.customer_id AND jp.status = '1'
                                     ) AS last_payment_date
                                 FROM customer c
                                 LEFT JOIN job_ledger l ON l.customer_id = c.customer_id

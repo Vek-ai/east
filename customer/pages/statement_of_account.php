@@ -196,6 +196,13 @@ if(isset($_REQUEST['customer_id'])){
                         <input type="hidden" name="payment_id" id="upload_payment_id">
                         <input type="hidden" name="ledger_id" id="upload_ledger_id">
 
+                        <div class="row">
+                            <div class="mb-4 col-md-6 offset-md-3 text-center">
+                                <label for="amount_payment" class="form-label">Amount Paid</label>
+                                <input type="number" class="form-control text-center" step="0.0001" id="amount_payment" name="amount" placeholder="Enter Amount Paid">
+                            </div>
+                        </div>
+
                         <div class="mb-3 text-center">
                             <input type="file" id="payment_screenshots" name="screenshots[]" multiple accept="image/*" class="d-none">
                             <button type="button" class="btn btn-primary mb-3" id="uploadTriggerBtn">

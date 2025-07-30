@@ -1374,7 +1374,7 @@ if(isset($_REQUEST['action'])) {
                     IFNULL(SUM(p.amount), 0) AS total_paid
                 FROM job_ledger l
                 LEFT JOIN job_payment p ON l.ledger_id = p.ledger_id
-                WHERE l.reference_no = '$orderid'
+                WHERE l.reference_no = '$orderid' AND p.status = '1'
                 GROUP BY l.ledger_id
                 ORDER BY l.created_at ASC
             ";
@@ -1404,7 +1404,7 @@ if(isset($_REQUEST['action'])) {
                 $insert = "
                     INSERT INTO job_payment (
                         ledger_id, amount, payment_method, check_number,
-                        reference_no, description, created_by, cashier
+                        reference_no, description, created_by, cashier, status
                     ) VALUES (
                         '$ledger_id',
                         '$to_pay',
@@ -1413,7 +1413,8 @@ if(isset($_REQUEST['action'])) {
                         '$orderid',
                         '$description',
                         '$paid_by',
-                        '$cashier'
+                        '$cashier',
+                        '1'
                     )
                 ";
                 if (!mysqli_query($conn, $insert)) {

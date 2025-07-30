@@ -184,7 +184,7 @@ if(isset($_REQUEST['action'])) {
                 if ($payment_id === 0 && $ledger_id !== 0) {
                     $insert_sql = "
                         INSERT INTO job_payment (ledger_id, amount, payment_method, created_by, created_at, status)
-                        VALUES ($ledger_id, $amount, 'wire', '$created_by', NOW(), 0)
+                        VALUES ($ledger_id, $amount, 'wire', '$created_by', NOW(), '0')
                     ";
 
                     if (mysqli_query($conn, $insert_sql)) {
@@ -249,9 +249,17 @@ if(isset($_REQUEST['action'])) {
                             $payment_id = $row['payment_id'];
 
                             $status = intval($row['status']);
-                            $badge = $status === 1
-                                ? "<span class='badge bg-success'>Paid</span>"
-                                : "<span class='badge bg-warning text-dark'>Pending</span>";
+                            switch ($status) {
+                                case 1:
+                                    $badge = "<span class='badge bg-success'>Paid</span>";
+                                    break;
+                                case 2:
+                                    $badge = "<span class='badge bg-danger'>Rejected</span>";
+                                    break;
+                                default:
+                                    $badge = "<span class='badge bg-warning text-dark'>Pending</span>";
+                                    break;
+                            }
 
                             $total_paid += $row['amount'];
                             echo "<tr>

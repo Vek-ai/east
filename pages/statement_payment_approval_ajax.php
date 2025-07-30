@@ -12,14 +12,16 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == 'view_payment_proof') {
         $payment_id = intval($_POST['payment_id'] ?? 0);
-        $query = "SELECT screenshots FROM job_payment WHERE payment_id = $payment_id LIMIT 1";
+        $query = "SELECT screenshots, amount FROM job_payment WHERE payment_id = $payment_id LIMIT 1";
         $result = mysqli_query($conn, $query);
 
         if ($row = mysqli_fetch_assoc($result)) {
             $screenshots = json_decode($row['screenshots'] ?? '[]', true);
+            $amount = number_format($row['amount'], 2);
 
             if (!empty($screenshots)) {
                 ?>
+                
                 <div id="proofCarousel" class="carousel slide no-animation" data-bs-ride="false">
                     <div class="carousel-inner">
                         <?php foreach ($screenshots as $index => $filename): ?>
@@ -33,6 +35,7 @@ if(isset($_REQUEST['action'])) {
                             </div>
                         <?php endforeach; ?>
                     </div>
+
                     <button class="carousel-control-prev" type="button" data-bs-target="#proofCarousel" data-bs-slide="prev"
                         style="width: 60px; background-color: rgba(255, 255, 255, 0.2); border: none;">
                         <span class="carousel-control-prev-icon" aria-hidden="true"
@@ -46,8 +49,11 @@ if(isset($_REQUEST['action'])) {
                             style="filter: brightness(0) invert(1); width: 2rem; height: 2rem;"></span>
                         <span class="visually-hidden fw-bold text-white">Next</span>
                     </button>
-
                 </div>
+
+                <h3 class="text-center mt-3 fw-bold">
+                    Amount Paid: $<?= $amount ?>
+                </h3>
                 <?php
             } else {
                 echo "<p class='text-center'>No screenshots found for this payment.</p>";
@@ -57,6 +63,7 @@ if(isset($_REQUEST['action'])) {
         }
         exit;
     }
+
 
     if ($action == 'approve_payment' || $action == 'reject_payment') {
         $payment_id = intval($_POST['payment_id'] ?? 0);
