@@ -1152,6 +1152,7 @@ function getCustomerCreditTotal($customer_id) {
             SELECT SUM(amount) AS total_payment 
             FROM job_payment 
             WHERE ledger_id IN ($ledger_id_list)
+            AND status = '1'
         ";
 
         $payment_result = mysqli_query($conn, $payment_query);
@@ -1638,7 +1639,8 @@ function getTotalJobPayments($ledger_id) {
 
     $query = "SELECT SUM(amount) AS total_payment 
               FROM job_payment
-              WHERE ledger_id = $ledger_id";
+              WHERE ledger_id = $ledger_id
+              AND status = '1'";
 
     $result = mysqli_query($conn, $query);
 
