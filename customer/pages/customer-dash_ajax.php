@@ -11,7 +11,7 @@ if (isset($_POST['search_orders'])) {
     $customerid = mysqli_real_escape_string($conn, string: $_POST['customerid']);
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
-?>
+    ?>
     <div class="month-table">
         <div class="table-responsive mt-3">
             <table class="table align-middle  mb-0 no-wrap text-center">
@@ -89,7 +89,7 @@ if (isset($_POST['search_estimates'])) {
     $customerid = mysqli_real_escape_string($conn, string: $_POST['customerid']);
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
-?>
+    ?>
     <div class="month-table">
         <div class="table-responsive mt-3">
             <table class="table align-middle  mb-0 no-wrap text-center">
@@ -362,13 +362,7 @@ if (isset($_POST['search_jobs'])) {
                                 <?php
                             }
                         }
-                    } else {
-                        ?>
-                        <tr>
-                            <td colspan="6" class="text-center">No jobs found</td>
-                        </tr>
-                        <?php
-                    }
+                    } 
                     ?>
                     </tbody>
 
@@ -491,7 +485,7 @@ if (isset($_REQUEST['query'])) {
 
         }
     } else {
-        $tableHTML .= '<tr><td colspan="8" class="text-center">No products found</td></tr>';
+        $tableHTML .= '<tr><td colspan="4" class="text-center">No products found</td></tr>';
     }
     
     //echo $tableHTML;
