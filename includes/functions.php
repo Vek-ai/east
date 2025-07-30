@@ -1870,4 +1870,29 @@ function getAvailableCoils($color_id = '', $grade = '', $width = '') {
     return $result;
 }
 
+function getJobID($job_name, $customer_id) {
+    global $conn;
+
+    $job_name = $conn->real_escape_string($job_name);
+    $customer_id = intval($customer_id);
+
+    $sql = "
+        SELECT job_id 
+        FROM jobs 
+        WHERE job_name = '$job_name' 
+          AND customer_id = $customer_id 
+        LIMIT 1
+    ";
+
+    $result = $conn->query($sql);
+
+    if ($result && $row = $result->fetch_assoc()) {
+        return intval($row['job_id']);
+    }
+
+    return null;
+}
+
+
+
 ?>

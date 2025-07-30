@@ -364,6 +364,35 @@ if (isset($_POST['chng_status'])) {
                         $recipientIds = getAdminIDs();
                         createNotification($actorId, $actionType, $targetId, $targetType, $message, 'cashier', $url);
 
+                        $job_id = getJobID($approval_data['job_name'], $approval_data['customerid']);
+                        $created_by = 0;
+                        $amount = floatval($approval_data['discounted_price']);
+                        $job_id_value = $job_id ? "'$job_id'" : '0';
+                        $po_number = $conn->real_escape_string($approval_data['job_po']);
+                        $pay_type = $approval_data['pay_type'];
+                        $customer_id = intval($approval_data['customerid']);
+
+                        $ledger_sql = "
+                            INSERT INTO job_ledger (
+                                job_id, customer_id, entry_type, amount, po_number, reference_no, description,
+                                check_number, created_by, created_at, payment_method
+                            ) VALUES (
+                                $job_id_value,
+                                $customer_id,
+                                'credit',
+                                $amount,
+                                '$po_number',
+                                '',
+                                'Approval converted to order',
+                                NULL,
+                                $created_by,
+                                NOW(),
+                                '$pay_type'
+                            )
+                        ";
+
+                        mysqli_query($conn, $ledger_sql);
+
                         echo "success";
                     } else {
                         echo "Error inserting order: " . $conn->error;
