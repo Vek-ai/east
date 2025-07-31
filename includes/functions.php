@@ -1083,7 +1083,7 @@ function getCustomerTotalAvail($customer_id) {
         SELECT jd.deposit_remaining AS amount
         FROM job_deposits jd
         JOIN jobs j ON jd.job_id = j.job_id
-        WHERE j.customer_id = '$customer_id'
+        WHERE j.customer_id = '$customer_id' AND jd.deposit_status = '1'
     ";
 
     $result = mysqli_query($conn, $query);

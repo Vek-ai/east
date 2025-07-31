@@ -11,7 +11,7 @@ if (isset($_POST['search_orders'])) {
     $customerid = mysqli_real_escape_string($conn, string: $_POST['customerid']);
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
-?>
+    ?>
     <div class="month-table">
         <div class="table-responsive mt-3">
             <table class="table align-middle  mb-0 no-wrap text-center">
@@ -89,7 +89,7 @@ if (isset($_POST['search_estimates'])) {
     $customerid = mysqli_real_escape_string($conn, string: $_POST['customerid']);
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
-?>
+    ?>
     <div class="month-table">
         <div class="table-responsive mt-3">
             <table class="table align-middle  mb-0 no-wrap text-center">
@@ -210,7 +210,7 @@ if (isset($_POST['search_jobs'])) {
 
                             $deposit_query = "
                                 SELECT * FROM job_deposits 
-                                WHERE job_id = '$job_id'
+                                WHERE job_id = '$job_id' AND deposit_status = '1'
                                 " . (!empty($date_from) && !empty($date_to) ? "AND DATE(created_at) BETWEEN '$date_from' AND '$date_to'" : "") . "
                                 ORDER BY created_at ASC
                             ";
@@ -1182,7 +1182,7 @@ if (isset($_POST['save_job'])) {
 if (isset($_POST['deposit_job'])) {
     $job_id = intval($_POST['job_id'] ?? 0);
     $deposit_amount = floatval($_POST['deposit_amount'] ?? 0);
-    $deposited_by = trim($_POST['deposited_by'] ?? '');
+    $deposited_by = $_SESSION['userid'];
     $reference_no = trim($_POST['reference_no'] ?? '');
     $payment_method = $_POST['type'] ?? 'cash';
     $check_no = $_POST['check_no'] ?? null;
@@ -1193,6 +1193,11 @@ if (isset($_POST['deposit_job'])) {
 
     if ($check_result && mysqli_num_rows($check_result) > 0) {
         $check_no_sql = $payment_method === 'check' ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
+
+        $deposit_status = 1;
+        if ($payment_method === 'cash' && $deposit_amount > 10000) {
+            $deposit_status = 0;
+        }
 
         $insert = "
             INSERT INTO job_ledger (job_id, customer_id, entry_type, amount, payment_method, check_number, reference_no, description, created_by)
@@ -1224,7 +1229,7 @@ if (isset($_POST['deposit_job'])) {
                     '$job_id',
                     '$deposit_amount',
                     '$deposit_amount',
-                    1,
+                    '$deposit_status',
                     '" . mysqli_real_escape_string($conn, $deposited_by) . "',
                     '" . mysqli_real_escape_string($conn, $reference_no) . "',
                     '$payment_method',
@@ -1232,6 +1237,20 @@ if (isset($_POST['deposit_job'])) {
                 )
             ";
             mysqli_query($conn, $insert_deposit);
+
+            if ($payment_method === 'cash' && $deposit_amount > 10000) {
+                $deposit_id = mysqli_insert_id($conn);
+
+                $actorId = $_SESSION['userid'];
+                $actor_name = get_staff_name($actorId);
+                $actionType = 'deposit_approval';
+                $targetId = $deposit_id;
+                $targetType = 'Cash Deposit Approval';
+                $message = "$actor_name has requested cash deposit approval";
+                $url = '?page=job_deposit_approval';
+                $recipientIds = getAdminIDs();
+                createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
+            }
 
             $update = "
                 UPDATE jobs 

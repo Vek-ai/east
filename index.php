@@ -1429,6 +1429,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "coils_claim") {include 'pages/coils_claim.php';}
             if ($_REQUEST['page'] == "notifications") {include 'pages/notifications_list.php';}
             if ($_REQUEST['page'] == "statement_payment_approval") {include 'pages/statement_payment_approval.php';}
+            if ($_REQUEST['page'] == "job_deposit_approval") {include 'pages/job_deposit_approval.php';}
           ?>
         </div>
       </div>
