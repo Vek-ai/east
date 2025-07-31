@@ -160,6 +160,7 @@ if(isset($_POST['fetch_order'])){
     $totalquantity = 0;
     $timestamp = time();
     $no = $timestamp . 1;
+    $total_weight = 0;
     $cart = getCartDataByCustomerId($customer_id);
     if (!empty($cart)) {
         foreach ($cart as $keys => $values) {
@@ -389,7 +390,39 @@ if(isset($_POST['fetch_order'])){
                                     We'll email you when your order is ready.
                                 </small>
                             </div>
-                            
+
+                            <div id="truck_div" class="col-md-3 mb-3 d-none">
+                                <label for="truck" class="form-label mb-0">Truck</label>
+                                <div class="mb-2">
+                                    <?php
+                                        $query = "
+                                            SELECT id, truck_name, max_limit
+                                            FROM trucks
+                                            WHERE max_limit >= $total_weight
+                                            ORDER BY max_limit ASC
+                                            LIMIT 1
+                                        ";
+                                        $result = mysqli_query($conn, $query);
+
+                                        if ($row = mysqli_fetch_assoc($result)) {
+                                            $id = $row['id'];
+                                            $name = htmlspecialchars($row['truck_name']);
+                                            echo "
+                                                <select class='form-control-plaintext p-0 ms-2 bg-transparent' id='truck' name='truck_id' disabled>
+                                                    <option value='$id' selected>$name</option>
+                                                </select>
+                                            ";
+                                        } else {
+                                            echo "
+                                                <div class='text-danger small'>
+                                                    No suitable truck found.
+                                                    <a href='/?page=truck' class='text-decoration-underline'>Add one here</a>.
+                                                </div>
+                                            ";
+                                        }
+                                        ?>
+                                </div>
+                            </div>
 
                             <div class="mb-2">
                                 <div class="form-check">
@@ -399,8 +432,6 @@ if(isset($_POST['fetch_order'])){
                                     </label>
                                 </div>
                             </div>
-
-                            
 
                             <!-- Hidden by default -->
                             <div id="separate_address_section" class="d-none">

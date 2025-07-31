@@ -2921,6 +2921,7 @@ $(document).ready(function() {
         var discount = $('#order_discount').val();
         var delivery_amt = $('#delivery_amt').val();
         var cash_amt = $('#order_payable_amt').val();
+        var truck = $('#truck').val() || '';
         var credit_amt = 0;
         var job_name = $('#order_job_name').val();
         var job_id = $('#order_job_name option:selected').data('job-id');
@@ -2959,6 +2960,7 @@ $(document).ready(function() {
                     applyStoreCredit: applyStoreCredit,
                     applyJobDeposit: applyJobDeposit,
                     payment_method: payment_method,
+                    truck: truck,
                     save_order: 'save_order'
                 },
                 success: function(response) {
@@ -3607,6 +3609,14 @@ $(document).ready(function() {
     });
 
     $(document).on('change', 'input[name="order_delivery_method"]', function () {
+        const selectedMethod = $(this).val();
+
+        if (selectedMethod === 'deliver') {
+            $('#truck_div').removeClass('d-none');
+        } else {
+            $('#truck_div').addClass('d-none');
+        }
+        
         calculateDeliveryAmount();
     });
 

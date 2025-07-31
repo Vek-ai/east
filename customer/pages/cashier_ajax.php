@@ -888,6 +888,7 @@ if (isset($_POST['save_order'])) {
     $deliver_fname = mysqli_real_escape_string($conn, $_POST['deliver_fname'] ?? '');
     $deliver_lname = mysqli_real_escape_string($conn, $_POST['deliver_lname'] ?? '');
     $pay_type = mysqli_real_escape_string($conn, $_POST['payment_method'] ?? '');
+    $truck = intval($_POST['truck']);
 
     $estimateid = intval($_SESSION['estimateid']);
     $customerid = intval($_SESSION['customer_id']);
