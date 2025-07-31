@@ -522,7 +522,7 @@ if(isset($_REQUEST['customer_id'])){
                                                     </a>
                                                 <?php endif; ?>
 
-                                                <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
+                                                <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
                                                     <i class="text-success fa fa-print fs-5"></i>
                                                 </a>
 
@@ -619,10 +619,17 @@ if(isset($_REQUEST['customer_id'])){
                 }
                 ?>
 
-                <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
-                    <button id="printBtn" class="btn btn-success">Print</button>
-                    <button id="downloadBtn" class="btn btn-primary">Download</button>
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <div class="mt-3 d-flex justify-content-between flex-wrap">
+                    <div>
+                        <a href="print_order_delivery.php" class="btn-print-delivery btn btn-warning" role="button">
+                            Print Delivery
+                        </a>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button id="printBtn" class="btn btn-success">Print</button>
+                        <button id="downloadBtn" class="btn btn-primary">Download</button>
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -677,6 +684,7 @@ if(isset($_REQUEST['customer_id'])){
 
         var pdfUrl = '';
         var isPrinting = false;
+        var print_order_id = '';
 
         var table = $('#order_list_tbl').DataTable({
             "order": [],
@@ -814,7 +822,6 @@ if(isset($_REQUEST['customer_id'])){
                     action: "fetch_trim_queue"
                 },
                 success: function(response) {
-                    console.log();
                     $('#viewTrimQueueBody').html(response);
                     $('#viewTrimQueueModal').modal('show');
                 },
@@ -923,7 +930,6 @@ if(isset($_REQUEST['customer_id'])){
                     order_data: JSON.stringify(formData)
                 },
                 success: function (response) {
-                    console.log("Save Response:", response);
                     if(response.trim() == 'success'){
                         alert("Successfully saved!");
                         location.reload();
@@ -994,8 +1000,17 @@ if(isset($_REQUEST['customer_id'])){
             });
         });
 
+        $(document).on('click', '.btn-print-delivery', function(e) {
+            e.preventDefault();
+            pdfUrl = "print_order_delivery.php?id=" +print_order_id;
+            document.getElementById('pdfFrame').src = pdfUrl;
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            modal.show();
+        });
+
         $(document).on('click', '.btn-show-pdf', function(e) {
             e.preventDefault();
+            print_order_id = $(this).data('id');
             pdfUrl = $(this).attr('href');
             document.getElementById('pdfFrame').src = pdfUrl;
             const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
@@ -1007,11 +1022,10 @@ if(isset($_REQUEST['customer_id'])){
 
             const pricing_id = $(this).data('id');
             const $iframe = $('#pdfFrame');
-            let src = $iframe.attr('src');
 
-            const [baseUrl, queryString] = src.split('?');
-            const params = new URLSearchParams(queryString || '');
-
+            const baseUrl = 'print_order_product.php';
+            const params = new URLSearchParams();
+            params.set('id', print_order_id);
             params.set('pricing_id', pricing_id);
 
             const newSrc = baseUrl + '?' + params.toString();
@@ -1070,7 +1084,6 @@ if(isset($_REQUEST['customer_id'])){
                         action: 'update_status'
                     },
                     success: function (response) {
-                        console.log(response);
                         try {
                             var jsonResponse = JSON.parse(response);  
                         } catch (e) {
@@ -1157,8 +1170,6 @@ if(isset($_REQUEST['customer_id'])){
                     action: 'update_status'
                 },
                 success: function (response) {
-                    console.log(response);
-
                     try {
                         var jsonResponse = JSON.parse(response);
                     } catch (e) {
@@ -1224,8 +1235,6 @@ if(isset($_REQUEST['customer_id'])){
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    console.log(response);
-
                     try {
                         var jsonResponse = JSON.parse(response);
                     } catch (e) {

@@ -192,6 +192,11 @@ if (mysqli_num_rows($result) > 0) {
                 
             }
             
+        }else {
+            $pdf->SetFont('Arial', 'I', 10);
+            $pdf->SetTextColor(255, 0, 0);
+            $pdf->Cell(0, 10, 'No approved products found for dispatch.', 0, 1, 'C');
+            $pdf->SetTextColor(0, 0, 0);
         }
 
         $pdf->Ln(5);
