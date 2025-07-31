@@ -1411,6 +1411,17 @@ function getTrussTypeName($id) {
     return '';
 }
 
+function getTruckName($id) {
+    global $conn;
+    $id = intval($id);
+    $query = "SELECT truck_name FROM trucks WHERE id = '$id'";
+    $result = mysqli_query($conn, $query);
+    if ($row = mysqli_fetch_assoc($result)) {
+        return $row['truck_name'];
+    }
+    return '';
+}
+
 function getTrussMaterialName($id) {
     global $conn;
     $id = intval($id);

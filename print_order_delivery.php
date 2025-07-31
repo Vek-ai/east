@@ -125,6 +125,11 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->Ln(5);
 
+        $pdf->SetXY($col1_x, $pdf->GetY());
+        $pdf->Cell(10, 5, 'Truck: ' .getTruckName($row_orders['truck']), 0, 0, 'L');
+
+        $pdf->Ln(5);
+
         $total_price = 0;
         $total_qty = 0;
 
