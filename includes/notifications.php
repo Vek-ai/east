@@ -254,7 +254,13 @@ function getNotifDetails($type) {
             'icon' => 'solar:document-line-duotone',
             'iconColor' => '#6610f2',
             'iconBg' => '#e6e0f8',
-        ]
+        ],
+        'deposit_approval' => [
+            'title' => 'Job Deposit Approval',
+            'icon' => 'solar:wallet-line-duotone',
+            'iconColor' => '#20c997',
+            'iconBg' => '#d2f4ea',
+        ],
     ];
 
     return $actions[$type] ?? [

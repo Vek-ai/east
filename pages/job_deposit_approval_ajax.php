@@ -76,6 +76,7 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action === 'approve_deposit') {
+        $deposit_id = intval($_REQUEST['id'] ?? 0);
         $sql = "UPDATE job_deposits SET deposit_status = 1 WHERE deposit_id = $deposit_id";
         if (mysqli_query($conn, $sql)) {
             echo json_encode(['status' => 'success', 'message' => 'Deposit approved successfully.']);
@@ -86,6 +87,7 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action === 'reject_deposit') {
+        $deposit_id = intval($_REQUEST['id'] ?? 0);
         $sql = "UPDATE job_deposits SET deposit_status = 3 WHERE deposit_id = $deposit_id";
         if (mysqli_query($conn, $sql)) {
             echo json_encode(['status' => 'success', 'message' => 'Deposit rejected successfully.']);

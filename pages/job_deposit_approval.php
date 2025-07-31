@@ -241,6 +241,8 @@ $page_title = "Job Deposit Approval";
                     alert('Failed');
                     console.error(res.message || 'Unknown error', response);
                 }
+
+                location.reload();
             },
             error: function (xhr) {
                 alert('Failed');
