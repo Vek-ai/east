@@ -271,5 +271,119 @@ function getNotifDetails($type) {
     ];
 }
 
+function getCustomerNotifDetails($type) {
+    $actions = [
+        'return_approved' => [
+            'title' => 'Return Approved',
+            'icon' => 'solar:check-circle-line-duotone',
+            'iconColor' => '#198754',
+            'iconBg' => '#d1e7dd',
+        ],
+        'return_rejected' => [
+            'title' => 'Return Rejected',
+            'icon' => 'solar:close-circle-line-duotone',
+            'iconColor' => '#dc3545',
+            'iconBg' => '#f8d7da',
+        ],
+    ];
+
+    return $actions[$type] ?? [
+        'title' => 'New Notification',
+        'icon' => 'solar:bell-line-duotone',
+        'iconColor' => '#0d6efd',
+        'iconBg' => '#d0e2ff',
+    ];
+}
+
+function createCustomerNotification($actorId, $actionType, $targetId, $targetType, $message, $recipientIds = [], $url = null) {
+    $pdo = getPDO();
+
+    try {
+        $pdo->beginTransaction();
+
+        $audienceScope = null;
+
+        if (is_string($recipientIds)) {
+            switch (strtolower($recipientIds)) {
+                case 'all':
+                    $audienceScope = 0;
+                    break;
+                default:
+                    $audienceScope = null;
+            }
+            $recipientIds = [];
+        }
+
+        if (is_numeric($recipientIds)) {
+            $recipientIds = [$recipientIds];
+        }
+
+        $stmt = $pdo->prepare("
+            INSERT INTO customer_notifications (
+                actor_id, action_type, target_id, target_type, message, url, audience_scope, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+        ");
+        $stmt->execute([$actorId, $actionType, $targetId, $targetType, $message, $url, $audienceScope]);
+
+        $notificationId = $pdo->lastInsertId();
+
+        if (!empty($recipientIds)) {
+            $stmt = $pdo->prepare("
+                INSERT INTO customer_notification_recipients (notification_id, recipient_id, is_read)
+                VALUES (?, ?, 0)
+            ");
+            foreach ($recipientIds as $recipientId) {
+                $stmt->execute([$notificationId, $recipientId]);
+            }
+        }
+
+        $pdo->commit();
+        return $notificationId;
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        error_log("Customer notification failed: " . $e->getMessage());
+        return false;
+    }
+}
+
+function getCustomerNotifications($customerId, $audience = null) {
+    global $conn;
+
+    $customerId = intval($customerId);
+    $audienceFilter = '';
+
+    if ($audience !== null) {
+        $audience = intval($audience);
+        $audienceFilter = "AND (n.audience_scope = $audience)";
+    }
+
+    $sql = "
+        SELECT 
+            n.id,
+            n.message,
+            n.url,
+            n.created_at,
+            n.action_type,
+            r.is_read,
+            r.read_at
+        FROM customer_notification_recipients r
+        JOIN customer_notifications n ON r.notification_id = n.id
+        WHERE r.recipient_id = $customerId
+        $audienceFilter
+        ORDER BY n.created_at DESC
+        LIMIT 10
+    ";
+
+    $result = mysqli_query($conn, $sql);
+    $notifications = [];
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $notifications[] = $row;
+        }
+    }
+
+    return $notifications;
+}
 
 ?>

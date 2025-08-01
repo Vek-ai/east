@@ -126,6 +126,7 @@ $page_title = "Return/Refund List";
                                 <th>Invoice #</th>
                                 <th>Customer</th>
                                 <th>Product Amount</th>
+                                <th>Status</th>
                                 <th>Date</th>
                                 <th>Time</th>
                                 <th>Salesperson</th>
@@ -155,9 +156,6 @@ $page_title = "Return/Refund List";
             <div class="modal-body">
                 <div id="order-details">
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>
@@ -290,6 +288,23 @@ $page_title = "Return/Refund List";
         });
     }
 
+    function loadPendingDetails(orderid){
+        $.ajax({
+            url: 'pages/returns_list_ajax.php',
+            type: 'POST',
+            data: {
+                orderid: orderid,
+                fetch_pending_details: "fetch_pending_details"
+            },
+            success: function(response) {
+                $('#order-details').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
     $(document).ready(function() {
         document.title = "<?= $page_title ?>";
 
@@ -408,17 +423,24 @@ $page_title = "Return/Refund List";
 
                     if (response.orders.length > 0) {
                         response.orders.forEach(order => {
+                            const viewBtn = order.status == 0
+                                ? `<a href="javascript:void(0)" class="text-warning" id="view_pending_return" data-id="${order.orderid}" title="View Pending">
+                                        <i class="fa fa-search"></i>
+                                </a>`
+                                : `<a href="javascript:void(0)" class="text-primary" id="view_order_details" data-id="${order.orderid}" title="View Details">
+                                        <i class="fa fa-eye"></i>
+                                </a>`;
+
                             table.row.add([
                                 order.orderid,
                                 order.customer_name,
                                 `$ ${parseFloat(order.amount).toFixed(2)}`,
+                                order.status_badge,
                                 order.formatted_date,
                                 order.formatted_time,
                                 order.cashier,
                                 `
-                                <a href="javascript:void(0)" class="text-primary" id="view_order_details" data-id="${order.orderid}">
-                                    <i class="fa fa-eye"></i>
-                                </a>
+                                ${viewBtn}
                                 <a href="print_return_product.php?id=${order.orderid}" 
                                     class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" 
                                     data-id="${order.orderid}" data-bs-toggle="tooltip" 
@@ -442,7 +464,7 @@ $page_title = "Return/Refund List";
 
                         $('#returns_table tfoot').html(`
                             <tr>
-                                <td colspan="2" class="text-end fw-bold">Total Orders:</td>
+                                <td colspan="3" class="text-end fw-bold">Total Orders:</td>
                                 <td>${response.total_count}</td>
                                 <td colspan="2" class="text-end fw-bold">Total Amount:</td>
                                 <td class="text-end fw-bold">$ ${parseFloat(response.total_amount).toFixed(2)}</td>
@@ -473,6 +495,65 @@ $page_title = "Return/Refund List";
             var orderid = $(this).data('id');
             loadOrderDetails(orderid);
             $('#view_order_details_modal').modal('toggle');
+        });
+
+        $(document).on('click', '#view_pending_return', function(event) {
+            var orderid = $(this).data('id');
+            loadPendingDetails(orderid);
+            $('#view_order_details_modal').modal('toggle');
+        });
+
+        $(document).on('click', '.btn-approve-return', function () {
+            const orderId = $(this).data('id');
+
+            $.ajax({
+                type: 'POST',
+                url: 'pages/returns_list_ajax.php',
+                data: {
+                    approve_return: 'approve_return',
+                    orderid: orderId
+                },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.status === 'success') {
+                        alert('Success');
+                    } else {
+                        alert('Failed');
+                        console.error(response.message);
+                    }
+                },
+                error: function (xhr) {
+                    alert('Failed');
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+
+        $(document).on('click', '.btn-reject-return', function () {
+            const orderId = $(this).data('id');
+
+            $.ajax({
+                type: 'POST',
+                url: 'pages/returns_list_ajax.php',
+                data: {
+                    reject_return: 'reject_return',
+                    orderid: orderId
+                },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.status === 'success') {
+                        alert('Success');
+                        console.error(response);
+                    } else {
+                        alert('Failed');
+                        console.error(response);
+                    }
+                },
+                error: function (xhr) {
+                    alert('Failed');
+                    console.error(xhr.responseText);
+                }
+            });
         });
 
         $(document).on('click', '.btn-show-pdf', function(e) {
