@@ -408,7 +408,7 @@ if(isset($_POST['fetch_cart'])){
                             $total += $subtotal;
                             $total_customer_price += $customer_price;
                             $no++;
-                            $total_weight += $values["weight"] * $values["quantity_cart"];
+                            $total_weight += $product["weight"] * $values["quantity_cart"];
                             $customer_savings += $subtotal - $customer_price;
                         }
                     }

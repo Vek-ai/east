@@ -223,7 +223,7 @@ if(isset($_POST['fetch_order'])){
             $total_customer_price += $customer_price;
             $total_tax = number_format((floatval($total_customer_price)) * $tax, 2);
 
-            $total_weight += $values["weight"] * $values["quantity_cart"];
+            $total_weight += $product["weight"] * $values["quantity_cart"];
             $no++;
         }
     }
