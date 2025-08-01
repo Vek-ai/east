@@ -3,6 +3,7 @@ include __DIR__ . "/calculate_price.php";
 include __DIR__ . "/notifications.php";
 include __DIR__ . "/../modules/emailtemplates.php";
 
+
 function get_userid(){
     if (isset($_COOKIE['userid'])) {
         $userId = $_COOKIE['userid'];
