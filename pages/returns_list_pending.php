@@ -2,7 +2,7 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Return/Refund List";
+$page_title = "Pending Return/Refund List";
 ?>
 
 <div class="container-fluid">
@@ -14,10 +14,10 @@ $page_title = "Return/Refund List";
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                <a class="text-muted text-decoration-none" href="">Sales
+                <a class="text-muted text-decoration-none" href="?page=">Home
                 </a>
                 </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Return/Refund List</li>
+                <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
             </ol>
             </nav>
         </div>
@@ -160,92 +160,11 @@ $page_title = "Return/Refund List";
     </div>
 </div>
 
-<div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-xl" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Print/View Outputs</h5>
-        <button type="button" class="close" data-bs-dismiss="modal">
-          <span>&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
-
-        <div class="container mt-3 border rounded p-3" style="width: 100%;">
-        <h6 class="mb-3">Download Outputs</h6>
-        <div class="row">
-            <div class="col-md-4">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="officeCopy">
-                <label class="form-check-label" style="color: #ffffff;" for="officeCopy">Cover Sheet (Office Copy)</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="customerCopy">
-                <label class="form-check-label" style="color: #ffffff;" for="customerCopy">Cover Sheet (Customer Copy)</label>
-            </div>
-            </div>
-            <div class="col-md-4">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="ekmCost">
-                <label class="form-check-label" style="color: #ffffff;" for="ekmCost">EKM Cost Breakdown</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="noPrice">
-                <label class="form-check-label" style="color: #ffffff;" for="noPrice">Cover Sheet w/o Price</label>
-            </div>
-            </div>
-            <div class="col-md-4">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="jobCsv">
-                <label class="form-check-label" style="color: #ffffff;" for="jobCsv">Job Data CSV</label>
-            </div>
-            </div>
-        </div>
-        <div class="mt-3 text-end">
-            <button id="printBtn" class="btn btn-success me-2">Print</button>
-            <button id="downloadBtn" class="btn btn-primary me-2">Download</button>
-            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="sendOrderModal" tabindex="-1" aria-labelledby="sendOrderModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="sendOrderModalLabel">Send Options</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center">
-                <h6 class="mb-3">How would you like to send the order to the customer?</h6>
-
-                <form class="send_order_form d-flex flex-column flex-md-row align-items-center justify-content-center gap-2" method="post">
-                    <input id="send_order_id" type="hidden" name="send_order_id" value="">
-                    <input id="send_customer_id" type="hidden" name="send_customer_id" value="">
-
-                    <select name="send_option" class="form-select form-select-sm w-auto">
-                        <option value="email">Email</option>
-                        <option value="sms">Text Message</option>
-                        <option value="both">Both</option>
-                    </select>
-
-                    <button type="submit" class="btn btn-sm btn-primary">Send</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
     $("#customer_search").autocomplete({
         source: function(request, response) {
             $.ajax({
-                url: "pages/returns_list_ajax.php",
+                url: "pages/returns_list_pending_ajax.php",
                 type: 'post',
                 dataType: "json",
                 data: {
@@ -270,26 +189,9 @@ $page_title = "Return/Refund List";
         minLength: 0
     });
 
-    function loadOrderDetails(orderid){
-        $.ajax({
-            url: 'pages/returns_list_ajax.php',
-            type: 'POST',
-            data: {
-                orderid: orderid,
-                fetch_order_details: "fetch_order_details"
-            },
-            success: function(response) {
-                $('#order-details').html(response);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    }
-
     function loadPendingDetails(orderid){
         $.ajax({
-            url: 'pages/returns_list_ajax.php',
+            url: 'pages/returns_list_pending_ajax.php',
             type: 'POST',
             data: {
                 orderid: orderid,
@@ -393,7 +295,7 @@ $page_title = "Return/Refund List";
             const tax_status = $('#filter-tax').val();
 
             $.ajax({
-                url: 'pages/returns_list_ajax.php',
+                url: 'pages/returns_list_pending_ajax.php',
                 type: 'POST',
                 dataType: 'json',
                 data: {
@@ -422,6 +324,11 @@ $page_title = "Return/Refund List";
 
                     if (response.orders.length > 0) {
                         response.orders.forEach(order => {
+                            const viewBtn = order.status == 0
+                                ? `<a href="javascript:void(0)" class="text-warning" id="view_pending_return" data-id="${order.orderid}" title="View Return/Refund Details">
+                                        <i class="fa fa-eye"></i>
+                                </a>`
+                                : ``;
 
                             table.row.add([
                                 order.orderid,
@@ -431,24 +338,7 @@ $page_title = "Return/Refund List";
                                 order.formatted_time,
                                 order.cashier,
                                 `
-                                <a href="javascript:void(0)" class="text-primary" id="view_order_details" data-id="${order.orderid}" title="View Details">
-                                        <i class="fa fa-eye"></i>
-                                </a>
-                                <a href="print_return_product.php?id=${order.orderid}" 
-                                    class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" 
-                                    data-id="${order.orderid}" data-bs-toggle="tooltip" 
-                                    title="Print/Download">
-                                        <i class="text-success fa fa-print fs-5"></i>
-                                </a>
-                                <a href="javascript:void(0)" 
-                                    type="button" 
-                                    id="email_order_btn" 
-                                    class="me-1 email_order_btn" 
-                                    data-customer="${order.customer_id}" 
-                                    data-id="${order.orderid}" 
-                                    title="Send to Customer">
-                                        <iconify-icon icon="solar:plain-linear" class="fs-5 text-info"></iconify-icon>
-                                </a>
+                                ${viewBtn}
                                 `
                             ]);
                         });
@@ -457,7 +347,7 @@ $page_title = "Return/Refund List";
 
                         $('#returns_table tfoot').html(`
                             <tr>
-                                <td colspan="3" class="text-end fw-bold">Total Orders:</td>
+                                <td colspan="2" class="text-end fw-bold">Total Orders:</td>
                                 <td>${response.total_count}</td>
                                 <td colspan="2" class="text-end fw-bold">Total Amount:</td>
                                 <td class="text-end fw-bold">$ ${parseFloat(response.total_amount).toFixed(2)}</td>
@@ -484,108 +374,61 @@ $page_title = "Return/Refund List";
             performSearch();
         });
 
-        $(document).on('click', '#view_order_details', function(event) {
+        $(document).on('click', '#view_pending_return', function(event) {
             var orderid = $(this).data('id');
-            loadOrderDetails(orderid);
+            loadPendingDetails(orderid);
             $('#view_order_details_modal').modal('toggle');
         });
 
-        $(document).on('click', '.btn-show-pdf', function(e) {
-            e.preventDefault();
-            pdfUrl = $(this).attr('href');
-            document.getElementById('pdfFrame').src = pdfUrl;
-            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
-            modal.show();
-        });
-
-        $('#printBtn').on('click', function () {
-            if (isPrinting) {
-                return;
-            }
-
-            isPrinting = true;
-            const $iframe = $('#pdfFrame');
-
-            $iframe.off('load').one('load', function () {
-                try {
-                    this.contentWindow.focus();
-                    this.contentWindow.print();
-                } catch (e) {
-                    alert("Failed to print PDF.");
-                }
-                isPrinting = false;
-            });
-
-            $iframe.attr('src', pdfUrl);
-
-            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
-            modal.show();
-        });
-
-        $('#downloadBtn').on('click', function () {
-            const link = document.createElement('a');
-            link.href = pdfUrl;
-            link.download = '';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-
-        $(document).on('click', '.email_order_btn', function () {
+        $(document).on('click', '.btn-approve-return', function () {
             const orderId = $(this).data('id');
-            const customerId = $(this).data('customer');
-
-            $('#send_order_id').val(orderId);
-            $('#send_customer_id').val(customerId);
-
-            $('#sendOrderModal').modal('show');
-        });
-
-        $(document).on('submit', '.send_order_form', function (e) {
-            e.preventDefault();
-
-            const $form = $(this);
-            const formData = new FormData(this);
-            formData.append('send_order', 'send_order');
 
             $.ajax({
-                url: 'pages/returns_list_ajax.php',
                 type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                beforeSend: function () {
-                    $form.find('button').prop('disabled', true).text('Sending...');
+                url: 'pages/returns_list_pending_ajax.php',
+                data: {
+                    approve_return: 'approve_return',
+                    orderid: orderId
                 },
+                dataType: 'json',
                 success: function (response) {
-                    console.log(response);
-                    let res = {};
-                    try {
-                        res = JSON.parse(response);
-                    } catch (e) {
-                        alert('Invalid response from server.');
-                        return;
-                    }
-
-                    let msg = '';
-                    if (res.results) {
-                        if (res.results.email) {
-                            msg += 'Email: ' + res.results.email.message + '\n';
-                        }
-                        if (res.results.sms) {
-                            msg += 'SMS: ' + res.results.sms.message + '\n';
-                        }
+                    if (response.status === 'success') {
+                        alert('Success');
                     } else {
-                        msg = res.message || 'Operation complete.';
+                        alert('Failed');
+                        console.error(response.message);
                     }
+                },
+                error: function (xhr) {
+                    alert('Failed');
+                    console.error(xhr.responseText);
+                }
+            });
+        });
 
-                    alert(msg);
+        $(document).on('click', '.btn-reject-return', function () {
+            const orderId = $(this).data('id');
+
+            $.ajax({
+                type: 'POST',
+                url: 'pages/returns_list_pending_ajax.php',
+                data: {
+                    reject_return: 'reject_return',
+                    orderid: orderId
                 },
-                error: function () {
-                    alert('Failed to send message.');
+                dataType: 'json',
+                success: function (response) {
+                    if (response.status === 'success') {
+                        alert('Success');
+                        console.error(response);
+                    } else {
+                        alert('Failed');
+                        console.error(response);
+                    }
                 },
-                complete: function () {
-                    $('.modal').modal('hide');
+                error: function (xhr) {
+                    alert('Failed');
+                    console.error(xhr.responseText);
                 }
             });
         });

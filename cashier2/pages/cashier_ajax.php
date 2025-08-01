@@ -2185,6 +2185,15 @@ if (isset($_POST['return_product'])) {
                     ";
                     mysqli_query($conn, $insert_credit_history);
                 }
+            }else{
+                $actorId = $_SESSION['userid'];
+                $actor_name = get_staff_name($actorId);
+                $actionType = 'return_approval';
+                $targetId = $return_id;
+                $targetType = 'Return Approval';
+                $message = "New Non-stockable product Return approval Request";
+                $url = '?page=returns_list_pending';
+                createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
             }
 
             setOrderTotals($order['orderid']);

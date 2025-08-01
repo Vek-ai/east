@@ -72,7 +72,7 @@ if (isset($_POST['search_returns'])) {
         FROM product_returns AS pr
         LEFT JOIN orders AS o ON o.orderid = pr.orderid
         LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
-        WHERE pr.status = '1'
+        WHERE pr.status = 0
     ";
 
     if (!empty($customer_name) && $customer_name !== 'All Customers') {
@@ -155,7 +155,7 @@ if (isset($_POST['search_returns'])) {
     echo json_encode($response);
 }
 
-if(isset($_POST['fetch_order_details'])){
+if(isset($_POST['fetch_pending_details'])){
     $orderid = mysqli_real_escape_string($conn, $_POST['orderid']);
     ?>
     <style>
@@ -276,6 +276,14 @@ if(isset($_POST['fetch_order_details'])){
                     </tfoot>
                 </table>
             </div>
+            <div class="mt-4 d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-success btn-approve-return" data-id="<?= $orderid ?>">
+                    <i class="fa fa-check me-1"></i> Approve Return
+                </button>
+                <button type="button" class="btn btn-danger btn-reject-return" data-id="<?= $orderid ?>">
+                    <i class="fa fa-times me-1"></i> Reject Return
+                </button>
+            </div>
         <?php 
         } 
         ?>
@@ -312,82 +320,133 @@ if(isset($_POST['fetch_order_details'])){
     <?php
 }
 
-if (isset($_POST['send_order'])) {
-    $orderid = mysqli_real_escape_string($conn, $_POST['send_order_id']);
-    $customer_id = mysqli_real_escape_string($conn, $_POST['send_customer_id']);
-    $customer_details= getCustomerDetails($customer_id);
-    $customer_name = get_customer_name($customer_id);
-    $customer_email = $customer_details['contact_email'];
-    $customer_phone = $customer_details['contact_phone'];
+if(isset($_POST['approve_return'])){
+    header('Content-Type: application/json');
+    $orderid = mysqli_real_escape_string($conn, $_POST['orderid']);
 
-    $send_option = mysqli_real_escape_string($conn, $_POST['send_option']);
-
-    $return_url = "https://metal.ilearnwebtech.com/print_return_product.php?id=" . urlencode($orderid);
-
-    $subject = "Product Returns";
-
-    $sms_message = "Hi $customer_name,\n\nYour product orders has been successfully returned.\nClick this link for details:\n$return_url";
-    
-    $html_message = "
-    <html>
-        <head>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    line-height: 1.6;
-                    color: #333;
-                    background-color: #f4f4f4;
-                    padding: 30px;
-                }
-                .container {
-                    padding: 20px;
-                    border: 1px solid #e0e0e0;
-                    background-color: #ffffff;
-                    width: 80%;
-                    margin: 0 auto;
-                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-                }
-                h2 {
-                    color: #0056b3;
-                    margin-bottom: 15px;
-                }
-                .link {
-                    display: inline-block;
-                    margin-top: 10px;
-                    padding: 10px 15px;
-                    background-color: #007bff;
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 5px;
-                }
-                .link:hover {
-                    background-color: #0056b3;
-                }
-            </style>
-        </head>
-        <body>
-            <div class='container'>
-                <h2>Order Invoice</h2>
-                <p>Hi $customer_name,</p>
-                <p>Your product orders has been successfully returned. Click the button below for more details.</p>
-                <a href='$return_url' class='link' target='_blank'>View Details</a>
-            </div>
-        </body>
-    </html>";
-
-    if ($send_option === 'email' || $send_option === 'both') {
-        $results['email'] = sendEmail($customer_email, $customer_name, $subject, $html_message);
+    $update = "UPDATE product_returns SET status = 1 WHERE orderid = '$orderid' AND status = 0";
+    if (!mysqli_query($conn, $update)) {
+        echo json_encode([
+            'status' => 'failed',
+            'message' => 'Failed to approve returned items.'
+        ]);
+        exit;
     }
 
-    if ($send_option === 'sms' || $send_option === 'both') {
-        $results['sms'] = sendPhoneMessage($customer_phone, $customer_name, $subject, $sms_message);
+    $query_returns = "
+        SELECT pr.*, o.order_date, o.customerid
+        FROM product_returns pr
+        JOIN orders o ON pr.orderid = o.orderid
+        WHERE pr.orderid = '$orderid' AND pr.status = 1
+    ";
+    $result_returns = mysqli_query($conn, $query_returns);
+    if (!$result_returns || mysqli_num_rows($result_returns) === 0) {
+        echo json_encode([
+            'status' => 'failed',
+            'message' => 'No returned items found to approve.'
+        ]);
+        exit;
     }
 
-    $response = [
-        'success' => true,
-        'message' => "Successfully sent to Customer",
-        'results' => $results
-    ];
+    $row = mysqli_fetch_assoc($result_returns);
+    $customer_id = $row['customerid'];
 
-    echo json_encode($response);
+    while ($row = mysqli_fetch_assoc($result_returns)) {
+        $quantity = $row['quantity'];
+        $discounted_price = floatval($row['discounted_price']);
+        $stock_fee_percent = floatval($row['stock_fee']);
+        $productid = $row['productid'];
+        $return_id = $row['id'];
+        $order_date = $row['order_date'];
+        $customer_id = $row['originalcustomerid'];
+
+        $purchase_date = new DateTime($order_date);
+        $today = new DateTime();
+        $interval = $purchase_date->diff($today)->days;
+
+        if ($interval > 90) {
+            $amount = $quantity * $discounted_price;
+            $stock_fee = $amount * $stock_fee_percent;
+            $amount_returned = $amount - $stock_fee;
+
+            $credit_update = "
+                UPDATE customer 
+                SET store_credit = store_credit + $amount_returned
+                WHERE customer_id = '$customer_id'
+            ";
+            if (!mysqli_query($conn, $credit_update)) {
+                continue;
+            }
+
+            $credit_history = "
+                INSERT INTO customer_store_credit_history (
+                    customer_id,
+                    credit_amount,
+                    credit_type,
+                    reference_type,
+                    reference_id,
+                    description,
+                    created_at
+                ) VALUES (
+                    '$customer_id',
+                    $amount_returned,
+                    'add',
+                    'product_return',
+                    $return_id,
+                    'Refund (return over 90 days, less stock fee)',
+                    NOW()
+                )
+            ";
+            if (!mysqli_query($conn, $credit_history)) {
+            }
+        }
+    }
+
+    setOrderTotals($orderid);
+
+    $actorId = $_SESSION['userid'];
+    $actor_name = get_staff_name($actorId);
+    $actionType = 'return_approved';
+    $targetId = $orderid;
+    $targetType = 'Returns';
+    $message = "Approved Return Request for Invoice #$orderid";
+    $url = '#';
+    createCustomerNotification($actorId, $actionType, $targetId, $targetType, $message, [$customer_id], $url);
+
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Return approved successfully.'
+    ]);
+    exit;
+}
+
+if(isset($_POST['reject_return'])){
+    header('Content-Type: application/json');
+    $orderid = mysqli_real_escape_string($conn, $_POST['orderid']);
+    $order_details = getOrderDetails($orderid);
+    $customer_id = $order_details['customerid'];
+
+    $update = "UPDATE product_returns SET status = 2 WHERE orderid = '$orderid'";
+    if (mysqli_query($conn, $update)) {
+        $actorId = $_SESSION['userid'];
+        $actor_name = get_staff_name($actorId);
+        $actionType = 'return_rejected';
+        $targetId = $orderid;
+        $targetType = 'Returns';
+        $message = "Rejected Return Request for Invoice #$orderid";
+        $url = '#';
+        createCustomerNotification($actorId, $actionType, $targetId, $targetType, $message, [$customer_id], $url);
+        
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Return has been rejected successfully.',
+            'customerid' => $customer_id
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'failed',
+            'message' => 'Failed to reject the return. Please try again.'
+        ]);
+    }
+    exit;
 }

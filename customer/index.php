@@ -446,6 +446,7 @@ foreach ($cartItems as $item) {
             if ($_REQUEST['page'] == "messages") {include 'pages/messages.php';}
             if ($_REQUEST['page'] == "job_details") {include 'pages/job_details.php';}
             if ($_REQUEST['page'] == "statement_of_account") {include 'pages/statement_of_account.php';}
+            if ($_REQUEST['page'] == "notifications") {include 'pages/notifications_list.php';}
           ?>
         </div>
       </div>

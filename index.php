@@ -1431,6 +1431,9 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "statement_payment_approval") {include 'pages/statement_payment_approval.php';}
             if ($_REQUEST['page'] == "job_deposit_approval") {include 'pages/job_deposit_approval.php';}
             if ($_REQUEST['page'] == "truck") {include 'pages/truck.php';}
+
+            if ($_REQUEST['page'] == "returns_list_pending") {include 'pages/returns_list_pending.php';}
+            if ($_REQUEST['page'] == "returns_list_rejected") {include 'pages/returns_list_rejected.php';}
           ?>
         </div>
       </div>
