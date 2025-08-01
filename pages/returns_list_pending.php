@@ -393,7 +393,8 @@ $page_title = "Pending Return/Refund List";
                 dataType: 'json',
                 success: function (response) {
                     if (response.status === 'success') {
-                        alert('Success');
+                        alert('Successfully Approved');
+                        location.reload();
                     } else {
                         alert('Failed');
                         console.error(response.message);
@@ -419,8 +420,8 @@ $page_title = "Pending Return/Refund List";
                 dataType: 'json',
                 success: function (response) {
                     if (response.status === 'success') {
-                        alert('Success');
-                        console.error(response);
+                        alert('Successfully Rejected');
+                        location.reload();
                     } else {
                         alert('Failed');
                         console.error(response);
