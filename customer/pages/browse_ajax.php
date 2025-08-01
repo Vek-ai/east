@@ -9,6 +9,7 @@ require '../../includes/functions.php';
 require '../../includes/send_email.php';
 
 $admin_email = getSetting('admin_email');
+$emailSender = new EmailTemplates();
 
 $trim_id = 4;
 $panel_id = 3;
@@ -565,53 +566,10 @@ if (isset($_POST['save_estimate'])) {
                 $response['estimate_id'] = $estimateid;
 
                 $subject = "$customer_name has sent an Estimate request";
-                $message = "
-                        <html>
-                        <head>
-                            <style>
-                                body {
-                                    font-family: Arial, sans-serif;
-                                    line-height: 1.6;
-                                    color: #333;
-                                }
-                                .container {
-                                    padding: 20px;
-                                    border: 1px solid #e0e0e0;
-                                    background-color: #f9f9f9;
-                                    width: 80%;
-                                    margin: 0 auto;
-                                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                                }
-                                h2 {
-                                    color: #0056b3;
-                                    margin-bottom: 20px;
-                                }
-                                p {
-                                    margin: 5px 0;
-                                }
-                                .link {
-                                    font-weight: bold;
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <div class='container'>
-                                <h2>$subject</h2>
-                                <a href='https://metal.ilearnwebtech.com/index.php?page=estimate_list' class='link' target='_blank'>To view estimate details, click this link</a>
-                            </div>
-                        </body>
-                        </html>
-                        ";
+                $emailResult = $emailer->sendEstimateNotif($admin_email, $subject);
 
-                if(!empty($admin_email)){
-                    $response = sendEmail($admin_email, $customer_name, $subject, $message);
-                    if ($response['success'] == true) {
-                        $response['message'] = "Successfully sent Estimate request to EKM.";
-                    }else{
-                        $response['message'] = addslashes($response['error']);
-                    }
-                }else {
-                    $response['message'] = "Admin email is unavailable.";
+                if (!$emailResult['success']) {
+                    $response['message'] = $emailResult['error'];
                 }
                 
                 $sql = "DELETE FROM customer_cart WHERE customer_id = '$customerid'";
@@ -846,56 +804,13 @@ if (isset($_POST['save_order'])) {
                 curl_close($ch);
 
                 $response['success'] = true;
+                $response['message'] = "Successfully sent Order request to EKM.";
                 $response['order_id'] = $orderid;
 
                 $subject = "$customer_name has sent an Order request";
-                $message = "
-                        <html>
-                        <head>
-                            <style>
-                                body {
-                                    font-family: Arial, sans-serif;
-                                    line-height: 1.6;
-                                    color: #333;
-                                }
-                                .container {
-                                    padding: 20px;
-                                    border: 1px solid #e0e0e0;
-                                    background-color: #f9f9f9;
-                                    width: 80%;
-                                    margin: 0 auto;
-                                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                                }
-                                h2 {
-                                    color: #0056b3;
-                                    margin-bottom: 20px;
-                                }
-                                p {
-                                    margin: 5px 0;
-                                }
-                                .link {
-                                    font-weight: bold;
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <div class='container'>
-                                <h2>$subject</h2>
-                                <a href='https://metal.ilearnwebtech.com/index.php?page=order_list' class='link' target='_blank'>To view order details, click this link</a>
-                            </div>
-                        </body>
-                        </html>
-                        ";
-
-                if(!empty($admin_email)){
-                    $response = sendEmail($admin_email, $customer_name, $subject, $message);
-                    if ($response['success'] == true) {
-                        $response['message'] = "Successfully sent Order request to EKM.";
-                    }else{
-                        $response['message'] = addslashes($response['error']);
-                    }
-                }else {
-                    $response['message'] = "Admin email is unavailable.";
+                $emailResult = $emailer->sendEstimateNotif($admin_email, $subject);
+                if (!$emailResult['success']) {
+                    $response['message'] = $emailResult['error'];
                 }
 
                 $sql = "DELETE FROM customer_cart WHERE customer_id = '$customerid'";

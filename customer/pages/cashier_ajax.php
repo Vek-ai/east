@@ -9,6 +9,7 @@ require '../../includes/functions.php';
 require '../../includes/send_email.php';
 
 $admin_email = getSetting('admin_email');
+$emailSender = new EmailTemplates();
 
 $trim_id = 4;
 $panel_id = 3;
@@ -689,46 +690,10 @@ if (isset($_POST['save_estimate'])) {
                 $list_items .= '</ul>';
 
                 $subject = "Out of stock Product has been Ordered!";
-
-                $message = "
-                    <html>
-                    <head>
-                        <style>
-                            body {
-                                font-family: Arial, sans-serif;
-                                line-height: 1.6;
-                                color: #333;
-                            }
-                            .container {
-                                padding: 20px;
-                                border: 1px solid #e0e0e0;
-                                background-color: #f9f9f9;
-                                width: 80%;
-                                margin: 0 auto;
-                                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                            }
-                            h2 {
-                                color: #0056b3;
-                                margin-bottom: 20px;
-                            }
-                            p {
-                                margin: 5px 0;
-                            }
-                            ul {
-                                padding-left: 0;
-                            }
-                            li {
-                                margin-bottom: 5px;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class='container'>
-                            <h2>$subject</h2>
-                            $list_items
-                        </div>
-                    </body>
-                </html>";
+                $response = $emailSender->sendOutOfStockEmail($admin_email, $subject, $list_items);
+                if (!$response['success']) {
+                    $response['error'] = "Failed to send mail. " . ($response['error'] ?? '');
+                }
 
                 $actorId = $cashierid;
                 $actor_name = get_staff_name($actorId);
@@ -740,11 +705,7 @@ if (isset($_POST['save_estimate'])) {
                 $recipientIds = getAdminIDs();
                 createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
                 
-                $response = sendEmail($admin_email, 'EKM', $subject, $message);
-                if ($response['success'] == true) {
-                } else {
-                    $response['error'] = "Failed to send Mail" . $conn->error;
-                }
+                
             }
         }
 
@@ -761,49 +722,10 @@ if (isset($_POST['save_estimate'])) {
             $list_items .= '</ul>';
         
             $subject ="Out of Stock items has been preordered";
-        
-            $message = "
-                <html>
-                <head>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            line-height: 1.6;
-                            color: #333;
-                        }
-                        .container {
-                            padding: 20px;
-                            border: 1px solid #e0e0e0;
-                            background-color: #f9f9f9;
-                            width: 80%;
-                            margin: 0 auto;
-                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                        }
-                        h2 {
-                            color: #0056b3;
-                            margin-bottom: 20px;
-                        }
-                        p {
-                            margin: 5px 0;
-                        }
-                        ul {
-                            padding-left: 20px;
-                        }
-                        li {
-                            margin-bottom: 5px;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class='container'>
-                        <h2>$subject</h2>
-                        <ul>
-                            $list_items
-                        </ul>
-                    </div>
-                </body>
-                </html>
-            ";
+            $response = $emailSender->sendPreOrderEmail($admin_email, $subject, $list_items);
+            if (!$response['success']) {
+                $response['error'] = "Failed to send mail. " . ($response['error'] ?? '');
+            }
 
             $actorId = $cashierid;
             $actor_name = get_staff_name($actorId);
@@ -814,12 +736,6 @@ if (isset($_POST['save_estimate'])) {
             $url = '?page=estimate_list';
             $recipientIds = getAdminIDs();
             createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
-
-            $response = sendEmail($admin_email, 'EKM', $subject, $message);
-            if ($response['success'] == true) {
-            } else {
-                $response['error'] = "Failed to send Mail" . $conn->error;
-            }
         }
 
         $actorId = $customerid;

@@ -9,6 +9,8 @@ require '../includes/functions.php';
 require '../includes/vendor/autoload.php';
 require '../includes/send_email.php';
 
+$emailSender = new EmailTemplates();
+
 if(isset($_POST['fetch_edit_modal'])){
     $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
     ?>
@@ -356,46 +358,11 @@ if (isset($_POST['order_supplier_products'])) {
             $conn->query($delete_query);
 
             $subject = "EKM has placed a New Order";
-            $message = "
-                <html>
-                <head>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            line-height: 1.6;
-                            color: #333;
-                        }
-                        .container {
-                            padding: 20px;
-                            border: 1px solid #e0e0e0;
-                            background-color: #f9f9f9;
-                            width: 80%;
-                            margin: 0 auto;
-                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                        }
-                        h2 {
-                            color: #0056b3;
-                            margin-bottom: 20px;
-                        }
-                        p {
-                            margin: 5px 0;
-                        }
-                        .link {
-                            font-weight: bold;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class='container'>
-                        <h2>$subject</h2>
-                        <a href='https://metal.ilearnwebtech.com/supplier/index.php?id=$supplier_order_id&key=$order_key' class='link' target='_blank'>To view order details, click this link</a>
-                    </div>
-                </body>
-                </html>
-                ";
+            $link = "https://metal.ilearnwebtech.com/supplier/index.php?id=$supplier_order_id&key=$order_key";
 
-            $response = sendEmail($supplier_email, $supplier_name, $subject, $message);
-            if ($response['success'] == true) {
+            $response = $emailSender->sendSupplierOrder($supplier_email, $subject, $link);
+
+            if ($response['success'] === true) {
                 echo json_encode([
                     'success' => true,
                     'email_success' => true,
@@ -408,7 +375,7 @@ if (isset($_POST['order_supplier_products'])) {
                     'success' => true,
                     'email_success' => false,
                     'message' => "Successfully saved, but email could not be sent to $supplier_name.",
-                    'error' => $response['error'],
+                    'error' => $response['error'] ?? 'Unknown error',
                     'supplier_order_id' => $supplier_order_id,
                     'key' => $order_key
                 ]);
@@ -417,6 +384,7 @@ if (isset($_POST['order_supplier_products'])) {
         } else {
             echo json_encode(['error' => "Error inserting order products: " . $conn->error]);
         }
+
     } else {
         echo json_encode(['error' => "Error inserting order: " . $conn->error]);
     }

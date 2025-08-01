@@ -7,6 +7,8 @@ require '../includes/dbconn.php';
 require '../includes/functions.php';
 require '../includes/send_email.php';
 
+$emailSender = new EmailTemplates();
+
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
@@ -984,46 +986,7 @@ if(isset($_REQUEST['action'])) {
         $est_url = "https://metal.ilearnwebtech.com/customer/index.php?page=estimate&id=$id&key=$est_key";
 
         $subject = "EKM has sent an Estimate List for Approval";
-
-        $sms_message = "Hi $customer_name,\n\n$subject\nClick this link to view your estimate details:\n$est_url";
-
-        $html_message = "
-                <html>
-                <head>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            line-height: 1.6;
-                            color: #333;
-                        }
-                        .container {
-                            padding: 20px;
-                            border: 1px solid #e0e0e0;
-                            background-color: #f9f9f9;
-                            width: 80%;
-                            margin: 0 auto;
-                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                        }
-                        h2 {
-                            color: #0056b3;
-                            margin-bottom: 20px;
-                        }
-                        p {
-                            margin: 5px 0;
-                        }
-                        .link {
-                            font-weight: bold;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class='container'>
-                        <h2>$subject</h2>
-                        <a href='https://metal.ilearnwebtech.com/customer/index.php?page=estimate&id=$id&key=$est_key' class='link' target='_blank'>To estimate order details, click this link</a>
-                    </div>
-                </body>
-                </html>
-                ";
+        $sms_message = "$subject\nClick this link to view your estimate details:\n$est_url";
 
         $email_success = false;
         $sms_success = false;
@@ -1032,7 +995,7 @@ if(isset($_REQUEST['action'])) {
 
         if ($send_option === 'email' || $send_option === 'both') {
             if (!empty($customer_email)) {
-                $email_result = sendEmail($customer_email, $customer_name, $subject, $html_message);
+                $email_result = $emailSender->sendEstimateToCustomer($customer_email, $subject, $est_url);
                 $email_success = $email_result['success'];
                 $response['email_success'] = $email_success;
 
@@ -1048,7 +1011,7 @@ if(isset($_REQUEST['action'])) {
 
         if ($send_option === 'sms' || $send_option === 'both') {
             if (!empty($customer_phone)) {
-                $sms_result = sendPhoneMessage($customer_phone, $customer_name, $subject, $sms_message);
+                $sms_result = $emailSender->sendPhoneMessage($customer_phone, $subject, $sms_message);
                 $sms_success = $sms_result['success'];
                 $response['sms_success'] = $sms_success;
 
@@ -1063,9 +1026,9 @@ if(isset($_REQUEST['action'])) {
         }
 
         if ($email_success || $sms_success) {
-            $response['message'] = "Successfully sent to $customer_name.";
+            $response['message'] = "Successfully sent to customer.";
         } else {
-            $response['message'] = "Message could not be sent to $customer_name.";
+            $response['message'] = "Message could not be sent.";
         }
 
         $response['success'] = true;
@@ -1166,123 +1129,46 @@ if(isset($_REQUEST['action'])) {
             $sql = "UPDATE estimates SET " . implode(", ", $updateParts) . " WHERE estimateid = $estimateid";
             
             if (mysqli_query($conn, $sql)) {
-                $message = "
-                    <html>
-                    <head>
-                        <style>
-                            body {
-                                font-family: Arial, sans-serif;
-                                line-height: 1.6;
-                                color: #333;
-                            }
-                            .container {
-                                padding: 20px;
-                                border: 1px solid #e0e0e0;
-                                background-color: #f9f9f9;
-                                width: 80%;
-                                margin: 0 auto;
-                                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                            }
-                            h2 {
-                                color: #0056b3;
-                                margin-bottom: 20px;
-                            }
-                            p {
-                                margin: 5px 0;
-                            }
-                            .link {
-                                font-weight: bold;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class='container'>
-                            <h2>$subject</h2>
-                            <a href='https://metal.ilearnwebtech.com/customer/index.php?page=estimate&id=$id&key=$est_key' class='link' target='_blank'>To estimate order details, click this link</a>
-                        </div>
-                    </body>
-                    </html>
-                    ";
+                $shipping_url = '';
+                $shipping_comp_details = getShippingCompanyDetails($shipping_company);
+                if (!empty($shipping_comp_details['url'])) {
+                    $shipping_url = $shipping_comp_details['url'];
+                }
 
-                    $shipping_url = '';
-                    $shipping_comp_details = getShippingCompanyDetails($shipping_company);
-                    if(!empty($shipping_comp_details['url'])){
-                        $shipping_url = $shipping_comp_details['url'];
+                $link_url = "https://metal.ilearnwebtech.com/customer/index.php?page=estimate&id=$id&key=$est_key";
+
+                if ($primary_contact == 2) {
+                    if (!empty($customer_phone)) {
+                        $sms_response = $emailSender->sendPhoneMessage($customer_phone, $subject, "$subject\n$link_url");
+                        echo json_encode([
+                            'success' => true,
+                            'msg_success' => $sms_response['success'],
+                            'message' => $sms_response['success']
+                                ? "Successfully sent message for confirmation on orders."
+                                : "Saved, but SMS could not be sent.",
+                            'error' => $sms_response['error'] ?? null,
+                            'id' => $id,
+                            'key' => $est_key,
+                            'url' => $shipping_url
+                        ]);
+                    } else {
+                        echo json_encode([
+                            'success' => true,
+                            'msg_success' => false,
+                            'message' => "Saved, but SMS could not be sent (no phone).",
+                            'id' => $id,
+                            'key' => $est_key,
+                            'url' => $shipping_url
+                        ]);
                     }
 
-                    if($primary_contact == 2){
-                        if(!empty($customer_phone)){
-                            $response = sendPhoneMessage($customer_email, $customer_name, $subject, $message);
-                            if ($response['success'] == true) {
-                                echo json_encode([
-                                    'success' => true,
-                                    'msg_success' => true,
-                                    'message' => "Successfully sent message to $customer_name for confirmation on orders.",
-                                    'id' => $id,
-                                    'key' => $est_key,
-                                    'url' => $shipping_url
-                                ]);
-                            } else {
-                                echo json_encode([
-                                    'success' => true,
-                                    'msg_success' => false,
-                                    'message' => "Successfully saved, but message could not be sent to $customer_name.",
-                                    'error' => $response['error'],
-                                    'id' => $id,
-                                    'key' => $est_key,
-                                    'url' => $shipping_url
-                                ]);
-                            }
-                        } else {
-                            echo json_encode([
-                                'success' => true,
-                                'msg_success' => false,
-                                'message' => "Successfully saved, but message could not be sent to $customer_name.",
-                                'error' => $response['error'],
-                                'id' => $id,
-                                'key' => $est_key,
-                                'url' => $shipping_url
-                            ]);
-                        }
-                    }else{
-                        if(!empty($customer_email)){
-                            $response = sendEmail($customer_email, $customer_name, $subject, $message);
-                            if ($response['success'] == true) {
-                                echo json_encode([
-                                    'success' => true,
-                                    'email_success' => true,
-                                    'message' => "Successfully updated status and sent email confirmation to $customer_name",
-                                    'id' => $id,
-                                    'key' => $est_key,
-                                    'url' => $shipping_url
-                                ]);
-                            } else {
-                                echo json_encode([
-                                    'success' => true,
-                                    'email_success' => false,
-                                    'message' => "Successfully updated status, but email could not be sent to $customer_name.",
-                                    'error' => $response['error'],
-                                    'id' => $id,
-                                    'key' => $est_key,
-                                    'url' => $shipping_url
-                                ]);
-                            }
-            
-                        }else {
-                            echo json_encode([
-                                'success' => true,
-                                'email_success' => false,
-                                'message' => "Successfully updated status, but email could not be sent to $customer_name.",
-                                'error' => $response['error'],
-                                'id' => $id,
-                                'key' => $est_key,
-                                'url' => $shipping_url
-                            ]);
-                        }
-                    }
+                } else {
+                    $response = $emailSender->sendEstimateStatusEmail($customer_email, $subject, $link_url, $id, $est_key, $shipping_url);
+                    echo json_encode($response);
+                }
             } else {
                 echo json_encode([
-                    'success' => true,
+                    'success' => false,
                     'email_success' => false,
                     'message' => "Failed to save!",
                     'error' => mysqli_error($conn),
@@ -1291,6 +1177,7 @@ if(isset($_REQUEST['action'])) {
                     'url' => ''
                 ]);
             }
+
         }
     }
 

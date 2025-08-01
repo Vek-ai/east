@@ -7,6 +7,8 @@ require '../includes/dbconn.php';
 require '../includes/functions.php';
 require '../includes/send_email.php';
 
+$emailSender = new EmailTemplates();
+
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
@@ -295,45 +297,9 @@ if(isset($_REQUEST['action'])) {
             $sql = "UPDATE supplier_orders SET status = $newStatus, is_edited = '0' WHERE supplier_order_id = $orderId";
             
             if (mysqli_query($conn, $sql)) {
-                $message = "
-                    <html>
-                    <head>
-                        <style>
-                            body {
-                                font-family: Arial, sans-serif;
-                                line-height: 1.6;
-                                color: #333;
-                            }
-                            .container {
-                                padding: 20px;
-                                border: 1px solid #e0e0e0;
-                                background-color: #f9f9f9;
-                                width: 80%;
-                                margin: 0 auto;
-                                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                            }
-                            h2 {
-                                color: #0056b3;
-                                margin-bottom: 20px;
-                            }
-                            p {
-                                margin: 5px 0;
-                            }
-                            .link {
-                                font-weight: bold;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class='container'>
-                            <h2>$subject</h2>
-                            <a href='https://metal.ilearnwebtech.com/supplier/index.php?id=$orderId&key=$key' class='link' target='_blank'>To view order details, click this link</a>
-                        </div>
-                    </body>
-                    </html>
-                    ";
+                $link = "https://metal.ilearnwebtech.com/supplier/index.php?id=$orderId&key=$key";
+                $response_email = $emailSender->sendSupplierNotif($supplier_email, $subject, $link);
 
-                $response_email = sendEmail($supplier_email, $supplier_name, $subject, $message);
                 if ($response_email['success'] == true) {
                     echo json_encode([
                         'success' => true,
@@ -348,7 +314,6 @@ if(isset($_REQUEST['action'])) {
                         'error' => addslashes($response_email['error'])
                     ]);
                 }
-
             } else {
                 echo json_encode([
                     'success' => false,

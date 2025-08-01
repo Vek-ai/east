@@ -8,6 +8,8 @@ require '../includes/dbconn.php';
 require '../includes/functions.php';
 require '../includes/send_email.php';
 
+$emailSender = new EmailTemplates();
+
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
@@ -853,12 +855,11 @@ if(isset($_REQUEST['action'])) {
     if ($action == "send_email") {
         $id = mysqli_real_escape_string($conn, $_POST['id']);
         $customerid = mysqli_real_escape_string($conn, $_POST['customerid']);
-        $customer_details= getCustomerDetails($customerid);
-        $customer_name = $customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'];
+        $customer_details = getCustomerDetails($customerid);
+        $customer_name = $customer_details['customer_first_name'] . ' ' . $customer_details['customer_last_name'];
         $customer_email = $customer_details['contact_email'];
         $customer_phone = $customer_details['contact_phone'];
         $primary_contact = $customer_details['primary_contact'];
-
         $send_option = mysqli_real_escape_string($conn, $_POST['send_option']);
 
         $order_key = 'ORD' . substr(hash('sha256', uniqid()), 0, 10);
@@ -872,116 +873,71 @@ if(isset($_REQUEST['action'])) {
                 'message' => "Query Failed.",
                 "error" => mysqli_error($conn)
             ]);
+            exit;
         }
 
         $order_url = "https://metal.ilearnwebtech.com/customer/index.php?page=order&id=$id&key=$order_key";
-
         $subject = "EKM has confirmed your order.";
 
-        $sms_message = "Hi $customer_name,\n\n$subject\nClick this link to view your order details:\n$est_url";
+        $sms_message = "Hi $customer_name,\n\n$subject\nClick this link to view your order details:\n$order_url";
 
-        $html_message = "
-                <html>
-                <head>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            line-height: 1.6;
-                            color: #333;
-                        }
-                        .container {
-                            padding: 20px;
-                            border: 1px solid #e0e0e0;
-                            background-color: #f9f9f9;
-                            width: 80%;
-                            margin: 0 auto;
-                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                        }
-                        h2 {
-                            color: #0056b3;
-                            margin-bottom: 20px;
-                        }
-                        p {
-                            margin: 5px 0;
-                        }
-                        .link {
-                            font-weight: bold;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class='container'>
-                        <h2>$subject</h2>
-                        <a href='$order_url' class='link' target='_blank'>To view order details, click this link</a>
-                    </div>
-                </body>
-                </html>
-                ";
+        $email_success = false;
+        $sms_success = false;
+        $response = [];
 
-            $email_success = false;
-            $sms_success = false;
-            $email_error = '';
-            $sms_error = '';
+        if ($send_option === 'email' || $send_option === 'both') {
+            if (!empty($customer_email)) {
+                $email_result = $emailSender->sendOrderToCustomer($customer_email, $customer_name, $subject, $order_url);
+                $email_success = $email_result['success'];
+                $response['email_success'] = $email_success;
 
-            if ($send_option === 'email' || $send_option === 'both') {
-                if (!empty($customer_email)) {
-                    $email_result = sendEmail($customer_email, $customer_name, $subject, $html_message);
-                    $email_success = $email_result['success'];
-                    $response['email_success'] = $email_success;
-
-                    if (!$email_success) {
-                        $email_error = $email_result['error'] ?? 'Unknown email error';
-                        $response['email_error'] = $email_error;
-                    }
-                } else {
-                    $response['email_success'] = false;
-                    $response['email_error'] = 'Missing email';
+                if (!$email_success) {
+                    $response['email_error'] = $email_result['error'] ?? 'Unknown email error';
                 }
-            }
-
-            if ($send_option === 'sms' || $send_option === 'both') {
-                if (!empty($customer_phone)) {
-                    $sms_result = sendPhoneMessage($customer_phone, $customer_name, $subject, $sms_message);
-                    $sms_success = $sms_result['success'];
-                    $response['sms_success'] = $sms_success;
-
-                    if (!$sms_success) {
-                        $sms_error = $sms_result['error'] ?? 'Unknown SMS error';
-                        $response['sms_error'] = $sms_error;
-                    }
-                } else {
-                    $response['sms_success'] = false;
-                    $response['sms_error'] = 'Missing phone number';
-                }
-            }
-
-            if ($email_success || $sms_success) {
-                $response['message'] = "Successfully sent to $customer_name.";
             } else {
-                $response['message'] = "Message could not be sent to $customer_name.";
+                $response['email_success'] = false;
+                $response['email_error'] = 'Missing email';
             }
+        }
 
-            $query = "SELECT * FROM orders WHERE orderid = '$id'";
-            $result = mysqli_query($conn, $query);
-            while ($row = mysqli_fetch_assoc($result)) {
+        if ($send_option === 'sms' || $send_option === 'both') {
+            if (!empty($customer_phone)) {
+                $sms_result = $emailSender->sendPhoneMessage($customer_phone, $subject, $sms_message);
+                $sms_success = $sms_result['success'];
+                $response['sms_success'] = $sms_success;
 
-                $sql = "UPDATE order_product SET status = 1 WHERE orderid = $id";
-                if (!mysqli_query($conn, $sql)) {
-                    $response['message'] = 'Error updating order status.';
+                if (!$sms_success) {
+                    $response['sms_error'] = $sms_result['error'] ?? 'Unknown SMS error';
                 }
+            } else {
+                $response['sms_success'] = false;
+                $response['sms_error'] = 'Missing phone number';
             }
+        }
 
-            $sql = "UPDATE orders SET status = '2', is_edited = '0' WHERE orderid = $id";
-            if (!mysqli_query($conn, $sql)) {
-                $response['message'] = 'Error updating order status.';
-            }
+        if ($email_success || $sms_success) {
+            $response['message'] = "Successfully sent to $customer_name.";
+        } else {
+            $response['message'] = "Message could not be sent to $customer_name.";
+        }
 
-            $response['success'] = true;
-            $response['id'] = $id;
-            $response['key'] = $est_key;
+        $sql = "UPDATE order_product SET status = 1 WHERE orderid = $id";
+        if (!mysqli_query($conn, $sql)) {
+            $response['message'] = 'Error updating order product status.';
+        }
 
-            echo json_encode($response);
+        $sql = "UPDATE orders SET status = '2', is_edited = '0' WHERE orderid = $id";
+        if (!mysqli_query($conn, $sql)) {
+            $response['message'] = 'Error updating order status.';
+        }
+
+        $response['success'] = true;
+        $response['id'] = $id;
+        $response['key'] = $order_key;
+
+        echo json_encode($response);
     }
+
 
     if ($action == "update_status") {
         $orderid = mysqli_real_escape_string($conn, $_POST['id']);
@@ -1078,128 +1034,71 @@ if(isset($_REQUEST['action'])) {
             
             if (mysqli_query($conn, $sql)) {
 
-                if($method == 'pickup_order'){
+                if ($method == 'pickup_order') {
                     echo json_encode([
                         'success' => true,
                         'email_success' => false,
                         'message' => "Successfully saved"
                     ]);
-                    exit(); //skip email
+                    exit();
                 }
 
-                $message = "
-                    <html>
-                    <head>
-                        <style>
-                            body {
-                                font-family: Arial, sans-serif;
-                                line-height: 1.6;
-                                color: #333;
-                            }
-                            .container {
-                                padding: 20px;
-                                border: 1px solid #e0e0e0;
-                                background-color: #f9f9f9;
-                                width: 80%;
-                                margin: 0 auto;
-                                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                            }
-                            h2 {
-                                color: #0056b3;
-                                margin-bottom: 20px;
-                            }
-                            p {
-                                margin: 5px 0;
-                            }
-                            .link {
-                                font-weight: bold;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class='container'>
-                            <h2>$subject</h2>
-                            <a href='https://metal.ilearnwebtech.com/customer/index.php?page=order&id=$orderid&key=$order_key' class='link' target='_blank'>To view order details, click this link</a>
-                        </div>
-                    </body>
-                    </html>
-                ";
+                $order_link = "https://metal.ilearnwebtech.com/customer/index.php?page=order&id=$orderid&key=$order_key";
+
                 $shipping_url = '';
                 $shipping_comp_details = getShippingCompanyDetails($shipping_company);
-                if(!empty($shipping_comp_details['url'])){
+                if (!empty($shipping_comp_details['url'])) {
                     $shipping_url = $shipping_comp_details['url'];
                 }
 
-                if($primary_contact == 2){
-                    if(!empty($customer_phone)){
-                        $response = sendPhoneMessage($customer_email, $customer_name, $subject, $message);
-                        if ($response['success'] == true) {
-                            echo json_encode([
-                                'success' => true,
-                                'msg_success' => true,
-                                'message' => "Successfully sent message to $customer_name for confirmation on orders.",
-                                'id' => $orderid,
-                                'key' => $order_key,
-                                'url' => $shipping_url
-                            ]);
-                        } else {
-                            echo json_encode([
-                                'success' => true,
-                                'msg_success' => false,
-                                'message' => "Successfully saved, but message could not be sent to $customer_name.",
-                                'error' => $response['error'],
-                                'id' => $orderid,
-                                'key' => $order_key,
-                                'url' => $shipping_url
-                            ]);
+                $json = [
+                    'success' => true,
+                    'id' => $orderid,
+                    'key' => $order_key,
+                    'url' => $shipping_url
+                ];
+
+                if ($primary_contact == 2) {
+                    if (!empty($customer_phone)) {
+                        $response = $emailSender->sendPhoneMessage(
+                            $customer_phone,
+                            $subject,
+                            "Hi $customer_name,\n\n$subject\nClick this link to view your order:\n$order_link"
+                        );
+
+                        $json['msg_success'] = $response['success'];
+                        $json['message'] = $response['success']
+                            ? "Successfully sent message to $customer_name for confirmation on orders."
+                            : "Successfully saved, but message could not be sent to $customer_name.";
+
+                        if (!$response['success']) {
+                            $json['error'] = $response['error'];
                         }
                     } else {
-                        echo json_encode([
-                            'success' => true,
-                            'msg_success' => false,
-                            'message' => "Successfully saved, but message could not be sent to $customer_name.",
-                            'error' => $response['error'],
-                            'id' => $orderid,
-                            'key' => $order_key,
-                            'url' => $shipping_url
-                        ]);
+                        $json['msg_success'] = false;
+                        $json['message'] = "Successfully saved, but phone number is missing.";
                     }
-                }else{
-                    if(!empty($customer_email)){
-                        $response = sendEmail($customer_email, $customer_name, $subject, $message);
-                        if ($response['success'] == true) {
-                            echo json_encode([
-                                'success' => true,
-                                'email_success' => true,
-                                'message' => "Successfully updated status and sent email confirmation to $customer_name",
-                                'id' => $orderid,
-                                'key' => $order_key,
-                                'url' => $shipping_url
-                            ]);
-                        } else {
-                            echo json_encode([
-                                'success' => true,
-                                'email_success' => false,
-                                'message' => "Successfully updated status, but email could not be sent to $customer_name.",
-                                'error' => $response['error'],
-                                'id' => $orderid,
-                                'key' => $order_key,
-                                'url' => $shipping_url
-                            ]);
+
+                } else {
+                    if (!empty($customer_email)) {
+                        $response = $emailSender->sendOrderToCustomer($customer_email, $customer_name, $subject, $order_link);
+
+                        $json['email_success'] = $response['success'];
+                        $json['message'] = $response['success']
+                            ? "Successfully updated status and sent email confirmation to $customer_name"
+                            : "Successfully updated status, but email could not be sent to $customer_name.";
+
+                        if (!$response['success']) {
+                            $json['error'] = $response['error'];
                         }
-        
-                    }else {
-                        echo json_encode([
-                            'success' => true,
-                            'email_success' => false,
-                            'message' => "Successfully updated status, but email could not be sent to $customer_name.",
-                            'error' => $response['error'],
-                            'id' => $orderid,
-                            'key' => $order_key,
-                            'url' => $shipping_url
-                        ]);
+                    } else {
+                        $json['email_success'] = false;
+                        $json['message'] = "Successfully updated status, but email could not be sent to $customer_name.";
                     }
                 }
+
+                echo json_encode($json);
+
             } else {
                 echo json_encode([
                     'success' => true,
@@ -1211,6 +1110,7 @@ if(isset($_REQUEST['action'])) {
                     'url' => ''
                 ]);
             }
+
         }
     }
 

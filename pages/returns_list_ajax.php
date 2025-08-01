@@ -7,6 +7,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
+$emailSender = new EmailTemplates();
+
 if (isset($_POST['search_customer'])) {
     $search = mysqli_real_escape_string($conn, $_POST['search_customer']);
 
@@ -315,72 +317,24 @@ if(isset($_POST['fetch_order_details'])){
 if (isset($_POST['send_order'])) {
     $orderid = mysqli_real_escape_string($conn, $_POST['send_order_id']);
     $customer_id = mysqli_real_escape_string($conn, $_POST['send_customer_id']);
-    $customer_details= getCustomerDetails($customer_id);
+    $customer_details = getCustomerDetails($customer_id);
     $customer_name = get_customer_name($customer_id);
     $customer_email = $customer_details['contact_email'];
     $customer_phone = $customer_details['contact_phone'];
 
     $send_option = mysqli_real_escape_string($conn, $_POST['send_option']);
-
     $return_url = "https://metal.ilearnwebtech.com/print_return_product.php?id=" . urlencode($orderid);
-
     $subject = "Product Returns";
 
-    $sms_message = "Hi $customer_name,\n\nYour product orders has been successfully returned.\nClick this link for details:\n$return_url";
-    
-    $html_message = "
-    <html>
-        <head>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    line-height: 1.6;
-                    color: #333;
-                    background-color: #f4f4f4;
-                    padding: 30px;
-                }
-                .container {
-                    padding: 20px;
-                    border: 1px solid #e0e0e0;
-                    background-color: #ffffff;
-                    width: 80%;
-                    margin: 0 auto;
-                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-                }
-                h2 {
-                    color: #0056b3;
-                    margin-bottom: 15px;
-                }
-                .link {
-                    display: inline-block;
-                    margin-top: 10px;
-                    padding: 10px 15px;
-                    background-color: #007bff;
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 5px;
-                }
-                .link:hover {
-                    background-color: #0056b3;
-                }
-            </style>
-        </head>
-        <body>
-            <div class='container'>
-                <h2>Order Invoice</h2>
-                <p>Hi $customer_name,</p>
-                <p>Your product orders has been successfully returned. Click the button below for more details.</p>
-                <a href='$return_url' class='link' target='_blank'>View Details</a>
-            </div>
-        </body>
-    </html>";
+    $results = [];
 
     if ($send_option === 'email' || $send_option === 'both') {
-        $results['email'] = sendEmail($customer_email, $customer_name, $subject, $html_message);
+        $results['email'] = $emailSender->sendReturnNoticeToCustomer($customer_email, $subject, $return_url, $customer_name);
     }
 
     if ($send_option === 'sms' || $send_option === 'both') {
-        $results['sms'] = sendPhoneMessage($customer_phone, $customer_name, $subject, $sms_message);
+        $sms_message = "Hi $customer_name,\n\nYour product orders have been successfully returned.\nClick this link for details:\n$return_url";
+        $results['sms'] = $emailSender->sendPhoneMessage($customer_phone, $subject, $sms_message);
     }
 
     $response = [
@@ -391,3 +345,4 @@ if (isset($_POST['send_order'])) {
 
     echo json_encode($response);
 }
+

@@ -8,6 +8,8 @@ require '../includes/dbconn.php';
 require '../includes/functions.php';
 require '../includes/send_email.php';
 
+$emailSender = new EmailTemplates();
+
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
@@ -399,72 +401,24 @@ if(isset($_REQUEST['action'])) {
     if ($action == "send_order") {
         $orderid = mysqli_real_escape_string($conn, $_POST['send_order_id']);
         $customer_id = mysqli_real_escape_string($conn, $_POST['send_customer_id']);
-        $customer_details= getCustomerDetails($customer_id);
+        $customer_details = getCustomerDetails($customer_id);
         $customer_name = get_customer_name($customer_id);
         $customer_email = $customer_details['contact_email'];
         $customer_phone = $customer_details['contact_phone'];
 
         $send_option = mysqli_real_escape_string($conn, $_POST['send_option']);
-
         $order_url = "https://metal.ilearnwebtech.com/print_order_product.php?id=" . urlencode($orderid);
-
         $subject = "Order Invoice";
 
-        $sms_message = "Hi $customer_name,\n\nYour order invoice is ready.\nClick this link to view your receipt:\n$order_url";
-        
-        $html_message = "
-        <html>
-            <head>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        line-height: 1.6;
-                        color: #333;
-                        background-color: #f4f4f4;
-                        padding: 30px;
-                    }
-                    .container {
-                        padding: 20px;
-                        border: 1px solid #e0e0e0;
-                        background-color: #ffffff;
-                        width: 80%;
-                        margin: 0 auto;
-                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-                    }
-                    h2 {
-                        color: #0056b3;
-                        margin-bottom: 15px;
-                    }
-                    .link {
-                        display: inline-block;
-                        margin-top: 10px;
-                        padding: 10px 15px;
-                        background-color: #007bff;
-                        color: white;
-                        text-decoration: none;
-                        border-radius: 5px;
-                    }
-                    .link:hover {
-                        background-color: #0056b3;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class='container'>
-                    <h2>Order Invoice</h2>
-                    <p>Hi $customer_name,</p>
-                    <p>Your Order Invoice is now ready. Click the button below to view your invoice.</p>
-                    <a href='$order_url' class='link' target='_blank'>View Invoice</a>
-                </div>
-            </body>
-        </html>";
+        $results = [];
 
         if ($send_option === 'email' || $send_option === 'both') {
-            $results['email'] = sendEmail($customer_email, $customer_name, $subject, $html_message);
+            $results['email'] = $emailSender->sendInvoiceToCustomer($customer_email, $subject, $order_url);
         }
 
         if ($send_option === 'sms' || $send_option === 'both') {
-            $results['sms'] = sendPhoneMessage($customer_phone, $customer_name, $subject, $sms_message);
+            $sms_message = "Hi $customer_name,\n\nYour order invoice is ready.\nClick this link to view your receipt:\n$order_url";
+            $results['sms'] = $emailSender->sendPhoneMessage($customer_phone, $subject, $sms_message);
         }
 
         $response = [
@@ -475,6 +429,7 @@ if(isset($_REQUEST['action'])) {
 
         echo json_encode($response);
     }
+
 
     if ($action === 'update_delivery_payment') {
         $order_id = mysqli_real_escape_string($conn, $_POST['orderid'] ?? '');
