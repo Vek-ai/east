@@ -395,6 +395,7 @@ $page_title = "Pending Return/Refund List";
                     if (response.status === 'success') {
                         alert('Successfully Approved');
                         performSearch();
+                        $('.modal.show').modal('hide');
                     } else {
                         alert('Failed');
                         console.error(response.message);
@@ -422,6 +423,7 @@ $page_title = "Pending Return/Refund List";
                     if (response.status === 'success') {
                         alert('Successfully Rejected');
                         performSearch();
+                        $('.modal.show').modal('hide');
                     } else {
                         alert('Failed');
                         console.error(response);
