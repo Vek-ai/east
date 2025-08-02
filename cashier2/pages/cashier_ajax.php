@@ -1990,15 +1990,13 @@ if (isset($_POST['return_product'])) {
             exit;
         }
 
-        $return_status = ($product_origin == 2) ? 0 : 1;
-
         $insert_query = "INSERT INTO product_returns 
                          (orderid, productid, status, quantity, custom_color, custom_width, custom_height, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, usageid, stock_fee)
                          VALUES 
                          (
                             '{$order['orderid']}', 
                             '{$order['productid']}', 
-                            '$return_status', 
+                            '0', 
                             '$quantity', 
                             '{$order['custom_color']}', 
                             '{$order['custom_width']}', 
@@ -2017,59 +2015,26 @@ if (isset($_POST['return_product'])) {
         if (mysqli_query($conn, $insert_query)) {
             $return_id = mysqli_insert_id($conn);
 
-            $new_quantity = $available_quantity - $quantity;
-            $update_query = "UPDATE order_product SET quantity = '$new_quantity' WHERE id = '$id'";
-            mysqli_query($conn, $update_query);
-
-            if ($return_status == 1) {
-                $purchase_date = new DateTime($order['order_date']);
-                $today = new DateTime();
-                $interval = $purchase_date->diff($today)->days;
-
-                if ($interval > 90) {
-                    $discounted_price = floatval($order['discounted_price']);
-                    $amount = $quantity * $discounted_price;
-                    $stock_fee = $amount * $stock_fee_percent;
-                    $amount_returned = $amount - $stock_fee;
-
-                    $customer_id = $order['originalcustomerid'];
-
-                    $update_credit_query = "UPDATE customer SET store_credit = store_credit + $amount_returned WHERE customer_id = '$customer_id'";
-                    mysqli_query($conn, $update_credit_query);
-
-                    $insert_credit_history = "
-                        INSERT INTO customer_store_credit_history (
-                            customer_id,
-                            credit_amount,
-                            credit_type,
-                            reference_type,
-                            reference_id,
-                            description,
-                            created_at
-                        ) VALUES (
-                            '$customer_id',
-                            $amount_returned,
-                            'add',
-                            'product_return',
-                            $return_id,
-                            'Refund (return over 90 days, less stock fee)',
-                            NOW()
-                        )
-                    ";
-                    mysqli_query($conn, $insert_credit_history);
-                }
+            if ($product_origin == 1) {
+                $actorId = $_SESSION['userid'];
+                $actor_name = get_staff_name($actorId);
+                $actionType = 'return_stockable';
+                $targetId = $return_id;
+                $targetType = 'Return Stockable';
+                $message = "New Stockable product Return approval Request";
+                $url = '?page=returns_list_pending';
+                createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
             }else{
                 $actorId = $_SESSION['userid'];
                 $actor_name = get_staff_name($actorId);
-                $actionType = 'return_approval';
+                $actionType = 'return_manufactured';
                 $targetId = $return_id;
                 $targetType = 'Return Approval';
-                $message = "New Non-stockable product Return approval Request";
+                $message = "New Manufactured product Return approval Request";
                 $url = '?page=returns_list_pending';
                 createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
             }
-
-            setOrderTotals($order['orderid']);
+            
             echo "success";
         } else {
             echo "Error inserting into product_returns.";

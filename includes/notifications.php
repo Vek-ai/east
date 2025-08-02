@@ -261,6 +261,18 @@ function getNotifDetails($type) {
             'iconColor' => '#20c997',
             'iconBg' => '#d2f4ea',
         ],
+        'return_stockable' => [
+            'title' => 'Stockable Item Returned',
+            'icon' => 'solar:box-check-line-duotone',
+            'iconColor' => '#17a2b8',
+            'iconBg' => '#d1ecf1',
+        ],
+        'return_manufactured' => [
+            'title' => 'Manufactured Item Returned',
+            'icon' => 'solar:factory-line-duotone',
+            'iconColor' => '#795548',
+            'iconBg' => '#e9d8cd',
+        ],
     ];
 
     return $actions[$type] ?? [

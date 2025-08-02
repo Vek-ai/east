@@ -1,6 +1,7 @@
 <?php
 include "calculate_price.php";
 include "notifications.php";
+require_once __DIR__ . '/../modules/EmailTemplates.php';
 
 function get_userid(){
     if (isset($_COOKIE['userid'])) {
@@ -1905,6 +1906,19 @@ function getJobID($job_name, $customer_id) {
     return null;
 }
 
+function getOrderProductBarcode($id) {
+    global $conn;
 
+    $id = intval($id);
+    $sql = "SELECT orderid, id FROM order_product WHERE id = $id LIMIT 1";
+    $result = mysqli_query($conn, $sql);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['orderid'] . $row['id'] . '0000';
+    }
+
+    return null;
+}
 
 ?>
