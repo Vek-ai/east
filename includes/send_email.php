@@ -1,4 +1,5 @@
 <?php
+
 class EmailTemplates {
     private $headers;
     private $enableEmail;
