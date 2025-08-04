@@ -94,6 +94,7 @@ if(isset($_POST['fetch_edit_modal'])){
                                 $data_id = $row["product_id"];
                                 $row_id = $row["id"];
                                 $product = getProductDetails($data_id);
+                                $product_name = getProductName($product_name);
                                 $category_id = $product["product_category"];
                                 $default_image = 'images/product/product.jpg';
                                 $picture_path = !empty($product['main_image'])
@@ -110,7 +111,7 @@ if(isset($_POST['fetch_edit_modal'])){
                                         </div>
                                     </td>
                                     <td>
-                                        <h6 class="fw-semibold mb-0 fs-4"><?= $product["product_item"] ?></h6>
+                                        <h6 class="fw-semibold mb-0 fs-4"><?= $product_name ?></h6>
                                     </td>
                                     <td>
                                         <select id="color_order<?= $no ?>" class="form-control color-order text-start" name="color" onchange="updateColor(this)" data-key="<?= $row_id ?>" data-id="<?= $data_id; ?>">
