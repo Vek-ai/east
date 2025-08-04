@@ -70,7 +70,6 @@ require 'includes/functions.php';
         </div>
     </div>
 
-    <!-- Add Inventory -->
     <div class="modal fade" id="addInventoryModal" tabindex="-1" aria-labelledby="addInventoryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -250,6 +249,17 @@ require 'includes/functions.php';
                                     <label class="form-label">Date</label>
                                     <input type="date" id="Date" name="Date" class="form-control"  />
                                 </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Length</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" name="length_value" class="form-control" placeholder="Enter length">
+                                        <select name="length_unit" class="form-control">
+                                            <option value="inches">Inches</option>
+                                            <option value="meter">Meter</option>
+                                            <option value="feet">Feet</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>      
                             </div>
                         </div>
@@ -264,11 +274,8 @@ require 'includes/functions.php';
                     </div>
                 </form>
             </div>
-            <!-- /.modal-content -->
         </div>
-    <!-- /.modal-dialog -->
     </div>
-    <!-- End of Add Inventory -->
      
     <div class="modal fade" id="updateInventoryModal" tabindex="-1" role="dialog" aria-labelledby="updateInventoryModal" aria-hidden="true">
         

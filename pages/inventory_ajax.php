@@ -24,6 +24,12 @@ if(isset($_REQUEST['action'])) {
         $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
         $quantity_ttl = mysqli_real_escape_string($conn, $_POST['quantity_ttl']);
         $pack = mysqli_real_escape_string($conn, $_POST['pack']);
+
+        $length_value = mysqli_real_escape_string($conn, $_POST['length_value']);
+        $length_unit = mysqli_real_escape_string($conn, $_POST['length_unit']);
+
+        $formatted_length = "$length_value $length_unit";
+
         $addedby = $_SESSION['userid'];
     
         $checkQuery = "SELECT * FROM inventory WHERE Product_id = '$Product_id' AND color_id = '$color_id'";
@@ -101,6 +107,18 @@ if(isset($_REQUEST['action'])) {
             } else {
                 die("Error inserting record: " . mysqli_error($conn));
             }
+        }
+
+        $inv_id_query = mysqli_query($conn, "SELECT inventory_id FROM inventory WHERE Product_id = '$Product_id' AND color_id = '$color_id' LIMIT 1");
+        $inventory = mysqli_fetch_assoc($inv_id_query);
+        $inventory_id = $inventory['inventory_id'];
+
+        $check_length = mysqli_query($conn, "SELECT variant_id FROM product_variant_length WHERE inventory_id = '$inventory_id'");
+        
+        if (mysqli_num_rows($check_length) > 0) {
+            mysqli_query($conn, "UPDATE product_variant_length SET length = '$formatted_length' WHERE inventory_id = '$inventory_id'");
+        } else {
+            mysqli_query($conn, "INSERT INTO product_variant_length (inventory_id, length) VALUES ('$inventory_id', '$formatted_length')");
         }
     }
     
@@ -296,6 +314,17 @@ if(isset($_REQUEST['action'])) {
                                     <div class="col-md-6">
                                         <label class="form-label">Date</label>
                                         <input type="date" id="date" name="Date" class="form-control" value="<?= $row['Date'] ?>" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Length</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.01" name="length_value" class="form-control" placeholder="Enter length">
+                                            <select name="length_unit" class="form-control">
+                                                <option value="inches">Inches</option>
+                                                <option value="meter">Meter</option>
+                                                <option value="feet">Feet</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>       
                                 </div>
