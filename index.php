@@ -1434,6 +1434,7 @@ if (!isset($_SESSION['userid'])) {
 
             if ($_REQUEST['page'] == "returns_list_pending") {include 'pages/returns_list_pending.php';}
             if ($_REQUEST['page'] == "returns_list_rejected") {include 'pages/returns_list_rejected.php';}
+            if ($_REQUEST['page'] == "out_of_stock") {include 'pages/out_of_stock.php';}
           ?>
         </div>
       </div>
