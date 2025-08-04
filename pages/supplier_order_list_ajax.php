@@ -94,7 +94,7 @@ if(isset($_POST['fetch_edit_modal'])){
                                 $data_id = $row["product_id"];
                                 $row_id = $row["id"];
                                 $product = getProductDetails($data_id);
-                                $product_name = getProductName($product_name);
+                                $product_name = getProductName($data_id);
                                 $category_id = $product["product_category"];
                                 $default_image = 'images/product/product.jpg';
                                 $picture_path = !empty($product['main_image'])
