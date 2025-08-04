@@ -32,13 +32,18 @@ if(isset($_POST['fetch_modal'])){
             </div>
             <div class="col-6">
                 <label class="form-label">Length</label>
-                <div class="mb-3 row g-2">
-                    <div class="col">
-                        <input type="number" step="0.001" min="0" class="form-control" name="custom_length_feet" id="custom_length_feet" placeholder="Feet">
-                    </div>
-                    <div class="col">
-                        <input type="number" step="0.001" min="0" class="form-control" name="custom_length_inch" id="custom_length_inch" placeholder="Inches">
-                    </div>
+                <div class="mb-3">
+                    <select id="custom_length" class="form-control">
+                        <option value="0">Select length</option>
+                        <?php
+                        $lengths = getInventoryLengths($id);
+                        foreach ($lengths as $entry) {
+                            $length = htmlspecialchars($entry['length']);
+                            $feet = htmlspecialchars($entry['feet']);
+                            echo "<option value=\"$feet\">$length</option>";
+                        }
+                        ?>
+                    </select>
                 </div>
             </div>
             <div class="col-12">
@@ -64,25 +69,20 @@ if(isset($_POST['fetch_modal'])){
             $(document).ready(function() {
                 function updatePrice() {
                     const basePrice = parseFloat($('#product_price').val()) || 0;
-                    const feet = parseFloat($('#custom_length_feet').val()) || 0;
-                    const inches = parseFloat($('#custom_length_inch').val()) || 0;
+                    const totalLength = parseFloat($('#custom_length').val()) || 0;
                     const quantity = parseFloat($('#custom_length_quantity').val()) || 1;
 
-                    const totalLength = feet + (inches / 12);
-                    const multiplier = totalLength;
-
-                    const finalPrice = (basePrice * multiplier * quantity).toFixed(2);
+                    const finalPrice = (basePrice * totalLength * quantity).toFixed(2);
 
                     $('#total_price').val(finalPrice);
                     $('#price_display').text(finalPrice);
                 }
 
-                $(document).on('input', '#custom_length_quantity', updatePrice);
-                $(document).on('input', '#custom_length_feet', updatePrice);
-                $(document).on('input', '#custom_length_inch', updatePrice);
+                $(document).on('change input', '#custom_length, #custom_length_quantity, #product_price', updatePrice);
 
                 updatePrice();
             });
         </script>
+
 <?php
 }

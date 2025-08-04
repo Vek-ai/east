@@ -36,11 +36,9 @@ if(isset($_POST['fetch_modal'])){
                     <select id="custom_length_select" class="form-control mb-1">
                         <option value="0">Select Length</option>
                         <?php
-                        $query = "SELECT * FROM product_length WHERE hidden = 0 AND status = 1 ORDER BY product_length + 0 ASC";
-                        $result = mysqli_query($conn, $query);
-
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $length_in_feet = floatval($row['length_in_feet']);
+                        $lengths = getInventoryLengths($id);
+                        foreach ($lengths as $entry) {
+                            $length_in_feet = floatval($entry['feet']);
                             $feet = floor($length_in_feet);
                             $inch = round(($length_in_feet - $feet) * 12);
 
@@ -52,13 +50,10 @@ if(isset($_POST['fetch_modal'])){
                             $selected = ($feet == 1 && $inch == 0) ? 'selected' : '';
 
                             $display = '';
-                            if ($feet > 0) {
-                                $display .= "{$feet}ft ";
-                            }
-                            if ($inch > 0) {
-                                $display .= "{$inch}in";
-                            }
+                            if ($feet > 0) $display .= "{$feet}ft ";
+                            if ($inch > 0) $display .= "{$inch}in";
                             $display = trim($display);
+
                             echo "<option value=\"$length_in_feet\" data-feet=\"$feet\" data-inch=\"$inch\" $selected>$display</option>";
                         }
                         ?>
@@ -66,9 +61,9 @@ if(isset($_POST['fetch_modal'])){
 
                     <input type="hidden" id="custom_length_feet" name="custom_length_feet" class="form-control mb-1">
                     <input type="hidden" id="custom_length_inch" name="custom_length_inch" class="form-control mb-1">
-
                 </div>
             </div>
+
             <div class="col-12">
                 <div class="product_cost_display">
                     <h5 class="text-center pt-3 fs-5 fw-bold">Product Cost: $<span id="price_display">0.00</span></h5>
@@ -115,11 +110,11 @@ if(isset($_POST['fetch_modal'])){
                     updatePrice();
                 });
 
-
                 $(document).on('input', '#custom_length_quantity', updatePrice);
 
                 updatePrice();
             });
         </script>
+
 <?php
 }

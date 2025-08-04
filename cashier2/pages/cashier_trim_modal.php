@@ -131,20 +131,16 @@ if(isset($_POST['fetch_modal'])){
             </div>
             <div class="col-6">
                 <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <label class="form-label" for="trim_length">Length</label>
-                        <a href="/?page=product_length" target="_blank" class="text-decoration-none">Edit</a>
-                    </div>
+                    <label class="form-label" for="trim_length">Length</label>
                     <select id="trim_length_select" class="form-control mb-1">
-                        <option value="0" $selected>Select Length</option>
+                        <option value="0" selected>Select Length</option>
                         <?php
-                        $query = "SELECT * FROM product_length WHERE hidden = 0 AND status = 1 ORDER BY product_length + 0 ASC";
-                        $result = mysqli_query($conn, $query);
+                        $lengths = getInventoryLengths($id);
 
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $product_length = htmlspecialchars($row['product_length']);
-                            $length_in_feet = htmlspecialchars($row['length_in_feet']);
-                            $selected = ($length_in_feet == 1) ? 'selected' : '';
+                        foreach ($lengths as $entry) {
+                            $product_length = htmlspecialchars($entry['length']);
+                            $length_in_feet = htmlspecialchars($entry['feet']);
+                            $selected = ($length_in_feet == 1.0) ? 'selected' : '';
                             echo "<option value=\"$length_in_feet\" $selected>$product_length</option>";
                         }
                         ?>
@@ -152,6 +148,7 @@ if(isset($_POST['fetch_modal'])){
                     <input type="hidden" id="trim_length" name="length" class="form-control mb-1">
                 </div>
             </div>
+
             <div class="col-12">
                 <div class="product_cost_display">
                     <h5 class="text-center pt-3 fs-5 fw-bold">Product Cost: $<span id="trim_price"><?= number_format(0,2) ?></span></h5>

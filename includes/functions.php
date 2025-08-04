@@ -1921,4 +1921,62 @@ function getOrderProductBarcode($id) {
     return null;
 }
 
+function convertLengthToFeet($lengthStr) {
+    $parts = explode(' ', trim($lengthStr));
+
+    if (count($parts) !== 2) return 0;
+
+    $value = floatval($parts[0]);
+    $unit = strtolower(trim($parts[1]));
+
+    switch ($unit) {
+        case 'feet':
+        case 'foot':
+            return $value;
+
+        case 'inches':
+        case 'inch':
+            return $value / 12;
+
+        case 'meter':
+        case 'meters':
+            return $value * 3.28084;
+
+        default:
+            return 0;
+    }
+}
+
+function getInventoryLengths($product_id) {
+    global $conn;
+
+    $lengths = [];
+
+    $query = "
+        SELECT iv.inventory_id, pvl.length 
+        FROM inventory iv
+        JOIN product_variant_length pvl ON iv.inventory_id = pvl.inventory_id
+        WHERE iv.Product_id = '$product_id'
+    ";
+
+    $result = mysqli_query($conn, $query);
+
+    if (!$result) {
+        return [];
+    }
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $lengths[] = [
+            'inventory_id' => $row['inventory_id'],
+            'length'       => $row['length'],
+            'feet'         => convertLengthToFeet($row['length'])
+        ];
+    }
+
+    return $lengths;
+}
+
+
+
+
 ?>

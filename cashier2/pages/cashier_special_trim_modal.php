@@ -78,20 +78,17 @@ if(isset($_POST['fetch_modal'])){
                             </div>
                             <div class="col-6">
                                 <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <label class="form-label">Length</label>
-                                        <a href="?page=product_length" target="_blank" class="text-decoration-none">Edit</a>
-                                    </div>
+                                    <label class="form-label">Length</label>
                                     <select id="custom_trim_length" class="form-control mb-1">
+                                        <option value="0">Select length</option>
                                         <?php
-                                        $query = "SELECT * FROM product_length WHERE hidden = 0 AND status = 1 ORDER BY product_length + 0 ASC";
-                                        $result = mysqli_query($conn, $query);
+                                        $lengths = getInventoryLengths($id);
 
-                                        while ($row = mysqli_fetch_assoc($result)) {
-                                            $product_length = htmlspecialchars($row['product_length']);
-                                            $length_in_feet = htmlspecialchars($row['length_in_feet']);
-                                            $selected = ($length_in_feet == 1) ? 'selected' : '';
-                                            echo "<option value=\"$length_in_feet\" $selected>$product_length</option>";
+                                        foreach ($lengths as $entry) {
+                                            $length = htmlspecialchars($entry['length']);
+                                            $feet = htmlspecialchars($entry['feet']);
+                                            $selected = ($feet == 1) ? 'selected' : '';
+                                            echo "<option value=\"$feet\" $selected>$length</option>";
                                         }
                                         ?>
                                     </select>
