@@ -6,10 +6,11 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Edit Supplier Order";
-
 $supplier_id = $_REQUEST['supplier_id'] ?? 0;
 $supplier_id = intval($supplier_id);
+$supplier_name = getSupplierName($supplier_id);
+
+$page_title = "$supplier_name Orders";
 
 if (!empty($supplier_id)) {
     loadSupplierOrders($supplier_id);
@@ -115,7 +116,7 @@ if (!empty($supplier_id)) {
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                <a class="text-muted text-decoration-none" href="?page=product4">Product
+                <a class="text-muted text-decoration-none" href="?page=supplier_pending_orders">Supplier Orders
                 </a>
                 </li>
                 <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
@@ -134,15 +135,7 @@ if (!empty($supplier_id)) {
     <div class="widget-content searchable-container list">
     <div class="card card-body">
         <div class="row">
-            <div class="col-md-6 d-flex align-items-center">
-                <a href="?page=supplier_pending_orders" target="_blank" class="btn btn-primary fw-semibold">
-                    <i class="ti ti-list-details me-1"></i> View Orders
-                </a>
-            </div>
-            <div class="col-md-6 mt-3 mt-md-0 d-flex align-items-center justify-content-end gap-4">
-                <a href="#" id="view_order_list" class="cart-icon text-decoration-none position-relative d-inline-flex">
-                    <iconify-icon icon="ic:round-list-alt" class="cart-icon fs-9"></iconify-icon>
-                </a>
+            <div class="col-md-12 mt-3 mt-md-0 d-flex align-items-center justify-content-end gap-4">
                 <a href="#" id="view_order" class="cart-icon text-decoration-none position-relative d-inline-flex">
                     <iconify-icon icon="ic:round-shopping-cart" class="cart-icon fs-8"></iconify-icon>
                     <span id="cartCounter" class="cart-badge">0</span>

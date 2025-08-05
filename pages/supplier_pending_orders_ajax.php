@@ -68,9 +68,9 @@ if(isset($_REQUEST['action'])) {
                                             <td>$<?= number_format($prod['price'], 2) ?></td>
                                             <td><?= getColorName($prod['color']) ?></td>
                                             <td><?= date("M d, Y", strtotime($prod['order_date'])) ?></td>
-                                            <td>
-                                                <a href="javascript:void(0)" class="delete-product-btn" data-id="<?= $prod['prod_order_id'] ?>">
-                                                    <i class="fas fa-trash"></i>
+                                            <td class="text-center">
+                                                <a href="javascript:void(0)" class="delete-product-btn" data-id="<?= $prod['prod_order_id'] ?>" title="Remove Product from Order">
+                                                    <i class="fas fa-trash text-danger"></i>
                                                 </a>
                                             </td>
                                         </tr>
