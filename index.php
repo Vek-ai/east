@@ -1437,6 +1437,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "out_of_stock") {include 'pages/out_of_stock.php';}
             if ($_REQUEST['page'] == "supplier_pending_orders") {include 'pages/supplier_pending_orders.php';}
             if ($_REQUEST['page'] == "supplier_approved_orders") {include 'pages/supplier_approved_orders.php';}
+            if ($_REQUEST['page'] == "supplier_edit_orders") {include 'pages/supplier_edit_orders.php';}
           ?>
         </div>
       </div>

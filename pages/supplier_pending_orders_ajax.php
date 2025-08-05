@@ -44,6 +44,7 @@ if(isset($_REQUEST['action'])) {
                                         <th>Price</th>
                                         <th>Color</th>
                                         <th>Order Date</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -67,6 +68,11 @@ if(isset($_REQUEST['action'])) {
                                             <td>$<?= number_format($prod['price'], 2) ?></td>
                                             <td><?= getColorName($prod['color']) ?></td>
                                             <td><?= date("M d, Y", strtotime($prod['order_date'])) ?></td>
+                                            <td>
+                                                <a href="javascript:void(0)" class="delete-product-btn" data-id="<?= $prod['prod_order_id'] ?>">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </td>
                                         </tr>
                                         <?php
                                     }
@@ -76,13 +82,19 @@ if(isset($_REQUEST['action'])) {
                         </div>
                     </div>
                     
-                    <div class="d-flex justify-content-end mt-3">
-                        <button class="btn btn-success me-2" id="approve_supplier_order" data-supplier-id="<?= $supplier_id ?>">
-                            <i class="fas fa-check"></i>Place Order
-                        </button>
-                        <button class="btn btn-danger" id="remove_supplier_order" data-supplier-id="<?= $supplier_id ?>">
-                            <i class="fas fa-trash-alt"></i> Remove Order
-                        </button>
+                    <div class="d-flex justify-content-between mt-3">
+                        <a href="?page=supplier_edit_orders&supplier_id=<?= $supplier_id ?>" target="_blank" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Edit Order
+                        </a>
+                        
+                        <div>
+                            <button class="btn btn-success me-2" id="approve_supplier_order" data-supplier-id="<?= $supplier_id ?>">
+                                <i class="fas fa-check"></i> Place Order
+                            </button>
+                            <button class="btn btn-danger" id="remove_supplier_order" data-supplier-id="<?= $supplier_id ?>">
+                                <i class="fas fa-trash-alt"></i> Remove Order
+                            </button>
+                        </div>
                     </div>
 
                 <?php } else { ?>
@@ -180,6 +192,46 @@ if(isset($_REQUEST['action'])) {
 
         exit;
     }
+
+    if ($action === "delete_product") {
+        $prod_order_id = intval($_POST['prod_order_id']);
+
+        $query = "SELECT supplier_order_id FROM supplier_orders_prod WHERE id = '$prod_order_id' LIMIT 1";
+        $result = mysqli_query($conn, $query);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $supplier_order_id = intval($row['supplier_order_id']);
+
+            $delete = "DELETE FROM supplier_orders_prod WHERE id = '$prod_order_id' LIMIT 1";
+            if (mysqli_query($conn, $delete)) {
+                $total_query = "
+                    SELECT SUM(price * quantity) AS total 
+                    FROM supplier_orders_prod 
+                    WHERE supplier_order_id = '$supplier_order_id'
+                ";
+                $total_result = mysqli_query($conn, $total_query);
+                $total_row = mysqli_fetch_assoc($total_result);
+                $new_total = floatval($total_row['total'] ?? 0);
+
+                $update_total = "
+                    UPDATE supplier_orders 
+                    SET total_price = '$new_total', is_edited = 1 
+                    WHERE supplier_order_id = '$supplier_order_id'
+                ";
+                mysqli_query($conn, $update_total);
+
+                echo "success";
+            } else {
+                echo "failed";
+            }
+        } else {
+            echo "failed";
+        }
+
+        exit;
+    }
+
 
     mysqli_close($conn);
 }

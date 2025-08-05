@@ -1976,6 +1976,162 @@ function getInventoryLengths($product_id) {
     return $lengths;
 }
 
+function loadSupplierOrders($supplier_id) {
+    global $conn;
+
+    $_SESSION["order_cart"] = [];
+
+    $query = "
+        SELECT 
+            sop.id AS supplier_order_prod_id,
+            sop.supplier_order_id,
+            sop.product_id,
+            sop.quantity,
+            sop.price,
+            sop.color,
+            p.supplier_id,
+            p.product_item,
+            p.unit_price,
+            p.length,
+            p.sold_by_feet
+        FROM supplier_orders so
+        JOIN supplier_orders_prod sop ON so.supplier_order_id = sop.supplier_order_id
+        JOIN product p ON sop.product_id = p.product_id
+        WHERE so.supplier_id = '$supplier_id' AND so.status = 1
+    ";
+
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $price = floatval($row['price']);
+
+            if ($row['sold_by_feet'] == 1 && floatval($row['length']) > 0) {
+                $price = $price / floatval($row['length']);
+            }
+
+            $_SESSION["order_cart"][] = [
+                'product_id'              => $row['product_id'],
+                'product_item'            => getProductName($row['product_id']),
+                'supplier_id'             => $row['supplier_id'],
+                'unit_price'              => $price,
+                'quantity_cart'           => intval($row['quantity']),
+                'custom_color'            => $row['color'],
+                'supplier_order_id'       => $row['supplier_order_id'],
+                'supplier_order_prod_id'  => $row['supplier_order_prod_id']
+            ];
+        }
+    }
+}
+
+function updateSupplierOrders($supplier_id) {
+    global $conn;
+
+    if (!isset($_SESSION['order_cart']) || !is_array($_SESSION['order_cart']) || empty($_SESSION['order_cart'])) {
+        return false;
+    }
+
+    $query = "SELECT supplier_order_id FROM supplier_orders WHERE supplier_id = '$supplier_id' AND status = 1 LIMIT 1";
+    $result = mysqli_query($conn, $query);
+
+    $supplier_order_id = null;
+    $is_new_order = false;
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $supplier_order_id = intval($row['supplier_order_id']);
+    } else {
+        $is_new_order = true;
+    }
+
+    $insert_items = [];
+
+    $new_orders_price = 0;
+    foreach ($_SESSION['order_cart'] as &$item) {
+        $product_id = intval($item['product_id']);
+        $quantity = intval($item['quantity_cart']);
+        $price = floatval($item['unit_price']);
+        $color = mysqli_real_escape_string($conn, $item['custom_color']);
+
+        if (!empty($item['supplier_order_prod_id']) && !$is_new_order) {
+            $prod_id = intval($item['supplier_order_prod_id']);
+            $update = "
+                UPDATE supplier_orders_prod 
+                SET quantity = '$quantity', price = '$price', color = '$color'
+                WHERE id = '$prod_id' AND supplier_order_id = '$supplier_order_id'
+            ";
+            mysqli_query($conn, $update);
+        } else {
+            $insert_items[] = [
+                'product_id' => $product_id,
+                'quantity' => $quantity,
+                'price' => $price,
+                'color' => $color
+            ];
+
+            $new_orders_price += $price;
+        }
+    }
+
+    if ($is_new_order && !empty($insert_items)) {
+        $cashier_id = $_SESSION['staff_id'] ?? 0;
+        $order_date = date("Y-m-d H:i:s");
+
+        $insert_order = "
+            INSERT INTO supplier_orders (supplier_id, cashier, total_price, order_date, status)
+            VALUES ('$supplier_id', '$cashier_id', '$new_orders_price', '$order_date', 1)
+        ";
+
+        if (mysqli_query($conn, $insert_order)) {
+            $supplier_order_id = mysqli_insert_id($conn);
+        } else {
+            return false;
+        }
+    }
+
+    if (!$is_new_order) {
+        $existing_ids = [];
+        $query_existing = "SELECT id FROM supplier_orders_prod WHERE supplier_order_id = '$supplier_order_id'";
+        $result_existing = mysqli_query($conn, $query_existing);
+
+        while ($row = mysqli_fetch_assoc($result_existing)) {
+            $existing_ids[] = $row['id'];
+        }
+
+        $session_ids = [];
+        foreach ($_SESSION['order_cart'] as $item) {
+            if (!empty($item['supplier_order_prod_id'])) {
+                $session_ids[] = intval($item['supplier_order_prod_id']);
+            }
+        }
+
+        $to_delete = array_diff($existing_ids, $session_ids);
+        if (!empty($to_delete)) {
+            $ids_to_delete = implode(",", array_map('intval', $to_delete));
+            $delete_sql = "DELETE FROM supplier_orders_prod WHERE id IN ($ids_to_delete)";
+            mysqli_query($conn, $delete_sql);
+        }
+    }
+
+    foreach ($insert_items as $idx => $item_data) {
+        $product_id = $item_data['product_id'];
+        $quantity = $item_data['quantity'];
+        $price = $item_data['price'];
+        $color = $item_data['color'];
+
+        $insert = "
+            INSERT INTO supplier_orders_prod (supplier_order_id, product_id, quantity, price, color)
+            VALUES ('$supplier_order_id', '$product_id', '$quantity', '$price', '$color')
+        ";
+
+        if (mysqli_query($conn, $insert)) {
+            $_SESSION['order_cart'][$idx]['supplier_order_prod_id'] = mysqli_insert_id($conn);
+            $_SESSION['order_cart'][$idx]['supplier_order_id'] = $supplier_order_id;
+        }
+    }
+
+    return true;
+}
 
 
 

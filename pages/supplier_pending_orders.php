@@ -233,6 +233,37 @@ $page_title = "Supplier Orders";
 
 <script>
     $(document).ready(function() {
+        var supplier_id = '';
+        
+        function loadViewModal() {
+            $.ajax({
+                url: 'pages/supplier_pending_orders_ajax.php',
+                type: 'POST',
+                data: {
+                    supplier_id: supplier_id,
+                    action: "fetch_view_modal"
+                },
+                success: function(response) {
+                    $('#viewProductModalBody').html(response);
+
+                    if ($.fn.DataTable.isDataTable('#supplier_order_products')) {
+                        $('#supplier_order_products').DataTable().destroy();
+                    }
+
+                    $('#supplier_order_products').DataTable({
+                        paging: false,
+                        searching: false,
+                        info: false,
+                        ordering: true
+                    });
+
+                    $('#viewProductModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
         var selectedCategory = '';
 
         var table = $('#supplier_pending_orders').DataTable({
@@ -270,35 +301,9 @@ $page_title = "Supplier Orders";
         });
 
         $(document).on('click', '.view_order_btn', function(event) {
-            event.preventDefault(); 
-            var supplier_id = $(this).data('supplier');
-            $.ajax({
-                url: 'pages/supplier_pending_orders_ajax.php',
-                type: 'POST',
-                data: {
-                    supplier_id: supplier_id,
-                    action: "fetch_view_modal"
-                },
-                success: function(response) {
-                    $('#viewProductModalBody').html(response);
-
-                    if ($.fn.DataTable.isDataTable('#supplier_order_products')) {
-                        $('#supplier_order_products').DataTable().destroy();
-                    }
-
-                    $('#supplier_order_products').DataTable({
-                        paging: false,
-                        searching: false,
-                        info: false,
-                        ordering: true
-                    });
-
-                    $('#viewProductModal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
+            event.preventDefault();
+            supplier_id = $(this).data('supplier');
+            loadViewModal();
         });
 
         $(document).on('click', '#approve_supplier_order', function () {
@@ -344,6 +349,35 @@ $page_title = "Supplier Orders";
                 });
             }
         });
+
+        $(document).on('click', '.delete-product-btn', function () {
+            const prodOrderId = $(this).data('id');
+
+            if (!confirm("Are you sure you want to delete this product from the order?")) {
+                return;
+            }
+
+            $.ajax({
+                url: 'pages/supplier_pending_orders_ajax.php',
+                type: 'POST',
+                data: {
+                    action: 'delete_product',
+                    prod_order_id: prodOrderId
+                },
+                success: function (response) {
+                    if(response.trim() == 'success'){
+                        alert("Successfully deleted product from order");
+                    }else{
+                        alert('Failed');
+                    }
+                    loadViewModal();
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error:", xhr.responseText);
+                }
+            });
+        });
+
         
         $(document).on('mousedown', '.readonly', function() {
             e.preventDefault();
