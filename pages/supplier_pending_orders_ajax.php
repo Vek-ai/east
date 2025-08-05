@@ -64,8 +64,8 @@ if(isset($_REQUEST['action'])) {
                                                 </div>
                                             </td>
                                             <td><?= $prod['quantity'] ?></td>
-                                            <td>₱<?= number_format($prod['price'], 2) ?></td>
-                                            <td><?= $prod['color'] ?></td>
+                                            <td>$<?= number_format($prod['price'], 2) ?></td>
+                                            <td><?= getColorName($prod['color']) ?></td>
                                             <td><?= date("M d, Y", strtotime($prod['order_date'])) ?></td>
                                         </tr>
                                         <?php

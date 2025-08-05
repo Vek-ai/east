@@ -128,16 +128,20 @@ $page_title = "Out of Stock Products";
     <div class="widget-content searchable-container list">
     <div class="card card-body">
         <div class="row">
-        <div class="col-md-12 col-xl-12 mt-3 text-end text-start mt-md-0 d-flex align-items-center justify-content-end gap-4">
-            <a href="#" id="view_order_list" class="cart-icon text-decoration-none position-relative d-inline-flex">
-                <iconify-icon icon="ic:round-list-alt" class="cart-icon fs-9"></iconify-icon>
-            </a>
-            <a href="#" id="view_order" class="cart-icon text-decoration-none position-relative d-inline-flex">
-                <iconify-icon icon="ic:round-shopping-cart" class="cart-icon fs-8"></iconify-icon>
-                <span id="cartCounter" class="cart-badge">0</span>
-            </a>
-        </div>
-
+            <div class="col-md-6 d-flex align-items-center">
+                <a href="?page=supplier_pending_orders" target="_blank" class="btn btn-primary fw-semibold">
+                    <i class="ti ti-list-details me-1"></i> View Orders
+                </a>
+            </div>
+            <div class="col-md-6 mt-3 mt-md-0 d-flex align-items-center justify-content-end gap-4">
+                <a href="#" id="view_order_list" class="cart-icon text-decoration-none position-relative d-inline-flex">
+                    <iconify-icon icon="ic:round-list-alt" class="cart-icon fs-9"></iconify-icon>
+                </a>
+                <a href="#" id="view_order" class="cart-icon text-decoration-none position-relative d-inline-flex">
+                    <iconify-icon icon="ic:round-shopping-cart" class="cart-icon fs-8"></iconify-icon>
+                    <span id="cartCounter" class="cart-badge">0</span>
+                </a>
+            </div>
         </div>
     </div>
 
