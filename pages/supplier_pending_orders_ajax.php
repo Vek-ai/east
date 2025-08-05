@@ -78,7 +78,7 @@ if(isset($_REQUEST['action'])) {
                     
                     <div class="d-flex justify-content-end mt-3">
                         <button class="btn btn-success me-2" id="approve_supplier_order" data-supplier-id="<?= $supplier_id ?>">
-                            <i class="fas fa-check"></i> Approve and Place Order
+                            <i class="fas fa-check"></i>Place Order
                         </button>
                         <button class="btn btn-danger" id="remove_supplier_order" data-supplier-id="<?= $supplier_id ?>">
                             <i class="fas fa-trash-alt"></i> Remove Order

@@ -6,7 +6,7 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Pending Supplier Orders";
+$page_title = "Supplier Orders";
 ?>
 <style>
     .dz-preview {
