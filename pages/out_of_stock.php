@@ -6,18 +6,9 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Out Of Stock Products";
-
-$picture_path = "images/product/product.jpg";
-
-$price_per_hem = getPaymentSetting('price_per_hem');
-$price_per_bend = getPaymentSetting('price_per_bend');
-
+$page_title = "Out of Stock Products";
 ?>
 <style>
-    /* .select2-container {
-        z-index: 9999 !important; 
-    } */
     .dz-preview {
         position: relative;
     }
@@ -37,11 +28,11 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         text-decoration: none;
         font-weight: bold;
         font-size: 12px;
-        z-index: 9999; /* Ensure the remove button is on top of the image */
-        cursor: pointer; /* Make sure it looks clickable */
+        z-index: 9999;
+        cursor: pointer;
     }
 
-    #out_of_stock_filter {
+    #productList_filter {
         display: none !important;
     }
 
@@ -69,28 +60,86 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         background-color: #f8f9fa !important;
         color: #6c757d !important;
     }
+
+    .cart-icon {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .cart-badge {
+        position: absolute;
+        top: -16px;
+        right: -16px; /* Slightly outside the icon */
+        background-color: red;
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+        min-width: 20px;
+        min-height: 20px;
+        line-height: 20px;
+        text-align: center;
+        border-radius: 50%;
+        padding: 2px 6px;
+        white-space: nowrap;
+        display: none;
+    }
+
+    /* Adjust width dynamically based on number size */
+    .cart-badge[data-count="10"],
+    .cart-badge[data-count="99"],
+    .cart-badge[data-count="100+"] {
+        min-width: auto;
+        padding: 2px 8px;
+    }
+    
+    /* Show badge only when count is greater than 0 */
+    .cart-badge:not(:empty):not(:contains("0")) {
+        display: inline-block;
+    }
+
+
 </style>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
     <div class="card-body px-0">
         <div class="d-flex justify-content-between align-items-center">
         <div><br>
-            <h4 class="font-weight-medium fs-14 mb-0"> <?= $page_title ?></h4>
+            <h4 class="font-weight-medium fs-14 mb-0"><?= $page_title ?></h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                <a class="text-muted text-decoration-none" href="?page=">Home
+                <a class="text-muted text-decoration-none" href="?page=product4">Product
                 </a>
                 </li>
                 <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
             </ol>
             </nav>
         </div>
+        <div>
+            <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
+            
+            </div>
+        </div>
         </div>
     </div>
     </div>
 
     <div class="widget-content searchable-container list">
+    <div class="card card-body">
+        <div class="row">
+        <div class="col-md-12 col-xl-12 mt-3 text-end text-start mt-md-0 d-flex align-items-center justify-content-end gap-4">
+            <a href="#" id="view_order_list" class="cart-icon text-decoration-none position-relative d-inline-flex">
+                <iconify-icon icon="ic:round-list-alt" class="cart-icon fs-9"></iconify-icon>
+            </a>
+            <a href="#" id="view_order" class="cart-icon text-decoration-none position-relative d-inline-flex">
+                <iconify-icon icon="ic:round-shopping-cart" class="cart-icon fs-8"></iconify-icon>
+                <span id="cartCounter" class="cart-badge">0</span>
+            </a>
+        </div>
+
+        </div>
+    </div>
 
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -112,23 +161,76 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         </div>
     </div>
 
-    <div class="modal fade" id="viewProductModal" tabindex="-1" role="dialog" aria-labelledby="viewProductModal" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header d-flex align-items-center">
-                    <h4 class="modal-title" id="myLargeModalLabel">
-                        View Product Details
-                    </h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal" id="order_modal">
+        <div class="modal-dialog modal-fullscreen" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title">Save Order</h6>
+                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-                <div id="product_details" class="form-horizontal">
-                    <div id="viewProductModalBody" class="modal-body">
-                        
+                <div class="modal-body">
+                    <div id="order-tbl"></div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+                    <div>
+                        <button class="btn ripple fw-bold text-white" type="button" id="save_order" 
+                            style="background-color: #17A2B8; border-color: #138496;">
+                            <i class="fas fa-save" style="color: #E3F2FD;"></i> Save Order for Later
+                        </button>
+                    </div>
+
+                    <div>
+                        <button class="btn ripple fw-bold text-white me-2" type="button" id="order_products" 
+                            style="background-color: #28A745; border-color: #218838;">
+                            <i class="fas fa-shopping-cart" style="color: #D4EDDA;"></i> Place Order
+                        </button>
+                        <button class="btn ripple fw-bold text-white" data-bs-dismiss="modal" type="button" 
+                            style="background-color: #DC3545; border-color: #C82333;">
+                            <i class="fas fa-times" style="color: #F8D7DA;"></i> Close
+                        </button>
                     </div>
                 </div>
 
             </div>
-            <!-- /.modal-content -->
+        </div>
+    </div>
+
+    <div class="modal" id="view_order_list_modal">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title">Saved Orders List</h6>
+                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="orders-saved-tbl">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="view_order_details_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title">Order Details</h6>
+                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="order-details">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -137,10 +239,10 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         <div class="row">
             <div class="col-3">
                 <h3 class="card-title align-items-center mb-2">
-                    Filter <?= $page_title ?> 
+                    Filter Products 
                 </h3>
                 <div class="position-relative w-100 px-0 mr-0 mb-2">
-                    <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search <?= $page_title ?>">
+                    <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search Product">
                     <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                 </div>
                 <div class="align-items-center">
@@ -281,21 +383,108 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             </div>
             <div class="col-9">
                 <h3 class="card-title mb-2">
-                    <?= $page_title ?> List 
+                    Products List 
                 </h3>
                 <div id="selected-tags" class="mb-2"></div>
                 <div class="datatables">
                     <div class="table-responsive">
-                        <table id="out_of_stock" class="table search-table align-middle text-wrap">
+                        <table id="productList" class="table search-table align-middle text-wrap">
                             <thead class="header-item">
-                            <th>Product Name</th>
-                            <th>Product Category</th>
-                            <th>Product Line</th>
-                            <th>Product Type</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Color</th>
+                            <th>Quantity</th>
                             <th>Action</th>
                             </thead>
                             <tbody>
-                            
+                            <?php
+                                $no = 1;
+                                $query_product = "
+                                    SELECT 
+                                        p.*,
+                                        COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
+                                    FROM 
+                                        product AS p
+                                    LEFT JOIN 
+                                        inventory AS i ON p.product_id = i.product_id
+                                    WHERE 
+                                        p.hidden = '0' AND p.product_origin = '1'
+                                    GROUP BY p.product_id
+                                    HAVING total_quantity < 1 
+                                ";
+                                $result_product = mysqli_query($conn, $query_product);            
+                                while ($row_product = mysqli_fetch_array($result_product)) {
+                                    $product_id = $row_product['product_id'];
+                                    $db_status = $row_product['status'];
+
+                                    if ($db_status == '0') {
+                                        $status_icon = "text-danger ti ti-trash";
+                                        $status = "<a href='#'><div id='status-alert$no' class='changeStatus alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='$db_status' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+                                    } else {
+                                        $status_icon = "text-warning ti ti-reload";
+                                        $status = "<a href='#'><div id='status-alert$no' class='changeStatus alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='$db_status' style='border-radius: 5%;' role='alert'>Active</div></a>";
+                                    }
+
+                                    if(!empty($row_product['main_image'])){
+                                        $picture_path = '../'.$row_product['main_image'];
+                                    }else{
+                                        $picture_path = "../images/product/product.jpg";
+                                    }
+                
+                                ?>
+                                    <!-- start row -->
+                                    <tr class="search-items" 
+                                        data-system="<?= getProductSystemName($row_product['product_system']) ?>"
+                                        data-line="<?= getProductLineName($row_product['product_line']) ?>"
+                                        data-profile="<?= getProfileTypeName($row_product['profile']) ?>"
+                                        data-color="<?= getColorName($row_product['color']) ?>"
+                                        data-grade="<?= getGradeName($row_product['grade']) ?>"
+                                        data-gauge="<?= getGaugeName($row_product['gauge']) ?>"
+                                        data-category="<?= getProductCategoryName($row_product['product_category']) ?>"
+                                        data-type="<?= getProductTypeName($row_product['product_type']) ?>"
+                                        >
+                                        <td>
+                                            <a href="/?page=product_details&product_id=<?= $row_product['product_id'] ?>">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
+                                                    <div class="ms-3">
+                                                        <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['product_item'] ?></h6>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </td>
+                                        <td><?= getProductCategoryName($row_product['product_category']) ?></td>
+                                        <td>
+                                            <select class="form-control search-chat py-0 ps-5 select2_color" id="select_color_<?= $row_product['product_id'] ?>" data-id="<?= $row_product['product_id'] ?>">
+                                                <option value="" data-category="">All Colors</option>
+                                                <optgroup label="Product Colors">
+                                                    <?php
+                                                    $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
+                                                    $result_color = mysqli_query($conn, $query_color);
+                                                    while ($row_color = mysqli_fetch_array($result_color)) {
+                                                        $selected = ($color_id == $row_color['color_id']) ? 'selected' : '';
+                                                    ?>
+                                                        <option value="<?= $row_color['color_id'] ?>" data-color="<?= $row_color['color_code'] ?>" <?= $selected ?>><?= $row_color['color_name'] ?></option>
+                                                    <?php
+                                                    }
+                                                    ?>
+                                                </optgroup>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <div class="input-group input-group-sm">
+                                                <button class="btn btn-outline-primary btn-minus" type="button" data-id="<?= $row_product['product_id'] ?>">-</button>
+                                                <input class="form-control p-1 text-center" type="number" id="qty<?= $row_product['product_id'] ?>" value="1" min="1">
+                                                <button class="btn btn-outline-primary btn-plus" type="button" data-id="<?= $row_product['product_id'] ?>">+</button>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary btn-add-to-cart" type="button" data-id="<?= $row_product['product_id'] ?>" id="add-to-cart-btn">Add to Order</button>
+                                        </td>
+                                    </tr>
+                                <?php 
+                                $no++;
+                                } ?>
                             </tbody>
                         </table>
                     </div>
@@ -304,44 +493,250 @@ $price_per_bend = getPaymentSetting('price_per_bend');
         </div>
         
     </div>
+
     </div>
 </div>
 
 <script src="includes/pricing_data.js"></script>
 
 <script>
+    function updateCartCounter() {
+        $.ajax({
+            url: 'pages/supplier_order_ajax.php',
+            type: 'POST',
+            data: {
+                fetch_cart_count: 'fetch_cart_count'
+            },
+            success: function(response) {
+                console.log(response);
+                let count = parseInt(response, 10) || 0;
+                let $counter = $('#cartCounter');
+                if (count > 0) {
+                    $counter.text(count).show();
+                } else {
+                    $counter.hide();
+                }
+            }
+        });
+    }
+
+    function loadOrderContents(){
+        $.ajax({
+            url: 'pages/supplier_order_ajax.php',
+            type: 'POST',
+            data: {
+                fetch_order: "fetch_order"
+            },
+            success: function(response) {
+                $('#order-tbl').html('');
+                $('#order-tbl').html(response);
+
+                updateCartCounter();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function formatOption(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        var color = $(state.element).data('color');
+        var $state = $(
+            '<span class="d-flex align-items-center small">' +
+                '<span class="rounded-circle d-block p-1 me-2" style="background-color:' + color + '; width: 16px; height: 16px;"></span>' +
+                state.text + 
+            '</span>'
+        );
+        return $state;
+    }
+
+    function formatSelected(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        var color = $(state.element).data('color');
+        var $state = $( 
+            '<span class="d-flex align-items-center justify-content-center">' + 
+                '<span class="rounded-circle d-block p-1" style="background-color:' + color + '; width: 25px; height: 25px;"></span>' +
+                '&nbsp;' +
+            '</span>'
+        );
+        return $state;
+    }
+
+    function updatequantity(element) {
+        var product_id = $(element).data('id');
+        var key = $(element).data('key');
+        var qty = $(element).val();
+        $.ajax({
+            url: "pages/supplier_order_ajax.php",
+            type: "POST",
+            data: {
+                product_id: product_id,
+                key: key,
+                qty: qty,
+                modifyquantity: 'modifyquantity',
+                setquantity: 'setquantity'
+            },
+            success: function(data) {
+                loadOrderContents();
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
+    function addquantity(element) {
+        var product_id = $(element).data('id');
+        var key = $(element).data('key');
+        var input_quantity = $('input[data-id="' + product_id + '"]');
+        var quantity = Number(input_quantity.val());
+        $.ajax({
+            url: "pages/supplier_order_ajax.php",
+            type: "POST",
+            data: {
+                product_id: product_id,
+                key: key,
+                quantity: quantity,
+                modifyquantity: 'modifyquantity',
+                addquantity: 'addquantity'
+            },
+            success: function(data) {
+                loadOrderContents();
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
+    function deductquantity(element) {
+        var product_id = $(element).data('id');
+        var key = $(element).data('key');
+        var input_quantity = $('input[data-id="' + product_id + '"]');
+        var quantity = Number(input_quantity.val());
+        $.ajax({
+            url: "pages/supplier_order_ajax.php",
+            type: "POST",
+            data: {
+                product_id: product_id,
+                key: key,
+                quantity: quantity,
+                modifyquantity: 'modifyquantity',
+                deductquantity: 'deductquantity'
+            },
+            success: function(data) {
+                loadOrderContents();
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
+    function delete_item(element) {
+        var key = $(element).data('key');
+        $.ajax({
+            url: "pages/supplier_order_ajax.php",
+            data: {
+                key: key,
+                deleteitem: 'deleteitem'
+            },
+            type: "POST",
+            success: function(data) {
+                loadOrderContents();
+            },
+            error: function() {}
+        });
+    }
+
+    function updateColor(element){
+        var color = $(element).val();
+        var id = $(element).data('id');
+        var key = $(element).data('key');
+        $.ajax({
+            url: 'pages/supplier_order_ajax.php',
+            type: 'POST',
+            data: {
+                color_id: color,
+                key: key,
+                id: id,
+                set_color: "set_color"
+            },
+            success: function(response) {
+                loadOrderContents();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function loadOrderList(){
+        $.ajax({
+            url: 'pages/supplier_order_ajax.php',
+            type: 'POST',
+            data: {
+                fetch_order_saved: "fetch_order_saved"
+            },
+            success: function(response) {
+                $('#orders-saved-tbl').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function loadOrderDetails(orderid){
+        $.ajax({
+            url: 'pages/supplier_order_ajax.php',
+            type: 'POST',
+            data: {
+                orderid: orderid,
+                fetch_order_details: "fetch_order_details"
+            },
+            success: function(response) {
+                $('#order-details').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
     $(document).ready(function() {
         var selectedCategory = '';
 
-        var table = $('#out_of_stock').DataTable({
-            order: [[1, "asc"]],
-            pageLength: 100,
-            ajax: {
-                url: 'pages/out_of_stock_ajax.php',
-                type: 'POST',
-                data: { action: 'fetch_products' }
-            },
-            columns: [
-                { data: 'product_name_html' },
-                { data: 'product_category' },
-                { data: 'product_line' },
-                { data: 'product_type' },
-                { data: 'action_html' }
+        var table = $('#productList').DataTable({
+            "order": [[1, "asc"]],
+            "pageLength": 100,
+            "lengthMenu": [
+                [10, 25, 50, 100],
+                [10, 25, 50, 100]
             ],
-            createdRow: function (row, data, dataIndex) {
-                $(row).attr('data-category', data.product_category);
-                $(row).attr('data-system', data.product_system);
-                $(row).attr('data-line', data.product_line);
-                $(row).attr('data-type', data.product_type);
-                $(row).attr('data-profile', data.profile);
-                $(row).attr('data-color', data.color);
-                $(row).attr('data-grade', data.grade);
-                $(row).attr('data-gauge', data.gauge);
-            },
-            "dom": 'lftp'
+            "dom": 'lftp',
         });
 
-        $('#out_of_stock_filter').hide();
+        $('#select-system, #select-line, #select-profile, #select-color, #select-grade, #select-gauge, #select-category, #select-type, #onlyInStock').on('change', filterTable);
+
+        $('#text-srh').on('keyup', filterTable);
 
         $(".select2").each(function() {
             $(this).select2({
@@ -349,25 +744,247 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             });
         });
 
-        $(document).on('click', '#view_product_btn', function(event) {
-            event.preventDefault(); 
-            var id = $(this).data('id');
-            $.ajax({
-                    url: 'pages/out_of_stock_ajax.php',
-                    type: 'POST',
-                    data: {
-                        id: id,
-                        action: "fetch_view_modal"
-                    },
-                    success: function(response) {
-                        $('#viewProductModalBody').html(response);
-                        $('#viewProductModal').modal('show');
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
+        $(".select2_color").each(function() {
+            $(this).select2({
+                dropdownParent: $(this).parent(),
+                templateResult: formatOption,
+                templateSelection: formatOption,
+                escapeMarkup: function(markup) { return markup; }
             });
         });
+
+        $(document).on('change', '#product_category', function() {
+            updateSearchCategory();
+        });
+
+        $(document).on('change', '#supplier_id, #order_supplier_id', function() {
+            var supplier_id = $(this).val();
+            $.ajax({
+                url: 'pages/supplier_order_ajax.php',
+                type: 'POST',
+                data: {
+                    supplier_id: supplier_id,
+                    change_supplier: "change_supplier"
+                },
+                success: function(response) {
+
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#view_order', function(event) {
+            $('.modal').modal('hide');
+            loadOrderContents();
+            $('#order_modal').modal('show');
+        });
+
+        $(document).on('click', '#save_order', function(event) {
+            if (!confirm("Save this Order for future use?")) {
+                return;
+            }
+            $.ajax({
+                url: 'pages/supplier_order_ajax.php',
+                type: 'POST',
+                data: {
+                    save_order: 'save_order'
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response.success) {
+                        alert("Order successfully saved.");
+                    } else if (response.error) {
+                        alert("Error: " + response.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#edit_saved_order', function(event) {
+            if (!confirm("Load and edit this saved order?")) {
+                return;
+            }
+
+            var orderid = $(this).data('id');
+            $.ajax({
+                url: 'pages/supplier_order_ajax.php',
+                type: 'POST',
+                data: {
+                    orderid: orderid,
+                    load_saved_order: 'load_saved_order'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert("Order successfully loaded.");
+                        $('.modal').modal('hide');
+                        updateCartCounter();
+                    } else if (response.error) {
+                        alert("Error: " + response.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#order_products', function(event) {
+            if (!confirm("Order the products in cart?")) {
+                return;
+            }
+            $.ajax({
+                url: 'pages/supplier_order_ajax.php',
+                type: 'POST',
+                data: {
+                    order_supplier_products: 'order_supplier_products'
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response.success) {
+                        alert("Order to Supplier successfully submitted.");
+                    } else if (response.error) {
+                        alert("Error: " + response.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#view_order_list', function(event) {
+            loadOrderList();
+            $('#view_order_list_modal').modal('show');
+        });
+
+        $(document).on('click', '#view_order_details', function(event) {
+            let orderId = $(this).data('id');
+            loadOrderDetails(orderId);
+            $('#view_order_details_modal').modal('show');
+        });
+
+        $(document).on('click', '.btn-minus', function () {
+            var product_id = $(this).data('id');
+            var input = $('#qty' + product_id);
+            var currentValue = parseInt(input.val(), 10) || 0;
+            var minValue = parseInt(input.attr('min')) || 1;
+            if (currentValue > minValue) {
+                input.val(currentValue - 1).trigger('change');
+            }
+        });
+
+        $(document).on('click', '.btn-plus', function () {
+            var product_id = $(this).data('id');
+            var input = $('#qty' + product_id);
+            var currentValue = parseInt(input.val(), 10) || 0;
+            input.val(currentValue + 1).trigger('change');
+        });
+
+        $(document).on('click', '#add-to-cart-btn', function() {
+            var product_id = $(this).data('id');
+            var qty = parseInt($('#qty' + product_id).val(), 10) || 0;
+            var color = parseInt($('#select_color_' + product_id).val(), 10) || 0;
+
+            $.ajax({
+                url: "pages/supplier_order_ajax.php",
+                type: "POST",
+                data: {
+                    product_id: product_id,
+                    qty: qty,
+                    color: color,
+                    addquantity: 'addquantity',
+                    modifyquantity: 'modifyquantity'
+                },
+                success: function(data) {
+                    $('#qty' + product_id).val(1);
+
+                    if ($('#alert-container').length === 0) {
+                        $('body').append(`
+                            <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050; max-width: 300px;">
+                            </div>
+                        `);
+                    }
+
+                    var alertId = 'alert-' + Date.now();
+                    var alertHtml = `
+                        <div id="${alertId}" class="alert alert-success alert-dismissible fade show small mb-2" role="alert">
+                            <strong>Success!</strong> Item added to cart.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>`;
+                    $('#alert-container').append(alertHtml);
+
+                    setTimeout(function() {
+                        $('#' + alertId).alert('close');
+                    }, 5000);
+
+                    updateCartCounter();
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                }
+            });
+        });
+  
+        function updateSearchCategory() {
+            var product_category = $('#product_category').val() || '';
+            var product_id = $('#product_id').val() || '';
+            var filename = $('#product_category option:selected').data('filename') || '';
+
+            if(filename != ''){
+                $.ajax({
+                    url: 'pages/' +filename,
+                    type: 'POST',
+                    data: {
+                        id: product_id,
+                        action: "fetch_product_modal"
+                    },
+                    success: function(response) {
+                        $('#add-fields').html(response);
+
+                        let selectedCategory = $('#product_category').val() || '';
+                        //this hides select options that are not the selected category
+                        $('.add-category option').each(function() {
+                            let match = String($(this).data('category')) === String(product_category);
+                            $(this).toggle(match);
+                        });
+                        
+                        $(".select2").each(function() {
+                            let $this = $(this);
+
+                            if ($this.hasClass("select2-hidden-accessible")) {
+                                $this.select2('destroy');
+                                $this.removeAttr('data-select2-id');
+                                $this.next('.select2-container').remove();
+                            }
+
+                            $this.select2({
+                                width: '100%',
+                                dropdownParent: $this.parent()
+                            });
+                        });
+                        
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.log('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }else{
+                $('#add-fields').html('');
+            }
+            
+        }
         
         $(document).on('mousedown', '.readonly', function() {
             e.preventDefault();
@@ -375,19 +992,12 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
         function filterTable() {
             var textSearch = $('#text-srh').val().toLowerCase();
-            var isActive = $('#toggleActive').is(':checked');
 
             $.fn.dataTable.ext.search = [];
 
             if (textSearch) {
                 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                     return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
-                });
-            }
-
-            if (isActive) {
-                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                    return $(table.row(dataIndex).node()).find('a .alert').text() === 'Active';
                 });
             }
 
@@ -444,8 +1054,6 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             });
         }
 
-        $(document).on('input change', '#text-srh, #toggleActive, #onlyInStock, .filter-selection', filterTable);
-
         $(document).on('click', '.reset_filters', function () {
             $('.filter-selection').each(function () {
                 $(this).val(null).trigger('change.select2');
@@ -456,6 +1064,7 @@ $price_per_bend = getPaymentSetting('price_per_bend');
             filterTable();
         });
 
+        updateCartCounter();
     });
 </script>
 
