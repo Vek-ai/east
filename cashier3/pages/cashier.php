@@ -4313,6 +4313,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             const id = $('#hidden_id').val();
             const quantity = $('#hidden_quantity').val();
             const stock_fee = $('#hidden_stock_fee').val();
+            const pay_method = $('input[name="payMethod"]:checked').val() || '';
 
             $.ajax({
                 url: 'pages/cashier_ajax.php',
@@ -4321,19 +4322,26 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     id: id,
                     quantity: quantity,
                     stock_fee: stock_fee,
+                    pay_method: pay_method,
                     return_product: "return_product"
                 },
                 success: function (response) {
-                    console.log(response);
-                    alert("Successfully Returned!");
-                    //location.reload();
+                    if (response.trim() == "success") {
+                        alert("Successfully Returned!");
+                        location.reload();
+                    } else {
+                        alert("Return failed.");
+                        console.log("Server response:", response);
+                    }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    alert('Return failed');
+                    alert('Return failed (request error).');
+                    console.log('AJAX error:', textStatus, errorThrown);
                     console.log(jqXHR.responseText);
                 }
             });
         });
+
 
         $(document).on('click', '#btnApprovalModal', function (e) {
             e.preventDefault();
@@ -4352,9 +4360,13 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     return_approval_product: "return_approval_product"
                 },
                 success: function (response) {
-                    console.log(response);
-                    alert("Successfully Requested Return Approval!");
-                    //location.reload();
+                    if (response.trim() == "success") {
+                        alert("Successfully Requested Return Approval!");
+                        location.reload();
+                    } else {
+                        alert("Return failed.");
+                        console.log("Server response:", response);
+                    }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     alert('Return failed');

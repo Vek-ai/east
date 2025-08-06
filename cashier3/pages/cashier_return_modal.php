@@ -29,6 +29,11 @@ if(isset($_POST['return_product_modal'])){
 
     $stock_fee_amount = ($total_price * $stock_percentage) / 100;
     $return_amount = $total_price - $stock_fee_amount;
+
+    $order_date_str = $order['order_date'];
+    $order_date = new DateTime($order_date_str);
+    $today = new DateTime();
+    $days_passed = $order_date->diff($today)->days;
     ?>
     <div class="modal-body flex-grow-1 overflow-auto">
         <style>
@@ -155,28 +160,28 @@ if(isset($_POST['return_product_modal'])){
                                     <div id="paymentOptions">
                                         <label class="form-label fw-bold">Select Payment Method</label><br>
 
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="payMethod" id="payCash" value="cash">
-                                            <label class="form-check-label" for="payCash">
-                                                <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
-                                            </label>
-                                        </div>
-
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="payMethod" id="payCard" value="card">
-                                            <label class="form-check-label" for="payCard">
-                                                <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
-                                            </label>
-                                        </div>
-
-                                        <?php if (!empty($customer_details['charge_net_30'])): ?>
+                                        <?php if ($days_passed <= 90): ?>
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="payMethod" id="payStoreCredit" value="store_credit">
-                                                <label class="form-check-label" for="payStoreCredit">
-                                                    <i class="fa-solid fa-wallet me-1"></i>Apply Store Credit
+                                                <input class="form-check-input" type="radio" name="payMethod" id="payCash" value="cash">
+                                                <label class="form-check-label" for="payCash">
+                                                    <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
+                                                </label>
+                                            </div>
+
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="payMethod" id="payCard" value="card">
+                                                <label class="form-check-label" for="payCard">
+                                                    <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
                                                 </label>
                                             </div>
                                         <?php endif; ?>
+
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="payMethod" id="payStoreCredit" value="store_credit">
+                                            <label class="form-check-label" for="payStoreCredit">
+                                                <i class="fa-solid fa-wallet me-1"></i>Apply Store Credit
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

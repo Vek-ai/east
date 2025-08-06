@@ -1970,6 +1970,7 @@ if (isset($_POST['return_product'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $quantity = floatval($_POST['quantity']);
     $stock_fee_percent = floatval($_POST['stock_fee']) / 100;
+    $pay_method = mysqli_real_escape_string($conn, $_POST['pay_method'] ?? '');
 
     $query = "SELECT op.*, o.order_date, o.customerid, o.originalcustomerid 
               FROM order_product AS op
@@ -1985,14 +1986,13 @@ if (isset($_POST['return_product'])) {
         $product_origin = intval($product_details['product_origin']);
         $orderid = $order['orderid'];
         $customer_id = $order['originalcustomerid'] ?: $order['customerid'];
-        $order_date = $order['order_date'];
 
         if ($quantity > $available_quantity) {
             echo "Quantity entered exceeds the purchased count!";
             exit;
         }
 
-        $status = $product_origin == 1 ? 1 : 0;
+        $status = $product_origin === 1 ? 1 : 0;
 
         $insert_query = "INSERT INTO product_returns 
                          (orderid, productid, status, quantity, custom_color, custom_width, custom_height, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, usageid, stock_fee)
@@ -2023,45 +2023,41 @@ if (isset($_POST['return_product'])) {
             $update_order_product = "UPDATE order_product SET quantity = '$new_quantity' WHERE id = '$id'";
             mysqli_query($conn, $update_order_product);
 
-            if ($status == 1) {
-                $purchase_date = new DateTime($order_date);
-                $today = new DateTime();
-                $interval = $purchase_date->diff($today)->days;
+            if ($status === 1 && $pay_method === 'store_credit') {
+                $amount = $quantity * floatval($order['discounted_price']);
+                $stock_fee = $amount * $stock_fee_percent;
+                $amount_returned = $amount - $stock_fee;
 
-                if ($interval > 90) {
-                    $amount = $quantity * floatval($order['discounted_price']);
-                    $stock_fee = $amount * $stock_fee_percent;
-                    $amount_returned = $amount - $stock_fee;
+                $credit_update = "
+                    UPDATE customer 
+                    SET store_credit = store_credit + $amount_returned
+                    WHERE customer_id = '$customer_id'
+                ";
+                mysqli_query($conn, $credit_update);
 
-                    $credit_update = "
-                        UPDATE customer 
-                        SET store_credit = store_credit + $amount_returned
-                        WHERE customer_id = '$customer_id'
-                    ";
-                    mysqli_query($conn, $credit_update);
+                $credit_history = "
+                    INSERT INTO customer_store_credit_history (
+                        customer_id,
+                        credit_amount,
+                        credit_type,
+                        reference_type,
+                        reference_id,
+                        description,
+                        created_at
+                    ) VALUES (
+                        '$customer_id',
+                        $amount_returned,
+                        'add',
+                        'product_return',
+                        $return_id,
+                        'Refund via store credit (return)',
+                        NOW()
+                    )
+                ";
+                mysqli_query($conn, $credit_history);
+            }
 
-                    $credit_history = "
-                        INSERT INTO customer_store_credit_history (
-                            customer_id,
-                            credit_amount,
-                            credit_type,
-                            reference_type,
-                            reference_id,
-                            description,
-                            created_at
-                        ) VALUES (
-                            '$customer_id',
-                            $amount_returned,
-                            'add',
-                            'product_return',
-                            $return_id,
-                            'Refund (return over 90 days, less stock fee)',
-                            NOW()
-                        )
-                    ";
-                    mysqli_query($conn, $credit_history);
-                }
-            } else {
+            if ($status === 0) {
                 $actorId = $_SESSION['userid'];
                 $actor_name = get_staff_name($actorId);
                 $actionType = 'return_manufactured';
@@ -2080,6 +2076,7 @@ if (isset($_POST['return_product'])) {
         echo "Error: Order not found.";
     }
 }
+
 
 
 if (isset($_POST['return_approval_product'])) {
