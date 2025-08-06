@@ -4315,7 +4315,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             const stock_fee = $('#hidden_stock_fee').val();
 
             $.ajax({
-                url: 'pages/cashier_return_modal.php',
+                url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     id: id,
@@ -4326,7 +4326,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 success: function (response) {
                     console.log(response);
                     alert("Successfully Returned!");
-                    location.reload();
+                    //location.reload();
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     alert('Return failed');
@@ -4343,7 +4343,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             const stock_fee = $('#hidden_stock_fee').val();
 
             $.ajax({
-                url: 'pages/cashier_return_modal.php',
+                url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
                     id: id,
@@ -4354,7 +4354,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 success: function (response) {
                     console.log(response);
                     alert("Successfully Requested Return Approval!");
-                    location.reload();
+                    //location.reload();
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     alert('Return failed');

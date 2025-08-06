@@ -193,7 +193,7 @@ if(isset($_POST['fetch_pending_details'])){
                             $response = array();
                             while ($row = mysqli_fetch_assoc($result)) {
                                 $product_id = $row['productid'];
-                                $price = $row['discounted_price'] * $row['quantity'];
+                                $price = $row['discounted_price'];
                                 $stock_fee = floatval($row['stock_fee']) * $price;
                                 $amount_returned = $price - $stock_fee;
                                 if($row['quantity'] > 0){
@@ -365,7 +365,7 @@ if(isset($_POST['approve_return'])){
         $interval = $purchase_date->diff($today)->days;
 
         if ($interval > 90) {
-            $amount = $quantity * $discounted_price;
+            $amount = $discounted_price;
             $stock_fee = $amount * $stock_fee_percent;
             $amount_returned = $amount - $stock_fee;
 

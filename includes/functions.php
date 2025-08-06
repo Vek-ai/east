@@ -852,8 +852,8 @@ function getReturnTotals($orderid) {
     global $conn;
     $query = "
         SELECT 
-            SUM(discounted_price * quantity) AS total_price,
-            SUM((discounted_price * quantity) * stock_fee) AS total_fee
+            SUM(discounted_price ) AS total_price,
+            SUM((discounted_price) * stock_fee) AS total_fee
         FROM 
             product_returns
         WHERE 
