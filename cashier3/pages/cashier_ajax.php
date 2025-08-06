@@ -2023,7 +2023,7 @@ if (isset($_POST['return_product'])) {
             $update_order_product = "UPDATE order_product SET quantity = '$new_quantity' WHERE id = '$id'";
             mysqli_query($conn, $update_order_product);
 
-            if ($status === 1 && $pay_method === 'store_credit') {
+            if ($pay_method == 'store_credit') {
                 $amount = $quantity * floatval($order['discounted_price']);
                 $stock_fee = $amount * $stock_fee_percent;
                 $amount_returned = $amount - $stock_fee;

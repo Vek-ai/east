@@ -298,12 +298,7 @@ if(isset($_POST['fetch_available'])){
 
                                 window.open(response.url, '_blank');
 
-                                if (response.barcodes) {
-                                    const viewUrl = `/view/?line_item=${encodeURIComponent(response.barcodes)}`;
-                                    window.open(viewUrl, '_blank');
-                                }
-
-                                //location.reload();
+                                location.reload();
                             } else {
                                 alert('Failed');
                                 console.log(res);
@@ -744,12 +739,7 @@ if(isset($_POST['fetch_view'])){
                                 
                                 window.open(response.url, '_blank');
 
-                                if (response.barcodes) {
-                                    const viewUrl = `/view/?line_item=${encodeURIComponent(response.barcodes)}`;
-                                    window.open(viewUrl, '_blank');
-                                }
-
-                                //location.reload();
+                                location.reload();
                             } else {
                                 alert('Failed');
                                 console.log(res);

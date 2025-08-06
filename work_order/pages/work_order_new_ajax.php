@@ -247,11 +247,6 @@ if (isset($_POST['fetch_coils'])) {
 
                                 window.open(response.url, '_blank');
 
-                                if (response.barcodes) {
-                                    const viewUrl = `/view/?line_item=${encodeURIComponent(response.barcodes)}`;
-                                    window.open(viewUrl, '_blank');
-                                }
-
                                 location.reload();
                             } else {
                                 alert('Failed');
