@@ -2133,6 +2133,21 @@ function updateSupplierOrders($supplier_id) {
     return true;
 }
 
+function getReturnableProducts($orderid) {
+    global $conn;
 
+    $orderid = intval($orderid);
+    $sql = "SELECT * FROM order_product WHERE orderid = $orderid AND status IN (2, 3, 4)";
+    $result = mysqli_query($conn, $sql);
+
+    $products = [];
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $products[] = $row;
+        }
+    }
+
+    return $products;
+}
 
 ?>

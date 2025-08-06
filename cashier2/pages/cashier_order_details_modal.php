@@ -36,7 +36,7 @@ if(isset($_POST['fetch_order_details'])){
                 <tbody>
                     <?php 
                     $no = 0;
-                    $query = "SELECT * FROM order_product WHERE orderid='$orderid' AND (status = '3' || status = '4')";
+                    $query = "SELECT * FROM order_product WHERE orderid='$orderid' AND status IN (2, 3, 4)";
                     $result = mysqli_query($conn, $query);
                     $totalquantity = $total_actual_price = $total_disc_price = 0;
                     if ($result && mysqli_num_rows($result) > 0) {
