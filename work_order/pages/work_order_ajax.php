@@ -1397,6 +1397,7 @@ if (isset($_POST['run_work_order'])) {
         ['#B', 'BATCH', 'QUANTITY', 'LENGTH', 'PART', 'USER 1', 'USER 2', 'USER 3', 'USER 4', 'USER 5']
     ];
     $job_batch_data = [];
+    $barcodes = [];
 
     $no = 1;
     foreach ($ids as $id) {
@@ -1407,7 +1408,7 @@ if (isset($_POST['run_work_order'])) {
             $fields[] = "usageid = " . intval($usage);
         }
         if (!empty($upc)) {
-            $fields[] = "upc = '" . mysqli_real_escape_string($conn, $upc) . "'";
+            $fields[] = "upc = '" . (!empty($upc) ? $upc : getOrderProductBarcode($id)) . "'";
         }
         if (!empty($fields)) {
             $updateSQL = "UPDATE work_order SET " . implode(", ", $fields) . " WHERE id = $id";
@@ -1421,8 +1422,8 @@ if (isset($_POST['run_work_order'])) {
         $product_name = getProductName($productid);
         $product_details = getProductDetails($productid);
         $color_id = $work_order_details['custom_color'];
-        $work_order_product_id = $work_order_details['work_order_product_id'];
-        $barcode = getOrderProductBarcode($work_order_product_id);
+        $barcode = !empty($work_order_details['upc']) ? $work_order_details['upc'] : getOrderProductBarcode($id);
+        $barcodes[] = $barcode;
         $usageid = $usage;
         $usage_name = getUsageName($usageid);
 
@@ -1554,9 +1555,12 @@ if (isset($_POST['run_work_order'])) {
     $baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
     $downloadUrl = $baseUrl . "/temp_exports/$filename";
 
+    $barcodeList = implode(',', $barcodes);
+
     echo json_encode([
         'status' => 'success',
-        'url' => $downloadUrl
+        'url' => $downloadUrl,
+        'barcodes' => $barcodeList
     ]);
     exit;
 }

@@ -4334,7 +4334,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         alert("Successfully Returned!");
 
                         $('#print_return_btn')
-                            .attr('href', `print_single_return.php?id=${returnId}`)
+                            .attr('href', `/print_single_return.php?id=${returnId}`)
                             .removeClass('d-none');
 
                         $('#save_return, #save_return_alt').addClass('d-none');

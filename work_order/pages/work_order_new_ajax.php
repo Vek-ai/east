@@ -414,6 +414,7 @@ if (isset($_POST['run_work_order'])) {
     $materialData = [];
     $coilData = [];
     $jobBatchData = [];
+    $barcodes = [];
 
     $no = 1;
     foreach ($ids as $id) {
@@ -467,7 +468,8 @@ if (isset($_POST['run_work_order'])) {
             ];
         }
 
-        $status_update = "UPDATE work_order SET status = 2 WHERE id = $id";
+        $generated_upc = getOrderProductBarcode($id);
+        $status_update = "UPDATE work_order SET status = 2, upc = '$generated_upc' WHERE id = $id";
         mysqli_query($conn, $status_update);
 
         $orderid = $work_order_details['work_order_id'];
@@ -479,7 +481,8 @@ if (isset($_POST['run_work_order'])) {
         $custom_length2 = $work_order_details['custom_length2'];
         $decimal_length = floatval($custom_length) + (floatval($custom_length2) / 12);
         $work_order_product_id = $work_order_details['work_order_product_id'];
-        $barcode = getOrderProductBarcode($work_order_product_id);
+        $barcode = $generated_upc;
+        $barcodes[] = $barcode;
         $usageid = $work_order_details['usageid'];
         $usage_name = getUsageName($usageid);
 
@@ -566,9 +569,12 @@ if (isset($_POST['run_work_order'])) {
     $baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
     $downloadUrl = $baseUrl . "/temp_exports/$filename";
 
+    $barcodeList = implode(',', $barcodes);
+
     echo json_encode([
         'status' => 'success',
-        'url' => $downloadUrl
+        'url' => $downloadUrl,
+        'barcodes' => $barcodeList
     ]);
     exit;
 }
