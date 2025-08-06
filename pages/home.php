@@ -323,12 +323,6 @@ $reorder_level = 1;
                                 </tr>
                                 <?php
                             }
-                        } else {
-                        ?>
-                        <tr>
-                            <td colspan="3" class="text-center">No Orders found.</td>
-                        </tr>
-                        <?php
                         }
                         ?>
                       </tbody> 
@@ -617,12 +611,6 @@ $reorder_level = 1;
                               </tr>
                               <?php
                           }
-                      } else {
-                          ?>
-                          <tr>
-                            <td colspan="4" class="text-center">No credit history found.</td>
-                          </tr>
-                          <?php
                       }
                       ?>
                     </tbody>
@@ -700,12 +688,6 @@ $reorder_level = 1;
                               </tr>
                               <?php
                           }
-                      } else {
-                          ?>
-                          <tr>
-                            <td colspan="4" class="text-center">No ledger records found.</td>
-                          </tr>
-                          <?php
                       }
                       ?>
                     </tbody>
