@@ -16,6 +16,7 @@ if(isset($_POST['fetch_order_list'])){
                 <table id="order_list_tbl" class="table table-hover mb-0 text-md-nowrap">
                     <thead>
                         <tr>
+                            <th class="d-none">Product Name (Hidden)</th>
                             <th>Customer</th>
                             <th>Total Price</th>
                             <th>Discounted Price</th>
@@ -35,20 +36,34 @@ if(isset($_POST['fetch_order_list'])){
                         ";
 
                         if (!empty($customerid) && $customer_name != 'All Customers') {
-                            $query .= " AND customerid = '$customerid' ";
+                            $query .= " AND o.customerid = '$customerid' ";
                         }
 
                         if (!empty($orderid)) {
                             $query .= " AND orderid = '$orderid' ";
                         }
 
+                        $query .= " ORDER BY o.order_date DESC";
+
                         $result = mysqli_query($conn, $query);
                     
                         if ($result && mysqli_num_rows($result) > 0) {
                             $response = array();
                             while ($row = mysqli_fetch_assoc($result)) {
+                                $orderid = $row['orderid'];
+
+                                $orderProducts = getReturnableProducts($orderid);
+                                $productNames = array_map(function($prod) {
+                                    return getProductName($prod['productid']);
+                                }, $orderProducts);
+
+                                $hiddenProductNames = implode(', ', $productNames);
+
                             ?>
                             <tr>
+                                <td class="d-none">
+                                    <?php echo htmlspecialchars($hiddenProductNames); ?>
+                                </td>
                                 <td>
                                     <?php echo get_customer_name($row["customerid"]) ?>
                                 </td>
@@ -80,8 +95,17 @@ if(isset($_POST['fetch_order_list'])){
         $(document).ready(function() {
             $('#order_list_tbl').DataTable({
                 language: {
-                    emptyTable: "No Orders found"
-                }
+                    emptyTable: "No products available for return"
+                },
+                columnDefs: [
+                    { targets: 0, visible: false },
+                    { width: "20%", targets: 1 },
+                    { width: "15%", targets: [2, 3, 4] },
+                    { width: "10%", targets: [5, 6] }
+                ],
+                autoWidth: false,
+                responsive: true,
+                order: []
             });
         });
     </script>
