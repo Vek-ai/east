@@ -4313,7 +4313,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             const id = $('#hidden_id').val();
             const quantity = $('#hidden_quantity').val();
             const stock_fee = $('#hidden_stock_fee').val();
-            const pay_method = $('input[name="payMethod"]:checked').val() || '';
+            const pay_method = $('input[name="payReturnMethod"]:checked').val() || '';
 
             $.ajax({
                 url: 'pages/cashier_ajax.php',
@@ -4326,9 +4326,19 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     return_product: "return_product"
                 },
                 success: function (response) {
-                    if (response.trim() == "success") {
+                    const trimmed = response.trim();
+
+                    if (trimmed.startsWith("success|")) {
+                        const returnId = trimmed.split("|")[1];
+
                         alert("Successfully Returned!");
-                        location.reload();
+
+                        $('#print_return_btn')
+                            .attr('href', `print_single_return.php?id=${returnId}`)
+                            .removeClass('d-none');
+
+                        $('#save_return, #save_return_alt').addClass('d-none');
+
                     } else {
                         alert("Return failed.");
                         console.log("Server response:", response);
@@ -4341,7 +4351,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 }
             });
         });
-
 
         $(document).on('click', '#btnApprovalModal', function (e) {
             e.preventDefault();

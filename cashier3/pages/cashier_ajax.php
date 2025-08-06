@@ -2068,7 +2068,7 @@ if (isset($_POST['return_product'])) {
                 createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
             }
 
-            echo "success";
+            echo "success|$return_id";
         } else {
             echo "Error inserting into product_returns.";
         }

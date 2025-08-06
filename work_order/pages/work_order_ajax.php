@@ -1421,7 +1421,8 @@ if (isset($_POST['run_work_order'])) {
         $product_name = getProductName($productid);
         $product_details = getProductDetails($productid);
         $color_id = $work_order_details['custom_color'];
-        $barcode = $upc;
+        $work_order_product_id = $work_order_details['work_order_product_id'];
+        $barcode = getOrderProductBarcode($work_order_product_id);
         $usageid = $usage;
         $usage_name = getUsageName($usageid);
 
