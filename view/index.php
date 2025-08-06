@@ -60,123 +60,127 @@ require '../includes/functions.php';
       <div class="body-wrapper">
         <div class="container-fluid">
             <?php
-                $line_item = mysqli_real_escape_string($conn, $_REQUEST['line_item']);
-                $query = "SELECT * FROM work_order WHERE upc IN ($line_item)";
-                $result = mysqli_query($conn, $query);
-                
-                if ($result && mysqli_num_rows($result) > 0) {
-                    $response = array();
-                    ?>
-                    <div class="datatables">
-                        <h3 class="fw-bold">View Line Items</h3>
-                        <div class="table-responsive" style="overflow-y: hidden !important">
-                            <table id="view_tbl" class="table table-hover mb-0 text-center align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>Description</th>
-                                        <th class="text-center">Color</th>
-                                        <th class="text-center">Grade</th>
-                                        <th class="text-center">Profile</th>
-                                        <th class="text-center">Quantity</th>
-                                        <th class="text-center">Status</th>
-                                        <th class="text-center">Dimensions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php 
-                                        $totalquantity = 0;
-                                        $total_actual_price = 0;
-                                        $total_disc_price = 0;
-                                        $total_amount = 0;
-                                        while ($row = mysqli_fetch_assoc($result)) {
-                                            $orderid = $row['work_order_id'];
-                                            $product_details = getProductDetails($row['productid']);
+                $line_item = mysqli_real_escape_string($conn, $_REQUEST['line_item'] ?? '');
 
-                                            $is_stockable = $product_details['product_origin'] == 1;
+                if(!empty($line_item)){
+                    $query = "SELECT * FROM work_order WHERE upc IN ($line_item)";
+                    $result = mysqli_query($conn, $query);
+                    
+                    if ($result && mysqli_num_rows($result) > 0) {
+                        $response = array();
+                        ?>
+                        <div class="datatables">
+                            <h3 class="fw-bold">View Line Items</h3>
+                            <div class="table-responsive" style="overflow-y: hidden !important">
+                                <table id="view_tbl" class="table table-hover mb-0 text-center align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th class="text-center">Color</th>
+                                            <th class="text-center">Grade</th>
+                                            <th class="text-center">Profile</th>
+                                            <th class="text-center">Quantity</th>
+                                            <th class="text-center">Status</th>
+                                            <th class="text-center">Dimensions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php 
+                                            $totalquantity = 0;
+                                            $total_actual_price = 0;
+                                            $total_disc_price = 0;
+                                            $total_amount = 0;
+                                            while ($row = mysqli_fetch_assoc($result)) {
+                                                $orderid = $row['work_order_id'];
+                                                $product_details = getProductDetails($row['productid']);
 
-                                            $status_prod_db = (int)$row['status'];
+                                                $is_stockable = $product_details['product_origin'] == 1;
 
-                                            $price = $row['discounted_price'];
+                                                $status_prod_db = (int)$row['status'];
 
-                                            $product_name = '';
-                                            if(!empty($row['product_item'])){
-                                                $product_name = $row['product_item'];
-                                            }else{
-                                                $product_name = getProductName($row['product_id']);
-                                            }
+                                                $price = $row['discounted_price'];
 
-                                            $status_prod_labels = [
-                                                0 => ['label' => 'New', 'class' => 'badge bg-primary'],
-                                                1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
-                                                2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
-                                                3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
-                                                4 => ['label' => 'Delivered', 'class' => 'badge bg-success'],
-                                                5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
-                                                6 => ['label' => 'Returned', 'class' => 'badge bg-danger']
-                                            ];
+                                                $product_name = '';
+                                                if(!empty($row['product_item'])){
+                                                    $product_name = $row['product_item'];
+                                                }else{
+                                                    $product_name = getProductName($row['product_id']);
+                                                }
 
-                                            $status_prod = $status_prod_labels[$status_prod_db];
-                                            $filepath = !empty($product_details['main_image']) ? $product_details['main_image'] : "images/product/product.jpg";
+                                                $status_prod_labels = [
+                                                    0 => ['label' => 'New', 'class' => 'badge bg-primary'],
+                                                    1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+                                                    2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
+                                                    3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
+                                                    4 => ['label' => 'Delivered', 'class' => 'badge bg-success'],
+                                                    5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
+                                                    6 => ['label' => 'Returned', 'class' => 'badge bg-danger']
+                                                ];
 
-                                            $picture_path = "../" . $filepath;
-                                        ?> 
-                                            <tr> 
-                                                <td class="text-start">
-                                                    <a href='javascript:void(0)'>
-                                                        <div class='d-flex align-items-center'>
-                                                            <img src='<?= $picture_path ?>' class='rounded-circle' width='56' height='56'>
-                                                            <div class='ms-3'>
-                                                                <h6 class='fw-semibold mb-0 fs-4'><?= $product_name ?></h6>
+                                                $status_prod = $status_prod_labels[$status_prod_db];
+                                                $filepath = !empty($product_details['main_image']) ? $product_details['main_image'] : "images/product/product.jpg";
+
+                                                $picture_path = "../" . $filepath;
+                                            ?> 
+                                                <tr> 
+                                                    <td class="text-start">
+                                                        <a href='javascript:void(0)'>
+                                                            <div class='d-flex align-items-center'>
+                                                                <img src='<?= $picture_path ?>' class='rounded-circle' width='56' height='56'>
+                                                                <div class='ms-3'>
+                                                                    <h6 class='fw-semibold mb-0 fs-4'><?= $product_name ?></h6>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </a>
-                                                    
-                                                </td>
-                                                <td>
-                                                <div class="d-flex mb-0 gap-8">
-                                                    <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_details['color'])?>"></a>
-                                                    <?= getColorFromID($product_details['color']); ?>
-                                                </div>
-                                                </td>
-                                                <td>
-                                                    <?php echo getGradeName($product_details['grade']); ?>
-                                                </td>
-                                                <td>
-                                                    <?php echo getProfileTypeName($product_details['profile']); ?>
-                                                </td>
-                                                <td><?= $row['quantity'] ?></td>
-                                                <td>
-                                                    <span class="<?= $status_prod['class']; ?> fw-bond"><?= $status_prod['label']; ?></span>
-                                                </td>
-                                                <td>
-                                                    <?php 
-                                                    $width = $row['custom_width'];
-                                                    $height = $row['custom_height'];
-                                                    
-                                                    if (!empty($width) && !empty($height)) {
-                                                        echo htmlspecialchars($width) . " X " . htmlspecialchars($height);
-                                                    } elseif (!empty($width)) {
-                                                        echo "Width: " . htmlspecialchars($width);
-                                                    } elseif (!empty($height)) {
-                                                        echo "Height: " . htmlspecialchars($height);
-                                                    }
-                                                    ?>
-                                                </td>
-                                            </tr>
-                                    <?php
-                                            $totalquantity += $row['quantity'] ;
-                                            $total_actual_price += $row['actual_price'];
-                                            $total_disc_price += $row['discounted_price'];
-                                            $total_amount += floatval($row['discounted_price']);
-                                        }
-                                    
-                                    ?>
-                                </tbody>
-                            </table>
+                                                        </a>
+                                                        
+                                                    </td>
+                                                    <td>
+                                                    <div class="d-flex mb-0 gap-8">
+                                                        <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_details['color'])?>"></a>
+                                                        <?= getColorFromID($product_details['color']); ?>
+                                                    </div>
+                                                    </td>
+                                                    <td>
+                                                        <?php echo getGradeName($product_details['grade']); ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php echo getProfileTypeName($product_details['profile']); ?>
+                                                    </td>
+                                                    <td><?= $row['quantity'] ?></td>
+                                                    <td>
+                                                        <span class="<?= $status_prod['class']; ?> fw-bond"><?= $status_prod['label']; ?></span>
+                                                    </td>
+                                                    <td>
+                                                        <?php 
+                                                        $width = $row['custom_width'];
+                                                        $height = $row['custom_height'];
+                                                        
+                                                        if (!empty($width) && !empty($height)) {
+                                                            echo htmlspecialchars($width) . " X " . htmlspecialchars($height);
+                                                        } elseif (!empty($width)) {
+                                                            echo "Width: " . htmlspecialchars($width);
+                                                        } elseif (!empty($height)) {
+                                                            echo "Height: " . htmlspecialchars($height);
+                                                        }
+                                                        ?>
+                                                    </td>
+                                                </tr>
+                                        <?php
+                                                $totalquantity += $row['quantity'] ;
+                                                $total_actual_price += $row['actual_price'];
+                                                $total_disc_price += $row['discounted_price'];
+                                                $total_amount += floatval($row['discounted_price']);
+                                            }
+                                        
+                                        ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                    <?php
+                        <?php
+                    }
                 }
+                
             ?>
         </div>
       </div>
