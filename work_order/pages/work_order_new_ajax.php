@@ -478,7 +478,8 @@ if (isset($_POST['run_work_order'])) {
         $custom_length = $work_order_details['custom_length'];
         $custom_length2 = $work_order_details['custom_length2'];
         $decimal_length = floatval($custom_length) + (floatval($custom_length2) / 12);
-        $barcode = $work_order_details['upc'];
+        $work_order_product_id = $work_order_details['work_order_product_id'];
+        $barcode = getOrderProductBarcode($work_order_product_id);
         $usageid = $work_order_details['usageid'];
         $usage_name = getUsageName($usageid);
 
