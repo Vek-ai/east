@@ -290,12 +290,20 @@ if(isset($_POST['fetch_available'])){
                         run_work_order: 'run_work_order'
                     },
                     success: function (res) {
+                        console.log(res);
                         try {
                             const response = JSON.parse(res);
                             if (response.status === 'success' && response.url) {
                                 alert('Work Order Run Started.');
+
                                 window.open(response.url, '_blank');
-                                location.reload();
+
+                                if (response.barcodes) {
+                                    const viewUrl = `/view/?line_item=${encodeURIComponent(response.barcodes)}`;
+                                    window.open(viewUrl, '_blank');
+                                }
+
+                                //location.reload();
                             } else {
                                 alert('Failed');
                                 console.log(res);
@@ -311,6 +319,7 @@ if(isset($_POST['fetch_available'])){
                     }
                 });
             });
+
 
             $(document).on('click', '#openSingleRunWorkOrderModal', function () {
                 $('#runSingleWorkOrderModal').modal('toggle');
@@ -727,12 +736,20 @@ if(isset($_POST['fetch_view'])){
                         run_work_order: 'run_work_order'
                     },
                     success: function (res) {
+                        console.log(res);
                         try {
                             const response = JSON.parse(res);
                             if (response.status === 'success' && response.url) {
                                 alert('Work Order Run Started.');
+                                
                                 window.open(response.url, '_blank');
-                                location.reload();
+
+                                if (response.barcodes) {
+                                    const viewUrl = `/view/?line_item=${encodeURIComponent(response.barcodes)}`;
+                                    window.open(viewUrl, '_blank');
+                                }
+
+                                //location.reload();
                             } else {
                                 alert('Failed');
                                 console.log(res);
@@ -748,6 +765,7 @@ if(isset($_POST['fetch_view'])){
                     }
                 });
             });
+
 
             if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
                 $('#coil_dtls_tbl').DataTable().order([[0, 'desc'], [3, 'asc']]).draw();
@@ -1402,27 +1420,28 @@ if (isset($_POST['run_work_order'])) {
     $no = 1;
     foreach ($ids as $id) {
         $id = mysqli_real_escape_string($conn, $id);
+        $work_order_details = getWorkOrderDetails($id);
+        $upc = (!empty($upc) ? $upc : getOrderProductBarcode($work_order_details['work_order_product_id']));
 
         $fields = [];
         if (!empty($usage)) {
             $fields[] = "usageid = " . intval($usage);
         }
         if (!empty($upc)) {
-            $fields[] = "upc = '" . (!empty($upc) ? $upc : getOrderProductBarcode($id)) . "'";
+            $fields[] = "upc = '" . $upc . "'";
         }
         if (!empty($fields)) {
             $updateSQL = "UPDATE work_order SET " . implode(", ", $fields) . " WHERE id = $id";
             mysqli_query($conn, $updateSQL);
         }
 
-        $work_order_details = getWorkOrderDetails($id);
         if (!$work_order_details) continue;
 
         $productid = $work_order_details['productid'];
         $product_name = getProductName($productid);
         $product_details = getProductDetails($productid);
         $color_id = $work_order_details['custom_color'];
-        $barcode = !empty($work_order_details['upc']) ? $work_order_details['upc'] : getOrderProductBarcode($id);
+        $barcode = $upc;
         $barcodes[] = $barcode;
         $usageid = $usage;
         $usage_name = getUsageName($usageid);
@@ -1555,7 +1574,7 @@ if (isset($_POST['run_work_order'])) {
     $baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
     $downloadUrl = $baseUrl . "/temp_exports/$filename";
 
-    $barcodeList = implode(',', $barcodes);
+    $barcodeList = implode(',', array_filter($barcodes, fn($b) => trim($b) !== ''));
 
     echo json_encode([
         'status' => 'success',

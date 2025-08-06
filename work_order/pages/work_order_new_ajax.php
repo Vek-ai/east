@@ -238,11 +238,20 @@ if (isset($_POST['fetch_coils'])) {
                         run_work_order: 'run_work_order'
                     },
                     success: function (res) {
+                        console.log(res);
                         try {
                             const response = JSON.parse(res);
+
                             if (response.status === 'success' && response.url) {
                                 alert('Work Order Run Started.');
+
                                 window.open(response.url, '_blank');
+
+                                if (response.barcodes) {
+                                    const viewUrl = `/view/?line_item=${encodeURIComponent(response.barcodes)}`;
+                                    window.open(viewUrl, '_blank');
+                                }
+
                                 location.reload();
                             } else {
                                 alert('Failed');
@@ -259,6 +268,7 @@ if (isset($_POST['fetch_coils'])) {
                     }
                 });
             });
+
 
             $(document).on('click', '#openSingleRunWorkOrderModal', function () {
                 $('#runSingleWorkOrderModal').modal('toggle');
@@ -468,7 +478,7 @@ if (isset($_POST['run_work_order'])) {
             ];
         }
 
-        $generated_upc = getOrderProductBarcode($id);
+        $generated_upc = getOrderProductBarcode($work_order_details['work_order_product_id']);
         $status_update = "UPDATE work_order SET status = 2, upc = '$generated_upc' WHERE id = $id";
         mysqli_query($conn, $status_update);
 
@@ -569,7 +579,7 @@ if (isset($_POST['run_work_order'])) {
     $baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
     $downloadUrl = $baseUrl . "/temp_exports/$filename";
 
-    $barcodeList = implode(',', $barcodes);
+    $barcodeList = implode(',', array_filter($barcodes, fn($b) => trim($b) !== ''));
 
     echo json_encode([
         'status' => 'success',
