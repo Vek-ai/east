@@ -1,4 +1,8 @@
 <?php
+if (!defined('APP_SECURE')) {
+    header("Location: /not_authorized.php");
+    exit;
+}
 session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);

@@ -1,3 +1,9 @@
+<?php
+if (!defined('APP_SECURE')) {
+    header("Location: /not_authorized.php");
+    exit;
+}
+?>
 <style>
     /* Ensure everything is visible in print, but hide what you don't need */
     @media print {
