@@ -1275,6 +1275,9 @@ if (!isset($_SESSION['userid'])) {
         <div class="container-fluid">
           <?php 
             if (empty($_REQUEST['page'])) {include 'pages/home.php';}
+
+            if ($_REQUEST['page'] == "page_categories") {include 'pages/page_categories.php';}
+
             if ($_REQUEST['page'] == "category") {include 'pages/category.php';}
             if ($_REQUEST['page'] == "category2") {include 'pages/category2.php';}
             if ($_REQUEST['page'] == "product_line") {include 'pages/product_line.php';}
