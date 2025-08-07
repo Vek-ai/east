@@ -1295,8 +1295,8 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
             if ($row = mysqli_fetch_assoc($result)) {
                 include "pages/" . $row['file_name'];
             } else {
-                //include "not_authorized.php";
-                include "pages/user_page_access.php";
+                include "not_authorized.php";
+                //include "pages/user_page_access.php";
             }
           ?>
         </div>
