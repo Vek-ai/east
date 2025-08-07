@@ -5,6 +5,11 @@ if (!isset($_SESSION['userid'])) {
     header("Location: login.php?redirect=$redirect_url");
     exit();
 }
+include_once 'includes/dbconn.php';
+define('APP_SECURE', true);
+
+$user_id = $_SESSION['userid'];
+$page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-bs-theme="dark" data-color-theme="Blue_Theme" data-layout="vertical">
@@ -1274,175 +1279,25 @@ if (!isset($_SESSION['userid'])) {
       <div class="body-wrapper">
         <div class="container-fluid">
           <?php 
-            if (empty($_REQUEST['page'])) {include 'pages/home.php';}
+            $query = "
+                SELECT p.id, p.file_name
+                FROM pages p
+                JOIN user_page_access upa ON upa.page_id = p.id
+                WHERE p.url = '$page_key'
+                AND upa.staff_id = '$user_id'
+                AND upa.permission IN ('view', 'edit')
+                AND p.category_id = '1'
+                LIMIT 1
+            ";
 
-            if ($_REQUEST['page'] == "page_categories") {include 'pages/page_categories.php';}
-            if ($_REQUEST['page'] == "pages") {include 'pages/pages.php';}
+            $result = mysqli_query($conn, $query);
 
-            if ($_REQUEST['page'] == "category") {include 'pages/category.php';}
-            if ($_REQUEST['page'] == "category2") {include 'pages/category2.php';}
-            if ($_REQUEST['page'] == "product_line") {include 'pages/product_line.php';}
-            if ($_REQUEST['page'] == "product_type") {include 'pages/product_type.php';}
-            if ($_REQUEST['page'] == "warehouse") {include 'pages/warehouse.php';}
-            if ($_REQUEST['page'] == "warehouse_details") {include 'pages/warehouse_details.php';}
-            if ($_REQUEST['page'] == "product_supplier") {include 'pages/supplier.php';}
-            if ($_REQUEST['page'] == "supplier_type") {include 'pages/supplier_type.php';}
-            if ($_REQUEST['page'] == "warehouses") {include 'pages/warehouses.php';}
-            if ($_REQUEST['page'] == "employee_roles") {include 'pages/staff_role.php';}
-            if ($_REQUEST['page'] == "staff") {include 'pages/staff.php';}
-            if ($_REQUEST['page'] == "product") {include 'pages/product.php';}
-            if ($_REQUEST['page'] == "product2") {include 'pages/product2.php';}
-            if ($_REQUEST['page'] == "product3") {include 'pages/product3.php';}
-            if ($_REQUEST['page'] == "product4") {include 'pages/product4.php';}
-            if ($_REQUEST['page'] == "warehouses_test") {include 'pages/warehouses_test.php';}
-            if ($_REQUEST['page'] == "paint_providers") {include 'pages/paint_providers.php';}
-            if ($_REQUEST['page'] == "paint_colors") {include 'pages/paint_colors.php';}
-            if ($_REQUEST['page'] == "product_gauge") {include 'pages/product_gauge.php';}
-            if ($_REQUEST['page'] == "product_grade") {include 'pages/product_grade.php';}
-            if ($_REQUEST['page'] == "product_warranty_type") {include 'pages/product_warranty_type.php';}
-            if ($_REQUEST['page'] == "profile_type") {include 'pages/profile_type.php';}
-            if ($_REQUEST['page'] == "stock_type") {include 'pages/stock_type.php';}
-            if ($_REQUEST['page'] == "orders_cat") {include 'pages/orders_cat.php';}
-            if ($_REQUEST['page'] == "customer_tax") {include 'pages/customer_tax.php';}
-            if ($_REQUEST['page'] == "settings") {include 'pages/settings.php';}
-
-            if ($_REQUEST['page'] == "generate_barcode") {include 'pages/generate_barcode.php';}
-            if ($_REQUEST['page'] == "scan_barcode") {include 'pages/scan_barcode.php';}
-            if ($_REQUEST['page'] == "inventory") {include 'pages/inventory.php';}
-            if ($_REQUEST['page'] == "inventory_staff") {include 'pages/inventory_staff.php';}
-            if ($_REQUEST['page'] == "product_view") {include 'pages/product_view.php';}
-            if ($_REQUEST['page'] == "product_details") {include 'pages/product_details.php';}
-            if ($_REQUEST['page'] == "customer") {include 'pages/customer.php';}
-            if ($_REQUEST['page'] == "customer_type") {include 'pages/customer_type.php';}
-
-            if ($_REQUEST['page'] == "staff_product_access") {include 'pages/staff_product_access.php';}
-            if ($_REQUEST['page'] == "product_pack") {include 'pages/product_pack.php';}
-            if ($_REQUEST['page'] == "product_fields") {include 'pages/product_fields.php';}
-            if ($_REQUEST['page'] == "coils") {include 'pages/coils.php';}
-
-            if ($_REQUEST['page'] == "coil_create") {include 'pages/compute.php';}
-
-            if ($_REQUEST['page'] == "coils_manufactured") {include 'pages/coils_manufactured.php';}
-            if ($_REQUEST['page'] == "coil_transactions") {include 'pages/coils_transactions.php';}
-
-            if ($_REQUEST['page'] == "order") {include 'pages/order.php';}
-            if ($_REQUEST['page'] == "order_coil") {include 'pages/order_coil.php';}
-            if ($_REQUEST['page'] == "coils_with_order") {include 'pages/coils_with_order.php';}
-            if ($_REQUEST['page'] == "order_coil_summary") {include 'pages/order_coil_summary.php';}
-
-            if ($_REQUEST['page'] == "flat_sheet_compute") {include 'pages/flat_sheet_compute.php';}
-            
-            if ($_REQUEST['page'] == "flat_stock") {include 'pages/flat_stock.php';}
-            if ($_REQUEST['page'] == "flat_stock_list") {include 'pages/flat_stock_list.php';}
-            if ($_REQUEST['page'] == "flat_stock_manufactured") {include 'pages/flat_stock_manufactured.php';}
-
-            if ($_REQUEST['page'] == "estimate_list") {include 'pages/estimate_list.php';}
-            if ($_REQUEST['page'] == "order_list") {include 'pages/order_list.php';}
-
-            if ($_REQUEST['page'] == "loyalty_program") {include 'pages/loyalty_program.php';}
-            if ($_REQUEST['page'] == "customer_loyalty") {include 'pages/customer_loyalty.php';}
-            if ($_REQUEST['page'] == "merge_customer") {include 'pages/merge_customer.php';}
-            if ($_REQUEST['page'] == "sales_list") {include 'pages/sales_list.php';}
-            if ($_REQUEST['page'] == "returns_list") {include 'pages/returns_list.php';}
-            if ($_REQUEST['page'] == "merge_list") {include 'pages/merge_list.php';}
-
-
-            if ($_REQUEST['page'] == "customer-dashboard") {include 'pages/customer-dash.php';}
-
-            if ($_REQUEST['page'] == "order_estimate_list") {include 'pages/order_estimate_list.php';}
-            if ($_REQUEST['page'] == "custom_discount_list") {include 'pages/custom_discount_list.php';}
-
-            if ($_REQUEST['page'] == "product_system") {include 'pages/product_system.php';}
-            if ($_REQUEST['page'] == "product_order_list") {include 'pages/product_order_list.php';}
-            if ($_REQUEST['page'] == "product_base") {include 'pages/product_base.php';}
-            if ($_REQUEST['page'] == "payment_settings") {include 'pages/payment_settings.php';}
-
-            if ($_REQUEST['page'] == "test_selection") {include 'pages/test_selection.php';}
-            if ($_REQUEST['page'] == "trim_color") {include 'pages/trim_color.php';}
-
-            if ($_REQUEST['page'] == "coil_product") {include 'pages/coil_product.php';}
-            if ($_REQUEST['page'] == "approval_list") {include 'pages/approval_list.php';}
-            if ($_REQUEST['page'] == "approval_details") {include 'pages/approval_details.php';}
-            if ($_REQUEST['page'] == "approved_list") {include 'pages/approved_list.php';}
-
-            if ($_REQUEST['page'] == "work_order_list") {include 'pages/work_order_list.php';}
-            if ($_REQUEST['page'] == "status_list") {include 'pages/status_list.php';}
-            if ($_REQUEST['page'] == "job_details") {include 'pages/job_details.php';}
-            
-            if ($_REQUEST['page'] == "customer_pricing") {include 'pages/customer_pricing.php';}
-            if ($_REQUEST['page'] == "pricing_category") {include 'pages/pricing_category.php';}
-
-            if ($_REQUEST['page'] == "supplier_color") {include 'pages/supplier_color.php';}
-
-            if ($_REQUEST['page'] == "product_color") {include 'pages/product_color.php';}
-            if ($_REQUEST['page'] == "table_gauge") {include 'pages/table_gauge.php';}
-
-            if ($_REQUEST['page'] == "customer_login_creds") {include 'pages/customer_login_creds.php';}
-            if ($_REQUEST['page'] == "supplier_pack") {include 'pages/supplier_pack.php';}
-            if ($_REQUEST['page'] == "supplier_case") {include 'pages/supplier_case.php';}
-
-            if ($_REQUEST['page'] == "color_multiplier") {include 'pages/color_multiplier.php';}
-            if ($_REQUEST['page'] == "coil_width") {include 'pages/coil_width.php';}
-
-            if ($_REQUEST['page'] == "upload_excel") {include 'pages/upload_excel.php';}
-            if ($_REQUEST['page'] == "download_excel") {include 'pages/download_excel.php';}
-            if ($_REQUEST['page'] == "flat_sheet_width") {include 'pages/flat_sheet_width.php';}
-
-            if ($_REQUEST['page'] == "product_availability") {include 'pages/product_availability.php';}
-            if ($_REQUEST['page'] == "color_group_name") {include 'pages/color_group_names.php';}
-            if ($_REQUEST['page'] == "product_coating") {include 'pages/product_coating.php';}
-
-            if ($_REQUEST['page'] == "supplier_dashboard") {include 'pages/supplier_dashboard.php';}
-            if ($_REQUEST['page'] == "supplier_order") {include 'pages/supplier_order.php';}
-            if ($_REQUEST['page'] == "supplier_order_list") {include 'pages/supplier_order_list.php';}
-            if ($_REQUEST['page'] == "supplier_order_list_all") {include 'pages/supplier_order_list_all.php';}
-
-            if ($_REQUEST['page'] == "staging_bin") {include 'pages/staging_bin.php';}
-            if ($_REQUEST['page'] == "shipping_company") {include 'pages/shipping_company.php';}
-
-            if ($_REQUEST['page'] == "truss_type") {include 'pages/truss_type.php';}
-            if ($_REQUEST['page'] == "truss_material") {include 'pages/truss_material.php';}
-            if ($_REQUEST['page'] == "truss_ceiling_load") {include 'pages/truss_ceiling_load.php';}
-
-            if ($_REQUEST['page'] == "truss_pitch") {include 'pages/truss_pitch.php';}
-            if ($_REQUEST['page'] == "truss_overhang") {include 'pages/truss_overhang.php';}
-            if ($_REQUEST['page'] == "truss_spacing") {include 'pages/truss_spacing.php';}
-
-            if ($_REQUEST['page'] == "product_color_width") {include 'pages/product_color_width.php';}
-            if ($_REQUEST['page'] == "panel_multiplier") {include 'pages/panel_multiplier.php';}
-
-            if ($_REQUEST['page'] == "product_length") {include 'pages/product_length.php';}
-            if ($_REQUEST['page'] == "promotions") {include 'pages/promotions.php';}
-            if ($_REQUEST['page'] == "statement_of_account") {include 'pages/statement_of_account.php';}
-            if ($_REQUEST['page'] == "statement_of_account_details") {include 'pages/statement_of_account_details.php';}
-
-            if ($_REQUEST['page'] == "invoice") {include 'pages/invoice.php';}
-            if ($_REQUEST['page'] == "stockable_staging") {include 'pages/stockable_staging.php';}
-            if ($_REQUEST['page'] == "stockable_release") {include 'pages/stockable_release.php';}
-
-            if ($_REQUEST['page'] == "work_order_run") {include 'pages/work_order_run.php';}
-            if ($_REQUEST['page'] == "work_order_finish") {include 'pages/work_order_finish.php';}
-            if ($_REQUEST['page'] == "work_order_release") {include 'pages/work_order_release.php';}
-
-            if ($_REQUEST['page'] == "roll_former") {include 'pages/roll_former.php';}
-            if ($_REQUEST['page'] == "coils_defective") {include 'pages/coils_defective.php';}
-            if ($_REQUEST['page'] == "coils_rework") {include 'pages/coils_claim.php';}
-            if ($_REQUEST['page'] == "coils_rework_done") {include 'pages/coils_rework_done.php';}
-            if ($_REQUEST['page'] == "coils_released") {include 'pages/coils_released.php';}
-
-            if ($_REQUEST['page'] == "coils_claim") {include 'pages/coils_claim.php';}
-            if ($_REQUEST['page'] == "notifications") {include 'pages/notifications_list.php';}
-            if ($_REQUEST['page'] == "statement_payment_approval") {include 'pages/statement_payment_approval.php';}
-            if ($_REQUEST['page'] == "job_deposit_approval") {include 'pages/job_deposit_approval.php';}
-            if ($_REQUEST['page'] == "truck") {include 'pages/truck.php';}
-
-            if ($_REQUEST['page'] == "returns_list_pending") {include 'pages/returns_list_pending.php';}
-            if ($_REQUEST['page'] == "returns_list_rejected") {include 'pages/returns_list_rejected.php';}
-            if ($_REQUEST['page'] == "out_of_stock") {include 'pages/out_of_stock.php';}
-            if ($_REQUEST['page'] == "supplier_pending_orders") {include 'pages/supplier_pending_orders.php';}
-            if ($_REQUEST['page'] == "supplier_placed_orders") {include 'pages/supplier_approved_orders.php';}
-            if ($_REQUEST['page'] == "supplier_edit_orders") {include 'pages/supplier_edit_orders.php';}
-            if ($_REQUEST['page'] == "user_page_access") {include 'pages/user_page_access.php';}
+            if ($row = mysqli_fetch_assoc($result)) {
+                include "pages/" . $row['file_name'];
+            } else {
+                include "not_authorized.php";
+                //include "pages/user_page_access.php";
+            }
           ?>
         </div>
       </div>

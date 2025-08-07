@@ -5,6 +5,11 @@ if (!isset($_SESSION['work_order_user_id'])) {
     header("Location: login.php?redirect=$redirect_url");
     exit();
 }
+include_once '../includes/dbconn.php';
+define('APP_SECURE', true);
+
+$user_id = $_SESSION['userid'];
+$page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'work_order';
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-bs-theme="dark" data-color-theme="Blue_Theme" data-layout="vertical">
@@ -200,15 +205,24 @@ if (!isset($_SESSION['work_order_user_id'])) {
       <div class="body-wrapper">
         <div class="container-fluid">
           <?php 
-            if (empty($_REQUEST['page'])) {include 'pages/work_order.php';}
-            if ($_REQUEST['page'] == "messages") {include 'pages/messages.php';}
-            if ($_REQUEST['page'] == "inventory") {include 'pages/inventory.php';}
+            $query = "
+                SELECT p.id, p.file_name
+                FROM pages p
+                JOIN user_page_access upa ON upa.page_id = p.id
+                WHERE p.url = '$page_key'
+                AND upa.staff_id = '$user_id'
+                AND upa.permission IN ('view', 'edit')
+                AND p.category_id = '3'
+                LIMIT 1
+            ";
 
-            if ($_REQUEST['page'] == "work_order_new") {include 'pages/work_order_new.php';}
-            if ($_REQUEST['page'] == "work_order_run") {include 'pages/work_order_run.php';}
-            if ($_REQUEST['page'] == "work_order_finish") {include 'pages/work_order_finish.php';}
-            if ($_REQUEST['page'] == "work_order_release") {include 'pages/work_order_release.php';}
-            if ($_REQUEST['page'] == "notifications") {include 'pages/notifications_list.php';}
+            $result = mysqli_query($conn, $query);
+
+            if ($row = mysqli_fetch_assoc($result)) {
+                include "pages/" . $row['file_name'];
+            } else {
+                include "not_authorized.php";
+            }
           ?>
         </div>
       </div>

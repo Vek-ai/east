@@ -5,6 +5,11 @@ if (!isset($_SESSION['userid'])) {
     header("Location: login.php?redirect=$redirect_url");
     exit();
 }
+include_once '../includes/dbconn.php';
+define('APP_SECURE', true);
+
+$user_id = $_SESSION['userid'];
+$page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-bs-theme="dark" data-color-theme="Blue_Theme" data-layout="vertical">
@@ -1335,17 +1340,24 @@ if (!isset($_SESSION['userid'])) {
       <div class="body-wrapper">
         <div class="container-fluid">
           <?php 
-            if (empty($_REQUEST['page'])) {include 'pages/cashier.php';}
-            if ($_REQUEST['page'] == "customer") {include 'pages/customer.php';}
-            if ($_REQUEST['page'] == "cashier2") {include 'pages/cashier2.php';}
-            if ($_REQUEST['page'] == "customer-dashboard") {include 'pages/customer-dash.php';}
-            if ($_REQUEST['page'] == "approved_list") {include 'pages/approved_list.php';}
-            if ($_REQUEST['page'] == "work_order_list") {include 'pages/work_order_list.php';}
-            if ($_REQUEST['page'] == "job_details") {include 'pages/job_details.php';}
-            if ($_REQUEST['page'] == "supplier_order") {include 'pages/supplier_order.php';}
-            if ($_REQUEST['page'] == "old") {include 'pages/old.php';}
-            if ($_REQUEST['page'] == "notifications") {include 'pages/notifications_list.php';}
-            if ($_REQUEST['page'] == "job_deposits") {include 'pages/job_deposit.php';}
+            $query = "
+                SELECT p.id, p.file_name
+                FROM pages p
+                JOIN user_page_access upa ON upa.page_id = p.id
+                WHERE p.url = '$page_key'
+                AND upa.staff_id = '$user_id'
+                AND upa.permission IN ('view', 'edit')
+                AND p.category_id = '2'
+                LIMIT 1
+            ";
+
+            $result = mysqli_query($conn, $query);
+
+            if ($row = mysqli_fetch_assoc($result)) {
+                include "pages/" . $row['file_name'];
+            } else {
+                include "not_authorized.php";
+            }
           ?>
         </div>
       </div>

@@ -1,7 +1,7 @@
 <?php
 session_start();
-include 'includes/dbconn.php';
-include 'includes/functions.php';
+include_once 'includes/dbconn.php';
+include_once 'includes/functions.php';
 
 $customer_id = $_SESSION['customer_id'];
 $customer_first_name = "";
