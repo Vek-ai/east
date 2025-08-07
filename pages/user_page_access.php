@@ -2,6 +2,19 @@
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
+$query = "SELECT id, page_name FROM pages";
+$result = mysqli_query($conn, $query);
+
+while ($row = mysqli_fetch_assoc($result)) {
+    $id = $row['id'];
+    $originalName = $row['page_name'];
+
+    $formatted = ucwords(str_replace('_', ' ', strtolower($originalName)));
+
+    $update = "UPDATE pages SET page_name = '" . mysqli_real_escape_string($conn, $formatted) . "' WHERE id = $id";
+    mysqli_query($conn, $update);
+}
+
 $page_title = "User Permissions Management";
 ?>
 <style>
