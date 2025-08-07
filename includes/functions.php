@@ -2150,4 +2150,43 @@ function getReturnableProducts($orderid) {
     return $products;
 }
 
+function getUserAccess($staff_id) {
+    global $conn;
+
+    $staff_id = mysqli_real_escape_string($conn, $staff_id);
+
+    $query = "SELECT page_id, permission FROM user_page_access WHERE staff_id = '$staff_id'";
+    $result = mysqli_query($conn, $query);
+
+    $access = [];
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $access[$row['page_id']] = $row['permission'];
+        }
+    }
+
+    return $access;
+}
+
+function getPageCategoryName($category_id) {
+    global $conn;
+
+    if (empty($category_id)) {
+        return 'Uncategorized';
+    }
+
+    $category_id = mysqli_real_escape_string($conn, $category_id);
+
+    $query = "SELECT category_name FROM page_categories WHERE id = '$category_id' LIMIT 1";
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['category_name'];
+    }
+
+    return 'Unknown';
+}
+
 ?>

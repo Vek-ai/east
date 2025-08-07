@@ -1277,6 +1277,7 @@ if (!isset($_SESSION['userid'])) {
             if (empty($_REQUEST['page'])) {include 'pages/home.php';}
 
             if ($_REQUEST['page'] == "page_categories") {include 'pages/page_categories.php';}
+            if ($_REQUEST['page'] == "pages") {include 'pages/pages.php';}
 
             if ($_REQUEST['page'] == "category") {include 'pages/category.php';}
             if ($_REQUEST['page'] == "category2") {include 'pages/category2.php';}
@@ -1441,6 +1442,7 @@ if (!isset($_SESSION['userid'])) {
             if ($_REQUEST['page'] == "supplier_pending_orders") {include 'pages/supplier_pending_orders.php';}
             if ($_REQUEST['page'] == "supplier_placed_orders") {include 'pages/supplier_approved_orders.php';}
             if ($_REQUEST['page'] == "supplier_edit_orders") {include 'pages/supplier_edit_orders.php';}
+            if ($_REQUEST['page'] == "user_page_access") {include 'pages/user_page_access.php';}
           ?>
         </div>
       </div>
