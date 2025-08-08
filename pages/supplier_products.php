@@ -1,9 +1,3 @@
-<?php
-if (!defined('APP_SECURE')) {
-    header("Location: /not_authorized.php");
-    exit;
-}
-?>
 <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
             <div class="card-body px-0">
               <div class="d-flex justify-content-between align-items-center">

@@ -1,9 +1,3 @@
-<?php
-if (!defined('APP_SECURE')) {
-    header("Location: /not_authorized.php");
-    exit;
-}
-?>
 <div class="col-md-12">
     <div class="card-body p-0">
         <h4 class="card-title text-center">Product Image</h4>

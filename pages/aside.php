@@ -1,9 +1,3 @@
-<?php
-if (!defined('APP_SECURE')) {
-    header("Location: /not_authorized.php");
-    exit;
-}
-?>
   <aside class="left-sidebar with-vertical">
       <div><!-- ---------------------------------- -->
         <!-- Start Vertical Layout Sidebar -->

@@ -1,8 +1,4 @@
 <?php
-if (!defined('APP_SECURE')) {
-    header("Location: /not_authorized.php");
-    exit;
-}
 session_start();
 
 require '../../includes/dbconn.php';
