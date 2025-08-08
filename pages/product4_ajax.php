@@ -1,4 +1,5 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -1301,6 +1302,7 @@ if(isset($_REQUEST['action'])) {
     }   
     
     if ($action == 'fetch_products') {
+        $permission = $_SESSION['permission'];
         $data = [];
         $query = "
             SELECT 
@@ -1336,14 +1338,17 @@ if(isset($_REQUEST['action'])) {
                     </div>
                 </a>";
     
-            $action_html = "
-                <div class='action-btn text-center'>
-                    <a href='javascript:void(0)' id='view_product_btn' title='View' class='text-primary edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-eye fs-7'></i></a>
-                    <a href='javascript:void(0)' id='edit_product_btn' title='Edit' class='text-warning edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-pencil fs-7'></i></a>
-                    <a href='javascript:void(0)' id='duplicate_product_btn' title='Duplicate' class='text-info edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-copy fs-7'></i></a>
-                    <a href='javascript:void(0)' id='add_inventory_btn' title='Add Inventory' class='text-secondary edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-plus fs-7'></i></a>
-                    <a href='javascript:void(0)' id='delete_product_btn' title='Archive' class='text-danger edit hideProduct' data-no='{$no}' data-id='{$product_id}' data-status='{$status}'><i class='ti ti-trash fs-7'></i></a>
-                </div>";
+            $action_html = '';
+            if ($permission === 'edit') {
+                $action_html = "
+                    <div class='action-btn text-center'>
+                        <a href='javascript:void(0)' id='view_product_btn' title='View' class='text-primary edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-eye fs-7'></i></a>
+                        <a href='javascript:void(0)' id='edit_product_btn' title='Edit' class='text-warning edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-pencil fs-7'></i></a>
+                        <a href='javascript:void(0)' id='duplicate_product_btn' title='Duplicate' class='text-info edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-copy fs-7'></i></a>
+                        <a href='javascript:void(0)' id='add_inventory_btn' title='Add Inventory' class='text-secondary edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-plus fs-7'></i></a>
+                        <a href='javascript:void(0)' id='delete_product_btn' title='Archive' class='text-danger edit hideProduct' data-no='{$no}' data-id='{$product_id}' data-status='{$status}'><i class='ti ti-trash fs-7'></i></a>
+                    </div>";
+            }
     
             $data[] = [
                 'product_name_html'   => $product_name_html,

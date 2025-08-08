@@ -1,4 +1,8 @@
 <?php
+if (!defined('APP_SECURE')) {
+    header("Location: /not_authorized.php");
+    exit;
+}
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
@@ -11,6 +15,8 @@ if(!empty($_REQUEST['staff_id'])){
     while ($row = mysqli_fetch_array($result)) {
     }
 }
+
+$permission = $_SESSION['permission'];
 
 ?>
 
@@ -182,6 +188,9 @@ if(!empty($_REQUEST['staff_id'])){
                                         <td style="color: #ffffff !important"><?= $row_staff['phone'] ?></td>
                                         <td style="color: #ffffff !important"><?= $status ?></td>
                                         <td>
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
                                             <div class="action-btn text-center">
                                                 <a href="#" title="Edit" id="view_staff_btn" class="text-primary edit" data-id="<?= $row_staff['staff_id'] ?>">
                                                     <i class="ti ti-pencil fs-7"></i>
@@ -190,6 +199,9 @@ if(!empty($_REQUEST['staff_id'])){
                                                     <i class="ti ti-trash fs-5"></i>
                                                 </a> -->
                                             </div>
+                                            <?php
+                                            }
+                                            ?>
                                         </td>
                                     </tr>
                                 <?php 

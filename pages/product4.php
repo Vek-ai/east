@@ -1,4 +1,8 @@
 <?php
+if (!defined('APP_SECURE')) {
+    header("Location: /not_authorized.php");
+    exit;
+}
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -19,6 +23,8 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
 
 $price_per_hem = getPaymentSetting('price_per_hem');
 $price_per_bend = getPaymentSetting('price_per_bend');
+
+$permission = $_SESSION['permission'];
 
 ?>
 <style>

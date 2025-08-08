@@ -1,4 +1,8 @@
 <?php
+if (!defined('APP_SECURE')) {
+    header("Location: /not_authorized.php");
+    exit;
+}
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
@@ -22,6 +26,8 @@ if(!empty($_REQUEST['supplier_type_id'])){
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
 }
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
 td.notes,  td.last-edit{
@@ -175,7 +181,9 @@ td.notes,  td.last-edit{
                       <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                       <td><?= $status ?></td>
                       <td class="text-center" id="action-button-<?= $no ?>">
-                          <?php if ($row_supplier_type['status'] == '0') { ?>
+                        <?php                                                    
+                        if ($permission === 'edit') {
+                            if ($row_supplier_type['status'] == '0') { ?>
                                 <a href="#" class="py-1 text-dark hideSupplierType" title="Archive" data-id="<?= $supplier_type_id ?>" data-row="<?= $no ?>">
                                     <i class="text-danger ti ti-trash fs-7"></i>
                                 </a>
@@ -183,7 +191,10 @@ td.notes,  td.last-edit{
                                 <a href="#" id="addModalBtn" title="Edit" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $supplier_type_id ?>" data-type="edit">
                                     <i class="ti ti-pencil fs-7"></i>
                                 </a>
-                          <?php } ?>
+                          <?php 
+                          }
+                        }
+                        ?>
                       </td>
                   </tr>
                   <?php

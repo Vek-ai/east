@@ -1,11 +1,15 @@
 <?php
+if (!defined('APP_SECURE')) {
+    header("Location: /not_authorized.php");
+    exit;
+}
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $supplier_colors = array();
 
 $page_title = "Supplier";
-
+$permission = $_SESSION['permission'];
 ?>
 <style>
     td.last-edit{
@@ -193,12 +197,19 @@ $page_title = "Supplier";
                                     <td><?= $status ?></td>
                                     <td>
                                         <div class="action-btn d-flex justify-content-center align-items-center gap-2">
+                                            
                                             <a href="#" id="addModalBtn" title="View" class="d-flex align-items-center justify-content-center text-decoration-none" data-toggle="tooltip" data-placement="top" title="View" data-id="<?= $supplier_id ?>" data-type="view">
                                                 <i class="fa fa-eye"></i>
                                             </a>
-                                            <a href="#" id="addModalBtn" title="Edit" class="d-flex align-items-center justify-content-center text-decoration-none" data-toggle="tooltip" data-placement="top" title="Edit" data-id="<?= $supplier_id ?>" data-type="edit">
-                                                <i class="fa fa-pencil text-warning"></i>
-                                            </a>
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
+                                                <a href="#" id="addModalBtn" title="Edit" class="d-flex align-items-center justify-content-center text-decoration-none" data-toggle="tooltip" data-placement="top" title="Edit" data-id="<?= $supplier_id ?>" data-type="edit">
+                                                    <i class="fa fa-pencil text-warning"></i>
+                                                </a>
+                                            <?php
+                                            }
+                                            ?>
                                             <a href="?page=supplier_dashboard&id=<?= $supplier_id ?>" title="Dashboard"  class="py-1 pe-1" data-toggle="tooltip" data-placement="top" title="Dashboard">
                                                 <i class="fa fa-chart-bar text-info"></i>
                                             </a>

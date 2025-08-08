@@ -1,4 +1,8 @@
 <?php
+if (!defined('APP_SECURE')) {
+    header("Location: /not_authorized.php");
+    exit;
+}
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
@@ -22,6 +26,8 @@ if(!empty($_REQUEST['emp_role_id'])){
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
 }
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
 td.notes,  td.last-edit{
@@ -162,13 +168,18 @@ td.notes,  td.last-edit{
                         <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                         <td><?= $status ?></td>
                         <td class="text-center" id="action-button-<?= $no ?>">
-                            <?php if ($row_employee_roles['status'] == '0') { ?>
-                                <a href="#" title="Archive" class="btn btn-light py-1 text-dark hideCategory" data-id="<?= $emp_role_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
-                            <?php } else { ?>
-                                <a href="#" title="Edit" id="addRoleModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $emp_role_id ?>" data-type="edit">
-                                  <i class="ti ti-pencil fs-7"></i>
-                                </button>
-                            <?php } ?>
+                            <?php                                                    
+                            if ($permission === 'edit') {
+                                 if ($row_employee_roles['status'] == '0') { ?>
+                                    <a href="#" title="Archive" class="btn btn-light py-1 text-dark hideCategory" data-id="<?= $emp_role_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
+                                <?php } else { ?>
+                                    <a href="#" title="Edit" id="addRoleModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $emp_role_id ?>" data-type="edit">
+                                    <i class="ti ti-pencil fs-7"></i>
+                                    </button>
+                                <?php 
+                                } 
+                            }
+                            ?>
                         </td>
                     </tr>
                     <?php

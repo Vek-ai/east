@@ -1,4 +1,5 @@
 <?php
+session_start();
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 require '../includes/vendor/autoload.php';
@@ -75,6 +76,8 @@ if(isset($_REQUEST['action'])) {
     }
     
     if ($action === 'fetch_table') {
+        $permission = $_SESSION['permission'];
+
         $query = "SELECT * FROM page_categories";
         $result = mysqli_query($conn, $query);
     
@@ -84,9 +87,12 @@ if(isset($_REQUEST['action'])) {
             $category_name = $row['category_name'];
             $description = $row['description'];
     
-            $action_html = "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$id' data-type='edit'>
-                                <i class='ti ti-pencil fs-7'></i>
-                            </a>";
+            $action_html = '';
+            if ($permission === 'edit') {
+                $action_html = "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$id' data-type='edit'>
+                                    <i class='ti ti-pencil fs-7'></i>
+                                </a>";
+            }
     
             $data[] = [
                 'category_name' => $category_name,

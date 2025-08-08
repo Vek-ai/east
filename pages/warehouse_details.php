@@ -1,4 +1,8 @@
 <?php
+if (!defined('APP_SECURE')) {
+    header("Location: /not_authorized.php");
+    exit;
+}
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
@@ -18,7 +22,9 @@ if(!empty($_REQUEST['warehouse_id'])){
         $contact_phone = $row['contact_phone'];
         $contact_email = $row['contact_email'];
     }
-  }
+}
+
+$permission = $_SESSION['permission'];
 ?>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -161,6 +167,10 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                 </td>
                                                                 <td><?= $row_wh_section['Description'] ?></td>
                                                                 <td>
+                                                                    <?php 
+                                                                    $action_html = '';
+                                                                    if ($permission === 'edit') {
+                                                                    ?>
                                                                     <div class="action-btn text-center">
                                                                         <a href="#" id="section-edit" 
                                                                                     class="text-primary addEditSectionBtn" 
@@ -173,6 +183,9 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                             <i class="text-danger ti ti-trash fs-7"></i>
                                                                         </a>
                                                                     </div>
+                                                                    <?php
+                                                                    }
+                                                                    ?>
                                                                 </td>
                                                             </tr>
                                                         <?php
@@ -215,6 +228,10 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                     <?= $row_wh_rows['RowCode'] ?></td>
                                                                 <td><?= $row_wh_rows['Description'] ?></td>
                                                                 <td>
+                                                                    <?php 
+                                                                    $action_html = '';
+                                                                    if ($permission === 'edit') {
+                                                                    ?>
                                                                     <div class="action-btn text-center">
                                                                         <a href="#" id="row-item" data-id="<?= $row_wh_rows['WarehouseRowID'] ?>">
                                                                             <i class="text-primary ti ti-eye fs-7"></i>
@@ -230,6 +247,9 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                             <i class="text-danger ti ti-trash fs-7"></i>
                                                                         </a>
                                                                     </div>
+                                                                    <?php
+                                                                    }
+                                                                    ?>
                                                                 </td>
                                                             </tr>
                                                         <?php
@@ -281,6 +301,10 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                     <td><?= getWarehouseRowName($row_wh_shelves['WarehouseRowID']) ?></td>
                                                                     <td><?= $row_wh_shelves['Description'] ?></td>
                                                                     <td>
+                                                                        <?php 
+                                                                        $action_html = '';
+                                                                        if ($permission === 'edit') {
+                                                                        ?>
                                                                         <div class="action-btn text-center">
                                                                             <a href="#" id="shelf-item" data-id="<?= $row_wh_shelves['ShelfID'] ?>">
                                                                                 <i class="text-primary ti ti-eye fs-7"></i>
@@ -296,6 +320,9 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                                 <i class="text-danger ti ti-trash fs-7"></i>
                                                                             </a>
                                                                         </div>
+                                                                        <?php
+                                                                        }
+                                                                        ?>
                                                                     </td>
                                                                 </tr>
                                                                 <?php
@@ -340,6 +367,10 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                 </td>
                                                                 <td><?= $row_wh_bins['Description'] ?></td>
                                                                 <td>
+                                                                    <?php 
+                                                                    $action_html = '';
+                                                                    if ($permission === 'edit') {
+                                                                    ?>
                                                                     <div class="action-btn text-center">
                                                                         <a href="#" id="bin-item" data-id="<?= $row_wh_bins['BinID'] ?>">
                                                                             <i class="text-primary ti ti-eye fs-7"></i>
@@ -355,6 +386,9 @@ if(!empty($_REQUEST['warehouse_id'])){
                                                                             <i class="text-danger ti ti-trash fs-7"></i>
                                                                         </a>
                                                                     </div>
+                                                                    <?php
+                                                                    }
+                                                                    ?>
                                                                 </td>
                                                             </tr>
                                                         <?php

@@ -205,24 +205,26 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'work_order';
       <div class="body-wrapper">
         <div class="container-fluid">
           <?php 
-            $query = "
-                SELECT p.id, p.file_name
-                FROM pages p
-                JOIN user_page_access upa ON upa.page_id = p.id
-                WHERE p.url = '$page_key'
-                AND upa.staff_id = '$user_id'
-                AND upa.permission IN ('view', 'edit')
-                AND p.category_id = '3'
-                LIMIT 1
-            ";
-
-            $result = mysqli_query($conn, $query);
-
-            if ($row = mysqli_fetch_assoc($result)) {
-                include "pages/" . $row['file_name'];
-            } else {
-                include "not_authorized.php";
-            }
+          $query = "
+              SELECT 
+                  p.id, 
+                  p.file_name, 
+                  upa.permission
+              FROM pages p
+              JOIN user_page_access upa ON upa.page_id = p.id
+              WHERE p.url = '$page_key'
+              AND upa.staff_id = '$user_id'
+              AND upa.permission IN ('view', 'edit')
+              AND p.category_id = '3'
+              LIMIT 1
+          ";
+          $result = mysqli_query($conn, $query);
+          if ($row = mysqli_fetch_assoc($result)) {
+              $_SESSION['permission'] = $row['permission'];
+              include "pages/" . $row['file_name'];
+          } else {
+              include "not_authorized.php";
+          }
           ?>
         </div>
       </div>

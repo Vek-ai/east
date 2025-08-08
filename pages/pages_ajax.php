@@ -1,4 +1,5 @@
 <?php
+session_start();
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
@@ -100,6 +101,7 @@ if(isset($_REQUEST['action'])) {
     }
     
     if ($action === 'fetch_table') {
+        $permission = $_SESSION['permission'];
         $category_id = mysqli_real_escape_string($conn, $_POST['category_id'] ?? '');
 
         $query = "SELECT * FROM pages";
@@ -117,9 +119,12 @@ if(isset($_REQUEST['action'])) {
             $url = $row['url'];
             $category_id = $row['category_id'];
 
-            $action_html = "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$id' data-type='edit'>
-                                <i class='ti ti-pencil fs-7'></i>
-                            </a>";
+            $action_html = '';
+            if ($permission === 'edit') {
+                $action_html = "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$id' data-type='edit'>
+                                    <i class='ti ti-pencil fs-7'></i>
+                                </a>";
+            }
 
             $data[] = [
                 'page_name' => $page_name,

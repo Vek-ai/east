@@ -1,6 +1,12 @@
 <?php
+if (!defined('APP_SECURE')) {
+    header("Location: /not_authorized.php");
+    exit;
+}
 require 'includes/dbconn.php';
 require 'includes/functions.php';
+
+$permission = $_SESSION['permission'];
 
 ?>
 <div class="container-fluid">
@@ -209,17 +215,24 @@ require 'includes/functions.php';
                         <td><?= $row_warehouse['contact_phone'] ?></td>
                         <td><?= $status ?></td>
                         <td>
-                            <div class="action-btn d-flex justify-content-center gap-2">
-                                <a href="#" id="view_warehouse_btn" class="text-primary edit" data-id="<?= $row_warehouse['WarehouseID'] ?>" title="Archive">
-                                    <i class="fa fa-eye fs-6"></i>
-                                </a>
-                                <a href="?page=warehouse_details&warehouse_id=<?= $row_warehouse['WarehouseID'] ?>" title="Edit">
-                                    <i class="fa fa-pencil text-warning fs-6"></i>
-                                </a>
-                                <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_warehouse['WarehouseID'] ?>">
-                                    <i class="ti ti-trash fs-5"></i>
-                                </a> -->
-                            </div>
+                            <?php
+                            $action_html = '';
+                                if ($permission === 'edit') {
+                                ?>
+                                <div class="action-btn d-flex justify-content-center gap-2">
+                                    <a href="#" id="view_warehouse_btn" class="text-primary edit" data-id="<?= $row_warehouse['WarehouseID'] ?>" title="Archive">
+                                        <i class="fa fa-eye fs-6"></i>
+                                    </a>
+                                    <a href="?page=warehouse_details&warehouse_id=<?= $row_warehouse['WarehouseID'] ?>" title="Edit">
+                                        <i class="fa fa-pencil text-warning fs-6"></i>
+                                    </a>
+                                    <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_warehouse['WarehouseID'] ?>">
+                                        <i class="ti ti-trash fs-5"></i>
+                                    </a> -->
+                                </div>
+                                <?php
+                                }
+                            ?>
                         </td>
                     </tr>
                 <?php 
