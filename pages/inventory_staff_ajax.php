@@ -1,8 +1,5 @@
 <?php
 session_start();
-?>
-
-<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -10,6 +7,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require '../includes/dbconn.php';
 require '../includes/functions.php';
+
+$permission = $_SESSION['permission'];
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];

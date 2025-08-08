@@ -22,6 +22,8 @@ $category_id = isset($_REQUEST['category_id']) ? $_REQUEST['category_id'] : '';
 $profile_id = isset($_REQUEST['profile_id']) ? $_REQUEST['profile_id'] : '';
 $type_id = isset($_REQUEST['type_id']) ? $_REQUEST['type_id'] : '';
 $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     .dz-preview {
@@ -73,6 +75,9 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
 
     <div class="widget-content searchable-container list">
 
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
     <div class="card card-body">
         <div class="row">
             <div class="col-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
@@ -82,6 +87,10 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
             </div>
         </div>
     </div>
+    <?php
+    }
+    ?>
+
 
     <div class="modal fade" id="addCoilModal" tabindex="-1" aria-labelledby="addCoilModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -652,12 +661,19 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
                                         <td><?= $status ?></td>
                                         <td>
                                             <div class="action-btn text-center">
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>
                                                 <a href="#" title="Edit" id="edit_product_btn" class="edit" data-id="<?= $row_coil['coil_id'] ?>">
                                                     <i class="ti ti-pencil fs-7"></i>
                                                 </a>
                                                 <a href="#" title="Archive" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $coil_id ?>" data-status='<?= $db_status ?>'>
                                                     <i class="text-danger ti ti-trash fs-7"></i>
                                                 </a>
+                                                <?php
+                                                }
+                                                ?>
+
                                             </div>
                                         </td>
                                     </tr>

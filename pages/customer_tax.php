@@ -42,7 +42,7 @@ if (!empty($_REQUEST['result'])) {
   }
 
 }
-
+$permission = $_SESSION['permission'];
 ?>
 <style>
   /* Ensure that the text within the notes column wraps properly */
@@ -102,6 +102,9 @@ if (!empty($_REQUEST['result'])) {
   </div>
 </div>
 
+<?php                                                    
+if ($permission === 'edit') {
+?>
 <div class="card card-body">
     <div class="row">
       <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
@@ -117,6 +120,9 @@ if (!empty($_REQUEST['result'])) {
       </div>
     </div>
 </div>
+<?php
+}
+?>
 
 <div class="card card-body">
   <div class="row">
@@ -175,9 +181,16 @@ if (!empty($_REQUEST['result'])) {
                         <td><?= $percentage ?></td>
                         <td><?= $status ?></td>
                         <td class="text-center" id="action-button-<?= $no ?>">
+                          <?php                                                    
+                          if ($permission === 'edit') {
+                          ?>
                           <a href="#" id="addModalBtn" title="Edit" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $taxid ?>" data-type="edit">
                             <i class="ti ti-pencil fs-7"></i>
                           </a>
+                          <?php
+                          }
+                          ?>
+
                         </td>
                       </tr>
                       <?php

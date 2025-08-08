@@ -7,6 +7,8 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Page Categories";
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -58,6 +60,10 @@ $page_title = "Page Categories";
   </div>
 </div>
 
+<?php                                                    
+if ($permission === 'edit') {
+?>
+
 <div class="card card-body">
     <div class="row">
       <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
@@ -67,6 +73,10 @@ $page_title = "Page Categories";
       </div>
     </div>
 </div>
+
+<?php
+}
+?>
 
 <div class="card card-body">
   <div class="row">

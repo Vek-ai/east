@@ -39,6 +39,8 @@ $customer_name = $customer_first_name . " " . $customer_last_name;
 
 $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
+
+$permission = $_SESSION['permission'];
 ?>
 
 <style>
@@ -104,6 +106,9 @@ $addHeaderTxt = "Add New";
   </div>
 </div>
 
+<?php                                                    
+if ($permission === 'edit') {
+?>
 <div class="card card-body">
     <div class="row">
       <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
@@ -122,6 +127,10 @@ $addHeaderTxt = "Add New";
       </div>
     </div>
 </div>
+<?php
+}
+?>
+
 
 <div class="card card-body">
     <div class="row">
@@ -301,18 +310,30 @@ $addHeaderTxt = "Add New";
                                   title="View">
                                   <i class="fa fa-eye text-light"></i>
                                 </a>
+                                <?php                                                    
+                                if ($permission === 'edit') {
+                                ?>
                                 <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="e" class="py-1 pe-1 addModalBtn"
                                   data-toggle="tooltip" data-placement="top" title="Edit">
                                   <i class="fa fa-pencil text-warning"></i>
                                 </a>
+                                <?php
+                                }
+                                ?>
                                 <a href="?page=customer-dashboard&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
                                   data-toggle="tooltip" data-placement="top" title="Dashboard"><i
                                     class="fa fa-chart-bar text-primary"></i>
                                 </a>
+                                <?php                                                    
+                                if ($permission === 'edit') {
+                                ?>
                                 <a href="?page=customer_login_creds&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
                                   data-toggle="tooltip" data-placement="top" title="Username and Password">
                                   <i class="fa-solid fa-lock text-info"></i>
                                 </a>
+                                <?php
+                                }
+                                ?>
                                 <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
                                   style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i
                                     class="fa fa-calculator text-secondary"></i>

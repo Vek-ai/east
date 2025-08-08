@@ -1,5 +1,7 @@
 <?php
+session_start();
 require '../includes/dbconn.php';
+$permission = $_SESSION['permission'];
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];

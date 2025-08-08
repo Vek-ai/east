@@ -7,6 +7,8 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Loyalty Program";
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
   td.notes,  td.last-edit{
@@ -53,6 +55,9 @@ $page_title = "Loyalty Program";
   </div>
 </div>
 
+<?php                                                    
+if ($permission === 'edit') {
+?>
 <div class="card card-body">
     <div class="row">
       <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
@@ -68,6 +73,9 @@ $page_title = "Loyalty Program";
       </div>
     </div>
 </div>
+<?php
+}
+?>
 
 <div class="card card-body">
     <div class="row">
@@ -143,6 +151,9 @@ $page_title = "Loyalty Program";
                           <td class="last-edit" style="width:20%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                           <td><?= $status ?></td>
                           <td class="text-center" id="action-button-<?= $no ?>">
+                            <?php                                                    
+                            if ($permission === 'edit') {
+                            ?>
                               <?php if ($row_loyalty_program['status'] == '0') { ?>
                                   <a href="#" class="py-1 text-dark hideLoyaltyProgram" title="Archive" data-id="<?= $loyalty_id ?>" data-row="<?= $no ?>">
                                       <i class="text-danger ti ti-trash fs-7"></i>
@@ -152,6 +163,10 @@ $page_title = "Loyalty Program";
                                       <i class="ti ti-pencil fs-7"></i>
                                   </a>
                                   <?php } ?>
+                            <?php
+                            }
+                            ?>
+
                           </td>
                       </tr>
                       <?php

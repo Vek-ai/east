@@ -7,6 +7,8 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Sales History";
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     .modal.custom-size .modal-dialog {
@@ -552,14 +554,20 @@ $page_title = "Sales History";
                             `;
 
                             if (order.payment_status === 'not_paid') {
-                                actionButtons += `
-                                    <a href="javascript:void(0)" 
-                                        class="close_out_sale btn btn-danger-gradient btn-sm p-0" 
-                                        data-id="${order.orderid}" data-bs-toggle="tooltip" 
-                                        title="Close Out Sale">
-                                            <iconify-icon icon="solar:close-circle-outline" class="text-danger fs-6"></iconify-icon>
-                                    </a>
-                                `;
+                                <?php                                                    
+                                if ($permission === 'edit') {
+                                ?>
+                                    actionButtons += `
+                                        <a href="javascript:void(0)" 
+                                            class="close_out_sale btn btn-danger-gradient btn-sm p-0" 
+                                            data-id="${order.orderid}" data-bs-toggle="tooltip" 
+                                            title="Close Out Sale">
+                                                <iconify-icon icon="solar:close-circle-outline" class="text-danger fs-6"></iconify-icon>
+                                        </a>
+                                    `;
+                                <?php
+                                }
+                                ?>
                             }
 
                             table.row.add([

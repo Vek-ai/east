@@ -25,6 +25,7 @@ if(isset($_REQUEST['customer_id'])){
     $customer_details = getCustomerDetails($customer_id);
 }
 
+$permission = $_SESSION['permission'];
 ?>
 <style>
     .dz-preview {
@@ -389,13 +390,25 @@ if(isset($_REQUEST['customer_id'])){
                                                 <i class="text-primary fa fa-eye fs-5"></i>
                                             </button>
                                             
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
                                             <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="edit_estimate_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Edit Estimate">
                                                 <i class="text-warning fa fa-pencil fs-5"></i>
                                             </button>
-                                            
+                                            <?php
+                                            }
+                                            ?>
+
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
                                             <button class="btn btn-danger-gradient btn-sm p-0 me-1 email_estimate_btn" data-customer="<?= $row["customerid"]; ?>" id="email_estimate_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Send Email to Customer">
                                                 <iconify-icon icon="solar:plain-linear" class="fs-5 text-info"></iconify-icon>
                                             </button>
+                                            <?php
+                                            }
+                                            ?>
                                             
                                             <a href="print_estimate_product.php?id=<?= $row["estimateid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
                                                 <i class="text-success fa fa-print fs-5"></i>
@@ -409,9 +422,15 @@ if(isset($_REQUEST['customer_id'])){
                                                 <i class="text-info fa fa-sign-in-alt fs-5"></i>
                                             </a>
                                             
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
                                             <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="delete_estimate_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Delete Estimate">
                                                 <i class="text-danger fa fa-trash fs-5"></i>
                                             </button>
+                                            <?php
+                                            }
+                                            ?>
                                             
                                             
                                         </td>

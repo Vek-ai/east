@@ -1,4 +1,5 @@
 <?php
+session_start();
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 require '../includes/vendor/autoload.php';
@@ -9,6 +10,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 $table = 'product_gauge';
 $test_table = 'product_gauge_excel';
+
+$permission = $_SESSION['permission'];
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -497,10 +500,13 @@ if(isset($_REQUEST['action'])) {
             $status = $row['status'];
             $rowData['status_html'] = '<a href="javascript:void(0)" class="changeStatus" data-no="' . $no . '" data-id="' . $row['product_gauge_id'] . '" data-status="' . $status . '"><div id="status-alert' . $no . '" class="alert ' . ($status == '0' ? 'alert-danger bg-danger' : 'alert-success bg-success') . ' text-white border-0 text-center py-1 px-2 my-0" style="border-radius: 5%;">' . ($status == '0' ? 'Inactive' : 'Active') . '</div></a>';
     
-            if ($status == '0') {
-                $rowData['action_html'] = '<a href="javascript:void(0)" class="text-decoration-none py-1 text-dark hideProductGauge" data-id="' . $row['product_gauge_id'] . '" data-row="' . $no . '"><i class="text-danger ti ti-trash fs-7"></i></a>';
-            } else {
-                $rowData['action_html'] = '<a href="javascript:void(0)" class="text-decoration-none py-1" id="addModalBtn" data-id="' . $row['product_gauge_id'] . '" data-type="edit"><i class="ti ti-pencil fs-7"></i></a>';
+            $rowData['action_html'] = '';
+            if ($permission === 'edit') {
+                if ($status == '0') {
+                    $rowData['action_html'] = '<a href="javascript:void(0)" class="text-decoration-none py-1 text-dark hideProductGauge" data-id="' . $row['product_gauge_id'] . '" data-row="' . $no . '"><i class="text-danger ti ti-trash fs-7"></i></a>';
+                } else {
+                    $rowData['action_html'] = '<a href="javascript:void(0)" class="text-decoration-none py-1" id="addModalBtn" data-id="' . $row['product_gauge_id'] . '" data-type="edit"><i class="ti ti-pencil fs-7"></i></a>';
+                }
             }
     
             $data[] = $rowData;

@@ -39,7 +39,7 @@
           </div>
           <!-----------Profile End------------------>
 
-          <ul id="sidebarnav">
+      <ul id="sidebarnav">
         <!-- ---------------------------------- -->
         <!-- Sales -->
         <!-- ---------------------------------- -->
@@ -53,42 +53,34 @@
             <span class="hide-menu">New Sale</span>
           </a>
         </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=estimate_list">
-            <iconify-icon icon="solar:document-linear" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Estimates</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=order_list">
-            <iconify-icon icon="solar:wallet-money-linear" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Orders</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=returns_list">
-            <iconify-icon icon="solar:undo-left-round-linear" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Returns/Refunds</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=sales_list">
-            <iconify-icon icon="solar:history-linear" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Sales History</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=invoice">
-            <iconify-icon icon="solar:folder-with-files-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Invoices</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=statement_of_account">
-            <iconify-icon icon="solar:clipboard-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Statement of Accounts</span>
-          </a>
-        </li>
+        
+        <?php
+        $sql = "SELECT url, menu_icon, menu_name 
+                FROM pages 
+                WHERE visibility = 1 
+                  AND menu_category = 'Sales'
+                  AND category_id = '1'
+                ORDER BY id ASC";
+
+        $result = mysqli_query($conn, $sql);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $page_url = !empty($row['url']) 
+                            ? '?page=' . htmlspecialchars($row['url']) 
+                            : 'javascript:void(0);';
+
+                echo '<li class="sidebar-item">
+                        <a class="sidebar-link" href="' . $page_url . '">
+                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
+                        </a>
+                      </li>';
+            }
+        }
+        ?>
+
+
 
         <!-- ---------------------------------- -->
         <!-- Products -->
@@ -97,49 +89,32 @@
           <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
           <span class="hide-menu">Products</span>
         </li>
-       <!-- <li class="sidebar-item">
-          <a class="sidebar-link" href="add_product.php">
-            <iconify-icon icon="solar:add-circle-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Add New Product</span>
-          </a>
-        </li>-->
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=product4">
-            <iconify-icon icon="solar:clipboard-list-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Product List</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=inventory">
-            <iconify-icon icon="solar:smartphone-update-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Inventory</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="discounts_promotions.php">
-            <iconify-icon icon="solar:flag-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Discounts/Promotions</span>
-          </a>
-        </li>
-       <!--   <li class="sidebar-item">
-          <a class="sidebar-link" href="remove_product.php">
-            <iconify-icon icon="solar:trash-bin-minimalistic-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Remove Product</span>
-          </a>
-        </li>-->
-        
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="add_barcode.php">
-            <iconify-icon icon="solar:camera-add-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Print Barcode</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="add_barcode.php">
-            <iconify-icon icon="solar:camera-add-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Print QR</span>
-          </a>
-        </li>
+        <?php
+        $sql = "SELECT url, menu_icon, menu_name 
+                FROM pages 
+                WHERE visibility = 1 
+                  AND menu_category = 'Products'
+                  AND category_id = '1'
+                ORDER BY id ASC";
+
+        $result = mysqli_query($conn, $sql);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $page_url = !empty($row['url']) 
+                            ? '?page=' . htmlspecialchars($row['url']) 
+                            : 'javascript:void(0);';
+
+                echo '<li class="sidebar-item">
+                        <a class="sidebar-link" href="' . $page_url . '">
+                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
+                        </a>
+                      </li>';
+            }
+        }
+        ?>
+
         <!-- Products -->
         <!-- ---------------------------------- -->
         
@@ -150,70 +125,102 @@
           <iconify-icon icon="solar:add-square-outline" class="nav-small-cap-icon fs-4"></iconify-icon>
           <span class="hide-menu">Customers</span>
         </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=customer">
-            <iconify-icon icon="solar:add-square-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Customer</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=merge_customer">
-            <iconify-icon icon="solar:checklist-minimalistic-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Merge Customer</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=loyalty_program">
-            <iconify-icon icon="solar:graph-new-up-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Loyalty Program</span>
-          </a>
-        </li>
+        <?php
+        $sql = "SELECT url, menu_icon, menu_name 
+                FROM pages 
+                WHERE visibility = 1 
+                  AND menu_category = 'Customers'
+                  AND category_id = '1'
+                ORDER BY id ASC";
+
+        $result = mysqli_query($conn, $sql);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $page_url = !empty($row['url']) 
+                            ? '?page=' . htmlspecialchars($row['url']) 
+                            : 'javascript:void(0);';
+
+                echo '<li class="sidebar-item">
+                        <a class="sidebar-link" href="' . $page_url . '">
+                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
+                        </a>
+                      </li>';
+            }
+        }
+        ?>
 
         <li class="nav-small-cap">
           <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
           <span class="hide-menu">EKM Tools</span>
         </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#contactInfoModal">
-            <iconify-icon icon="mdi:store-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Store Information</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" target="_blank" href="https://eastweb.ilearnwebtech.com/">
-            <iconify-icon icon="mdi:web" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">EKM Website</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#color_chart_modal">
-            <iconify-icon icon="mdi:palette-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">EKM Color Charts</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" target="_blank" href="https://postframesolver.azurewebsites.net/Account/Login?ReturnUrl=%2F">
-            <iconify-icon icon="mdi:tools" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Smart Build</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" target="_blank" href="https://www.roofingpassport.com/jobs">
-            <iconify-icon icon="mdi:home-roof" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Roofing Passport</span>
-          </a>
-        </li>
+        <?php
+        $sql = "SELECT url, menu_icon, menu_name 
+                FROM pages 
+                WHERE visibility = 1 
+                  AND menu_category = 'EKM Tools'
+                  AND category_id = '1'
+                ORDER BY id ASC";
+
+        $result = mysqli_query($conn, $sql);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $url = trim($row['url']);
+        
+                if (!empty($url)) {
+                    if (preg_match('/^https?:\/\//i', $url)) {
+                        $page_url = htmlspecialchars($url);
+                        $target   = ' target="_blank"';
+                    } else {
+                        $page_url = '?page=' . htmlspecialchars($url);
+                        $target   = '';
+                    }
+                } else {
+                    $page_url = 'javascript:void(0);';
+                    $target   = '';
+                }
+
+                echo '<li class="sidebar-item">
+                        <a class="sidebar-link" href="' . $page_url . '">
+                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
+                        </a>
+                      </li>';
+            }
+        }
+        ?>
 
         <li class="nav-small-cap">
           <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
           <span class="hide-menu">Supplier</span>
         </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=product_supplier">
-            <iconify-icon icon="solar:pen-new-round-linear" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Suppliers</span>
-          </a>
-        </li>
+        <?php
+        $sql = "SELECT url, menu_icon, menu_name 
+                FROM pages 
+                WHERE visibility = 1 
+                  AND menu_category = 'Supplier'
+                  AND category_id = '1'
+                ORDER BY id ASC";
+
+        $result = mysqli_query($conn, $sql);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $page_url = !empty($row['url']) 
+                            ? '?page=' . htmlspecialchars($row['url']) 
+                            : 'javascript:void(0);';
+
+                echo '<li class="sidebar-item">
+                        <a class="sidebar-link" href="' . $page_url . '">
+                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
+                        </a>
+                      </li>';
+            }
+        }
+        ?>
 
         <!-- ---------------------------------- -->
         <!-- Reports -->
@@ -222,30 +229,31 @@
           <iconify-icon icon="solar:presentation-graph-outline" class="nav-small-cap-icon fs-4"></iconify-icon>
           <span class="hide-menu">Reports</span>
         </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="sales_reports.php">
-            <iconify-icon icon="solar:presentation-graph-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Sales Reports</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="inventory_reports.php">
-            <iconify-icon icon="solar:clipboard-list-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Inventory Reports</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="customer_reports.php">
-            <iconify-icon icon="solar:user-hands-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Customer Reports</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="financial_reports.php">
-            <iconify-icon icon="solar:chart-2-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Financial Reports</span>
-          </a>
-        </li>
+        <?php
+        $sql = "SELECT url, menu_icon, menu_name 
+                FROM pages 
+                WHERE visibility = 1 
+                  AND menu_category = 'Reports'
+                  AND category_id = '1'
+                ORDER BY id ASC";
+
+        $result = mysqli_query($conn, $sql);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $page_url = !empty($row['url']) 
+                            ? '?page=' . htmlspecialchars($row['url']) 
+                            : 'javascript:void(0);';
+
+                echo '<li class="sidebar-item">
+                        <a class="sidebar-link" href="' . $page_url . '">
+                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
+                        </a>
+                      </li>';
+            }
+        }
+        ?>
 
         <!-- ---------------------------------- -->
         <!-- Employees -->
@@ -254,65 +262,92 @@
           <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
           <span class="hide-menu">Employees</span>
         </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=staff">
-            <iconify-icon icon="solar:user-hand-up-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Employees</span>
-          </a>
-        </li>
-       <!-- <li class="sidebar-item">
-          <a class="sidebar-link" href="employee_list.php">
-            <iconify-icon icon="solar:notebook-minimalistic-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Employee List</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="update_employee.php">
-            <iconify-icon icon="solar:restart-circle-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Update Employee</span>
-          </a>
-        </li>-->
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=employee_roles">
-            <iconify-icon icon="solar:user-circle-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Employee Roles</span>
-          </a>
-        </li>
-<!-- Products -->
+        <?php
+        $sql = "SELECT url, menu_icon, menu_name 
+                FROM pages 
+                WHERE visibility = 1 
+                  AND menu_category = 'Employees'
+                  AND category_id = '1'
+                ORDER BY id ASC";
+
+        $result = mysqli_query($conn, $sql);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $page_url = !empty($row['url']) 
+                            ? '?page=' . htmlspecialchars($row['url']) 
+                            : 'javascript:void(0);';
+
+                echo '<li class="sidebar-item">
+                        <a class="sidebar-link" href="' . $page_url . '">
+                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
+                        </a>
+                      </li>';
+            }
+        }
+        ?>
+        <!-- Products -->
         <!-- ---------------------------------- -->
         <li class="nav-small-cap">
           <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
           <span class="hide-menu">Warehouse</span>
         </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=warehouses">
-            <iconify-icon icon="la:warehouse" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Warehouses</span>
-          </a>
-        </li>
+        <?php
+        $sql = "SELECT url, menu_icon, menu_name 
+                FROM pages 
+                WHERE visibility = 1 
+                  AND menu_category = 'Warehouse'
+                  AND category_id = '1'
+                ORDER BY id ASC";
+
+        $result = mysqli_query($conn, $sql);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $page_url = !empty($row['url']) 
+                            ? '?page=' . htmlspecialchars($row['url']) 
+                            : 'javascript:void(0);';
+
+                echo '<li class="sidebar-item">
+                        <a class="sidebar-link" href="' . $page_url . '">
+                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
+                        </a>
+                      </li>';
+            }
+        }
+        ?>
 
         <li class="nav-small-cap">
           <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
           <span class="hide-menu">Products Properties</span>
         </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=category">
-            <iconify-icon icon="solar:server-minimalistic-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Categories</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=product_line">
-            <iconify-icon icon="solar:server-linear" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Product Line</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="?page=product_type">
-            <iconify-icon icon="octicon:dash-16" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Product Type</span>
-          </a>
-        </li>
+        <?php
+        $sql = "SELECT url, menu_icon, menu_name 
+                FROM pages 
+                WHERE visibility = 1 
+                  AND menu_category = 'Products Properties'
+                  AND category_id = '1'
+                ORDER BY id ASC";
+
+        $result = mysqli_query($conn, $sql);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $page_url = !empty($row['url']) 
+                            ? '?page=' . htmlspecialchars($row['url']) 
+                            : 'javascript:void(0);';
+
+                echo '<li class="sidebar-item">
+                        <a class="sidebar-link" href="' . $page_url . '">
+                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
+                        </a>
+                      </li>';
+            }
+        }
+        ?>
     
         <!-- ---------------------------------- -->
         <!-- Settings -->
@@ -321,30 +356,31 @@
           <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
           <span class="hide-menu">Settings</span>
         </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="general_settings.php">
-            <iconify-icon icon="solar:settings-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">General Settings</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="tax_settings.php">
-            <iconify-icon icon="solar:calculator-minimalistic-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Tax Settings</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="payment_methods.php">
-            <iconify-icon icon="solar:money-bag-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Payment Methods</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="receipt_templates.php">
-            <iconify-icon icon="solar:bill-check-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Receipt Templates</span>
-          </a>
-        </li>
+        <?php
+        $sql = "SELECT url, menu_icon, menu_name 
+                FROM pages 
+                WHERE visibility = 1 
+                  AND menu_category = 'Settings'
+                  AND category_id = '1'
+                ORDER BY id ASC";
+
+        $result = mysqli_query($conn, $sql);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $page_url = !empty($row['url']) 
+                            ? '?page=' . htmlspecialchars($row['url']) 
+                            : 'javascript:void(0);';
+
+                echo '<li class="sidebar-item">
+                        <a class="sidebar-link" href="' . $page_url . '">
+                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
+                        </a>
+                      </li>';
+            }
+        }
+        ?>
 
         <!-- ---------------------------------- -->
         <!-- Help & Support -->
@@ -353,30 +389,31 @@
           <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
           <span class="hide-menu">Help & Support</span>
         </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="user_manual.php">
-            <iconify-icon icon="solar:book-2-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">User Manual</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="contact_support.php">
-            <iconify-icon icon="solar:headphones-round-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">Contact Support</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="faqs.php">
-            <iconify-icon icon="solar:question-square-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">FAQs</span>
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="system_updates.php">
-            <iconify-icon icon="solar:cloud-upload-outline" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">System Updates</span>
-          </a>
-        </li>
+        <?php
+        $sql = "SELECT url, menu_icon, menu_name 
+                FROM pages 
+                WHERE visibility = 1 
+                  AND menu_category = 'Help & Support'
+                  AND category_id = '1'
+                ORDER BY id ASC";
+
+        $result = mysqli_query($conn, $sql);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $page_url = !empty($row['url']) 
+                            ? '?page=' . htmlspecialchars($row['url']) 
+                            : 'javascript:void(0);';
+
+                echo '<li class="sidebar-item">
+                        <a class="sidebar-link" href="' . $page_url . '">
+                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
+                        </a>
+                      </li>';
+            }
+        }
+        ?>
       </ul>
         </nav>
 

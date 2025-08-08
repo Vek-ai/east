@@ -52,6 +52,10 @@ $permission = $_SESSION['permission'];
     </div>
 
     <div class="widget-content searchable-container list">
+
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
     <div class="card card-body">
         <div class="row">
         <div class="col-md-4 col-xl-3">
@@ -72,6 +76,9 @@ $permission = $_SESSION['permission'];
         </div>
         </div>
     </div>
+    <?php
+    }
+    ?>
 
     <div class="modal fade" id="addWarehouseModal" tabindex="-1" aria-labelledby="addWarehouseModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">

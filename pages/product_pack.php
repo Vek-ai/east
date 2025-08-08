@@ -41,7 +41,7 @@ if(!empty($_REQUEST['result'])){
   }
   
 }
-
+$permission = $_SESSION['permission'];
 ?>
 <style>
     /* Ensure that the text within the description column wraps properly */
@@ -110,6 +110,9 @@ if(!empty($_REQUEST['result'])){
         </div>
       </div>
     </div>
+  <?php                                                    
+if ($permission === 'edit') {
+?>
 <div class="col-12">
   <!-- start Default Form Elements -->
   <div class="card card-body">
@@ -164,6 +167,10 @@ if(!empty($_REQUEST['result'])){
   </div>
   <!-- end Default Form Elements -->
 </div>
+<?php
+}
+?>
+
 <div class="col-12">
   <div class="datatables">
     <div class="card">
@@ -229,11 +236,18 @@ while ($row_product_pack = mysqli_fetch_array($result_product_pack)) {
     <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
     <td><?= $status ?></td>
     <td class="text-center" id="action-button-<?= $no ?>">
+      <?php                                                    
+      if ($permission === 'edit') {
+      ?>
         <?php if ($row_product_pack['status'] == '0') { ?>
             <a href="#" title="Archive" class="py-1 text-dark hideProductPack" data-id="<?= $id ?>" data-row="<?= $no ?>" ><i class="text-danger ti ti-trash fs-7"></i></a>
         <?php } else { ?>
             <a href="/?page=product_pack&id=<?= $id ?>" title="Edit" class="py-1" ><i class="ti ti-pencil fs-7"></i></a>
         <?php } ?>
+      <?php
+      }
+      ?>
+
     </td>
 </tr>
 <?php

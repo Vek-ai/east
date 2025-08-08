@@ -7,6 +7,8 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     .tooltip-inner {
@@ -183,11 +185,18 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                                                         </a>
                                                     </td>
                                                     <td>
+                                                        <?php                                                    
+                                                        if ($permission === 'edit') {
+                                                        ?>
                                                         <div class="action-btn text-center">
                                                             <a href="#" title="View" class="text-decoration-none" id="viewAvailableBtn" data-app-prod-id="<?= $row['id'] ?>">
                                                                 <i class="text-white ti ti-eye fs-7"></i>
                                                             </a>
                                                         </div>
+                                                        <?php
+                                                        }
+                                                        ?>
+
                                                     </td>
                                                 </tr>
                                         <?php
@@ -213,12 +222,18 @@ $approval_id = mysqli_real_escape_string($conn, $_REQUEST['id']);
                                 </table>
                             </div>
                             <div class="d-flex align-items-center justify-content-end gap-3 pt-4">
+                                <?php                                                    
+                                if ($permission === 'edit') {
+                                ?>
                                 <button class="chng-status btn btn-success btn-md" data-id="<?= $approval_id ?>" data-status="2" type="button">
                                     <span aria-hidden="true">Approve</span>
                                 </button>
                                 <button class="chng-status btn btn-danger btn-md" data-id="<?= $approval_id ?>" data-status="3" type="button">
                                     <span aria-hidden="true">Reject</span>
                                 </button>
+                                <?php
+                                }
+                                ?>
                             </div>
                         </div>
                         </div>

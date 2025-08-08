@@ -7,6 +7,8 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Pages";
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -82,11 +84,19 @@ $page_title = "Pages";
             </div>
         </div>
 
+        <?php                                                    
+        if ($permission === 'edit') {
+        ?>
+
         <div class="col-md-6 d-flex justify-content-md-end justify-content-center">
             <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
                 <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title ?>
             </button>
         </div>
+
+        <?php
+        }
+        ?>
     </div>
 </div>
 

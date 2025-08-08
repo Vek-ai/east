@@ -38,20 +38,21 @@ $addHeaderTxt = "Add New";
     $addHeaderTxt = "Update";
   }
 
-  $message = "";
-  if(!empty($_REQUEST['result'])){
-    if($_REQUEST['result'] == '1'){
-      $message = "New customer added successfully.";
-      $textColor = "text-success";
-    }else if($_REQUEST['result'] == '2'){
-      $message = "Customer updated successfully.";
-      $textColor = "text-success";
-    }else if($_REQUEST['result'] == '0'){
-      $message = "Failed to Perform Operation";
-      $textColor = "text-danger";
-    }
-  
+$message = "";
+if(!empty($_REQUEST['result'])){
+  if($_REQUEST['result'] == '1'){
+    $message = "New customer added successfully.";
+    $textColor = "text-success";
+  }else if($_REQUEST['result'] == '2'){
+    $message = "Customer updated successfully.";
+    $textColor = "text-success";
+  }else if($_REQUEST['result'] == '0'){
+    $message = "Failed to Perform Operation";
+    $textColor = "text-danger";
+  }
 }
+
+$permission = $_SESSION['permission'];
 ?>
 
 <style>
@@ -121,7 +122,9 @@ $addHeaderTxt = "Add New";
               </div>
             </div>
           </div>
-          
+<?php                                                    
+if ($permission === 'edit') {
+?>    
 <div class="col-12">
   <!-- start Default Form Elements -->
   <div class="card card-body">
@@ -205,6 +208,12 @@ $addHeaderTxt = "Add New";
   </div>
   <!-- end Default Form Elements -->
 </div>
+<?php
+}
+?>
+
+
+
 <div class="col-12">
   <div class="datatables">
     <div class="card">
@@ -256,11 +265,20 @@ $addHeaderTxt = "Add New";
                     <td><?= $customer_crew_size ?></td>
                     <td><?= $status ?></td>
                     <td class="text-center" id="action-button-<?= $no ?>">
+                      <?php                                                    
+                      if ($permission === 'edit') {
+                      ?>
+
                         <?php if ($row_customer_type['status'] == '0') { ?>
                             <a href="#" title="Archive" class="btn btn-light py-1 text-dark hideCustomer" data-id="<?= $customer_type_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
                         <?php } else { ?>
                             <a href="/?page=customer_type&customer_type_id=<?= $customer_type_id ?>" title="Edit" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
                         <?php } ?>
+
+                      <?php
+                      }
+                      ?>
+
                     </td>
                 </tr>
                 <?php

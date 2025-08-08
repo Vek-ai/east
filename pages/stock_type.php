@@ -42,6 +42,7 @@ if(!empty($_REQUEST['result'])){
   
 }
 
+$permission = $_SESSION['permission'];
 ?>
 <style>
         /* Ensure that the text within the notes column wraps properly */
@@ -110,6 +111,9 @@ if(!empty($_REQUEST['result'])){
               </div>
             </div>
           </div>
+<?php                                                    
+if ($permission === 'edit') {
+?>
 <div class="col-12">
   <!-- start Default Form Elements -->
   <div class="card card-body">
@@ -164,6 +168,11 @@ if(!empty($_REQUEST['result'])){
   </div>
   <!-- end Default Form Elements -->
 </div>
+
+<?php
+}
+?>
+
 <div class="col-12">
   <div class="datatables">
     <div class="card">
@@ -229,11 +238,18 @@ while ($row_stock_type = mysqli_fetch_array($result_stock_type)) {
     <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
     <td><?= $status ?></td>
     <td class="text-center" id="action-button-<?= $no ?>">
+      <?php                                                    
+      if ($permission === 'edit') {
+      ?>
         <?php if ($row_stock_type['status'] == '0') { ?>
             <a href="#" class="btn btn-light py-1 text-dark hideStockType" title="Archive" data-id="<?= $stock_type_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
         <?php } else { ?>
             <a href="/?page=stock_type&stock_type_id=<?= $stock_type_id ?>" title="Edit" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
         <?php } ?>
+      <?php
+      }
+      ?>
+
     </td>
 </tr>
 <?php

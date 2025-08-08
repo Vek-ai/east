@@ -37,7 +37,6 @@ if(!empty($_REQUEST['result'])){
     $message = "Failed to Perform Operation";
     $textColor = "text-danger";
   }
-  
 }
 $no = 1;
 
@@ -61,6 +60,7 @@ $data = json_decode($points_details, true);
 $points_order_total = isset($data['order_total']) ? $data['order_total'] : 0;
 $points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
 
+$permission = $_SESSION['permission'];
 ?>
 <style>
         /* Ensure that the text within the notes column wraps properly */
@@ -129,6 +129,9 @@ $points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
               </div>
             </div>
           </div>
+<?php                                                    
+if ($permission === 'edit') {
+?>
 <div class="col-12">
   <!-- start Default Form Elements -->
   <div class="card card-body">
@@ -178,6 +181,10 @@ $points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
   </div>
   <!-- end Default Form Elements -->
 </div>
+<?php
+}
+?>
+
 <div class="col-12">
   <div class="datatables">
     <div class="card">
@@ -207,8 +214,15 @@ $points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
                     <?= $addressDetails ?>
                   </td>
                   <td class="text-center" id="action-button-<?= $no ?>">
+                      <?php                                                    
+                      if ($permission === 'edit') {
+                      ?>
                       <a href="#" class="py-1" id="showMapsBtn" style="border-radius: 10%;" data-bs-toggle="modal" title="Edit" data-bs-target="#map1Modal"><i class="ti ti-pencil fs-7"></i></a>
-                  </td>
+                      <?php
+                      }
+                      ?>
+                    </td>
+                  
               </tr>
               <tr id="settings-row-<?= $no ?>">
                   <td>Order Points</td>
@@ -225,8 +239,14 @@ $points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
                     </div>
                   </td>
                   <td class="text-center" id="action-button-<?= $no ?>">
+                    <?php                                                    
+                    if ($permission === 'edit') {
+                    ?>
                       <a href="#" class="py-1" id="pointsBtn" style="border-radius: 10%;" data-bs-toggle="modal" title="Edit" data-bs-target="#orderPointsModal"><i class="ti ti-pencil fs-7"></i></a>
-                  </td>
+                    <?php
+                    }
+                    ?>
+                    </td>
               </tr>
               <?php
               $query_setting_name = "SELECT * FROM settings WHERE setting_name != 'address' AND setting_name != 'points'";
@@ -240,8 +260,14 @@ $points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
                   <td><?= $setting_name ?></td>
                   <td><?= $value ?></td>
                   <td class="text-center" id="action-button-<?= $no ?>">
-                          <a href="/?page=settings&settingid=<?= $settingid ?>" title="Edit" class="py-1" style='border-radius: 10%;'><i class="ti ti-pencil fs-7"></i></a>
-                          <a class="py-1 text-light deleteSettings" title="Archive" data-settingid="<?= $settingid ?>" data-row="<?= $no ?>" style='border-radius: 10%;'><i class="text-danger ti ti-trash fs-7"></i></a>
+                    <?php                                                    
+                    if ($permission === 'edit') {
+                    ?>
+                      <a href="/?page=settings&settingid=<?= $settingid ?>" title="Edit" class="py-1" style='border-radius: 10%;'><i class="ti ti-pencil fs-7"></i></a>
+                      <a class="py-1 text-light deleteSettings" title="Archive" data-settingid="<?= $settingid ?>" data-row="<?= $no ?>" style='border-radius: 10%;'><i class="text-danger ti ti-trash fs-7"></i></a>
+                    <?php
+                    }
+                    ?>
 
                   </td>
               </tr>

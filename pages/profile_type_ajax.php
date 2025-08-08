@@ -1,4 +1,5 @@
 <?php
+session_start();
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 require '../includes/vendor/autoload.php';
@@ -9,6 +10,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 $table = 'profile_type';
 $test_table = 'profile_type_excel';
+
+$permission = $_SESSION['permission'];
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -540,13 +543,17 @@ if(isset($_REQUEST['action'])) {
                         <div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Active</div>
                 </a>";
 
-            $action_html = $row['status'] == '0'
-                ? "<a href='javascript:void(0)' class='py-1 text-dark hideProfileType' title='Archive' data-id='$no' data-row='$no' style='border-radius: 10%;'>
-                        <i class='text-danger ti ti-trash fs-7'></i>
-                </a>"
-                : "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='edit'>
-                        <i class='ti ti-pencil fs-7'></i>
-                </a>";
+            $action_html = '';
+            if ($permission === 'edit') {
+
+                $action_html = $row['status'] == '0'
+                    ? "<a href='javascript:void(0)' class='py-1 text-dark hideProfileType' title='Archive' data-id='$no' data-row='$no' style='border-radius: 10%;'>
+                            <i class='text-danger ti ti-trash fs-7'></i>
+                    </a>"
+                    : "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='edit'>
+                            <i class='ti ti-pencil fs-7'></i>
+                    </a>";
+            }
 
             $data[] = [
                 'profile_type' => $profile_type,

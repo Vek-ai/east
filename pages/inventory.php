@@ -8,7 +8,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 require 'includes/dbconn.php';
 require 'includes/functions.php';
-
+$permission = $_SESSION['permission'];
 ?>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -53,6 +53,9 @@ require 'includes/functions.php';
     </div>
 
     <div class="widget-content searchable-container list">
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
     <div class="card card-body">
         <div class="row">
         <div class="col-md-4 col-xl-3">
@@ -73,6 +76,10 @@ require 'includes/functions.php';
         </div>
         </div>
     </div>
+    <?php
+    }
+    ?>
+
 
     <div class="modal fade" id="addInventoryModal" tabindex="-1" aria-labelledby="addInventoryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -487,9 +494,16 @@ require 'includes/functions.php';
                                     <td><?= $status ?></td>
                                     <td>
                                         <div class="action-btn text-center">
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
                                             <a href="#" id="view_inventory_btn" title="Edit" class="text-primary edit" data-id="<?= $Inventory_id ?>">
                                                 <i class="ti ti-pencil fs-5"></i>
                                             </a>
+                                            <?php
+                                            }
+                                            ?>
+
                                         </div>
                                     </td>
                                 </tr>

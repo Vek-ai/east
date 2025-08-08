@@ -7,6 +7,8 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Return/Refund List";
+
+$permission = $_SESSION['permission'];
 ?>
 
 <div class="container-fluid">
@@ -444,6 +446,9 @@ $page_title = "Return/Refund List";
                                     title="Print/Download">
                                         <i class="text-success fa fa-print fs-5"></i>
                                 </a>
+                                <?php                                                    
+                                if ($permission === 'edit') {
+                                ?>
                                 <a href="javascript:void(0)" 
                                     type="button" 
                                     id="email_order_btn" 
@@ -453,6 +458,9 @@ $page_title = "Return/Refund List";
                                     title="Send to Customer">
                                         <iconify-icon icon="solar:plain-linear" class="fs-5 text-info"></iconify-icon>
                                 </a>
+                                <?php
+                                }
+                                ?>
                                 `
                             ]);
                         });

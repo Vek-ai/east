@@ -7,6 +7,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
+$permission = $_SESSION['permission'];
+
 if (isset($_POST['search_orders'])) {
     $customerid = mysqli_real_escape_string($conn, string: $_POST['customerid']);
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
@@ -243,6 +245,10 @@ if (isset($_POST['search_jobs'])) {
                                             <i class="fa fa-eye text-primary fs-5"></i>
                                         </a>
 
+                                        <?php                                                    
+                                        if ($permission === 'edit') {
+                                        ?>
+
                                         <a href="#"
                                             id="addModalBtn"
                                             title="Edit Job"
@@ -260,6 +266,10 @@ if (isset($_POST['search_jobs'])) {
                                             data-job="<?= $job_id ?>">
                                             <i class="ti ti-plus text-success fs-6"></i>
                                         </a>
+
+                                        <?php
+                                        }
+                                        ?>
                                     </td>
                                     <td style="display:none;" class="created-at"><?= $deposit['created_at'] ?></td>
                                 </tr>
@@ -301,6 +311,9 @@ if (isset($_POST['search_jobs'])) {
                                             <i class="fa fa-eye text-primary fs-5"></i>
                                         </a>
 
+                                        <?php                                                    
+                                        if ($permission === 'edit') {
+                                        ?>
                                         <a href="#"
                                             id="addModalBtn"
                                             title="Edit Job"
@@ -318,6 +331,9 @@ if (isset($_POST['search_jobs'])) {
                                             data-job="<?= $job_id ?>">
                                             <i class="ti ti-plus text-success fs-6"></i>
                                         </a>
+                                        <?php 
+                                        }
+                                        ?>
                                     </td>
                                     <td style="display:none;" class="created-at"><?= $usage['created_at'] ?></td>
                                 </tr>

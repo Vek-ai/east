@@ -120,7 +120,13 @@ $permission = $_SESSION['permission'];
                                     <div class="card">
                                         <div class="card-body">
                                             <h4 class="card-title d-flex justify-content-between align-items-center">List of Sections
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>
                                                 <a href="#" class="btn btn-primary addEditSectionBtn" style="border-radius: 10%;" data-id="" data-warehouse-id="<?=$WarehouseID?>">Add New</a>
+                                                <?php
+                                                }
+                                                ?>
                                             </h4>
                                             
                                             <div class="table-responsive">
@@ -202,7 +208,13 @@ $permission = $_SESSION['permission'];
                                     <div class="card">
                                         <div class="card-body">
                                             <h4 class="card-title d-flex justify-content-between align-items-center">List of Rows  
+                                                 <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>       
                                                 <a href="#" class="btn btn-primary addEditRowBtn" style="border-radius: 10%;" data-id="" data-warehouse-id="<?=$WarehouseID?>">Add New</a>
+                                                <?php
+                                                }
+                                                ?>
                                             </h4>
                                             
                                             <div class="table-responsive">
@@ -266,7 +278,13 @@ $permission = $_SESSION['permission'];
                                     <div class="card">
                                         <div class="card-body">
                                             <h4 class="card-title d-flex justify-content-between align-items-center">List of Shelves  
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?> 
                                                 <a href="#" class="btn btn-primary addEditShelfBtn" style="border-radius: 10%;" data-id="" data-warehouse-id="<?=$WarehouseID?>">Add New</a>
+                                                <?php
+                                                }
+                                                ?>
                                             </h4>
                                             
                                             <div class="table-responsive">
@@ -340,7 +358,13 @@ $permission = $_SESSION['permission'];
                                     <div class="card">
                                         <div class="card-body">
                                             <h4 class="card-title d-flex justify-content-between align-items-center">List of Bins  
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?> 
                                                 <a href="#" class="btn btn-primary addEditBinBtn" style="border-radius: 10%;" data-id="" data-warehouse-id="<?=$WarehouseID?>">Add New</a>
+                                                <?php
+                                                }
+                                                ?>
                                             </h4>
                                             
                                             <div class="table-responsive">

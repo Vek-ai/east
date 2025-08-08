@@ -1,4 +1,5 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -14,6 +15,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 $table = 'customer_tax';
 $test_table = 'customer_tax_excel';
 $main_primary_key = getPrimaryKey($table);
+
+$permission = $_SESSION['permission'];
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];

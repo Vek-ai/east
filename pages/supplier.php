@@ -74,6 +74,9 @@ $permission = $_SESSION['permission'];
 
     <div class="widget-content searchable-container list">
 
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
     <div class="card card-body">
         <div class="row">
         <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
@@ -92,6 +95,9 @@ $permission = $_SESSION['permission'];
         </div>
         </div>
     </div>
+    <?php                                                    
+    }
+    ?>
 
     <div class="card card-body">
         <div class="row">

@@ -25,6 +25,8 @@ if(!empty($_REQUEST['id'])){
   $addHeaderTxt = "Update";
 }
 $no = 1;
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -91,6 +93,10 @@ $no = 1;
     </div>
     </div>
 </div>
+
+<?php                                                    
+if ($permission === 'edit') {
+?>
 <div class="col-12">
     <div class="card card-body">
         <div class="row">
@@ -135,6 +141,10 @@ $no = 1;
         </form>
     </div>
 </div>
+<?php
+}
+?>
+
 <div class="col-12">
   <div class="datatables">
     <div class="card">
@@ -168,10 +178,17 @@ $no = 1;
               ?>
               <tr id="settings-row-<?= $no ?>">
                   <td><?= $payment_setting_name ?></td>
-                  <td><?= $value ?></td>
+                  <td>$ <?= $value ?></td>
                   <td class="text-center" id="action-button-<?= $no ?>">
-                          <a href="/?page=payment_settings&id=<?= $payment_setting_id ?>" title="Edit" class="py-1"><i class="ti ti-pencil fs-7"></i></a>
-                          <a class="py-1 text-light deleteSettings" title="Archive" data-id="<?= $payment_setting_id ?>" data-row="<?= $no ?>" ><i class="text-danger ti ti-trash fs-7"></i></a>
+                    <?php                                                    
+                    if ($permission === 'edit') {
+                    ?>
+
+                        <a href="/?page=payment_settings&id=<?= $payment_setting_id ?>" title="Edit" class="py-1"><i class="ti ti-pencil fs-7"></i></a>
+                        <a class="py-1 text-light deleteSettings" title="Archive" data-id="<?= $payment_setting_id ?>" data-row="<?= $no ?>" ><i class="text-danger ti ti-trash fs-7"></i></a>
+                    <?php
+                    }
+                    ?>
 
                   </td>
               </tr>

@@ -3,7 +3,6 @@ if (!defined('APP_SECURE')) {
     header("Location: /not_authorized.php");
     exit;
 }
-session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -17,6 +16,8 @@ while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
     $user_warehouse = $row_warehouse['WarehouseID'];
     $warehouse_name = $row_warehouse['WarehouseName'];
 }
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     .select2-container {
@@ -343,9 +344,15 @@ while ($row_warehouse = mysqli_fetch_array($result_warehouse)) {
                         <td><?= $status ?></td>
                         <td>
                             <div class="action-btn text-center">
+                                <?php                                                    
+                                if ($permission === 'edit') {
+                                ?>
                                 <a href="#" id="view_inventory_btn" class="text-primary edit" data-id="<?= $Inventory_id ?>">
                                     <i class="ti ti-eye fs-5"></i>
                                 </a>
+                                <?php
+                                }
+                                ?>
                             </div>
                         </td>
                     </tr>
