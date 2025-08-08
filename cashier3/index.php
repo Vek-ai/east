@@ -5,8 +5,9 @@ if (!isset($_SESSION['userid'])) {
     header("Location: login.php?redirect=$redirect_url");
     exit();
 }
-include_once '../includes/dbconn.php';
 define('APP_SECURE', true);
+include_once '../includes/dbconn.php';
+
 
 $user_id = $_SESSION['userid'];
 $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
