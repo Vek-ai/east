@@ -38,6 +38,8 @@ if(!empty($_REQUEST['id'])){
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
 }
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -94,6 +96,9 @@ if(!empty($_REQUEST['id'])){
   </div>
 </div>
 
+<?php                                                    
+if ($permission === 'edit') {
+?>
 <div class="card card-body">
     <div class="row">
       <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
@@ -112,6 +117,10 @@ if(!empty($_REQUEST['id'])){
       </div>
     </div>
 </div>
+<?php
+}
+?>
+
 
 <div class="card card-body">
   <div class="row">
@@ -212,6 +221,9 @@ if(!empty($_REQUEST['id'])){
                         <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                         <td><?= $status ?></td>
                         <td class="text-center" id="action-button-<?= $no ?>">
+                        <?php                                                    
+                        if ($permission === 'edit') {
+                        ?>
                             <?php if ($row_supplier_pack['status'] == '0') { ?>
                                 <a href="#" title="Archive" class="py-1 text-dark hideSupplierPack" data-id="<?= $id ?>" data-row="<?= $no ?>">
                                   <i class="text-danger ti ti-trash fs-7"></i>
@@ -221,6 +233,9 @@ if(!empty($_REQUEST['id'])){
                                   <i class="ti ti-pencil fs-7"></i>
                                 </a>
                             <?php } ?>
+                        <?php
+                        }
+                        ?>
                         </td>
                     </tr>
                     <?php

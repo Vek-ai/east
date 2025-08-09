@@ -41,6 +41,7 @@ if(!empty($_REQUEST['id'])){
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
 }
+$permission = $_SESSION['permission'];
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -108,6 +109,9 @@ if(!empty($_REQUEST['id'])){
     </div>
   </div>
 </div>
+<?php                                                    
+if ($permission === 'edit') {
+?>
 <div class="col-12">
   <!-- start Default Form Elements -->
   <div class="card card-body">
@@ -257,6 +261,10 @@ if(!empty($_REQUEST['id'])){
   </div>
   <!-- end Default Form Elements -->
 </div>
+<?php                                                    
+}
+?>
+
 <div class="col-12">
   <div class="datatables">
     <div class="card">
@@ -335,11 +343,17 @@ if(!empty($_REQUEST['id'])){
                   <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                   <td><?= $status ?></td>
                   <td class="text-center" id="action-button-<?= $no ?>">
+                    <?php                                                    
+                    if ($permission === 'edit') {
+                    ?>
                       <?php if ($row_coil_width['status'] == '0') { ?>
                           <a href="#" title="Archive" class="btn btn-light py-1 text-dark hideSupplierPack" data-id="<?= $id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
                       <?php } else { ?>
                           <a href="?page=coil_width&id=<?= $id ?>" title="Edit" class="btn btn-primary py-1" style='border-radius: 10%;'>Edit</a>
                       <?php } ?>
+                    <?php                                                    
+                    }
+                    ?>
                   </td>
               </tr>
               <?php

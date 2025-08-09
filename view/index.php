@@ -72,19 +72,20 @@ require '../includes/functions.php';
                     $status_prod_db = (int)$row['status'];
 
                     $status_prod_labels = [
-                        0 => ['label' => 'New', 'class' => 'badge bg-primary'],
-                        1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
-                        2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
-                        3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
-                        4 => ['label' => 'Delivered', 'class' => 'badge bg-success'],
-                        5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
-                        6 => ['label' => 'Returned', 'class' => 'badge bg-danger']
+                        0 => ['label' => 'New Pending', 'class' => 'badge bg-primary'],
+                        1 => ['label' => 'Approved', 'class' => 'badge bg-success'],
+                        2 => ['label' => 'Running on Machine', 'class' => 'badge bg-warning'],
+                        3 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-secondary']
                     ];
 
                     $status_prod = $status_prod_labels[$status_prod_db];
                     $filepath = !empty($product_details['main_image']) ? $product_details['main_image'] : "images/product/product.jpg";
                     $picture_path = "../" . $filepath;
                     $product_name = !empty($row['product_item']) ? $row['product_item'] : getProductName($row['product_id']);
+
+                    $color_details = getColorDetails($row['custom_color']);
+                    $color_name = ucwords($color_details['color_name'] ?? '');
+                    $color_hex = $color_details['color_code'] ?? '';
                     ?>
 
                     <div class="container py-4">
@@ -103,8 +104,8 @@ require '../includes/functions.php';
                                             <div class="col-sm-6 mb-2">
                                                 <div class="fw-bold">Color:</div>
                                                 <div class="ps-3">
-                                                    <span class="d-inline-block rounded-circle me-2" style="width: 16px; height: 16px; background-color: <?= getColorHexFromProdID($product_details['color']) ?>;"></span>
-                                                    <?= getColorFromID($product_details['color']) ?>
+                                                    <span class="d-inline-block rounded-circle me-2" style="width: 16px; height: 16px; background-color: <?= $color_hex ?>;"></span>
+                                                    <?= $color_name ?>
                                                 </div>
                                             </div>
                                             <div class="col-sm-6 mb-2">

@@ -5,6 +5,8 @@ if (!defined('APP_SECURE')) {
 }
 require 'includes/dbconn.php';
 require 'includes/functions.php';
+
+$permission = $_SESSION['permission'];
 ?>
 
 <div class="container-fluid">
@@ -119,7 +121,14 @@ require 'includes/functions.php';
                 </div>
             </div>
             <div class="modal-footer">
+                <?php                                                    
+                if ($permission === 'edit') {
+                ?>
                 <button id="saveSelection" class="btn ripple btn-success" type="button">Dispatch</button>
+                <?php
+                }
+                ?>
+
                 <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>

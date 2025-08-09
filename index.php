@@ -1297,8 +1297,8 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
               $_SESSION['permission'] = $row['permission'];
               include "pages/" . $row['file_name'];
           } else {
-              //include "not_authorized.php";
-              include "pages/user_page_access.php";
+              include "not_authorized.php";
+              //include "pages/user_page_access.php";
           }
           ?>
         </div>

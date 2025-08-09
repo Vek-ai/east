@@ -1,4 +1,8 @@
 <?php
+session_start();
+
+$permission = $_SESSION['permission'];
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -623,13 +627,16 @@ if(isset($_REQUEST['action'])) {
                         <div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Active</div>
                    </a>";
     
-            $action_html = $row['status'] == '0'
-                ? "<a href='javascript:void(0)' class='py-1 text-dark hideFSWidth' title='Archive' data-id='$no' data-row='$no' style='border-radius: 10%;'>
-                        <i class='text-danger ti ti-trash fs-7'></i>
-                   </a>"
-                : "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='edit'>
-                        <i class='ti ti-pencil fs-7'></i>
-                   </a>";
+            $action_html = '';
+            if ($permission === 'edit') {
+                $action_html = $row['status'] == '0'
+                    ? "<a href='javascript:void(0)' class='py-1 text-dark hideFSWidth' title='Archive' data-id='$no' data-row='$no' style='border-radius: 10%;'>
+                            <i class='text-danger ti ti-trash fs-7'></i>
+                    </a>"
+                    : "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='edit'>
+                            <i class='ti ti-pencil fs-7'></i>
+                    </a>";
+            }
     
             $data[] = [
                 'width' => $width,

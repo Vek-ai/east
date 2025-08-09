@@ -28,6 +28,8 @@ if(!empty($_REQUEST['product_availability_id'])){
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
 }
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
 td.notes,  td.last-edit{
@@ -101,9 +103,16 @@ td.notes,  td.last-edit{
     <div class="card">
       <div class="card-body">
           <h4 class="card-title d-flex justify-content-between align-items-center">Product Availability List  &nbsp;&nbsp; 
+          <?php                                                    
+          if ($permission === 'edit') {
+          ?>
           <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
               <i class="ti ti-plus text-white me-1 fs-5"></i> Add Product Availability
           </button>  
+          <?php                                                    
+          }
+          ?>
+
           <div> 
             <input type="checkbox" id="toggleActive" checked> Show Active Only
           </div>
@@ -167,6 +176,9 @@ td.notes,  td.last-edit{
                   <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                   <td><?= $status ?></td>
                   <td class="text-center" id="action-button-<?= $no ?>">
+                    <?php                                                    
+                    if ($permission === 'edit') {
+                    ?>
                       <?php if ($row_product_availability['status'] == '0') { ?>
                           <a href="#" title="Archive" class="text-decoration-none py-1 text-dark hideAvailability" data-id="<?= $product_availability_id ?>" data-row="<?= $no ?>">
                             <i class="text-danger ti ti-trash fs-7"></i>
@@ -176,6 +188,10 @@ td.notes,  td.last-edit{
                             <i class="ti ti-pencil fs-7"></i>
                           </a>
                       <?php } ?>
+                    <?php                                                    
+                    }
+                    ?>
+
                   </td>
               </tr>
               <?php

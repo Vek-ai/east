@@ -26,6 +26,8 @@ if(!empty($_REQUEST['id'])){
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
 }
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -79,19 +81,26 @@ if(!empty($_REQUEST['id'])){
 
 <div class="card card-body">
     <div class="row">
-      <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
-          <a href="?page=pricing_category" class="mx-auto btn btn-primary d-flex align-items-center">
-              <i class="fa fa-sign-in-alt text-white me-1 fs-5"></i> View Pricing Categories
-          </a>
-          <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
-              <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title ?>
-          </button>
-          <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
-              <i class="ti ti-download text-white me-1 fs-5"></i> Download <?= $page_title ?>
-          </button>
-          <button type="button" id="uploadBtn" class="btn btn-primary d-flex align-items-center">
-              <i class="ti ti-upload text-white me-1 fs-5"></i> Upload <?= $page_title ?>
-          </button>
+      <div class="col-md-12 col-xl-12 text-start d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+            <a href="?page=pricing_category" class="btn btn-primary d-flex align-items-center">
+                <i class="fa fa-sign-in-alt text-white me-1 fs-5"></i> View Pricing Categories
+            </a>
+            <?php                                                    
+            if ($permission === 'edit') {
+            ?>
+                <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
+                    <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title ?>
+                </button>
+                <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-download text-white me-1 fs-5"></i> Download <?= $page_title ?>
+                </button>
+                <button type="button" id="uploadBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-upload text-white me-1 fs-5"></i> Upload <?= $page_title ?>
+                </button>
+            <?php
+            }
+            ?>
+
       </div>
     </div>
 </div>
@@ -167,6 +176,10 @@ if(!empty($_REQUEST['id'])){
                         <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                         <td><?= $status ?></td>
                         <td class="text-center" id="action-button-<?= $no ?>">
+                        <?php                                                    
+                        if ($permission === 'edit') {
+                        ?>
+
                             <?php if ($row_customer_pricing['status'] == '0') { ?>
                                 <a href="javascript:void(0)" title="Archive" class="py-1 hideCustomerPricing" data-id="<?= $id ?>" data-row="<?= $no ?>">
                                   <i class="ti ti-trash fs-7"></i>
@@ -176,6 +189,10 @@ if(!empty($_REQUEST['id'])){
                                   <i class="ti ti-pencil fs-7"></i>
                                 </a>
                             <?php } ?>
+                        <?php
+                        }
+                        ?>
+
                         </td>
                     </tr>
                     <?php

@@ -13,6 +13,7 @@ if($_REQUEST['id']){
     $customer_id = $_REQUEST['id'];
     $customer_details = getCustomerDetails($customer_id);
 }
+$permission = $_SESSION['permission'];
 ?>
 
 
@@ -116,9 +117,16 @@ if($_REQUEST['id']){
                 </div>
                 </div>
             </div>
+            <?php                                                    
+            if ($permission === 'edit') {
+            ?>
             <div class="col-12 text-end">
                 <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
             </div>
+            <?php
+            }
+            ?>
+
         </form>
     </div>
     </div>

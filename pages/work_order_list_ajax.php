@@ -6,6 +6,7 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require '../includes/dbconn.php';
 require '../includes/functions.php';
+$permission = $_SESSION['permission'];
 
 if (isset($_POST['search_product'])) {
     $search = mysqli_real_escape_string($conn, $_POST['search_product']);
@@ -386,9 +387,18 @@ if (isset($_POST['search_work_order'])) {
                     </td>
                     <td>
                         <div class="action-btn text-center">
+                            <?php                                                    
+                            if ($permission === 'edit') {
+                            ?>
+
                             <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" data-app-prod-id="<?= $row['id'] ?>">
                                 <i class="fa fa-arrow-right-to-bracket"></i>
                             </a>
+
+                            <?php
+                            }
+                            ?>
+
                         </div>
                     </td>
                 </tr>

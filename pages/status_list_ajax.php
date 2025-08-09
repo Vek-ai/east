@@ -7,6 +7,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
+$permission = $_SESSION['permission'];
+
 if (isset($_POST['search_customer'])) {
     $search = mysqli_real_escape_string($conn, $_POST['search_customer']);
 
@@ -435,7 +437,14 @@ if(isset($_POST['fetch_status_details'])){
                                 <td class="text-end">$ <?= number_format($actual_price,2) ?></td>
                                 <td class="text-end">$ <?= number_format($discounted_price,2) ?></td>
                                 <td>
+                                    <?php                                                    
+                                    if ($permission === 'edit') {
+                                    ?>
                                     <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="edit_status_details" data-id="<?= $data_id ?>" data-type="<?= $type ?>" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fa fa-pencil"></i></a>
+                                    <?php
+                                    }
+                                    ?>
+
                                     <a href="javascript:void(0);" class="py-1 pe-1 fs-5" id="edit_history_details" data-id="<?= $data_id ?>" data-type="<?= $type ?>" data-toggle="tooltip" data-placement="top" title="History"><i class="fa fa-clock-rotate-left"></i></i></a>
                                 </td>
                             </tr>

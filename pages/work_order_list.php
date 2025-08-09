@@ -5,6 +5,8 @@ if (!defined('APP_SECURE')) {
 }
 require 'includes/dbconn.php';
 require 'includes/functions.php';
+
+$permission = $_SESSION['permission'];
 ?>
 
 <div class="container-fluid">

@@ -7,6 +7,8 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Color Group";
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     /* .select2-container {
@@ -87,6 +89,9 @@ $page_title = "Color Group";
     </div>
 
     <div class="widget-content searchable-container list">
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
     <div class="card card-body">
         <div class="row">
             <div class="col-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
@@ -105,6 +110,10 @@ $page_title = "Color Group";
             </div>
         </div>
     </div>
+    <?php                                                    
+    }
+    ?>
+
 
     <div class="modal fade" id="colorGroupModal" tabindex="-1" role="dialog" aria-labelledby="colorGroupModal" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -474,9 +483,16 @@ $page_title = "Color Group";
                                         <td><?= getGaugeName($row_prod_color['gauge']) ?></td>
                                         <td>
                                             <div class="action-btn text-center">
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>
                                                 <a href="#" title="View" class="view_color_btn" data-title="Update Color Group Multiplier" data-category="<?= $row_prod_color['product_category'] ?>" data-id="<?= $row_prod_color['id'] ?>">
                                                     <i class="ti ti-eye fs-7"></i>
                                                 </a>
+                                                <?php                                                    
+                                                }
+                                                ?>
+
                                             </div>
                                         </td>
                                     </tr>

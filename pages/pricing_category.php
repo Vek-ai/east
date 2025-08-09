@@ -28,6 +28,8 @@ if(!empty($_REQUEST['id'])){
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
 }
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -137,9 +139,16 @@ if(!empty($_REQUEST['id'])){
               <div class="card">
                 <div class="card-body">
                     <h4 class="card-title d-flex justify-content-between align-items-center">Pricing Category List  &nbsp;&nbsp; 
+                    <?php                                                    
+                    if ($permission === 'edit') {
+                    ?>
                     <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
                         <i class="ti ti-plus text-white me-1 fs-5"></i> Add Pricing Category
                     </button>
+                    <?php                                                    
+                    }
+                    ?>
+
                     </h4>
                   
                   <div class="table-responsive">
@@ -199,6 +208,10 @@ if(!empty($_REQUEST['id'])){
                             <td><?= $status ?></td>
                             <td class="text-center " id="action-button-<?= $no ?>">
                               <div class="d-flex align-items-center justify-content-center">
+                                <?php                                                    
+                                if ($permission === 'edit') {
+                                ?>
+
                                   <?php if ($row_pricing_category['status'] == '0') { ?>
                                       <a href="#" title="Archive" class="py-1 text-dark hidePricingCategory text-decoration-none" data-id="<?= $id ?>" data-row="<?= $no ?>">
                                         <i class="ti ti-trash text-danger fs-7"></i>
@@ -208,6 +221,9 @@ if(!empty($_REQUEST['id'])){
                                         <i class="ti ti-pencil fs-7"></i>
                                       </a>
                                   <?php } ?>
+                                <?php                                                    
+                                }
+                                ?>
                               </div>
                             </td>
                         </tr>
