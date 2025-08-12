@@ -1,5 +1,26 @@
 <?php
 $staff_id = intval($_SESSION['userid']);
+
+$allowed_categories = ['Sales', 'Products', 'Customers', 'Reports', 'Inventory', 'Settings'];
+
+$sql = "SELECT p.url, p.menu_icon, p.menu_name, p.menu_category
+        FROM pages AS p
+        INNER JOIN user_page_access AS upa 
+            ON p.id = upa.page_id
+        WHERE p.visibility = 1
+          AND upa.staff_id = $staff_id
+          AND p.menu_category IN ('" . implode("','", $allowed_categories) . "')
+        ORDER BY p.menu_category, p.id ASC";
+
+$result = mysqli_query($conn, $sql);
+
+$menu_items = [];
+
+if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $menu_items[$row['menu_category']][] = $row;
+    }
+}
 ?>
   <aside class="left-sidebar with-vertical">
       <div><!-- ---------------------------------- -->
@@ -43,412 +64,47 @@ $staff_id = intval($_SESSION['userid']);
           <!-----------Profile End------------------>
 
       <ul id="sidebarnav">
-        <!-- ---------------------------------- -->
-        <!-- Sales -->
-        <!-- ---------------------------------- -->
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Sales</span>
-        </li>
         <li class="sidebar-item">
-          <a class="sidebar-link" href="/cashier2/">
+          <a class="sidebar-link" href="/cashier3/">
             <iconify-icon icon="solar:pen-new-round-linear" class="aside-icon"></iconify-icon>
             <span class="hide-menu">New Sale</span>
           </a>
         </li>
-        
         <?php
-        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
-          FROM pages AS p
-          INNER JOIN user_page_access AS upa 
-              ON p.id = upa.page_id
-          WHERE p.visibility = 1
-            AND p.menu_category = 'Sales'
-            AND p.category_id = '1'
-            AND upa.staff_id = $staff_id
-          ORDER BY p.id ASC";
+        foreach ($allowed_categories as $category) {
+            if (!empty($menu_items[$category])) {
+                echo '<li class="nav-small-cap"><span class="hide-menu">' . htmlspecialchars($category) . '</span></li>';
+                
+                foreach ($menu_items[$category] as $page) {
+                    $url = trim($page['url']);
 
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $page_url = !empty($row['url']) 
-                            ? '?page=' . htmlspecialchars($row['url']) 
-                            : 'javascript:void(0);';
-
-                echo '<li class="sidebar-item">
-                        <a class="sidebar-link" href="' . $page_url . '">
-                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
-                        </a>
-                      </li>';
-            }
-        }
-        ?>
-
-
-
-        <!-- ---------------------------------- -->
-        <!-- Products -->
-        <!-- ---------------------------------- -->
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Products</span>
-        </li>
-        <?php
-        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
-            FROM pages AS p
-            INNER JOIN user_page_access AS upa 
-                ON p.id = upa.page_id
-            WHERE p.visibility = 1
-              AND p.menu_category = 'Products'
-              AND p.category_id = '1'
-              AND upa.staff_id = $staff_id
-            ORDER BY p.id ASC";
-
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $page_url = !empty($row['url']) 
-                            ? '?page=' . htmlspecialchars($row['url']) 
-                            : 'javascript:void(0);';
-
-                echo '<li class="sidebar-item">
-                        <a class="sidebar-link" href="' . $page_url . '">
-                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
-                        </a>
-                      </li>';
-            }
-        }
-        ?>
-
-        <!-- Products -->
-        <!-- ---------------------------------- -->
-        
-       <!-- ---------------------------------- -->
-        <!-- Customers -->
-        <!-- ---------------------------------- -->
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:add-square-outline" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Customers</span>
-        </li>
-        <?php
-        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
-                FROM pages AS p
-                INNER JOIN user_page_access AS upa 
-                    ON p.id = upa.page_id
-                WHERE p.visibility = 1
-                  AND p.menu_category = 'Customers'
-                  AND p.category_id = '1'
-                  AND upa.staff_id = $staff_id
-                ORDER BY p.id ASC";
-
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $page_url = !empty($row['url']) 
-                            ? '?page=' . htmlspecialchars($row['url']) 
-                            : 'javascript:void(0);';
-
-                echo '<li class="sidebar-item">
-                        <a class="sidebar-link" href="' . $page_url . '">
-                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
-                        </a>
-                      </li>';
-            }
-        }
-        ?>
-
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">EKM Tools</span>
-        </li>
-        <?php
-        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
-                FROM pages AS p
-                INNER JOIN user_page_access AS upa 
-                    ON p.id = upa.page_id
-                WHERE p.visibility = 1
-                  AND p.menu_category = 'EKM Tools'
-                  AND p.category_id = '1'
-                  AND upa.staff_id = $staff_id
-                ORDER BY p.id ASC";
-
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $url = trim($row['url']);
-        
-                if (!empty($url)) {
-                    if (preg_match('/^https?:\/\//i', $url)) {
-                        $page_url = htmlspecialchars($url);
-                        $target   = ' target="_blank"';
-                    } else {
-                        $page_url = '?page=' . htmlspecialchars($url);
-                        $target   = '';
+                    if ($url === '') {
+                        $href = 'javascript:void(0)';
+                        $target = '';
                     }
-                } else {
-                    $page_url = 'javascript:void(0);';
-                    $target   = '';
+                    elseif (preg_match('/^https?:\/\//i', $url)) {
+                        $href = $url;
+                        $target = ' target="_blank" rel="noopener noreferrer"';
+                    }
+                    elseif (strpos($url, '/') === 0) {
+                        $href = $url;
+                        $target = ' target="_blank" rel="noopener noreferrer"';
+                    }
+                    else {
+                        $href = $url;
+                        $target = '';
+                    }
+
+                    echo '<li class="sidebar-item">
+                            <a class="sidebar-link" href="' . htmlspecialchars($href) . '"' . $target . '>
+                                <iconify-icon icon="' . htmlspecialchars($page['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                                <span class="hide-menu">' . htmlspecialchars($page['menu_name']) . '</span>
+                            </a>
+                          </li>';
                 }
-
-                echo '<li class="sidebar-item">
-                        <a class="sidebar-link" href="' . $page_url . '">
-                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
-                        </a>
-                      </li>';
             }
         }
-        ?>
 
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Supplier</span>
-        </li>
-        <?php
-        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
-                FROM pages AS p
-                INNER JOIN user_page_access AS upa 
-                    ON p.id = upa.page_id
-                WHERE p.visibility = 1
-                  AND p.menu_category = 'Supplier'
-                  AND p.category_id = '1'
-                  AND upa.staff_id = $staff_id
-                ORDER BY p.id ASC";
-
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $page_url = !empty($row['url']) 
-                            ? '?page=' . htmlspecialchars($row['url']) 
-                            : 'javascript:void(0);';
-
-                echo '<li class="sidebar-item">
-                        <a class="sidebar-link" href="' . $page_url . '">
-                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
-                        </a>
-                      </li>';
-            }
-        }
-        ?>
-
-        <!-- ---------------------------------- -->
-        <!-- Reports -->
-        <!-- ---------------------------------- -->
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:presentation-graph-outline" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Reports</span>
-        </li>
-        <?php
-        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
-                FROM pages AS p
-                INNER JOIN user_page_access AS upa 
-                    ON p.id = upa.page_id
-                WHERE p.visibility = 1
-                  AND p.menu_category = 'Reports'
-                  AND p.category_id = '1'
-                  AND upa.staff_id = $staff_id
-                ORDER BY p.id ASC";
-
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $page_url = !empty($row['url']) 
-                            ? '?page=' . htmlspecialchars($row['url']) 
-                            : 'javascript:void(0);';
-
-                echo '<li class="sidebar-item">
-                        <a class="sidebar-link" href="' . $page_url . '">
-                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
-                        </a>
-                      </li>';
-            }
-        }
-        ?>
-
-        <!-- ---------------------------------- -->
-        <!-- Employees -->
-        <!-- ---------------------------------- -->
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Employees</span>
-        </li>
-        <?php
-        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
-                FROM pages AS p
-                INNER JOIN user_page_access AS upa 
-                    ON p.id = upa.page_id
-                WHERE p.visibility = 1
-                  AND p.menu_category = 'Employees'
-                  AND p.category_id = '1'
-                  AND upa.staff_id = $staff_id
-                ORDER BY p.id ASC";
-
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $page_url = !empty($row['url']) 
-                            ? '?page=' . htmlspecialchars($row['url']) 
-                            : 'javascript:void(0);';
-
-                echo '<li class="sidebar-item">
-                        <a class="sidebar-link" href="' . $page_url . '">
-                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
-                        </a>
-                      </li>';
-            }
-        }
-        ?>
-        <!-- Products -->
-        <!-- ---------------------------------- -->
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Warehouse</span>
-        </li>
-        <?php
-        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
-                FROM pages AS p
-                INNER JOIN user_page_access AS upa 
-                    ON p.id = upa.page_id
-                WHERE p.visibility = 1
-                  AND p.menu_category = 'Warehouse'
-                  AND p.category_id = '1'
-                  AND upa.staff_id = $staff_id
-                ORDER BY p.id ASC";
-
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $page_url = !empty($row['url']) 
-                            ? '?page=' . htmlspecialchars($row['url']) 
-                            : 'javascript:void(0);';
-
-                echo '<li class="sidebar-item">
-                        <a class="sidebar-link" href="' . $page_url . '">
-                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
-                        </a>
-                      </li>';
-            }
-        }
-        ?>
-
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Products Properties</span>
-        </li>
-        <?php
-        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
-                FROM pages AS p
-                INNER JOIN user_page_access AS upa 
-                    ON p.id = upa.page_id
-                WHERE p.visibility = 1
-                  AND p.menu_category = 'Products Properties'
-                  AND p.category_id = '1'
-                  AND upa.staff_id = $staff_id
-                ORDER BY p.id ASC";
-
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $page_url = !empty($row['url']) 
-                            ? '?page=' . htmlspecialchars($row['url']) 
-                            : 'javascript:void(0);';
-
-                echo '<li class="sidebar-item">
-                        <a class="sidebar-link" href="' . $page_url . '">
-                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
-                        </a>
-                      </li>';
-            }
-        }
-        ?>
-    
-        <!-- ---------------------------------- -->
-        <!-- Settings -->
-        <!-- ---------------------------------- -->
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Settings</span>
-        </li>
-        <?php
-        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
-                FROM pages AS p
-                INNER JOIN user_page_access AS upa 
-                    ON p.id = upa.page_id
-                WHERE p.visibility = 1
-                  AND p.menu_category = 'Settings'
-                  AND p.category_id = '1'
-                  AND upa.staff_id = $staff_id
-                ORDER BY p.id ASC";
-
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $page_url = !empty($row['url']) 
-                            ? '?page=' . htmlspecialchars($row['url']) 
-                            : 'javascript:void(0);';
-
-                echo '<li class="sidebar-item">
-                        <a class="sidebar-link" href="' . $page_url . '">
-                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
-                        </a>
-                      </li>';
-            }
-        }
-        ?>
-
-        <!-- ---------------------------------- -->
-        <!-- Help & Support -->
-        <!-- ---------------------------------- -->
-        <li class="nav-small-cap">
-          <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
-          <span class="hide-menu">Help & Support</span>
-        </li>
-        <?php
-        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
-                FROM pages AS p
-                INNER JOIN user_page_access AS upa 
-                    ON p.id = upa.page_id
-                WHERE p.visibility = 1
-                  AND p.menu_category = 'Help & Support'
-                  AND p.category_id = '1'
-                  AND upa.staff_id = $staff_id
-                ORDER BY p.id ASC";
-
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $page_url = !empty($row['url']) 
-                            ? '?page=' . htmlspecialchars($row['url']) 
-                            : 'javascript:void(0);';
-
-                echo '<li class="sidebar-item">
-                        <a class="sidebar-link" href="' . $page_url . '">
-                            <iconify-icon icon="' . htmlspecialchars($row['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                            <span class="hide-menu">' . htmlspecialchars($row['menu_name']) . '</span>
-                        </a>
-                      </li>';
-            }
-        }
         ?>
       </ul>
         </nav>
