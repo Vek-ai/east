@@ -7,6 +7,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
+$permission = $_SESSION['permission'];
+
 if(isset($_POST['fetch_available'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $work_order_details = getWorkOrderDetails($id);
@@ -377,11 +379,8 @@ if(isset($_POST['fetch_view'])){
                                 </td>
                                 <td>
                                     <div class="action-btn text-center">
-                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Run Work Order" data-app-prod-id="<?= $row['id'] ?>">
+                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Finish Work Order" data-app-prod-id="<?= $row['id'] ?>">
                                             <i class="fa fa-arrow-right-to-bracket"></i>
-                                        </a>
-                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAssignedBtn" title="View" data-id="<?= $row['id'] ?>">
-                                            <i class="fa fa-eye"></i>
                                         </a>
                                     </div>
                                 </td>

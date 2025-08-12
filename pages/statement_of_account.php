@@ -11,7 +11,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 
 $page_title = "Statement of Accounts";
-
+$permission = $_SESSION['permission'];
 ?>
 <style>
     .dz-preview {
@@ -374,10 +374,15 @@ $page_title = "Statement of Accounts";
                                             <a href="print_statement_account.php?id=<?= $customer_id; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
                                                     <i class="text-success fa fa-print fs-5"></i>
                                             </a>
-
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
                                             <a href="javascript:void(0)" type="button" id="email_statement_btn" class="me-1 email_statement_btn" data-customer="<?= $customer_id ?>" data-bs-toggle="tooltip" title="Send Confirmation">
                                                 <iconify-icon icon="solar:plain-linear" class="fs-6 text-info"></iconify-icon>
                                             </a>
+                                            <?php                                                    
+                                            }
+                                            ?>
                                         </td>
                                     </tr>
                                 <?php endwhile; ?>

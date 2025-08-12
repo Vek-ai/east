@@ -1,4 +1,8 @@
 <?php
+session_start();
+
+$permission = $_SESSION['permission'];
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -93,16 +97,19 @@ if(isset($_REQUEST['action'])) {
 
             $action_html = '';
 
-            if ($source_type === 'return') {
-                $action_html .= "
-                    <a href='javascript:void(0)' id='transfer_warehouse' data-id='{$id}' title='Return to Warehouse' class='text-success'>
-                        <iconify-icon icon='material-symbols:warehouse' class='fs-7'></iconify-icon>
-                    </a>";
-            }else if ($source_type === 'order'){
-                $action_html .= "
-                    <a href='javascript:void(0)' id='transfer_warehouse_order' data-id='{$id}' title='Return to Warehouse' class='text-success'>
-                        <iconify-icon icon='material-symbols:warehouse' class='fs-7'></iconify-icon>
-                    </a>";
+            $action_html = '';
+            if ($permission === 'edit') {
+                if ($source_type === 'return') {
+                    $action_html .= "
+                        <a href='javascript:void(0)' id='transfer_warehouse' data-id='{$id}' title='Return to Warehouse' class='text-success'>
+                            <iconify-icon icon='material-symbols:warehouse' class='fs-7'></iconify-icon>
+                        </a>";
+                }else if ($source_type === 'order'){
+                    $action_html .= "
+                        <a href='javascript:void(0)' id='transfer_warehouse_order' data-id='{$id}' title='Return to Warehouse' class='text-success'>
+                            <iconify-icon icon='material-symbols:warehouse' class='fs-7'></iconify-icon>
+                        </a>";
+                }
             }
 
             $data[] = [

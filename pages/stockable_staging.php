@@ -16,7 +16,7 @@ $page_title = "Stockable Order Staging";
 
 $price_per_hem = getPaymentSetting('price_per_hem');
 $price_per_bend = getPaymentSetting('price_per_bend');
-
+$permission = $_SESSION['permission'];
 ?>
 <style>
     .dz-preview {

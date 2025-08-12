@@ -6,6 +6,7 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require '../includes/dbconn.php';
 require '../includes/functions.php';
+$permission = $_SESSION['permission'];
 
 if(isset($_POST['fetch_available'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
@@ -87,11 +88,18 @@ if(isset($_POST['fetch_available'])){
             </table>
         </div>
     </div>
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
     <div class="modal-footer">
         <?php if (!empty($work_order_details) && $work_order_details['status'] == 2): ?>
             <button id="finish_work_order" class="btn ripple btn-primary" type="button">Finish Work Order</button>
         <?php endif; ?>
     </div>
+    <?php                                                    
+    }
+    ?>
+
 
     <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -397,9 +405,16 @@ if(isset($_POST['fetch_view'])){
         </div>
     </div>
     <div class="d-flex justify-content-end mt-3">
+        <?php                                                    
+        if ($permission === 'edit') {
+        ?>
         <button type="button" class="btn btn-success" id="finishSelectedBtn">
             <i class="fa fa-play me-1"></i> Finish
         </button>
+        <?php                                                    
+        }
+        ?>
+
     </div>
 
     <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">

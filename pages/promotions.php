@@ -10,7 +10,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Promotions/Discounts"
+$page_title = "Promotions/Discounts";
+$permission = $_SESSION['permission'];
 ?>
 <style>
     .dz-preview {
@@ -65,6 +66,9 @@ $page_title = "Promotions/Discounts"
         </div>
     </div>
 
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
     <div class="card card-body">
         <div class="row">
             <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
@@ -74,6 +78,9 @@ $page_title = "Promotions/Discounts"
             </div>
         </div>
     </div>
+    <?php                                                    
+    }
+    ?>
 
     <div class="widget-content searchable-container list">
         <div class="card card-body">
@@ -238,9 +245,15 @@ $page_title = "Promotions/Discounts"
                                                     <a href="#" id="view_product_btn" class="edit d-flex align-items-center" data-id="<?= $row_product['product_id'] ?>" title="View">
                                                         <i class="text-primary ti ti-eye fs-7"></i>
                                                     </a>
+                                                    <?php                                                    
+                                                    if ($permission === 'edit') {
+                                                    ?>
                                                     <a href="#" id="addModalBtn" title="Edit" class="edit d-flex align-items-center" data-id="<?= $row_product['product_id'] ?>" data-type="edit">
                                                         <i class="text-warning ti ti-pencil fs-7"></i>
                                                     </a>
+                                                    <?php                                                    
+                                                    }
+                                                    ?>
                                                 </div>
                                             </td>
                                         </tr>

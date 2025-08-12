@@ -1,4 +1,8 @@
 <?php
+session_start();
+
+$permission = $_SESSION['permission'];
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -65,16 +69,19 @@ if(isset($_REQUEST['action'])) {
 
             $action_html = '';
     
-            if ($instock == 1) {
-                $action_html .= "
-                    <a href='javascript:void(0)' id='release_product' data-id='{$id}' title='Release' class='text-success'>
-                        <iconify-icon icon='solar:box-minimalistic-bold' class='fs-7'></iconify-icon>
-                    </a>";
-            } else {
-                $action_html .= "
-                    <a href='javascript:void(0)' id='order_product' data-id='{$id}' title='Order' class='text-danger'>
-                        <iconify-icon icon='solar:cart-large-bold' class='fs-7'></iconify-icon>
-                    </a>";
+            $action_html = '';
+            if ($permission === 'edit') {
+                if ($instock == 1) {
+                    $action_html .= "
+                        <a href='javascript:void(0)' id='release_product' data-id='{$id}' title='Release' class='text-success'>
+                            <iconify-icon icon='solar:box-minimalistic-bold' class='fs-7'></iconify-icon>
+                        </a>";
+                } else {
+                    $action_html .= "
+                        <a href='javascript:void(0)' id='order_product' data-id='{$id}' title='Order' class='text-danger'>
+                            <iconify-icon icon='solar:cart-large-bold' class='fs-7'></iconify-icon>
+                        </a>";
+                }
             }
     
             $data[] = [

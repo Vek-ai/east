@@ -12,6 +12,7 @@ if(isset($_REQUEST['customer_id'])){
   $customer_id = $_REQUEST['customer_id'];
   $customer_details = getCustomerDetails($customer_id);
 }
+$permission = $_SESSION['permission'];
 ?>
 
 <div class="container-fluid">
@@ -206,7 +207,14 @@ if(isset($_REQUEST['customer_id'])){
                     <div class="modal-header d-flex justify-content-between align-items-center">
                         <h5 class="fw-bold">Ledger Data for <?= get_customer_name($customer_id) ?></h5>
                         <div class="mb-2">
+                            <?php                                                    
+                            if ($permission === 'edit') {
+                            ?>
                             <button class="btn btn-primary" id="batchPaymentBtn">Batch Payment</button>
+                            <?php                                                    
+                            }
+                            ?>
+
                         </div>
                     </div>
                     <div class="product-details table-responsive text-wrap">
@@ -359,9 +367,15 @@ if(isset($_REQUEST['customer_id'])){
                                             if($is_credit){
                                                 ?>
                                                 <div class="d-flex justify-content-center gap-2">
+                                                    <?php                                                    
+                                                    if ($permission === 'edit') {
+                                                    ?>
                                                     <a id="paymentBtn" title="Payment" role="button" class="py-1" data-id="<?= $ledger_id ?>">
                                                         <iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon>
                                                     </a>
+                                                    <?php                                                    
+                                                    }
+                                                    ?>
                                                     <a id="paymentHistoryBtn" title="Payment History" role="button" class="py-1" data-id="<?= $ledger_id ?>">
                                                         <i class="fas fa-history text-primary fs-5"></i>
                                                     </a>

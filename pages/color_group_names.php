@@ -26,6 +26,8 @@ if(!empty($_REQUEST['color_group_name_id'])){
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
 }
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -82,9 +84,16 @@ if(!empty($_REQUEST['color_group_name_id'])){
         <div class="card">
         <div class="card-body">
             <h4 class="card-title d-flex justify-content-between align-items-center">Color Group Name List  &nbsp;&nbsp; 
+                <?php                                                    
+                if ($permission === 'edit') {
+                ?>
                 <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
                     <i class="ti ti-plus text-white me-1 fs-5"></i> Add Color Group Name
                 </button>
+                <?php                                                    
+                }
+                ?>
+
                 <div> 
                     <input type="checkbox" id="toggleActive" checked> Show Active Only
                 </div>
@@ -115,8 +124,8 @@ if(!empty($_REQUEST['color_group_name_id'])){
                         $color_group_name_id = $row_color_group_name['color_group_name_id'];
                         $color_group_name = $row_color_group_name['color_group_name'];
                         $group_abbreviations = $row_color_group_name['group_abbreviations'];
-                        $product_category = $row_color_group_name['product_category'];
-                        $multiplier = $row_color_group_name['multiplier'];
+                        $product_category = $row_color_group_name['product_category'] ?? '';
+                        $multiplier = $row_color_group_name['multiplier'] ?? '';
                         $db_status = $row_color_group_name['status'];
                         $notes = $row_color_group_name['notes'];
                         // $last_edit = $row_color_group_name['last_edit'];
@@ -148,15 +157,21 @@ if(!empty($_REQUEST['color_group_name_id'])){
                         <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                         <td><?= $status ?></td>
                         <td class="text-center" id="action-button-<?= $no ?>">
-                            <?php if ($row_color_group_name['status'] == '0') { ?>
-                                <a href="#" title="Archive" class="py-1 text-dark hideColorGroupName text-decoration-none" data-id="<?= $color_group_name_id ?>" data-row="<?= $no ?>">
-                                    <i class="text-danger ti ti-trash fs-7"></i>
-                                </a>
-                            <?php } else { ?>
-                                <a href="#" title="Edit" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $color_group_name_id ?>" data-type="edit">
-                                    <i class="ti ti-pencil fs-7"></i>
-                                </a>
-                            <?php } ?>
+                            <?php                                                    
+                            if ($permission === 'edit') {
+                            ?>
+                                <?php if ($row_color_group_name['status'] == '0') { ?>
+                                    <a href="#" title="Archive" class="py-1 text-dark hideColorGroupName text-decoration-none" data-id="<?= $color_group_name_id ?>" data-row="<?= $no ?>">
+                                        <i class="text-danger ti ti-trash fs-7"></i>
+                                    </a>
+                                <?php } else { ?>
+                                    <a href="#" title="Edit" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $color_group_name_id ?>" data-type="edit">
+                                        <i class="ti ti-pencil fs-7"></i>
+                                    </a>
+                                <?php } ?>
+                            <?php                                                    
+                            }
+                            ?>
                         </td>
                     </tr>
                     <?php

@@ -16,6 +16,7 @@ if(!empty($_REQUEST['id'])){
     $supplier_id = $_REQUEST['id'];
     $supplier_details = getSupplierDetails($supplier_id);
 }
+$permission = $_SESSION['permission'];
 
 ?>
 <style>
@@ -179,6 +180,9 @@ if(!empty($_REQUEST['id'])){
                                 </table>
                             </div>
                         </div>
+                        <?php                                                    
+                        if ($permission === 'edit') {
+                        ?>
                         <div class="d-flex justify-content-end gap-2">
                             <a href="#" class="btn btn-sm" id="place_order_products" style="background-color: #28a745; color: #fff; border: none;">
                                 <i class="fas fa-shopping-cart me-1"></i> Order
@@ -187,6 +191,9 @@ if(!empty($_REQUEST['id'])){
                                 <i class="fas fa-edit me-1"></i> Edit
                             </a>
                         </div>
+                        <?php                                                    
+                        }
+                        ?>
                     </div>
                 </div>
             </div>

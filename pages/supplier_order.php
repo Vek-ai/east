@@ -9,6 +9,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 require 'includes/dbconn.php';
 require 'includes/functions.php';
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
     .dz-preview {
@@ -128,6 +130,10 @@ require 'includes/functions.php';
     </div>
 
     <div class="widget-content searchable-container list">
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
+
     <div class="card card-body">
         <div class="row">
         
@@ -172,6 +178,11 @@ require 'includes/functions.php';
 
         </div>
     </div>
+
+    <?php                                                    
+    }
+    ?>
+
 
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -505,14 +516,26 @@ require 'includes/functions.php';
                                             </select>
                                         </td>
                                         <td>
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
                                             <div class="input-group input-group-sm">
                                                 <button class="btn btn-outline-primary btn-minus" type="button" data-id="<?= $row_product['product_id'] ?>">-</button>
                                                 <input class="form-control p-1 text-center" type="number" id="qty<?= $row_product['product_id'] ?>" value="1" min="1">
                                                 <button class="btn btn-outline-primary btn-plus" type="button" data-id="<?= $row_product['product_id'] ?>">+</button>
                                             </div>
+                                            <?php                                                    
+                                            }
+                                            ?>
                                         </td>
                                         <td>
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
                                             <button class="btn btn-sm btn-primary btn-add-to-cart" type="button" data-id="<?= $row_product['product_id'] ?>" id="add-to-cart-btn">Add to Order</button>
+                                            <?php                                                    
+                                            }
+                                            ?>
                                         </td>
                                     </tr>
                                 <?php 

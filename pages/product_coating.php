@@ -30,6 +30,8 @@ if(!empty($_REQUEST['product_coating_id'])){
   $saveBtnTxt = "Update";
   $addHeaderTxt = "Update";
 }
+
+$permission = $_SESSION['permission'];
 ?>
 <style>
   td.notes,  td.last-edit{
@@ -96,6 +98,9 @@ if(!empty($_REQUEST['product_coating_id'])){
     </div>
   </div>
 </div>
+<?php                                                    
+if ($permission === 'edit') {
+?>
 <div class="col-12">
   <div class="card card-body">
     <div class="row">
@@ -145,6 +150,10 @@ if(!empty($_REQUEST['product_coating_id'])){
   </div>
   <!-- end Default Form Elements -->
 </div>
+<?php                                                    
+}
+?>
+
 <div class="col-12">
   <div class="datatables">
     <div class="card">
@@ -210,6 +219,10 @@ if(!empty($_REQUEST['product_coating_id'])){
                   <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                   <td><?= $status ?></td>
                   <td class="text-center" id="action-button-<?= $no ?>">
+                    <?php                                                    
+                    if ($permission === 'edit') {
+                    ?>
+
                       <?php if ($row_product_coating['status'] == '0') { ?>
                           <a href="#" title="Archive" class="text-decoration-none py-1 text-dark hideSystem" data-id="<?= $product_coating_id ?>" data-row="<?= $no ?>">
                             <i class="text-danger ti ti-trash fs-7"></i>
@@ -219,6 +232,10 @@ if(!empty($_REQUEST['product_coating_id'])){
                             <i class="text-warning ti ti-pencil fs-7"></i>
                           </a>
                       <?php } ?>
+                    <?php                                                    
+                    }
+                    ?>
+
                   </td>
               </tr>
               <?php

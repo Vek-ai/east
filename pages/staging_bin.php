@@ -7,6 +7,8 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Staging Bin";
+
+$permission = $_SESSION['permission'];
 ?>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -246,12 +248,19 @@ $page_title = "Staging Bin";
                                             <td><?= $status ?></td>
                                             <td>
                                                 <div class="action-btn text-center">
+                                                    <?php                                                    
+                                                    if ($permission === 'edit') {
+                                                    ?>
                                                     <a href="javascript:void(0);" 
                                                         class="transfer_to_inventory text-primary me-2" 
                                                         data-id="<?= $row_product['id'] ?? '' ?>" 
                                                         title="Transfer to Inventory">
                                                             <i class="fas fa-warehouse"></i>
                                                     </a>
+                                                    <?php                                                    
+                                                    }
+                                                    ?>
+
                                                 </div>
                                             </td>
                                         </tr>

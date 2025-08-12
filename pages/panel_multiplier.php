@@ -7,6 +7,7 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Panel Multipliers";
+$permission = $_SESSION['permission'];
 ?>
 <style>
 td.notes,  td.last-edit{
@@ -316,7 +317,14 @@ td.notes,  td.last-edit{
         </div>
       </div>
       <div class="modal-footer">
+        <?php                                                    
+        if ($permission === 'edit') {
+        ?>
         <button type="submit" class="btn btn-primary">Save Changes</button>
+        <?php                                                    
+        }
+        ?>
+
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
       </div>
     </form>

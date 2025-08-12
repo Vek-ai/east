@@ -14,7 +14,7 @@ if(isset($_REQUEST['customer_id'])){
     $customer_id = $_REQUEST['customer_id'];
     $customer_details = getCustomerDetails($customer_id);
 }
-
+$permission = $_SESSION['permission'];
 ?>
 <style>
     .dz-preview {
@@ -336,13 +336,23 @@ if(isset($_REQUEST['customer_id'])){
                                                     <i class="text-success fa fa-print fs-5"></i>
                                                 </a>
 
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>
                                                 <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" title="Send to Customer">
                                                     <iconify-icon icon="solar:plain-linear" class="fs-5 text-info"></iconify-icon>
                                                 </a>
+                                                <?php                                                    
+                                                }
+                                                ?>
 
                                                 <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Change History">
                                                     <i class="text-info fa fa-clock-rotate-left fs-5"></i>
                                                 </button>
+
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>
 
                                                 <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" title="Send to Customer">
                                                     <iconify-icon icon="solar:streets-map-point-outline" class="fs-6 text-info"></iconify-icon>
@@ -359,6 +369,10 @@ if(isset($_REQUEST['customer_id'])){
                                                     title="Change Pick-up/Delivery">
                                                     <iconify-icon icon="mdi:package-variant-closed" class="text-warning fs-7"></iconify-icon>
                                                 </button>
+
+                                                <?php                                                    
+                                                }
+                                                ?>
                                             </td>
 
                                         </tr>
