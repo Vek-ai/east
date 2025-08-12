@@ -158,20 +158,14 @@ if(isset($_REQUEST['action'])) {
                 $status = $permission === 'edit' ? 'View and Edit' : 'View Only';
             }
 
-            /* $data[] = [
+            $data[] = [
                 'page' => "<div><strong>{$page_name}</strong><br><small class='text-muted'>{$url}</small></div>",
                 'category' => "<span class='badge bg-primary'>{$category_name}</span>",
                 'access' => $access_html,
                 'permission' => $perm_html,
                 'status' => "<span class='fw-semibold'>{$status}</span>"
-            ]; */
-            $data[] = [
-                'page' => "$url",
-                'category' => "",
-                'access' => '',
-                'permission' => '',
-                'status' => ""
             ];
+            
         }
 
         echo json_encode([
