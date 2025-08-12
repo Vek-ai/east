@@ -1,3 +1,6 @@
+<?php
+$staff_id = intval($_SESSION['userid']);
+?>
   <aside class="left-sidebar with-vertical">
       <div><!-- ---------------------------------- -->
         <!-- Start Vertical Layout Sidebar -->
@@ -55,12 +58,15 @@
         </li>
         
         <?php
-        $sql = "SELECT url, menu_icon, menu_name 
-                FROM pages 
-                WHERE visibility = 1 
-                  AND menu_category = 'Sales'
-                  AND category_id = '1'
-                ORDER BY id ASC";
+        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
+          FROM pages AS p
+          INNER JOIN user_page_access AS upa 
+              ON p.id = upa.page_id
+          WHERE p.visibility = 1
+            AND p.menu_category = 'Sales'
+            AND p.category_id = '1'
+            AND upa.staff_id = $staff_id
+          ORDER BY p.id ASC";
 
         $result = mysqli_query($conn, $sql);
 
@@ -90,12 +96,15 @@
           <span class="hide-menu">Products</span>
         </li>
         <?php
-        $sql = "SELECT url, menu_icon, menu_name 
-                FROM pages 
-                WHERE visibility = 1 
-                  AND menu_category = 'Products'
-                  AND category_id = '1'
-                ORDER BY id ASC";
+        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
+            FROM pages AS p
+            INNER JOIN user_page_access AS upa 
+                ON p.id = upa.page_id
+            WHERE p.visibility = 1
+              AND p.menu_category = 'Products'
+              AND p.category_id = '1'
+              AND upa.staff_id = $staff_id
+            ORDER BY p.id ASC";
 
         $result = mysqli_query($conn, $sql);
 
@@ -126,12 +135,15 @@
           <span class="hide-menu">Customers</span>
         </li>
         <?php
-        $sql = "SELECT url, menu_icon, menu_name 
-                FROM pages 
-                WHERE visibility = 1 
-                  AND menu_category = 'Customers'
-                  AND category_id = '1'
-                ORDER BY id ASC";
+        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
+                FROM pages AS p
+                INNER JOIN user_page_access AS upa 
+                    ON p.id = upa.page_id
+                WHERE p.visibility = 1
+                  AND p.menu_category = 'Customers'
+                  AND p.category_id = '1'
+                  AND upa.staff_id = $staff_id
+                ORDER BY p.id ASC";
 
         $result = mysqli_query($conn, $sql);
 
@@ -156,12 +168,15 @@
           <span class="hide-menu">EKM Tools</span>
         </li>
         <?php
-        $sql = "SELECT url, menu_icon, menu_name 
-                FROM pages 
-                WHERE visibility = 1 
-                  AND menu_category = 'EKM Tools'
-                  AND category_id = '1'
-                ORDER BY id ASC";
+        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
+                FROM pages AS p
+                INNER JOIN user_page_access AS upa 
+                    ON p.id = upa.page_id
+                WHERE p.visibility = 1
+                  AND p.menu_category = 'EKM Tools'
+                  AND p.category_id = '1'
+                  AND upa.staff_id = $staff_id
+                ORDER BY p.id ASC";
 
         $result = mysqli_query($conn, $sql);
 
@@ -197,12 +212,15 @@
           <span class="hide-menu">Supplier</span>
         </li>
         <?php
-        $sql = "SELECT url, menu_icon, menu_name 
-                FROM pages 
-                WHERE visibility = 1 
-                  AND menu_category = 'Supplier'
-                  AND category_id = '1'
-                ORDER BY id ASC";
+        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
+                FROM pages AS p
+                INNER JOIN user_page_access AS upa 
+                    ON p.id = upa.page_id
+                WHERE p.visibility = 1
+                  AND p.menu_category = 'Supplier'
+                  AND p.category_id = '1'
+                  AND upa.staff_id = $staff_id
+                ORDER BY p.id ASC";
 
         $result = mysqli_query($conn, $sql);
 
@@ -230,12 +248,15 @@
           <span class="hide-menu">Reports</span>
         </li>
         <?php
-        $sql = "SELECT url, menu_icon, menu_name 
-                FROM pages 
-                WHERE visibility = 1 
-                  AND menu_category = 'Reports'
-                  AND category_id = '1'
-                ORDER BY id ASC";
+        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
+                FROM pages AS p
+                INNER JOIN user_page_access AS upa 
+                    ON p.id = upa.page_id
+                WHERE p.visibility = 1
+                  AND p.menu_category = 'Reports'
+                  AND p.category_id = '1'
+                  AND upa.staff_id = $staff_id
+                ORDER BY p.id ASC";
 
         $result = mysqli_query($conn, $sql);
 
@@ -263,12 +284,15 @@
           <span class="hide-menu">Employees</span>
         </li>
         <?php
-        $sql = "SELECT url, menu_icon, menu_name 
-                FROM pages 
-                WHERE visibility = 1 
-                  AND menu_category = 'Employees'
-                  AND category_id = '1'
-                ORDER BY id ASC";
+        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
+                FROM pages AS p
+                INNER JOIN user_page_access AS upa 
+                    ON p.id = upa.page_id
+                WHERE p.visibility = 1
+                  AND p.menu_category = 'Employees'
+                  AND p.category_id = '1'
+                  AND upa.staff_id = $staff_id
+                ORDER BY p.id ASC";
 
         $result = mysqli_query($conn, $sql);
 
@@ -294,12 +318,15 @@
           <span class="hide-menu">Warehouse</span>
         </li>
         <?php
-        $sql = "SELECT url, menu_icon, menu_name 
-                FROM pages 
-                WHERE visibility = 1 
-                  AND menu_category = 'Warehouse'
-                  AND category_id = '1'
-                ORDER BY id ASC";
+        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
+                FROM pages AS p
+                INNER JOIN user_page_access AS upa 
+                    ON p.id = upa.page_id
+                WHERE p.visibility = 1
+                  AND p.menu_category = 'Warehouse'
+                  AND p.category_id = '1'
+                  AND upa.staff_id = $staff_id
+                ORDER BY p.id ASC";
 
         $result = mysqli_query($conn, $sql);
 
@@ -324,12 +351,15 @@
           <span class="hide-menu">Products Properties</span>
         </li>
         <?php
-        $sql = "SELECT url, menu_icon, menu_name 
-                FROM pages 
-                WHERE visibility = 1 
-                  AND menu_category = 'Products Properties'
-                  AND category_id = '1'
-                ORDER BY id ASC";
+        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
+                FROM pages AS p
+                INNER JOIN user_page_access AS upa 
+                    ON p.id = upa.page_id
+                WHERE p.visibility = 1
+                  AND p.menu_category = 'Products Properties'
+                  AND p.category_id = '1'
+                  AND upa.staff_id = $staff_id
+                ORDER BY p.id ASC";
 
         $result = mysqli_query($conn, $sql);
 
@@ -357,12 +387,15 @@
           <span class="hide-menu">Settings</span>
         </li>
         <?php
-        $sql = "SELECT url, menu_icon, menu_name 
-                FROM pages 
-                WHERE visibility = 1 
-                  AND menu_category = 'Settings'
-                  AND category_id = '1'
-                ORDER BY id ASC";
+        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
+                FROM pages AS p
+                INNER JOIN user_page_access AS upa 
+                    ON p.id = upa.page_id
+                WHERE p.visibility = 1
+                  AND p.menu_category = 'Settings'
+                  AND p.category_id = '1'
+                  AND upa.staff_id = $staff_id
+                ORDER BY p.id ASC";
 
         $result = mysqli_query($conn, $sql);
 
@@ -390,12 +423,15 @@
           <span class="hide-menu">Help & Support</span>
         </li>
         <?php
-        $sql = "SELECT url, menu_icon, menu_name 
-                FROM pages 
-                WHERE visibility = 1 
-                  AND menu_category = 'Help & Support'
-                  AND category_id = '1'
-                ORDER BY id ASC";
+        $sql = "SELECT p.url, p.menu_icon, p.menu_name 
+                FROM pages AS p
+                INNER JOIN user_page_access AS upa 
+                    ON p.id = upa.page_id
+                WHERE p.visibility = 1
+                  AND p.menu_category = 'Help & Support'
+                  AND p.category_id = '1'
+                  AND upa.staff_id = $staff_id
+                ORDER BY p.id ASC";
 
         $result = mysqli_query($conn, $sql);
 
