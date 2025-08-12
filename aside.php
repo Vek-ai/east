@@ -85,7 +85,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                         $target = ' target="_blank" rel="noopener noreferrer"';
                     }
                     else {
-                        $href = $url;
+                        $href = '?page='.$url;
                         $target = '';
                     }
 
