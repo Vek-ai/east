@@ -64,12 +64,6 @@ if ($result && mysqli_num_rows($result) > 0) {
           <!-----------Profile End------------------>
 
       <ul id="sidebarnav">
-        <li class="sidebar-item">
-          <a class="sidebar-link" href="/cashier3/">
-            <iconify-icon icon="solar:pen-new-round-linear" class="aside-icon"></iconify-icon>
-            <span class="hide-menu">New Sale</span>
-          </a>
-        </li>
         <?php
         foreach ($allowed_categories as $category) {
             if (!empty($menu_items[$category])) {
