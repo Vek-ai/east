@@ -15,7 +15,7 @@ $supplier_id = intval($supplier_id);
 $supplier_name = getSupplierName($supplier_id);
 
 $page_title = "$supplier_name Orders";
-
+$permission = $_SESSION['permission'];
 if (!empty($supplier_id)) {
     loadSupplierOrders($supplier_id);
 ?>
@@ -137,6 +137,9 @@ if (!empty($supplier_id)) {
     </div>
 
     <div class="widget-content searchable-container list">
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?> 
     <div class="card card-body">
         <div class="row">
             <div class="col-md-12 mt-3 mt-md-0 d-flex align-items-center justify-content-end gap-4">
@@ -147,6 +150,9 @@ if (!empty($supplier_id)) {
             </div>
         </div>
     </div>
+    <?php                                                    
+    }
+    ?> 
 
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -471,14 +477,26 @@ if (!empty($supplier_id)) {
                                             </select>
                                         </td>
                                         <td>
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?> 
                                             <div class="input-group input-group-sm">
                                                 <button class="btn btn-outline-primary btn-minus" type="button" data-id="<?= $row_product['product_id'] ?>">-</button>
                                                 <input class="form-control p-1 text-center" type="number" id="qty<?= $row_product['product_id'] ?>" value="1" min="1">
                                                 <button class="btn btn-outline-primary btn-plus" type="button" data-id="<?= $row_product['product_id'] ?>">+</button>
                                             </div>
+                                            <?php                                                    
+                                            }
+                                            ?> 
                                         </td>
                                         <td>
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?> 
                                             <button class="btn btn-sm btn-primary btn-add-to-cart" type="button" data-id="<?= $row_product['product_id'] ?>" id="add-to-cart-btn">Add to Order</button>
+                                            <?php                                                    
+                                            }
+                                            ?> 
                                         </td>
                                     </tr>
                                 <?php 

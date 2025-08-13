@@ -1,5 +1,6 @@
 <?php
 session_start();
+$permission = $_SESSION['permission'];
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -276,6 +277,9 @@ if(isset($_POST['fetch_pending_details'])){
                     </tfoot>
                 </table>
             </div>
+            <?php                                                    
+            if ($permission === 'edit') {
+            ?>
             <div class="mt-4 d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-success btn-approve-return" data-id="<?= $orderid ?>">
                     <i class="fa fa-check me-1"></i> Approve Return
@@ -284,6 +288,10 @@ if(isset($_POST['fetch_pending_details'])){
                     <i class="fa fa-times me-1"></i> Reject Return
                 </button>
             </div>
+            <?php                                                    
+            }
+            ?>
+
         <?php 
         } 
         ?>

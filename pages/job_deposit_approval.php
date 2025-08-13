@@ -7,7 +7,7 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Job Deposit Approval";
-
+$permission = $_SESSION['permission'];
 ?>
 <style>
 .dataTables_filter input {
@@ -104,19 +104,24 @@ $page_title = "Job Deposit Approval";
                                             <td>$date</td>
                                             <td>$reference_no</td>
                                             <td>$check_no</td>
-                                            <td class='text-end'> $" .number_format($deposit_amount,2) ."</td>
+                                            <td class='text-end'>$" . number_format($deposit_amount, 2) . "</td>
                                             <td class='text-center'>
                                                 <a type='button' class='btnview' title='View Deposit Details' data-id='$deposit_id'>
                                                     <iconify-icon icon='mdi:eye' class='fs-7 text-primary'></iconify-icon>
-                                                </a>
+                                                </a>";
+
+                                        if ($permission === 'edit') {
+                                            echo "
                                                 <a type='button' class='btnApprove' title='Approve Deposit' data-id='$deposit_id'>
                                                     <iconify-icon icon='solar:like-bold' class='fs-7 text-success'></iconify-icon>
                                                 </a>
                                                 <a type='button' class='btnReject' title='Reject Deposit' data-id='$deposit_id'>
                                                     <iconify-icon icon='solar:dislike-bold' class='fs-7 text-danger'></iconify-icon>
-                                                </a>
-                                            </td>
-                                        </tr>";
+                                                </a>";
+                                        }
+
+                                        echo "</td></tr>";
+
                                 }
                                 ?>
                             </tbody>

@@ -7,7 +7,7 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Payment Approval";
-
+$permission = $_SESSION['permission'];
 ?>
 <style>
 .dataTables_filter input {
@@ -119,15 +119,20 @@ $page_title = "Payment Approval";
                                             <td class='text-center'>
                                                 <a type='button' class='btnViewProof' title='View Proof of Payment' data-payment-id='$payment_id'>
                                                     <iconify-icon icon='mdi:eye' class='fs-7 text-primary'></iconify-icon>
-                                                </a>
-                                                <a type='button' class='btnApprove' title='Approve Payment' data-payment-id='$payment_id'>
-                                                    <iconify-icon icon='solar:like-bold' class='fs-7 text-success'></iconify-icon>
-                                                </a>
-                                                <a type='button' class='btnReject' title='Reject Payment' data-payment-id='$payment_id'>
-                                                    <iconify-icon icon='solar:dislike-bold' class='fs-7 text-danger'></iconify-icon>
-                                                </a>
-                                            </td>
-                                        </tr>";
+                                                </a>";
+
+                                            if ($permission === 'edit') {
+                                                echo "
+                                                    <a type='button' class='btnApprove' title='Approve Payment' data-payment-id='$payment_id'>
+                                                        <iconify-icon icon='solar:like-bold' class='fs-7 text-success'></iconify-icon>
+                                                    </a>
+                                                    <a type='button' class='btnReject' title='Reject Payment' data-payment-id='$payment_id'>
+                                                        <iconify-icon icon='solar:dislike-bold' class='fs-7 text-danger'></iconify-icon>
+                                                    </a>";
+                                            }
+
+                                        echo "</td></tr>";
+
                                 }
                                 ?>
                             </tbody>

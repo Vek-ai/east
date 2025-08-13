@@ -1,5 +1,6 @@
 <?php
 session_start();
+$permission = $_SESSION['permission'];
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -88,9 +89,15 @@ if(isset($_POST['fetch_available'])){
         </div>
     </div>
     <div class="modal-footer">
+        <?php                                                    
+        if ($permission === 'edit') {
+        ?>
         <?php if (!empty($work_order_details) && $work_order_details['status'] == 3): ?>
             <button id="release_work_order" class="btn ripple btn-primary" type="button">Release Work Order</button>
         <?php endif; ?>
+        <?php                                                    
+        }
+        ?>
     </div>
 
     <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">
@@ -397,9 +404,16 @@ if(isset($_POST['fetch_view'])){
         </div>
     </div>
     <div class="d-flex justify-content-end mt-3">
+        <?php                                                    
+        if ($permission === 'edit') {
+        ?>
         <button type="button" class="btn btn-success" id="releaseSelectedBtn">
             <i class="fa fa-play me-1"></i> Release
         </button>
+        <?php                                                    
+        }
+        ?>
+
     </div>
 
     <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">

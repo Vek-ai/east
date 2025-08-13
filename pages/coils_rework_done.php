@@ -7,6 +7,7 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Coils Rework Completed";
+$permission = $_SESSION['permission'];
 ?>
 
 <div class="container-fluid">
@@ -77,7 +78,7 @@ $page_title = "Coils Rework Completed";
                                             coil_defective
                                         WHERE 
                                             hidden = '0'
-                                            AND status = '2'
+                                            AND status = '1'
                                         ORDER BY 
                                             tagged_date
                                     ";  
@@ -130,9 +131,15 @@ $page_title = "Coils Rework Completed";
                                             <th><?= $row_coil['tagged_note'] ?></th>
                                             <td>
                                                 <div class="action-btn text-center">
+                                                    <?php                                                    
+                                                    if ($permission === 'edit') {
+                                                    ?>
                                                     <a href="#" role="button" class="tag-rework-btn" data-id="<?= $row_coil['coil_defective_id'] ?>" title="Tag as Transferred to Inventory">
                                                         <iconify-icon class="fs-7" icon="mdi:tools"></iconify-icon>
                                                     </a>
+                                                    <?php                                                    
+                                                    }
+                                                    ?>
                                                 </div>
                                             </td>
                                            

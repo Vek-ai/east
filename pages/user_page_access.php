@@ -7,6 +7,7 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "User Permissions Management";
+$permission = $_SESSION['permission'];
 ?>
 <style>
     .dataTables_filter input {
@@ -115,15 +116,22 @@ $page_title = "User Permissions Management";
         <i class="fas fa-cog"></i> Page Permission (<span id="selected-staff-name">Staff Name</span>)
     </h3>
     <div class="btn-group">
-      <button type="button" class="btn btn-outline-success" id="grant_all_btn">
-        <i class="fas fa-check me-1"></i> Grant All
-      </button>
-      <button type="button" class="btn btn-outline-danger" id="revoke_all_btn">
-        <i class="fas fa-times me-1"></i> Revoke All
-      </button>
-      <button type="button" class="btn btn-primary" id="save_changes_btn">
-        <i class="fas fa-save me-1"></i> Save Changes
-      </button>
+      <?php                                                    
+      if ($permission === 'edit') {
+      ?>
+        <button type="button" class="btn btn-outline-success" id="grant_all_btn">
+          <i class="fas fa-check me-1"></i> Grant All
+        </button>
+        <button type="button" class="btn btn-outline-danger" id="revoke_all_btn">
+          <i class="fas fa-times me-1"></i> Revoke All
+        </button>
+        <button type="button" class="btn btn-primary" id="save_changes_btn">
+          <i class="fas fa-save me-1"></i> Save Changes
+        </button>
+      <?php                                                    
+      }
+      ?>
+
     </div>
   </div>
 

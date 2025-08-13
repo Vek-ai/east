@@ -1,4 +1,6 @@
 <?php
+session_start();
+$permission = $_SESSION['permission'];
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
@@ -7,6 +9,7 @@ if(isset($_REQUEST['action'])) {
     
     if ($action === 'fetch_table') {
         $access_profile_id = mysqli_real_escape_string($conn, $_POST['access_profile_id'] ?? '');
+        $fullDisabled = ($permission !== 'edit') ? 'disabled' : '';
 
         $query = "SELECT * FROM pages";
         $result = mysqli_query($conn, $query);
@@ -62,6 +65,7 @@ if(isset($_REQUEST['action'])) {
                         data-page-id='$page_id' 
                         id='access_$page_id'
                         $accessChecked
+                        $fullDisabled
                     >
                     <label class='form-check-label' for='access_$page_id'></label>
                 </div>";
@@ -70,11 +74,11 @@ if(isset($_REQUEST['action'])) {
             $editChecked = ($permission === 'edit') ? 'checked' : '';
             $perm_html = "
                 <div class='form-check form-check-inline'>
-                    <input class='form-check-input permission-radio' type='radio' name='permission_$page_id' value='view' $viewChecked " . (!$hasAccess ? "disabled" : "") . ">
+                    <input class='form-check-input permission-radio' type='radio' name='permission_$page_id' value='view' $viewChecked " . (!$hasAccess ? "disabled" : "") . " $fullDisabled>
                     <label class='form-check-label'>View</label>
                 </div>
                 <div class='form-check form-check-inline'>
-                    <input class='form-check-input permission-radio' type='radio' name='permission_$page_id' value='edit' $editChecked " . (!$hasAccess ? "disabled" : "") . ">
+                    <input class='form-check-input permission-radio' type='radio' name='permission_$page_id' value='edit' $editChecked " . (!$hasAccess ? "disabled" : "") . " $fullDisabled>
                     <label class='form-check-label'>Edit</label>
                 </div>";
 

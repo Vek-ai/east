@@ -7,6 +7,7 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Defective Coils";
+$permission = $_SESSION['permission'];
 ?>
 
 <div class="container-fluid">

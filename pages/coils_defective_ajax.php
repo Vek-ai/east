@@ -1,5 +1,6 @@
 <?php
 session_start();
+$permission = $_SESSION['permission'];
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -45,15 +46,17 @@ if(isset($_REQUEST['action'])){
             $actions .= '<a href="#" role="button" class="view-history-btn" data-id="' . $row['coil_defective_id'] . '" title="View Coil History">
                 <iconify-icon class="fs-7" style="color: #00ffbfff;" icon="solar:history-outline"></iconify-icon>
             </a>';
-            $actions .= '<a href="#" role="button" class="tag-review-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="review" title="Tag Coil for EKM Review">
-                <iconify-icon class="fs-7" style="color: #ffd700;" icon="solar:tag-outline"></iconify-icon>
-            </a>';
-            $actions .= '<a href="#" role="button" class="tag-claim-btn" data-id="' . $row['coil_defective_id'] . '" data-action="claim" title="Submit Claim against Coil"> 
-                <iconify-icon class="fs-7" style="color: #ffffff;" icon="solar:clipboard-text-outline"></iconify-icon>
-            </a>';
-            $actions .= '<a href="#" role="button" class="tag-transfer-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="transfer" data-grade="'.$row['grade'].'" title="Add Coil to Inventory">
-                <iconify-icon class="fs-7" style="color: #28a745;" icon="solar:verified-check-outline"></iconify-icon>
-            </a>';
+            if ($permission === 'edit') {
+                $actions .= '<a href="#" role="button" class="tag-review-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="review" title="Tag Coil for EKM Review">
+                    <iconify-icon class="fs-7" style="color: #ffd700;" icon="solar:tag-outline"></iconify-icon>
+                </a>';
+                $actions .= '<a href="#" role="button" class="tag-claim-btn" data-id="' . $row['coil_defective_id'] . '" data-action="claim" title="Submit Claim against Coil"> 
+                    <iconify-icon class="fs-7" style="color: #ffffff;" icon="solar:clipboard-text-outline"></iconify-icon>
+                </a>';
+                $actions .= '<a href="#" role="button" class="tag-transfer-btn change_status" data-id="' . $row['coil_defective_id'] . '" data-action="transfer" data-grade="'.$row['grade'].'" title="Add Coil to Inventory">
+                    <iconify-icon class="fs-7" style="color: #28a745;" icon="solar:verified-check-outline"></iconify-icon>
+                </a>';
+            }
 
             $actions .= '</div>';
 

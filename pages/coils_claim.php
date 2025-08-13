@@ -7,6 +7,7 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Coil Claims";
+$permission = $_SESSION['permission'];
 ?>
 
 <div class="container-fluid">
@@ -193,12 +194,19 @@ $page_title = "Coil Claims";
       </div>
 
       <div class="modal-body">
+        <?php                                                    
+        if ($permission === 'edit') {
+        ?>
         <div class="mb-3">
           <label for="newNote" class="form-label">Add a Note:</label>
           <textarea id="newNote" class="form-control" rows="3" placeholder="Write your note here..."></textarea>
           <div class="text-end mt-2">
             <button class="btn btn-sm btn-primary" id="saveNoteBtn">Save Note</button>
         </div>
+        <?php                                                    
+        }
+        ?>
+
         </div>
 
         <table class="table table-bordered table-striped mt-3" id="notesTable">

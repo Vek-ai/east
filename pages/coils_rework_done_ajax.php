@@ -24,7 +24,7 @@ if(isset($_REQUEST['action'])){
 
             $update = "
                 UPDATE coil_defective 
-                SET status = 3 
+                SET status = 2 
                 WHERE coil_defective_id = $coil_defective_id
             ";
 

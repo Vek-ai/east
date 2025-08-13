@@ -11,6 +11,7 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Out of Stock Products";
+$permission = $_SESSION['permission'];
 ?>
 <style>
     .dz-preview {
@@ -130,6 +131,9 @@ $page_title = "Out of Stock Products";
     </div>
 
     <div class="widget-content searchable-container list">
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
     <div class="card card-body">
         <div class="row">
             <div class="col-md-6 d-flex align-items-center">
@@ -148,6 +152,9 @@ $page_title = "Out of Stock Products";
             </div>
         </div>
     </div>
+    <?php                                                    
+    }
+    ?>
 
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -183,17 +190,29 @@ $page_title = "Out of Stock Products";
                 </div>
                 <div class="modal-footer d-flex justify-content-between">
                     <div>
+                        <?php                                                    
+                        if ($permission === 'edit') {
+                        ?>
                         <button class="btn ripple fw-bold text-white" type="button" id="save_order" 
                             style="background-color: #17A2B8; border-color: #138496;">
                             <i class="fas fa-save" style="color: #E3F2FD;"></i> Save Order for Later
                         </button>
+                        <?php                                                    
+                        }
+                        ?>
                     </div>
 
                     <div>
+                        <?php                                                    
+                        if ($permission === 'edit') {
+                        ?>
                         <button class="btn ripple fw-bold text-white me-2" type="button" id="order_products" 
                             style="background-color: #28A745; border-color: #218838;">
                             <i class="fas fa-shopping-cart" style="color: #D4EDDA;"></i> Place Order
                         </button>
+                        <?php                                                    
+                        }
+                        ?>
                         <button class="btn ripple fw-bold text-white" data-bs-dismiss="modal" type="button" 
                             style="background-color: #DC3545; border-color: #C82333;">
                             <i class="fas fa-times" style="color: #F8D7DA;"></i> Close
@@ -480,14 +499,28 @@ $page_title = "Out of Stock Products";
                                             </select>
                                         </td>
                                         <td>
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
                                             <div class="input-group input-group-sm">
                                                 <button class="btn btn-outline-primary btn-minus" type="button" data-id="<?= $row_product['product_id'] ?>">-</button>
                                                 <input class="form-control p-1 text-center" type="number" id="qty<?= $row_product['product_id'] ?>" value="1" min="1">
                                                 <button class="btn btn-outline-primary btn-plus" type="button" data-id="<?= $row_product['product_id'] ?>">+</button>
                                             </div>
+                                            <?php                                                    
+                                            }else{
+                                                echo "0";
+                                            }
+                                            ?>
                                         </td>
                                         <td>
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
                                             <button class="btn btn-sm btn-primary btn-add-to-cart" type="button" data-id="<?= $row_product['product_id'] ?>" id="add-to-cart-btn">Add to Order</button>
+                                            <?php                                                    
+                                            }
+                                            ?>
                                         </td>
                                     </tr>
                                 <?php 

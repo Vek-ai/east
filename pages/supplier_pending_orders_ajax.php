@@ -1,4 +1,6 @@
 <?php
+session_start();
+$permission = $_SESSION['permission'];
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -69,9 +71,15 @@ if(isset($_REQUEST['action'])) {
                                             <td><?= getColorName($prod['color']) ?></td>
                                             <td><?= date("M d, Y", strtotime($prod['order_date'])) ?></td>
                                             <td class="text-center">
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>
                                                 <a href="javascript:void(0)" class="delete-product-btn" data-id="<?= $prod['prod_order_id'] ?>" title="Remove Product from Order">
                                                     <i class="fas fa-trash text-danger"></i>
                                                 </a>
+                                                <?php                                                    
+                                                }
+                                                ?>
                                             </td>
                                         </tr>
                                         <?php
@@ -81,7 +89,9 @@ if(isset($_REQUEST['action'])) {
                             </table>
                         </div>
                     </div>
-                    
+                    <?php                                                    
+                    if ($permission === 'edit') {
+                    ?>
                     <div class="d-flex justify-content-between mt-3">
                         <a href="?page=supplier_edit_orders&supplier_id=<?= $supplier_id ?>" target="_blank" class="btn btn-warning">
                             <i class="fas fa-edit"></i> Edit Order
@@ -96,6 +106,9 @@ if(isset($_REQUEST['action'])) {
                             </button>
                         </div>
                     </div>
+                    <?php                                                    
+                    }
+                    ?>
 
                 <?php } else { ?>
                     <p class="text-muted">No orders found for this supplier.</p>
