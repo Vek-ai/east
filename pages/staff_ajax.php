@@ -35,6 +35,7 @@ if(isset($_REQUEST['action'])) {
         $driver_class = mysqli_real_escape_string($conn, $_POST['driver_class']);
         $license_renewal_date = mysqli_real_escape_string($conn, $_POST['license_renewal_date']);
         $warehouse = mysqli_real_escape_string($conn, $_POST['warehouse'] ?? '');
+        $access_profile_id = intval($_POST['access_profile_id'] ?? 0);
     
         $checkQuery = "SELECT * FROM staff WHERE staff_id = '$staff_id'";
         $result = mysqli_query($conn, $checkQuery);
@@ -57,7 +58,8 @@ if(isset($_REQUEST['action'])) {
                     emergency_contact_phone = '$emergency_contact_phone', 
                     driver_med_cert = '$driver_med_cert', 
                     driver_class = '$driver_class', 
-                    license_renewal_date = '$license_renewal_date'
+                    license_renewal_date = '$license_renewal_date', 
+                    access_profile_id = '$access_profile_id'
                 WHERE staff_id = '$staff_id'
             ";
     
@@ -110,7 +112,8 @@ if(isset($_REQUEST['action'])) {
                     emergency_contact_phone, 
                     driver_med_cert, 
                     driver_class, 
-                    license_renewal_date
+                    license_renewal_date,
+                    access_profile_id
                 ) VALUES (
                     '$staff_fname', 
                     '$staff_lname', 
@@ -125,7 +128,8 @@ if(isset($_REQUEST['action'])) {
                     '$emergency_contact_phone', 
                     '$driver_med_cert', 
                     '$driver_class', 
-                    '$license_renewal_date'
+                    '$license_renewal_date', 
+                    '$access_profile_id'
                 )
             ";
     
@@ -351,7 +355,27 @@ if(isset($_REQUEST['action'])) {
                                             <input type="date" id="license_renewal_date" name="license_renewal_date" class="form-control" value="<?= $row['license_renewal_date'] ?>" />
                                         </div>
                                     </div>
-                                
+
+                                    <div class="row">
+                                        <div class="col-6 mb-7">
+                                            <label class="form-label">Access Profile</label>
+                                            <select id="access_profile_id" name="access_profile_id" class="form-control">
+                                                <option value="">-- Select Profile --</option>
+                                                <?php
+                                                $res = mysqli_query($conn, "
+                                                    SELECT access_profile_id, access_profile
+                                                    FROM access_profile
+                                                    WHERE status = 1 AND hidden = 0
+                                                    ORDER BY access_profile ASC
+                                                ");
+                                                while ($ap = mysqli_fetch_assoc($res)) {
+                                                    $selected = ($ap['access_profile_id'] == $row['access_profile_id']) ? 'selected' : '';
+                                                    echo "<option value='{$ap['access_profile_id']}' $selected>{$ap['access_profile']}</option>";
+                                                }
+                                                ?>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

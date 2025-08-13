@@ -6,17 +6,17 @@ if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
     
     if ($action === 'fetch_table') {
-        $staff_id = mysqli_real_escape_string($conn, $_POST['staff_id'] ?? '');
+        $access_profile_id = mysqli_real_escape_string($conn, $_POST['access_profile_id'] ?? '');
 
         $query = "SELECT * FROM pages";
         $result = mysqli_query($conn, $query);
 
         $allAccess = [];
-        if (!empty($staff_id)) {
+        if (!empty($access_profile_id)) {
             $perm_query = "
-                SELECT page_id, permission
-                FROM user_page_access
-                WHERE staff_id = '$staff_id'
+                SELECT page_id, permission 
+                FROM access_profile_pages 
+                WHERE access_profile_id = '$access_profile_id'
             ";
             $perm_result = mysqli_query($conn, $perm_query);
             if ($perm_result && mysqli_num_rows($perm_result) > 0) {
@@ -90,7 +90,6 @@ if(isset($_REQUEST['action'])) {
                 'permission' => $perm_html,
                 'status' => "<span class='fw-semibold'>{$status}</span>"
             ];
-            
         }
 
         echo json_encode([
@@ -105,39 +104,55 @@ if(isset($_REQUEST['action'])) {
         exit;
     }
 
+
     if ($action === 'save_changes') {
-        $staff_id = mysqli_real_escape_string($conn, $_POST['staff_id'] ?? '');
-        $updates = json_decode($_POST['updates'] ?? '[]', true);
+    $access_profile_id = intval($_POST['access_profile_id'] ?? 0);
+    $updates = json_decode($_POST['updates'] ?? '[]', true);
 
-        foreach ($updates as $update) {
-            $page_id = mysqli_real_escape_string($conn, $update['page_id']);
-            $has_access = $update['has_access'] ? 1 : 0;
-            $permission = $has_access ? mysqli_real_escape_string($conn, $update['permission']) : null;
+    foreach ($updates as $update) {
+        $page_id = intval($update['page_id']);
+        $has_access = !empty($update['has_access']) ? 1 : 0;
+        $permission = $has_access ? mysqli_real_escape_string($conn, $update['permission']) : null;
 
-            $check_sql = "SELECT * FROM user_page_access WHERE staff_id = '$staff_id' AND page_id = '$page_id'";
-            $check_result = mysqli_query($conn, $check_sql);
+        $check_sql = "
+            SELECT 1 
+            FROM access_profile_pages 
+            WHERE access_profile_id = $access_profile_id 
+              AND page_id = $page_id
+        ";
+        $check_result = mysqli_query($conn, $check_sql);
 
-            if ($check_result && mysqli_num_rows($check_result) > 0) {
-                if ($has_access) {
-                    $update_sql = "UPDATE user_page_access SET permission = '$permission' WHERE staff_id = '$staff_id' AND page_id = '$page_id'";
-                    mysqli_query($conn, $update_sql);
-                } else {
-                    $delete_sql = "DELETE FROM user_page_access WHERE staff_id = '$staff_id' AND page_id = '$page_id'";
-                    mysqli_query($conn, $delete_sql);
-                }
+        if ($check_result && mysqli_num_rows($check_result) > 0) {
+            if ($has_access) {
+                $update_sql = "
+                    UPDATE access_profile_pages 
+                    SET permission = " . ($permission !== null ? "'$permission'" : "NULL") . " 
+                    WHERE access_profile_id = $access_profile_id 
+                      AND page_id = $page_id
+                ";
+                mysqli_query($conn, $update_sql);
             } else {
-                if ($has_access) {
-                    $insert_sql = "INSERT INTO user_page_access (staff_id, page_id, permission) VALUES ('$staff_id', '$page_id', '$permission')";
-                    mysqli_query($conn, $insert_sql);
-                }
+                $delete_sql = "
+                    DELETE FROM access_profile_pages 
+                    WHERE access_profile_id = $access_profile_id 
+                      AND page_id = $page_id
+                ";
+                mysqli_query($conn, $delete_sql);
+            }
+        } else {
+            if ($has_access) {
+                $insert_sql = "
+                    INSERT INTO access_profile_pages (access_profile_id, page_id, permission) 
+                    VALUES ($access_profile_id, $page_id, " . ($permission !== null ? "'$permission'" : "NULL") . ")
+                ";
+                mysqli_query($conn, $insert_sql);
             }
         }
-
-        echo 'success';
-        exit;
     }
 
-
+    echo 'success';
+    exit;
+}
     mysqli_close($conn);
 }
 ?>

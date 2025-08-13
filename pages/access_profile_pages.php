@@ -6,7 +6,7 @@ if (!defined('APP_SECURE')) {
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "User Permissions Management";
+$page_title = "Access Profile Permissions Management";
 ?>
 <style>
     .dataTables_filter input {
@@ -56,29 +56,24 @@ $page_title = "User Permissions Management";
         <span class="me-2" style="font-size: 1.4rem;">
           <i class="fas fa-user"></i>
         </span>
-        Select User
+        Select Access Profile
       </h4>
     </div>
 
     <div class="col-md-4">
-      <label for="staff_filter" class="form-label">Choose user to manage</label>
+      <label for="access_profile_filter" class="form-label">Choose Access Profile to manage</label>
       <div class="mb-3 mb-md-0">
-        <select id="staff_filter" class="form-select select2">
-          <option value="" hidden selected>Select User</option>
+        <select id="access_profile_filter" class="form-select select2">
+          <option value="" hidden selected>Select Access Profile</option>
           <optgroup label="Staff List">
             <?php
-              $staffQuery = "SELECT staff_id, email FROM staff ORDER BY staff_fname ASC";
+              $staffQuery = "SELECT access_profile_id, access_profile FROM access_profile ORDER BY access_profile ASC";
               $staffResult = mysqli_query($conn, $staffQuery);
               if ($staffResult && mysqli_num_rows($staffResult) > 0) {
                   while ($staffRow = mysqli_fetch_assoc($staffResult)) {
-                      $staff_id = $staffRow['staff_id'];
-                      $email = $staffRow['email'];
-                      $staff_name_only = get_staff_name($staff_id);
-                      $display_name = $staff_name_only;
-                      if (!empty($email)) {
-                          $display_name .= " ({$email})";
-                      }
-                      echo "<option value='{$staff_id}' data-name='" . htmlspecialchars($staff_name_only, ENT_QUOTES) . "'>{$display_name}</option>";
+                      $access_profile_id = $staffRow['access_profile_id'];
+                      $access_profile = $staffRow['access_profile'];
+                      echo "<option value='{$access_profile_id}' data-name='" . htmlspecialchars($access_profile, ENT_QUOTES) . "'>{$access_profile}</option>";
                   }
               }
             ?>
@@ -191,11 +186,11 @@ $page_title = "User Permissions Management";
         table = $('#pages_table').DataTable({
             pageLength: 100,
             ajax: {
-                url: 'pages/user_page_access_ajax.php',
+                url: 'pages/access_profile_pages_ajax.php',
                 type: 'POST',
                 data: function(d) {
                     d.action = 'fetch_table';
-                    d.staff_id = $('#staff_filter').val();
+                    d.access_profile_id = $('#access_profile_filter').val();
                 },
                 dataSrc: function (json) {
                     const counts = json.counts || {};
@@ -289,19 +284,20 @@ $page_title = "User Permissions Management";
             });
         });
 
-        const staffId = $('#staff_filter').val();
+        const access_profile_id = $('#access_profile_filter').val();
 
         $.ajax({
-            url: 'pages/user_page_access_ajax.php',
+            url: 'pages/access_profile_pages_ajax.php',
             method: 'POST',
             data: {
                 action: 'save_changes',
-                staff_id: staffId,
+                access_profile_id: access_profile_id,
                 updates: JSON.stringify(updates)
             },
             success: function (response) {
                 alert('Changes saved successfully.');
                 table.ajax.reload(null, false);
+                console.log(response);
             },
             error: function (xhr, status, error) {
                 console.error('Save failed:', error);
@@ -310,7 +306,7 @@ $page_title = "User Permissions Management";
         });
     });
 
-    $(document).on('change', '#staff_filter', function () {
+    $(document).on('change', '#access_profile_filter', function () {
         const selected = $(this).val();
         const selectedName = $(this).find('option:selected').data('name');
         $('#selected-staff-name').text(selectedName);

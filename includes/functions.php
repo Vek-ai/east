@@ -2154,14 +2154,42 @@ function getUserAccess($staff_id) {
     global $conn;
 
     $staff_id = mysqli_real_escape_string($conn, $staff_id);
-
-    $query = "SELECT page_id, permission FROM user_page_access WHERE staff_id = '$staff_id'";
-    $result = mysqli_query($conn, $query);
-
     $access = [];
 
-    if ($result && mysqli_num_rows($result) > 0) {
-        while ($row = mysqli_fetch_assoc($result)) {
+    $profile_query = "
+        SELECT access_profile_id
+        FROM staff
+        WHERE staff_id = '$staff_id'
+        LIMIT 1
+    ";
+    $profile_result = mysqli_query($conn, $profile_query);
+    $profile_row = mysqli_fetch_assoc($profile_result);
+    $access_profile_id = (int)($profile_row['access_profile_id'] ?? 0);
+
+    if ($access_profile_id > 0) {
+        $profile_pages_query = "
+            SELECT page_id, permission
+            FROM access_profile_pages
+            WHERE access_profile_id = '$access_profile_id'
+        ";
+        $profile_pages_result = mysqli_query($conn, $profile_pages_query);
+
+        if ($profile_pages_result && mysqli_num_rows($profile_pages_result) > 0) {
+            while ($row = mysqli_fetch_assoc($profile_pages_result)) {
+                $access[$row['page_id']] = $row['permission'];
+            }
+        }
+    }
+
+    $user_pages_query = "
+        SELECT page_id, permission
+        FROM user_page_access
+        WHERE staff_id = '$staff_id'
+    ";
+    $user_pages_result = mysqli_query($conn, $user_pages_query);
+
+    if ($user_pages_result && mysqli_num_rows($user_pages_result) > 0) {
+        while ($row = mysqli_fetch_assoc($user_pages_result)) {
             $access[$row['page_id']] = $row['permission'];
         }
     }
