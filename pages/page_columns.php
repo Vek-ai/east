@@ -138,10 +138,6 @@ td.notes,  td.last-edit{
                             </table>
                         </div>
                     </div>
-                
-                    <div class="mt-3 text-end">
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                    </div>
                 </form>
             </div>
         </div>
