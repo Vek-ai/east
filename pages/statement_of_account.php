@@ -12,6 +12,21 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 
 $page_title = "Statement of Accounts";
 $permission = $_SESSION['permission'];
+
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 <style>
     .dz-preview {
@@ -320,14 +335,32 @@ $permission = $_SESSION['permission'];
                         <table id="est_list_tbl" class="table table-hover mb-0 text-wrap">
                             <thead>
                                 <tr>
-                                    <th style="color: #ffffff !important;">Customer</th>
-                                    <th style="color: #ffffff !important;">Available Credit</th>
-                                    <th style="color: #ffffff !important;">Balance Due</th>
-                                    <th style="color: #ffffff !important;">Last Payment</th>
-                                    <th style="color: #ffffff !important;">Date Outstanding</th>
-                                    <th style="color: #ffffff !important;" class="text-center">Action</th>
+                                    <?php if (showCol('customer', $visibleColumns)) : ?>
+                                        <th style="color: #ffffff !important;">Customer</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('available_credit', $visibleColumns)) : ?>
+                                        <th style="color: #ffffff !important;">Available Credit</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('balance_due', $visibleColumns)) : ?>
+                                        <th style="color: #ffffff !important;">Balance Due</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('last_payment', $visibleColumns)) : ?>
+                                        <th style="color: #ffffff !important;">Last Payment</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('date_outstanding', $visibleColumns)) : ?>
+                                        <th style="color: #ffffff !important;">Date Outstanding</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('action', $visibleColumns)) : ?>
+                                        <th style="color: #ffffff !important;" class="text-center">Action</th>
+                                    <?php endif; ?>
                                 </tr>
-                            </thead>
+                                </thead>
+
                             <tbody>
                                 <?php while ($row = $result->fetch_assoc()) : ?>
                                     <?php 
@@ -352,38 +385,60 @@ $permission = $_SESSION['permission'];
                                         }
                                     ?>
                                     <tr>
-                                        <td><?= get_customer_name($row['customer_id']) ?></td>
-                                        <td style="color:green !important;">
-                                            $<?= number_format(getCustomerTotalAvail($customer_id), 2) ?>
-                                        </td>
-                                        <td style="color:rgb(255, 21, 21) !important;">
-                                            $<?= number_format(getCustomerCreditTotal($customer_id), 2) ?>
-                                        </td>
-                                        <td><?= $last_payment ?></td>
-                                        <td>
-                                            <?= $date_outstanding ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <a href="?page=statement_of_account_details&customer_id=<?= $row["customer_id"]; ?>" 
-                                                class="btn btn-danger-gradient btn-sm p-0 me-1" 
-                                                data-bs-toggle="tooltip" 
-                                                title="View Details">
-                                                    <i class="text-primary fa fa-eye fs-5"></i>
-                                            </a>
+                                        <?php if (showCol('customer', $visibleColumns)) : ?>
+                                            <td><?= get_customer_name($row['customer_id']) ?></td>
+                                        <?php endif; ?>
 
-                                            <a href="print_statement_account.php?id=<?= $customer_id; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
-                                                    <i class="text-success fa fa-print fs-5"></i>
-                                            </a>
-                                            <?php                                                    
-                                            if ($permission === 'edit') {
-                                            ?>
-                                            <a href="javascript:void(0)" type="button" id="email_statement_btn" class="me-1 email_statement_btn" data-customer="<?= $customer_id ?>" data-bs-toggle="tooltip" title="Send Confirmation">
-                                                <iconify-icon icon="solar:plain-linear" class="fs-6 text-info"></iconify-icon>
-                                            </a>
-                                            <?php                                                    
-                                            }
-                                            ?>
-                                        </td>
+                                        <?php if (showCol('available_credit', $visibleColumns)) : ?>
+                                            <td style="color:green !important;">
+                                                $<?= number_format(getCustomerTotalAvail($customer_id), 2) ?>
+                                            </td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('balance_due', $visibleColumns)) : ?>
+                                            <td style="color:rgb(255, 21, 21) !important;">
+                                                $<?= number_format(getCustomerCreditTotal($customer_id), 2) ?>
+                                            </td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('last_payment', $visibleColumns)) : ?>
+                                            <td><?= $last_payment ?></td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('date_outstanding', $visibleColumns)) : ?>
+                                            <td><?= $date_outstanding ?></td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('action', $visibleColumns)) : ?>
+                                            <td class="text-center">
+                                                <a href="?page=statement_of_account_details&customer_id=<?= $row["customer_id"]; ?>" 
+                                                    class="btn btn-danger-gradient btn-sm p-0 me-1" 
+                                                    data-bs-toggle="tooltip" 
+                                                    title="View Details">
+                                                        <i class="text-primary fa fa-eye fs-5"></i>
+                                                </a>
+
+                                                <a href="print_statement_account.php?id=<?= $customer_id; ?>" 
+                                                class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" 
+                                                type="button" 
+                                                data-id="<?= $row["orderid"]; ?>" 
+                                                data-bs-toggle="tooltip" 
+                                                title="Print/Download">
+                                                        <i class="text-success fa fa-print fs-5"></i>
+                                                </a>
+
+                                                <?php if ($permission === 'edit') : ?>
+                                                    <a href="javascript:void(0)" 
+                                                    id="email_statement_btn" 
+                                                    class="me-1 email_statement_btn" 
+                                                    data-customer="<?= $customer_id ?>" 
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Send Confirmation">
+                                                        <iconify-icon icon="solar:plain-linear" class="fs-6 text-info"></iconify-icon>
+                                                    </a>
+                                                <?php endif; ?>
+                                            </td>
+                                        <?php endif; ?>
                                     </tr>
                                 <?php endwhile; ?>
                             </tbody>
