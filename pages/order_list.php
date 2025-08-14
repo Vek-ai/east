@@ -25,6 +25,21 @@ if(isset($_REQUEST['customer_id'])){
 }
 
 $permission = $_SESSION['permission'];
+
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 <style>
     .dz-preview {
@@ -443,15 +458,36 @@ $permission = $_SESSION['permission'];
                             <table id="order_list_tbl" class="table table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
-                                        <th style="color: #ffffff !important;">OrderID</th>
-                                        <th style="color: #ffffff !important;">Customer</th>
-                                        <th style="color: #ffffff !important;">Total Price</th>
-                                        <th style="color: #ffffff !important;">Order Date</th>
-                                        <th style="color: #ffffff !important;">Status</th>
-                                        <th style="color: #ffffff !important;">Salesperson</th>
-                                        <th style="color: #ffffff !important;">Action</th>
+                                        <?php if (showCol('orderid')): ?>
+                                            <th style="color: #ffffff !important;">OrderID</th>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('customer')): ?>
+                                            <th style="color: #ffffff !important;">Customer</th>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('total_price')): ?>
+                                            <th style="color: #ffffff !important;">Total Price</th>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('order_date')): ?>
+                                            <th style="color: #ffffff !important;">Order Date</th>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('status')): ?>
+                                            <th style="color: #ffffff !important;">Status</th>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('salesperson')): ?>
+                                            <th style="color: #ffffff !important;">Salesperson</th>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('action')): ?>
+                                            <th style="color: #ffffff !important;">Action</th>
+                                        <?php endif; ?>
                                     </tr>
                                 </thead>
+
                                 <tbody>
                                     <?php 
 
@@ -484,83 +520,102 @@ $permission = $_SESSION['permission'];
                                             data-status="<?= $status_code ?>"
                                             data-show-email="<?= $show_send_email ?>"
                                         >
-                                            <td style="color: #ffffff !important;">
-                                                <?= $row["orderid"]; ?>
-                                            </td>
-                                            <td style="color: #ffffff !important;">
-                                                <?php echo get_customer_name($row["customerid"]) ?>
-                                            </td>
-                                            <td style="color: #ffffff !important;">
-                                                $ <?php echo number_format($row["discounted_price"],2) ?>
-                                            </td>
-                                            <td style="color: #ffffff !important;"
-                                                <?php if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
-                                                    data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
-                                                <?php endif; ?>
-                                            >
-                                                <?php 
-                                                    if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
-                                                        echo date("F d, Y", strtotime($row["order_date"]));
-                                                    } else {
-                                                        echo '';
-                                                    }
-                                                ?>
-                                            </td>
-                                            <td class="text-center" style="color: #ffffff !important;">
-                                                <span class="estimate_status <?= $status['class']; ?> fw-bond"><?= $status['label']; ?></span>
-                                            </td>
-                                            <td style="color: #ffffff !important;">
-                                                <?= ucwords(get_staff_name($row["cashier"])) ?>
-                                            </td>
-                                            <td class="text-center">
-                                                <button class="btn btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Order">
-                                                    <i class="text-primary fa fa-eye fs-5"></i>
-                                                </button>
+                                            <?php if (showCol('orderid')): ?>
+                                                <td style="color: #ffffff !important;">
+                                                    <?= $row["orderid"]; ?>
+                                                </td>
+                                            <?php endif; ?>
 
-                                                <?php                                                    
-                                                if ($permission === 'edit') {
-                                                ?>
-                                                    <button class="btn btn-sm p-0 me-1" id="edit_order_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Edit Order">
-                                                        <i class="text-warning fa fa-pencil fs-5"></i>
-                                                    </button>
-                                                <?php
-                                                }
-                                                ?>
+                                            <?php if (showCol('customer')): ?>
+                                                <td style="color: #ffffff !important;">
+                                                    <?php echo get_customer_name($row["customerid"]) ?>
+                                                </td>
+                                            <?php endif; ?>
 
-                                                <?php                                                    
-                                                if ($permission === 'edit') {
-                                                    if ($show_send_email == '1'){ ?>
-                                                        <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Send Confirmation">
-                                                            <iconify-icon icon="solar:plain-linear" class="fs-6 text-info"></iconify-icon>
-                                                        </a>
+                                            <?php if (showCol('total_price')): ?>
+                                                <td style="color: #ffffff !important;">
+                                                    $ <?php echo number_format($row["discounted_price"],2) ?>
+                                                </td>
+                                            <?php endif; ?>
+
+                                            <?php if (showCol('order_date')): ?>
+                                                <td style="color: #ffffff !important;"
+                                                    <?php if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
+                                                        data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
+                                                    <?php endif; ?>
+                                                >
                                                     <?php 
+                                                        if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
+                                                            echo date("F d, Y", strtotime($row["order_date"]));
+                                                        } else {
+                                                            echo '';
+                                                        }
+                                                    ?>
+                                                </td>
+                                            <?php endif; ?>
+
+                                            <?php if (showCol('status')): ?>
+                                                <td class="text-center" style="color: #ffffff !important;">
+                                                    <span class="estimate_status <?= $status['class']; ?> fw-bond"><?= $status['label']; ?></span>
+                                                </td>
+                                            <?php endif; ?>
+
+                                            <?php if (showCol('salesperson')): ?>
+                                                <td style="color: #ffffff !important;">
+                                                    <?= ucwords(get_staff_name($row["cashier"])) ?>
+                                                </td>
+                                            <?php endif; ?>
+
+                                            <?php if (showCol('action')): ?>
+                                                <td class="text-center">
+                                                    <button class="btn btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Order">
+                                                        <i class="text-primary fa fa-eye fs-5"></i>
+                                                    </button>
+
+                                                    <?php                                                    
+                                                    if ($permission === 'edit') {
+                                                    ?>
+                                                        <button class="btn btn-sm p-0 me-1" id="edit_order_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Edit Order">
+                                                            <i class="text-warning fa fa-pencil fs-5"></i>
+                                                        </button>
+                                                    <?php
                                                     }
-                                                }
-                                                ?>
+                                                    ?>
 
-                                                <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
-                                                    <i class="text-success fa fa-print fs-5"></i>
-                                                </a>
+                                                    <?php                                                    
+                                                    if ($permission === 'edit') {
+                                                        if ($show_send_email == '1'){ ?>
+                                                            <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Send Confirmation">
+                                                                <iconify-icon icon="solar:plain-linear" class="fs-6 text-info"></iconify-icon>
+                                                            </a>
+                                                        <?php 
+                                                        }
+                                                    }
+                                                    ?>
 
-                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Change History">
-                                                    <i class="text-info fa fa-clock-rotate-left fs-5"></i>
-                                                </button>
+                                                    <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
+                                                        <i class="text-success fa fa-print fs-5"></i>
+                                                    </a>
 
-                                                <a href="customer/index.php?page=order&id=<?=$row["orderid"]?>&key=<?=$row["order_key"]?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Open Customer View">
-                                                    <i class="text-info fa fa-sign-in-alt fs-5"></i>
-                                                </a>
+                                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Change History">
+                                                        <i class="text-info fa fa-clock-rotate-left fs-5"></i>
+                                                    </button>
 
-                                                <?php                                                    
-                                                if ($permission === 'edit') {
-                                                ?>
-                                                <button class="btn btn-sm p-0 me-1" id="hold_order_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Place on Hold">
-                                                    <iconify-icon icon="solar:shield-cross-outline" class="fs-6 text-primary"></iconify-icon>
-                                                </button>
-                                                <?php
-                                                }
-                                                ?>
-                                            </td>
+                                                    <a href="customer/index.php?page=order&id=<?=$row["orderid"]?>&key=<?=$row["order_key"]?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Open Customer View">
+                                                        <i class="text-info fa fa-sign-in-alt fs-5"></i>
+                                                    </a>
 
+                                                    <?php                                                    
+                                                    if ($permission === 'edit') {
+                                                    ?>
+                                                    <button class="btn btn-sm p-0 me-1" id="hold_order_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Place on Hold">
+                                                        <iconify-icon icon="solar:shield-cross-outline" class="fs-6 text-primary"></iconify-icon>
+                                                    </button>
+                                                    <?php
+                                                    }
+                                                    ?>
+                                                </td>
+                                            <?php endif; ?>
                                         </tr>
                                         <?php
                                         }
