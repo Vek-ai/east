@@ -2217,4 +2217,55 @@ function getPageCategoryName($category_id) {
     return 'Unknown';
 }
 
+function getPageIdFromUrl($pageKey) {
+    global $conn;
+
+    $sql = "SELECT id 
+            FROM pages 
+            WHERE url = '$pageKey'
+            LIMIT 1";
+
+    $result = mysqli_query($conn, $sql);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        return intval(mysqli_fetch_assoc($result)['id']);
+    }
+
+    return 0;
+}
+
+function getVisibleColumns($page_id, $profile_id) {
+    global $conn;
+    $visibleColumns = [];
+
+    $sql = "
+        SELECT 
+            pc.id,
+            pc.column_name,
+            pc.display_name,
+            pc.data_type,
+            pc.default_visible,
+            h.page_column_id IS NOT NULL AS is_hidden
+        FROM page_columns pc
+        LEFT JOIN hidden_page_column_roles h
+            ON h.page_column_id = pc.id
+            AND h.page_id = pc.page_id
+            AND h.profile_id = ?
+        WHERE pc.page_id = ?
+        ORDER BY pc.sort_order ASC
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $profile_id, $page_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    while ($row = $result->fetch_assoc()) {
+        $isVisible = ($row['default_visible'] && !$row['is_hidden']);
+        $visibleColumns[$row['column_name']] = $isVisible;
+    }
+
+    return $visibleColumns;
+}
+
 ?>

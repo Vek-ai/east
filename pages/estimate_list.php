@@ -26,6 +26,21 @@ if(isset($_REQUEST['customer_id'])){
 }
 
 $permission = $_SESSION['permission'];
+
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 <style>
     .dz-preview {
@@ -112,7 +127,7 @@ $permission = $_SESSION['permission'];
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                <a class="text-muted text-decoration-none" href="?page=">Home
+                <a class="text-muted text-decoration-none" href="?page=">Home || <?= print_r($visibleColumns)?>
                 </a>
                 </li>
                 <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
@@ -306,14 +321,37 @@ $permission = $_SESSION['permission'];
                         <table id="est_list_tbl" class="table table-hover mb-0 text-wrap">
                             <thead>
                                 <tr>
-                                    <th style="color: #ffffff !important;">Estimate ID</th>
-                                    <th style="color: #ffffff !important;">Customer</th>
-                                    <th style="color: #ffffff !important;">Total Price</th>
-                                    <th style="color: #ffffff !important;">Estimate Date</th>
-                                    <th style="color: #ffffff !important;">Order Date</th>
-                                    <th style="color: #ffffff !important;">Status</th>
-                                    <th style="color: #ffffff !important;">Salesperson</th>
-                                    <th style="color: #ffffff !important;" class="text-center">Action</th>
+                                    <?php if (showCol('estimateid')): ?>
+                                        <th>Estimate ID</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('customer_name')): ?>
+                                        <th>Customer Name</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('total_discounted')): ?>
+                                        <th>Total</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('estimated_date')): ?>
+                                        <th>Estimated Date</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('order_date')): ?>
+                                        <th>Order Date</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('status')): ?>
+                                        <th>Status</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('cashier')): ?>
+                                        <th>Cashier</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('actions')): ?>
+                                        <th>Actions</th>
+                                    <?php endif; ?>
                                 </tr>
                             </thead>
                             <tbody>
@@ -344,96 +382,126 @@ $permission = $_SESSION['permission'];
                                         data-year="<?= date('Y', strtotime($row['estimated_date'])) ?>"
                                         data-status="<?= $status_code ?>"
                                     >
-                                        <td style="color: #ffffff !important;">
-                                            <?= $row["estimateid"] ?>
-                                        </td>
-                                        <td style="color: #ffffff !important;">
-                                            <?= ucwords(get_customer_name($row["customerid"])) ?>
-                                        </td>
-                                        <td style="color: #ffffff !important;">
-                                            $ <?= getEstimateTotalsDiscounted($row["estimateid"]) ?>
-                                        </td>
-                                        <td style="color: #ffffff !important;" 
-                                            <?php if (!empty($row["estimated_date"]) && $row["estimated_date"] !== '0000-00-00 00:00:00') : ?>
-                                                data-order="<?= date('Y-m-d', strtotime($row["estimated_date"])) ?>"
-                                            <?php endif; ?>
-                                        >
-                                            <?php 
-                                                if (!empty($row["estimated_date"]) && $row["estimated_date"] !== '0000-00-00 00:00:00') {
-                                                    echo date("F d, Y", strtotime($row["estimated_date"]));
-                                                } else {
-                                                    echo '';
-                                                }
-                                            ?>
-                                        </td>
-                                        <td style="color: #ffffff !important;"
-                                            <?php if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
-                                                data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
-                                            <?php endif; ?>
-                                        >
-                                            <?php 
-                                                if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
-                                                    echo date("F d, Y", strtotime($row["order_date"]));
-                                                } else {
-                                                    echo '';
-                                                }
-                                            ?>
-                                        </td>
-                                        <td class="text-center" style="color: #ffffff !important;">
-                                            <span class="estimate_status <?= $status['class']; ?> fw-bond"><?= $status['label']; ?></span>
-                                        </td>
-                                        <td style="color: #ffffff !important;">
-                                            <?= ucwords(get_staff_name($row["cashier"])) ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_estimate_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="View Estimate">
-                                                <i class="text-primary fa fa-eye fs-5"></i>
-                                            </button>
-                                            
-                                            <?php                                                    
-                                            if ($permission === 'edit') {
-                                            ?>
-                                            <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="edit_estimate_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Edit Estimate">
-                                                <i class="text-warning fa fa-pencil fs-5"></i>
-                                            </button>
-                                            <?php
-                                            }
-                                            ?>
+                                        <?php if (showCol('estimateid')): ?>
+                                            <td style="color: #ffffff !important;">
+                                                <?= $row["estimateid"] ?>
+                                            </td>
+                                        <?php endif; ?>
 
-                                            <?php                                                    
-                                            if ($permission === 'edit') {
-                                            ?>
-                                            <button class="btn btn-danger-gradient btn-sm p-0 me-1 email_estimate_btn" data-customer="<?= $row["customerid"]; ?>" id="email_estimate_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Send Email to Customer">
-                                                <iconify-icon icon="solar:plain-linear" class="fs-5 text-info"></iconify-icon>
-                                            </button>
-                                            <?php
-                                            }
-                                            ?>
-                                            
-                                            <a href="print_estimate_product.php?id=<?= $row["estimateid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
-                                                <i class="text-success fa fa-print fs-5"></i>
-                                            </a>
-                                            
-                                            <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="View Change History">
-                                                <i class="text-info fa fa-clock-rotate-left fs-5"></i>
-                                            </button>
+                                        <?php if (showCol('customer_name')): ?>
+                                            <td style="color: #ffffff !important;">
+                                                <?= ucwords(get_customer_name($row["customerid"])) ?>
+                                            </td>
+                                        <?php endif; ?>
 
-                                            <a href="customer/index.php?page=estimate&id=<?= $row["estimateid"]; ?>&key=<?= $row["est_key"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Customer View">
-                                                <i class="text-info fa fa-sign-in-alt fs-5"></i>
-                                            </a>
-                                            
-                                            <?php                                                    
-                                            if ($permission === 'edit') {
-                                            ?>
-                                            <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="delete_estimate_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Delete Estimate">
-                                                <i class="text-danger fa fa-trash fs-5"></i>
-                                            </button>
-                                            <?php
-                                            }
-                                            ?>
-                                            
-                                            
-                                        </td>
+                                        <?php if (showCol('total_discounted')): ?>
+                                            <td style="color: #ffffff !important;">
+                                                $ <?= getEstimateTotalsDiscounted($row["estimateid"]) ?>
+                                            </td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('estimated_date')): ?>
+                                            <td style="color: #ffffff !important;" 
+                                                <?php if (!empty($row["estimated_date"]) && $row["estimated_date"] !== '0000-00-00 00:00:00') : ?>
+                                                    data-order="<?= date('Y-m-d', strtotime($row["estimated_date"])) ?>"
+                                                <?php endif; ?>
+                                            >
+                                                <?php 
+                                                    if (!empty($row["estimated_date"]) && $row["estimated_date"] !== '0000-00-00 00:00:00') {
+                                                        echo date("F d, Y", strtotime($row["estimated_date"]));
+                                                    } else {
+                                                        echo '';
+                                                    }
+                                                ?>
+                                            </td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('order_date')): ?>
+                                            <td style="color: #ffffff !important;"
+                                                <?php if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
+                                                    data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
+                                                <?php endif; ?>
+                                            >
+                                                <?php 
+                                                    if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
+                                                        echo date("F d, Y", strtotime($row["order_date"]));
+                                                    } else {
+                                                        echo '';
+                                                    }
+                                                ?>
+                                            </td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('status')): ?>
+                                            <td class="text-center" style="color: #ffffff !important;">
+                                                <span class="estimate_status <?= $status['class']; ?> fw-bond"><?= $status['label']; ?></span>
+                                            </td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('cashier')): ?>
+                                            <td style="color: #ffffff !important;">
+                                                <?= ucwords(get_staff_name($row["cashier"])) ?>
+                                            </td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('actions')): ?>
+                                            <td class="text-center">
+                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_estimate_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="View Estimate">
+                                                    <i class="text-primary fa fa-eye fs-5"></i>
+                                                </button>
+                                                
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>
+                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="edit_estimate_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Edit Estimate">
+                                                    <i class="text-warning fa fa-pencil fs-5"></i>
+                                                </button>
+                                                <?php
+                                                }
+                                                ?>
+
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>
+                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1 email_estimate_btn" data-customer="<?= $row["customerid"]; ?>" id="email_estimate_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Send Email to Customer">
+                                                    <iconify-icon icon="solar:plain-linear" class="fs-5 text-info"></iconify-icon>
+                                                </button>
+                                                <?php
+                                                }
+                                                ?>
+                                                
+                                                <a href="print_estimate_product.php?id=<?= $row["estimateid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
+                                                    <i class="text-success fa fa-print fs-5"></i>
+                                                </a>
+                                                
+                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="View Change History">
+                                                    <i class="text-info fa fa-clock-rotate-left fs-5"></i>
+                                                </button>
+
+                                                <a href="customer/index.php?page=estimate&id=<?= $row["estimateid"]; ?>&key=<?= $row["est_key"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Customer View">
+                                                    <i class="text-info fa fa-sign-in-alt fs-5"></i>
+                                                </a>
+                                                
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>
+                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="delete_estimate_btn" type="button" data-id="<?= $row["estimateid"]; ?>" data-bs-toggle="tooltip" title="Delete Estimate">
+                                                    <i class="text-danger fa fa-trash fs-5"></i>
+                                                </button>
+                                                <?php
+                                                }
+                                                ?>
+                                                
+                                            </td>
+                                        <?php endif; ?>
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
                                     </tr>
                                     <?php
                                     }
