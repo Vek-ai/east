@@ -8,7 +8,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 require '../includes/dbconn.php';
 require '../includes/functions.php';
-
+$permission = $_SESSION['permission'];
 ?>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -267,9 +267,15 @@ require '../includes/functions.php';
                                     <td><?= get_name($addedby) ?></td>
                                     <td>
                                         <div class="action-btn text-center">
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
                                             <a href="#" id="view_inventory_btn" title="View" class="text-primary edit" data-id="<?= $Inventory_id ?>">
                                                 <i class="ti ti-eye fs-5"></i>
                                             </a>
+                                            <?php                                                    
+                                            }
+                                            ?>
                                         </div>
                                     </td>
                                 </tr>

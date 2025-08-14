@@ -1,5 +1,6 @@
 <?php
 session_start();
+$permission = $_SESSION['permission'];
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -87,11 +88,17 @@ if(isset($_POST['fetch_available'])){
             </table>
         </div>
     </div>
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
     <div class="modal-footer">
         <?php if (!empty($work_order_details) && $work_order_details['status'] == 3): ?>
             <button id="release_work_order" class="btn ripple btn-primary" type="button">Release Work Order</button>
         <?php endif; ?>
     </div>
+    <?php                                                    
+    }
+    ?>
 
     <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -380,9 +387,6 @@ if(isset($_POST['fetch_view'])){
                                         <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Release Work Order" data-app-prod-id="<?= $row['id'] ?>">
                                             <i class="fa fa-arrow-right-to-bracket"></i>
                                         </a>
-                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAssignedBtn" title="View" data-id="<?= $row['id'] ?>">
-                                            <i class="fa fa-eye"></i>
-                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -399,11 +403,17 @@ if(isset($_POST['fetch_view'])){
                 ?>
         </div>
     </div>
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
     <div class="d-flex justify-content-end mt-3">
         <button type="button" class="btn btn-success" id="releaseSelectedBtn">
             <i class="fa fa-play me-1"></i> Release
         </button>
     </div>
+    <?php                                                    
+    }
+    ?>
 
     <div class="modal fade" id="coilWarehouseModal" tabindex="-1" aria-labelledby="coilWarehouseModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

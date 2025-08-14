@@ -1,5 +1,6 @@
 <?php
 session_start();
+$permission = $_SESSION['permission'];
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -117,6 +118,9 @@ if (isset($_POST['fetch_coils'])) {
                         <td class="text-right"><?= $row['width'] ?></td>
                         <td class="text-right"><?= $row['remaining_feet'] ?></td>
                         <td class="text-center">
+                            <?php                                                    
+                            if ($permission === 'edit') {
+                            ?>
                             <a href="javascript:void(0)" 
                                 class="text-decoration-none" 
                                 id="tagDefectiveBtn" 
@@ -125,6 +129,9 @@ if (isset($_POST['fetch_coils'])) {
                                 data-coil-id="<?=$row['coil_id']?>">
                                 <iconify-icon class="fs-7 text-danger" icon="mdi:tools"></iconify-icon>
                             </a>
+                            <?php                                                    
+                            }
+                            ?>
                         </td>
                     </tr>
                     <?php } ?>
@@ -206,9 +213,15 @@ if (isset($_POST['fetch_coils'])) {
         </div>
     </div>
 
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
     <div class="modal-footer">
         <button id="openSingleRunWorkOrderModal" class="btn ripple btn-success" data-id="<?= $id ?>" type="button">Run Work Order</button>
     </div>
+    <?php                                                    
+    }
+    ?>
 
     <script>
         $(function () {

@@ -7,6 +7,7 @@ require '../includes/dbconn.php';
 require '../includes/functions.php';
 
 $page_title = "New Work Orders";
+$permission = $_SESSION['permission'];
 ?>
 
 <div class="container-fluid">
@@ -242,9 +243,16 @@ $page_title = "New Work Orders";
                 </div>
             </div>
         </div>
+        <?php                                                    
+        if ($permission === 'edit') {
+        ?>
         <div class="modal-footer">
             <button id="bulk_run_work_order" class="btn ripple btn-success" type="button">Run Work Order</button>
         </div>
+        <?php                                                    
+        }
+        ?>
+
     </div>
 </div>
 

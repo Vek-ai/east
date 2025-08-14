@@ -1,17 +1,63 @@
+<?php
+$staff_id = intval($_SESSION['userid']);
+$allowed_categories = [
+                        'Work Order',
+                     ];
+
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$access_profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $access_profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+
+$profilePages = [];
+if ($access_profile_id > 0) {
+    $ppSql = "SELECT page_id FROM access_profile_pages WHERE access_profile_id = $access_profile_id";
+    $ppRes = mysqli_query($conn, $ppSql);
+    if ($ppRes && mysqli_num_rows($ppRes) > 0) {
+        while ($row = mysqli_fetch_assoc($ppRes)) {
+            $profilePages[$row['page_id']] = true;
+        }
+    }
+}
+
+$userPages = [];
+$upaSql = "SELECT page_id FROM user_page_access WHERE staff_id = $staff_id";
+$upaRes = mysqli_query($conn, $upaSql);
+if ($upaRes && mysqli_num_rows($upaRes) > 0) {
+    while ($row = mysqli_fetch_assoc($upaRes)) {
+        $userPages[$row['page_id']] = true;
+    }
+}
+
+$pageIds = array_keys($profilePages + $userPages);
+
+$menu_items = [];
+if (!empty($pageIds)) {
+    $sql = "
+        SELECT id, url, menu_icon, menu_name, menu_category
+        FROM pages
+        WHERE visibility = 1
+          AND id IN (" . implode(",", array_map('intval', $pageIds)) . ")
+          AND menu_category IN ('" . implode("','", $allowed_categories) . "')
+        ORDER BY menu_category, id ASC
+    ";
+    $result = mysqli_query($conn, $sql);
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $menu_items[$row['menu_category']][] = $row;
+        }
+    }
+}
+?>
 <aside class="left-sidebar with-vertical">
    <div>
-      <!-- ---------------------------------- -->
-      <!-- Start Vertical Layout Sidebar -->
-      <!-- ---------------------------------- -->
-      <!-- Sidebar scroll-->
       <nav class="sidebar-nav scroll-sidebar" data-simplebar>
-         <!-----------Profile------------------>
          <div class="user-profile position-relative" style="background: url(../../assets/images/backgrounds/user-info.jpg) no-repeat;">
-            <!-- User profile image -->
             <div class="profile-img">
                <img src="../../assets/images/profile/user-1.jpg" alt="user" class="w-100 rounded-circle overflow-hidden" />
             </div>
-            <!-- User profile text-->
             <div class="profile-text hide-menu pt-1 dropdown">
                <a href="javascript:void(0)" class="dropdown-toggle u-dropdown w-100 text-white
                   d-block
@@ -35,62 +81,37 @@
                </div>
             </div>
          </div>
-         <!-----------Profile End------------------>
          <ul id="sidebarnav">
-            <!-- ---------------------------------- -->
-            <!-- Cashier -->
-            <!-- ---------------------------------- -->
-            <li class="nav-small-cap">
-               <iconify-icon icon="solar:menu-dots-bold" class="nav-small-cap-icon fs-4"></iconify-icon>
-               <span class="hide-menu">Work Orders</span>
-            </li>
-            <li class="sidebar-item">
-               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=">
-                  <iconify-icon icon="mdi:clipboard-text-outline" class="fs-7 aside-icon"></iconify-icon>
-                  <span class="hide-menu">Work Orders</span>
-               </a>
-            </li>
-            <li class="sidebar-item">
-               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=work_order_new">
-                  <iconify-icon icon="mdi:progress-clock" class="fs-7 aside-icon"></iconify-icon>
-                  <span class="hide-menu">New Work Orders</span>
-               </a>
-            </li>
-            <li class="sidebar-item">
-               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=work_order_run">
-                  <iconify-icon icon="mdi:wrench" class="fs-7 aside-icon"></iconify-icon>
-                  <span class="hide-menu">Processing Work Orders</span>
-               </a>
-            </li>
-            <li class="sidebar-item">
-               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=work_order_finish">
-                  <iconify-icon icon="mdi:check-circle-outline" class="fs-7 aside-icon"></iconify-icon>
-                  <span class="hide-menu">Finished Work Orders</span>
-               </a>
-            </li>
-            <li class="sidebar-item">
-               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=work_order_release">
-                  <iconify-icon icon="mdi:truck-outline" class="fs-7 aside-icon"></iconify-icon>
-                  <span class="hide-menu">Released Work Orders</span>
-               </a>
-            </li>
-
-            <li class="sidebar-item">
-               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=inventory">
-                  <iconify-icon icon="mdi:warehouse" class="fs-7 aside-icon"></iconify-icon>
-                  <span class="hide-menu">Inventory</span>
-               </a>
-            </li>
-
-            <li class="sidebar-item">
-               <a class="sidebar-link d-flex align-items-center gap-2" href="?page=messages">
-                  <iconify-icon icon="mdi:email-outline" class="fs-7 aside-icon"></iconify-icon>
-                  <span class="hide-menu">Messages</span>
-               </a>
-            </li>
-
+            <?php
+               foreach ($allowed_categories as $category) {
+                  if (!empty($menu_items[$category])) {
+                     echo '<li class="nav-small-cap"><span class="hide-menu">' . htmlspecialchars($category) . '</span></li>';
+                     foreach ($menu_items[$category] as $page) {
+                           $url = trim($page['url']);
+                           if ($url === '') {
+                              $href = 'javascript:void(0)';
+                              $target = '';
+                           } elseif (preg_match('/^https?:\/\//i', $url)) {
+                              $href = $url;
+                              $target = ' target="_blank" rel="noopener noreferrer"';
+                           } elseif (strpos($url, '/') === 0) {
+                              $href = $url;
+                              $target = ' target="_blank" rel="noopener noreferrer"';
+                           } else {
+                              $href = '?page=' . $url;
+                              $target = '';
+                           }
+                           echo '<li class="sidebar-item">
+                                 <a class="sidebar-link" href="' . htmlspecialchars($href) . '"' . $target . '>
+                                       <iconify-icon icon="' . htmlspecialchars($page['menu_icon']) . '" class="aside-icon"></iconify-icon>
+                                       <span class="hide-menu">' . htmlspecialchars($page['menu_name']) . '</span>
+                                 </a>
+                                 </li>';
+                     }
+                  }
+               }
+               ?>
          </ul>
       </nav>
-      <!-- End Sidebar scroll-->
    </div>
 </aside>
