@@ -15,6 +15,21 @@ if(isset($_REQUEST['customer_id'])){
     $customer_details = getCustomerDetails($customer_id);
 }
 $permission = $_SESSION['permission'];
+
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 <style>
     .dz-preview {
@@ -234,16 +249,36 @@ $permission = $_SESSION['permission'];
                             <table id="order_list_tbl" class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>Invoice #</th>
-                                        <th>Customer</th>
-                                        <th style="text-align: right">Total Price</th>
-                                        <th class="text-nowrap" style="text-align: center">Order Date</th>
-                                        <th style="text-align: center">Pick-up/Delivery</th>
-                                        <th style="text-align: center">Payment Method</th>
-                                        <th style="text-align: center">Scheduled Pick-up/Delivery Date</th>
-                                        <th style="text-align: center">Pick-up/Delivery Date Completed</th>
-                                        <th style="color: #ffffff !important;">Salesperson</th>
-                                        <th>Action</th>
+                                        <?php if (showCol('invoice_no')): ?>
+                                            <th>Invoice #</th>
+                                        <?php endif; ?>
+                                        <?php if (showCol('customer')): ?>
+                                            <th>Customer</th>
+                                        <?php endif; ?>
+                                        <?php if (showCol('total_price')): ?>
+                                            <th style="text-align: right">Total Price</th>
+                                        <?php endif; ?>
+                                        <?php if (showCol('order_date')): ?>
+                                            <th class="text-nowrap" style="text-align: center">Order Date</th>
+                                        <?php endif; ?>
+                                        <?php if (showCol('deliver_method')): ?>
+                                            <th style="text-align: center">Pick-up/Delivery</th>
+                                        <?php endif; ?>
+                                        <?php if (showCol('payment_method')): ?>
+                                            <th style="text-align: center">Payment Method</th>
+                                        <?php endif; ?>
+                                        <?php if (showCol('scheduled_delivery')): ?>
+                                            <th style="text-align: center">Scheduled Pick-up/Delivery Date</th>
+                                        <?php endif; ?>
+                                        <?php if (showCol('completed_delivery')): ?>
+                                            <th style="text-align: center">Pick-up/Delivery Date Completed</th>
+                                        <?php endif; ?>
+                                        <?php if (showCol('salesperson')): ?>
+                                            <th>Salesperson</th>
+                                        <?php endif; ?>
+                                        <?php if (showCol('action')): ?>
+                                            <th>Action</th>
+                                        <?php endif; ?>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -282,99 +317,118 @@ $permission = $_SESSION['permission'];
                                             data-status="<?= $status_code ?>"
                                             data-completed="<?= $row['status'] == '4' ? '1' : '0' ?>"
                                         >
-                                            <td style="color: #ffffff !important;">
-                                                <?= $row["orderid"] ?>
-                                            </td>
-                                            <td style="color: #ffffff !important;">
-                                                <?php echo get_customer_name($row["customerid"]) ?>
-                                            </td>
-                                            <td style="color: #ffffff !important; text-align: right;">
-                                                $ <?php echo number_format($row["discounted_price"],2) ?>
-                                            </td>
-                                            <td class="text-center" style="color: #ffffff !important;"
-                                                <?php if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
-                                                    data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
-                                                <?php endif; ?>
-                                                >
-                                                <?php 
-                                                    if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
-                                                        echo date("F d, Y", strtotime($row["order_date"]));
-                                                    } else {
-                                                        echo '';
+                                            <?php if (showCol('invoice_no')): ?>
+                                                <td style="color: #ffffff !important;">
+                                                    <?= $row["orderid"] ?>
+                                                </td>
+                                            <?php endif; ?>
+                                            <?php if (showCol('customer')): ?>
+                                                <td style="color: #ffffff !important;">
+                                                    <?php echo get_customer_name($row["customerid"]) ?>
+                                                </td>
+                                            <?php endif; ?>
+                                            <?php if (showCol('total_price')): ?>
+                                                <td style="color: #ffffff !important; text-align: right;">
+                                                    $ <?php echo number_format($row["discounted_price"],2) ?>
+                                                </td>
+                                            <?php endif; ?>
+                                            <?php if (showCol('order_date')): ?>
+                                                <td class="text-center" style="color: #ffffff !important;"
+                                                    <?php if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
+                                                        data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
+                                                    <?php endif; ?>
+                                                    >
+                                                    <?php 
+                                                        if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
+                                                            echo date("F d, Y", strtotime($row["order_date"]));
+                                                        } else {
+                                                            echo '';
+                                                        }
+                                                    ?>
+                                                </td>
+                                            <?php endif; ?>
+                                            <?php if (showCol('deliver_method')): ?>
+                                                <td style="color: #ffffff !important;">
+                                                    <?= ucwords($row['deliver_method']); ?>
+                                                </td>
+                                            <?php endif; ?>
+                                            <?php if (showCol('payment_method')): ?>
+                                                <td class="text-center" style="color: #ffffff !important;">
+                                                    <span class="badge" style="<?= $label_info['style'] ?>">
+                                                        <?= $label_info['label'] ?>
+                                                    </span>
+                                                </td>
+                                            <?php endif; ?>
+                                            <?php if (showCol('scheduled_delivery')): ?>
+                                                <td style="color: #ffffff !important;">
+                                                    
+                                                </td>
+                                            <?php endif; ?>
+                                            <?php if (showCol('completed_delivery')): ?>
+                                                <td style="color: #ffffff !important;">
+                                                    <?php 
+                                                        if (isset($row["delivered_date"]) && !empty($row["delivered_date"]) && $row["delivered_date"] !== '0000-00-00 00:00:00') {
+                                                            echo date("F d, Y", strtotime($row["delivered_date"]));
+                                                        } else {
+                                                            echo '';
+                                                        }
+                                                    ?>
+                                                </td>
+                                            <?php endif; ?>
+                                            <?php if (showCol('salesperson')): ?>
+                                                <td style="color: #ffffff !important;">
+                                                    <?= ucwords(get_staff_name($row["cashier"])) ?>
+                                                </td>
+                                            <?php endif; ?>
+                                            <?php if (showCol('action')): ?>
+                                                <td class="text-center">
+                                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Order">
+                                                        <i class="text-primary fa fa-eye fs-5"></i>
+                                                    </button>
+
+                                                    <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" title="Print/Download">
+                                                        <i class="text-success fa fa-print fs-5"></i>
+                                                    </a>
+
+                                                    <?php                                                    
+                                                    if ($permission === 'edit') {
+                                                    ?>
+                                                    <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" title="Send to Customer">
+                                                        <iconify-icon icon="solar:plain-linear" class="fs-5 text-info"></iconify-icon>
+                                                    </a>
+                                                    <?php                                                    
                                                     }
-                                                ?>
-                                            </td>
-                                            <td style="color: #ffffff !important;">
-                                                <?= ucwords($row['deliver_method']); ?>
-                                            </td>
-                                            <td class="text-center" style="color: #ffffff !important;">
-                                                <span class="badge" style="<?= $label_info['style'] ?>">
-                                                    <?= $label_info['label'] ?>
-                                                </span>
-                                            </td>
-                                            <td style="color: #ffffff !important;">
-                                                
-                                            </td>
-                                            <td style="color: #ffffff !important;">
-                                                <?php 
-                                                    if (isset($row["delivered_date"]) && !empty($row["delivered_date"]) && $row["delivered_date"] !== '0000-00-00 00:00:00') {
-                                                        echo date("F d, Y", strtotime($row["delivered_date"]));
-                                                    } else {
-                                                        echo '';
+                                                    ?>
+
+                                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Change History">
+                                                        <i class="text-info fa fa-clock-rotate-left fs-5"></i>
+                                                    </button>
+
+                                                    <?php                                                    
+                                                    if ($permission === 'edit') {
+                                                    ?>
+
+                                                    <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" title="Send to Customer">
+                                                        <iconify-icon icon="solar:streets-map-point-outline" class="fs-6 text-info"></iconify-icon>
+                                                    </a>
+
+                                                    <button 
+                                                        class="btn btn-danger-gradient btn-sm p-0 me-1 view-method-btn" 
+                                                        type="button"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#deliveryMethodModal"
+                                                        data-orderid="<?= $row["orderid"]; ?>"
+                                                        data-delivery="<?= $row["deliver_method"]; ?>"
+                                                        data-payment="<?= $row["pay_type"]; ?>"
+                                                        title="Change Pick-up/Delivery">
+                                                        <iconify-icon icon="mdi:package-variant-closed" class="text-warning fs-7"></iconify-icon>
+                                                    </button>
+
+                                                    <?php                                                    
                                                     }
-                                                ?>
-                                            </td>
-                                            <td style="color: #ffffff !important;">
-                                                <?= ucwords(get_staff_name($row["cashier"])) ?>
-                                            </td>
-                                            <td class="text-center">
-                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Order">
-                                                    <i class="text-primary fa fa-eye fs-5"></i>
-                                                </button>
-
-                                                <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" title="Print/Download">
-                                                    <i class="text-success fa fa-print fs-5"></i>
-                                                </a>
-
-                                                <?php                                                    
-                                                if ($permission === 'edit') {
-                                                ?>
-                                                <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" title="Send to Customer">
-                                                    <iconify-icon icon="solar:plain-linear" class="fs-5 text-info"></iconify-icon>
-                                                </a>
-                                                <?php                                                    
-                                                }
-                                                ?>
-
-                                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Change History">
-                                                    <i class="text-info fa fa-clock-rotate-left fs-5"></i>
-                                                </button>
-
-                                                <?php                                                    
-                                                if ($permission === 'edit') {
-                                                ?>
-
-                                                <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" title="Send to Customer">
-                                                    <iconify-icon icon="solar:streets-map-point-outline" class="fs-6 text-info"></iconify-icon>
-                                                </a>
-
-                                                <button 
-                                                    class="btn btn-danger-gradient btn-sm p-0 me-1 view-method-btn" 
-                                                    type="button"
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#deliveryMethodModal"
-                                                    data-orderid="<?= $row["orderid"]; ?>"
-                                                    data-delivery="<?= $row["deliver_method"]; ?>"
-                                                    data-payment="<?= $row["pay_type"]; ?>"
-                                                    title="Change Pick-up/Delivery">
-                                                    <iconify-icon icon="mdi:package-variant-closed" class="text-warning fs-7"></iconify-icon>
-                                                </button>
-
-                                                <?php                                                    
-                                                }
-                                                ?>
-                                            </td>
-
+                                                    ?>
+                                                </td>
+                                            <?php endif; ?>
                                         </tr>
                                         <?php
                                         }
