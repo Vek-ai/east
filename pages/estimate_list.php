@@ -127,7 +127,7 @@ function showCol($name) {
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                <a class="text-muted text-decoration-none" href="?page=">Home || <?= print_r($visibleColumns)?>
+                <a class="text-muted text-decoration-none" href="?page=">Home
                 </a>
                 </li>
                 <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
