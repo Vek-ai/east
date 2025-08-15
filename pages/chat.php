@@ -230,21 +230,85 @@ $(document).ready(function() {
         openChat($(this).data('user-id'));
     });
 
-    $(document).on('click', '.btn-send-message', function() {
-        var msg = $('.message-type-box').val().trim();
-        if (!active_chat || msg === '') return;
+    $(document).on("click", ".chat-menu", function () {
+      $(".parent-chat-box").toggleClass("app-chat-right");
+      $(this).toggleClass("app-chat-active");
+  });
+
+    $(document).on('click', '.btn-attach', function () {
+        $('#file-attachments').click();
+    });
+    
+    $(document).on('click', '.btn-attach-image', function () {
+        $('#image-attachments').click();
+    });
+
+    $(document).on('change', '#image-attachments', function (e) {
+        let files = e.target.files;
+        $('.attachment-preview-images').empty();
+
+        Array.from(files).forEach(file => {
+            if (file.type.startsWith('image/')) {
+                let reader = new FileReader();
+                reader.onload = function (ev) {
+                    $('.attachment-preview-images').append(
+                        `<img src="${ev.target.result}" 
+                              class="rounded border me-1 mb-1" 
+                              style="width:70px;height:70px;object-fit:cover;">`
+                    );
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+
+    $(document).on('change', '#file-attachments', function (e) {
+        let files = e.target.files;
+        $('.attachment-preview-files').empty();
+
+        Array.from(files).forEach(file => {
+            if (!file.type.startsWith('image/')) {
+                $('.attachment-preview-files').append(
+                    `<div class="border rounded p-1 bg-light small mb-1">
+                        <i class="fa fa-file text-secondary me-1"></i> ${file.name}
+                    </div>`
+                );
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-send-message', function () {
+        let message = $('.message-type-box').val().trim();
+        let imageFiles = $('#image-attachments')[0].files;
+        let docFiles = $('#file-attachments')[0].files;
+
+        if (!message && imageFiles.length === 0 && docFiles.length === 0) return;
+
+        let formData = new FormData();
+        formData.append('action', 'send_message');
+        formData.append('recipient_id', active_chat);
+        formData.append('message', message);
+
+        Array.from(imageFiles).forEach(file => formData.append('images[]', file));
+        Array.from(docFiles).forEach(file => formData.append('attachments[]', file));
 
         $.ajax({
             url: 'pages/chat_ajax.php',
             type: 'POST',
-            data: { 
-              recipient_id: active_chat, 
-              message: msg,
-              action: 'send_message'
-            },
-            success: function() {
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                console.log('Server Response:', response);
                 $('.message-type-box').val('');
+                $('#image-attachments').val('');
+                $('#file-attachments').val('');
+                $('.attachment-preview-images').empty();
+                $('.attachment-preview-files').empty();
                 loadChatMessages();
+            },
+            error: function (xhr) {
+                console.error('AJAX Error:', xhr.responseText);
             }
         });
     });

@@ -91,34 +91,70 @@ if(isset($_REQUEST['action'])) {
               <div class="chat-box-inner p-9" data-simplebar>
                 <div class="chat-list chat active-chat" data-user-id="<?= $chatUserId ?>">
                     <?php
-                    foreach ($messages as $msg):
-                        $isCurrentUser = $msg['sender_id'] == $_SESSION['userid'];
-                        $sender_name = get_staff_name($msg['sender_id']);
-                        $msgClass = $isCurrentUser ? 'justify-content-end' : 'justify-content-start';
-                        $time = date('h:i A', strtotime($msg['created_at']));
-                        $avatar = $msg['sender_avatar'];
-                    ?>
-                        <div class="hstack gap-3 align-items-start mb-7 <?= $msgClass ?>">
-                            <?php if (!$isCurrentUser): ?>
-                                <img src="<?= $avatar ?>" alt="<?= htmlspecialchars($sender_name) ?>" width="40" height="40" class="rounded-circle" />
-                            <?php endif; ?>
-                            <div class="<?= $isCurrentUser ? 'text-end' : '' ?>">
+                        foreach ($messages as $msg):
+                            $isCurrentUser = $msg['sender_id'] == $_SESSION['userid'];
+                            $sender_name = get_staff_name($msg['sender_id']);
+                            $msgClass = $isCurrentUser ? 'justify-content-end' : 'justify-content-start';
+                            $time = date('h:i A', strtotime($msg['created_at']));
+                            $avatar = $msg['sender_avatar'];
+
+                            // Get attachments
+                            $attachments = getMessageAttachments($msg['message_id']);
+
+                            // Skip if no text and no attachments
+                            if (empty(trim($msg['body_text'])) && empty($attachments)) {
+                                continue;
+                            }
+                            ?>
+                            <div class="hstack gap-3 align-items-start mb-3 <?= $msgClass ?>">
                                 <?php if (!$isCurrentUser): ?>
-                                    <h6 class="fs-2 text-muted"><?= htmlspecialchars($sender_name) ?>, <?= $time ?></h6>
-                                    <div class="p-2 text-bg-light rounded-1 d-inline-block text-dark fs-3"><?= htmlspecialchars($msg['body_text']) ?></div>
-                                <?php else: ?>
-                                    <h6 class="fs-2 text-muted"><?= $time ?></h6>
-                                    <div class="p-2 bg-info-subtle text-dark rounded-1 d-inline-block fs-3"><?= htmlspecialchars($msg['body_text']) ?></div>
+                                    <img src="<?= $avatar ?>" alt="<?= htmlspecialchars($sender_name) ?>" width="40" height="40" class="rounded-circle" />
                                 <?php endif; ?>
+
+                                <div class="<?= $isCurrentUser ? 'text-end' : '' ?>">
+                                    <h6 class="fs-2 text-muted mb-1">
+                                        <?php if (!$isCurrentUser): ?>
+                                            <?= htmlspecialchars($sender_name) ?>,
+                                        <?php endif; ?>
+                                        <?= $time ?>
+                                    </h6>
+
+                                    <?php if (!empty(trim($msg['body_text']))): ?>
+                                        <div class="p-2 rounded-3 mb-2 <?= $isCurrentUser ? 'bg-primary text-white' : 'bg-light text-dark' ?>" style="max-width: 340px;">
+                                            <?= htmlspecialchars($msg['body_text']) ?>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <?php if (!empty($attachments)): ?>
+                                        <div class="d-flex flex-column <?= $isCurrentUser ? 'align-items-end' : 'align-items-start' ?>" style="gap: 8px;">
+                                            <?php foreach ($attachments as $att): ?>
+                                                <?php if (strpos($att['mime_type'], 'image/') === 0): ?>
+                                                    <a href="<?= htmlspecialchars($att['file_url']) ?>" target="_blank" class="image-attachment d-inline-block">
+                                                        <img src="<?= htmlspecialchars($att['file_url']) ?>" 
+                                                            alt="attachment"
+                                                            style="width: 200px; height: auto; border-radius: 10px; display: block;" />
+                                                    </a>
+                                                <?php else: ?>
+                                                    <a href="<?= htmlspecialchars($att['file_url']) ?>" target="_blank" 
+                                                    class="d-flex align-items-center p-2 rounded-3 border text-decoration-none bg-light"
+                                                    style="width: 200px;">
+                                                        <i class="fa fa-file fa-lg me-2 text-secondary"></i>
+                                                        <span style="font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                            <?= htmlspecialchars(basename($att['file_url'])) ?>
+                                                        </span>
+                                                    </a>
+                                                <?php endif; ?>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
                             </div>
-                            <?php if ($isCurrentUser): ?>
-                                <!-- Optional: add spacing to match layout -->
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </div>
               </div>
-              <div class="px-9 py-6 border-top chat-send-message-footer">
+            <div class="px-9 py-6 border-top chat-send-message-footer">
+                <div class="attachment-preview-images mb-2 d-flex flex-wrap"></div>
+                <div class="attachment-preview d-flex flex-wrap gap-2 mb-2"></div>
                 <div class="d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center gap-2 w-85">
                     <a class="position-relative nav-icon-hover z-index-5" href="javascript:void(0)">
@@ -127,195 +163,189 @@ if(isset($_REQUEST['action'])) {
                     <input type="text" class="form-control message-type-box text-muted border-0 rounded-0 p-0 ms-2" placeholder="Type a Message" />
                     </div>
                     <ul class="list-unstyled mb-0 d-flex align-items-center gap-2">
-                    <li>
-                        <a class="text-dark px-2 fs-7 bg-hover-primary nav-icon-hover position-relative z-index-5" href="javascript:void(0)">
-                        <i class="ti ti-photo-plus"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="text-dark px-2 fs-7 bg-hover-primary nav-icon-hover position-relative z-index-5" href="javascript:void(0)">
-                        <i class="ti ti-paperclip"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="text-dark px-2 fs-7 fs-hover-primary nav-icon-hover position-relative z-index-5" href="javascript:void(0)">
-                        <i class="ti ti-microphone"></i>
-                        </a>
-                    </li>
-                    <!-- Send button -->
-                    <li>
-                        <a href="javascript:void(0)" class="btn-send-message text-white bg-primary px-3 py-1 rounded d-flex align-items-center gap-1">
-                        <i class="ti ti-send"></i> Send
-                        </a>
-                    </li>
+                        <li>
+                            <a class="text-dark px-2 fs-7 bg-hover-primary nav-icon-hover position-relative z-index-5 btn-attach-image" href="javascript:void(0)">
+                                <i class="ti ti-photo-plus"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="text-dark px-2 fs-7 bg-hover-primary nav-icon-hover position-relative z-index-5 btn-attach" href="javascript:void(0)">
+                            <i class="ti ti-paperclip"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="text-dark px-2 fs-7 fs-hover-primary nav-icon-hover position-relative z-index-5" href="javascript:void(0)">
+                            <i class="ti ti-microphone"></i>
+                            </a>
+                        </li>
+                        <!-- Send button -->
+                        <li>
+                            <a href="javascript:void(0)" class="btn-send-message text-white bg-primary px-3 py-1 rounded d-flex align-items-center gap-1">
+                            <i class="ti ti-send"></i> Send
+                            </a>
+                        </li>
                     </ul>
-                </div>
+                    <input type="file" id="file-attachments" multiple style="display:none;">
+                    <input type="file" id="image-attachments" accept="image/*" multiple style="display:none;">
                 </div>
             </div>
-            <div class="app-chat-offcanvas border-start">
-              <div class="custom-app-scroll mh-n100" data-simplebar>
-                <div class="p-3 d-flex align-items-center justify-content-between">
-                  <h6 class="fw-semibold mb-0 text-nowrap">
-                    Media <span class="text-muted">(36)</span>
-                  </h6>
-                  <a class="chat-menu d-lg-none d-block text-dark fs-6 bg-hover-primary nav-icon-hover position-relative z-index-5" href="javascript:void(0)">
-                    <i class="ti ti-x"></i>
-                  </a>
+            </div>
+            <?php
+            $attachments = getUserMsgAttachments($staff_id);
+
+            $imageAttachments = [];
+            $fileAttachments  = [];
+
+            foreach ($attachments as $att) {
+                $mime = $att['mime_type'] ?? '';
+
+                if ($mime !== '' && strpos($mime, 'image/') === 0) {
+                    $imageAttachments[] = $att;
+                } else {
+                    $fileAttachments[] = $att;
+                }
+            }
+            ?>
+
+            <div class="app-chat-offcanvas border-start" style="max-height: 900px">
+                <div class="custom-app-scroll mh-n100" data-simplebar>
+                    <div class="p-3 d-flex align-items-center justify-content-between">
+                        <h6 class="fw-semibold mb-0 text-nowrap">
+                            Media <span class="text-muted">(<?= count($imageAttachments) ?>)</span>
+                        </h6>
+                        <a class="chat-menu d-lg-none d-block text-dark fs-6 bg-hover-primary nav-icon-hover position-relative z-index-5" href="javascript:void(0)">
+                            <i class="ti ti-x"></i>
+                        </a>
+                    </div>
+                    <div class="offcanvas-body p-9">
+
+                        <!-- IMAGES -->
+                        <div class="row mb-7 text-nowrap">
+                            <?php foreach ($imageAttachments as $img): ?>
+                                <div class="col-4 px-1 mb-2">
+                                    <img src="<?= htmlspecialchars($img['file_url']) ?>" 
+                                        width="88" height="65" 
+                                        alt="media-img" 
+                                        class="rounded" />
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <!-- FILES -->
+                        <div class="files-chat">
+                            <h6 class="fw-semibold mb-3 text-nowrap">
+                                Files <span class="text-muted">(<?= count($fileAttachments) ?>)</span>
+                            </h6>
+
+                            <?php foreach ($fileAttachments as $file): 
+                                $filename = basename($file['file_url']);
+                                $filesizeMB = round($file['file_size'] / 1024 / 1024, 2) . ' MB';
+                                $fileExt = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                            ?>
+                            <a href="<?= htmlspecialchars($file['file_url']) ?>" download 
+                            class="hstack gap-3 file-chat-hover justify-content-between text-nowrap mb-9">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-1 text-bg-light p-6">
+                                        <i class="fa fa-file fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold" title="<?= htmlspecialchars($filename) ?>"><?= htmlspecialchars(strlen($filename) > 20 ? substr($filename, 0, 17) . '...' : $filename) ?></h6>
+                                        <div class="d-flex align-items-center gap-3 fs-2 text-muted">
+                                            <span><?= $filesizeMB ?></span>
+                                            <span><?= date('d M Y', strtotime($file['uploaded_at'] ?? 'now')) ?></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="position-relative nav-icon-hover download-file">
+                                    <i class="ti ti-download text-dark fs-6 bg-hover-primary"></i>
+                                </span>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
+
+                    </div>
                 </div>
-                <div class="offcanvas-body p-9">
-
-                  <div class="row mb-7 text-nowrap">
-                    <div class="col-4 px-1 mb-2">
-
-                      <img src="../assets/images/products/product-1.jpg" width="88" height="65" alt="materialpro-img" class="rounded" />
-
-                    </div>
-                    <div class="col-4 px-1 mb-2">
-
-                      <img src="../assets/images/products/product-2.jpg" width="88" height="65" alt="materialpro-img" class="rounded" />
-
-                    </div>
-                    <div class="col-4 px-1 mb-2">
-
-                      <img src="../assets/images/products/product-3.jpg" width="88" height="65" alt="materialpro-img" class="rounded" />
-
-                    </div>
-                    <div class="col-4 px-1 mb-2">
-
-                      <img src="../assets/images/products/product-4.jpg" width="88" height="65" alt="materialpro-img" class="rounded" />
-
-                    </div>
-                    <div class="col-4 px-1 mb-2">
-
-                      <img src="../assets/images/products/product-1.jpg" width="88" height="65" alt="materialpro-img" class="rounded" />
-
-                    </div>
-                    <div class="col-4 px-1 mb-2">
-
-                      <img src="../assets/images/products/product-2.jpg" width="88" height="65" alt="materialpro-img" class="rounded" />
-
-                    </div>
-
-                  </div>
-                  <div class="files-chat">
-                    <h6 class="fw-semibold mb-3 text-nowrap">
-                      Files <span class="text-muted">(36)</span>
-                    </h6>
-                    <a href="javascript:void(0)" class="hstack gap-3 file-chat-hover justify-content-between text-nowrap mb-9">
-                      <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-1 text-bg-light p-6">
-                          <img src="../assets/images/chat/icon-adobe.svg" alt="materialpro-img" width="24" height="24" />
-                        </div>
-                        <div>
-                          <h6 class="fw-semibold">
-                            service-task.pdf
-                          </h6>
-                          <div class="d-flex align-items-center gap-3 fs-2 text-muted">
-                            <span>2 MB</span>
-                            <span>2 Dec 2023</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span class="position-relative nav-icon-hover download-file">
-                        <i class="ti ti-download text-dark fs-6 bg-hover-primary"></i>
-                      </span>
-                    </a>
-                    <a href="javascript:void(0)" class="hstack gap-3 file-chat-hover justify-content-between text-nowrap mb-9">
-                      <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-1 text-bg-light p-6">
-                          <img src="../assets/images/chat/icon-figma.svg" alt="materialpro-img" width="24" height="24" />
-                        </div>
-                        <div>
-                          <h6 class="fw-semibold">
-                            homepage-design.fig
-                          </h6>
-                          <div class="d-flex align-items-center gap-3 fs-2 text-muted">
-                            <span>2 MB</span>
-                            <span>2 Dec 2023</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span class="position-relative nav-icon-hover download-file">
-                        <i class="ti ti-download text-dark fs-6 bg-hover-primary"></i>
-                      </span>
-                    </a>
-                    <a href="javascript:void(0)" class="hstack gap-3 file-chat-hover justify-content-between text-nowrap mb-9">
-                      <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-1 text-bg-light p-6">
-                          <img src="../assets/images/chat/icon-chrome.svg" alt="materialpro-img" width="24" height="24" />
-                        </div>
-                        <div>
-                          <h6 class="fw-semibold">about-us.html</h6>
-                          <div class="d-flex align-items-center gap-3 fs-2 text-muted">
-                            <span>2 MB</span>
-                            <span>2 Dec 2023</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span class="position-relative nav-icon-hover download-file">
-                        <i class="ti ti-download text-dark fs-6 bg-hover-primary"></i>
-                      </span>
-                    </a>
-                    <a href="javascript:void(0)" class="hstack gap-3 file-chat-hover justify-content-between text-nowrap mb-9">
-                      <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-1 text-bg-light p-6">
-                          <img src="../assets/images/chat/icon-zip-folder.svg" alt="materialpro-img" width="24" height="24" />
-                        </div>
-                        <div>
-                          <h6 class="fw-semibold">
-                            work-project.zip
-                          </h6>
-                          <div class="d-flex align-items-center gap-3 fs-2 text-muted">
-                            <span>2 MB</span>
-                            <span>2 Dec 2023</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span class="position-relative nav-icon-hover download-file">
-                        <i class="ti ti-download text-dark fs-6 bg-hover-primary"></i>
-                      </span>
-                    </a>
-                    <a href="javascript:void(0)" class="hstack gap-3 file-chat-hover justify-content-between text-nowrap">
-                      <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-1 text-bg-light p-6">
-                          <img src="../assets/images/chat/icon-javascript.svg" alt="materialpro-img" width="24" height="24" />
-                        </div>
-                        <div>
-                          <h6 class="fw-semibold">custom.js</h6>
-                          <div class="d-flex align-items-center gap-3 fs-2 text-muted">
-                            <span>2 MB</span>
-                            <span>2 Dec 2023</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span class="position-relative nav-icon-hover download-file">
-                        <i class="ti ti-download text-dark fs-6 bg-hover-primary"></i>
-                      </span>
-                    </a>
-                  </div>
-                </div>
-              </div>
             </div>
         </div>
         <?php
     }
 
     if ($action == 'send_message') {
-        $sender_id = intval($_SESSION['userid']);
+        $sender_id    = intval($_SESSION['userid']);
         $recipient_id = intval($_POST['recipient_id'] ?? 0);
-        $message = trim($_POST['message'] ?? '');
+        $message      = trim($_POST['message'] ?? '');
 
-        if ($recipient_id && $message !== '') {
-            $sender_id = mysqli_real_escape_string($conn, $sender_id);
-            $recipient_id = mysqli_real_escape_string($conn, $recipient_id);
-            $message = mysqli_real_escape_string($conn, $message);
-
-            $query = "
-                INSERT INTO messages (sender_user_id, recipient_user_id, body_text, created_at)
-                VALUES ('$sender_id', '$recipient_id', '$message', NOW())
-            ";
-            mysqli_query($conn, $query) or die(mysqli_error($conn));
+        $hasImages = !empty($_FILES['images']['name'][0]);
+        $hasDocs   = !empty($_FILES['attachments']['name'][0]);
+        if (!$recipient_id || ($message === '' && !$hasImages && !$hasDocs)) {
+            echo "No message or attachments.";
+            exit;
         }
+
+        $message_safe = mysqli_real_escape_string($conn, $message);
+
+        $query = "
+            INSERT INTO messages (sender_user_id, recipient_user_id, body_text, created_at)
+            VALUES ($sender_id, $recipient_id, '$message_safe', NOW())
+        ";
+        mysqli_query($conn, $query) or die(mysqli_error($conn));
+        $message_id = mysqli_insert_id($conn);
+
+        $uploadDir = '../chat_attachments/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        function saveAttachment($conn, $message_id, $tmpName, $name, $isImage = false) {
+            $uploadDir = '../chat_attachments/';
+            $fileName = time() . '_' . preg_replace('/[^A-Za-z0-9_\.-]/', '_', $name);
+            $targetFile = $uploadDir . $fileName;
+
+            if (move_uploaded_file($tmpName, $targetFile)) {
+                $mimeType = mime_content_type($targetFile);
+                $fileSize = filesize($targetFile);
+                $sha256   = hash_file('sha256', $targetFile);
+
+                $width = $height = 'NULL';
+                if ($isImage) {
+                    $imgInfo = getimagesize($targetFile);
+                    if ($imgInfo) {
+                        $width  = intval($imgInfo[0]);
+                        $height = intval($imgInfo[1]);
+                    }
+                }
+
+                $fileUrl = mysqli_real_escape_string($conn, "chat_attachments/$fileName");
+                $mimeType_safe = mysqli_real_escape_string($conn, $mimeType);
+                $fileSize_safe = intval($fileSize);
+                $sha256_safe   = mysqli_real_escape_string($conn, $sha256);
+
+                mysqli_query($conn, "
+                    INSERT INTO message_attachments 
+                        (message_id, file_url, mime_type, file_size_bytes, width_px, height_px, sha256_hex, storage_provider) 
+                    VALUES 
+                        ($message_id, '$fileUrl', '$mimeType_safe', $fileSize_safe, 
+                        " . ($width === 'NULL' ? "NULL" : $width) . ", 
+                        " . ($height === 'NULL' ? "NULL" : $height) . ", 
+                        '$sha256_safe', '')
+                ") or die(mysqli_error($conn));
+            }
+        }
+
+        if ($hasImages) {
+            foreach ($_FILES['images']['name'] as $key => $name) {
+                saveAttachment($conn, $message_id, $_FILES['images']['tmp_name'][$key], $name, true);
+            }
+        }
+
+        if ($hasDocs) {
+            foreach ($_FILES['attachments']['name'] as $key => $name) {
+                saveAttachment($conn, $message_id, $_FILES['attachments']['tmp_name'][$key], $name, false);
+            }
+        }
+
+        echo "OK";
+        exit;
     }
 
     mysqli_close($conn);

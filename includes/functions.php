@@ -2355,6 +2355,7 @@ function getChatMessages($chatUserId) {
 
     $sql = "
         SELECT 
+            m.id AS message_id,
             m.sender_user_id,
             m.recipient_user_id,
             m.body_text,
@@ -2373,15 +2374,79 @@ function getChatMessages($chatUserId) {
 
     while ($row = mysqli_fetch_assoc($result)) {
         $messages[] = [
-            'sender_id' => $row['sender_user_id'],
+            'message_id'   => $row['message_id'], // added here
+            'sender_id'    => $row['sender_user_id'],
             'recipient_id' => $row['recipient_user_id'],
-            'body_text' => $row['body_text'],
-            'created_at' => $row['created_at'],
-            'sender_name' => $row['staff_name'],
-            'sender_avatar' => $row['profile_path'] ?: '../assets/images/profile/default.jpg'
+            'body_text'    => $row['body_text'],
+            'created_at'   => $row['created_at'],
+            'sender_name'  => $row['staff_name'],
+            'sender_avatar'=> $row['profile_path'] ?: '../assets/images/profile/default.jpg'
         ];
     }
 
     return $messages;
 }
+
+function getMessageAttachments($messageId) {
+    global $conn;
+
+    $messageId = intval($messageId);
+    $sql = "
+        SELECT id, file_url, mime_type, file_size_bytes
+        FROM message_attachments
+        WHERE message_id = $messageId
+    ";
+
+    $result = mysqli_query($conn, $sql);
+    $attachments = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $attachments[] = [
+            'id'       => $row['id'],
+            'file_url' => $row['file_url'],
+            'mime_type'=> $row['mime_type'],
+            'file_size'=> $row['file_size_bytes']
+        ];
+    }
+
+    return $attachments;
+}
+
+function getUserMsgAttachments($userId) {
+    global $conn;
+
+    $userId = intval($userId);
+
+    $sql = "
+        SELECT 
+            ma.id,
+            ma.file_url,
+            COALESCE(ma.mime_type, '') AS mime_type,  -- ensure it's always a string
+            ma.file_size_bytes,
+            ma.attachment_type,
+            ma.created_at
+        FROM message_attachments ma
+        INNER JOIN messages m ON ma.message_id = m.id
+        WHERE m.sender_user_id = $userId
+           OR m.recipient_user_id = $userId
+        ORDER BY ma.created_at DESC
+    ";
+
+    $result = mysqli_query($conn, $sql);
+    $attachments = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $attachments[] = [
+            'id'             => (int)$row['id'],
+            'file_url'       => $row['file_url'],
+            'mime_type'      => $row['mime_type'],
+            'file_size'      => isset($row['file_size_bytes']) ? (int)$row['file_size_bytes'] : 0,
+            'attachment_type'=> $row['attachment_type'],
+            'created_at'     => $row['created_at']
+        ];
+    }
+
+    return $attachments;
+}
+
 ?>
