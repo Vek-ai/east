@@ -412,7 +412,7 @@ $permission = $_SESSION['permission'];
                                 $result_system = mysqli_query($conn, $query_system);
                                 while ($row_system = mysqli_fetch_array($result_system)) {
                                 ?>
-                                    <option value="<?= $row_system['product_system'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
+                                    <option value="<?= $row_system['product_system'] ?>" data-category="<?= trim(preg_replace('/\s+/', '', $row_system['product_category'])) ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -1336,8 +1336,14 @@ $permission = $_SESSION['permission'];
                 var match = true;
 
                 $('.filter-selection').each(function() {
-                    var filterValue = $(this).val()?.toString().toLowerCase() || '';
-                    var rowValue = row.data($(this).data('filter'))?.toString().toLowerCase() || '';
+                    const normalize = str => str
+                        ?.toString()
+                        .trim()
+                        .replace(/\s+/g, ' ')
+                        .toLowerCase() || '';
+
+                    var filterValue = normalize($(this).val());
+                    var rowValue = normalize(row.data($(this).data('filter')));
 
                     if (filterValue && filterValue !== '/') {
                         if (!rowValue.includes(filterValue)) {
@@ -1350,7 +1356,6 @@ $permission = $_SESSION['permission'];
                 return match;
             });
 
-            console.log(123);
 
             table.draw();
             updateSelectedTags();

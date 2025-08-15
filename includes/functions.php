@@ -1865,7 +1865,7 @@ function getAvailableCoils($color_id = '', $grade = '', $width = '') {
     if (!empty($width)) {
         $w = floatval($width);
         if ($w > 0) {
-            $where .= " AND width >= $w";
+            $where .= " AND coil_width_id IN (SELECT id FROM coil_width WHERE actual_width >= $w)";
         }
     }
 
@@ -1881,6 +1881,22 @@ function getAvailableCoils($color_id = '', $grade = '', $width = '') {
     }
 
     return $result;
+}
+
+function getCoilWidth($id) {
+    global $conn;
+
+    $id = intval($id);
+
+    $sql = "SELECT actual_width FROM coil_width WHERE id = $id LIMIT 1";
+    $result = mysqli_query($conn, $sql);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['actual_width'];
+    }
+
+    return null;
 }
 
 function getJobID($job_name, $customer_id) {

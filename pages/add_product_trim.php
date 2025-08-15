@@ -40,7 +40,8 @@ if(isset($_REQUEST['action'])) {
                     while ($row_system = mysqli_fetch_array($result_system)) {
                         $selected = (($row['product_system'] ?? '') == $row_system['product_system_id']) ? 'selected' : '';
                     ?>
-                        <option value="<?= $row_system['product_system_id'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
+                        <option 
+                            value="<?= $row_system['product_system_id'] ?>" data-category='<?= $row_system['product_category'] ?>' <?= $selected ?>><?= $row_system['product_system'] ?></option>
                     <?php
                     }
                     ?>
