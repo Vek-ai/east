@@ -1277,7 +1277,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
      
 
       <div class="body-wrapper">
-        <div class="container-fluid">
+        <div class="container-fluid pt-3">
           <?php 
           $query = "
                     SELECT 

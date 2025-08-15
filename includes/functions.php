@@ -2284,4 +2284,104 @@ function getVisibleColumns($page_id, $profile_id) {
     return $visibleColumns;
 }
 
+function getChatUsers($currentUserId, $searchName = '') {
+    global $conn;
+
+    if (!empty($searchName)) {
+        $searchName = mysqli_real_escape_string($conn, $searchName);
+        $sql = "
+            SELECT 
+                s.staff_id,
+                s.staff_fname,
+                s.staff_lname,
+                s.username,
+                s.profile_path,
+                MAX(m.body_text) AS last_message,
+                MAX(m.created_at) AS last_time,
+                SUM(CASE WHEN m.recipient_user_id = $currentUserId AND m.read_at IS NULL THEN 1 ELSE 0 END) AS unread_count
+            FROM staff s
+            LEFT JOIN messages m
+                ON (m.sender_user_id = s.staff_id AND m.recipient_user_id = $currentUserId)
+                OR (m.recipient_user_id = s.staff_id AND m.sender_user_id = $currentUserId)
+            WHERE s.staff_id != $currentUserId
+              AND CONCAT(s.staff_fname, ' ', s.staff_lname) LIKE '%$searchName%'
+            GROUP BY s.staff_id
+            ORDER BY (MAX(m.created_at) IS NULL), MAX(m.created_at) DESC
+        ";
+    } else {
+        $sql = "
+            SELECT 
+                s.staff_id,
+                s.staff_fname,
+                s.staff_lname,
+                s.username,
+                s.profile_path,
+                MAX(m.body_text) AS last_message,
+                MAX(m.created_at) AS last_time,
+                SUM(CASE WHEN m.recipient_user_id = $currentUserId AND m.read_at IS NULL THEN 1 ELSE 0 END) AS unread_count
+            FROM staff s
+            INNER JOIN messages m 
+                ON (m.sender_user_id = s.staff_id AND m.recipient_user_id = $currentUserId)
+                OR (m.recipient_user_id = s.staff_id AND m.sender_user_id = $currentUserId)
+            WHERE s.staff_id != $currentUserId
+            GROUP BY s.staff_id
+            ORDER BY MAX(m.created_at) DESC
+        ";
+    }
+
+    $result = mysqli_query($conn, $sql);
+    $chatUsers = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $chatUsers[] = [
+            'id' => $row['staff_id'],
+            'full_name' => $row['staff_fname'] . ' ' . $row['staff_lname'],
+            'username' => $row['username'],
+            'avatar' => $row['profile_path'] ?: '../assets/images/profile/default.jpg',
+            'last_message' => $row['last_message'] ?? '',
+            'last_time' => $row['last_time'] ? date('h:i A', strtotime($row['last_time'])) : '',
+            'unread_count' => $row['unread_count'] ?? 0
+        ];
+    }
+
+    return $chatUsers;
+}
+
+function getChatMessages($chatUserId) {
+    global $conn;
+
+    $currentUserId = intval($_SESSION['userid'] ?? 0);
+    $chatUserId = intval($chatUserId);
+
+    $sql = "
+        SELECT 
+            m.sender_user_id,
+            m.recipient_user_id,
+            m.body_text,
+            m.created_at,
+            s.staff_name,
+            s.profile_path
+        FROM messages m
+        JOIN staff s ON s.staff_id = m.sender_user_id
+        WHERE (m.sender_user_id = $currentUserId AND m.recipient_user_id = $chatUserId)
+           OR (m.sender_user_id = $chatUserId AND m.recipient_user_id = $currentUserId)
+        ORDER BY m.created_at ASC
+    ";
+
+    $result = mysqli_query($conn, $sql);
+    $messages = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $messages[] = [
+            'sender_id' => $row['sender_user_id'],
+            'recipient_id' => $row['recipient_user_id'],
+            'body_text' => $row['body_text'],
+            'created_at' => $row['created_at'],
+            'sender_name' => $row['staff_name'],
+            'sender_avatar' => $row['profile_path'] ?: '../assets/images/profile/default.jpg'
+        ];
+    }
+
+    return $messages;
+}
 ?>
