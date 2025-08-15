@@ -135,11 +135,11 @@ if (mysqli_num_rows($result) > 0) {
 
         $data = array();
         if($type == 'approval'){
-            $query_product = "SELECT * FROM approval_product WHERE approval_id = '$table_id' AND status = '3'";
+            $query_product = "SELECT * FROM approval_product WHERE approval_id = '$table_id'";
         }else if($type == 'estimate'){
-            $query_product = "SELECT * FROM estimate_prod WHERE estimateid = '$table_id' AND status = '3'";
+            $query_product = "SELECT * FROM estimate_prod WHERE estimateid = '$table_id'";
         }else if($type == 'order'){
-            $query_product = "SELECT * FROM order_product WHERE orderid = '$table_id' AND status = '3'";
+            $query_product = "SELECT * FROM order_product WHERE orderid = '$table_id'";
         }
 
        
