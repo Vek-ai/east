@@ -1865,7 +1865,7 @@ function getAvailableCoils($color_id = '', $grade = '', $width = '') {
     if (!empty($width)) {
         $w = floatval($width);
         if ($w > 0) {
-            $where .= " AND coil_width_id IN (SELECT id FROM coil_width WHERE actual_width >= $w)";
+            $where .= " AND width IN (SELECT id FROM coil_width WHERE actual_width >= $w)";
         }
     }
 
