@@ -88,7 +88,7 @@ if (isset($_POST['fetch_available'])) {
                     foreach ($coils as $row) {
                         $color_details = getColorDetails($row['color_sold_as']);
 
-                        $weighted_sum += $row['price'] * $row['remaining_feet'];
+                        $weighted_sum += floatval($row['price']) * floatval($row['remaining_feet']);
                         $total_weight += $row['remaining_feet'];
 
                         $is_checked = 0;
