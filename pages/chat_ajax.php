@@ -19,7 +19,7 @@ if(isset($_REQUEST['action'])) {
         foreach ($chatUsers as $user): 
             $avatar = $user['avatar'];
             $displayName = $user['full_name'];
-            $lastMessage = $user['last_message'] ?? '';
+            $lastMessage = mb_strimwidth($user['last_message'] ?? '', 0, 50, '...');
             $lastTime = $user['last_time'];
             $unreadCount = $user['unread_count'];
             $messageClass = $unreadCount > 0 ? 'text-body-color' : 'text-muted';
