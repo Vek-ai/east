@@ -114,7 +114,7 @@ if (isset($_POST['fetch_available'])) {
                             <td><?= $row['thickness'] ?></td>
                             <td class="text-right"><?= $row['width'] ?></td>
                             <td class="text-right"><?= $row['remaining_feet'] ?></td>
-                            <td class="text-right"><?= number_format($row['price'], 2) ?></td>
+                            <td class="text-right"><?= number_format(floatval($row['price']), 2) ?></td>
                         </tr>
                     <?php } ?>
                 </tbody>
