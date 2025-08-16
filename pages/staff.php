@@ -17,7 +17,20 @@ if(!empty($_REQUEST['staff_id'])){
 }
 
 $permission = $_SESSION['permission'];
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
 
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 
 <style>
@@ -143,13 +156,33 @@ $permission = $_SESSION['permission'];
                         <div class="table-responsive">
                         <table id="staffList" class="table search-table align-middle text-nowrap">
                             <thead class="header-item">
-                            <th style="color: #ffffff !important">Staff Name</th>
-                            <th style="color: #ffffff !important">Role</th>
-                            <th style="color: #ffffff !important">Email</th>
-                            <th style="color: #ffffff !important">Phone</th>
-                            <th style="color: #ffffff !important">Details</th>
-                            <th style="color: #ffffff !important">Action</th>
+                                <tr>
+                                    <?php if (showCol('staff_name')): ?>
+                                        <th style="color: #ffffff !important">Staff Name</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('role')): ?>
+                                        <th style="color: #ffffff !important">Role</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('email')): ?>
+                                        <th style="color: #ffffff !important">Email</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('phone')): ?>
+                                        <th style="color: #ffffff !important">Phone</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('details')): ?>
+                                        <th style="color: #ffffff !important">Details</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('action')): ?>
+                                        <th style="color: #ffffff !important">Action</th>
+                                    <?php endif; ?>
+                                </tr>
                             </thead>
+
                             <tbody>
                             <?php
                                 $no = 1;
@@ -179,36 +212,60 @@ $permission = $_SESSION['permission'];
                                         data-role="<?=$row_staff['role']?>"
                                         data-warehouse="<?=$warehouse_assigned_id?>"
                                     >
-                                        <td style="color: #ffffff !important">
-                                        <a href="#" id="view_details_btn" data-id="<?= $row_staff['staff_id'] ?>">
-                                            <div class="d-flex align-items-center gap-3">
-                                                <img src="<?= $profile_path ?>" alt="user4" width="60" height="60" class="rounded-circle">
-                                                <div>
-                                                    <?= $row_staff['staff_fname'] ." " .$row_staff['staff_lname'] ?>
-                                                </div>
-                                            </div>
-                                        </a>
-                                        </td>
-                                        <td style="color: #ffffff !important"><?= get_role_name($row_staff['role']) ?></td>
-                                        <td style="color: #ffffff !important"><?= $row_staff['email'] ?></td>
-                                        <td style="color: #ffffff !important"><?= $row_staff['phone'] ?></td>
-                                        <td style="color: #ffffff !important"><?= $status ?></td>
-                                        <td>
-                                            <?php                                                    
-                                            if ($permission === 'edit') {
-                                            ?>
-                                            <div class="action-btn text-center">
-                                                <a href="#" title="Edit" id="view_staff_btn" class="text-primary edit" data-id="<?= $row_staff['staff_id'] ?>">
-                                                    <i class="ti ti-pencil fs-7"></i>
+                                        <?php if (showCol('staff_name')): ?>
+                                            <td style="color: #ffffff !important">
+                                                <a href="#" id="view_details_btn" data-id="<?= $row_staff['staff_id'] ?>">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <img src="<?= $profile_path ?>" alt="user4" width="60" height="60" class="rounded-circle">
+                                                        <div>
+                                                            <?= $row_staff['staff_fname'] ." " .$row_staff['staff_lname'] ?>
+                                                        </div>
+                                                    </div>
                                                 </a>
-                                                <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_staff['staff_id'] ?>">
-                                                    <i class="ti ti-trash fs-5"></i>
-                                                </a> -->
-                                            </div>
-                                            <?php
-                                            }
-                                            ?>
-                                        </td>
+                                                </td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('role')): ?>
+                                            <td style="color: #ffffff !important"><?= get_role_name($row_staff['role']) ?></td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('email')): ?>
+                                            <td style="color: #ffffff !important"><?= $row_staff['email'] ?></td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('phone')): ?>
+                                            <td style="color: #ffffff !important"><?= $row_staff['phone'] ?></td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('details')): ?>
+                                            <td style="color: #ffffff !important"><?= $status ?></td>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('action')): ?>
+                                            <td>
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>
+                                                <div class="action-btn text-center">
+                                                    <a href="#" title="Edit" id="view_staff_btn" class="text-primary edit" data-id="<?= $row_staff['staff_id'] ?>">
+                                                        <i class="ti ti-pencil fs-7"></i>
+                                                    </a>
+                                                    <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_staff['staff_id'] ?>">
+                                                        <i class="ti ti-trash fs-5"></i>
+                                                    </a> -->
+                                                </div>
+                                                <?php
+                                                }
+                                                ?>
+                                            </td>
+                                        <?php endif; ?>
+
+                                        
+                                        
+                                        
+                                        
+                                       
+                                        
                                     </tr>
                                 <?php 
                                 $no++;

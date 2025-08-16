@@ -7,7 +7,20 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $permission = $_SESSION['permission'];
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
 
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -190,13 +203,33 @@ $permission = $_SESSION['permission'];
         <div class="table-responsive">
         <table id="warehouseList" class="table search-table align-middle text-nowrap">
             <thead class="header-item">
-            <th>Warehouse Name</th>
-            <th>Location</th>
-            <th>Contact Name</th>
-            <th>Contact Phone</th>
-            <th>Details</th>
-            <th>Action</th>
+                <tr>
+                    <?php if (showCol('warehouse_name')): ?>
+                        <th>Warehouse Name</th>
+                    <?php endif; ?>
+
+                    <?php if (showCol('location')): ?>
+                        <th>Location</th>
+                    <?php endif; ?>
+
+                    <?php if (showCol('contact_name')): ?>
+                        <th>Contact Name</th>
+                    <?php endif; ?>
+
+                    <?php if (showCol('contact_phone')): ?>
+                        <th>Contact Phone</th>
+                    <?php endif; ?>
+
+                    <?php if (showCol('details')): ?>
+                        <th>Details</th>
+                    <?php endif; ?>
+
+                    <?php if (showCol('action')): ?>
+                        <th>Action</th>
+                    <?php endif; ?>
+                </tr>
             </thead>
+
             <tbody>
             <?php
                 $no = 1;
@@ -214,33 +247,50 @@ $permission = $_SESSION['permission'];
                 ?>
                     <!-- start row -->
                     <tr class="search-items">
-                        <td>
-                            <?= $row_warehouse['WarehouseName'] ?>
-                        </td>
-                        <td><?= $row_warehouse['Location'] ?></td>
-                        <td><?= $row_warehouse['contact_person'] ?></td>
-                        <td><?= $row_warehouse['contact_phone'] ?></td>
-                        <td><?= $status ?></td>
-                        <td>
-                            <?php
-                            $action_html = '';
-                                if ($permission === 'edit') {
-                                ?>
-                                <div class="action-btn d-flex justify-content-center gap-2">
-                                    <a href="#" id="view_warehouse_btn" class="text-primary edit" data-id="<?= $row_warehouse['WarehouseID'] ?>" title="Archive">
-                                        <i class="fa fa-eye fs-6"></i>
-                                    </a>
-                                    <a href="?page=warehouse_details&warehouse_id=<?= $row_warehouse['WarehouseID'] ?>" title="Edit">
-                                        <i class="fa fa-pencil text-warning fs-6"></i>
-                                    </a>
-                                    <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_warehouse['WarehouseID'] ?>">
-                                        <i class="ti ti-trash fs-5"></i>
-                                    </a> -->
-                                </div>
+                        <?php if (showCol('warehouse_name')): ?>
+                            <td>
+                                <?= $row_warehouse['WarehouseName'] ?>
+                            </td>
+                        <?php endif; ?>
+
+                        <?php if (showCol('location')): ?>
+                            <td><?= $row_warehouse['Location'] ?></td>
+                        <?php endif; ?>
+
+                        <?php if (showCol('contact_name')): ?>
+                            <td><?= $row_warehouse['contact_person'] ?></td>
+                        <?php endif; ?>
+
+                        <?php if (showCol('contact_phone')): ?>
+                            <td><?= $row_warehouse['contact_phone'] ?></td>
+                        <?php endif; ?>
+
+                        <?php if (showCol('details')): ?>
+                            <td><?= $status ?></td>
+                        <?php endif; ?>
+
+                        <?php if (showCol('action')): ?>
+                            <td>
                                 <?php
-                                }
-                            ?>
-                        </td>
+                                $action_html = '';
+                                    if ($permission === 'edit') {
+                                    ?>
+                                    <div class="action-btn d-flex justify-content-center gap-2">
+                                        <a href="#" id="view_warehouse_btn" class="text-primary edit" data-id="<?= $row_warehouse['WarehouseID'] ?>" title="Archive">
+                                            <i class="fa fa-eye fs-6"></i>
+                                        </a>
+                                        <a href="?page=warehouse_details&warehouse_id=<?= $row_warehouse['WarehouseID'] ?>" title="Edit">
+                                            <i class="fa fa-pencil text-warning fs-6"></i>
+                                        </a>
+                                        <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_warehouse['WarehouseID'] ?>">
+                                            <i class="ti ti-trash fs-5"></i>
+                                        </a> -->
+                                    </div>
+                                    <?php
+                                    }
+                                ?>
+                            </td>
+                        <?php endif; ?>
                     </tr>
                 <?php 
                 $no++;

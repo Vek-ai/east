@@ -28,6 +28,20 @@ if(!empty($_REQUEST['emp_role_id'])){
 }
 
 $permission = $_SESSION['permission'];
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 <style>
 td.notes,  td.last-edit{
@@ -124,13 +138,27 @@ if ($permission === 'edit') {
                 <table id="display_employee_roles" class="table table-striped table-bordered text-nowrap align-middle">
                   <thead>
                     <tr>
-                      <th>Employee Role</th>
-                      <th>Role Description</th>
-                      <th>Details</th>
-                      <th>Status</th>
-                      <th>Action</th>
+                        <?php if (showCol('employee_role')): ?>
+                            <th>Employee Role</th>
+                        <?php endif; ?>
+
+                        <?php if (showCol('role_description')): ?>
+                            <th>Role Description</th>
+                        <?php endif; ?>
+
+                        <?php if (showCol('details')): ?>
+                            <th>Details</th>
+                        <?php endif; ?>
+
+                        <?php if (showCol('status')): ?>
+                            <th>Status</th>
+                        <?php endif; ?>
+
+                        <?php if (showCol('action')): ?>
+                            <th>Action</th>
+                        <?php endif; ?>
                     </tr>
-                  </thead>
+                </thead>
                   <tbody>
                     <?php
                     $no = 1;
@@ -164,28 +192,42 @@ if ($permission === 'edit') {
                         }
                     ?>
                     <tr id="product-row-<?= $no ?>">
-                        <td>
-                            <a href="#" id="view_emp_list" data-id="<?= $emp_role_id ?>">
-                              <span class="product<?= $no ?> <?php if ($row_employee_roles['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $emp_role ?></span>
-                            </a>
-                        </td>
-                        <td class="notes" style="width:30%;"><?= $role_desc ?></td>
-                        <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
-                        <td><?= $status ?></td>
-                        <td class="text-center" id="action-button-<?= $no ?>">
-                            <?php                                                    
-                            if ($permission === 'edit') {
-                                 if ($row_employee_roles['status'] == '0') { ?>
-                                    <a href="#" title="Archive" class="btn btn-light py-1 text-dark hideCategory" data-id="<?= $emp_role_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
-                                <?php } else { ?>
-                                    <a href="#" title="Edit" id="addRoleModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $emp_role_id ?>" data-type="edit">
-                                    <i class="ti ti-pencil fs-7"></i>
-                                    </button>
-                                <?php 
-                                } 
-                            }
-                            ?>
-                        </td>
+                        <?php if (showCol('employee_role')): ?>
+                            <td>
+                                <a href="#" id="view_emp_list" data-id="<?= $emp_role_id ?>">
+                                <span class="product<?= $no ?> <?php if ($row_employee_roles['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $emp_role ?></span>
+                                </a>
+                            </td>
+                        <?php endif; ?>
+
+                        <?php if (showCol('role_description')): ?>
+                            <td class="notes" style="width:30%;"><?= $role_desc ?></td>
+                        <?php endif; ?>
+
+                        <?php if (showCol('details')): ?>
+                            <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
+                        <?php endif; ?>
+
+                        <?php if (showCol('status')): ?>
+                            <td><?= $status ?></td>
+                        <?php endif; ?>
+
+                        <?php if (showCol('action')): ?>
+                            <td class="text-center" id="action-button-<?= $no ?>">
+                                <?php                                                    
+                                if ($permission === 'edit') {
+                                    if ($row_employee_roles['status'] == '0') { ?>
+                                        <a href="#" title="Archive" class="btn btn-light py-1 text-dark hideCategory" data-id="<?= $emp_role_id ?>" data-row="<?= $no ?>" style='border-radius: 10%;'>Archive</a>
+                                    <?php } else { ?>
+                                        <a href="#" title="Edit" id="addRoleModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $emp_role_id ?>" data-type="edit">
+                                        <i class="ti ti-pencil fs-7"></i>
+                                        </button>
+                                    <?php 
+                                    } 
+                                }
+                                ?>
+                            </td>
+                        <?php endif; ?>
                     </tr>
                     <?php
                     $no++;

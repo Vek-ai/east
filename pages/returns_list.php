@@ -9,6 +9,20 @@ require 'includes/functions.php';
 $page_title = "Return/Refund List";
 
 $permission = $_SESSION['permission'];
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 
 <div class="container-fluid">
@@ -129,13 +143,33 @@ $permission = $_SESSION['permission'];
                     <table id="returns_table" class="table table-hover mb-0 text-md-nowrap">
                         <thead>
                             <tr>
-                                <th>Invoice #</th>
-                                <th>Customer</th>
-                                <th>Product Amount</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Salesperson</th>
-                                <th>Action</th>
+                                <?php if (showCol('invoice_no')): ?>
+                                    <th>Invoice #</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('customer')): ?>
+                                    <th>Customer</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('product_amount')): ?>
+                                    <th>Product Amount</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('sale_date')): ?>
+                                    <th>Date</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('sale_time')): ?>
+                                    <th>Time</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('salesperson')): ?>
+                                    <th>Salesperson</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('action')): ?>
+                                    <th>Action</th>
+                                <?php endif; ?>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -413,8 +447,6 @@ $permission = $_SESSION['permission'];
                     search_returns: 'search_returns'
                 },
                 success: function (response) {
-                    console.log(response);
-
                     if ($.fn.DataTable.isDataTable('#returns_table')) {
                         $('#returns_table').DataTable().clear().destroy();
                     }
@@ -428,54 +460,91 @@ $permission = $_SESSION['permission'];
 
                     if (response.orders.length > 0) {
                         response.orders.forEach(order => {
+                            let rowData = [];
 
-                            table.row.add([
-                                order.orderid,
-                                order.customer_name,
-                                `$ ${parseFloat(order.amount).toFixed(2)}`,
-                                order.formatted_date,
-                                order.formatted_time,
-                                order.cashier,
-                                `
-                                <a href="javascript:void(0)" class="text-primary" id="view_order_details" data-id="${order.orderid}" title="View Details">
+                            <?php if (showCol('invoice_no')): ?>
+                                rowData.push(order.orderid);
+                            <?php endif; ?>
+
+                            <?php if (showCol('customer')): ?>
+                                rowData.push(order.customer_name);
+                            <?php endif; ?>
+
+                            <?php if (showCol('product_amount')): ?>
+                                rowData.push(`$ ${parseFloat(order.amount).toFixed(2)}`);
+                            <?php endif; ?>
+
+                            <?php if (showCol('sale_date')): ?>
+                                rowData.push(order.formatted_date);
+                            <?php endif; ?>
+
+                            <?php if (showCol('sale_time')): ?>
+                                rowData.push(order.formatted_time);
+                            <?php endif; ?>
+
+                            <?php if (showCol('salesperson')): ?>
+                                rowData.push(order.cashier);
+                            <?php endif; ?>
+
+                            <?php if (showCol('action')): ?>
+                                let actionButtons = `
+                                    <a href="javascript:void(0)" class="text-primary" id="view_order_details" data-id="${order.orderid}" title="View Details">
                                         <i class="fa fa-eye"></i>
-                                </a>
-                                <a href="print_return_product.php?id=${order.orderid}" 
-                                    class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" 
-                                    data-id="${order.orderid}" data-bs-toggle="tooltip" 
-                                    title="Print/Download">
-                                        <i class="text-success fa fa-print fs-5"></i>
-                                </a>
-                                <?php                                                    
-                                if ($permission === 'edit') {
-                                ?>
-                                <a href="javascript:void(0)" 
-                                    type="button" 
-                                    id="email_order_btn" 
-                                    class="me-1 email_order_btn" 
-                                    data-customer="${order.customer_id}" 
-                                    data-id="${order.orderid}" 
-                                    title="Send to Customer">
-                                        <iconify-icon icon="solar:plain-linear" class="fs-5 text-info"></iconify-icon>
-                                </a>
-                                <?php
-                                }
-                                ?>
-                                `
-                            ]);
+                                    </a>
+                                    <a href="print_return_product.php?id=${order.orderid}" 
+                                        class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" 
+                                        data-id="${order.orderid}" data-bs-toggle="tooltip" 
+                                        title="Print/Download">
+                                            <i class="text-success fa fa-print fs-5"></i>
+                                    </a>
+                                `;
+                                <?php if ($permission === 'edit'): ?>
+                                    actionButtons += `
+                                        <a href="javascript:void(0)" 
+                                            class="me-1 email_order_btn" 
+                                            data-customer="${order.customer_id}" 
+                                            data-id="${order.orderid}" 
+                                            title="Send to Customer">
+                                                <iconify-icon icon="solar:plain-linear" class="fs-5 text-info"></iconify-icon>
+                                        </a>
+                                    `;
+                                <?php endif; ?>
+                                rowData.push(actionButtons);
+                            <?php endif; ?>
+
+                            table.row.add(rowData);
                         });
 
                         table.draw();
 
-                        $('#returns_table tfoot').html(`
-                            <tr>
-                                <td colspan="3" class="text-end fw-bold">Total Orders:</td>
-                                <td>${response.total_count}</td>
-                                <td colspan="2" class="text-end fw-bold">Total Amount:</td>
-                                <td class="text-end fw-bold">$ ${parseFloat(response.total_amount).toFixed(2)}</td>
-                                <td></td>
-                            </tr>
-                        `);
+                        let footerCols = [];
+
+                        <?php if (showCol('invoice_no') || showCol('customer') || showCol('product_amount')): ?>
+                            footerCols.push(`<td colspan="2" class="text-end fw-bold">Total Orders:</td>`);
+                        <?php else: ?>
+                            footerCols.push(`<td colspan="0"></td>`);
+                        <?php endif; ?>
+
+                        <?php if (showCol('product_amount')): ?>
+                            footerCols.push(`<td class="fw-bold">$ ${parseFloat(response.total_amount).toFixed(2)}</td>`);
+                        <?php else: ?>
+                            footerCols.push(`<td></td>`);
+                        <?php endif; ?>
+
+                        <?php if (showCol('sale_date') || showCol('sale_time')): ?>
+                            footerCols.push(`<td colspan="2" class="text-end fw-bold">Total</td>`);
+                        <?php endif; ?>
+
+                        <?php if (showCol('salesperson')): ?>
+                            footerCols.push(`<td class="text-end">${response.total_count}</td>`);
+                        <?php endif; ?>
+
+                        <?php if (showCol('action')): ?>
+                            footerCols.push(`<td></td>`);
+                        <?php endif; ?>
+
+                        $('#returns_table tfoot').html(`<tr>${footerCols.join('')}</tr>`);
+
                     } else {
                         $('#returns_table tfoot').html(`
                             <tr>
@@ -491,6 +560,7 @@ $permission = $_SESSION['permission'];
                 }
             });
         }
+
 
         $(document).on('change', '#customer_search, #date_from, #date_to, .filter-selection', function(event) {
             performSearch();

@@ -41,6 +41,20 @@ $saveBtnTxt = "Add";
 $addHeaderTxt = "Add New";
 
 $permission = $_SESSION['permission'];
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 
 <style>
@@ -222,11 +236,25 @@ if ($permission === 'edit') {
                     <table id="display_customer" class="table table-bordered align-middle table-hover mb-0 text-md-nowrap">
                       <thead>
                         <tr>
-                          <th>Name</th>
-                          <th>Business Name</th>
-                          <th>Phone Number</th>
-                          <th>Status</th>
-                          <th>Action</th>
+                            <?php if (showCol('name')): ?>
+                                <th>Name</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('business_name')): ?>
+                                <th>Business Name</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('phone_number')): ?>
+                                <th>Phone Number</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('status')): ?>
+                                <th>Status</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('action')): ?>
+                                <th>Action</th>
+                            <?php endif; ?>
                         </tr>
                       </thead>
                       <tbody>
@@ -281,69 +309,83 @@ if ($permission === 'edit') {
                               data-city="<?= strtolower($row_customer['city']) ?>"
                               data-pricing="<?= $row_customer['customer_pricing'] ?>"
                           >
-                            <td>
-                              <a href="javascript:void(0)" class="text-decoration-none">
-                                <span class="customer<?= $no ?><?php if ($row_customer['status'] == '0' || $row_customer['status'] == '3') {echo 'emphasize-strike';} ?>">
-                                  <?php 
-                                  if($row_customer['status'] == '3'){
-                                    $merge_details = getCustomerDetails($customer_id);
-                                    $merge_id = $merge_details['merge_from'];
-                                    $current_details = getCustomerDetails($merge_id);
-                                    echo "$name - Merge to " .$current_details['customer_first_name'] . " " . $current_details['customer_last_name'];
-                                  }else{
-                                    echo $name;
-                                  }
-                                  ?>
-                                </span>
-                              </a>
-                            </td>
-                            <td><?= $business_name ?></td>
-                            <td><?= $phone ?></td>
-                            <td><?= $status ?></td>
-                            <td class="text-center fs-5" id="action-button-<?= $no ?>">
-                              <?php if ($row_customer['status'] == '0') { ?>
-                                <a href="?page=customer&customer_id=<?= $customer_id ?>&t=e" class="py-1 text-dark hideCustomer" data-id="<?= $customer_id ?>" data-row="<?= $no ?>"
-                                  style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Archive"><i
-                                    class="fa fa-box-archive text-danger"></i></a>
-                              <?php } else { ?>
-                                <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="v" class="py-1 pe-1 addModalBtn"
-                                  title="View">
-                                  <i class="fa fa-eye text-light"></i>
-                                </a>
-                                <?php                                                    
-                                if ($permission === 'edit') {
-                                ?>
-                                <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="e" class="py-1 pe-1 addModalBtn"
-                                  data-toggle="tooltip" data-placement="top" title="Edit">
-                                  <i class="fa fa-pencil text-warning"></i>
-                                </a>
-                                <?php
-                                }
-                                ?>
-                                <a href="?page=customer-dashboard&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
-                                  data-toggle="tooltip" data-placement="top" title="Dashboard"><i
-                                    class="fa fa-chart-bar text-primary"></i>
-                                </a>
-                                <?php                                                    
-                                if ($permission === 'edit') {
-                                ?>
-                                <a href="?page=customer_login_creds&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
-                                  data-toggle="tooltip" data-placement="top" title="Username and Password">
-                                  <i class="fa-solid fa-lock text-info"></i>
-                                </a>
-                                <?php
-                                }
-                                ?>
-                                <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
-                                  style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i
-                                    class="fa fa-calculator text-secondary"></i>
-                                </a>
-                                <a href="?page=order_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
-                                  style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Orders"><i
-                                    class="fa fa-cart-shopping text-success"></i>
-                                </a>
-                              <?php } ?>
-                            </td>
+                            <?php if (showCol('name')): ?>
+                                <td>
+                                  <a href="javascript:void(0)" class="text-decoration-none">
+                                    <span class="customer<?= $no ?><?php if ($row_customer['status'] == '0' || $row_customer['status'] == '3') {echo 'emphasize-strike';} ?>">
+                                      <?php 
+                                      if($row_customer['status'] == '3'){
+                                        $merge_details = getCustomerDetails($customer_id);
+                                        $merge_id = $merge_details['merge_from'];
+                                        $current_details = getCustomerDetails($merge_id);
+                                        echo "$name - Merge to " .$current_details['customer_first_name'] . " " . $current_details['customer_last_name'];
+                                      }else{
+                                        echo $name;
+                                      }
+                                      ?>
+                                    </span>
+                                  </a>
+                                </td>
+                            <?php endif; ?>
+
+                            <?php if (showCol('business_name')): ?>
+                                <td><?= $business_name ?></td>
+                            <?php endif; ?>
+
+                            <?php if (showCol('phone_number')): ?>
+                                <td><?= $phone ?></td>
+                            <?php endif; ?>
+
+                            <?php if (showCol('status')): ?>
+                                <td><?= $status ?></td>
+                            <?php endif; ?>
+
+                            <?php if (showCol('action')): ?>
+                                <td class="text-center fs-5" id="action-button-<?= $no ?>">
+                                  <?php if ($row_customer['status'] == '0') { ?>
+                                    <a href="?page=customer&customer_id=<?= $customer_id ?>&t=e" class="py-1 text-dark hideCustomer" data-id="<?= $customer_id ?>" data-row="<?= $no ?>"
+                                      style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Archive"><i
+                                        class="fa fa-box-archive text-danger"></i></a>
+                                  <?php } else { ?>
+                                    <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="v" class="py-1 pe-1 addModalBtn"
+                                      title="View">
+                                      <i class="fa fa-eye text-light"></i>
+                                    </a>
+                                    <?php                                                    
+                                    if ($permission === 'edit') {
+                                    ?>
+                                    <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="e" class="py-1 pe-1 addModalBtn"
+                                      data-toggle="tooltip" data-placement="top" title="Edit">
+                                      <i class="fa fa-pencil text-warning"></i>
+                                    </a>
+                                    <?php
+                                    }
+                                    ?>
+                                    <a href="?page=customer-dashboard&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
+                                      data-toggle="tooltip" data-placement="top" title="Dashboard"><i
+                                        class="fa fa-chart-bar text-primary"></i>
+                                    </a>
+                                    <?php                                                    
+                                    if ($permission === 'edit') {
+                                    ?>
+                                    <a href="?page=customer_login_creds&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
+                                      data-toggle="tooltip" data-placement="top" title="Username and Password">
+                                      <i class="fa-solid fa-lock text-info"></i>
+                                    </a>
+                                    <?php
+                                    }
+                                    ?>
+                                    <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
+                                      style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i
+                                        class="fa fa-calculator text-secondary"></i>
+                                    </a>
+                                    <a href="?page=order_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
+                                      style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Orders"><i
+                                        class="fa fa-cart-shopping text-success"></i>
+                                    </a>
+                                  <?php } ?>
+                                </td>
+                            <?php endif; ?>
                           </tr>
                           <?php
                           $no++;

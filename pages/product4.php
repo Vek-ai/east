@@ -26,6 +26,21 @@ $price_per_bend = getPaymentSetting('price_per_bend');
 
 $permission = $_SESSION['permission'];
 
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
+
 ?>
 <style>
     /* .select2-container {
@@ -537,16 +552,33 @@ $permission = $_SESSION['permission'];
                     <div class="table-responsive">
                         <table id="productList" class="table search-table align-middle text-wrap">
                             <thead class="header-item">
-                            <th>Product Name</th>
-                            <th>Product Category</th>
-                            <th>Product Line</th>
-                            <th>Product Type</th>
-                            <th>Status</th>
-                            <th>Action</th>
+                                <tr>
+                                    <?php if (showCol('product_name')): ?>
+                                        <th>Product Name</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('product_category')): ?>
+                                        <th>Product Category</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('product_line')): ?>
+                                        <th>Product Line</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('product_type')): ?>
+                                        <th>Product Type</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('status')): ?>
+                                        <th>Status</th>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('action')): ?>
+                                        <th>Action</th>
+                                    <?php endif; ?>
+                                </tr>
                             </thead>
-                            <tbody>
-                            
-                            </tbody>
+                            <tbody></tbody>
                         </table>
                     </div>
                 </div>
@@ -572,12 +604,29 @@ $permission = $_SESSION['permission'];
                 data: { action: 'fetch_products' }
             },
             columns: [
-                { data: 'product_name_html' },
-                { data: 'product_category' },
-                { data: 'product_line' },
-                { data: 'product_type' },
-                { data: 'status_html' },
-                { data: 'action_html' }
+                <?php if (showCol('product_name')): ?>
+                    { data: 'product_name_html' },
+                <?php endif; ?>
+
+                <?php if (showCol('product_category')): ?>
+                    { data: 'product_category' },
+                <?php endif; ?>
+
+                <?php if (showCol('product_line')): ?>
+                    { data: 'product_line' },
+                <?php endif; ?>
+
+                <?php if (showCol('product_type')): ?>
+                    { data: 'product_type' },
+                <?php endif; ?>
+
+                <?php if (showCol('status')): ?>
+                    { data: 'status_html' },
+                <?php endif; ?>
+
+                <?php if (showCol('action')): ?>
+                    { data: 'action_html' }
+                <?php endif; ?>
             ],
             createdRow: function (row, data, dataIndex) {
                 $(row).attr('data-category', data.product_category);
@@ -593,6 +642,7 @@ $permission = $_SESSION['permission'];
             },
             "dom": 'lftp'
         });
+
 
         $('#productList_filter').hide();
 

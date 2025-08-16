@@ -9,6 +9,20 @@ require 'includes/functions.php';
 $page_title = "Loyalty Program";
 
 $permission = $_SESSION['permission'];
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 <style>
   td.notes,  td.last-edit{
@@ -100,15 +114,35 @@ if ($permission === 'edit') {
                 <div class="table-responsive">
                   <table id="display_loyalty_program" class="table table-striped align-middle text-wrap">
                     <thead>
-                      <tr>
-                        <th>Loyalty Programs</th>
-                        <th class="text-wrap">Accumulated Total Orders</th>
-                        <th>Discount (%)</th>
-                        <th>Valid Since</th>
-                        <th>Details</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
+                        <tr>
+                            <?php if (showCol('loyalty_programs')): ?>
+                                <th>Loyalty Programs</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('accumulated_total_orders')): ?>
+                                <th class="text-wrap">Accumulated Total Orders</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('discount')): ?>
+                                <th>Discount (%)</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('valid_since')): ?>
+                                <th>Valid Since</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('details')): ?>
+                                <th>Details</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('status')): ?>
+                                <th>Status</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('action')): ?>
+                                <th>Action</th>
+                            <?php endif; ?>
+                        </tr>
                     </thead>
                     <tbody>
                       <?php
@@ -144,30 +178,49 @@ if ($permission === 'edit') {
                           }
                       ?>
                       <tr id="product-row-<?= $no ?>">
-                          <td><span class="product<?= $no ?> <?php if ($row_loyalty_program['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $loyalty_program_name ?></span></td>
-                          <td><?= $accumulated_total_orders ?></td>
-                          <td><?= $discount ?></td>
-                          <td><?= date("F d, Y", strtotime($date_from)) ?></td>
-                          <td class="last-edit" style="width:20%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
-                          <td><?= $status ?></td>
-                          <td class="text-center" id="action-button-<?= $no ?>">
-                            <?php                                                    
-                            if ($permission === 'edit') {
-                            ?>
-                              <?php if ($row_loyalty_program['status'] == '0') { ?>
-                                  <a href="#" class="py-1 text-dark hideLoyaltyProgram" title="Archive" data-id="<?= $loyalty_id ?>" data-row="<?= $no ?>">
-                                      <i class="text-danger ti ti-trash fs-7"></i>
-                                  </a>
-                                  <?php } else { ?>
-                                  <a href="#" id="addModalBtn" title="Edit" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $loyalty_id ?>" data-type="edit">
-                                      <i class="ti ti-pencil fs-7"></i>
-                                  </a>
-                                  <?php } ?>
-                            <?php
-                            }
-                            ?>
+                            <?php if (showCol('loyalty_programs')): ?>
+                                <td><span class="product<?= $no ?> <?php if ($row_loyalty_program['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= $loyalty_program_name ?></span></td>
+                            <?php endif; ?>
 
-                          </td>
+                            <?php if (showCol('accumulated_total_orders')): ?>
+                                <td><?= $accumulated_total_orders ?></td>
+                            <?php endif; ?>
+
+                            <?php if (showCol('discount')): ?>
+                                <td><?= $discount ?></td>
+                            <?php endif; ?>
+
+                            <?php if (showCol('valid_since')): ?>
+                                <td><?= date("F d, Y", strtotime($date_from)) ?></td>
+                            <?php endif; ?>
+
+                            <?php if (showCol('details')): ?>
+                                <td class="last-edit" style="width:20%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
+                            <?php endif; ?>
+
+                            <?php if (showCol('status')): ?>
+                                <td><?= $status ?></td>
+                            <?php endif; ?>
+
+                            <?php if (showCol('action')): ?>
+                                <td class="text-center" id="action-button-<?= $no ?>">
+                                    <?php                                                    
+                                    if ($permission === 'edit') {
+                                    ?>
+                                    <?php if ($row_loyalty_program['status'] == '0') { ?>
+                                        <a href="#" class="py-1 text-dark hideLoyaltyProgram" title="Archive" data-id="<?= $loyalty_id ?>" data-row="<?= $no ?>">
+                                            <i class="text-danger ti ti-trash fs-7"></i>
+                                        </a>
+                                        <?php } else { ?>
+                                        <a href="#" id="addModalBtn" title="Edit" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $loyalty_id ?>" data-type="edit">
+                                            <i class="ti ti-pencil fs-7"></i>
+                                        </a>
+                                        <?php } ?>
+                                    <?php
+                                    }
+                                    ?>
+                                </td>
+                            <?php endif; ?>
                       </tr>
                       <?php
                       $no++;

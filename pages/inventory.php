@@ -9,6 +9,21 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 $permission = $_SESSION['permission'];
+
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -439,14 +454,39 @@ $permission = $_SESSION['permission'];
                     <div id="selected-tags" class="mb-2"></div>
                     <table id="inventoryList" class="table search-table align-middle text-wrap">
                         <thead class="header-item">
-                        <th>Product</th>
-                        <th>Warehouse</th>
-                        <th>Date</th>
-                        <th>Quantity</th>
-                        <th>Total Quantity</th>
-                        <th>Added by</th>
-                        <th>Status</th>
-                        <th>Action</th>
+                            <tr>
+                                <?php if (showCol('product')): ?>
+                                    <th>Product</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('warehouse')): ?>
+                                    <th>Warehouse</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('date')): ?>
+                                    <th>Date</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('quantity')): ?>
+                                    <th>Quantity</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('total_quantity')): ?>
+                                    <th>Total Quantity</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('added_by')): ?>
+                                    <th>Added by</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('status')): ?>
+                                    <th>Status</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('action')): ?>
+                                    <th>Action</th>
+                                <?php endif; ?>
+                            </tr>
                         </thead>
                         <tbody>
                         <?php
@@ -485,27 +525,50 @@ $permission = $_SESSION['permission'];
                                     data-row="<?= $row_inventory['Row_id'] ?? 0 ?>"
                                     data-new="<?= $row_inventory['status'] == 0 ? 1 : 0 ?>"
                                 >
-                                    <td><?= getProductName($Product_id) ?></td>
-                                    <td><?= getWarehouseName($Warehouse_id) ?></td>
-                                    <td><?= $Date ?></td>
-                                    <td><?= $quantity_ttl ?></td>
-                                    <td><?= $quantity_ttl ?></td>
-                                    <td><?= get_name($addedby) ?></td>
-                                    <td><?= $status ?></td>
-                                    <td>
-                                        <div class="action-btn text-center">
-                                            <?php                                                    
-                                            if ($permission === 'edit') {
-                                            ?>
-                                            <a href="#" id="view_inventory_btn" title="Edit" class="text-primary edit" data-id="<?= $Inventory_id ?>">
-                                                <i class="ti ti-pencil fs-5"></i>
-                                            </a>
-                                            <?php
-                                            }
-                                            ?>
+                                    <?php if (showCol('product')): ?>
+                                        <td><?= getProductName($Product_id) ?></td>
+                                    <?php endif; ?>
 
-                                        </div>
-                                    </td>
+                                    <?php if (showCol('warehouse')): ?>
+                                        <td><?= getWarehouseName($Warehouse_id) ?></td>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('date')): ?>
+                                        <td><?= $Date ?></td>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('quantity')): ?>
+                                        <td><?= $quantity_ttl ?></td>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('total_quantity')): ?>
+                                        <td><?= $quantity_ttl ?></td>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('added_by')): ?>
+                                        <td><?= get_name($addedby) ?></td>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('status')): ?>
+                                        <td><?= $status ?></td>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('action')): ?>
+                                        <td>
+                                            <div class="action-btn text-center">
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>
+                                                <a href="#" id="view_inventory_btn" title="Edit" class="text-primary edit" data-id="<?= $Inventory_id ?>">
+                                                    <i class="ti ti-pencil fs-5"></i>
+                                                </a>
+                                                <?php
+                                                }
+                                                ?>
+
+                                            </div>
+                                        </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php 
                             $no++;

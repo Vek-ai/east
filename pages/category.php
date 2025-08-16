@@ -7,6 +7,21 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $permission = $_SESSION['permission'];
+
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -109,15 +124,35 @@ if ($permission === 'edit') {
                 <div class="table-responsive">
                   <table id="display_category" class="table table-striped table-bordered align-middle">
                     <thead>
-                      <tr>
-                        <th>Product Category</th>
-                        <th>Abreviations</th>
-                        <th>Multiplier</th>
-                        <th>Notes</th>
-                        <th>Details</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
+                        <tr>
+                            <?php if (showCol('product_category')): ?>
+                                <th>Product Category</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('abreviations')): ?>
+                                <th>Abreviations</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('multiplier')): ?>
+                                <th>Multiplier</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('notes')): ?>
+                                <th>Notes</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('details')): ?>
+                                <th>Details</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('status')): ?>
+                                <th>Status</th>
+                            <?php endif; ?>
+
+                            <?php if (showCol('action')): ?>
+                                <th>Action</th>
+                            <?php endif; ?>
+                        </tr>
                     </thead>
                     <tbody>
                       
@@ -251,6 +286,36 @@ function previewChartImage(input) {
 $(document).ready(function() {
     document.title = "Product Category";
 
+    var columns = [];
+
+    <?php if (showCol('product_category')): ?>
+    columns.push({ data: 'product_category' });
+    <?php endif; ?>
+
+    <?php if (showCol('abreviations')): ?>
+    columns.push({ data: 'category_abreviations' });
+    <?php endif; ?>
+
+    <?php if (showCol('multiplier')): ?>
+    columns.push({ data: 'multiplier' });
+    <?php endif; ?>
+
+    <?php if (showCol('notes')): ?>
+    columns.push({ data: 'notes' });
+    <?php endif; ?>
+
+    <?php if (showCol('details')): ?>
+    columns.push({ data: 'last_edit' });
+    <?php endif; ?>
+
+    <?php if (showCol('status')): ?>
+    columns.push({ data: 'status_html' });
+    <?php endif; ?>
+
+    <?php if (showCol('action')): ?>
+    columns.push({ data: 'action_html' });
+    <?php endif; ?>
+
     var table = $('#display_category').DataTable({
         pageLength: 100,
         ajax: {
@@ -258,15 +323,7 @@ $(document).ready(function() {
             type: 'POST',
             data: { action: 'fetch_table' }
         },
-        columns: [
-            { data: 'product_category' },
-            { data: 'category_abreviations' },
-            { data: 'multiplier' },
-            { data: 'notes' },
-            { data: 'last_edit' },
-            { data: 'status_html' },
-            { data: 'action_html' }
-        ]
+        columns: columns
     });
 
     $('#display_category_filter').hide();

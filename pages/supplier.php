@@ -10,6 +10,21 @@ $supplier_colors = array();
 
 $page_title = "Supplier";
 $permission = $_SESSION['permission'];
+
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 <style>
     td.last-edit{
@@ -144,13 +159,35 @@ $permission = $_SESSION['permission'];
                 <div class="table-responsive">
                     <table id="supplierList" class="table search-table align-middle text-nowrap">
                         <thead class="header-item">
-                        <th>Supplier Name</th>
-                        <th>Supplier Type</th>
-                        <th>Contact Name</th>
-                        <th>Contact Email</th>
-                        <th>Contact Phone</th>
-                        <th>Status</th>
-                        <th>Action</th>
+                            <tr>
+                                <?php if (showCol('supplier_name')): ?>
+                                    <th>Supplier Name</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('supplier_type')): ?>
+                                    <th>Supplier Type</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('contact_name')): ?>
+                                    <th>Contact Name</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('contact_email')): ?>
+                                    <th>Contact Email</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('contact_phone')): ?>
+                                    <th>Contact Phone</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('status')): ?>
+                                    <th>Status</th>
+                                <?php endif; ?>
+
+                                <?php if (showCol('action')): ?>
+                                    <th>Action</th>
+                                <?php endif; ?>
+                            </tr>
                         </thead>
                         <tbody>
                         <?php
@@ -185,45 +222,61 @@ $permission = $_SESSION['permission'];
                                 <tr id="product-row-<?= $no ?>"
                                     data-type="<?=$row_supplier['supplier_type']?>"
                                 >
-                                    <td>
-                                    <!-- <a href="?page=supplier_products"> -->
-                                    <a href="#" id="view_product_btn" data-id="<?= $row_supplier['supplier_id'] ?>">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <img src="<?= $logo_path ?>" alt="user4" width="60" height="60" class="rounded-circle">
-                                            <div>
-                                                <?= $row_supplier['supplier_name'] ?>
+                                    <?php if (showCol('supplier_name')): ?>
+                                        <td>
+                                        <a href="#" id="view_product_btn" data-id="<?= $row_supplier['supplier_id'] ?>">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <img src="<?= $logo_path ?>" alt="user4" width="60" height="60" class="rounded-circle">
+                                                <div>
+                                                    <?= $row_supplier['supplier_name'] ?>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </a>
-                                    </td>
-                                    <td><?= !empty($row_supplier['supplier_type']) ? getSupplierType($row_supplier['supplier_type']) : '' ?></td>
-                                    <td><?= $row_supplier['contact_name'] ?></td>
-                                    <td><?= $row_supplier['contact_email'] ?></td>
-                                    <td><?= $row_supplier['contact_phone'] ?></td>
-                                    <td><?= $status ?></td>
-                                    <td>
-                                        <div class="action-btn d-flex justify-content-center align-items-center gap-2">
-                                            
-                                            <a href="#" id="addModalBtn" title="View" class="d-flex align-items-center justify-content-center text-decoration-none" data-toggle="tooltip" data-placement="top" title="View" data-id="<?= $supplier_id ?>" data-type="view">
-                                                <i class="fa fa-eye"></i>
-                                            </a>
-                                            <?php                                                    
-                                            if ($permission === 'edit') {
-                                            ?>
-                                                <a href="#" id="addModalBtn" title="Edit" class="d-flex align-items-center justify-content-center text-decoration-none" data-toggle="tooltip" data-placement="top" title="Edit" data-id="<?= $supplier_id ?>" data-type="edit">
-                                                    <i class="fa fa-pencil text-warning"></i>
+                                        </a>
+                                        </td>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('supplier_type')): ?>
+                                        <td><?= !empty($row_supplier['supplier_type']) ? getSupplierType($row_supplier['supplier_type']) : '' ?></td>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('contact_name')): ?>
+                                        <td><?= $row_supplier['contact_name'] ?></td>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('contact_email')): ?>
+                                        <td><?= $row_supplier['contact_email'] ?></td>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('contact_phone')): ?>
+                                        <td><?= $row_supplier['contact_phone'] ?></td>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('status')): ?>
+                                        <td><?= $status ?></td>
+                                    <?php endif; ?>
+
+                                    <?php if (showCol('action')): ?>
+                                        <td>
+                                            <div class="action-btn d-flex justify-content-center align-items-center gap-2">
+                                                
+                                                <a href="#" id="addModalBtn" title="View" class="d-flex align-items-center justify-content-center text-decoration-none" data-toggle="tooltip" data-placement="top" title="View" data-id="<?= $supplier_id ?>" data-type="view">
+                                                    <i class="fa fa-eye"></i>
                                                 </a>
-                                            <?php
-                                            }
-                                            ?>
-                                            <a href="?page=supplier_dashboard&id=<?= $supplier_id ?>" title="Dashboard"  class="py-1 pe-1" data-toggle="tooltip" data-placement="top" title="Dashboard">
-                                                <i class="fa fa-chart-bar text-info"></i>
-                                            </a>
-                                            <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_supplier['supplier_id'] ?>">
-                                                <i class="ti ti-trash fs-5"></i>
-                                            </a> -->
-                                        </div>
-                                    </td>
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?>
+                                                    <a href="#" id="addModalBtn" title="Edit" class="d-flex align-items-center justify-content-center text-decoration-none" data-toggle="tooltip" data-placement="top" title="Edit" data-id="<?= $supplier_id ?>" data-type="edit">
+                                                        <i class="fa fa-pencil text-warning"></i>
+                                                    </a>
+                                                <?php
+                                                }
+                                                ?>
+                                                <a href="?page=supplier_dashboard&id=<?= $supplier_id ?>" title="Dashboard"  class="py-1 pe-1" data-toggle="tooltip" data-placement="top" title="Dashboard">
+                                                    <i class="fa fa-chart-bar text-info"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php 
                             $no++;

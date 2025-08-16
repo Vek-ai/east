@@ -12,6 +12,20 @@ require 'includes/functions.php';
 
 $page_title = "Promotions/Discounts";
 $permission = $_SESSION['permission'];
+$staff_id = intval($_SESSION['userid']);
+$profileSql = "SELECT access_profile_id FROM staff WHERE staff_id = $staff_id";
+$profileRes = mysqli_query($conn, $profileSql);
+$profile_id = 0;
+if ($profileRes && mysqli_num_rows($profileRes) > 0) {
+    $profile_id = intval(mysqli_fetch_assoc($profileRes)['access_profile_id']);
+}
+$page_id = getPageIdFromUrl($_GET['page'] ?? '');
+
+$visibleColumns = getVisibleColumns($page_id, $profile_id);
+function showCol($name) {
+    global $visibleColumns;
+    return !empty($visibleColumns[$name]);
+}
 ?>
 <style>
     .dz-preview {
@@ -180,11 +194,27 @@ $permission = $_SESSION['permission'];
                         <div class="table-responsive">
                             <table id="productList" class="table search-table align-middle text-wrap text-center">
                                 <thead class="header-item">
-                                    <th class="align-middle text-start">Product Name</th>
-                                    <th class="align-middle text-center">On Promotions</th>
-                                    <th class="align-middle text-center">On Sale</th>
-                                    <th class="align-middle text-center">Reason</th>
-                                    <th class="align-middle text-center">Action</th>
+                                    <tr>
+                                        <?php if (showCol('product_name')): ?>
+                                            <th class="align-middle text-start">Product Name</th>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('on_promotions')): ?>
+                                            <th class="align-middle text-center">On Promotions</th>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('on_sale')): ?>
+                                            <th class="align-middle text-center">On Sale</th>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('reason')): ?>
+                                            <th class="align-middle text-center">Reason</th>
+                                        <?php endif; ?>
+
+                                        <?php if (showCol('action')): ?>
+                                            <th class="align-middle text-center">Action</th>
+                                        <?php endif; ?>
+                                    </tr>
                                 </thead>
                                 <tbody>
                                 <?php
@@ -227,35 +257,49 @@ $permission = $_SESSION['permission'];
                                             data-on-sale="<?= $row_product['on_sale'] ?? '' == 1 ? 'true' : 'false' ?>"
                                             data-promotion="<?= $row_product['on_promotion'] ?? '' == 1 ? 'true' : 'false' ?>"
                                             >
-                                            <td class="align-middle">
-                                                <a href="/?page=product_details&product_id=<?= $row_product['product_id'] ?>">
-                                                    <div class="d-flex align-items-center">
-                                                        <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
-                                                        <div class="ms-3">
-                                                            <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['product_item'] ?></h6>
+                                            <?php if (showCol('product_name')): ?>
+                                                <td class="align-middle">
+                                                    <a href="/?page=product_details&product_id=<?= $row_product['product_id'] ?>">
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
+                                                            <div class="ms-3">
+                                                                <h6 class="fw-semibold mb-0 fs-4"><?= $row_product['product_item'] ?></h6>
+                                                            </div>
                                                         </div>
+                                                    </a>
+                                                </td>
+                                            <?php endif; ?>
+
+                                            <?php if (showCol('on_promotions')): ?>
+                                                <td class="align-middle"><?= $row_product['on_sale'] ?? '' == 1 ? '<i class="fas fa-check"></i>' : '' ?></td>
+                                            <?php endif; ?>
+
+                                            <?php if (showCol('on_sale')): ?>
+                                                <td class="align-middle"><?= $row_product['on_promotion'] ?? '' == 1 ? '<i class="fas fa-check"></i>' : '' ?></td>
+                                            <?php endif; ?>
+
+                                            <?php if (showCol('reason')): ?>
+                                                <td class="align-middle"><?= $row_product['reason'] ?></td>
+                                            <?php endif; ?>
+
+                                            <?php if (showCol('action')): ?>
+                                                <td class="align-middle">
+                                                    <div class="action-btn text-center d-flex justify-content-center gap-2">
+                                                        <a href="#" id="view_product_btn" class="edit d-flex align-items-center" data-id="<?= $row_product['product_id'] ?>" title="View">
+                                                            <i class="text-primary ti ti-eye fs-7"></i>
+                                                        </a>
+                                                        <?php                                                    
+                                                        if ($permission === 'edit') {
+                                                        ?>
+                                                        <a href="#" id="addModalBtn" title="Edit" class="edit d-flex align-items-center" data-id="<?= $row_product['product_id'] ?>" data-type="edit">
+                                                            <i class="text-warning ti ti-pencil fs-7"></i>
+                                                        </a>
+                                                        <?php                                                    
+                                                        }
+                                                        ?>
                                                     </div>
-                                                </a>
-                                            </td>
-                                            <td class="align-middle"><?= $row_product['on_sale'] ?? '' == 1 ? '<i class="fas fa-check"></i>' : '' ?></td>
-                                            <td class="align-middle"><?= $row_product['on_promotion'] ?? '' == 1 ? '<i class="fas fa-check"></i>' : '' ?></td>
-                                            <td class="align-middle"><?= $row_product['reason'] ?></td>
-                                            <td class="align-middle">
-                                                <div class="action-btn text-center d-flex justify-content-center gap-2">
-                                                    <a href="#" id="view_product_btn" class="edit d-flex align-items-center" data-id="<?= $row_product['product_id'] ?>" title="View">
-                                                        <i class="text-primary ti ti-eye fs-7"></i>
-                                                    </a>
-                                                    <?php                                                    
-                                                    if ($permission === 'edit') {
-                                                    ?>
-                                                    <a href="#" id="addModalBtn" title="Edit" class="edit d-flex align-items-center" data-id="<?= $row_product['product_id'] ?>" data-type="edit">
-                                                        <i class="text-warning ti ti-pencil fs-7"></i>
-                                                    </a>
-                                                    <?php                                                    
-                                                    }
-                                                    ?>
-                                                </div>
-                                            </td>
+                                                </td>
+                                            <?php endif; ?>
                                         </tr>
                                     <?php 
                                     $no++;
