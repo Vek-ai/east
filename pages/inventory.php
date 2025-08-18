@@ -286,7 +286,20 @@ function showCol($name) {
                                         </select>
                                     </div>
                                 </div>
-                            </div>      
+                            </div>  
+                            <div class="row pt-3">
+                                <div class="col-md-4 d-flex align-items-center">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input on_sale" id="on_sale" name="on_sale" value="1">
+                                        <label class="form-check-label" for="on_sale">On Sale</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-8 sale_price_wrapper" id="sale_price_wrapper" style="display:none;">
+                                    <label class="form-label">Sale Price</label>
+                                    <input type="number" step="0.0001" min="0" id="sale_price" name="sale_price" 
+                                        class="form-control" placeholder="Enter sale price">
+                                </div>
+                            </div>    
                             </div>
                         </div>
                     </div>
@@ -950,6 +963,19 @@ function showCol($name) {
             $('#text-srh').val('');
 
             filterTable();
+        });
+
+        $(document).on("change", ".on_sale", function() {
+            let row = $(this).closest(".row");
+            let wrapper = row.find(".sale_price_wrapper");
+            let input   = row.find(".sale_price");
+
+            if ($(this).is(":checked")) {
+                wrapper.show();
+            } else {
+                wrapper.hide();
+                input.val("");
+            }
         });
     });
 </script>

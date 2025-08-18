@@ -2502,4 +2502,41 @@ function getUserMsgAttachments($userId) {
     return $attachments;
 }
 
+function getSaleItems() {
+    global $conn;
+    $items = [];
+
+    $sql = "
+        SELECT 
+            sd.saleid,
+            sd.category_id,
+            sd.product_id,
+            sd.date_started,
+            sd.date_finished,
+            p.product_item,
+            p.unit_price,
+            i.Inventory_id,
+            i.sale_price,
+            i.quantity_ttl
+        FROM sales_discounts sd
+        INNER JOIN product p 
+            ON p.product_id = sd.product_id
+        INNER JOIN inventory i 
+            ON i.Product_id = sd.product_id
+        WHERE NOW() BETWEEN sd.date_started AND sd.date_finished
+          AND i.quantity_ttl > 0
+          AND i.sale_price IS NOT NULL
+    ";
+
+    $result = mysqli_query($conn, $sql);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $items[] = $row;
+        }
+    }
+
+    return $items;
+}
+
 ?>

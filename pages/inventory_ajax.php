@@ -30,6 +30,13 @@ if(isset($_REQUEST['action'])) {
 
         $formatted_length = "$length_value $length_unit";
 
+        $on_sale    = isset($_POST['on_sale']) ? 1 : 0;
+        $sale_price = mysqli_real_escape_string($conn, $_POST['sale_price'] ?? '0.00');
+
+        if ($on_sale == 0) {
+            $sale_price = '0.00';
+        }
+
         $addedby = $_SESSION['userid'];
     
         $checkQuery = "SELECT * FROM inventory WHERE Product_id = '$Product_id' AND color_id = '$color_id'";
@@ -50,9 +57,11 @@ if(isset($_REQUEST['action'])) {
                 quantity = '$quantity',
                 quantity_ttl = '$quantity_ttl', 
                 pack = '$pack',
+                on_sale = '$on_sale',
+                sale_price = '$sale_price',
                 addedby = '$addedby'
                 WHERE Product_id = '$Product_id' AND color_id = '$color_id'";
-    
+
             if ($operation == 'add') {
                 $updateQuery = "UPDATE inventory SET 
                     supplier_id = '$supplier_id', 
@@ -64,15 +73,17 @@ if(isset($_REQUEST['action'])) {
                     quantity = quantity + '$quantity',
                     quantity_ttl = quantity_ttl + '$quantity_ttl', 
                     pack = '$pack',
+                    on_sale = '$on_sale',
+                    sale_price = '$sale_price',
                     addedby = '$addedby'
                     WHERE Product_id = '$Product_id' AND color_id = '$color_id'";
             }
-    
-            if (mysqli_query($conn, $updateQuery)) {
-                echo "success";
-            } else {
-                die("Error updating record: " . mysqli_error($conn));
+
+            if (!mysqli_query($conn, $updateQuery)) {
+                echo "Error updating: " . mysqli_error($conn);
+                exit;
             }
+
         } else {
             $insertQuery = "INSERT INTO inventory (
                 Product_id, 
@@ -86,6 +97,8 @@ if(isset($_REQUEST['action'])) {
                 quantity, 
                 pack, 
                 quantity_ttl, 
+                on_sale,
+                sale_price,
                 addedby
             ) VALUES (
                 '$Product_id', 
@@ -99,27 +112,73 @@ if(isset($_REQUEST['action'])) {
                 '$quantity', 
                 '$pack', 
                 '$quantity_ttl', 
+                '$on_sale',
+                '$sale_price',
                 '$addedby'
             )";
-    
-            if (mysqli_query($conn, $insertQuery)) {
-                echo "success";
-            } else {
-                die("Error inserting record: " . mysqli_error($conn));
+
+            if (!mysqli_query($conn, $insertQuery)) {
+                echo "Error inserting: " . mysqli_error($conn);
+                exit;
             }
         }
 
         $inv_id_query = mysqli_query($conn, "SELECT inventory_id FROM inventory WHERE Product_id = '$Product_id' AND color_id = '$color_id' LIMIT 1");
+        if (!$inv_id_query) {
+            echo "Error fetching inventory_id: " . mysqli_error($conn);
+            exit;
+        }
+
         $inventory = mysqli_fetch_assoc($inv_id_query);
         $inventory_id = $inventory['inventory_id'];
 
         $check_length = mysqli_query($conn, "SELECT variant_id FROM product_variant_length WHERE inventory_id = '$inventory_id'");
-        
-        if (mysqli_num_rows($check_length) > 0) {
-            mysqli_query($conn, "UPDATE product_variant_length SET length = '$formatted_length' WHERE inventory_id = '$inventory_id'");
-        } else {
-            mysqli_query($conn, "INSERT INTO product_variant_length (inventory_id, length) VALUES ('$inventory_id', '$formatted_length')");
+        if (!$check_length) {
+            echo "Error checking length: " . mysqli_error($conn);
+            exit;
         }
+
+        if (mysqli_num_rows($check_length) > 0) {
+            if (!mysqli_query($conn, "UPDATE product_variant_length SET length = '$formatted_length' WHERE inventory_id = '$inventory_id'")) {
+                echo "Error updating length: " . mysqli_error($conn);
+                exit;
+            }
+        } else {
+            if (!mysqli_query($conn, "INSERT INTO product_variant_length (inventory_id, length) VALUES ('$inventory_id', '$formatted_length')")) {
+                echo "Error inserting length: " . mysqli_error($conn);
+                exit;
+            }
+        }
+
+        if ($on_sale == 1) {
+            $checkSale = mysqli_query($conn, "SELECT * FROM sales_discounts WHERE product_id = '$Product_id' LIMIT 1");
+
+            if ($checkSale && mysqli_num_rows($checkSale) == 0) {
+                $date_started = mysqli_real_escape_string($conn, $_POST['sale_date_started'] ?? date('Y-m-d H:i:s'));
+                $date_finished = mysqli_real_escape_string($conn, $_POST['sale_date_finished'] ?? date('Y-m-d H:i:s', strtotime('+7 days')));
+                
+                $insertSale = "INSERT INTO sales_discounts (
+                    category_id,
+                    product_id,
+                    date_started,
+                    date_finished,
+                    added_by
+                ) VALUES (
+                    '{$details['product_category']}',
+                    '$Product_id',
+                    '$date_started',
+                    '$date_finished',
+                    '$addedby'
+                )";
+
+                if (!mysqli_query($conn, $insertSale)) {
+                    echo "Error adding sale: " . mysqli_error($conn);
+                    exit;
+                }
+            }
+        }
+
+        echo "success";
     }
     
 
@@ -326,7 +385,22 @@ if(isset($_REQUEST['action'])) {
                                             </select>
                                         </div>
                                     </div>
-                                </div>       
+                                </div>
+                                <div class="row pt-3">
+                                    <div class="col-md-4 d-flex align-items-center">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input on_sale" id="on_sale" name="on_sale" 
+                                                value="1" <?= ($row['on_sale'] == 1) ? 'checked' : '' ?>>
+                                            <label class="form-check-label" for="on_sale">On Sale</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8 sale_price_wrapper" id="sale_price_wrapper" style="<?= ($row['on_sale'] == 1) ? '' : 'display:none;' ?>">
+                                        <label class="form-label">Sale Price</label>
+                                        <input type="number" step="0.0001" min="0" id="sale_price" name="sale_price" 
+                                            class="form-control" value="<?= $row['sale_price'] ?? '' ?>" 
+                                            placeholder="Enter sale price">
+                                    </div>
+                                </div>      
                                 </div>
                             </div>
                         </div>
@@ -357,6 +431,15 @@ if(isset($_REQUEST['action'])) {
                         templateResult: formatOption,
                         templateSelection: formatOption
                     });
+
+                    if ($("#on_sale").length) {
+                        if ($("#on_sale").is(":checked")) {
+                            $("#sale_price_wrapper").show();
+                        } else {
+                            $("#sale_price_wrapper").hide();
+                            $("#sale_price").val("");
+                        }
+                    }
                 }); 
                 
             </script>
