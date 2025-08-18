@@ -116,6 +116,65 @@ function showCol($name) {
         </div>
     </div>
 
+    <!-- Bulk Discount Modal -->
+    <div class="modal fade" id="bulkDiscountModal" tabindex="-1" aria-labelledby="bulkDiscountLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+            <form id="bulkDiscountForm">
+                <div class="modal-header">
+                <h5 class="modal-title" id="bulkDiscountLabel">Apply Bulk Discount</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                <input type="hidden" name="action" value="apply_discount">
+                <input type="hidden" name="apply_category" value="1">
+
+                <div class="mb-3">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" name="category_id" required>
+                    <option value="">Select Category</option>
+                    <?php
+                        $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY product_category ASC";
+                        $result_category = mysqli_query($conn, $query_category);
+                        while ($row_category = mysqli_fetch_array($result_category)) {
+                            echo "<option value='{$row_category['product_category_id']}'>{$row_category['product_category']}</option>";
+                        }
+                    ?>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Discount Type</label>
+                    <input type="text" class="form-control" value="Percent" readonly>
+                    <input type="hidden" name="discount_type" value="percent">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Discount Value (%)</label>
+                    <input type="number" step="0.01" class="form-control" name="discount_value" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Date Start</label>
+                    <input type="date" class="form-control" name="start_date" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Date End</label>
+                    <input type="date" class="form-control" name="end_date" required>
+                </div>
+                </div>
+
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-success">Apply Discount</button>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -333,44 +392,6 @@ function showCol($name) {
             });
         });
 
-        $(document).on('change', '#product_category', function() {
-            updateSearchCategory();
-        });
-
-        $(document).on('click', '#addDiscountModalBtn, #edit_product_btn', function(event) {
-            event.preventDefault();
-            var id = $(this).data('id') || '';
-            $('#product_id').val(id);
-
-            var product_category = $(this).data('category') || '';
-            $('#product_category').val(product_category);
-
-            updateSearchCategory();
-
-            $('#addDiscountModal').modal('show');
-        });
-
-        $("#download_product_form").submit(function (e) {
-            e.preventDefault();
-
-            let formData = new FormData(this);
-            formData.append("action", "download_excel");
-
-            $.ajax({
-                url: "pages/sales_discounts_ajax.php",
-                type: "POST",
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    window.location.href = "pages/sales_discounts_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
-                },
-                error: function (xhr, status, error) {
-                    alert("Error downloading file: " + error);
-                }
-            });
-        });
-
         $(document).on('click', '#add_sale_btn', function(e) {
             e.preventDefault();
 
@@ -394,6 +415,10 @@ function showCol($name) {
                     );
                 }
             });
+        });
+
+        $(document).on("click", "#addDiscountModalBtn", function() {
+            $("#bulkDiscountModal").modal("show");
         });
 
         $(document).on('click', '#applyDiscountBtn', function(e) {
@@ -424,6 +449,7 @@ function showCol($name) {
                         } else {
                             alert("Error: " + res.message);
                         }
+                        table.ajax.reload(null, false);
                     } catch(e) {
                         console.log(response);
                         alert("Unexpected response");
@@ -434,6 +460,47 @@ function showCol($name) {
                 }
             });
         });
+
+        $(document).on("submit", "#bulkDiscountForm", function(e) {
+            e.preventDefault();
+
+            let data = {
+                action: 'apply_discount',
+                product_id: 0,
+                category_id: $('select[name="category_id"]').val(),
+                discount_type: 'percent',
+                discount_value: $('input[name="discount_value"]').val(),
+                new_price: '',
+                start_date: $('input[name="start_date"]').val(),
+                end_date: $('input[name="end_date"]').val(),
+                apply_category: 1
+            };
+
+            $.ajax({
+                url: "pages/sales_discounts_ajax.php",
+                type: "POST",
+                data: data,
+                success: function(response) {
+                    try {
+                        let res = JSON.parse(response);
+                        if (res.success) {
+                            alert("Bulk discount applied successfully!");
+                            $("#bulkDiscountModal").modal("hide");
+                        } else {
+                            alert("Error: " + (response));
+                        }
+                        table.ajax.reload(null, false);
+                    } catch (e) {
+                        console.log(response);
+                        alert("Unexpected response");
+                    }
+                },
+                error: function() {
+                    alert("Request failed");
+                }
+            });
+        });
+
 
         $(document).on('change', 'select[name="discount_type"]', function() {
             $('input[name="discount_value"]').val('');
@@ -501,7 +568,6 @@ function showCol($name) {
             table.draw();
             updateSelectedTags();
         }
-
 
         function updateSelectedTags() {
             var displayDiv = $('#selected-tags');

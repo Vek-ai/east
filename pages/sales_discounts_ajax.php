@@ -18,123 +18,7 @@ $trim_id = 4;
 $category_id = 4;
 
 if(isset($_REQUEST['action'])) {
-    $action = $_REQUEST['action'];
-
-    if ($action == "add_update") {
-        $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
-        
-        $fields = [];
-        foreach ($_POST as $key => $value) {
-            if (is_array($value)) {
-                $value = json_encode($value);
-            }
-        
-            $escapedValue = mysqli_real_escape_string($conn, $value);
-        
-            if ($key != 'product_id') {
-                $fields[$key] = $escapedValue;
-            }
-        
-            if ($key == 'retail') {
-                $fields['unit_price'] = $escapedValue;
-            }
-
-            if ($key == 'color_paint') {
-                $fields['color'] = $escapedValue;
-            }
-        }
-        
-        $checkQuery = "SELECT * FROM product WHERE product_id = '$product_id'";
-        $result = mysqli_query($conn, $checkQuery);
-        
-        if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE product SET ";
-            
-            foreach ($fields as $column => $value) {
-                $columnExists = mysqli_query($conn, "SHOW COLUMNS FROM product LIKE '$column'");
-                if (mysqli_num_rows($columnExists) > 0) {
-                    $updateQuery .= "$column = '$value', ";
-                }
-            }
-            
-            $updateQuery = rtrim($updateQuery, ", ");
-            $updateQuery .= " WHERE product_id = '$product_id'";
-            
-            if (mysqli_query($conn, $updateQuery)) {
-                echo "success_update";
-            } else {
-                echo "Error updating product: " . mysqli_error($conn);
-            }
-        } else {
-            $columns = [];
-            $values = [];
-            
-            foreach ($fields as $column => $value) {
-                $columnExists = mysqli_query($conn, "SHOW COLUMNS FROM product LIKE '$column'");
-                if (mysqli_num_rows($columnExists) > 0) {
-                    $columns[] = $column;
-                    $values[] = "'$value'";
-                }
-            }
-            
-            $columnsStr = implode(", ", $columns);
-            $valuesStr = implode(", ", $values);
-            
-            $insertQuery = "INSERT INTO product (product_id, $columnsStr) VALUES ('$product_id', $valuesStr)";
-            
-            if (mysqli_query($conn, $insertQuery)) {
-                $product_id = $conn->insert_id;
-
-                $sql = "UPDATE product SET main_image='images/product/product.jpg' WHERE product_id='$product_id'";
-                if (!$conn->query($sql)) {
-                    echo "Error updating record: " . $conn->error;
-                }
-
-                echo "success_add";
-            } else {
-                echo "Error adding product: " . mysqli_error($conn);
-            }
-        }    
-
-        if (!empty($_FILES['picture_path']['name'][0])) {
-            if (is_array($_FILES['picture_path']['name']) && count($_FILES['picture_path']['name']) > 0) {
-                $uploadFileDir = '../images/product/';
-                
-                for ($i = 0; $i < count($_FILES['picture_path']['name']); $i++) {
-                    $fileTmpPath = $_FILES['picture_path']['tmp_name'][$i];
-                    $fileName = $_FILES['picture_path']['name'][$i];
-                    
-                    if (empty($fileName)) {
-                        continue;
-                    }
-        
-                    $fileNameCmps = explode(".", $fileName);
-                    $fileExtension = strtolower(end($fileNameCmps));
-                    
-                    $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
-                    $dest_path = $uploadFileDir . $newFileName;
-        
-                    if (move_uploaded_file($fileTmpPath, $dest_path)) {
-                        $picture_path = mysqli_real_escape_string($conn, $dest_path);
-        
-                        if ($i == 0) {
-                            $sql = "UPDATE product SET main_image='images/product/$newFileName' WHERE product_id='$product_id'";
-                            if (!$conn->query($sql)) {
-                                echo "Error updating record: " . $conn->error;
-                            }
-                        }
-        
-                        $sql = "INSERT INTO product_images (productid, image_url) VALUES ('$product_id', 'images/product/$newFileName')";
-                        if (!$conn->query($sql)) {
-                            echo "Error updating record: " . $conn->error;
-                        }
-                    } else {
-                        echo 'Error moving the file to the upload directory.';
-                    }
-                }
-            }
-        }
-    } 
+    $action = $_REQUEST['action']; 
     
     if ($action == 'fetch_products') {
         $permission = $_SESSION['permission'];
@@ -193,15 +77,29 @@ if(isset($_REQUEST['action'])) {
                 $active = 0;
             } else if (isset($saleMap[$product_id])) {
                 $now = new DateTime();
-                $start = new DateTime($saleMap[$product_id]['date_started']);
-                $end   = new DateTime($saleMap[$product_id]['date_finished']);
-
-                if ($now >= $start && $now <= $end) {
-                    $status_html = "<div id='status-alert$no' class='changeStatus alert alert-success text-white text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='1'>On Sale</div>";
+                $start = ($saleMap[$product_id]['date_started'] !== "0000-00-00 00:00:00") 
+                        ? new DateTime($saleMap[$product_id]['date_started']) 
+                        : null;
+                $end   = ($saleMap[$product_id]['date_finished'] !== "0000-00-00 00:00:00") 
+                        ? new DateTime($saleMap[$product_id]['date_finished']) 
+                        : null;
+                if (is_null($start) || is_null($end)) {
+                    $status_html = "<div id='status-alert$no' 
+                                    class='changeStatus alert alert-success text-white text-center py-1 px-2 my-0' 
+                                    data-no='$no' data-id='$product_id' data-status='1'>On Sale</div>";
                     $active = 1;
                 } else {
-                    $status_html = "<div id='status-alert$no' class='changeStatus alert alert-warning text-white text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='0'>Sale Ended</div>";
-                    $active = 1;
+                    if ($now >= $start && $now <= $end) {
+                        $status_html = "<div id='status-alert$no' 
+                                        class='changeStatus alert alert-success text-white text-center py-1 px-2 my-0' 
+                                        data-no='$no' data-id='$product_id' data-status='1'>On Sale</div>";
+                        $active = 1;
+                    } else {
+                        $status_html = "<div id='status-alert$no' 
+                                        class='changeStatus alert alert-warning text-white text-center py-1 px-2 my-0' 
+                                        data-no='$no' data-id='$product_id' data-status='0'>Sale Ended</div>";
+                        $active = 1;
+                    }
                 }
             } else {
                 $status_html = "<div id='status-alert$no' class='changeStatus alert alert-info text-white text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='1'>Active</div>";
@@ -243,19 +141,27 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $query);
         $row = mysqli_fetch_assoc($result);
 
+        $discount_sql = "SELECT * FROM sales_discounts WHERE product_id = $id LIMIT 1";
+        $discount_res = mysqli_query($conn, $discount_sql);
+        $discount_row = mysqli_fetch_assoc($discount_res);
+
+        $start_date = $discount_row['date_started'] ?? '';
+        $end_date   = $discount_row['date_finished'] ?? '';
+        $existing_price = $discount_row ? getSalePrice($id) : '';
+
         if ($row) {
             $picture_path = !empty($row['main_image']) ? $row['main_image'] : "images/product/product.jpg";
             ?>
             <a href='javascript:void(0)'>
                 <div class='d-flex align-items-center px-4 mb-3'>
-                    <img src='{$picture_path}' class='rounded-circle' width='56' height='56'>
+                    <img src='<?= $picture_path ?>' class='rounded-circle' width='56' height='56'>
                     <div class='ms-3'>
-                        <h6 class='fw-semibold mb-0 fs-4'><?=$row['product_item']?></h6>";
-                        <div class='text-muted fs-3'>Current Price: <?=$row['unit_price']?></div> 
+                        <h6 class='fw-semibold mb-0 fs-4'><?= $row['product_item'] ?></h6>
+                        <div class='text-muted fs-3'>Current Price: <?= $row['unit_price'] ?></div> 
                         <input type="hidden" id="unit_price" 
-                                value="<?= $row['unit_price'] ?>" 
-                                data-product-id="<?= $row['product_id'] ?>" 
-                                data-category-id="<?= $row['product_category'] ?>"> 
+                            value="<?= $row['unit_price'] ?>" 
+                            data-product-id="<?= $row['product_id'] ?>" 
+                            data-category-id="<?= $row['product_category'] ?>"> 
                     </div>
                 </div>
             </a>
@@ -272,34 +178,26 @@ if(isset($_REQUEST['action'])) {
                 <div class="col-6">
                     <label class="form-label">Discount Value</label>
                     <div class="input-group">
-                    <input type="number" step="0.01" class="form-control" name="discount_value">
-                    <span class="input-group-text">$</span>
+                        <input type="number" step="0.01" class="form-control" name="discount_value">
+                        <span class="input-group-text">$</span>
                     </div>
                 </div>
                 <div class="col-6">
                     <label class="form-label">New Price</label>
-                    <input type="text" class="form-control" name="new_price" readonly>
+                    <input type="text" class="form-control" name="new_price" readonly value="<?= $existing_price ?>">
                 </div>
             </div>
 
             <div class="row mb-3">
                 <div class="col-6">
                     <label class="form-label">Start Date</label>
-                    <input type="datetime-local" class="form-control" name="start_date">
+                    <input type="datetime-local" class="form-control" name="start_date" value="<?= $start_date ?>">
                 </div>
                 <div class="col-6">
                     <label class="form-label">End Date</label>
-                    <input type="datetime-local" class="form-control" name="end_date">
+                    <input type="datetime-local" class="form-control" name="end_date" value="<?= $end_date ?>">
                 </div>
             </div>
-
-            <!-- 
-            <div class="mb-3">
-                <label class="form-label">Minimum Quantity (Optional)</label>
-                <input type="number" class="form-control" name="min_qty" value="1">
-                <small class="text-muted">Minimum quantity required for discount to apply</small>
-            </div> 
-            -->
 
             <div class="form-check mb-3">
                 <input type="checkbox" class="form-check-input" name="apply_category" id="apply_category">
@@ -317,31 +215,86 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == 'apply_discount') {
-        $product_id   = intval($_POST['product_id']);
-        $category_id  = intval($_POST['category_id']);
-        $new_price    = floatval($_POST['new_price']);
-        $start_date   = mysqli_real_escape_string($conn, $_POST['start_date']);
-        $end_date     = mysqli_real_escape_string($conn, $_POST['end_date']);
-        $added_by     = $_SESSION['userid'] ?? 0;
+        $product_id     = intval($_POST['product_id']);
+        $category_id    = intval($_POST['category_id']);
+        $discount_value = floatval($_POST['discount_value']);
+        $discount_type  = $_POST['discount_type'] ?? 'flat';
+        $start_date     = mysqli_real_escape_string($conn, $_POST['start_date']);
+        $end_date       = mysqli_real_escape_string($conn, $_POST['end_date']);
+        $added_by       = $_SESSION['userid'] ?? 0;
+        $apply_category = intval($_POST['apply_category']);
 
-        $sql = "INSERT INTO sales_discounts 
-                (category_id, product_id, date_started, date_finished, added_by)
-                VALUES 
-                ('$category_id', '$product_id', '$start_date', '$end_date', '$added_by')";
-        
-        if (mysqli_query($conn, $sql)) {
-            $update = "UPDATE inventory 
-                        SET on_sale = 1, sale_price = '$new_price' 
-                        WHERE Product_id = '$product_id'";
-            mysqli_query($conn, $update);
+        if ($apply_category == 1) {
+            $products_sql = "SELECT product_id, price FROM product WHERE product_category = '$category_id'";
+            $products_res = mysqli_query($conn, $products_sql);
 
-            echo json_encode(['success' => true]);
+            while ($p = mysqli_fetch_assoc($products_res)) {
+                $pid = intval($p['product_id']);
+                $orig_price = floatval($p['price']);
+                $discounted_price = $orig_price - ($orig_price * ($discount_value / 100));
+                if ($discounted_price < 0) $discounted_price = 0;
+
+                $check = mysqli_query($conn, "SELECT saleid FROM sales_discounts WHERE product_id = '$pid' LIMIT 1");
+                if (mysqli_num_rows($check) > 0) {
+                    $sql = "UPDATE sales_discounts 
+                            SET category_id='$category_id',
+                                date_started='$start_date',
+                                date_finished='$end_date',
+                                added_by='$added_by'
+                            WHERE product_id = '$pid'";
+                } else {
+                    $sql = "INSERT INTO sales_discounts 
+                            (category_id, product_id, date_started, date_finished, added_by)
+                            VALUES 
+                            ('$category_id', '$pid', '$start_date', '$end_date', '$added_by')";
+                }
+                mysqli_query($conn, $sql);
+
+                mysqli_query($conn, "UPDATE inventory 
+                                    SET on_sale = 1, sale_price = '$discounted_price' 
+                                    WHERE product_id = '$pid'");
+            }
+            echo json_encode(['success' => true, 'bulk' => true]);
         } else {
-            echo json_encode(['success' => false, 'message' => mysqli_error($conn)]);
+            $res = mysqli_query($conn, "SELECT price FROM product WHERE product_id = '$product_id' LIMIT 1");
+            $row = mysqli_fetch_assoc($res);
+            $orig_price = floatval($row['price']);
+
+            if ($discount_type === 'percent') {
+                $discounted_price = $orig_price - ($orig_price * ($discount_value / 100));
+            } else {
+                $discounted_price = $discount_value;
+            }
+            if ($discounted_price < 0) $discounted_price = 0;
+
+            $check = mysqli_query($conn, "SELECT saleid FROM sales_discounts WHERE product_id = '$product_id' LIMIT 1");
+            if (mysqli_num_rows($check) > 0) {
+                $sql = "UPDATE sales_discounts 
+                        SET category_id='$category_id',
+                            date_started='$start_date',
+                            date_finished='$end_date',
+                            added_by='$added_by'
+                        WHERE product_id = '$product_id'";
+            } else {
+                $sql = "INSERT INTO sales_discounts 
+                        (category_id, product_id, date_started, date_finished, added_by)
+                        VALUES 
+                        ('$category_id', '$product_id', '$start_date', '$end_date', '$added_by')";
+            }
+
+            if (mysqli_query($conn, $sql)) {
+                mysqli_query($conn, "UPDATE inventory 
+                                    SET on_sale = 1, sale_price = '$discounted_price' 
+                                    WHERE product_id = '$product_id'");
+                echo json_encode(['success' => true, 'bulk' => false]);
+            } else {
+                echo json_encode(['success' => false, 'message' => mysqli_error($conn)]);
+            }
         }
+
         exit;
     }
-    
+
     mysqli_close($conn);
 }
 ?>

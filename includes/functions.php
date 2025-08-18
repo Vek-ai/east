@@ -2523,8 +2523,7 @@ function getSaleItems() {
             ON p.product_id = sd.product_id
         INNER JOIN inventory i 
             ON i.Product_id = sd.product_id
-        WHERE NOW() BETWEEN sd.date_started AND sd.date_finished
-          AND i.quantity_ttl > 0
+        WHERE i.quantity_ttl > 0
           AND i.sale_price IS NOT NULL
     ";
 
@@ -2537,6 +2536,44 @@ function getSaleItems() {
     }
 
     return $items;
+}
+
+function getSalePrice($id) {
+    global $conn;
+    $id = intval($id);
+
+    $sql_product = "SELECT unit_price FROM product WHERE product_id = $id LIMIT 1";
+    $res_product = mysqli_query($conn, $sql_product);
+    $row_product = mysqli_fetch_assoc($res_product);
+    $unit_price = $row_product ? floatval($row_product['unit_price']) : 0;
+
+    $sql_sale = "
+        SELECT sd.date_started, sd.date_finished, i.sale_price 
+        FROM sales_discounts sd
+        INNER JOIN inventory i ON i.Product_id = sd.product_id
+        WHERE sd.product_id = $id
+        ORDER BY saleid DESC 
+        LIMIT 1
+    ";
+    $res_sale = mysqli_query($conn, $sql_sale);
+
+    if ($row_sale = mysqli_fetch_assoc($res_sale)) {
+        $start = $row_sale['date_started'];
+        $end   = $row_sale['date_finished'];
+        $sale_price = floatval($row_sale['sale_price']);
+
+        $now = date('Y-m-d H:i:s');
+        if (
+            $sale_price > 0 && (
+                $start == '0000-00-00 00:00:00' || $end == '0000-00-00 00:00:00' ||
+                ($now >= $start && $now <= $end)
+            )
+        ) {
+            return $sale_price;
+        }
+    }
+
+    return $unit_price;
 }
 
 ?>
