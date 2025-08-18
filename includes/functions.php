@@ -556,6 +556,60 @@ function getPointsRatio() {
     return 0;
 }
 
+function addPoints($customer_id, $order_id) {
+    global $conn;
+
+    $res = mysqli_query($conn, "SELECT discounted_price FROM orders WHERE orderid = $order_id");
+    $row = mysqli_fetch_assoc($res);
+    $total_order_amount = floatval($row['discounted_price']);
+    $ratio = getPointsRatio();
+    $points_earned = floor($total_order_amount * $ratio);
+
+    $query = "
+        INSERT INTO customer_points (customer_id, order_id, total_order_amount, points_earned, date)
+        VALUES ('$customer_id', '$order_id', '$total_order_amount', '$points_earned', NOW())
+    ";
+    $result = mysqli_query($conn, $query);
+
+    if ($result) {
+        return mysqli_insert_id($conn);
+    }
+    return false;
+}
+
+function getOrderPoints($order_id) {
+    global $conn;
+
+    $query = "
+        SELECT points_earned 
+        FROM customer_points 
+        WHERE order_id = '$order_id'
+        LIMIT 1
+    ";
+    $result = mysqli_query($conn, $query);
+
+    if ($row = mysqli_fetch_assoc($result)) {
+        return (int)$row['points_earned'];
+    }
+    return 0;
+}
+
+function getCustomerPoints($customer_id) {
+    global $conn;
+
+    $query = "
+        SELECT IFNULL(SUM(points_earned), 0) AS total_points
+        FROM customer_points
+        WHERE customer_id = '$customer_id'
+    ";
+    $result = mysqli_query($conn, $query);
+
+    if ($row = mysqli_fetch_assoc($result)) {
+        return (int)$row['total_points'];
+    }
+    return 0;
+}
+
 function getPaymentSetting($payment_setting_name) {
     global $conn;
     $query = "SELECT value FROM payment_settings WHERE payment_setting_name = '$payment_setting_name'";
@@ -825,17 +879,16 @@ function getOrderTotals($orderid) {
     $query = "
         SELECT 
             SUM(
-                quantity * actual_price * 
+                actual_price * 
                 CASE 
                     WHEN custom_length > 0 OR custom_length2 > 0 
                     THEN (custom_length + (custom_length2 / 12))
                     ELSE 1
                 END
             ) AS total_actual_price
-        FROM 
-            order_product
-        WHERE 
-            orderid = '$orderid'";
+        FROM order_product
+        WHERE orderid = '$orderid'
+    ";
 
     $result = mysqli_query($conn, $query);
     $total_actual_price = 0;
@@ -845,7 +898,7 @@ function getOrderTotals($orderid) {
         $total_actual_price = floatval($row['total_actual_price']);
     }
 
-    return number_format($total_actual_price, 2);
+    return round($total_actual_price, 2);
 }
 
 function getReturnTotals($orderid) {
@@ -878,17 +931,16 @@ function getOrderTotalsDiscounted($orderid) {
     $query = "
         SELECT 
             SUM(
-                quantity * discounted_price * 
+                discounted_price * 
                 CASE 
                     WHEN custom_length > 0 OR custom_length2 > 0 
                     THEN (custom_length + (custom_length2 / 12))
                     ELSE 1
                 END
             ) AS total_discounted_price
-        FROM 
-            order_product
-        WHERE 
-            orderid = '$orderid'";
+        FROM order_product
+        WHERE orderid = '$orderid'
+    ";
 
     $result = mysqli_query($conn, $query);
     $total_discounted_price = 0;
@@ -898,8 +950,9 @@ function getOrderTotalsDiscounted($orderid) {
         $total_discounted_price = floatval($row['total_discounted_price']);
     }
 
-    return number_format($total_discounted_price, 2);
+    return round($total_discounted_price, 2);
 }
+
 
 
 function setOrderTotals($orderid) {

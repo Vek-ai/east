@@ -1191,6 +1191,8 @@ if (isset($_POST['save_order'])) {
     if ($conn->query($query) === TRUE) {
         $orderid = $conn->insert_id;
 
+        addPoints($customerid, $orderid);
+
         $job_id = intval($job_id);
         $po_number = mysqli_real_escape_string($conn, $job_po);
         $created_by = mysqli_real_escape_string($conn, $cashierid);

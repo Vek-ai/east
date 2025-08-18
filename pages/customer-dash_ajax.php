@@ -10,19 +10,30 @@ require '../includes/functions.php';
 $permission = $_SESSION['permission'];
 
 if (isset($_POST['search_orders'])) {
-    $customerid = mysqli_real_escape_string($conn, string: $_POST['customerid']);
+    $customerid = mysqli_real_escape_string($conn, $_POST['customerid']);
     $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
+
+    $status_labels = [
+        1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
+        2 => ['label' => 'Processing', 'class' => 'badge bg-warning'],
+        3 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
+        4 => ['label' => 'Sent to Customer', 'class' => 'badge bg-success'],
+        5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
+        6 => ['label' => 'Archived/Returned', 'class' => 'badge bg-secondary'],
+    ];
     ?>
     <div class="month-table">
         <div class="table-responsive mt-3">
-            <table class="table align-middle  mb-0 no-wrap text-center">
+            <table class="table align-middle mb-0 no-wrap text-center">
                 <thead>
                 <tr>
                     <th class="border-0 ps-0">Sales Person</th>
                     <th class="border-0">Date</th>
                     <th class="border-0 text-end">Total Amount</th>
                     <th class="border-0 text-end">Discount</th>
+                    <th class="border-0 text-end">Points</th>
+                    <th class="border-0">Status</th>
                     <th class="border-0"></th>
                 </tr>
                 </thead>
@@ -42,6 +53,8 @@ if (isset($_POST['search_orders'])) {
                     $result = mysqli_query($conn, $query);
                     if ($result && mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) {
+                            $status_code = $row['status'];
+                            $status = isset($status_labels[$status_code]) ? $status_labels[$status_code] : ['label' => 'Unknown', 'class' => 'badge bg-dark'];
                             ?>
                             <tr>
                                 <td class="ps-0">
@@ -63,6 +76,12 @@ if (isset($_POST['search_orders'])) {
                                 <td class="text-end">
                                     <p class="mb-0">$<?= getOrderTotalsDiscounted($row['orderid']) ?></p>
                                 </td>
+                                <td class="text-end">
+                                    <p class="mb-0"><?= getOrderPoints($row['orderid']) ?></p>
+                                </td>
+                                <td>
+                                    <span class="<?= $status['class']; ?> fw-bold"><?= $status['label']; ?></span>
+                                </td>
                                 <td>
                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
                                     <a href="/print_order_product.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
@@ -71,15 +90,14 @@ if (isset($_POST['search_orders'])) {
                             </tr>
                             <?php
                         }
-                    }else{
+                    } else {
                     ?>
                         <tr>
-                            <td colspan="4">No orders found</td>
+                            <td colspan="7">No orders found</td>
                         </tr>
                     <?php  
                     }
-                    
-                    ?>
+                ?>
                 </tbody>
             </table>
         </div>
@@ -524,6 +542,15 @@ if (isset($_REQUEST['query'])) {
 
 if(isset($_POST['fetch_order_details'])){
     $orderid = mysqli_real_escape_string($conn, $_POST['orderid']);
+    $status_prod_labels = [
+        0 => ['label' => 'New', 'class' => 'badge bg-primary'],
+        1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+        2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
+        3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
+        4 => ['label' => 'Delivered', 'class' => 'badge bg-success'],
+        5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
+        6 => ['label' => 'Returned', 'class' => 'badge bg-danger']
+    ];
     ?>
     <style>
         .tooltip-inner {
@@ -544,6 +571,7 @@ if(isset($_POST['fetch_order_details'])){
                         <th>Profile</th>
                         <th class="text-center">Quantity</th>
                         <th class="text-center">Dimensions</th>
+                        <th class="text-center">Status</th>
                         <th class="text-center">Price</th>
                         <th class="text-center">Customer Price</th>
                     </tr>
@@ -562,6 +590,8 @@ if(isset($_POST['fetch_order_details'])){
                             if($row['quantity'] > 0){
                                 $actual_price = number_format(floatval($row['actual_price'] * $row['quantity']),2);
                                 $discounted_price = number_format(floatval($row['discounted_price'] * $row['quantity']),2);
+                                $status_id = $row['status'] ?? 0; 
+                                $label_data = $status_prod_labels[$status_id] ?? ['label' => 'Unknown', 'class' => 'badge bg-dark'];
                             ?>
                             <tr>
                                 <td class="text-wrap"> 
@@ -614,6 +644,11 @@ if(isset($_POST['fetch_order_details'])){
                                     }
                                     ?>
                                 </td>
+                                <td class="text-center">
+                                    <span class="<?= $label_data['class'] ?>">
+                                        <?= htmlspecialchars($label_data['label']) ?>
+                                    </span>
+                                </td>
                                 <td class="text-end">$ <?= $actual_price ?></td>
                                 <td class="text-end">$ <?= $discounted_price ?></td>
                             </tr>
@@ -629,7 +664,7 @@ if(isset($_POST['fetch_order_details'])){
 
                 <tfoot>
                     <tr>
-                        <td colspan="4">Total</td>
+                        <td colspan="5">Total</td>
                         <td><?= $totalquantity ?></td>
                         <td></td>
                         <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
