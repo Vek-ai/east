@@ -315,6 +315,23 @@ if(isset($_REQUEST['id'])){
                 </div>
             </div>
         </div>
+
+        <div class="card">
+            <div class="card-body p-9">
+                <div class="hstack gap-9">
+                    <div class="round-56 rounded-circle text-white d-flex align-items-center justify-content-center text-bg-success">
+                        <i class="ti ti-star fs-6"></i>
+                    </div>
+                    <div class="align-self-center">
+                        <?php
+                        $points = getCustomerPoints($customer_id);
+                        ?>
+                        <h3 class="mb-1 fs-6"><?= number_format($points, 0) ?></h3>
+                        <span class="text-muted">EKM Points</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     

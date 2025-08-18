@@ -60,10 +60,15 @@ if(isset($_SESSION['customer_id'])){
             </div>
 
             <div class="card-body">
-                <div class="text-center">
-                    <div class="align-self-center">
-                        <h3 class="mb-1 fs-6">$<?= number_format($customer_details['store_credit'],2) ?></h3>
+                <div class="d-flex justify-content-center gap-5 text-center">
+                    <div>
+                        <h3 class="mb-1 fs-6">$<?= number_format($customer_details['store_credit'], 2) ?></h3>
                         <span class="text-muted">Store Credit</span>
+                    </div>
+                    <div>
+                        <?php $points = getCustomerPoints($customer_id); ?>
+                        <h3 class="mb-1 fs-6"><?= number_format($points, 0) ?></h3>
+                        <span class="text-muted">EKM Points</span>
                     </div>
                 </div>
             </div>
