@@ -107,7 +107,7 @@ if(isset($_REQUEST['action'])) {
             }
 
             $action_html = "<div class='action-btn text-center'>"; 
-            $action_html .= "<a href='javascript:void(0)' id='view_product_btn' title='View Sale' class='text-primary' data-id='{$product_id}'><i class='ti ti-eye fs-7'></i></a>"; 
+            //$action_html .= "<a href='javascript:void(0)' id='view_product_btn' title='View Sale' class='text-primary' data-id='{$product_id}'><i class='ti ti-eye fs-7'></i></a>"; 
             if ($permission === 'edit') {
                 $action_html .= "<a href='javascript:void(0)' id='add_sale_btn' title='Add Sale' class='text-warning' data-id='{$product_id}'><i class='ti ti-plus fs-7'></i></a>";
             }
