@@ -246,7 +246,17 @@ if (isset($_REQUEST['query'])) {
     }
 
     if ($onlyOnSale) {
-        $query_product .= " AND p.on_sale = '1'";
+        $query_product .= " 
+            AND EXISTS (
+                SELECT 1
+                FROM sales_discounts sd
+                INNER JOIN inventory inv ON inv.product_id = sd.product_id
+                WHERE sd.product_id = p.product_id
+                AND inv.quantity_ttl > 0
+                AND inv.sale_price IS NOT NULL
+                AND (sd.date_finished = '00000000' OR sd.date_finished >= CURDATE())
+            )
+        ";
     }
 
     $query_product .= " GROUP BY p.product_id";
