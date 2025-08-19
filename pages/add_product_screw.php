@@ -199,16 +199,18 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-4 screw-fields">
                 <div class="mb-3">
                     <label class="form-label">Price</label>
-                    <input type="text" id="price" name="price" class="form-control calculate" value="<?=$row['price'] ?? ''?>"/>
+                    <input type="text" id="unit_price" name="unit_price" class="form-control calculate" value="<?=$row['unit_price'] ?? ''?>"/>
                 </div>
             </div>
 
+            <!-- 
             <div class="col-md-4 trim-field screw-fields">
                 <div class="mb-3">
                     <label class="form-label">Retail Price</label>
                     <input type="text" id="retail" name="unit_price" class="form-control" value="<?=$row['unit_price'] ?? ''?>"/>
                 </div>
-            </div>
+            </div> 
+            -->
 
             <div class="col-md-12 trim-field screw-fields panel-fields">
                 <div class="mb-3">

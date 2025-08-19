@@ -1258,11 +1258,13 @@ function showCol($name) {
                 $("#description").val(descriptionParts.join(" - "));
                 $("#product_item").val(descriptionParts.join(" - "));
             }else if (String(selectedCategory) == '16') { //category 16 = SCREWS
+                /* 
                 let pieces = $("#pack option:selected").data('count') || 0;
                 let price = parseFloat($("#price").val()) || 0;
 
                 let retail = price * pieces;
-                $("#retail").val(retail.toFixed(3));
+                $("#retail").val(retail.toFixed(3)); 
+                */
 
                 /* 
                 let descriptionParts = [];

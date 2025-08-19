@@ -30,39 +30,69 @@ if(isset($_POST['fetch_modal'])){
                     <input type="number" id="custom_length_quantity" name="quantity" class="form-control mb-1" placeholder="Enter Quantity">
                 </div>
             </div>
-            <div class="col-6">
-                <label class="form-label">Length</label>
-                <div class="mb-3 row g-2">
-                    <select id="custom_length_select" class="form-control mb-1">
-                        <option value="0">Select Length</option>
+            <?php
+            $product_details = getProductDetails($id);
+            $category = $product_details['product_category'];
+            $supplier = $product_details['supplier_id'];
+
+            if ($category == 16): ?>
+                <div class="col-md-6">
+                    <label class="form-label">Pack</label>
+                    <select id="custom_length_select" class="form-control select-2">
+                        <option value="0">Select Pack...</option>
                         <?php
-                        $lengths = getInventoryLengths($id);
-                        foreach ($lengths as $entry) {
-                            $length_in_feet = floatval($entry['feet']);
-                            $feet = floor($length_in_feet);
-                            $inch = round(($length_in_feet - $feet) * 12);
-
-                            if ($inch === 12) {
-                                $feet += 1;
-                                $inch = 0;
-                            }
-
-                            $selected = ($feet == 1 && $inch == 0) ? 'selected' : '';
-
-                            $display = '';
-                            if ($feet > 0) $display .= "{$feet}ft ";
-                            if ($inch > 0) $display .= "{$inch}in";
-                            $display = trim($display);
-
-                            echo "<option value=\"$length_in_feet\" data-feet=\"$feet\" data-inch=\"$inch\" $selected>$display</option>";
+                        $query_pack = "
+                            SELECT id, pack, pack_abbreviation, pack_count 
+                            FROM supplier_pack 
+                            WHERE supplierid = '$supplier' AND status = 1 AND hidden = 0 
+                            ORDER BY pack ASC
+                        ";
+                        $result_pack = mysqli_query($conn, $query_pack);
+                        while ($pack = mysqli_fetch_assoc($result_pack)) {
+                            $pack_label = $pack['pack'] . " - " . $pack['pack_count'];
+                            echo "<option value='{$pack['pack_count']}' data-feet='{$pack['pack_count']}'>{$pack_label}</option>";
                         }
                         ?>
                     </select>
-
-                    <input type="hidden" id="custom_length_feet" name="custom_length_feet" class="form-control mb-1">
-                    <input type="hidden" id="custom_length_inch" name="custom_length_inch" class="form-control mb-1">
                 </div>
-            </div>
+
+            <?php else: ?>
+                <div class="col-6">
+                    <label class="form-label">Length</label>
+                    <div class="mb-3 row g-2">
+                        <select id="custom_length_select" class="form-control mb-1">
+                            <option value="0">Select Length</option>
+                            <?php
+                            $lengths = getInventoryLengths($id);
+                            foreach ($lengths as $entry) {
+                                $length_in_feet = floatval($entry['feet']);
+                                $feet = floor($length_in_feet);
+                                $inch = round(($length_in_feet - $feet) * 12);
+
+                                if ($inch === 12) {
+                                    $feet += 1;
+                                    $inch = 0;
+                                }
+
+                                $selected = ($feet == 1 && $inch == 0) ? 'selected' : '';
+
+                                $display = '';
+                                if ($feet > 0) $display .= "{$feet}ft ";
+                                if ($inch > 0) $display .= "{$inch}in";
+                                $display = trim($display);
+
+                                echo "<option value=\"$length_in_feet\" data-feet=\"$feet\" data-inch=\"$inch\" $selected>$display</option>";
+                            }
+                            ?>
+                        </select>
+
+                        
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <input type="hidden" id="custom_length_feet" name="custom_length_feet" class="form-control mb-1">
+            <input type="hidden" id="custom_length_inch" name="custom_length_inch" class="form-control mb-1">
 
             <div class="col-12">
                 <div class="product_cost_display">
@@ -106,6 +136,8 @@ if(isset($_POST['fetch_modal'])){
 
                     $('#custom_length_feet').val(feet || '');
                     $('#custom_length_inch').val(inch || '');
+
+                    console.log(feet);
 
                     updatePrice();
                 });
