@@ -156,7 +156,37 @@ if(isset($_REQUEST['action'])) {
                 </div>
                 <div class="mb-3">
                 <select id="pack" class="form-control select-2 pack_select calculate" name="pack">
-                    <option value="0" >Select Pack...</option>
+                    <option value="0">Select Pack...</option>
+                    <?php
+                    if (!empty($row['supplier_id'])) {
+                        $supplier_id = intval($row['supplier_id']);
+                        $query_pack = "
+                            SELECT id, pack, pack_abbreviation, pack_count 
+                            FROM supplier_pack 
+                            WHERE supplierid = '$supplier_id' 
+                            AND status = 1 
+                            AND hidden = 0
+                            ORDER BY pack ASC
+                        ";
+                    } else {
+                        $query_pack = "
+                            SELECT id, pack, pack_abbreviation, pack_count 
+                            FROM supplier_pack 
+                            WHERE status = 1 
+                            AND hidden = 0
+                            ORDER BY pack ASC
+                        ";
+                    }
+
+                    $result_pack = mysqli_query($conn, $query_pack);
+                    while ($pack = mysqli_fetch_assoc($result_pack)) {
+                        $pack_label = $pack['pack'];
+                        $pack_label .= " - " . $pack['pack_count'];
+
+                        $selected = (isset($row['pack_id']) && $row['pack_id'] == $pack['id']) ? "selected" : "";
+                        echo "<option value='{$pack['id']}' $selected>{$pack_label}</option>";
+                    }
+                    ?>
                 </select>
                 </div>
             </div>
@@ -171,7 +201,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-4 screw-fields">
                 <div class="mb-3">
                     <label class="form-label">Price</label>
-                    <input type="text" id="price" name="price" class="form-control readonly" value="<?=$row['price'] ?? ''?>"/>
+                    <input type="text" id="price" name="price" class="form-control" value="<?=$row['price'] ?? ''?>"/>
                 </div>
             </div>
 
