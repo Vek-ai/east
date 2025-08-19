@@ -250,11 +250,13 @@ if (isset($_REQUEST['query'])) {
             AND EXISTS (
                 SELECT 1
                 FROM sales_discounts sd
-                INNER JOIN inventory inv ON inv.product_id = sd.product_id
                 WHERE sd.product_id = p.product_id
-                AND inv.quantity_ttl > 0
-                AND inv.sale_price IS NOT NULL
-                AND (sd.date_finished = '00000000' OR sd.date_finished >= CURDATE())
+                AND (
+                    sd.date_started = '0000-00-00 00:00:00' OR sd.date_started <= NOW()
+                )
+                AND (
+                    sd.date_finished = '0000-00-00 00:00:00' OR sd.date_finished >= NOW()
+                )
             )
         ";
     }

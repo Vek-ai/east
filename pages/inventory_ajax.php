@@ -12,40 +12,32 @@ if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-        $operation = mysqli_real_escape_string($conn, $_POST['operation']);
-        $Product_id = mysqli_real_escape_string($conn, $_POST['Product_id']);
-        $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
+        $operation   = mysqli_real_escape_string($conn, $_POST['operation']);
+        $Product_id  = mysqli_real_escape_string($conn, $_POST['Product_id']);
+        $color_id    = mysqli_real_escape_string($conn, $_POST['color_id']);
         $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id']);
-        $Warehouse_id = mysqli_real_escape_string($conn, $_POST['Warehouse_id']);
-        $Shelves_id = mysqli_real_escape_string($conn, $_POST['Shelves_id']);
-        $Bin_id = mysqli_real_escape_string($conn, $_POST['Bin_id']);
-        $Row_id = mysqli_real_escape_string($conn, $_POST['Row_id']);
-        $Date = mysqli_real_escape_string($conn, $_POST['Date']);
-        $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
-        $quantity_ttl = mysqli_real_escape_string($conn, $_POST['quantity_ttl']);
-        $pack = mysqli_real_escape_string($conn, $_POST['pack']);
+        $Warehouse_id= mysqli_real_escape_string($conn, $_POST['Warehouse_id']);
+        $Shelves_id  = mysqli_real_escape_string($conn, $_POST['Shelves_id']);
+        $Bin_id      = mysqli_real_escape_string($conn, $_POST['Bin_id']);
+        $Row_id      = mysqli_real_escape_string($conn, $_POST['Row_id']);
+        $Date        = mysqli_real_escape_string($conn, $_POST['Date']);
+        $quantity    = mysqli_real_escape_string($conn, $_POST['quantity']);
+        $quantity_ttl= mysqli_real_escape_string($conn, $_POST['quantity_ttl']);
+        $pack        = mysqli_real_escape_string($conn, $_POST['pack']);
 
         $length_value = mysqli_real_escape_string($conn, $_POST['length_value']);
-        $length_unit = mysqli_real_escape_string($conn, $_POST['length_unit']);
-
+        $length_unit  = mysqli_real_escape_string($conn, $_POST['length_unit']);
         $formatted_length = "$length_value $length_unit";
 
-        $on_sale    = isset($_POST['on_sale']) ? 1 : 0;
-        $sale_price = mysqli_real_escape_string($conn, $_POST['sale_price'] ?? '0.00');
-
-        if ($on_sale == 0) {
-            $sale_price = '0.00';
-        }
-
         $addedby = $_SESSION['userid'];
-    
+
         $checkQuery = "SELECT * FROM inventory WHERE Product_id = '$Product_id' AND color_id = '$color_id'";
         $result = mysqli_query($conn, $checkQuery);
-    
+
         if (!$result) {
             die("Error executing query: " . mysqli_error($conn));
         }
-    
+
         if (mysqli_num_rows($result) > 0) {
             $updateQuery = "UPDATE inventory SET 
                 supplier_id = '$supplier_id', 
@@ -57,8 +49,6 @@ if(isset($_REQUEST['action'])) {
                 quantity = '$quantity',
                 quantity_ttl = '$quantity_ttl', 
                 pack = '$pack',
-                on_sale = '$on_sale',
-                sale_price = '$sale_price',
                 addedby = '$addedby'
                 WHERE Product_id = '$Product_id' AND color_id = '$color_id'";
 
@@ -73,8 +63,6 @@ if(isset($_REQUEST['action'])) {
                     quantity = quantity + '$quantity',
                     quantity_ttl = quantity_ttl + '$quantity_ttl', 
                     pack = '$pack',
-                    on_sale = '$on_sale',
-                    sale_price = '$sale_price',
                     addedby = '$addedby'
                     WHERE Product_id = '$Product_id' AND color_id = '$color_id'";
             }
@@ -97,8 +85,6 @@ if(isset($_REQUEST['action'])) {
                 quantity, 
                 pack, 
                 quantity_ttl, 
-                on_sale,
-                sale_price,
                 addedby
             ) VALUES (
                 '$Product_id', 
@@ -112,8 +98,6 @@ if(isset($_REQUEST['action'])) {
                 '$quantity', 
                 '$pack', 
                 '$quantity_ttl', 
-                '$on_sale',
-                '$sale_price',
                 '$addedby'
             )";
 
@@ -150,37 +134,8 @@ if(isset($_REQUEST['action'])) {
             }
         }
 
-        if ($on_sale == 1) {
-            $checkSale = mysqli_query($conn, "SELECT * FROM sales_discounts WHERE product_id = '$Product_id' LIMIT 1");
-
-            if ($checkSale && mysqli_num_rows($checkSale) == 0) {
-                $date_started = mysqli_real_escape_string($conn, $_POST['sale_date_started'] ?? date('Y-m-d H:i:s'));
-                $date_finished = mysqli_real_escape_string($conn, $_POST['sale_date_finished'] ?? date('Y-m-d H:i:s', strtotime('+7 days')));
-                
-                $insertSale = "INSERT INTO sales_discounts (
-                    category_id,
-                    product_id,
-                    date_started,
-                    date_finished,
-                    added_by
-                ) VALUES (
-                    '{$details['product_category']}',
-                    '$Product_id',
-                    '$date_started',
-                    '$date_finished',
-                    '$addedby'
-                )";
-
-                if (!mysqli_query($conn, $insertSale)) {
-                    echo "Error adding sale: " . mysqli_error($conn);
-                    exit;
-                }
-            }
-        }
-
         echo "success";
     }
-    
 
     if ($action == "fetch_modal") {
         $Inventory_id = mysqli_real_escape_string($conn, $_POST['id']);
@@ -385,22 +340,7 @@ if(isset($_REQUEST['action'])) {
                                             </select>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row pt-3">
-                                    <div class="col-md-4 d-flex align-items-center">
-                                        <div class="form-check">
-                                            <input type="checkbox" class="form-check-input on_sale" id="on_sale" name="on_sale" 
-                                                value="1" <?= ($row['on_sale'] == 1) ? 'checked' : '' ?>>
-                                            <label class="form-check-label" for="on_sale">On Sale</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-8 sale_price_wrapper" id="sale_price_wrapper" style="<?= ($row['on_sale'] == 1) ? '' : 'display:none;' ?>">
-                                        <label class="form-label">Sale Price</label>
-                                        <input type="number" step="0.0001" min="0" id="sale_price" name="sale_price" 
-                                            class="form-control" value="<?= $row['sale_price'] ?? '' ?>" 
-                                            placeholder="Enter sale price">
-                                    </div>
-                                </div>      
+                                </div> 
                                 </div>
                             </div>
                         </div>

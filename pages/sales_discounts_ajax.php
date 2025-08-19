@@ -72,10 +72,7 @@ if(isset($_REQUEST['action'])) {
             $status_html = '';
             $active = 0;
 
-            if ($details['status'] == 0) {
-                $status_html = "<div id='status-alert$no' class='changeStatus alert alert-danger text-white text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='0'>Inactive</div>";
-                $active = 0;
-            } else if (isset($saleMap[$product_id])) {
+            if (isset($saleMap[$product_id])) {
                 $now = new DateTime();
                 $start = ($saleMap[$product_id]['date_started'] !== "0000-00-00 00:00:00") 
                         ? new DateTime($saleMap[$product_id]['date_started']) 
@@ -83,27 +80,21 @@ if(isset($_REQUEST['action'])) {
                 $end   = ($saleMap[$product_id]['date_finished'] !== "0000-00-00 00:00:00") 
                         ? new DateTime($saleMap[$product_id]['date_finished']) 
                         : null;
+
                 if (is_null($start) || is_null($end)) {
                     $status_html = "<div id='status-alert$no' 
-                                    class='changeStatus alert alert-success text-white text-center py-1 px-2 my-0' 
-                                    data-no='$no' data-id='$product_id' data-status='1'>On Sale</div>";
-                    $active = 1;
+                                    class='alert alert-success text-white text-center py-1 px-2 my-0'>On Sale</div>";
                 } else {
                     if ($now >= $start && $now <= $end) {
                         $status_html = "<div id='status-alert$no' 
-                                        class='changeStatus alert alert-success text-white text-center py-1 px-2 my-0' 
-                                        data-no='$no' data-id='$product_id' data-status='1'>On Sale</div>";
-                        $active = 1;
+                                        class='alert alert-success text-white text-center py-1 px-2 my-0'>On Sale</div>";
                     } else {
                         $status_html = "<div id='status-alert$no' 
-                                        class='changeStatus alert alert-warning text-white text-center py-1 px-2 my-0' 
-                                        data-no='$no' data-id='$product_id' data-status='0'>Sale Ended</div>";
-                        $active = 1;
+                                        class='alert alert-warning text-white text-center py-1 px-2 my-0'>Sale Ended</div>";
                     }
                 }
             } else {
-                $status_html = "<div id='status-alert$no' class='changeStatus alert alert-info text-white text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='1'>Active</div>";
-                $active = 1;
+                $status_html = "";
             }
 
             $action_html = "<div class='action-btn text-center'>"; 
@@ -225,40 +216,43 @@ if(isset($_REQUEST['action'])) {
         $apply_category = intval($_POST['apply_category']);
 
         if ($apply_category == 1) {
-            $products_sql = "SELECT product_id, price FROM product WHERE product_category = '$category_id'";
+            $products_sql = "SELECT product_id, unit_price FROM product WHERE product_category = '$category_id'";
             $products_res = mysqli_query($conn, $products_sql);
 
             while ($p = mysqli_fetch_assoc($products_res)) {
                 $pid = intval($p['product_id']);
-                $orig_price = floatval($p['price']);
-                $discounted_price = $orig_price - ($orig_price * ($discount_value / 100));
+                $orig_price = floatval($p['unit_price']);
+
+                if ($discount_type === 'percent') {
+                    $discounted_price = $orig_price - ($orig_price * ($discount_value / 100));
+                } else {
+                    $discounted_price = $discount_value;
+                }
                 if ($discounted_price < 0) $discounted_price = 0;
 
                 $check = mysqli_query($conn, "SELECT saleid FROM sales_discounts WHERE product_id = '$pid' LIMIT 1");
                 if (mysqli_num_rows($check) > 0) {
                     $sql = "UPDATE sales_discounts 
-                            SET category_id='$category_id',
-                                date_started='$start_date',
-                                date_finished='$end_date',
-                                added_by='$added_by'
+                            SET category_id   = '$category_id',
+                                sale_price    = '$discounted_price',
+                                date_started  = '$start_date',
+                                date_finished = '$end_date',
+                                added_by      = '$added_by'
                             WHERE product_id = '$pid'";
                 } else {
                     $sql = "INSERT INTO sales_discounts 
-                            (category_id, product_id, date_started, date_finished, added_by)
+                            (category_id, product_id, sale_price, date_started, date_finished, added_by)
                             VALUES 
-                            ('$category_id', '$pid', '$start_date', '$end_date', '$added_by')";
+                            ('$category_id', '$pid', '$discounted_price', '$start_date', '$end_date', '$added_by')";
                 }
                 mysqli_query($conn, $sql);
-
-                mysqli_query($conn, "UPDATE inventory 
-                                    SET on_sale = 1, sale_price = '$discounted_price' 
-                                    WHERE product_id = '$pid'");
             }
+
             echo json_encode(['success' => true, 'bulk' => true]);
         } else {
-            $res = mysqli_query($conn, "SELECT price FROM product WHERE product_id = '$product_id' LIMIT 1");
+            $res = mysqli_query($conn, "SELECT unit_price FROM product WHERE product_id = '$product_id' LIMIT 1");
             $row = mysqli_fetch_assoc($res);
-            $orig_price = floatval($row['price']);
+            $orig_price = floatval($row['unit_price']);
 
             if ($discount_type === 'percent') {
                 $discounted_price = $orig_price - ($orig_price * ($discount_value / 100));
@@ -270,22 +264,20 @@ if(isset($_REQUEST['action'])) {
             $check = mysqli_query($conn, "SELECT saleid FROM sales_discounts WHERE product_id = '$product_id' LIMIT 1");
             if (mysqli_num_rows($check) > 0) {
                 $sql = "UPDATE sales_discounts 
-                        SET category_id='$category_id',
-                            date_started='$start_date',
-                            date_finished='$end_date',
-                            added_by='$added_by'
+                        SET category_id   = '$category_id',
+                            sale_price    = '$discounted_price',
+                            date_started  = '$start_date',
+                            date_finished = '$end_date',
+                            added_by      = '$added_by'
                         WHERE product_id = '$product_id'";
             } else {
                 $sql = "INSERT INTO sales_discounts 
-                        (category_id, product_id, date_started, date_finished, added_by)
+                        (category_id, product_id, sale_price, date_started, date_finished, added_by)
                         VALUES 
-                        ('$category_id', '$product_id', '$start_date', '$end_date', '$added_by')";
+                        ('$category_id', '$product_id', '$discounted_price', '$start_date', '$end_date', '$added_by')";
             }
 
             if (mysqli_query($conn, $sql)) {
-                mysqli_query($conn, "UPDATE inventory 
-                                    SET on_sale = 1, sale_price = '$discounted_price' 
-                                    WHERE product_id = '$product_id'");
                 echo json_encode(['success' => true, 'bulk' => false]);
             } else {
                 echo json_encode(['success' => false, 'message' => mysqli_error($conn)]);
@@ -294,7 +286,6 @@ if(isset($_REQUEST['action'])) {
 
         exit;
     }
-
     mysqli_close($conn);
 }
 ?>

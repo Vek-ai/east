@@ -2513,18 +2513,13 @@ function getSaleItems() {
             sd.product_id,
             sd.date_started,
             sd.date_finished,
+            sd.sale_price,
             p.product_item,
-            p.unit_price,
-            i.Inventory_id,
-            i.sale_price,
-            i.quantity_ttl
+            p.unit_price
         FROM sales_discounts sd
         INNER JOIN product p 
             ON p.product_id = sd.product_id
-        INNER JOIN inventory i 
-            ON i.Product_id = sd.product_id
-        WHERE i.quantity_ttl > 0
-          AND i.sale_price IS NOT NULL
+        WHERE sd.sale_price > 0
     ";
 
     $result = mysqli_query($conn, $sql);
@@ -2548,11 +2543,10 @@ function getSalePrice($id) {
     $unit_price = $row_product ? floatval($row_product['unit_price']) : 0;
 
     $sql_sale = "
-        SELECT sd.date_started, sd.date_finished, i.sale_price 
+        SELECT sd.date_started, sd.date_finished, sd.sale_price 
         FROM sales_discounts sd
-        INNER JOIN inventory i ON i.Product_id = sd.product_id
         WHERE sd.product_id = $id
-        ORDER BY saleid DESC 
+        ORDER BY sd.saleid DESC 
         LIMIT 1
     ";
     $res_sale = mysqli_query($conn, $sql_sale);
@@ -2575,5 +2569,4 @@ function getSalePrice($id) {
 
     return $unit_price;
 }
-
 ?>
