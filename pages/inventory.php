@@ -715,6 +715,7 @@ function showCol($name) {
                     },
                     success: function(response) {
                         $('#updateInventoryModal').html(response);
+                        $('.inventory_supplier').trigger('change');
                         $('#updateInventoryModal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
