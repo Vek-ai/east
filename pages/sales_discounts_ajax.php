@@ -30,7 +30,7 @@ if(isset($_REQUEST['action'])) {
             $saleMap[$s['product_id']] = $s;
         }
 
-        $query = "SELECT product_id FROM product WHERE hidden = 0";
+        $query = "SELECT product_id FROM product WHERE status = 1";
         $result = mysqli_query($conn, $query);
         $no = 1;
 
@@ -70,7 +70,7 @@ if(isset($_REQUEST['action'])) {
                 </a>";
 
             $status_html = '';
-            $active = 0;
+            $active = 1;
 
             if (isset($saleMap[$product_id])) {
                 $now = new DateTime();
