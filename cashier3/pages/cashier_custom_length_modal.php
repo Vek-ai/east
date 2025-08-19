@@ -42,10 +42,12 @@ if(isset($_POST['fetch_modal'])){
                         <option value="0">Select Pack...</option>
                         <?php
                         $query_pack = "
-                            SELECT id, pack, pack_abbreviation, pack_count 
-                            FROM supplier_pack 
-                            WHERE supplierid = '$supplier' AND status = 1 AND hidden = 0 
-                            ORDER BY pack ASC
+                            SELECT DISTINCT sp.id, sp.pack, sp.pack_abbreviation, sp.pack_count
+                            FROM inventory i
+                            INNER JOIN supplier_pack sp ON i.pack = sp.id
+                            WHERE i.product_id = '$id'
+                            AND i.pack IS NOT NULL
+                            ORDER BY sp.pack ASC
                         ";
                         $result_pack = mysqli_query($conn, $query_pack);
                         while ($pack = mysqli_fetch_assoc($result_pack)) {
