@@ -1258,18 +1258,19 @@ function showCol($name) {
                 $("#description").val(descriptionParts.join(" - "));
                 $("#product_item").val(descriptionParts.join(" - "));
             }else if (String(selectedCategory) == '16') { //category 16 = SCREWS
+                let descriptionParts = [];
+                let pieces = $("#pack option:selected").data('count') || 0;
+                let price = parseFloat($("#price").val()) || 0;
+
+                let retail = price * pieces;
+                $("#retail").val(retail.toFixed(3));
 
                 let descriptionParts = [];
-
-                let pieces = $("#pack option:selected").data('count') || 0;
-                let cost = $("#cost").val() || 0;
-                let price = pieces * cost;
-                $("#price").val(price.toFixed(3));
-                
-                let size = parseFloat($("#size").val()) || 0; 
+                let size = parseFloat($("#size").val()) || 0;
                 if (size) descriptionParts.push(size);
-                if (selectedType) descriptionParts.push($("#product_type option:selected").text().trim());
-
+                if ($("#product_type").length) {
+                    descriptionParts.push($("#product_type option:selected").text().trim());
+                }
                 $("#description").val(descriptionParts.join(" - "));
                 $("#product_item").val(descriptionParts.join(" - "));
             }else if (String(selectedCategory) == '3') { //category 3 = PANEL

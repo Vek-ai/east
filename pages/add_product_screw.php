@@ -180,11 +180,9 @@ if(isset($_REQUEST['action'])) {
 
                     $result_pack = mysqli_query($conn, $query_pack);
                     while ($pack = mysqli_fetch_assoc($result_pack)) {
-                        $pack_label = $pack['pack'];
-                        $pack_label .= " - " . $pack['pack_count'];
-
+                        $pack_label = $pack['pack'] . " - " . $pack['pack_count'];
                         $selected = (isset($row['pack_id']) && $row['pack_id'] == $pack['id']) ? "selected" : "";
-                        echo "<option value='{$pack['id']}' $selected>{$pack_label}</option>";
+                        echo "<option value='{$pack['id']}' data-count='{$pack['pack_count']}' $selected>{$pack_label}</option>";
                     }
                     ?>
                 </select>
@@ -201,7 +199,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-4 screw-fields">
                 <div class="mb-3">
                     <label class="form-label">Price</label>
-                    <input type="text" id="price" name="price" class="form-control" value="<?=$row['price'] ?? ''?>"/>
+                    <input type="text" id="price" name="price" class="form-control calculate" value="<?=$row['price'] ?? ''?>"/>
                 </div>
             </div>
 
