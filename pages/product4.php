@@ -684,7 +684,7 @@ function showCol($name) {
             updateSearchCategory();
         });
 
-        $(document).on('change', '#color', function() {
+        /* $(document).on('change', '#color', function() {
             let selectedGroup = $('#color option:selected').data('color') || '';
             let product_category = $('#product_category').val() || '';
 
@@ -696,7 +696,7 @@ function showCol($name) {
             });
 
             $('.color-group-filter').toggleClass("d-none", !selectedGroup);
-        });
+        }); */
        
         function updateSearchCategory() {
             var product_category = $('#product_category').val() || '';
@@ -1132,7 +1132,7 @@ function showCol($name) {
         function updateColorSelect() {
             let selectedCategory = $('#product_category').val();
 
-            if (String(selectedCategory) == '3') { 
+            /* if (String(selectedCategory) == '3') { 
                 let selectedSystem = $('#product_system').val();
                 let selectedGauge = $('#gauge').val();
 
@@ -1164,7 +1164,7 @@ function showCol($name) {
                 });
             }
 
-            $('#color').toggleClass('d-none', !selectedCategory);
+            $('#color').toggleClass('d-none', !selectedCategory); */
             
         }
 
