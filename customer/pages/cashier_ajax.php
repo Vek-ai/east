@@ -214,7 +214,19 @@ if (isset($_REQUEST['query'])) {
     }
 
     if ($onlyOnSale) {
-        $query_product .= " AND p.on_sale = '1'";
+        $query_product .= " 
+            AND EXISTS (
+                SELECT 1
+                FROM sales_discounts sd
+                WHERE sd.product_id = p.product_id
+                AND (
+                    sd.date_started = '0000-00-00 00:00:00' OR sd.date_started <= NOW()
+                )
+                AND (
+                    sd.date_finished = '0000-00-00 00:00:00' OR sd.date_finished >= NOW()
+                )
+            )
+        ";
     }
 
     $query_product .= " GROUP BY p.product_id";
@@ -293,11 +305,12 @@ if (isset($_REQUEST['query'])) {
 
             $is_panel = $row_product['product_category'] == $panel_id ? true : false;
             $is_trim = $row_product['product_category'] == $trim_id ? true : false;
+            $is_screw = $row_product['product_category'] == $screw_id ? true : false;
             $is_custom_truss = $row_product['product_id'] == $custom_truss_id ? true : false;
             $is_special_trim = $row_product['product_id'] == $special_trim_id ? true : false;
             $is_custom_length = $row_product['is_custom_length'] == 1 ? true : false;
 
-            $qty_input = !$is_panel  && !$is_custom_truss && !$is_special_trim && !$is_trim  && !$is_custom_length
+            $qty_input = !$is_panel  && !$is_custom_truss && !$is_special_trim && !$is_trim && !$is_custom_length && !$is_screw
                 ? ' <div class="input-group input-group-sm">
                         <button class="btn btn-outline-primary btn-minus" type="button" data-id="' . $row_product['product_id'] . '">-</button>
                         <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1">
@@ -313,6 +326,8 @@ if (isset($_REQUEST['query'])) {
                 $btn_id = 'add-to-cart-panel-btn';
             }else if($is_trim){
                 $btn_id = 'add-to-cart-trim-btn';
+            }else if($is_screw){
+                $btn_id = 'add-to-cart-custom-length-btn';
             }else if($is_custom_length){
                 $btn_id = 'add-to-cart-custom-length-btn';
             }else{
