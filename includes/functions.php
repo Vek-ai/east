@@ -1407,6 +1407,28 @@ function getProductStockTotal($product_id) {
     return $row['total_quantity'];
 }
 
+function hasProductVariantLength($product_id) {
+    global $conn;
+
+    $product_id = (int)$product_id;
+
+    $sql = "
+        SELECT 1 
+        FROM product_variant_length pvl
+        INNER JOIN inventory i ON pvl.inventory_id = i.Inventory_id
+        WHERE i.Product_id = $product_id 
+        LIMIT 1
+    ";
+
+    $result = mysqli_query($conn, $sql);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        return true;
+    }
+
+    return false;
+}
+
 function getPrimaryKey($table) {
     global $conn;
 

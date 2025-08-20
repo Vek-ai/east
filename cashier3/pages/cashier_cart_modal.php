@@ -291,6 +291,9 @@ if(isset($_POST['fetch_cart'])){
                                     </select>
                                 </td>
                                 <td>
+                                    <?php
+                                    if(!empty($category_id)){
+                                    ?>
                                     <div class="input-group text-start">
                                         <select id="grade<?= $no ?>" class="form-control grade-cart" name="grade" onchange="updateGrade(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
                                             <option value="">Select Grade...</option>
@@ -307,6 +310,9 @@ if(isset($_POST['fetch_cart'])){
                                             ?>
                                         </select>
                                     </div>
+                                    <?php
+                                    }
+                                    ?>
                                 </td>
                                 <td>
                                     <?php echo getProfileFromID($data_id); ?>
@@ -368,7 +374,7 @@ if(isset($_POST['fetch_cart'])){
                                         </div>
                                     </td>
                                     <?php
-                                    }else{
+                                    }else if(hasProductVariantLength($data_id)){
                                     ?>
                                     <td class="text-center">
                                         <fieldset class="border p-1 position-relative">
