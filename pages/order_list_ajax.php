@@ -10,6 +10,8 @@ require '../includes/send_email.php';
 
 $emailSender = new EmailTemplates();
 
+$screw_id = 16;
+
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
@@ -63,7 +65,7 @@ if(isset($_REQUEST['action'])) {
                                     <th class="text-center">Quantity</th>
                                     <th class="text-center">Status</th>
                                     <th class="text-center">Payment Status</th>
-                                    <th class="text-center">Dimensions</th>
+                                    <th class="text-center">Details</th>
                                     <th class="text-center">Price</th>
                                     <th class="text-center">Customer Price</th>
                                 </tr>
@@ -133,8 +135,8 @@ if(isset($_REQUEST['action'])) {
                                             </td>
                                             <td>
                                             <div class="d-flex mb-0 gap-8">
-                                                <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_details['color'])?>"></a>
-                                                <?= getColorFromID($product_details['color']); ?>
+                                                <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromColorID($row['custom_color'])?>"></a>
+                                                <?= getColorFromID($row['custom_color']); ?>
                                             </div>
                                             </td>
                                             <td>
@@ -152,15 +154,20 @@ if(isset($_REQUEST['action'])) {
                                             </td>
                                             <td>
                                                 <?php 
-                                                $width = $row['custom_width'];
-                                                $height = $row['custom_height'];
-                                                
-                                                if (!empty($width) && !empty($height)) {
-                                                    echo htmlspecialchars($width) . " X " . htmlspecialchars($height);
-                                                } elseif (!empty($width)) {
-                                                    echo "Width: " . htmlspecialchars($width);
-                                                } elseif (!empty($height)) {
-                                                    echo "Height: " . htmlspecialchars($height);
+                                                if($product_details['product_category'] == $screw_id){
+                                                    $pack_count = $row['custom_length'];
+                                                    echo htmlspecialchars($pack_count) . ' pcs';
+                                                }else{
+                                                    $width = $row['custom_width'];
+                                                    $height = $row['custom_height'];
+                                                    
+                                                    if (!empty($width) && !empty($height)) {
+                                                        echo htmlspecialchars($width) . " X " . htmlspecialchars($height);
+                                                    } elseif (!empty($width)) {
+                                                        echo "Width: " . htmlspecialchars($width);
+                                                    } elseif (!empty($height)) {
+                                                        echo "Height: " . htmlspecialchars($height);
+                                                    }
                                                 }
                                                 ?>
                                             </td>
