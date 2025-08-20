@@ -175,7 +175,7 @@ if (mysqli_num_rows($result) > 0) {
                                 $quantity,
                                 '',
                                 $product_name,
-                                getColorName($product_details['color']),
+                                getColorName($row_product['custom_color']),
                                 $grade_details['grade_abbreviations'] ?? '',
                                 $pack_count,
                                 '$ ' . number_format($unit_price, 2),
