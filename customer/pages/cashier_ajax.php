@@ -15,6 +15,7 @@ $trim_id = 4;
 $panel_id = 3;
 $custom_truss_id = 47;
 $special_trim_id = 66;
+$screw_id = 16;
 
 function cartItemExists($product_id, $line) {
     global $conn;
