@@ -1213,56 +1213,87 @@ if (isset($_POST['save_custom_length'])) {
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
 
-        $line_to_use = is_numeric($line) ? intval($line) : 1;
-        $line_query = "SELECT MAX(line) as max_line FROM customer_cart 
-                       WHERE customer_id = '$customer_id' AND product_id = '$id'";
-        $line_result = mysqli_query($conn, $line_query);
-        if ($line_result && $line_data = mysqli_fetch_assoc($line_result)) {
-            if ($line_data['max_line'] !== null) {
-                $line_to_use = $line_data['max_line'] + 1;
+        $check_query = "
+            SELECT id, quantity_cart 
+            FROM customer_cart 
+            WHERE customer_id = '$customer_id' 
+              AND product_id = '$id' 
+              AND estimate_length = '$estimate_length' 
+              AND estimate_length_inch = '$estimate_length_inch'
+            LIMIT 1
+        ";
+        $check_result = mysqli_query($conn, $check_query);
+
+        if ($check_result && mysqli_num_rows($check_result) > 0) {
+            $existing = mysqli_fetch_assoc($check_result);
+            $new_qty = $existing['quantity_cart'] + $quantity;
+
+            $update_query = "
+                UPDATE customer_cart 
+                SET quantity_cart = '$new_qty', unit_price = '$price'
+                WHERE id = '" . $existing['id'] . "'
+            ";
+
+            if (mysqli_query($conn, $update_query)) {
+                echo json_encode(['success' => true, 'action' => 'updated']);
+            } else {
+                echo json_encode(['error' => 'Update failed: ' . mysqli_error($conn)]);
             }
-        }
 
-        $insert_query = "INSERT INTO customer_cart (
-                customer_id, 
-                product_id, 
-                product_item, 
-                unit_price, 
-                line, 
-                quantity_cart, 
-                estimate_width, 
-                estimate_length, 
-                estimate_length_inch, 
-                prod_usage, 
-                custom_color, 
-                weight, 
-                supplier_id, 
-                custom_grade, 
-                custom_img_src,
-                drawing_data
-            ) VALUES (
-                '$customer_id', 
-                '$id', 
-                '" . mysqli_real_escape_string($conn, $row['product_item']) . "', 
-                '$price', 
-                '$line_to_use', 
-                '$quantity', 
-                0, 
-                '$estimate_length', 
-                '$estimate_length_inch', 
-                0, 
-                '', 
-                0, 
-                '',
-                '', 
-                '',
-                ''
-            )";
-
-        if (mysqli_query($conn, $insert_query)) {
-            echo json_encode(['success' => true]);
         } else {
-            echo json_encode(['error' => 'Insert failed: ' . mysqli_error($conn)]);
+            $line_to_use = is_numeric($line) ? intval($line) : 1;
+            $line_query = "SELECT MAX(line) as max_line 
+                           FROM customer_cart 
+                           WHERE customer_id = '$customer_id' 
+                             AND product_id = '$id'";
+            $line_result = mysqli_query($conn, $line_query);
+            if ($line_result && $line_data = mysqli_fetch_assoc($line_result)) {
+                if ($line_data['max_line'] !== null) {
+                    $line_to_use = $line_data['max_line'] + 1;
+                }
+            }
+
+            $insert_query = "INSERT INTO customer_cart (
+                    customer_id, 
+                    product_id, 
+                    product_item, 
+                    unit_price, 
+                    line, 
+                    quantity_cart, 
+                    estimate_width, 
+                    estimate_length, 
+                    estimate_length_inch, 
+                    prod_usage, 
+                    custom_color, 
+                    weight, 
+                    supplier_id, 
+                    custom_grade, 
+                    custom_img_src,
+                    drawing_data
+                ) VALUES (
+                    '$customer_id', 
+                    '$id', 
+                    '" . mysqli_real_escape_string($conn, $row['product_item']) . "', 
+                    '$price', 
+                    '$line_to_use', 
+                    '$quantity', 
+                    0, 
+                    '$estimate_length', 
+                    '$estimate_length_inch', 
+                    0, 
+                    '', 
+                    0, 
+                    '',
+                    '', 
+                    '',
+                    ''
+                )";
+
+            if (mysqli_query($conn, $insert_query)) {
+                echo json_encode(['success' => true, 'action' => 'inserted']);
+            } else {
+                echo json_encode(['error' => 'Insert failed: ' . mysqli_error($conn)]);
+            }
         }
 
     } else {

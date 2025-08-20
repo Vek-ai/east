@@ -348,6 +348,21 @@ if(isset($_POST['fetch_cart'])){
                                         </div>
                                     </td>
                                     <?php
+                                    }else if($category_id == $screw_id){
+                                    ?>
+                                    <td>
+                                        <div class="d-flex flex-column align-items-center d-none">
+                                            <input class="form-control text-center mb-1" type="text" value="<?= isset($values["estimate_width"]) ? $values["estimate_width"] : $product["width"]; ?>" placeholder="Width" size="5" style="color:#ffffff; " data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
+                                            <span class="mx-1 text-center mb-1">X</span>
+                                            <fieldset class="border p-1 position-relative">
+                                                <div class="input-group d-flex align-items-center">
+                                                    <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
+                                                    <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
+                                                </div>
+                                            </fieldset>
+                                        </div>
+                                    </td>
+                                    <?php
                                     }else if(hasProductVariantLength($data_id)){
                                     ?>
                                     <td class="text-center">
