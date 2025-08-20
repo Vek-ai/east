@@ -238,12 +238,14 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' .number_format(($total_price + $delivery_price) * $tax,2), 0, 1 , 'R');
+        $sales_tax = ($total_price + $delivery_price) * $tax;
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1 , 'R');
 
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'GRAND TOTAL:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' .number_format(($total_price + $delivery_price),2), 0, 1, 'R');
+        $grand_total = $total_price + $delivery_price + $sales_tax;
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
 
         $pdf->Ln(5);
 
