@@ -275,28 +275,32 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->MultiCell(120, 4, "Customer is solely responsible for accuracy of order and for verifying accuracy of materials before leaving EKMS or at time of delivery. If an agent orders or takes materials on customer's behalf, EKMS is entitled to rely upon the agent as if s/he has full authority to act on customer's behalf. No returns on metal panels or special trim. All other materials returned undamaged within 60 days of invoice date are subject to a restocking fee equal to 25% of current retail price.", 1);
 
         $pdf->SetFont('Arial', '', 9);
+
+        $grand_total = $total_price + $delivery_price;
+        $sales_tax = $grand_total * $tax / (1 + $tax);
+        $subtotal = $grand_total - $sales_tax;
+
         $pdf->SetXY($col2_x, $col_y);
         $pdf->Cell(40, $lineheight, 'MISC:', 0, 0);
-        $pdf->Cell(20, $lineheight, $discount < 0 ? '-' : '' .$discount * 100 .'%', 0, 1, 'R');
+        $pdf->Cell(20, $lineheight, ($discount < 0 ? '-' : '') . $discount * 100 .'%', 0, 1, 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'SUBTOTAL:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' .number_format($total_price,2), 0, 1 , 'R');
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 0, 1 , 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'DELIVERY:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' .number_format($delivery_price,2) , 0, 1 , 'R');
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1 , 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
-        $sales_tax = ($total_price + $delivery_price) * $tax;
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1 , 'R');
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
 
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'GRAND TOTAL:', 0, 0);
-        $grand_total = $total_price + $delivery_price + $sales_tax;
         $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
+
 
         $pdf->Ln(5);
 
