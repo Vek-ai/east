@@ -179,7 +179,7 @@ if(isset($_POST['fetch_cart'])){
 
                             $customer_pricing = getPricingCategory($category_id, $customer_details_pricing) / 100;
 
-                            $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 0;
+                            $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 1;
                             $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
 
                             $total_length = $estimate_length + ($estimate_length_inch / 12);
@@ -374,6 +374,10 @@ if(isset($_POST['fetch_cart'])){
                                             </div>
                                         </fieldset>
                                     </td>
+                                    <?php
+                                    }else{
+                                    ?>
+                                    <td></td>
                                     <?php
                                     }
                                     ?>

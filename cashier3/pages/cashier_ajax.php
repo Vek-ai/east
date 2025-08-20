@@ -984,11 +984,11 @@ if (isset($_POST['save_order'])) {
 
     $customer_details = getCustomerDetails($customerid);
 
-    if(!empty($customer_tax)){
-        $discount_default = floatval(getCustomerTaxById($customer_tax)) / 100;
+    if (!empty($customer_tax)) {
+        $tax_rate = floatval(getCustomerTaxById($customer_tax)) / 100;
         $tax_status = $customer_tax;
-    }else{
-        $discount_default = floatval(getCustomerDiscount($customerid)) / 100;
+    } else {
+        $tax_rate = floatval(getCustomerTaxById($customer_details['tax_status'])) / 100;
         $tax_status = $customer_details['tax_status'];
     }
 
@@ -1019,8 +1019,10 @@ if (isset($_POST['save_order'])) {
         $total_length = ($estimate_length + ($estimate_length_inch / 12));
         $actual_price = $unit_price * $quantity_cart * $total_length;
 
-        $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
-        $discounted_price = max(0, $discounted_price);
+        $price_after_discount = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
+        $price_after_discount = max(0, $price_after_discount);
+
+        $discounted_price = $price_after_discount * (1 + $tax_rate);
 
         $total_price += $actual_price;
         $total_discounted_price += $discounted_price;
@@ -1372,11 +1374,12 @@ if (isset($_POST['save_order'])) {
 
             $total_length = $estimate_length + ($estimate_length_inch / 12);
 
-            $amount_discount = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
-            $product_category = intval($product_details['product_category']);
+            $amount_discount   = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
+            $product_category  = intval($product_details['product_category']);
             $actual_price = $unit_price * $quantity_cart * $total_length;
-            $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
-            $discounted_price = max(0, $discounted_price);
+            $price_after_discount = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
+            $price_after_discount = max(0, $price_after_discount);
+            $discounted_price = $price_after_discount * (1 + $tax_rate);
 
             $curr_discount = intval(getCustomerDiscountProfile($customerid));
             $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));

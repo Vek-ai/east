@@ -1263,6 +1263,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         var payable_amt = parseFloat($('#order_payable_amt').val().replace(/,/g, ''));
         var store_credit = parseFloat($('#store_credit').val().replace(/,/g, ''));
         var points_ratio = parseFloat($('#points_ratio').val().replace(/,/g, ''));
+        var tax_rate = parseFloat($('#customer_tax_hidden').val()) || 0;
+
         var isapplystorecredit = $('#applyStoreCredit').is(':checked');
         var isPayViaJobDeposit = $('#pay_via_job_deposit').is(':checked');
         var isPayNet30 = $('#payNet30').is(':checked');
@@ -1331,16 +1333,23 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             $('#net30Value').text('');
         }
 
+        // base total before tax
         const raw_total = totalBeforeCredit - store_credit_calc - job_deposit_calc - net30_calc;
-        const total_amt = Math.max(0, parseFloat(raw_total));
+
+        // apply tax
+        const tax_amount = raw_total * tax_rate;
+        const total_amt = Math.max(0, parseFloat(raw_total + tax_amount));
 
         $('#delivery_amt').val(deliveryAmount).trigger('change');
         $('#order_delivery_amt').text(deliveryAmount.toFixed(2));
         $('#order_total').text('$' + number_format(total_amt, 2));
 
+        console.log(tax_amount);
+
         const estimated_points = Math.floor(raw_total * points_ratio);
         $('#estimated_points').text('+' + estimated_points);
     }
+
 
     function number_format(number, decimals = 2) {
         return parseFloat(number).toLocaleString('en-US', {
