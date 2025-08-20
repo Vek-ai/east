@@ -239,6 +239,7 @@ if(isset($_POST['fetch_order'])){
             <input type="hidden" id="store_credit" name="store_credit" value="<?= $store_credit ?>">
             <input type="hidden" id="points_ratio" name="points_ratio" value="<?= $points_ratio ?>">
             <input type="hidden" id="charge_net_30" value="<?= $charge_net_30 ?>">
+            <input type="hidden" id="customer_tax_hidden" value="<?= $tax ?>">
 
             <div class="row text-start">
                 <div class="col-12 mb-2" style="color: #ffffff !important;">
