@@ -28,6 +28,7 @@ $pdf->AddPage();
 
 $col1_x = 10;
 $col2_x = 140;
+$screw_id = 16;
 
 $orderid = $_REQUEST['id'];
 $pricing_id = $_REQUEST['pricing_id'] ?? '';
@@ -114,6 +115,7 @@ if (mysqli_num_rows($result) > 0) {
         $total_price = 0;
         $total_qty = 0;
 
+        $screw_id = 16;
         $query_category = "SELECT * FROM product_category WHERE hidden = 0";
         $result_category = mysqli_query($conn, $query_category);
         if (mysqli_num_rows($result_category) > 0) {
@@ -138,8 +140,13 @@ if (mysqli_num_rows($result) > 0) {
                     $pdf->Cell(10, 5, getProductCategoryName($product_category_id), 0, 1, 'L');
 
                     $pdf->SetFont('Arial', 'B', 7);
-                    $widths = [15, 20, 55, 20, 10, 10, 10, 18, 18, 15];
-                    $headers = ['QTY', "IMAGE", 'DESCRIPTION', 'COLOR', 'Grade', 'FT.', 'IN.', 'PRICE' , 'DISC PRICE', 'TOTAL'];
+                    if ($product_category_id == $screw_id) {
+                        $headers = ['QTY', "IMAGE", 'DESCRIPTION', 'COLOR', 'Grade', 'PACK COUNT', 'PRICE', 'DISC PRICE', 'TOTAL'];
+                        $widths = [15, 20, 55, 20, 10, 20, 18, 18, 15];
+                    } else {
+                        $headers = ['QTY', "IMAGE", 'DESCRIPTION', 'COLOR', 'Grade', 'FT.', 'IN.', 'PRICE', 'DISC PRICE', 'TOTAL'];
+                        $widths = [15, 20, 55, 20, 10, 10, 10, 18, 18, 15];
+                    }
 
                     for ($i = 0; $i < count($headers); $i++) {
                         $pdf->Cell($widths[$i], 10, $headers[$i], 1, 0, 'C');
@@ -162,19 +169,37 @@ if (mysqli_num_rows($result) > 0) {
 
                         $total_line_price = $discounted_price;
 
-                        $data[] = [
-                            $quantity,
-                            '',
-                            $product_name,
-                            getColorName($product_details['color']),
-                            $grade_details['grade_abbreviations'] ?? '',
-                            '',
-                            '',
-                            '$ ' . number_format($unit_price, 2),
-                            '$ ' . number_format($discounted_price, 2),
-                            '$ ' . number_format($total_line_price, 2),
-                            $picture_path
-                        ];
+                        if ($product_category_id == $screw_id) {
+                            $pack_count = !empty($row_product['custom_length']) ? $row_product['custom_length'] : 0;
+                            $data[] = [
+                                $quantity,
+                                '',
+                                $product_name,
+                                getColorName($product_details['color']),
+                                $grade_details['grade_abbreviations'] ?? '',
+                                $pack_count,
+                                '$ ' . number_format($unit_price, 2),
+                                '$ ' . number_format($discounted_price, 2),
+                                '$ ' . number_format($total_line_price, 2),
+                                $picture_path
+                            ];
+                        } else {
+                            $ft = !empty($row_product['custom_length']) ? $row_product['custom_length'] : '';
+                            $in = !empty($row_product['custom_length2']) ? $row_product['custom_length2'] : '';
+                            $data[] = [
+                                $quantity,
+                                '',
+                                $product_name,
+                                getColorName($product_details['color']),
+                                $grade_details['grade_abbreviations'] ?? '',
+                                $ft,
+                                $in,
+                                '$ ' . number_format($unit_price, 2),
+                                '$ ' . number_format($discounted_price, 2),
+                                '$ ' . number_format($total_line_price, 2),
+                                $picture_path
+                            ];
+                        }
 
                         $total_price += $total_line_price;
                         $total_qty += $quantity;
@@ -189,7 +214,7 @@ if (mysqli_num_rows($result) > 0) {
                         $isTrim = false;
                         $height = max($height_product, $height_color);
 
-                        if (!empty($row[10])) {
+                        if (!empty($row[ count($row)-1 ])) {
                             $isTrim = true;
                             $height = 30;
                         }
@@ -204,7 +229,7 @@ if (mysqli_num_rows($result) > 0) {
                             $yImg = $y_initial;
                             $imgWidth = $widths[1] - 2;
                             $imgHeight = $height - 2;
-                            $pdf->Image($row[10], $xImg + 1, $yImg, $imgWidth, $imgHeight);
+                            $pdf->Image($row[ count($row)-1 ], $xImg + 1, $yImg, $imgWidth, $imgHeight);
                         } else {
                             $pdf->Cell($widths[1], $height, $row[1], 'LR', 0, 'C');
                         }
@@ -239,21 +264,24 @@ if (mysqli_num_rows($result) > 0) {
                         $pdf->MultiCell($widths[3], $lineHeight, $row[3], 0, 'C');
                         $pdf->SetXY($x + $widths[3], $y_initial);
 
-                        $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'C');  
-                        $pdf->Cell($widths[5], $height, $row[5], 'LR', 0, 'C');  
-                        $pdf->Cell($widths[6], $height, $row[6], 'LR', 0, 'C');  
-                        $pdf->Cell($widths[7], $height, $row[7], 'LR', 0, 'R');  
-                        $pdf->Cell($widths[8], $height, $row[8], 'LR', 0, 'R');  
-                        $pdf->Cell($widths[9], $height, $row[9], 'LR', 0, 'R');  
-                        
+                        if ($product_category_id == $screw_id) {
+                            $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'C');  
+                            $pdf->Cell($widths[5], $height, $row[5], 'LR', 0, 'C');  
+                            $pdf->Cell($widths[6], $height, $row[6], 'LR', 0, 'R');  
+                            $pdf->Cell($widths[7], $height, $row[7], 'LR', 0, 'R');  
+                            $pdf->Cell($widths[8], $height, $row[8], 'LR', 0, 'R');  
+                        } else {
+                            $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'C');  
+                            $pdf->Cell($widths[5], $height, $row[5], 'LR', 0, 'C');  
+                            $pdf->Cell($widths[6], $height, $row[6], 'LR', 0, 'C');  
+                            $pdf->Cell($widths[7], $height, $row[7], 'LR', 0, 'R');  
+                            $pdf->Cell($widths[8], $height, $row[8], 'LR', 0, 'R');  
+                            $pdf->Cell($widths[9], $height, $row[9], 'LR', 0, 'R');  
+                        }
 
                         $pdf->Ln();
-
                         $y_bottom = $pdf->GetY();
-
                         $pdf->Line(10, $y_initial + $height, 210 - 10, $y_initial + $height);
-
-                        
                     }
                 }
             }
