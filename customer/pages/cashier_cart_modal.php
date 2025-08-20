@@ -9,6 +9,7 @@ require '../../includes/functions.php';
 
 $trim_id = 4;
 $panel_id = 3;
+$screw_id = 16;
 
 if(isset($_POST['fetch_cart'])){
     $customer_id = $_SESSION['customer_id'];
