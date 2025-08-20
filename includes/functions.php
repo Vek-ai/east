@@ -1413,7 +1413,7 @@ function hasProductVariantLength($product_id) {
     $product_id = (int)$product_id;
 
     $sql = "
-        SELECT 1 
+        SELECT * 
         FROM product_variant_length pvl
         INNER JOIN inventory i ON pvl.inventory_id = i.Inventory_id
         WHERE i.Product_id = $product_id 

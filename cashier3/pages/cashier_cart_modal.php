@@ -292,7 +292,7 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
                                 <td>
                                     <?php
-                                    if(!empty($category_id)){
+                                    if(!empty($product['grade'])){
                                     ?>
                                     <div class="input-group text-start">
                                         <select id="grade<?= $no ?>" class="form-control grade-cart" name="grade" onchange="updateGrade(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
