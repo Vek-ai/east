@@ -820,6 +820,7 @@ if (isset($_POST['save_order'])) {
     $deliver_fname = mysqli_real_escape_string($conn, $_POST['deliver_fname'] ?? '');
     $deliver_lname = mysqli_real_escape_string($conn, $_POST['deliver_lname'] ?? '');
     $pay_type = mysqli_real_escape_string($conn, $_POST['payment_method'] ?? '');
+    $customer_tax = mysqli_real_escape_string($conn, $_POST['customer_tax'] ?? '');
     $truck = intval($_POST['truck']);
 
     $estimateid = intval($_SESSION['estimateid']);
@@ -844,6 +845,14 @@ if (isset($_POST['save_order'])) {
     $credit_limit = number_format($customer_details['credit_limit'] ?? 0,2);
     $credit_total = number_format(getCustomerCreditTotal($customerid),2);
 
+    if (!empty($customer_tax)) {
+        $tax_rate = floatval(getCustomerTaxById($customer_tax)) / 100;
+        $tax_status = $customer_tax;
+    } else {
+        $tax_rate = floatval(getCustomerTaxById($customer_details['tax_status'])) / 100;
+        $tax_status = $customer_details['tax_status'];
+    }
+
     $total_price = 0;
     $total_discounted_price = 0;
     $pre_orders = array();
@@ -867,8 +876,10 @@ if (isset($_POST['save_order'])) {
         $total_length = ($estimate_length + ($estimate_length_inch / 12));
         $actual_price = $unit_price * $quantity_cart * $total_length;
 
-        $discounted_price = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
-        $discounted_price = max(0, $discounted_price);
+        $price_after_discount = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
+        $price_after_discount = max(0, $price_after_discount);
+
+        $discounted_price = $price_after_discount * (1 + $tax_rate);
 
         $total_price += $actual_price;
         $total_discounted_price += $discounted_price;
@@ -886,7 +897,7 @@ if (isset($_POST['save_order'])) {
             'custom_length' => $item['custom_length'] ?? null,
             'custom_length2' => $item['custom_length2'] ?? null,
             'actual_price' => $actual_price,
-            'discounted_price' => $discounted_price,
+            'discounted_price' => $price_after_discount,
             'product_category' => $product_details['product_category'],
             'usageid' => $item['usageid'] ?? 0,
             'current_customer_discount' => $item['current_customer_discount'] ?? 0,

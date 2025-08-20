@@ -1379,7 +1379,7 @@ if (isset($_POST['save_order'])) {
             $actual_price = $unit_price * $quantity_cart * $total_length;
             $price_after_discount = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
             $price_after_discount = max(0, $price_after_discount);
-            $discounted_price = $price_after_discount * (1 + $tax_rate);
+            $discounted_price = $price_after_discount;
 
             $curr_discount = intval(getCustomerDiscountProfile($customerid));
             $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));

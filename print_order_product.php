@@ -304,9 +304,9 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->SetFont('Arial', '', 9);
 
-        $grand_total = $total_price + $delivery_price;
-        $sales_tax = $grand_total * $tax / (1 + $tax);
-        $subtotal = $grand_total - $sales_tax;
+        $subtotal   = $total_price;
+        $sales_tax  = $subtotal * $tax;
+        $grand_total = $subtotal + $delivery_price + $sales_tax;
 
         $pdf->SetXY($col2_x, $col_y);
         $pdf->Cell(40, $lineheight, 'MISC:', 0, 0);
