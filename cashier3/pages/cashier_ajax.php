@@ -1948,7 +1948,7 @@ if (isset($_POST['save_custom_length'])) {
                 'product_item' => $row['product_item'],
                 'unit_price' => $price,
                 'line' => $line_to_use,
-                'quantity_ttl' => 0,
+                'quantity_ttl' => getProductStockTotal($row['product_id']),
                 'quantity_in_stock' => 0,
                 'quantity_cart' => $quantity,
                 'estimate_width' => 0,
