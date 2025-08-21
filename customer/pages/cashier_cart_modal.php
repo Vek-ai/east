@@ -401,6 +401,17 @@ if(isset($_POST['fetch_cart'])){
                                     <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $data_id;?>">
                                     <input class="form-control" type="hidden" size="5" value="<?php echo $values["line"];?>" id="line<?php echo $data_id;?>">
                                     <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $data_id;?>">
+                                    <?php 
+                                    if ($category_id == $panel_id) { // Panels ID
+                                    ?>
+                                        <div class="d-flex flex-column align-items-center">
+                                            <button type="button" class="btn btn-sm btn-info btn-add-screw">
+                                                Add Screw
+                                            </button>
+                                        </div>
+                                    <?php
+                                    }
+                                    ?>
                                 </td>
                             </tr>
                     <?php

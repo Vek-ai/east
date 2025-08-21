@@ -420,6 +420,18 @@ function getGradeDetails($product_grade_id) {
     return $product_grade;
 }
 
+function getProductSystemDetails($product_system_id) {
+    global $conn;
+    $product_system_id = mysqli_real_escape_string($conn, $product_system_id);
+    $query = "SELECT * FROM product_system WHERE product_system_id = '$product_system_id'";
+    $result = mysqli_query($conn, $query);
+    $product_system = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $product_system = $row;
+    }
+    return $product_system;
+}
+
 function getColorDetails($color_id) {
     global $conn;
     $color_id = mysqli_real_escape_string($conn, $color_id);
@@ -559,9 +571,15 @@ function getPointsRatio() {
 function addPoints($customer_id, $order_id) {
     global $conn;
 
+    $is_points_enabled = getSetting('is_points_enabled');
+    if ($is_points_enabled != '1') {
+        return false;
+    }
+
     $res = mysqli_query($conn, "SELECT discounted_price FROM orders WHERE orderid = $order_id");
     $row = mysqli_fetch_assoc($res);
     $total_order_amount = floatval($row['discounted_price']);
+
     $ratio = getPointsRatio();
     $points_earned = floor($total_order_amount * $ratio);
 

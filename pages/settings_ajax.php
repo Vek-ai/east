@@ -143,6 +143,25 @@ if(isset($_REQUEST['action'])) {
         exit;
     }
 
+    if ($action == "toggle_points") {
+        $status = $_POST['status'] ?? '';
+        $newValue = ($status === 'enable') ? 1 : 0;
+
+        $sql = "UPDATE settings SET value = '$newValue' WHERE setting_name = 'is_points_enabled'";
+
+        if (mysqli_query($conn, $sql)) {
+            echo json_encode([
+                "status" => "success",
+                "new_value" => $newValue
+            ]);
+        } else {
+            echo json_encode([
+                "status" => "error",
+                "message" => mysqli_error($conn)
+            ]);
+        }
+    }
+
     mysqli_close($conn);
 }
 ?>

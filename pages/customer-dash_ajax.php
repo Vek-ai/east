@@ -7,6 +7,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
+$is_points_enabled = getSetting('is_points_enabled');
+
 $permission = $_SESSION['permission'];
 
 if (isset($_POST['search_orders'])) {
@@ -32,7 +34,12 @@ if (isset($_POST['search_orders'])) {
                     <th class="border-0">Date</th>
                     <th class="border-0 text-end">Total Amount</th>
                     <th class="border-0 text-end">Discount</th>
-                    <th class="border-0 text-end">Points</th>
+                    <?php if($is_points_enabled == '1'){
+                    ?>
+                        <th class="border-0 text-end">Points</th>
+                    <?php
+                    }
+                    ?>
                     <th class="border-0">Status</th>
                     <th class="border-0"></th>
                 </tr>
@@ -76,9 +83,15 @@ if (isset($_POST['search_orders'])) {
                                 <td class="text-end">
                                     <p class="mb-0">$<?= getOrderTotalsDiscounted($row['orderid']) ?></p>
                                 </td>
-                                <td class="text-end">
-                                    <p class="mb-0"><?= getOrderPoints($row['orderid']) ?></p>
-                                </td>
+                                <?php if($is_points_enabled == '1'){
+                                ?>
+                                    <td class="text-end">
+                                        <p class="mb-0"><?= getOrderPoints($row['orderid']) ?></p>
+                                    </td>
+                                <?php
+                                }
+                                ?>
+                                
                                 <td>
                                     <span class="<?= $status['class']; ?> fw-bold"><?= $status['label']; ?></span>
                                 </td>
@@ -90,12 +103,6 @@ if (isset($_POST['search_orders'])) {
                             </tr>
                             <?php
                         }
-                    } else {
-                    ?>
-                        <tr>
-                            <td colspan="7">No orders found</td>
-                        </tr>
-                    <?php  
                     }
                 ?>
                 </tbody>

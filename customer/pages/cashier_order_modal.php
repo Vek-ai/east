@@ -17,6 +17,8 @@ $points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
 
 $points_ratio = getPointsRatio();
 
+$is_points_enabled = getSetting('is_points_enabled');
+
 if(isset($_POST['fetch_order'])){
     $discount = 0;
     $tax = 0;
@@ -588,10 +590,15 @@ if(isset($_POST['fetch_order'])){
                         By placing an order, I agree to EKM's <a href="#">Terms</a> and <a href="#">Privacy Statement</a>.
                     </p>
                     </div>
-                    <div class="card-footer bg-white d-flex justify-content-between">
-                    <span><i class="fa fa-gift me-1"></i>Estimated Points</span>
-                    <span><span id="estimated_points" class="badge bg-primary">0</span></span>
-                    </div>
+                    <?php if($is_points_enabled == '1'){
+                    ?>
+                        <div class="card-footer bg-white d-flex justify-content-between">
+                            <span><i class="fa fa-gift me-1"></i>Estimated Points</span>
+                            <span><span id="estimated_points" class="badge bg-primary">0</span></span>
+                        </div>
+                    <?php
+                    }
+                    ?>
                 </div>
                 </div>
             </div>

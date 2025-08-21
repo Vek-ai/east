@@ -61,6 +61,8 @@ $points_order_total = isset($data['order_total']) ? $data['order_total'] : 0;
 $points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
 
 $permission = $_SESSION['permission'];
+
+$is_points_enabled = getSetting('is_points_enabled');
 ?>
 <style>
         /* Ensure that the text within the notes column wraps properly */
@@ -247,6 +249,35 @@ if ($permission === 'edit') {
                     }
                     ?>
                     </td>
+              </tr>
+              <tr id="points-row">
+                  <td>Points</td>
+                  <td class="text-center">
+                      <?php if ($is_points_enabled == 1) { ?>
+                          <span class="badge bg-success">Enabled</span>
+                      <?php } else { ?>
+                          <span class="badge bg-danger">Disabled</span>
+                      <?php } ?>
+                  </td>
+                  <td class="text-center">
+                      <?php if ($permission === 'edit') { ?>
+                          <?php if ($is_points_enabled == 1) { ?>
+                              <a href="javascript:void(0)" 
+                                id="togglePoints" 
+                                data-status="disable" 
+                                class="btn btn-sm btn-danger text-decoration-none">
+                                Disable
+                              </a>
+                          <?php } else { ?>
+                              <a href="javascript:void(0)" 
+                                id="togglePoints" 
+                                data-status="enable" 
+                                class="btn btn-sm btn-success text-decoration-none">
+                                Enable
+                              </a>
+                          <?php } ?>
+                      <?php } ?>
+                  </td>
               </tr>
               <?php
               $query_setting_name = "SELECT * FROM settings WHERE setting_name != 'address' AND setting_name != 'points'";
@@ -718,6 +749,36 @@ if ($permission === 'edit') {
             }
         });
     });
+
+    $(document).on("click", "#togglePoints", function () {
+        let $btn = $(this);
+        let status = $btn.data("status");
+
+        $.ajax({
+            url: "pages/settings_ajax.php",
+            type: "POST",
+            data: { 
+                status: status,
+                action: "toggle_points"
+            },
+            success: function (response) {
+                if (status === "enable") {
+                    $("#points-row td:nth-child(2)").html('<span class="badge bg-success">Enabled</span>');
+                    $btn.text("Disable")
+                        .removeClass("btn-success")
+                        .addClass("btn-danger")
+                        .data("status", "disable");
+                } else {
+                    $("#points-row td:nth-child(2)").html('<span class="badge bg-secondary">Disabled</span>');
+                    $btn.text("Enable")
+                        .removeClass("btn-danger")
+                        .addClass("btn-success")
+                        .data("status", "enable");
+                }
+            }
+        });
+    });
+
 
 });
 </script>

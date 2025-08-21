@@ -5,6 +5,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require_once '../includes/dbconn.php';
 require_once '../includes/functions.php';
 
+$is_points_enabled = getSetting('is_points_enabled');
+
 if(isset($_SESSION['customer_id'])){
   $customer_id = $_SESSION['customer_id'];
   $customer_details = getCustomerDetails($customer_id);
@@ -65,11 +67,16 @@ if(isset($_SESSION['customer_id'])){
                         <h3 class="mb-1 fs-6">$<?= number_format($customer_details['store_credit'], 2) ?></h3>
                         <span class="text-muted">Store Credit</span>
                     </div>
-                    <div>
-                        <?php $points = getCustomerPoints($customer_id); ?>
-                        <h3 class="mb-1 fs-6"><?= number_format($points, 0) ?></h3>
-                        <span class="text-muted">EKM Points</span>
-                    </div>
+                    <?php if($is_points_enabled == '1'){
+                    ?>
+                        <div>
+                            <?php $points = getCustomerPoints($customer_id); ?>
+                            <h3 class="mb-1 fs-6"><?= number_format($points, 0) ?></h3>
+                            <span class="text-muted">EKM Points</span>
+                        </div>
+                    <?php
+                    }
+                    ?>
                 </div>
             </div>
           <div class="row gx-lg-4 text-center pt-4 justify-content-center border-top">

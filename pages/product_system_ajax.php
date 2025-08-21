@@ -26,6 +26,8 @@ if(isset($_REQUEST['action'])) {
 
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $multiplier = mysqli_real_escape_string($conn, floatval($_POST['multiplier'] ?? 0.00));
+        $screw_distance = mysqli_real_escape_string($conn, floatval($_POST['screw_distance'] ?? 0));
+        
 
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
@@ -34,14 +36,14 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE product_system SET product_system = '$product_system', system_abbreviations = '$system_abbreviations', product_category = '$product_category', notes = '$notes', multiplier = '$multiplier', last_edit = NOW(), edited_by = '$userid'  WHERE product_system_id = '$product_system_id'";
+            $updateQuery = "UPDATE product_system SET product_system = '$product_system', system_abbreviations = '$system_abbreviations', product_category = '$product_category', notes = '$notes', multiplier = '$multiplier', screw_distance = '$screw_distance', last_edit = NOW(), edited_by = '$userid'  WHERE product_system_id = '$product_system_id'";
             if (mysqli_query($conn, $updateQuery)) {
                 echo "success_update";
             } else {
                 echo "Error updating product systems: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO product_system (product_system, system_abbreviations, product_category, notes, multiplier, added_date, added_by) VALUES ('$product_system', '$system_abbreviations', '$product_category', '$notes', '$multiplier', NOW(), '$userid')";
+            $insertQuery = "INSERT INTO product_system (product_system, system_abbreviations, product_category, notes, multiplier, screw_distance, added_date, added_by) VALUES ('$product_system', '$system_abbreviations', '$product_category', '$notes', '$multiplier', '$screw_distance', NOW(), '$userid')";
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";
             } else {
@@ -128,10 +130,16 @@ if(isset($_REQUEST['action'])) {
             </div>
             </div>
             <div class="col-md-6">
-            <div class="mb-3">
-                <label class="form-label">Multiplier</label>
-                <input type="text" id="multiplier" name="multiplier" class="form-control" value="<?= $row['multiplier'] ?? '' ?>" />
+                <div class="mb-3">
+                    <label class="form-label">Multiplier</label>
+                    <input type="text" id="multiplier" name="multiplier" class="form-control" value="<?= $row['multiplier'] ?? '' ?>" />
+                </div>
             </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Screw Distance (Per Inch)</label>
+                    <input type="text" id="screw_distance" name="screw_distance" class="form-control" value="<?= $row['screw_distance'] ?? '' ?>" />
+                </div>
             </div>
         </div>
 
