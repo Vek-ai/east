@@ -18,28 +18,26 @@ $permission = $_SESSION['permission'];
     .order-form-card {
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        padding: 25px 30px;
+        padding: 20px;
         margin-bottom: 30px;
     }
     .order-header {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
-        justify-content: flex-start;
         gap: 0.75rem;
         border-bottom: 2px solid #dee2e6;
         margin-bottom: 20px;
         padding-bottom: 10px;
     }
     .order-header h1 {
-        font-size: 45px;
+        font-size: 2rem;
         margin: 0;
         color: #333;
-    }
-    .section {
-        margin-bottom: 25px;
+        flex: 1 1 auto;
     }
     .section h2 {
-        font-size: 18px;
+        font-size: 1.25rem;
         font-weight: 600;
         border-bottom: 1px solid #dee2e6;
         margin-bottom: 15px;
@@ -55,6 +53,28 @@ $permission = $_SESSION['permission'];
         color: #666;
         margin-top: 30px;
         line-height: 1.5;
+    }
+
+    @media (max-width: 767px) {
+        .order-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .order-header img {
+            height: 60px;
+        }
+        .order-header h1 {
+            font-size: 1.5rem;
+        }
+        .d-flex.gap-2 {
+            flex-direction: column !important;
+        }
+        .form-control.w-25 {
+            width: 100% !important;
+        }
+        .row > [class*="col-"] {
+            margin-bottom: 15px;
+        }
     }
 </style>
 
@@ -176,43 +196,47 @@ $permission = $_SESSION['permission'];
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Wall Insulation</label><br>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="wall-insulation-bubble" name="wall_insulation[]" value="Bubble">
-                            <label class="form-check-label" for="wall-insulation-bubble">Bubble</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="wall-insulation-underlayment" name="wall_insulation[]" value="Underlayment">
-                            <label class="form-check-label" for="wall-insulation-underlayment">Underlayment</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="wall-insulation-fiberglass" name="wall_insulation[]" value="Fiberglass">
-                            <label class="form-check-label" for="wall-insulation-fiberglass">Fiberglass</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="wall-insulation-none" name="wall_insulation[]" value="None">
-                            <label class="form-check-label" for="wall-insulation-none">None</label>
+                        <label class="form-label d-block">Wall Insulation</label>
+                        <div class="d-flex flex-wrap justify-content-center gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="wall-insulation-bubble" name="wall_insulation[]" value="Bubble">
+                                <label class="form-check-label" for="wall-insulation-bubble">Bubble</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="wall-insulation-underlayment" name="wall_insulation[]" value="Underlayment">
+                                <label class="form-check-label" for="wall-insulation-underlayment">Underlayment</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="wall-insulation-fiberglass" name="wall_insulation[]" value="Fiberglass">
+                                <label class="form-check-label" for="wall-insulation-fiberglass">Fiberglass</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="wall-insulation-none" name="wall_insulation[]" value="None">
+                                <label class="form-check-label" for="wall-insulation-none">None</label>
+                            </div>
                         </div>
                     </div>
 
 
                     <div class="mb-3">
-                        <label class="form-label">Roof Insulation</label><br>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" name="roof_insulation[]" value="Bubble">
-                            <label class="form-check-label">Bubble</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" name="roof_insulation[]" value="Underlayment">
-                            <label class="form-check-label">Underlayment</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" name="roof_insulation[]" value="Fiberglass">
-                            <label class="form-check-label">Fiberglass</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" name="roof_insulation[]" value="None">
-                            <label class="form-check-label">None</label>
+                        <label class="form-label d-block">Roof Insulation</label>
+                        <div class="d-flex flex-wrap justify-content-center gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="roof-insulation-bubble" name="roof_insulation[]" value="Bubble">
+                                <label class="form-check-label" for="roof-insulation-bubble">Bubble</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="roof-insulation-underlayment" name="roof_insulation[]" value="Underlayment">
+                                <label class="form-check-label" for="roof-insulation-underlayment">Underlayment</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="roof-insulation-fiberglass" name="roof_insulation[]" value="Fiberglass">
+                                <label class="form-check-label" for="roof-insulation-fiberglass">Fiberglass</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="roof-insulation-none" name="roof_insulation[]" value="None">
+                                <label class="form-check-label" for="roof-insulation-none">None</label>
+                            </div>
                         </div>
                     </div>
 
@@ -411,12 +435,14 @@ $permission = $_SESSION['permission'];
                             <input type="text" class="form-control" name="windows_size" placeholder="Size(s)">
                         </div>
                     </div>
-                </div>
-            </div>
+                    <div class="section mb-3">
+                        <h2>Additional Details</h2>
+                        <input type="file" id="file-input" multiple hidden>
+                        <button type="button" class="btn btn-outline-primary mb-3" id="upload-btn">Upload Files</button>
 
-            <div class="section">
-                <h2>Additional Details</h2>
-                <textarea class="form-control" name="additional_details" rows="4"></textarea>
+                        <div id="file-preview" class="d-flex flex-wrap gap-3"></div>
+                    </div>
+                </div>
             </div>
 
             <div class="footer">
@@ -427,8 +453,73 @@ $permission = $_SESSION['permission'];
             </div>
 
             <div class="mt-4 text-center">
-                <button type="submit" class="btn btn-primary px-4 py-2">Submit Order</button>
+                <button type="submit" class="btn btn-primary px-4 py-2">Submit Request</button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+$(document).ready(function(){
+    const maxFilenameLength = 12;
+    let uploadedFiles = [];
+
+    $('#upload-btn').click(function(){
+        $('#file-input').click();
+    });
+
+    $('#file-input').on('change', function(){
+        const newFiles = Array.from(this.files);
+        uploadedFiles = uploadedFiles.concat(newFiles);
+        renderFiles();
+        $(this).val('');
+    });
+
+    function renderFiles(){
+        $('#file-preview').empty();
+        uploadedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+
+            reader.onload = function(e){
+                const $card = $('<div class="card position-relative p-2 text-center"></div>').css({
+                    width: '120px',
+                    height: '120px',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                });
+
+                const $remove = $('<button type="button" class="btn-close position-absolute top-0 end-0 m-1 p-1" aria-label="Remove"></button>');
+                $remove.click(function(){
+                    uploadedFiles.splice(index, 1);
+                    renderFiles();
+                });
+                $card.append($remove);
+
+                if(file.type.startsWith('image/')){
+                    const $img = $('<img>').attr('src', e.target.result).css({
+                        width: '100%',
+                        height: 'auto',
+                        objectFit: 'cover'
+                    });
+                    $card.append($img);
+                } else {
+                    let displayName = file.name;
+                    if(displayName.length > maxFilenameLength){
+                        const ext = displayName.includes('.') ? displayName.split('.').pop() : '';
+                        displayName = displayName.substring(0, maxFilenameLength) + (ext ? `...${ext}` : '...');
+                    }
+                    const $icon = $('<div class="text-muted small"></div>').text(displayName);
+                    $card.append($icon);
+                }
+
+                $('#file-preview').append($card);
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+});
+</script>
