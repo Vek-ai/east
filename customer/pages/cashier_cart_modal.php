@@ -155,7 +155,7 @@ if(isset($_POST['fetch_cart'])){
                             $product = getProductDetails($data_id);
                             $totalstockquantity = $values["quantity_ttl"] + $values["quantity_in_stock"];
                             $category_id = $product["product_category"];
-                            if ($totalstockquantity > 0) {
+                            if (getProductStockTotal($data_id)) {
                                 $stock_text = '
                                     <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
                                         <span class="text-bg-success p-1 rounded-circle"></span>
@@ -405,7 +405,7 @@ if(isset($_POST['fetch_cart'])){
                                     if ($category_id == $panel_id) { // Panels ID
                                     ?>
                                         <div class="d-flex flex-column align-items-center">
-                                            <button type="button" class="btn btn-sm btn-info btn-add-screw">
+                                            <button type="button" class="btn btn-sm btn-info btn-add-screw" data-id="<?= $data_id; ?>">
                                                 Add Screw
                                             </button>
                                         </div>

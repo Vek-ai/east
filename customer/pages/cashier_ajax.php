@@ -2043,12 +2043,15 @@ if (isset($_POST['filter_category'])) {
 }
 
 if (isset($_POST['add_cart_screw'])) {
-    $product_id = (int)$_POST['product_id'];
-    $color_id   = (int)$_POST['color_id'];
+    $customer_id = $_SESSION['customer_id'];
+    $product_id  = (int)$_POST['product_id'];
+    $color_id    = (int)$_POST['color_id'];
+    $panel_id    = 3;
+
 
     $q = "
         SELECT p.product_id, p.product_item, p.unit_price, 
-               i.inventory_id AS id, i.pack, i.color_id, p.weight
+               i.inventory_id AS id, i.pack, i.color_id, p.weight, p.supplier_id
         FROM product p
         LEFT JOIN inventory i 
             ON i.product_id = p.product_id
@@ -2057,7 +2060,6 @@ if (isset($_POST['add_cart_screw'])) {
         ORDER BY i.pack ASC
     ";
     $r = mysqli_query($conn, $q);
-
     if (!$r || mysqli_num_rows($r) == 0) {
         exit("Screw product not found for this color: $color_id");
     }
@@ -2067,44 +2069,35 @@ if (isset($_POST['add_cart_screw'])) {
         $packs[] = $row;
     }
 
-    $product_details = getProductDetails($product_id);
-    $product_system  = $product_details['product_system'];
-    $sys             = getProductSystemDetails($product_system);
-    $screw_distance  = isset($sys['screw_distance']) && $sys['screw_distance'] > 0
-                        ? (int)$sys['screw_distance']
-                        : 1;
-
     $total_inches = 0;
-    if (!empty($_SESSION['cart'])) {
-        foreach ($_SESSION['cart'] as $item) {
-            if (!empty($item['product_id']) && !empty($item['quantity_cart'])) {
-                $qty = (int)$item['quantity_cart'];
+    $cart_sql = "SELECT * FROM customer_cart WHERE customer_id = '$customer_id'";
+    $cart_result = mysqli_query($conn, $cart_sql);
+    while ($item = mysqli_fetch_assoc($cart_result)) {
+        $item_details = getProductDetails($item['product_id']);
+        if ($item_details['product_category'] != $panel_id) continue;
 
-                $len_feet  = !empty($item['estimate_length']) ? (float)$item['estimate_length'] : 0;
-                $len_inch  = !empty($item['estimate_length_inch']) ? (float)$item['estimate_length_inch'] : 0;
-                $total_len_inch = ($len_feet * 12) + $len_inch;
+        $qty = (int)$item['quantity_cart'];
+        $len_feet  = !empty($item['estimate_length']) ? (float)$item['estimate_length'] : 0;
+        $len_inch  = !empty($item['estimate_length_inch']) ? (float)$item['estimate_length_inch'] : 0;
+        $total_len_inch = ($len_feet * 12) + $len_inch;
 
-                $pid = $item['product_id'];
-                $item_details = getProductDetails($pid);
-                $item_system  = $item_details['product_system'];
-                $item_sys     = getProductSystemDetails($item_system);
-                $item_distance = isset($item_sys['screw_distance']) ? (int)$item_sys['screw_distance'] : 0;
+        $product_system  = $item_details['product_system'];
+        $sys             = getProductSystemDetails($product_system);
+        $screw_distance  = isset($sys['screw_distance']) && $sys['screw_distance'] > 0
+                            ? (int)$sys['screw_distance']
+                            : 1;
 
-                if ($item_distance > 0 && $total_len_inch > 0) {
-                    $total_inches += $qty * $total_len_inch;
-                }
-            }
+        if ($total_len_inch > 0 && $screw_distance > 0) {
+            $total_inches += $qty * $total_len_inch;
         }
     }
 
-    $screws_needed = $total_inches > 0 
-        ? ceil($total_inches / $screw_distance) 
-        : 0;
+    $screws_needed = $total_inches > 0 ? ceil($total_inches / max($screw_distance,1)) : 0;
 
     $chosen_pack = null;
     $chosen_pack_pieces = 0;
     foreach ($packs as $pack) {
-        $pack_pieces = getPackPieces($pack['pack']);
+        $pack_pieces = getPackPieces($pack['id']);
         if ($pack_pieces > $chosen_pack_pieces) {
             $chosen_pack = $pack;
             $chosen_pack_pieces = $pack_pieces;
@@ -2119,38 +2112,56 @@ if (isset($_POST['add_cart_screw'])) {
     $packs_needed = ceil($screws_needed / $pack_size);
     $total_pcs    = $pack_size * $packs_needed;
 
-    $found_in_cart = false;
-    if (!empty($_SESSION['cart'])) {
-        foreach ($_SESSION['cart'] as &$cart_item) {
-            if ($cart_item['product_id'] == $chosen_pack['product_id'] &&
-                $cart_item['custom_color'] == $chosen_pack['color_id']) {
-                
-                $cart_item['quantity_cart'] += $packs_needed;
-                $cart_item['estimate_length'] += $total_pcs;
-                $found_in_cart = true;
-                break;
-            }
-        }
-        unset($cart_item);
+    $check_sql = "
+        SELECT * FROM customer_cart 
+        WHERE customer_id = '$customer_id' 
+          AND product_id = '".$chosen_pack['product_id']."' 
+          AND custom_color = '".$chosen_pack['color_id']."'
+    ";
+    $check_result = mysqli_query($conn, $check_sql);
+
+    if (mysqli_num_rows($check_result) > 0) {
+        $existing = mysqli_fetch_assoc($check_result);
+        $new_quantity = $existing['quantity_cart'] + $packs_needed;
+        $new_estimate = $existing['estimate_length'] + $total_pcs;
+
+        $update_sql = "
+            UPDATE customer_cart SET 
+                quantity_cart = '$new_quantity',
+                estimate_length = '$new_estimate'
+            WHERE id = '".$existing['id']."'
+        ";
+        mysqli_query($conn, $update_sql);
+    } else {
+        $insert_sql = "
+            INSERT INTO customer_cart (
+                customer_id, product_id, product_item, supplier_id,
+                unit_price, line, quantity_ttl, quantity_in_stock, quantity_cart,
+                estimate_width, estimate_length, estimate_length_inch, prod_usage,
+                custom_color, panel_type, weight
+            ) VALUES (
+                '$customer_id',
+                '".$chosen_pack['product_id']."',
+                '".mysqli_real_escape_string($conn, getProductName($chosen_pack['product_id']))."',
+                '".$chosen_pack['supplier_id']."',
+                '".$chosen_pack['unit_price']."',
+                1,
+                0,
+                0,
+                '$packs_needed',
+                0,
+                '$total_pcs',
+                0,
+                0,
+                '".$chosen_pack['color_id']."',
+                '',
+                '".floatval($chosen_pack['weight'])."'
+            )
+        ";
+        mysqli_query($conn, $insert_sql);
     }
 
-    if (!$found_in_cart) {
-        $_SESSION['cart'][] = [
-            "product_id"        => $chosen_pack['product_id'],
-            "product_item"      => getProductName($chosen_pack['product_id']),
-            "unit_price"        => $chosen_pack['unit_price'],
-            "line"              => 1,
-            "estimate_width"    => '',
-            "estimate_length"   => $total_pcs,
-            "estimate_length_inch" => '',
-            "quantity_cart"     => $packs_needed,
-            "custom_color"      => $chosen_pack['color_id'],
-            "usage"             => 0,
-            "weight"            => floatval($chosen_pack['weight'])
-        ];
-    }
-
-    echo "Added $packs_needed pack(s) of screws (Color ID: {$chosen_pack['color_id']}, Screw Distance: {$screw_distance}) to cart";
+    echo "Added $packs_needed pack(s) of screws (Color ID: {$chosen_pack['color_id']}) to cart";
 }
 
 ?>

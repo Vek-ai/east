@@ -2891,6 +2891,7 @@ if (isset($_POST['filter_category'])) {
 if (isset($_POST['add_cart_screw'])) {
     $product_id = (int)$_POST['product_id'];
     $color_id   = (int)$_POST['color_id'];
+    $panel_id   = 3;
 
     $q = "
         SELECT p.product_id, p.product_item, p.unit_price, 
@@ -2903,7 +2904,6 @@ if (isset($_POST['add_cart_screw'])) {
         ORDER BY i.pack ASC
     ";
     $r = mysqli_query($conn, $q);
-
     if (!$r || mysqli_num_rows($r) == 0) {
         exit("Screw product not found for this color: $color_id");
     }
@@ -2913,35 +2913,35 @@ if (isset($_POST['add_cart_screw'])) {
         $packs[] = $row;
     }
 
-    $product_details = getProductDetails($product_id);
-    $product_system  = $product_details['product_system'];
-    $sys             = getProductSystemDetails($product_system);
-    $screw_distance  = isset($sys['screw_distance']) && $sys['screw_distance'] > 0
-                        ? (int)$sys['screw_distance']
-                        : 1;
-
     $total_inches = 0;
     if (!empty($_SESSION['cart'])) {
         foreach ($_SESSION['cart'] as $item) {
-            if (!empty($item['product_id']) && !empty($item['quantity_cart'])) {
-                $qty = (int)$item['quantity_cart'];
+            $item_details = getProductDetails($item['product_id']);
+            if ($item_details['product_category'] != $panel_id) continue;
 
-                $len_feet  = !empty($item['estimate_length']) ? (float)$item['estimate_length'] : 0;
-                $len_inch  = !empty($item['estimate_length_inch']) ? (float)$item['estimate_length_inch'] : 0;
-                $total_len_inch = ($len_feet * 12) + $len_inch;
+            $qty = (int)$item['quantity_cart'];
+            $len_feet  = !empty($item['estimate_length']) ? (float)$item['estimate_length'] : 0;
+            $len_inch  = !empty($item['estimate_length_inch']) ? (float)$item['estimate_length_inch'] : 0;
+            $total_len_inch = ($len_feet * 12) + $len_inch;
 
-                $pid = $item['product_id'];
-                $item_details = getProductDetails($pid);
-                $item_system  = $item_details['product_system'];
-                $item_sys     = getProductSystemDetails($item_system);
-                $item_distance = isset($item_sys['screw_distance']) ? (int)$item_sys['screw_distance'] : 0;
+            $product_system = $item_details['product_system'];
+            $sys = getProductSystemDetails($product_system);
+            $distance = isset($sys['screw_distance']) && $sys['screw_distance'] > 0 
+                        ? (int)$sys['screw_distance'] 
+                        : 1;
 
-                if ($item_distance > 0 && $total_len_inch > 0) {
-                    $total_inches += $qty * $total_len_inch;
-                }
+            if ($total_len_inch > 0) {
+                $total_inches += $qty * $total_len_inch;
             }
         }
     }
+
+    $screw_details = getProductDetails($product_id);
+    $screw_system  = $screw_details['product_system'];
+    $screw_sys     = getProductSystemDetails($screw_system);
+    $screw_distance = isset($screw_sys['screw_distance']) && $screw_sys['screw_distance'] > 0 
+                        ? (int)$screw_sys['screw_distance'] 
+                        : 1;
 
     $screws_needed = $total_inches > 0 
         ? ceil($total_inches / $screw_distance) 
@@ -2970,7 +2970,7 @@ if (isset($_POST['add_cart_screw'])) {
         foreach ($_SESSION['cart'] as &$cart_item) {
             if ($cart_item['product_id'] == $chosen_pack['product_id'] &&
                 $cart_item['custom_color'] == $chosen_pack['color_id']) {
-                
+
                 $cart_item['quantity_cart'] += $packs_needed;
                 $cart_item['estimate_length'] += $total_pcs;
                 $found_in_cart = true;
@@ -2980,6 +2980,7 @@ if (isset($_POST['add_cart_screw'])) {
         unset($cart_item);
     }
 
+    // Otherwise, add new item to cart
     if (!$found_in_cart) {
         $_SESSION['cart'][] = [
             "product_id"        => $chosen_pack['product_id'],
