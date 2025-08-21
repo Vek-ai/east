@@ -2992,7 +2992,7 @@ if (isset($_POST['add_cart_screw'])) {
             "quantity_cart"     => $packs_needed,
             "custom_color"      => $chosen_pack['color_id'],
             "usage"             => 0,
-            'quantity_ttl'      => getProductStockTotal($chosen_pack['product_id']);,
+            'quantity_ttl'      => getProductStockTotal($chosen_pack['product_id']),
             'quantity_in_stock' => '',
             "weight"            => floatval($chosen_pack['weight'])
         ];
