@@ -1730,21 +1730,24 @@ if (isset($_POST['change_discount'])) {
 
 if (isset($_POST['add_to_cart'])) {
     $customer_id = $_SESSION['customer_id'];
+
     $quantity = isset($_POST['quantity_product']) ? $_POST['quantity_product'] : [];
     $quantity = array_map(fn($qty) => empty($qty) ? 0 : $qty, $quantity);
+
     $lengthFeet = $_POST['length_feet'] ?? [];
     $lengthInch = $_POST['length_inch'] ?? [];
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
     $is_pre_order = mysqli_real_escape_string($conn, $_POST['is_pre_order'] ?? 0);
-    $panel_type = mysqli_real_escape_string($conn, $_POST['panel_type']);
-    $color = mysqli_real_escape_string($conn, $_POST['color']);
-    $grade = mysqli_real_escape_string($conn, $_POST['grade']);
-    $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
-    $panel_drip_stop = mysqli_real_escape_string($conn, $_POST['panel_drip_stop']);
-    $stiff_board_batten = isset($_POST['stiff_board_batten']) ? mysqli_real_escape_string($conn, $_POST['stiff_board_batten']) : '';
-    $stiff_stand_seam = isset($_POST['stiff_stand_seam']) ? mysqli_real_escape_string($conn, $_POST['stiff_stand_seam']) : '';
+    $panel_type = mysqli_real_escape_string($conn, $_POST['panel_type'] ?? '');
+    $color = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
+    $grade = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
+    $gauge = mysqli_real_escape_string($conn, $_POST['gauge'] ?? 0);
+    $panel_drip_stop = mysqli_real_escape_string($conn, $_POST['panel_drip_stop'] ?? '');
+    $stiff_board_batten = mysqli_real_escape_string($conn, $_POST['stiff_board_batten'] ?? '');
+    $stiff_stand_seam = mysqli_real_escape_string($conn, $_POST['stiff_stand_seam'] ?? '');
     $bend_product = floatval($_POST['bend_product'] ?? 0);
     $hem_product = floatval($_POST['hem_product'] ?? 0);
+
     $line = 1;
 
     foreach ($quantity as $index => $qty) {
@@ -1792,6 +1795,7 @@ if (isset($_POST['add_to_cart'])) {
                                  AND product_id = '$product_id'
                                  AND line = '$line'";
                 mysqli_query($conn, $update_sql);
+
             } else {
                 $product_name = getProductName($product_id);
                 $weight = floatval($row['weight']);
@@ -1800,16 +1804,18 @@ if (isset($_POST['add_to_cart'])) {
                 $insert_sql = "INSERT INTO customer_cart (
                     customer_id, product_id, product_item, supplier_id,
                     unit_price, line, quantity_ttl, quantity_in_stock, quantity_cart,
-                    estimate_width, estimate_length, estimate_length_inch, usage,
-                    custom_color, panel_type, weight, custom_grade, custom_gauge,
-                    stiff_board_batten, stiff_stand_seam, is_pre_order
+                    estimate_width, estimate_length, estimate_length_inch, prod_usage,
+                    custom_color, panel_type, panel_drip_stop, weight, custom_grade, custom_gauge,
+                    stiff_board_batten, stiff_stand_seam, bend_product, hem_product,
+                    used_discount, is_pre_order, is_custom
                 ) VALUES (
                     '$customer_id', '$product_id', '".mysqli_real_escape_string($conn, $product_name)."', '".$row['supplier_id']."',
                     '$unit_price', '$line', '$totalStock', '$quantityInStock', '$requestedQuantity',
                     '$width', '$length_feet', '$length_inch', 0,
-                    '".(!empty($color) ? $color : $row['color'])."', '$panel_type', '$weight', 
-                    '".(!empty($grade) ? $grade : $row['grade'])."', '".(!empty($gauge) ? $gauge : $row['gauge'])."',
-                    '$stiff_board_batten', '$stiff_stand_seam', '$is_pre_order'
+                    '".(!empty($color) ? $color : $row['color'])."', '$panel_type', '$panel_drip_stop', '$weight', 
+                    '".(!empty($grade) ? $grade : $row['grade'])."', '".(!empty($gauge) ? $gauge : 0)."',
+                    '$stiff_board_batten', '$stiff_stand_seam', '$bend_product', '$hem_product',
+                    0, '$is_pre_order', 0
                 )";
                 mysqli_query($conn, $insert_sql);
             }
@@ -2034,6 +2040,117 @@ if (isset($_POST['filter_category'])) {
             </select>
         </div>
         <?php
+}
+
+if (isset($_POST['add_cart_screw'])) {
+    $product_id = (int)$_POST['product_id'];
+    $color_id   = (int)$_POST['color_id'];
+
+    $q = "
+        SELECT p.product_id, p.product_item, p.unit_price, 
+               i.inventory_id AS id, i.pack, i.color_id, p.weight
+        FROM product p
+        LEFT JOIN inventory i 
+            ON i.product_id = p.product_id
+        WHERE p.product_id = $product_id
+          AND i.color_id = $color_id
+        ORDER BY i.pack ASC
+    ";
+    $r = mysqli_query($conn, $q);
+
+    if (!$r || mysqli_num_rows($r) == 0) {
+        exit("Screw product not found for this color: $color_id");
+    }
+
+    $packs = [];
+    while ($row = mysqli_fetch_assoc($r)) {
+        $packs[] = $row;
+    }
+
+    $product_details = getProductDetails($product_id);
+    $product_system  = $product_details['product_system'];
+    $sys             = getProductSystemDetails($product_system);
+    $screw_distance  = isset($sys['screw_distance']) && $sys['screw_distance'] > 0
+                        ? (int)$sys['screw_distance']
+                        : 1;
+
+    $total_inches = 0;
+    if (!empty($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $item) {
+            if (!empty($item['product_id']) && !empty($item['quantity_cart'])) {
+                $qty = (int)$item['quantity_cart'];
+
+                $len_feet  = !empty($item['estimate_length']) ? (float)$item['estimate_length'] : 0;
+                $len_inch  = !empty($item['estimate_length_inch']) ? (float)$item['estimate_length_inch'] : 0;
+                $total_len_inch = ($len_feet * 12) + $len_inch;
+
+                $pid = $item['product_id'];
+                $item_details = getProductDetails($pid);
+                $item_system  = $item_details['product_system'];
+                $item_sys     = getProductSystemDetails($item_system);
+                $item_distance = isset($item_sys['screw_distance']) ? (int)$item_sys['screw_distance'] : 0;
+
+                if ($item_distance > 0 && $total_len_inch > 0) {
+                    $total_inches += $qty * $total_len_inch;
+                }
+            }
+        }
+    }
+
+    $screws_needed = $total_inches > 0 
+        ? ceil($total_inches / $screw_distance) 
+        : 0;
+
+    $chosen_pack = null;
+    $chosen_pack_pieces = 0;
+    foreach ($packs as $pack) {
+        $pack_pieces = getPackPieces($pack['pack']);
+        if ($pack_pieces > $chosen_pack_pieces) {
+            $chosen_pack = $pack;
+            $chosen_pack_pieces = $pack_pieces;
+        }
+    }
+
+    if (!$chosen_pack || $chosen_pack_pieces <= 0) {
+        exit("No valid screw packs found.");
+    }
+
+    $pack_size    = $chosen_pack_pieces;
+    $packs_needed = ceil($screws_needed / $pack_size);
+    $total_pcs    = $pack_size * $packs_needed;
+
+    $found_in_cart = false;
+    if (!empty($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as &$cart_item) {
+            if ($cart_item['product_id'] == $chosen_pack['product_id'] &&
+                $cart_item['custom_color'] == $chosen_pack['color_id']) {
+                
+                $cart_item['quantity_cart'] += $packs_needed;
+                $cart_item['estimate_length'] += $total_pcs;
+                $found_in_cart = true;
+                break;
+            }
+        }
+        unset($cart_item);
+    }
+
+    if (!$found_in_cart) {
+        $_SESSION['cart'][] = [
+            "product_id"        => $chosen_pack['product_id'],
+            "product_item"      => getProductName($chosen_pack['product_id']),
+            "unit_price"        => $chosen_pack['unit_price'],
+            "line"              => 1,
+            "estimate_width"    => '',
+            "estimate_length"   => $total_pcs,
+            "estimate_length_inch" => '',
+            "quantity_cart"     => $packs_needed,
+            "custom_color"      => $chosen_pack['color_id'],
+            "usage"             => 0,
+            "weight"            => floatval($chosen_pack['weight'])
+        ];
+    }
+
+    echo "Added $packs_needed pack(s) of screws (Color ID: {$chosen_pack['color_id']}, Screw Distance: {$screw_distance}) to cart";
 }
 
 ?>

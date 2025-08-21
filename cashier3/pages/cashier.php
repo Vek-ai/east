@@ -4829,6 +4829,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         $(document).on("click", "#btn-add-cart-screw", function () {
             let product_id = $("#screw_select").val();
+            let color_id   = $("#screw_select option:selected").data('color');
             if (!product_id || product_id == "0") {
                 alert("Please select a screw");
                 return;
@@ -4839,11 +4840,13 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 type: "POST",
                 data: { 
                     product_id: product_id,
+                    color_id: color_id,
                     add_cart_screw: 'add_cart_screw'
                 },
                 success: function (response) {
                     console.log("Screw Add Response:", response);
                     loadCart();
+                    $('#screw_modal').modal('hide');
                 },
                 error: function (xhr, status, error) {
                     console.error("XHR Error:", xhr.responseText);

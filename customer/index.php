@@ -447,6 +447,7 @@ foreach ($cartItems as $item) {
             if ($_REQUEST['page'] == "job_details") {include 'pages/job_details.php';}
             if ($_REQUEST['page'] == "statement_of_account") {include 'pages/statement_of_account.php';}
             if ($_REQUEST['page'] == "notifications") {include 'pages/notifications_list.php';}
+            if ($_REQUEST['page'] == "request_quote") {include 'pages/request_quote.php';}
           ?>
         </div>
       </div>
@@ -564,7 +565,11 @@ foreach ($cartItems as $item) {
               }
           },
           error: function(xhr, status, error) {
-              console.error('Error fetching cart items:', error);
+              console.log('AJAX Error:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText
+                });
           }
     });
 

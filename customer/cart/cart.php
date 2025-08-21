@@ -333,6 +333,22 @@
     </div>
 </div>
 
+<div class="modal fade" id="screw_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+        <form id="screw_form" class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="screw_container"></div>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="custom_length_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <form id="custom_length_form" class="modal-content modal-content-demo">

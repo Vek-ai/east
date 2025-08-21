@@ -3382,6 +3382,7 @@ $(document).ready(function() {
                 processData: false,
                 contentType: false,
                 success: function (response) {
+                    console.log(response);
                     $('.modal').modal("hide");
                     loadCart();
                 },
@@ -3634,6 +3635,69 @@ $(document).ready(function() {
 
     $(document).on('change', '[name="payMethod"]', function () {
         calculateDeliveryAmount();
+    });
+
+    $(document).on("click", ".btn-add-screw", function () {
+        let $row = $(this).closest("tr");
+        let product_id = $(this).data("id");
+
+        let colorVal = $row.find("select.color-cart").val();
+        let colorText = $row.find("select.color-cart option:selected").text();
+
+        console.log("Product ID:", product_id);
+        console.log("Selected Color Value:", colorVal);
+        console.log("Selected Color Text:", colorText);
+        
+        $.ajax({
+            url: "pages/cashier_screw_modal.php",
+            type: "POST",
+            data: {
+                product_id: product_id,
+                color_id: colorVal,
+                fetch_modal: 'fetch_modal'
+            },
+            success: function(response) {
+                $('#screw_container').html(response);
+
+                $('.screw_select2').each(function () {
+                    $(this).select2({
+                        width: '300px',
+                        dropdownParent: $(this).parent(),
+                        dropdownPosition: 'below'
+                    });
+                });
+
+                $('#screw_modal').modal('show');
+            }
+        });
+        
+    });
+
+    $(document).on("click", "#btn-add-cart-screw", function () {
+        let product_id = $("#screw_select").val();
+        let color_id   = $("#screw_select option:selected").data('color');
+        if (!product_id || product_id == "0") {
+            alert("Please select a screw");
+            return;
+        }
+
+        $.ajax({
+            url: "pages/cashier_ajax.php",
+            type: "POST",
+            data: { 
+                product_id: product_id,
+                color_id: color_id,
+                add_cart_screw: 'add_cart_screw'
+            },
+            success: function (response) {
+                console.log("Screw Add Response:", response);
+                loadCart();
+                $('#screw_modal').modal('hide');
+            },
+            error: function (xhr, status, error) {
+                console.error("XHR Error:", xhr.responseText);
+            }
+        });
     });
 });
 

@@ -98,7 +98,7 @@
         </li>
 
         <li class="sidebar-item">
-          <a class="sidebar-link" href="#">
+          <a class="sidebar-link" href="?page=request_quote">
             <iconify-icon icon="solar:buildings-line-duotone" class="aside-icon"></iconify-icon>
             <span class="hide-menu text-wrap">Request a Building Quote</span>
           </a>

@@ -14,7 +14,7 @@ if (isset($_GET['fetch_cart'])) {
 
     if (isset($_SESSION['customer_id'])) {
         $customer_id = $_SESSION['customer_id'];
-        $dbCartItems = getCartDataBycustomer_id($customer_id);
+        $dbCartItems = getCartDataByCustomerId($customer_id);
 
         foreach ($dbCartItems as $item) {
             $product_details = getProductDetails($item['product_id']);
