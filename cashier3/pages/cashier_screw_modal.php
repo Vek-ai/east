@@ -51,13 +51,19 @@ if (isset($_POST['fetch_modal'])) {
                 <?php
                 else:
                     $color_in = implode(',', array_map('intval', $color_ids));
+
                     $query_screw = "
                         SELECT 
                             p.product_id,
                             p.product_item,
                             p.unit_price
                         FROM product p
+                        INNER JOIN inventory i ON i.product_id = p.product_id
                         WHERE p.product_category = $screw_id
+                        AND i.color_id IN ($color_in)
+                        AND i.quantity > 0
+                        GROUP BY p.product_id, p.product_item, p.unit_price
+                        ORDER BY p.product_item
                     ";
                     $result_screw = mysqli_query($conn, $query_screw);
 
