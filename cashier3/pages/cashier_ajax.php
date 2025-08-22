@@ -2948,10 +2948,17 @@ if (isset($_POST['add_cart_screw'])) {
         : 0;
 
     $chosen_pack = null;
-    $chosen_pack_pieces = 0;
+    $chosen_pack_pieces = PHP_INT_MAX;
+
     foreach ($packs as $pack) {
         $pack_pieces = getPackPieces($pack['pack']);
-        if ($pack_pieces > $chosen_pack_pieces) {
+
+        if ($pack_pieces <= 0) continue;
+
+        $packs_needed = ceil($screws_needed / $pack_pieces);
+        $total_pcs    = $packs_needed * $pack_pieces;
+
+        if ($total_pcs >= $screws_needed && $pack_pieces < $chosen_pack_pieces) {
             $chosen_pack = $pack;
             $chosen_pack_pieces = $pack_pieces;
         }
