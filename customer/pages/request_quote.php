@@ -5,6 +5,7 @@ $formData = [];
 $attachments = [];
 $wallInsulation = $roofInsulation = $roofSelection = $wallSelection = $buildingType = [];
 $status = 0;
+$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
 if (!empty($id) && $id > 0) {
     $result = mysqli_query($conn, "SELECT * FROM building_form WHERE id = $id");
