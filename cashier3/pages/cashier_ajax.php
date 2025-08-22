@@ -2994,7 +2994,7 @@ if (isset($_POST['add_cart_screw'])) {
             "unit_price"        => $chosen_pack['unit_price'],
             "line"              => 1,
             "estimate_width"    => '',
-            "estimate_length"   => $total_pcs,
+            "estimate_length"   => $pack_size,
             "estimate_length_inch" => '',
             "quantity_cart"     => $packs_needed,
             "custom_color"      => $chosen_pack['color_id'],
