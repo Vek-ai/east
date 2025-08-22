@@ -22,11 +22,9 @@ if(isset($_REQUEST['action'])) {
         $truss_steel       = mysqli_real_escape_string($conn, $_POST['truss_steel'] ?? '');
         $overhang          = mysqli_real_escape_string($conn, $_POST['overhang'] ?? '');
         $spacing           = mysqli_real_escape_string($conn, $_POST['spacing'] ?? '');
-
         $interior_walls    = mysqli_real_escape_string($conn, $_POST['interior_walls'] ?? '');
         $slider_doors      = mysqli_real_escape_string($conn, $_POST['slider_doors'] ?? '');
         $slider_details    = mysqli_real_escape_string($conn, $_POST['slider_details'] ?? '');
-
         $grade             = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
         $roof_color        = mysqli_real_escape_string($conn, $_POST['roof_color'] ?? '');
         $wall_color        = mysqli_real_escape_string($conn, $_POST['wall_color'] ?? '');
@@ -34,30 +32,38 @@ if(isset($_REQUEST['action'])) {
         $wall_trim_color   = mysqli_real_escape_string($conn, $_POST['wall_trim_color'] ?? '');
         $wainscot          = mysqli_real_escape_string($conn, $_POST['wainscot'] ?? '');
         $wainscot_color    = mysqli_real_escape_string($conn, $_POST['wainscot_color'] ?? '');
-
-        $customer_name     = mysqli_real_escape_string($conn, $_POST['customer_name'] ?? '');
-        $customer_address  = mysqli_real_escape_string($conn, $_POST['customer_address'] ?? '');
-        $customer_phone    = mysqli_real_escape_string($conn, $_POST['customer_phone'] ?? '');
-        $customer_email    = mysqli_real_escape_string($conn, $_POST['customer_email'] ?? '');
-        $contractor        = mysqli_real_escape_string($conn, $_POST['contractor'] ?? '');
-        $contact_method    = mysqli_real_escape_string($conn, $_POST['contact_method'] ?? '');
-
         $garage_doors_no   = mysqli_real_escape_string($conn, $_POST['garage_doors_no'] ?? '');
         $garage_doors_size = mysqli_real_escape_string($conn, $_POST['garage_doors_size'] ?? '');
         $entry_doors_no    = mysqli_real_escape_string($conn, $_POST['entry_doors_no'] ?? '');
         $entry_doors_size  = mysqli_real_escape_string($conn, $_POST['entry_doors_size'] ?? '');
         $windows_no        = mysqli_real_escape_string($conn, $_POST['windows_no'] ?? '');
         $windows_size      = mysqli_real_escape_string($conn, $_POST['windows_size'] ?? '');
-
         $wall_insulation   = isset($_POST['wall_insulation']) ? mysqli_real_escape_string($conn, json_encode($_POST['wall_insulation'])) : null;
         $roof_insulation   = isset($_POST['roof_insulation']) ? mysqli_real_escape_string($conn, json_encode($_POST['roof_insulation'])) : null;
         $roof_selection    = isset($_POST['roof_selection']) ? mysqli_real_escape_string($conn, json_encode($_POST['roof_selection'])) : null;
         $wall_selection    = isset($_POST['wall_selection']) ? mysqli_real_escape_string($conn, json_encode($_POST['wall_selection'])) : null;
         $building_type     = isset($_POST['building_type']) ? mysqli_real_escape_string($conn, json_encode($_POST['building_type'])) : null;
 
-        $created_by        = 1;
-        $is_customer       = 1;
-        $customer_id       = $_SESSION['customer_id'];
+        $created_by  = 1;
+        $is_customer = 1;
+        $customer_id = $_SESSION['customer_id'] ?? null;
+
+        $customer_name = $customer_address = $customer_phone = $customer_email = $contractor = '';
+        $contact_method = 'email';
+
+        if ($customer_id) {
+            $sql_customer = "SELECT * FROM customer WHERE customer_id = $customer_id AND hidden = 0 LIMIT 1";
+            $res_customer = mysqli_query($conn, $sql_customer);
+            if ($res_customer && mysqli_num_rows($res_customer) > 0) {
+                $customerData = mysqli_fetch_assoc($res_customer);
+                $customer_name    = trim($customerData['customer_business_name'] ?: ($customerData['customer_first_name'].' '.$customerData['customer_last_name']));
+                $customer_address = $customerData['address'] ?? '';
+                $customer_phone   = $customerData['contact_phone'] ?? '';
+                $customer_email   = $customerData['contact_email'] ?? '';
+                $contractor       = trim($customerData['secondary_contact_name'] ?? '');
+                $contact_method   = ($customerData['primary_contact'] == 1) ? 'text' : 'email';
+            }
+        }
 
         if ($id > 0) {
             $sql = "

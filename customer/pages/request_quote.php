@@ -4,17 +4,14 @@ $page_title = "Request Quote";
 $formData = [];
 $attachments = [];
 $wallInsulation = $roofInsulation = $roofSelection = $wallSelection = $buildingType = [];
-$primary_contact = 'email';
 $status = 0;
-$customer_id = null;
-$customerData = null;
 
 if (!empty($id) && $id > 0) {
-    $sql = "SELECT * FROM building_form WHERE id = $id";
-    $result = mysqli_query($conn, $sql);
+    $result = mysqli_query($conn, "SELECT * FROM building_form WHERE id = $id");
     if ($result && mysqli_num_rows($result) > 0) {
         $formData = mysqli_fetch_assoc($result);
         $status = intval($formData['status']);
+
         $wallInsulation = json_decode($formData['wall_insulation'] ?? '[]', true);
         $roofInsulation = json_decode($formData['roof_insulation'] ?? '[]', true);
         $roofSelection  = json_decode($formData['roof_selection'] ?? '[]', true);
@@ -26,37 +23,6 @@ if (!empty($id) && $id > 0) {
     while ($row = mysqli_fetch_assoc($res)) {
         $attachments[] = $row;
     }
-
-    if (!empty($formData['customer_id'])) {
-        $customer_id = (int)$formData['customer_id'];
-    } elseif (!empty($_SESSION['customer_id'])) {
-        $customer_id = (int)$_SESSION['customer_id'];
-    }
-
-} else {
-    if (!empty($_SESSION['customer_id'])) {
-        $customer_id = (int)$_SESSION['customer_id'];
-    }
-}
-
-if ($customer_id) {
-    $sql_customer = "SELECT * FROM customer WHERE customer_id = $customer_id AND hidden = 0 LIMIT 1";
-    $res_customer = mysqli_query($conn, $sql_customer);
-
-    if ($res_customer && mysqli_num_rows($res_customer) > 0) {
-        $customerData = mysqli_fetch_assoc($res_customer);
-        if ($customerData['primary_contact'] == 0) {
-            $primary_contact = 'email';
-        } elseif ($customerData['primary_contact'] == 1) {
-            $primary_contact = 'text';
-        }
-    }
-
-    $formData['customer_name']    = $formData['customer_name']    ?? trim($customerData['customer_business_name'] ?: ($customerData['customer_first_name'].' '.$customerData['customer_last_name']));
-    $formData['customer_address'] = $formData['customer_address'] ?? ($customerData['address'] ?? '');
-    $formData['customer_phone']   = $formData['customer_phone']   ?? ($customerData['contact_phone'] ?? '');
-    $formData['customer_email']   = $formData['customer_email']   ?? ($customerData['contact_email'] ?? '');
-    $formData['contractor']       = $formData['contractor']       ?? trim($customerData['secondary_contact_name'].' '.$customerData['secondary_contact_phone']);
 }
 ?>
 
@@ -428,55 +394,6 @@ if ($customer_id) {
                             <label class="form-label">Wainscot Color</label>
                             <input type="text" class="form-control" name="wainscot_color"
                                 value="<?= htmlspecialchars($formData['wainscot_color'] ?? '') ?>">
-                        </div>
-                    </div>
-
-                    <div class="d-none">
-                        <h2>Customer Information</h2>
-                        <div class="mb-3">
-                            <label class="form-label">Name</label>
-                            <input type="text" class="form-control" name="customer_name"
-                                value="<?= htmlspecialchars($formData['customer_name'] ?? '') ?>">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Address</label>
-                            <input type="text" class="form-control" name="customer_address"
-                                value="<?= htmlspecialchars($formData['customer_address'] ?? '') ?>">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Phone No.</label>
-                            <input type="text" class="form-control" name="customer_phone"
-                                value="<?= htmlspecialchars($formData['customer_phone'] ?? '') ?>">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="text" class="form-control" name="customer_email"
-                                value="<?= htmlspecialchars($formData['customer_email'] ?? '') ?>">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Contractor Name & No.</label>
-                            <input type="text" class="form-control" name="contractor"
-                                value="<?= htmlspecialchars($formData['contractor'] ?? '') ?>">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Preferred Contact</label><br>
-                            <?php $contact = $formData['contact_method'] ?? ''; ?>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="contact_method" value="email"
-                                    <?= $contact === 'email' ? 'checked' : '' ?>>
-                                <label class="form-check-label">Email</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="contact_method" value="call"
-                                    <?= $contact === 'call' ? 'checked' : '' ?>>
-                                <label class="form-check-label">Call</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="contact_method" value="text"
-                                    <?= $contact === 'text' ? 'checked' : '' ?>>
-                                <label class="form-check-label">Text</label>
-                            </div>
                         </div>
                     </div>
 
