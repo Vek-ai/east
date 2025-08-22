@@ -1,23 +1,25 @@
 <?php
 $page_title = "Request Quote";
 
-$formData = null;
+$formData = [];
 $attachments = [];
-$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-
-$wallInsulation = [];
-$roofInsulation = [];
-$roofSelection  = [];
-$wallSelection  = [];
-$buildingType   = [];
-
+$wallInsulation = $roofInsulation = $roofSelection = $wallSelection = $buildingType = [];
+$primary_contact = 'email';
 $status = 0;
+$customer_id = null;
+$customerData = null;
 
-if ($id > 0) {
+if (!empty($id) && $id > 0) {
     $sql = "SELECT * FROM building_form WHERE id = $id";
     $result = mysqli_query($conn, $sql);
     if ($result && mysqli_num_rows($result) > 0) {
         $formData = mysqli_fetch_assoc($result);
+        $status = intval($formData['status']);
+        $wallInsulation = json_decode($formData['wall_insulation'] ?? '[]', true);
+        $roofInsulation = json_decode($formData['roof_insulation'] ?? '[]', true);
+        $roofSelection  = json_decode($formData['roof_selection'] ?? '[]', true);
+        $wallSelection  = json_decode($formData['wall_selection'] ?? '[]', true);
+        $buildingType   = json_decode($formData['building_type'] ?? '[]', true);
     }
 
     $res = mysqli_query($conn, "SELECT * FROM building_form_attachments WHERE building_form_id = $id");
@@ -25,55 +27,36 @@ if ($id > 0) {
         $attachments[] = $row;
     }
 
-    $formData = $formData ?? null;
-    $attachments = $attachments ?? [];
+    if (!empty($formData['customer_id'])) {
+        $customer_id = (int)$formData['customer_id'];
+    } elseif (!empty($_SESSION['customer_id'])) {
+        $customer_id = (int)$_SESSION['customer_id'];
+    }
 
-    $wallInsulation = $formData ? json_decode($formData['wall_insulation'] ?? '[]', true) : [];
-    $roofInsulation = $formData ? json_decode($formData['roof_insulation'] ?? '[]', true) : [];
-    $roofSelection  = $formData ? json_decode($formData['roof_selection'] ?? '[]', true) : [];
-    $wallSelection  = $formData ? json_decode($formData['wall_selection'] ?? '[]', true) : [];
-    $buildingType   = $formData ? json_decode($formData['building_type'] ?? '[]', true) : [];
+} else {
+    if (!empty($_SESSION['customer_id'])) {
+        $customer_id = (int)$_SESSION['customer_id'];
+    }
+}
 
-    $primary_contact = null;
+if ($customer_id) {
+    $sql_customer = "SELECT * FROM customer WHERE customer_id = $customer_id AND hidden = 0 LIMIT 1";
+    $res_customer = mysqli_query($conn, $sql_customer);
 
-    $status = intval($formData['status']);
-
-    if (!empty($formData['contact_method'])) {
-        $primary_contact = $formData['contact_method'];
-
-    } else {
-        $customer_id = null;
-        if (!empty($formData['customer_id'])) {
-            $customer_id = (int)$formData['customer_id'];
-        } elseif (!empty($_SESSION['customer_id'])) {
-            $customer_id = (int)$_SESSION['customer_id'];
-        }
-
-        if ($customer_id) {
-            $sql_customer = "SELECT * FROM customer WHERE customer_id = $customer_id AND hidden = 0 LIMIT 1";
-            $res_customer = mysqli_query($conn, $sql_customer);
-
-            if ($res_customer && mysqli_num_rows($res_customer) > 0) {
-                $customerData = mysqli_fetch_assoc($res_customer);
-
-                if ($customerData['primary_contact'] == 0) {
-                    $primary_contact = 'email';
-                } elseif ($customerData['primary_contact'] == 1) {
-                    $primary_contact = 'text';
-                }
-            }
+    if ($res_customer && mysqli_num_rows($res_customer) > 0) {
+        $customerData = mysqli_fetch_assoc($res_customer);
+        if ($customerData['primary_contact'] == 0) {
+            $primary_contact = 'email';
+        } elseif ($customerData['primary_contact'] == 1) {
+            $primary_contact = 'text';
         }
     }
 
-    if (!$primary_contact) {
-        $primary_contact = 'email';
-    }
-
-    $formData['customer_name']   = $formData['customer_name']   ?? trim(($customerData['customer_business_name'] ?: $customerData['customer_first_name'].' '.$customerData['customer_last_name']));
-    $formData['customer_address']= $formData['customer_address']?? ($customerData['address'] ?? '');
-    $formData['customer_phone']  = $formData['customer_phone']  ?? ($customerData['contact_phone'] ?? '');
-    $formData['customer_email']  = $formData['customer_email']  ?? ($customerData['contact_email'] ?? '');
-    $formData['contractor']      = $formData['contractor']      ?? ($customerData['secondary_contact_name'].' '.$customerData['secondary_contact_phone']);
+    $formData['customer_name']    = $formData['customer_name']    ?? trim($customerData['customer_business_name'] ?: ($customerData['customer_first_name'].' '.$customerData['customer_last_name']));
+    $formData['customer_address'] = $formData['customer_address'] ?? ($customerData['address'] ?? '');
+    $formData['customer_phone']   = $formData['customer_phone']   ?? ($customerData['contact_phone'] ?? '');
+    $formData['customer_email']   = $formData['customer_email']   ?? ($customerData['contact_email'] ?? '');
+    $formData['contractor']       = $formData['contractor']       ?? trim($customerData['secondary_contact_name'].' '.$customerData['secondary_contact_phone']);
 }
 ?>
 
