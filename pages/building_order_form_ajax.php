@@ -10,6 +10,7 @@ if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "save_building_form") {
+        $id                = (int)($_POST['id'] ?? 0);
         $width             = mysqli_real_escape_string($conn, $_POST['width'] ?? '');
         $length            = mysqli_real_escape_string($conn, $_POST['length'] ?? '');
         $wall_height       = mysqli_real_escape_string($conn, $_POST['wall_height'] ?? '');
@@ -57,99 +58,79 @@ if(isset($_REQUEST['action'])) {
         $is_customer       = 0;
         $customer_id       = "NULL";
 
-        $sql = "
-        INSERT INTO building_form(
-                                width,
-                                LENGTH,
-                                wall_height,
-                                wall_framing,
-                                roof_pitch,
-                                foundation,
-                                truss_wood,
-                                truss_steel,
-                                overhang,
-                                spacing,
-                                interior_walls,
-                                slider_doors,
-                                slider_details,
-                                grade,
-                                roof_color,
-                                wall_color,
-                                roof_trim_color,
-                                wall_trim_color,
-                                wainscot,
-                                wainscot_color,
-                                customer_name,
-                                customer_address,
-                                customer_phone,
-                                customer_email,
-                                contractor,
-                                contact_method,
-                                garage_doors_no,
-                                garage_doors_size,
-                                entry_doors_no,
-                                entry_doors_size,
-                                windows_no,
-                                windows_size,
-                                wall_insulation,
-                                roof_insulation,
-                                roof_selection,
-                                wall_selection,
-                                building_type,
-                                created_by,
-                                is_customer,
-                                customer_id
-                            )
-                            VALUES(
-                                '$width',
-                                '$length',
-                                '$wall_height',
-                                '$wall_framing',
-                                '$roof_pitch',
-                                '$foundation',
-                                '$truss_wood',
-                                '$truss_steel',
-                                '$overhang',
-                                '$spacing',
-                                '$interior_walls',
-                                '$slider_doors',
-                                '$slider_details',
-                                '$grade',
-                                '$roof_color',
-                                '$wall_color',
-                                '$roof_trim_color',
-                                '$wall_trim_color',
-                                '$wainscot',
-                                '$wainscot_color',
-                                '$customer_name',
-                                '$customer_address',
-                                '$customer_phone',
-                                '$customer_email',
-                                '$contractor',
-                                '$contact_method',
-                                '$garage_doors_no',
-                                '$garage_doors_size',
-                                '$entry_doors_no',
-                                '$entry_doors_size',
-                                '$windows_no',
-                                '$windows_size',
-                                " . ($wall_insulation ? " '$wall_insulation' " : " NULL ") . ",
-                                " . ($roof_insulation ? " '$roof_insulation' " : " NULL ") . ",
-                                " . ($roof_selection ? " '$roof_selection' " : " NULL ") . ",
-                                " . ($wall_selection ? " '$wall_selection' " : " NULL ") . ",
-                                " . ($building_type ? " '$building_type' " : " NULL ") . ",
-                                $created_by,
-                                $is_customer,
-                                $customer_id
-                            )";
+        if ($id > 0) {
+            $sql = "
+            UPDATE building_form SET
+                width = '$width',
+                length = '$length',
+                wall_height = '$wall_height',
+                wall_framing = '$wall_framing',
+                roof_pitch = '$roof_pitch',
+                foundation = '$foundation',
+                truss_wood = '$truss_wood',
+                truss_steel = '$truss_steel',
+                overhang = '$overhang',
+                spacing = '$spacing',
+                interior_walls = '$interior_walls',
+                slider_doors = '$slider_doors',
+                slider_details = '$slider_details',
+                grade = '$grade',
+                roof_color = '$roof_color',
+                wall_color = '$wall_color',
+                roof_trim_color = '$roof_trim_color',
+                wall_trim_color = '$wall_trim_color',
+                wainscot = '$wainscot',
+                wainscot_color = '$wainscot_color',
+                customer_name = '$customer_name',
+                customer_address = '$customer_address',
+                customer_phone = '$customer_phone',
+                customer_email = '$customer_email',
+                contractor = '$contractor',
+                contact_method = '$contact_method',
+                garage_doors_no = '$garage_doors_no',
+                garage_doors_size = '$garage_doors_size',
+                entry_doors_no = '$entry_doors_no',
+                entry_doors_size = '$entry_doors_size',
+                windows_no = '$windows_no',
+                windows_size = '$windows_size',
+                wall_insulation = " . ($wall_insulation ? "'$wall_insulation'" : "NULL") . ",
+                roof_insulation = " . ($roof_insulation ? "'$roof_insulation'" : "NULL") . ",
+                roof_selection = " . ($roof_selection ? "'$roof_selection'" : "NULL") . ",
+                wall_selection = " . ($wall_selection ? "'$wall_selection'" : "NULL") . ",
+                building_type = " . ($building_type ? "'$building_type'" : "NULL") . "
+            WHERE id = $id
+            ";
+        } else {
+            $sql = "
+            INSERT INTO building_form(
+                width, length, wall_height, wall_framing, roof_pitch, foundation, truss_wood, truss_steel, 
+                overhang, spacing, interior_walls, slider_doors, slider_details, grade, roof_color, wall_color, 
+                roof_trim_color, wall_trim_color, wainscot, wainscot_color, customer_name, customer_address, 
+                customer_phone, customer_email, contractor, contact_method, garage_doors_no, garage_doors_size, 
+                entry_doors_no, entry_doors_size, windows_no, windows_size, wall_insulation, roof_insulation, 
+                roof_selection, wall_selection, building_type, created_by, is_customer, customer_id
+            ) VALUES (
+                '$width','$length','$wall_height','$wall_framing','$roof_pitch','$foundation','$truss_wood','$truss_steel',
+                '$overhang','$spacing','$interior_walls','$slider_doors','$slider_details','$grade','$roof_color',
+                '$wall_color','$roof_trim_color','$wall_trim_color','$wainscot','$wainscot_color','$customer_name',
+                '$customer_address','$customer_phone','$customer_email','$contractor','$contact_method',
+                '$garage_doors_no','$garage_doors_size','$entry_doors_no','$entry_doors_size','$windows_no','$windows_size',
+                " . ($wall_insulation ? "'$wall_insulation'" : "NULL") . ",
+                " . ($roof_insulation ? "'$roof_insulation'" : "NULL") . ",
+                " . ($roof_selection ? "'$roof_selection'" : "NULL") . ",
+                " . ($wall_selection ? "'$wall_selection'" : "NULL") . ",
+                " . ($building_type ? "'$building_type'" : "NULL") . ",
+                $created_by, $is_customer, $customer_id
+            )
+            ";
+        }
 
-        
         if (mysqli_query($conn, $sql)) {
-            $form_id = mysqli_insert_id($conn);
+            $form_id = ($id > 0) ? $id : mysqli_insert_id($conn);
 
             echo json_encode([
                 "success" => true,
-                "form_id"  => $form_id
+                "form_id" => $form_id
             ]);
         } else {
             echo json_encode([

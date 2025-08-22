@@ -11,6 +11,8 @@ $roofSelection  = [];
 $wallSelection  = [];
 $buildingType   = [];
 
+$status = 0;
+
 if ($id > 0) {
     $sql = "SELECT * FROM building_form WHERE id = $id";
     $result = mysqli_query($conn, $sql);
@@ -33,6 +35,8 @@ if ($id > 0) {
     $buildingType   = $formData ? json_decode($formData['building_type'] ?? '[]', true) : [];
 
     $primary_contact = null;
+
+    $status = intval($formData['status']);
 
     if (!empty($formData['contact_method'])) {
         $primary_contact = $formData['contact_method'];
@@ -145,6 +149,7 @@ if ($id > 0) {
     <div class="order-form-card">
 
         <form class="sharp_form">
+            <input type="hidden" class="form-control" name="id" value="<?= $id ?>">
             <div class="order-header">
                 <h1 class="fw-bold">Building Package Order Form</h1>
             </div>
@@ -405,7 +410,7 @@ if ($id > 0) {
                                 value="<?= htmlspecialchars($formData['wainscot_color'] ?? '') ?>">
                         </div>
                     </div>
-                    
+
                     <div class="d-none">
                         <h2>Customer Information</h2>
                         <div class="mb-3">
@@ -542,11 +547,23 @@ if ($id > 0) {
             </div>
 
             <?php
-            if (empty($id)) {
+            if($status == 0){
             ?>
-            <div class="mt-4 text-center">
-                <button type="submit" class="btn btn-primary px-4 py-2">Submit Request</button>
-            </div>
+                <div class="mt-4 text-center">
+                    <button type="submit" class="btn btn-primary px-4 py-2">
+                        <?php
+                        if (empty($id)) {
+                        ?>    
+                        Submit Request
+                        <?php
+                        }else{
+                        ?>
+                        Update Request
+                        <?php
+                        }
+                        ?>
+                    </button>
+                </div>
             <?php
             }
             ?>

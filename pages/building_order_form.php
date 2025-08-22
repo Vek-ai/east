@@ -153,6 +153,7 @@ if ($id > 0) {
     <div class="order-form-card">
 
         <form class="sharp_form">
+            <input type="hidden" class="form-control" name="id" value="<?= $id ?>">
             <div class="order-header">
                 <h1 class="fw-bold">Building Package Order Form</h1>
             </div>
@@ -365,26 +366,63 @@ if ($id > 0) {
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">Roof Color</label>
-                            <input type="text" class="form-control" name="roof_color"
-                                value="<?= htmlspecialchars($formData['roof_color'] ?? '') ?>">
+                            <select class="form-control select2" name="roof_color">
+                                <option value="">-- Select Roof Color --</option>
+                                <?php
+                                $query_color = "SELECT MIN(color_id) as id, color_name 
+                                                FROM paint_colors 
+                                                WHERE hidden = '0' AND color_status = '1' 
+                                                GROUP BY color_name 
+                                                ORDER BY color_name ASC";
+                                $result_color = mysqli_query($conn, $query_color);
+                                while ($row_color = mysqli_fetch_assoc($result_color)) {
+                                    $selected = ($formData['roof_color'] ?? '') == $row_color['id'] ? 'selected' : '';
+                                    echo "<option value='{$row_color['id']}' $selected>{$row_color['color_name']}</option>";
+                                }
+                                ?>
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Wall Color</label>
-                            <input type="text" class="form-control" name="wall_color"
-                                value="<?= htmlspecialchars($formData['wall_color'] ?? '') ?>">
+                            <select class="form-control select2" name="wall_color">
+                                <option value="">-- Select Wall Color --</option>
+                                <?php
+                                mysqli_data_seek($result_color, 0); // rewind result set for reuse
+                                while ($row_color = mysqli_fetch_assoc($result_color)) {
+                                    $selected = ($formData['wall_color'] ?? '') == $row_color['id'] ? 'selected' : '';
+                                    echo "<option value='{$row_color['id']}' $selected>{$row_color['color_name']}</option>";
+                                }
+                                ?>
+                            </select>
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">Roof Trim Color</label>
-                            <input type="text" class="form-control" name="roof_trim_color"
-                                value="<?= htmlspecialchars($formData['roof_trim_color'] ?? '') ?>">
+                            <select class="form-control select2" name="roof_trim_color">
+                                <option value="">-- Select Roof Trim Color --</option>
+                                <?php
+                                mysqli_data_seek($result_color, 0);
+                                while ($row_color = mysqli_fetch_assoc($result_color)) {
+                                    $selected = ($formData['roof_trim_color'] ?? '') == $row_color['id'] ? 'selected' : '';
+                                    echo "<option value='{$row_color['id']}' $selected>{$row_color['color_name']}</option>";
+                                }
+                                ?>
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Wall Trim Color</label>
-                            <input type="text" class="form-control" name="wall_trim_color"
-                                value="<?= htmlspecialchars($formData['wall_trim_color'] ?? '') ?>">
+                            <select class="form-control select2" name="wall_trim_color">
+                                <option value="">-- Select Wall Trim Color --</option>
+                                <?php
+                                mysqli_data_seek($result_color, 0);
+                                while ($row_color = mysqli_fetch_assoc($result_color)) {
+                                    $selected = ($formData['wall_trim_color'] ?? '') == $row_color['id'] ? 'selected' : '';
+                                    echo "<option value='{$row_color['id']}' $selected>{$row_color['color_name']}</option>";
+                                }
+                                ?>
+                            </select>
                         </div>
                     </div>
 
@@ -545,15 +583,23 @@ if ($id > 0) {
                 Homeowner 2025
             </div>
 
-            <?php
-            if (empty($id)) {
-            ?>
+            
             <div class="mt-4 text-center">
-                <button type="submit" class="btn btn-primary px-4 py-2">Submit Request</button>
+                <button type="submit" class="btn btn-primary px-4 py-2">
+                <?php
+                if (empty($id)) {
+                ?>    
+                Submit Request
+                <?php
+                }else{
+                ?>
+                Update Request
+                <?php
+                }
+                ?>
+                </button>
             </div>
-            <?php
-            }
-            ?>
+
         </form>
     </div>
 </div>

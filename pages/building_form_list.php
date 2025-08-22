@@ -106,8 +106,8 @@ if ($permission === 'edit') {
                     </thead>
                     <tbody>
                     <?php
-                    $no = 1;
-                    $query_building_form = "SELECT * FROM building_form";
+                    $id = 1;
+                    $query_building_form = "SELECT * FROM building_form ORDER BY created_at DESC";
                     $result_building_form = mysqli_query($conn, $query_building_form);            
                     while ($row_building_form = mysqli_fetch_array($result_building_form)) {
                         $id            = $row_building_form['id'];
@@ -125,23 +125,28 @@ if ($permission === 'edit') {
                             $status_html = '<span class="badge bg-secondary">Unknown</span>';
                         }
                     ?>
-                        <tr id="product-row-<?= $no ?>">
+                        <tr id="product-row-<?= $id ?>">
                             <td><?= ucwords($customer_name) ?></td>
                             <td><?= $created_at ?></td>
                             <td><?= $status_html ?></td>
-                            <td class="text-center" id="action-button-<?= $no ?>">
-                            <a href="?page=building_order_form&id=<?= $id ?>" target="_blank" 
-                                class="d-flex align-items-center justify-content-center text-decoration-none" title="View">
-                                <i class="ti ti-eye fs-7"></i>
-                            </a>
+                            <td class="text-center d-flex justify-content-center" id="action-button-<?= $id ?>">
+                              <a href="?page=building_order_form&id=<?= $id ?>" target="_blank" 
+                                  class="d-flex align-items-center justify-content-center text-decoration-none" title="View">
+                                  <i class="ti ti-eye fs-7"></i>
+                              </a>
+                              <a href="javascript:void(0);" 
+                                  class="d-flex align-items-center justify-content-center text-decoration-none quote-request-btn"
+                                  data-id="<?= $id ?>" title="Quote Request">
+                                  <i class="ti ti-file-text text-warning fs-7"></i>
+                              </a>
                             </td>
                         </tr>
                     <?php
-                        $no++;
+                        $id++;
                     }
                     ?>
                     </tbody>
-                    </table>
+                </table>
 
               </div>
             </div>
@@ -177,10 +182,43 @@ if ($permission === 'edit') {
     document.title = "<?= $page_title ?>";
 
     var table = $('#display_building_form').DataTable({
-        pageLength: 100
+        pageLength: 100,
+        order: []
     });
 
     $('#display_building_form_filter').hide();
+
+    $(document).on('click', '.quote-request-btn', function () {
+        let id = $(this).data('id');
+
+        if (!confirm("Are you sure you want to Quote this Request?")) {
+            return;
+        }
+
+        $.ajax({
+            url: 'pages/building_form_list_ajax.php',
+            type: 'POST',
+            data: { 
+              action: 'quote_request',
+              id: id 
+            },
+            dataType: 'json',
+            success: function (response) {
+                console.log(response);
+                if (response.success) {
+                    let row = $('#product-row-' + response.row_no + ' td:nth-child(3)');
+                    row.html('<span class="badge bg-warning text-dark">Quoting</span>');
+                } else {
+                    alert(response.message || 'Error updating status');
+                }
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                console.log('AJAX error:', textStatus, errorThrown);
+                console.log('Response Text:', xhr.responseText);
+                alert('Request failed!');
+            }
+        });
+    });
 
     function filterTable() {
         var textSearch = $('#text-srh').val().toLowerCase();
