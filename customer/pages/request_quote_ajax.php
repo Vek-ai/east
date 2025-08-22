@@ -1,4 +1,5 @@
 <?php 
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -55,8 +56,8 @@ if(isset($_REQUEST['action'])) {
         $building_type     = isset($_POST['building_type']) ? mysqli_real_escape_string($conn, json_encode($_POST['building_type'])) : null;
 
         $created_by        = 1;
-        $is_customer       = 0;
-        $customer_id       = "NULL";
+        $is_customer       = 1;
+        $customer_id       = $_SESSION['customer_id'];
 
         if ($id > 0) {
             $sql = "
