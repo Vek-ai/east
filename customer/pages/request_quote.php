@@ -289,7 +289,13 @@ $page_title = "Building Package Order Form";
                         </div>
                     </div>
 
-                   <div class="mb-3">
+                   
+
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-6 section">
+                    <div class="mb-3">
                         <label class="form-label">#1 (Premier) or #2 (Economy) Metal?</label>
                         <input type="text" class="form-control" name="grade">
                         <p class="form-text fst-italic mt-1 small">
@@ -335,33 +341,6 @@ $page_title = "Building Package Order Form";
                         <div class="col-md-8">
                             <label class="form-label">Wainscot Color</label>
                             <input type="text" class="form-control" name="wainscot_color">
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Right Column -->
-                <div class="col-md-6 section">
-                    <h2>Customer Information</h2>
-                    <div class="mb-3"><label class="form-label">Name</label><input type="text" class="form-control" name="customer_name"></div>
-                    <div class="mb-3"><label class="form-label">Address</label><input type="text" class="form-control" name="customer_address"></div>
-                    <div class="mb-3"><label class="form-label">Phone No.</label><input type="text" class="form-control" name="customer_phone"></div>
-                    <div class="mb-3"><label class="form-label">Email</label><input type="text" class="form-control" name="customer_email"></div>
-                    <div class="mb-3"><label class="form-label">Contractor Name & No.</label><input type="text" class="form-control" name="contractor"></div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Preferred Contact</label><br>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" name="contact_method[]" value="Email">
-                            <label class="form-check-label">Email</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" name="contact_method[]" value="Call">
-                            <label class="form-check-label">Call</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" name="contact_method[]" value="Text">
-                            <label class="form-check-label">Text</label>
                         </div>
                     </div>
 

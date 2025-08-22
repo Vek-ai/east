@@ -147,6 +147,7 @@ if(isset($_POST['fetch_cart'])){
                     $total = 0;
                     $totalquantity = 0;
                     $no = 1;
+                    $is_panel_present = 0;
                     $total_weight = 0;
                     $cart = getCartDataByCustomerId($customer_id);
                     if (!empty($cart)) {
@@ -362,6 +363,7 @@ if(isset($_POST['fetch_cart'])){
                                                 </div>
                                             </fieldset>
                                         </div>
+                                        <?= $values["estimate_length"] ?> pack (<?= $values["estimate_length"] ?> pcs)
                                     </td>
                                     <?php
                                     }else if(hasProductVariantLength($data_id)){
@@ -403,13 +405,7 @@ if(isset($_POST['fetch_cart'])){
                                     <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $data_id;?>">
                                     <?php 
                                     if ($category_id == $panel_id) { // Panels ID
-                                    ?>
-                                        <div class="d-flex flex-column align-items-center">
-                                            <button type="button" class="btn btn-sm btn-info btn-add-screw" data-id="<?= $data_id; ?>">
-                                                Add Screw
-                                            </button>
-                                        </div>
-                                    <?php
+                                    $is_panel_present = 1;
                                     }
                                     ?>
                                 </td>
@@ -426,6 +422,21 @@ if(isset($_POST['fetch_cart'])){
                 </tbody>
 
                 <tfoot>
+                    <?php 
+                    if ($is_panel_present) {
+                    ?>
+                    <tr>
+                        <td colspan="11">
+                            <div class="d-flex flex-column align-items-end justify-content-end">
+                                <button type="button" class="btn btn-sm btn-info btn-add-screw" data-id="<?= $data_id; ?>">
+                                    Add Screw
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php 
+                    }
+                    ?>
                     <tr>
                         <td colspan="2" class="text-end">Total Weight</td>
                         <td><?= number_format(floatval($total_weight), 2) ?> LBS</td>
