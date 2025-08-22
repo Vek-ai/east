@@ -1961,6 +1961,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             type: "POST",
             success: function(data) {
                 loadCart();
+                console.log(data);
             },
             error: function() {}
         });

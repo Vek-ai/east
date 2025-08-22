@@ -2979,7 +2979,6 @@ if (isset($_POST['add_cart_screw'])) {
                 $cart_item['custom_color'] == $chosen_pack['color_id']) {
 
                 $cart_item['quantity_cart'] += $packs_needed;
-                $cart_item['estimate_length'] += $total_pcs;
                 $found_in_cart = true;
                 break;
             }

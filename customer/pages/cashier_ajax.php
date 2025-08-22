@@ -2134,8 +2134,7 @@ if (isset($_POST['add_cart_screw'])) {
 
         $update_sql = "
             UPDATE customer_cart SET 
-                quantity_cart = '$new_quantity',
-                estimate_length = '$new_estimate'
+                quantity_cart = '$new_quantity'
             WHERE id = '".$existing['id']."'
         ";
         mysqli_query($conn, $update_sql);
