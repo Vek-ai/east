@@ -2111,7 +2111,7 @@ if (isset($_POST['add_cart_screw'])) {
         }
     }
 
-    if (!$chosen_pack || $chosen_pack_pieces <= 0) {
+    if (!$chosen_pack) {
         exit("No valid screw packs found.");
     }
 
