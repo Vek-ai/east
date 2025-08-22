@@ -172,9 +172,10 @@ if(isset($_POST['fetch_cart'])){
                     <?php 
                     $total = 0;
                     $totalquantity = 0;
-                    $no = 1;
+                    $line = 1;
                     $total_weight = 0;
                     $customer_savings = 0;
+                    $is_panel_present = 0;
                     if (!empty($_SESSION["cart"])) {
                         foreach ($_SESSION["cart"] as $keys => $values) {
                             $data_id = $values["product_id"];
@@ -236,7 +237,7 @@ if(isset($_POST['fetch_cart'])){
                                     if($category_id == $trim_id){
                                         if(!empty($values["custom_trim_src"])){
                                         ?>
-                                        <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" data-drawing="<?= $drawing_data ?>">
+                                        <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" data-drawing="<?= $drawing_data ?>">
                                             <div class="align-items-center text-center w-100" style="background: #ffffff">
                                                 <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
                                             </div>
@@ -244,7 +245,7 @@ if(isset($_POST['fetch_cart'])){
                                         <?php
                                         }else{
                                         ?>
-                                        <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>">
+                                        <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>">
                                             Draw Here
                                         </a>
                                         <?php
@@ -268,7 +269,7 @@ if(isset($_POST['fetch_cart'])){
                                     </h6>
                                 </td>
                                 <td>
-                                    <select id="color_cart<?= $no ?>" class="form-control color-cart text-start" name="color" onchange="updateColor(this)" data-line="<?= $values["line"]; ?>" data-id="<?= $data_id; ?>">
+                                    <select id="color_cart<?= $line ?>" class="form-control color-cart text-start" name="color" onchange="updateColor(this)" data-line="<?= $line; ?>" data-id="<?= $data_id; ?>">
                                         <option value="">Select Color...</option>
                                         <?php
                                         if (!empty($color_id)) {
@@ -296,7 +297,7 @@ if(isset($_POST['fetch_cart'])){
                                     if(!empty($product['grade'])){
                                     ?>
                                     <div class="input-group text-start">
-                                        <select id="grade<?= $no ?>" class="form-control grade-cart" name="grade" onchange="updateGrade(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
+                                        <select id="grade<?= $line ?>" class="form-control grade-cart" name="grade" onchange="updateGrade(this)" data-line="<?= $values['line']; ?>" data-id="<?= $data_id; ?>">
                                             <option value="">Select Grade...</option>
                                             <?php
                                             $query_grade = "SELECT * FROM product_grade WHERE status = 1";
@@ -321,13 +322,13 @@ if(isset($_POST['fetch_cart'])){
                                 <td>
                                     <div class="input-group">
                                         <span class="input-group-btn">
-                                            <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)">
+                                            <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)">
                                                 <i class="fa fa-minus"></i>
                                             </button>
                                         </span> 
-                                        <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
+                                        <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
                                         <span class="input-group-btn">
-                                            <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)">
+                                            <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)">
                                                 <i class="fa fa-plus"></i>
                                             </button>
                                         </span>
@@ -338,21 +339,21 @@ if(isset($_POST['fetch_cart'])){
                                     ?>
                                     <td>
                                         <div class="d-flex flex-column align-items-center">
-                                            <input class="form-control" type="text" value="<?= $product["width"]; ?>" placeholder="W" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" <?= !empty($product["width"]) ? 'readonly' : '' ?>>
+                                            <input class="form-control" type="text" value="<?= $product["width"]; ?>" placeholder="W" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" <?= !empty($product["width"]) ? 'readonly' : '' ?>>
                                             <span class="mr-3 ml-1"> X</span>
                                             <?php
                                             if($sold_by_feet == 1){
                                                 ?>
                                                 <fieldset class="border p-1 position-relative">
                                                     <div class="input-group d-flex align-items-center">
-                                                        <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                        <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
+                                                        <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
+                                                        <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
                                                     </div>
                                                 </fieldset>
                                             <?php
                                             }else{
                                             ?>
-                                                <input class="form-control" type="text" value="<?= $values["estimate_length"]; ?>" placeholder="H" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
+                                                <input class="form-control" type="text" value="<?= $values["estimate_length"]; ?>" placeholder="H" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                             <?php
                                             }
                                             ?>
@@ -364,27 +365,28 @@ if(isset($_POST['fetch_cart'])){
                                     ?>
                                     <td>
                                         <div class="d-flex flex-column align-items-center d-none">
-                                            <input class="form-control text-center mb-1" type="text" value="<?= isset($values["estimate_width"]) ? $values["estimate_width"] : $product["width"]; ?>" placeholder="Width" size="5" style="color:#ffffff; " data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
+                                            <input class="form-control text-center mb-1" type="text" value="<?= isset($values["estimate_width"]) ? $values["estimate_width"] : $product["width"]; ?>" placeholder="Width" size="5" style="color:#ffffff; " data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
                                             <span class="mx-1 text-center mb-1">X</span>
                                             <fieldset class="border p-1 position-relative">
                                                 <div class="input-group d-flex align-items-center">
-                                                    <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                    <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
+                                                    <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
+                                                    <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
                                                 </div>
                                             </fieldset>
                                         </div>
+                                        <?= $values["estimate_length"] ?> pack (<?= $values["estimate_length"] ?> pcs)
                                     </td>
                                     <?php
                                     }else if($category_id == $trim_id){
                                     ?>
                                     <td>
                                         <div class="d-flex flex-column align-items-center">
-                                            <input class="form-control text-center mb-1" type="text" value="<?= isset($values["estimate_width"]) ? $values["estimate_width"] : $product["width"]; ?>" placeholder="Width" size="5" style="color:#ffffff; " data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
+                                            <input class="form-control text-center mb-1" type="text" value="<?= isset($values["estimate_width"]) ? $values["estimate_width"] : $product["width"]; ?>" placeholder="Width" size="5" style="color:#ffffff; " data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
                                             <span class="mx-1 text-center mb-1">X</span>
                                             <fieldset class="border p-1 position-relative">
                                                 <div class="input-group d-flex align-items-center">
-                                                    <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                    <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
+                                                    <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
+                                                    <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
                                                 </div>
                                             </fieldset>
                                         </div>
@@ -395,8 +397,8 @@ if(isset($_POST['fetch_cart'])){
                                     <td class="text-center">
                                         <fieldset class="border p-1 position-relative">
                                             <div class="input-group d-flex align-items-center">
-                                                <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
+                                                <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
+                                                <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
                                             </div>
                                         </fieldset>
                                     </td>
@@ -421,21 +423,15 @@ if(isset($_POST['fetch_cart'])){
                                     ?>
                                 </td>
                                 <td>
-                                    <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
-                                    <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
+                                    <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
+                                    <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
                                     <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["product_id"]; ?>">
                                     <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $data_id;?>">
-                                    <input class="form-control" type="hidden" size="5" value="<?php echo $values["line"];?>" id="line<?php echo $data_id;?>">
+                                    <input class="form-control" type="hidden" size="5" value="<?php echo $line;?>" id="line<?php echo $data_id;?>">
                                     <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $data_id;?>">
                                     <?php 
                                     if ($category_id == $panel_id) { // Panels ID
-                                    ?>
-                                        <div class="d-flex flex-column align-items-center">
-                                            <button type="button" class="btn btn-sm btn-info btn-add-screw" data-id="<?= $data_id; ?>">
-                                                Add Screw
-                                            </button>
-                                        </div>
-                                    <?php
+                                    $is_panel_present = 1;
                                     }
                                     ?>
                                 </td>
@@ -444,7 +440,7 @@ if(isset($_POST['fetch_cart'])){
                             $totalquantity += $values["quantity_cart"];
                             $total += $subtotal;
                             $total_customer_price += $customer_price;
-                            $no++;
+                            $line++;
                             $total_weight += $product["weight"] * $values["quantity_cart"];
                             $customer_savings += $subtotal - $customer_price;
                         }
@@ -455,6 +451,21 @@ if(isset($_POST['fetch_cart'])){
                 </tbody>
 
                 <tfoot>
+                    <?php 
+                    if ($is_panel_present) {
+                    ?>
+                    <tr>
+                        <td colspan="11">
+                            <div class="d-flex flex-column align-items-end justify-content-end">
+                                <button type="button" class="btn btn-sm btn-info btn-add-screw" data-id="<?= $data_id; ?>">
+                                    Add Screw
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php 
+                    }
+                    ?>
                     <tr>
                         <td colspan="2" class="text-end">Total Weight</td>
                         <td><?= number_format(floatval($total_weight), 2) ?> LBS</td>

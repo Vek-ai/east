@@ -2638,7 +2638,7 @@ if (isset($_POST['add_to_cart'])) {
                     'product_item' => getProductName($row['product_id']),
                     'supplier_id' => $row['supplier_id'],
                     'unit_price' => $unit_price,
-                    'line' => 1,
+                    'line' => $line,
                     'quantity_ttl' => $totalStock,
                     'quantity_in_stock' => $quantityInStock,
                     'quantity_cart' => $item_quantity,
