@@ -556,7 +556,7 @@ if ($id > 0) {
                                             aria-label="Remove"></button>
 
                                     <?php if (preg_match('/\.(jpg|jpeg|png|gif)$/i', $file['file_url'])): ?>
-                                        <img src="building_form_attachments/<?= htmlspecialchars($file['file_url']) ?>" 
+                                        <img src="../building_form_attachments/<?= htmlspecialchars($file['file_url']) ?>" 
                                             alt="<?= htmlspecialchars($file['file_url']) ?>" 
                                             style="width:100%;height:auto;object-fit:cover;">
                                     <?php else: ?>

@@ -141,7 +141,7 @@ if(isset($_REQUEST['action'])) {
         }
 
         if (!empty($_FILES['attachments']['name'][0])) {
-            $targetDir = "../building_form_attachments/";
+            $targetDir = "../../building_form_attachments/";
             if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
 
             foreach ($_FILES['attachments']['tmp_name'] as $i => $tmp) {
