@@ -9,6 +9,11 @@ $trim_id = 4;
 
 if (isset($_POST['fetch_modal'])) {
     ?>
+    <style>
+        .d-flex.justify-content-between:has(> *:only-child) {
+            justify-content: center !important;
+        }
+    </style>
     <div class="d-flex justify-content-between align-items-center gap-3">
         <?php
         $cart = isset($_SESSION['cart']) && is_array($_SESSION['cart']) ? $_SESSION['cart'] : [];

@@ -121,12 +121,7 @@ if (isset($_POST['deleteitem'])) {
     } else {
         echo "Item not found in cart.";
     }
-
-    echo "<pre>";
-    print_r($_SESSION["cart"]);
-    echo "</pre>";
 }
-
 
 if (isset($_REQUEST['query'])) {
     $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
