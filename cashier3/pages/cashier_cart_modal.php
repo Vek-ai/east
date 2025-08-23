@@ -70,9 +70,9 @@ if(isset($_POST['fetch_cart'])){
         .table-fixed th:nth-child(5),
         .table-fixed td:nth-child(5) { width: 8%; }
         .table-fixed th:nth-child(6),
-        .table-fixed td:nth-child(6) { width: 11%; }
+        .table-fixed td:nth-child(6) { width: 7%; }
         .table-fixed th:nth-child(7),
-        .table-fixed td:nth-child(7) { width: 11%; }
+        .table-fixed td:nth-child(7) { width: 15%; }
         .table-fixed th:nth-child(8),
         .table-fixed td:nth-child(8) { width: 11%; }
         .table-fixed th:nth-child(9),
@@ -182,6 +182,7 @@ if(isset($_POST['fetch_cart'])){
                             $product = getProductDetails($data_id);
                             $totalstockquantity = floatval($values["quantity_ttl"]);
                             $category_id = $product["product_category"];
+                            $line = $values["line"];
                             if ($totalstockquantity > 0) {
                                 $stock_text = '
                                     <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
@@ -320,44 +321,85 @@ if(isset($_POST['fetch_cart'])){
                                     <?php echo getProfileFromID($data_id); ?>
                                 </td>
                                 <td>
-                                    <div class="input-group">
-                                        <span class="input-group-btn">
-                                            <button class="btn btn-primary btn-icon p-1 mr-1" type="button" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onClick="deductquantity(this)">
-                                                <i class="fa fa-minus"></i>
-                                            </button>
-                                        </span> 
-                                        <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
-                                        <span class="input-group-btn">
-                                            <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)">
-                                                <i class="fa fa-plus"></i>
-                                            </button>
-                                        </span>
+                                    <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
+                                        <button class="btn btn-primary btn-sm p-1" type="button"
+                                            data-line="<?php echo $line; ?>" 
+                                            data-id="<?php echo $data_id; ?>" 
+                                            onClick="deductquantity(this)">
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+
+                                        <input class="form-control form-control-sm text-center mx-0"
+                                            type="text"
+                                            value="<?php echo $values['quantity_cart']; ?>"
+                                            onchange="updatequantity(this)"
+                                            data-line="<?php echo $line; ?>"
+                                            data-id="<?php echo $data_id; ?>"
+                                            id="item_quantity<?php echo $data_id;?>"
+                                            style="width: 45px;">
+
+                                        <button class="btn btn-primary btn-sm p-1" type="button"
+                                            data-line="<?php echo $line; ?>" 
+                                            data-id="<?php echo $data_id; ?>" 
+                                            onClick="addquantity(this)">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
                                     </div>
                                 </td>
                                 <?php 
                                     if($category_id == $panel_id){ // Panels ID
                                     ?>
-                                    <td>
-                                        <div class="d-flex flex-column align-items-center">
-                                            <input class="form-control" type="text" value="<?= $product["width"]; ?>" placeholder="W" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" <?= !empty($product["width"]) ? 'readonly' : '' ?>>
-                                            <span class="mr-3 ml-1"> X</span>
-                                            <?php
-                                            if($sold_by_feet == 1){
-                                                ?>
-                                                <fieldset class="border p-1 position-relative">
-                                                    <div class="input-group d-flex align-items-center">
-                                                        <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                        <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
+                                    <td class="text-center">
+                                        <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
+                                            <input class="form-control form-control-sm text-center px-1" 
+                                                type="text" 
+                                                value="<?= $product['width']; ?>" 
+                                                placeholder="W" 
+                                                size="5" 
+                                                style="width: 40px; color:#ffffff;" 
+                                                data-line="<?= $line; ?>" 
+                                                data-id="<?= $data_id; ?>" 
+                                                <?= !empty($product['width']) ? 'readonly' : '' ?>>
+
+                                            <span class="mx-1">X</span>
+
+                                            <?php if ($sold_by_feet == 1): ?>
+                                                <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
+                                                    <div class="input-group d-flex align-items-center flex-nowrap w-auto">
+                                                        <input class="form-control form-control-sm text-center px-1 mr-1" 
+                                                            type="number" 
+                                                            value="<?= $values['estimate_length']; ?>" 
+                                                            step="0.001" 
+                                                            placeholder="FT" 
+                                                            size="5" 
+                                                            style="width: 40px; color:#ffffff;" 
+                                                            data-line="<?= $line; ?>" 
+                                                            data-id="<?= $data_id; ?>" 
+                                                            onchange="updateEstimateLength(this)">
+                                                        
+                                                        <input class="form-control form-control-sm text-center px-1" 
+                                                            type="number" 
+                                                            value="<?= $values['estimate_length_inch']; ?>" 
+                                                            step="0.001" 
+                                                            placeholder="IN" 
+                                                            size="5" 
+                                                            style="width: 40px; color:#ffffff;" 
+                                                            data-line="<?= $line; ?>" 
+                                                            data-id="<?= $data_id; ?>" 
+                                                            onchange="updateEstimateLengthInch(this)">
                                                     </div>
                                                 </fieldset>
-                                            <?php
-                                            }else{
-                                            ?>
-                                                <input class="form-control" type="text" value="<?= $values["estimate_length"]; ?>" placeholder="H" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                            <?php
-                                            }
-                                            ?>
-                                            
+                                            <?php else: ?>
+                                                <input class="form-control form-control-sm text-center px-1" 
+                                                    type="text" 
+                                                    value="<?= $values['estimate_length']; ?>" 
+                                                    placeholder="H" 
+                                                    size="5" 
+                                                    style="width: 70px; color:#ffffff;" 
+                                                    data-line="<?= $line; ?>" 
+                                                    data-id="<?= $data_id; ?>" 
+                                                    onchange="updateEstimateLength(this)">
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                     <?php
@@ -379,14 +421,43 @@ if(isset($_POST['fetch_cart'])){
                                     <?php
                                     }else if($category_id == $trim_id){
                                     ?>
-                                    <td>
-                                        <div class="d-flex flex-column align-items-center">
-                                            <input class="form-control text-center mb-1" type="text" value="<?= isset($values["estimate_width"]) ? $values["estimate_width"] : $product["width"]; ?>" placeholder="Width" size="5" style="color:#ffffff; " data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateWidth(this)">
-                                            <span class="mx-1 text-center mb-1">X</span>
-                                            <fieldset class="border p-1 position-relative">
-                                                <div class="input-group d-flex align-items-center">
-                                                    <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
-                                                    <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
+                                    <td class="text-center">
+                                        <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
+                                            <input class="form-control form-control-sm text-center px-1" 
+                                                type="text" 
+                                                value="<?= $product['width']; ?>" 
+                                                placeholder="W" 
+                                                size="5" 
+                                                style="width: 40px; color:#ffffff;" 
+                                                data-line="<?= $line; ?>" 
+                                                data-id="<?= $data_id; ?>" 
+                                                <?= !empty($product['width']) ? 'readonly' : '' ?>>
+
+                                            <span class="mx-1">X</span>
+
+                                            <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
+                                                <div class="input-group d-flex align-items-center flex-nowrap w-auto">
+                                                    <input class="form-control form-control-sm text-center px-1 mr-1" 
+                                                        type="number" 
+                                                        value="<?= $values['estimate_length']; ?>" 
+                                                        step="0.001" 
+                                                        placeholder="FT" 
+                                                        size="5" 
+                                                        style="width: 40px; color:#ffffff;" 
+                                                        data-line="<?= $line; ?>" 
+                                                        data-id="<?= $data_id; ?>" 
+                                                        onchange="updateEstimateLength(this)">
+                                                    
+                                                    <input class="form-control form-control-sm text-center px-1" 
+                                                        type="number" 
+                                                        value="<?= $values['estimate_length_inch']; ?>" 
+                                                        step="0.001" 
+                                                        placeholder="IN" 
+                                                        size="5" 
+                                                        style="width: 40px; color:#ffffff;" 
+                                                        data-line="<?= $line; ?>" 
+                                                        data-id="<?= $data_id; ?>" 
+                                                        onchange="updateEstimateLengthInch(this)">
                                                 </div>
                                             </fieldset>
                                         </div>

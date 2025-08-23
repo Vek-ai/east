@@ -125,8 +125,8 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     <fieldset class="p-0 position-relative">
                         <legend class="fs-5 fw-bold">Length</legend>
                         <div id="length-field" class="input-group d-flex align-items-center mb-1">
-                            <input class="form-control mr-1 length_feet" type="number" id="length_feet" name="length_feet[]" list="length_feet_datalist" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;">
-                            <input class="form-control length_inch" type="number" id="length_inch" name="length_inch[]" list="length_inch_datalist" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;">
+                            <input step="0.0001" class="form-control mr-1 length_feet" type="number" id="length_feet" name="length_feet[]" list="length_feet_datalist" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;">
+                            <input step="0.0001" class="form-control length_inch" type="number" id="length_inch" name="length_inch[]" list="length_inch_datalist" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;">
                         </div>
                     </fieldset>
                 </div>

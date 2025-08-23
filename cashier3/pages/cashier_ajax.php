@@ -2595,8 +2595,8 @@ if (isset($_POST['add_to_cart'])) {
     $line = 1;
 
     foreach ($quantity as $index => $qty) {
-        $length_feet = isset($lengthFeet[$index]) ? intval($lengthFeet[$index]) : 0;
-        $length_inch = isset($lengthInch[$index]) ? intval($lengthInch[$index]) : 0;
+        $length_feet = isset($lengthFeet[$index]) ? floatval($lengthFeet[$index]) : 0;
+        $length_inch = isset($lengthInch[$index]) ? floatval($lengthInch[$index]) : 0;
 
         $quantityInStock = getProductStockInStock($product_id);
         $totalQuantity = getProductStockTotal($product_id);
@@ -2889,9 +2889,14 @@ if (isset($_POST['filter_category'])) {
 }
 
 if (isset($_POST['add_cart_screw'])) {
-    $product_id = (int)$_POST['product_id'];
-    $color_id   = (int)$_POST['color_id'];
-    $panel_id   = 3;
+    $product_id       = (int)$_POST['product_id'];
+    $color_id         = (int)$_POST['color_id'];
+    $selected_color_id = (int)($_POST['selected_color_id'] ?? 0);
+    $type_to_apply     = $_POST['type_to_apply'] ?? 'panel';
+
+    $panel_id = 3;
+    $trim_id  = 4;
+    $apply_category_id = ($type_to_apply === 'trim') ? $trim_id : $panel_id;
 
     $q = "
         SELECT p.product_id, p.product_item, p.unit_price, 
@@ -2917,7 +2922,9 @@ if (isset($_POST['add_cart_screw'])) {
     if (!empty($_SESSION['cart'])) {
         foreach ($_SESSION['cart'] as $item) {
             $item_details = getProductDetails($item['product_id']);
-            if ($item_details['product_category'] != $panel_id) continue;
+
+            if ($item_details['product_category'] != $apply_category_id) continue;
+            if ((int)$item['custom_color'] !== $selected_color_id) continue;
 
             $qty = (int)$item['quantity_cart'];
             $len_feet  = !empty($item['estimate_length']) ? (float)$item['estimate_length'] : 0;
@@ -2949,10 +2956,8 @@ if (isset($_POST['add_cart_screw'])) {
 
     $chosen_pack = null;
     $chosen_pack_pieces = PHP_INT_MAX;
-
     foreach ($packs as $pack) {
         $pack_pieces = getPackPieces($pack['pack']);
-
         if ($pack_pieces <= 0) continue;
 
         $packs_needed = ceil($screws_needed / $pack_pieces);
@@ -2986,7 +2991,6 @@ if (isset($_POST['add_cart_screw'])) {
         unset($cart_item);
     }
 
-    // Otherwise, add new item to cart
     if (!$found_in_cart) {
         $_SESSION['cart'][] = [
             "product_id"        => $chosen_pack['product_id'],
@@ -3005,7 +3009,7 @@ if (isset($_POST['add_cart_screw'])) {
         ];
     }
 
-    echo "Added $packs_needed pack(s) of screws (Color ID: {$chosen_pack['color_id']}, Screw Distance: {$screw_distance}) to cart";
+    echo "Added $packs_needed pack(s) of screws (Apply Type: $type_to_apply, Apply Color: $selected_color_id, Screw Distance: {$screw_distance}) to cart";
 }
 
 ?>
