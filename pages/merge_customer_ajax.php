@@ -140,7 +140,7 @@ if (isset($_POST['fetch_data'])) {
 
                     <div class="mb-2">
                         <div class="detail-label">Tax Status:</div>
-                        <div class="detail-value"><?= !empty($row['tax_status']) ? htmlspecialchars($row['tax_status']) : "-" ?></div>
+                        <div class="detail-value"><?= !empty($row['tax_status']) ? getCustomerTaxName($row['tax_status']) : "-" ?></div>
                     </div>
 
                     <div class="mb-2">
