@@ -182,7 +182,6 @@ if(isset($_POST['fetch_cart'])){
                             $product = getProductDetails($data_id);
                             $totalstockquantity = floatval($values["quantity_ttl"]);
                             $category_id = $product["product_category"];
-                            $line = $values["line"];
                             if ($totalstockquantity > 0) {
                                 $stock_text = '
                                     <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
