@@ -62,7 +62,7 @@ $panel_id = 46;
       </div>
     </div>
 
-    <div class="row pt-3 text-center">
+    <div class="row pt-3">
         <div class="col-md-5">
             <label class="form-label">Customer account to be removed</label>
             <div class="mb-3">
@@ -79,6 +79,7 @@ $panel_id = 46;
                     ?>
                 </select>
             </div>
+            <div id="merge_customer_details" class="mt-3"></div>
         </div>
         <div class="col-md-5">
             <label class="form-label">Customer account to keep</label>
@@ -96,10 +97,11 @@ $panel_id = 46;
                     ?>
                 </select>
             </div>
+            <div id="original_customer_details" class="mt-3"></div>
         </div>
         
-        <div class="col-md-2 d-flex align-items-center justify-content-center">
-            <button class="btn btn-primary w-100" type="button" id="mergeCustomers">
+        <div class="col-md-2 d-flex align-items-start justify-content-center">
+            <button class="btn btn-primary w-100 mt-4" type="button" id="mergeCustomers">
                 <i class="fe fe-hard-drive"></i> Merge
             </button>
         </div>
@@ -120,6 +122,44 @@ $panel_id = 46;
             width: '100%',
             placeholder: "Select account to be removed...",
             allowClear: true
+        });
+
+        $('#customer_merge').on('change', function() {
+            var customer_id = $(this).val();
+            if (customer_id) {
+                $.ajax({
+                    url: "pages/merge_customer_ajax.php",
+                    type: "POST",
+                    data: { 
+                      customer_id: customer_id,
+                      fetch_data: 'fetch_data'
+                    },
+                    success: function(data) {
+                        $("#merge_customer_details").html(data);
+                    }
+                });
+            } else {
+                $("#merge_customer_details").html('');
+            }
+        });
+
+        $('#customer_original').on('change', function() {
+            var customer_id = $(this).val();
+            if (customer_id) {
+                $.ajax({
+                    url: "pages/merge_customer_ajax.php",
+                    type: "POST",
+                    data: { 
+                      customer_id: customer_id,
+                      fetch_data: 'fetch_data'
+                    },
+                    success: function(data) {
+                        $("#original_customer_details").html(data);
+                    }
+                });
+            } else {
+                $("#original_customer_details").html('');
+            }
         });
 
         $('#mergeCustomers').click(function() {

@@ -45,4 +45,136 @@ if (isset($_POST['merge'])) {
         echo "Database error: " . mysqli_error($conn);
     }
 }
+
+if (isset($_POST['fetch_data'])) {
+    $customer_id = (int)($_POST['customer_id'] ?? 0);
+
+    if ($customer_id > 0) {
+        $query = "SELECT * FROM customer WHERE customer_id = '$customer_id' LIMIT 1";
+        $result = mysqli_query($conn, $query);
+        if ($row = mysqli_fetch_assoc($result)) {
+            ?>
+            <style>
+                .detail-label {
+                    font-weight: bold;
+                }
+                .detail-value {
+                    margin-left: 10px;
+                }
+            </style>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Customer Details</h5>
+                </div>
+                <div class="card-body">
+                    
+                    <div class="mb-2">
+                        <div class="detail-label">First Name:</div>
+                        <div class="detail-value"><?= !empty($row['customer_first_name']) ? htmlspecialchars($row['customer_first_name']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Last Name:</div>
+                        <div class="detail-value"><?= !empty($row['customer_last_name']) ? htmlspecialchars($row['customer_last_name']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Email:</div>
+                        <div class="detail-value"><?= !empty($row['contact_email']) ? htmlspecialchars($row['contact_email']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Phone:</div>
+                        <div class="detail-value"><?= !empty($row['contact_phone']) ? htmlspecialchars($row['contact_phone']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Fax:</div>
+                        <div class="detail-value"><?= !empty($row['contact_fax']) ? htmlspecialchars($row['contact_fax']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Primary Contact:</div>
+                        <div class="detail-value"><?= ($row['primary_contact']=='2' ? 'Phone' : 'Email') ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Business Name:</div>
+                        <div class="detail-value"><?= !empty($row['customer_business_name']) ? htmlspecialchars($row['customer_business_name']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Address:</div>
+                        <div class="detail-value">
+                            <?= (!empty($row['address']) ? htmlspecialchars($row['address']) : "-") ?>
+                            <?= (!empty($row['city']) ? ", ".htmlspecialchars($row['city']) : "") ?>
+                            <?= (!empty($row['state']) ? ", ".htmlspecialchars($row['state']) : "") ?>
+                            <?= (!empty($row['zip']) ? " ".htmlspecialchars($row['zip']) : "") ?>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Secondary Contact:</div>
+                        <div class="detail-value"><?= !empty($row['secondary_contact_name']) ? htmlspecialchars($row['secondary_contact_name']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Secondary Phone:</div>
+                        <div class="detail-value"><?= !empty($row['secondary_contact_phone']) ? htmlspecialchars($row['secondary_contact_phone']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">AP Contact:</div>
+                        <div class="detail-value"><?= !empty($row['ap_contact_name']) ? htmlspecialchars($row['ap_contact_name']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">AP Phone:</div>
+                        <div class="detail-value"><?= !empty($row['ap_contact_phone']) ? htmlspecialchars($row['ap_contact_phone']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">AP Email:</div>
+                        <div class="detail-value"><?= !empty($row['ap_contact_email']) ? htmlspecialchars($row['ap_contact_email']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Tax Status:</div>
+                        <div class="detail-value"><?= !empty($row['tax_status']) ? htmlspecialchars($row['tax_status']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Tax Exempt #:</div>
+                        <div class="detail-value"><?= !empty($row['tax_exempt_number']) ? htmlspecialchars($row['tax_exempt_number']) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Notes:</div>
+                        <div class="detail-value"><?= !empty($row['customer_notes']) ? nl2br(htmlspecialchars($row['customer_notes'])) : "-" ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Loyalty:</div>
+                        <div class="detail-value"><?= ($row['loyalty'] ? 'On' : 'Off') ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Call Status:</div>
+                        <div class="detail-value"><?= ($row['call_status'] ? 'Active' : 'Inactive') ?></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="detail-label">Charge Net 30:</div>
+                        <div class="detail-value"><?= !empty($row['charge_net_30']) ? htmlspecialchars($row['charge_net_30']) : "-" ?></div>
+                    </div>
+                </div>
+            </div>
+            <?php
+        } else {
+            echo "<div class='alert alert-warning'>Customer not found.</div>";
+        }
+    }
+}
+
+
 ?>
