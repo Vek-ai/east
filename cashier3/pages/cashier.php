@@ -4544,6 +4544,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     processData: false,
                     contentType: false,
                     success: function (response) {
+                        console.log(response);
                         $('.modal').modal("hide");
                         loadCart();
                     },
