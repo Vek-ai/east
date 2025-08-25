@@ -2082,8 +2082,13 @@ function getInventoryLengths($product_id) {
         ];
     }
 
+    usort($lengths, function ($a, $b) {
+        return $a['feet'] <=> $b['feet'];
+    });
+
     return $lengths;
 }
+
 
 function loadSupplierOrders($supplier_id) {
     global $conn;
