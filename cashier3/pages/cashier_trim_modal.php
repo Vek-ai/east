@@ -36,7 +36,7 @@ if(isset($_POST['fetch_modal'])){
             $category_id = $product_details['product_category'];
         ?>
         <input type="hidden" id="product_id" name="id" value="<?= $id ?>" />
-        <input type="hidden" id="product_price" name="price" value="<?= $product_details['unit_price'] ?>" />
+        <input type="hidden" id="trim_unit_price" name="price" value="<?= $product_details['unit_price'] ?>" />
         <input type="hidden" id="custom_multiplier_trim" name="custom_multiplier" value="<?= $custom_multiplier ?>" />
         <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
         <input type="hidden" id="is_custom_trim" name="is_custom" value="0" />
@@ -135,12 +135,12 @@ if(isset($_POST['fetch_modal'])){
             <div class="quantity-length-row row mb-1">
                 <div class="col-3 col-6-md">
                     <input type="number" name="quantity[]" 
-                        class="form-control mb-0 trim-qty" 
+                        class="form-control mb-0 trim_qty" 
                         value="1" placeholder="Enter Quantity">
                 </div>
 
                 <div class="col-3 col-6-md">
-                    <select class="form-control mb-0 trim-length-select">
+                    <select class="form-control mb-0 trim_length_select">
                         <option value="0" selected>Select Length</option>
                         <?php
                         $lengths = getInventoryLengths($id);
@@ -153,13 +153,15 @@ if(isset($_POST['fetch_modal'])){
                         ?>
                     </select>
                     <input type="hidden" name="length[]" 
-                        class="form-control mb-0 trim-length">
+                        class="form-control mb-0 trim_length">
                 </div>
             </div>
 
-            <a href="javascript:void(0)" type="button" id="duplicateTrimFields" class="text-end" title="Add Another">
-                <i class="fas fa-plus"></i>
-            </a>
+            <div class="col-6 text-end">
+                <a href="javascript:void(0)" type="button" id="duplicateTrimFields" class="text-end" title="Add Another">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
 
             <div class="col-12">
                 <div class="product_cost_display">

@@ -3221,28 +3221,37 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     }
 
     function updatePrice() {
-        const basePrice = parseFloat($('#product_price').val()) || 0;
-        const feet = parseFloat($('#trim_length').val()) || 0;
-        const quantity = parseFloat($('#trim_qty').val()) || 1;
+        const basePrice = parseFloat($('#trim_unit_price').val()) || 0;
         const is_custom = parseInt($('#is_custom_trim').val()) || 0;
         const custom_multiplier_trim = parseFloat($('#custom_multiplier_trim').val()) || 1;
 
-        let totalPrice = basePrice * feet * quantity;
+        let totalPrice = 0;
+
+        $('.quantity-length-row').each(function () {
+            const feet = parseFloat($(this).find('.trim_length').val()) || 0;
+            const qty = parseFloat($(this).find('.trim_qty').val()) || 1;
+
+            totalPrice += basePrice * feet * qty;
+
+            console.log(feet)
+        });
 
         if (is_custom === 1) {
             totalPrice += totalPrice * custom_multiplier_trim;
         }
 
+        
+
         $('#trim_price').text(totalPrice.toFixed(2));
     }
 
-    $(document).on('change', '#trim_length, #trim_qty', function() {
+    $(document).on('change', '.trim_length, .trim_qty', function() {
         updatePrice();
     });
 
-    $(document).on('change', '#trim_length_select', function() {
+    $(document).on('change', '.trim_length_select', function() {
         var value = $(this).val();
-        $('#trim_length').val(value);
+        $('.trim_length').val(value);
         updatePrice();
     });
 
