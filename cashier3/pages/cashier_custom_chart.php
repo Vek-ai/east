@@ -18,7 +18,7 @@ if (isset($_POST['fetch_modal'])) {
     if ($image && file_exists($checkPath)) {
         ?>
         <img id="chartImage" src="<?= $relativePath ?>" alt="Custom Chart Image"
-             class="img-fluid w-100" style="height: 60vw;">
+             class="img-fluid w-100" >
         <?php
     } else {
         ?>

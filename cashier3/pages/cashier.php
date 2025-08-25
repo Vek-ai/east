@@ -1063,7 +1063,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 </div>
 
 <div class="modal fade" id="custom_chart_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
         <div class="modal-header">
             <h6 class="modal-title">Custom Chart Guide</h6>
@@ -1073,9 +1073,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         </div>
         <div class="modal-body">
             <div id="custom_chart_container"></div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
         </div>
     </div>
   </div>

@@ -180,7 +180,7 @@ if(isset($_POST['fetch_cart'])){
                         foreach ($_SESSION["cart"] as $keys => $values) {
                             $data_id = $values["product_id"];
                             $product = getProductDetails($data_id);
-                            $totalstockquantity = floatval($values["quantity_ttl"]);
+                            $totalstockquantity = getProductStockTotal($data_id);
                             $category_id = $product["product_category"];
                             if ($totalstockquantity > 0) {
                                 $stock_text = '

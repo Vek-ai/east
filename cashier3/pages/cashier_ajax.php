@@ -1760,90 +1760,74 @@ if (isset($_POST['unset_customer'])) {
 }
 
 if (isset($_POST['save_trim'])) {
-    $id = mysqli_real_escape_string($conn, $_POST['id']);
-    $line = mysqli_real_escape_string($conn, $_POST['line']);
-    $quantity = floatval(mysqli_real_escape_string($conn, $_POST['quantity']));
-    $length = floatval(mysqli_real_escape_string($conn, $_POST['length']));
-    $feet = floor($length);
-    $decimalFeet = $length - $feet;
-    $inches = $decimalFeet * 12;
-    $price = floatval(mysqli_real_escape_string($conn, $_POST['price']));
+    $id       = mysqli_real_escape_string($conn, $_POST['id']);
+    $line     = mysqli_real_escape_string($conn, $_POST['line']);
+    $price    = floatval($_POST['price']);
     $drawing_data = mysqli_real_escape_string($conn, $_POST['drawing_data']);
-    $img_src = mysqli_real_escape_string($conn, $_POST['img_src']);
-    $is_pre_order = mysqli_real_escape_string($conn, $_POST['is_pre_order'] ?? 0);
-    $is_custom = mysqli_real_escape_string($conn, $_POST['is_custom'] ?? 0);
+    $img_src  = mysqli_real_escape_string($conn, $_POST['img_src']);
+    $is_pre_order = (int)($_POST['is_pre_order'] ?? 0);
+    $is_custom    = (int)($_POST['is_custom'] ?? 0);
 
-    $color = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
-    $grade = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
-    $gauge = mysqli_real_escape_string($conn, $_POST['gauge'] ?? '');
+    $color  = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
+    $grade  = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
+    $gauge  = mysqli_real_escape_string($conn, $_POST['gauge'] ?? '');
+
+    $quantities = $_POST['quantity'] ?? [];
+    $lengths    = $_POST['length'] ?? [];
 
     if (!isset($_SESSION["cart"])) {
-        $_SESSION["cart"] = array();
+        $_SESSION["cart"] = [];
     }
 
-    $key = findCartKey($_SESSION["cart"], $id, $line);
+    $query = "SELECT * FROM product WHERE product_id = '$id'";
+    $result = mysqli_query($conn, $query);
 
-    if ($key !== false && isset($_SESSION["cart"][$key])) {
-        $_SESSION["cart"][$key]['quantity_cart'] = $quantity;
-        $_SESSION["cart"][$key]['estimate_length'] = $feet;
-        $_SESSION["cart"][$key]['estimate_length_inch'] = $inches;
-        $_SESSION["cart"][$key]['unit_price'] = $price;
-        $_SESSION["cart"][$key]['custom_trim_src'] = $img_src;
-        $_SESSION["cart"][$key]['drawing_data'] = $drawing_data;
-        $_SESSION["cart"][$key]['custom_color'] = $color;
-        $_SESSION["cart"][$key]['custom_grade'] = $grade;
-        $_SESSION["cart"][$key]['custom_profile'] = $grade;
-        $_SESSION["cart"][$key]['custom_gauge'] = $gauge;
-        $_SESSION["cart"][$key]['is_pre_order'] = $is_pre_order;
-        $_SESSION["cart"][$key]['is_custom'] = $is_pre_order;
-    } else {
-        $query = "SELECT * FROM product WHERE product_id = '$id'";
-        $result = mysqli_query($conn, $query);
+    if (!$result || mysqli_num_rows($result) == 0) {
+        echo json_encode(['error' => "Trim Product not available"]);
+        exit;
+    }
+    $row = mysqli_fetch_assoc($result);
 
-        if (mysqli_num_rows($result) > 0) {
-            $row = mysqli_fetch_assoc($result);
+    foreach ($quantities as $i => $quantity) {
+        $quantity = floatval($quantity);
+        $length   = floatval($lengths[$i] ?? 0);
 
-            $line_to_use = is_numeric($line) ? intval($line) : 1;
+        $feet        = floor($length);
+        $decimalFeet = $length - $feet;
+        $inches      = $decimalFeet * 12;
 
-            foreach ($_SESSION["cart"] as $item) {
-                if ($item['product_id'] == $id && $item['line'] >= $line_to_use) {
-                    $line_to_use = $item['line'] + 1;
-                }
-            }
+        $newLine = empty($_SESSION['cart']) ? 1 : (max(array_keys($_SESSION['cart'])) + 1);
 
-            $item_array = array(
-                'product_id' => $row['product_id'],
-                'product_item' => $row['product_item'],
-                'unit_price' => $price,
-                'line' => $line_to_use,
-                'quantity_ttl' => 0,
-                'quantity_in_stock' => 0,
-                'quantity_cart' => $quantity,
-                'estimate_width' => 0,
-                'estimate_length' => $feet,
-                'estimate_length_inch' => $inches,
-                'usage' => 0,
-                'custom_color' => $color,
-                'weight' => 0,
-                'supplier_id' => '',
-                'custom_grade' => $grade,
-                'custom_profile' => $row['profile'],
-                'custom_gauge' => $gauge,
-                'is_pre_order' => $is_pre_order,
-                'is_custom' => $is_custom,
-                'custom_trim_src' => $img_src,
-                'drawing_data' => $drawing_data
-            );
+        $item_array = [
+            'product_id'        => $row['product_id'],
+            'product_item'      => $row['product_item'],
+            'unit_price'        => $price,
+            'line'              => $newLine,
+            'quantity_ttl'      => 0,
+            'quantity_in_stock' => getProductStockTotal($row['product_id']),
+            'quantity_cart'     => $quantity,
+            'estimate_width'    => 0,
+            'estimate_length'   => $feet,
+            'estimate_length_inch' => $inches,
+            'usage'             => 0,
+            'custom_color'      => $color,
+            'weight'            => 0,
+            'supplier_id'       => '',
+            'custom_grade'      => $grade,
+            'custom_profile'    => $row['profile'],
+            'custom_gauge'      => $gauge,
+            'is_pre_order'      => $is_pre_order,
+            'is_custom'         => $is_custom,
+            'custom_trim_src'   => $img_src,
+            'drawing_data'      => $drawing_data
+        ];
 
-            $_SESSION["cart"][] = $item_array;
-        } else {
-            echo json_encode(['error' => "Trim Product not available"]);
-            exit;
-        }
+        $_SESSION["cart"][$newLine] = $item_array;
     }
 
     echo json_encode(['success' => true]);
 }
+
 
 if (isset($_POST['save_custom_length'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);

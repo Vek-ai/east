@@ -122,21 +122,28 @@ if(isset($_POST['fetch_modal'])){
             </div>
 
             <div class="col-12"><hr class="w-100"></div>
-            
-            <div class="col-6">
-                <div class="mb-3">
-                    <label class="form-label" for="trim_quantity">Quantity</label>
-                    <input type="number" id="trim_qty" name="quantity" class="form-control mb-1" value="1" placeholder="Enter Quantity">
+
+            <div class="row">
+                <div class="col-3">
+                    <label class="fs-4 fw-semibold">Quantity</label>
+                </div>
+                <div class="col-9">
+                    <label class="fs-4 fw-semibold">Length</label>
                 </div>
             </div>
-            <div class="col-6">
-                <div class="mb-3">
-                    <label class="form-label" for="trim_length">Length</label>
-                    <select id="trim_length_select" class="form-control mb-1">
+            
+            <div class="quantity-length-row row mb-1">
+                <div class="col-3 col-6-md">
+                    <input type="number" name="quantity[]" 
+                        class="form-control mb-0 trim-qty" 
+                        value="1" placeholder="Enter Quantity">
+                </div>
+
+                <div class="col-3 col-6-md">
+                    <select class="form-control mb-0 trim-length-select">
                         <option value="0" selected>Select Length</option>
                         <?php
                         $lengths = getInventoryLengths($id);
-
                         foreach ($lengths as $entry) {
                             $product_length = htmlspecialchars($entry['length']);
                             $length_in_feet = htmlspecialchars($entry['feet']);
@@ -145,9 +152,14 @@ if(isset($_POST['fetch_modal'])){
                         }
                         ?>
                     </select>
-                    <input type="hidden" id="trim_length" name="length" class="form-control mb-1">
+                    <input type="hidden" name="length[]" 
+                        class="form-control mb-0 trim-length">
                 </div>
             </div>
+
+            <a href="javascript:void(0)" type="button" id="duplicateTrimFields" class="text-end" title="Add Another">
+                <i class="fas fa-plus"></i>
+            </a>
 
             <div class="col-12">
                 <div class="product_cost_display">
@@ -166,7 +178,7 @@ if(isset($_POST['fetch_modal'])){
                     </button>                
                 </div>
                 <div class="d-flex justify-content-center">
-                    <button id="btnCustomChart" class="btn btn-warning ripple btn-secondary" type="button" data-category="<?= $category_id ?>">Trim Profile</button>
+                    <button id="btnCustomChart" class="btn btn-primary ripple" type="button" data-category="<?= $category_id ?>">View Trim Profile</button>
                 </div>
                 <div class="d-flex justify-content-end">
                     <button id="saveDrawing" class="btn btn-success" type="submit">Save</button>
@@ -225,6 +237,36 @@ if(isset($_POST['fetch_modal'])){
 
                 $(document).on('change', '#trim-color, #trim-grade, #trim-gauge', function() {
                     fetchCoilStock();
+                });
+
+                $(document).on("keydown", ".trim-length-select", function(e) {
+                    if (e.key === "Tab" && !e.shiftKey) {
+                        e.preventDefault();
+
+                        let $currentRow = $(this).closest(".quantity-length-row");
+                        let $nextRow = $currentRow.next(".quantity-length-row");
+
+                        if ($nextRow.length) {
+                            $nextRow.find(".trim-qty").focus().select();
+                        } else {
+                            $(".quantity-length-row").first().find(".trim-qty").focus().select();
+                        }
+                    }
+                });
+
+                $(document).on("change", ".trim-length-select", function() {
+                    let val = $(this).val();
+                    $(this).closest(".quantity-length-row").find(".trim-length").val(val);
+                });
+
+                $('#duplicateTrimFields').on("click", function() {
+                    let $newRow = $(".quantity-length-row").first().clone();
+
+                    $newRow.find(".trim-qty").val("1");
+                    $newRow.find(".trim-length-select").prop("selectedIndex", 0);
+                    $newRow.find(".trim-length").val("");
+
+                    $(".quantity-length-row").last().after($newRow);
                 });
             });
         </script>

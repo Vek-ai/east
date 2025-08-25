@@ -49,7 +49,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
         <div class="row">
 
             <!-- Colors -->
-            <div class="col-4">
+            <div class="col-3">
                 <select class="form-control qty_select2" id="qty-color" name="color" >
                     <option value="" data-category="">All Colors</option>
                     <optgroup label="Product Colors">
@@ -72,7 +72,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
             </div>
 
             <!-- Grade -->
-            <div class="col-4">
+            <div class="col-3">
                 <select class="form-control qty_select2" id="qty-grade" name="grade">
                     <option value="" data-category="">All Grades</option>
                     <optgroup label="Product Grades">
@@ -91,7 +91,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
             </div>
 
             <!-- Gauge -->
-            <div class="col-4">
+            <div class="col-3">
                 <select class="form-control qty_select2" id="qty-gauge" name="gauge">
                     <option value="" data-category="">All Gauges</option>
                     <optgroup label="Product Gauges">
@@ -110,27 +110,50 @@ if(isset($_POST['fetch_prompt_quantity'])){
             </div>
 
             <div class="col-12">
-                <h5 class="text-center pt-3 fs-5 fw-bold"><span id="coil-stock"></span></h5>
+                <h5 class="text-center pt-3 fs-4 fw-bold"><span id="coil-stock"></span></h5>
             </div>
 
             <div class="col-12"><hr class="w-100"></div>
             
-
-            <div class="quantity-length-container row mx-0">
-                <div class="quantity-field <?= empty($sold_by_feet) ? 'col-12' : 'col-6'; ?> mb-2">
-                    <label class="fs-5 fw-bold" for="quantity-product">Quantity</label>
-                    <input type="number" value="1" id="quantity-product" name="quantity_product[]" class="form-control mb-1 quantity-product" placeholder="Enter Quantity" list="quantity-product-list" autocomplete="off">
+            <div class="row">
+                <div class="col-3">
+                    <label class="fs-4 fw-semibold">Quantity</label>
                 </div>
-                <div class="col-6 mb-2 <?= empty($sold_by_feet) ? 'd-none' : '';?> length-field">
+                <div class="col-9">
+                    <label class="fs-4 fw-semibold">Length</label>
+                </div>
+            </div>
+            
+            <div class="quantity-length-container row mx-0">
+                <div class="quantity-field <?= empty($sold_by_feet) ? 'col-12 col-md-6' : 'col-6 col-md-3'; ?> mb-1">
+                    <input type="number" value="1" id="quantity-product" name="quantity_product[]" 
+                        class="form-control form-control-sm mb-1 quantity-product" 
+                        placeholder="Qty" list="quantity-product-list" autocomplete="off">
+                </div>
+
+                <div class="col-8 col-md-4 mb-1 <?= empty($sold_by_feet) ? 'd-none' : '';?> length-field">
                     <fieldset class="p-0 position-relative">
-                        <legend class="fs-5 fw-bold">Length</legend>
                         <div id="length-field" class="input-group d-flex align-items-center mb-1">
-                            <input step="0.0001" class="form-control mr-1 length_feet" type="number" id="length_feet" name="length_feet[]" list="length_feet_datalist" value="<?= $values["estimate_length"] ?>" placeholder="FT" size="5" style="color:#ffffff;">
-                            <input step="0.0001" class="form-control length_inch" type="number" id="length_inch" name="length_inch[]" list="length_inch_datalist" value="<?= $values["estimate_length_inch"]; ?>" placeholder="IN" size="5" style="color:#ffffff;">
+                            <input step="0.0001" class="form-control form-control-sm mr-1 length_feet" 
+                                type="number" id="length_feet" name="length_feet[]" 
+                                list="length_feet_datalist" 
+                                value="<?= $values["estimate_length"] ?>" 
+                                placeholder="FT" style="color:#ffffff; max-width:70px;">
+
+                            <input step="0.0001" class="form-control form-control-sm mr-1 length_inch" 
+                                type="number" id="length_inch" name="length_inch[]" 
+                                list="length_inch_datalist" 
+                                value="<?= $values["estimate_length_inch"]; ?>" 
+                                placeholder="IN" style="color:#ffffff; max-width:70px;">
+
+                            <input class="form-control form-control-sm fraction_input" 
+                                type="number" step="0.01" id="length_fraction" name="length_fraction[]" 
+                                placeholder="Fraction" style="color:#ffffff; max-width:80px;">
                         </div>
                     </fieldset>
                 </div>
             </div>
+
 
             <?php
             if($category_id == $panel_id){
@@ -142,7 +165,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
             } 
             ?>
             <div class="mb-2 <?= (($category_id == $fastener_id) || $id == 21) ? '' : 'd-none';?>">
-                <label class="fs-5 fw-bold" for="case_type">Select Case</label>
+                <label class="fs-4 fw-bold" for="case_type">Select Case</label>
                 <div class="input-group d-flex align-items-center">
                     <select class="form-control mr-1" id="case_type" name="case_type" style="color:#ffffff;">
                         <option>100</option>
@@ -155,7 +178,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
             <div class="input-group d-flex align-items-center justify-content-between flex-wrap w-100 mt-3">
                 <div class="mb-2 <?= empty($standing_seam) ? 'd-none' : '';?>">
                     <div class="me-2 flex-grow-1">
-                        <label class="fs-5 fw-bold" for="stiff_stand_seam">Standing Seam Style</label>
+                        <label class="fs-4 fw-bold" for="stiff_stand_seam">Standing Seam Style</label>
                         <select class="form-control" id="stiff_stand_seam" name="stiff_stand_seam" style="color:#ffffff; width: 100%;">
                             <option value="1" selected>Striated</option>
                             <option value="2">Flat</option>
@@ -165,7 +188,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 </div>
                 <div class="mb-2 <?= empty($board_batten) ? 'd-none' : '';?>">
                     <div class="me-2 flex-grow-1">
-                        <label class="fs-5 fw-bold" for="stiff_board_batten">Board and Batten Style</label>
+                        <label class="fs-4 fw-bold" for="stiff_board_batten">Board and Batten Style</label>
                         <select class="form-control" id="stiff_board_batten" name="stiff_board_batten" style="color:#ffffff; width: 100%;">
                             <option value="1" selected>Flat</option>
                             <option value="2">Minor Rib</option>
@@ -176,21 +199,33 @@ if(isset($_POST['fetch_prompt_quantity'])){
         </div>
         <div class="panel_options">
             <div class="mb-2 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
-                <label class="fs-5 fw-bold" for="quantity-product">Select Panel Type</label>
-                <div class="input-group d-flex align-items-center position-relative">
-                    <div class="form-control mr-1">
-                        <input type="checkbox" id="solid_panel" name="panel_type" value="solid" selected> Solid
+                <label class="fs-4 fw-semibold" for="quantity-product">Select Panel Type</label>
+                <div class="row g-2 align-items-center">
+                    <div class="col-2 ">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="solid_panel" name="panel_type" value="solid" checked>
+                            <label class="form-check-label" for="solid_panel">Solid</label>
+                        </div>
                     </div>
-                    <div class="form-control mr-1 position-relative">
-                        <input type="checkbox" id="vented_panel" name="panel_type" value="vented"> Vented
-                        <div id="tooltip" class="tooltip-custom" style="display: none;">Double-click to select Vented</div>
+                    <div class="col-2 position-relative">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="vented_panel" name="panel_type" value="vented">
+                            <label class="form-check-label" for="vented_panel">Vented</label>
+                        </div>
+                        <div id="tooltip" class="tooltip-custom small" style="display: none;">
+                            Double-click to select Vented
+                        </div>
                     </div>
-                    <div class="form-control">
-                        <input type="checkbox" id="drip_stop_panel" name="panel_drip_stop" value="drip_stop"> Drip Stop
+                    <div class="col-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="drip_stop_panel" name="panel_drip_stop" value="drip_stop">
+                            <label class="form-check-label" for="drip_stop_panel">Drip Stop</label>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="input-group d-flex align-items-center justify-content-between flex-wrap w-100 mt-3 mb-2 <?= empty($is_special) ? 'd-none' : '';?>">
             <div class="me-2 flex-grow-1">
                 <label class="fs-5 fw-bold" for="bend_product">Bends</label>
@@ -309,15 +344,36 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 fetchCoilStock();
             });
 
+            $(document).on("change", ".fraction_input", function() {
+                const allowed = [0.25, 0.50, 0.75];
+                const val = parseFloat($(this).val());
+
+                if (val && !allowed.includes(val)) {
+                    alert("Invalid fraction. Allowed values: .25, .50, .75 only.");
+                    $(this).val("");
+                    $(this).focus();
+                }
+            });
+
+            $(document).on("keydown", ".fraction_input", function(e) {
+                if (e.key === "Tab" && !e.shiftKey) {
+                    e.preventDefault();
+
+                    let $currentRow = $(this).closest(".quantity-length-container");
+                    let $nextRow = $currentRow.next(".quantity-length-container");
+
+                    if ($nextRow.length) {
+                        $nextRow.find(".quantity-product").focus().select();
+                    } else {
+                        $(".quantity-length-container").first().find(".quantity-product").focus().select();
+                    }
+                }
+            });
+
             $('#duplicateFields').click(function() {
-                var $quantityClone = $('#quantity-product').first().clone();
-                var $lengthClone = $('#length-field').first().clone();
-
-                $quantityClone.val('');
-                $lengthClone.find('input').val('');
-
-                $('.quantity-field').append($quantityClone);
-                $('.length-field').append($lengthClone);
+                var $newRow = $('.quantity-length-container').first().clone();
+                $newRow.find("input").val("");
+                $('.quantity-length-container').last().after($newRow);
             });
 
             $(document).on('change input', '.quantity-product, .length_feet, .length_inch, input[name="panel_type"], #bend_product, #hem_product', calculateProductCost);
