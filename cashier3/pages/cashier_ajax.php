@@ -1830,12 +1830,13 @@ if (isset($_POST['save_trim'])) {
 
 
 if (isset($_POST['save_custom_length'])) {
-    $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $id   = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line'] ?? 1);
-    $quantity = floatval(mysqli_real_escape_string($conn, $_POST['quantity']));
-    $estimate_length = floatval(mysqli_real_escape_string($conn, $_POST['custom_length_feet']));
-    $estimate_length_inch = floatval(mysqli_real_escape_string($conn, $_POST['custom_length_inch']));
-    $price = floatval(mysqli_real_escape_string($conn, $_POST['price']));
+
+    $quantities  = $_POST['quantity'] ?? [];
+    $feet_list   = $_POST['length_feet'] ?? [];
+    $inch_list   = $_POST['length_inch'] ?? [];
+    $prices      = $_POST['price'] ?? [];
 
     if (!isset($_SESSION["cart"])) {
         $_SESSION["cart"] = array();
@@ -1847,49 +1848,58 @@ if (isset($_POST['save_custom_length'])) {
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
 
-        $found = false;
-        foreach ($_SESSION["cart"] as &$item) {
-            if (
-                $item['product_id'] == $id &&
-                $item['estimate_length'] == $estimate_length &&
-                $item['estimate_length_inch'] == $estimate_length_inch
-            ) {
-                $item['quantity_cart'] += $quantity;
-                $found = true;
-                break;
-            }
-        }
-        unset($item);
+        foreach ($quantities as $idx => $qty) {
+            $quantity           = floatval($qty);
+            $estimate_length    = floatval($feet_list[$idx] ?? 0);
+            $estimate_length_in = floatval($inch_list[$idx] ?? 0);
+            $price              = floatval($prices[$idx] ?? 0);
 
-        if (!$found) {
-            $line_to_use = is_numeric($line) ? intval($line) : 1;
-            foreach ($_SESSION["cart"] as $item) {
-                if ($item['product_id'] == $id && $item['line'] >= $line_to_use) {
-                    $line_to_use = $item['line'] + 1;
+            if ($quantity <= 0) continue;
+
+            $found = false;
+            foreach ($_SESSION["cart"] as &$item) {
+                if (
+                    $item['product_id'] == $id &&
+                    $item['estimate_length'] == $estimate_length &&
+                    $item['estimate_length_inch'] == $estimate_length_in
+                ) {
+                    $item['quantity_cart'] += $quantity;
+                    $found = true;
+                    break;
                 }
             }
+            unset($item);
 
-            $item_array = array(
-                'product_id' => $row['product_id'],
-                'product_item' => $row['product_item'],
-                'unit_price' => $price,
-                'line' => $line_to_use,
-                'quantity_ttl' => getProductStockTotal($row['product_id']),
-                'quantity_in_stock' => 0,
-                'quantity_cart' => $quantity,
-                'estimate_width' => 0,
-                'estimate_length' => $estimate_length,
-                'estimate_length_inch' => $estimate_length_inch,
-                'usage' => 0,
-                'custom_color' => '',
-                'weight' => 0,
-                'supplier_id' => '',
-                'custom_grade' => '',
-                'custom_profile' => 0,
-                'custom_gauge' => ''
-            );
+            if (!$found) {
+                $line_to_use = is_numeric($line) ? intval($line) : 1;
+                foreach ($_SESSION["cart"] as $item) {
+                    if ($item['product_id'] == $id && $item['line'] >= $line_to_use) {
+                        $line_to_use = $item['line'] + 1;
+                    }
+                }
 
-            $_SESSION["cart"][] = $item_array;
+                $item_array = array(
+                    'product_id'         => $row['product_id'],
+                    'product_item'       => $row['product_item'],
+                    'unit_price'         => $price,
+                    'line'               => $line_to_use,
+                    'quantity_ttl'       => getProductStockTotal($row['product_id']),
+                    'quantity_in_stock'  => 0,
+                    'quantity_cart'      => $quantity,
+                    'estimate_width'     => 0,
+                    'estimate_length'    => $estimate_length,
+                    'estimate_length_inch'=> $estimate_length_in,
+                    'usage'              => 0,
+                    'custom_color'       => '',
+                    'weight'             => 0,
+                    'supplier_id'        => '',
+                    'custom_grade'       => '',
+                    'custom_profile'     => 0,
+                    'custom_gauge'       => ''
+                );
+
+                $_SESSION["cart"][] = $item_array;
+            }
         }
     } else {
         echo json_encode(['error' => "Trim Product not available"]);
@@ -1898,6 +1908,7 @@ if (isset($_POST['save_custom_length'])) {
 
     echo json_encode(['success' => $_SESSION["cart"]]);
 }
+
 
 if (isset($_POST['save_drawing'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
@@ -2541,9 +2552,13 @@ if (isset($_POST['add_to_cart'])) {
                 $row = mysqli_fetch_assoc($result);
                 $item_quantity = $qty;
 
-                $basePrice = floatval($row['unit_price']);
-                if($row['sold_by_feet'] == '1'){
-                    $basePrice = $basePrice / floatval($row['length'] ?? 1);
+                $basePrice = floatval($product_details['unit_price'] ?? 0);
+
+                if (!empty($product_details['sold_by_feet']) && $product_details['sold_by_feet'] == '1') {
+                    $length = floatval($product_details['length'] ?? 0);
+                    if ($length > 0) {
+                        $basePrice = $basePrice / $length;
+                    }
                 }
 
                 $unit_price = calculateUnitPrice(

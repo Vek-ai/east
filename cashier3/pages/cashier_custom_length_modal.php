@@ -126,17 +126,25 @@ if(isset($_POST['fetch_modal'])){
 
         <script>
             $(document).ready(function() {
-                function updatePrice($row) {
+                function updateAllPrices() {
                     const basePrice = parseFloat($('#product_price').val()) || 0;
-                    const feet = parseFloat($row.find('.custom_length_feet').val()) || 0;
-                    const inches = parseFloat($row.find('.custom_length_inch').val()) || 0;
-                    const quantity = parseFloat($row.find('.custom_length_quantity').val()) || 1;
+                    let grandTotal = 0;
 
-                    const totalLength = feet + (inches / 12);
-                    const multiplier = totalLength > 0 ? totalLength : 1; // prevent zero
-                    const finalPrice = (basePrice * multiplier * quantity).toFixed(2);
+                    $('.custom-length-row').each(function () {
+                        const $row = $(this);
 
-                    $('#price_display').text(finalPrice);
+                        const feet = parseFloat($row.find('.custom_length_feet').val()) || 0;
+                        const inches = parseFloat($row.find('.custom_length_inch').val()) || 0;
+                        const quantity = parseFloat($row.find('.custom_length_quantity').val()) || 1;
+
+                        const totalLength = feet + (inches / 12);
+                        const multiplier = totalLength > 0 ? totalLength : 1;
+                        const rowPrice = basePrice * multiplier * quantity;
+
+                        grandTotal += rowPrice;
+                    });
+
+                    $('#price_display').text(grandTotal.toFixed(2));
                 }
 
                 $(document).on('change', '.custom_length_select', function () {
@@ -147,12 +155,12 @@ if(isset($_POST['fetch_modal'])){
                     $row.find('.custom_length_feet').val(feet);
                     $row.find('.custom_length_inch').val(inch);
 
-                    updatePrice($row);
+                    updateAllPrices();
                 });
 
                 $(document).on('input', '.custom_length_quantity', function () {
                     let $row = $(this).closest('.custom-length-row');
-                    updatePrice($row);
+                    updateAllPrices();
                 });
 
                 $('#duplicateCustomLengthFields').on("click", function() {
@@ -166,7 +174,7 @@ if(isset($_POST['fetch_modal'])){
                     $(".custom-length-row").last().after($newRow);
                 });
 
-                updatePrice($(".custom-length-row").first());
+                updateAllPrices();
             });
 
         </script>
