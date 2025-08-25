@@ -273,10 +273,6 @@ if(isset($_POST['fetch_order'])){
             <input type="hidden" id="customer_tax_hidden" value="<?= $tax ?>">
 
             <div class="row text-start">
-                <div class="col-12 mb-2" style="color: #ffffff !important;">
-                    <h5 class="mb-1">Checkout</h5>
-                    <p>Welcome, <strong><?= $customer_name ?></strong></p>
-                </div>
                 <!-- Left Side -->
                 <div class="col-lg-8" style="color: #ffffff !important;">
                 
