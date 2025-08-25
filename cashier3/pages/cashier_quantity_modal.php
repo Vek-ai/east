@@ -274,8 +274,12 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
                 <?php 
                 $basePrice = floatval($product_details['unit_price'] ?? 0);
-                if($product_details['sold_by_feet'] == '1'){
-                    $basePrice = $basePrice / floatval($product_details['length'] ?? 1);
+
+                if (!empty($product_details['sold_by_feet']) && $product_details['sold_by_feet'] == '1') {
+                    $length = floatval($product_details['length'] ?? 0);
+                    if ($length > 0) {
+                        $basePrice = $basePrice / $length;
+                    }
                 }
                 ?>
 
