@@ -158,9 +158,11 @@ if(isset($_POST['fetch_prompt_quantity'])){
             <?php
             if($category_id == $panel_id){
             ?>
-            <a href="javascript:void(0)" type="button" id="duplicateFields" class="text-end">
-                <i class="fas fa-plus"></i>
-            </a>
+            <div class="col-7 text-end">
+                <a href="javascript:void(0)" type="button" id="duplicateFields" class="text-end">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
             <?php 
             } 
             ?>
