@@ -20,15 +20,15 @@ if(isset($_POST['fetch_available'])){
         ? "../" .$product['main_image']
         : $default_image;
         ?>
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content modal-content-demo">
-                <div class="modal-header">
-                    <h6 class="modal-title">Available Colors</h6>
-                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
+        <div class="modal-header">
+            <h6 class="modal-title">Available Colors</h6>
+            <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="card">
+                <div class="card-body">
                     <div class="d-flex align-items-center justify-content-start fw-bold mb-3">
                         <div class="d-flex align-items-center w-100">
                             <img src="<?= $picture_path ?>" class="rounded-circle me-2" alt="product-image" width="56" height="56">
@@ -64,12 +64,13 @@ if(isset($_POST['fetch_available'])){
                         <h5>If desired Quantity is not shown, then there may be a manufacture lead time of 2-3 days.</h5>
                     </div>
                 </div>
-                
-                <div class="modal-footer">
-                    <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-                </div>
             </div>
         </div>
+        
+        <div class="modal-footer">
+            <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+        </div>
+        
 <?php
     }
 }

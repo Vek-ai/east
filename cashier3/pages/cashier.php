@@ -341,10 +341,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         </div>
                     </div>
                     <div class="table-responsive border rounded">
-                        <table id="productTable" class="table align-middle text-wrap mb-0 text-white">
+                        <table id="productTable" class="table align-middle text-wrap mb-0 text-white text-center">
                             <thead>
                                 <tr>
-                                    <th scope="col" style="color: #ffffff !important; opacity: 1;">Products</th>
+                                    <th scope="col" style="color: #ffffff !important; opacity: 1;">Description </th>
                                     <th scope="col" style="color: #ffffff !important; opacity: 1;">Avail. Colors</th>
                                     <th scope="col" style="color: #ffffff !important; opacity: 1;">Grade</th>
                                     <th scope="col" style="color: #ffffff !important; opacity: 1;">Gauge</th>
@@ -656,7 +656,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 <button class="btn ripple btn-primary next" type="button" id="next_page_est">
                     <i class="fe fe-hard-drive"></i> Next
                 </button>
-                <button class="btn ripple btn-primary previous d-none" type="button" id="prev_page_est">
+                <button class="btn ripple btn-danger previous d-none" type="button" id="prev_page_est">
                     <i class="fe fe-hard-drive"></i> Previous
                 </button>
                 <button class="btn ripple btn-success d-none" type="button" id="save_estimate_modal">
@@ -674,15 +674,99 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     </div>
 </div>
 
-<div class="modal" id="viewDetailsModal"></div>
+<div class="modal" id="viewDetailsModal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Product Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            <div class="card">
+                <div class="card-body mb-0" id="viewDetailsModalBody">
+                
+                </div>
+            </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-<div class="modal" id="viewInStockmodal"></div>
+<div class="modal" id="viewInStockmodal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Stock Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="viewInStockmodalBody">
+                    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-<div class="modal" id="viewOutOfStockmodal"></div>
+<div class="modal" id="viewOutOfStockmodal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Stock Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="viewOutOfStockmodalBody">
+                    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-<div class="modal" id="viewAvailablemodal"></div>
+<div class="modal" id="viewAvailablemodal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Stock Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="viewAvailablemodalBody">
+                    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-<div class="modal" id="viewAvailableColormodal"></div>
+<div class="modal" id="viewAvailableColormodal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div id="viewAvailableColormodalBody" class="modal-content modal-content-demo">
+            
+        </div>
+    </div>
+</div>
 
 <div class="modal" id="cashmodal">
     <div class="modal-dialog modal-fullscreen" role="document">
@@ -706,7 +790,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 <button class="btn ripple btn-success" type="button" id="save_order_alt">
                     Place Order
                 </button>
-                <button class="btn ripple btn-primary previous d-none" type="button" id="prev_page_order">
+                <button class="btn ripple btn-danger previous d-none" type="button" id="prev_page_order">
                     <i class="fe fe-hard-drive"></i> Previous
                 </button>
                 <a href="#" class="btn ripple btn-light text-dark d-none" type="button" id="print_order_category" target="_blank">
@@ -4149,7 +4233,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     fetch_details_modal: "fetch_details_modal"
                 },
                 success: function(response) {
-                    $('#viewDetailsModal').html(response);
+                    $('#viewDetailsModalBody').html(response);
                     $('#viewDetailsModal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -4455,7 +4539,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         fetch_in_stock_modal: "fetch_in_stock_modal"
                     },
                     success: function(response) {
-                        $('#viewInStockmodal').html(response);
+                        $('#viewInStockmodalBody').html(response);
                         $('#viewInStockmodal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
@@ -4475,7 +4559,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     fetch_out_of_stock_modal: "fetch_out_of_stock_modal"
                 },
                 success: function(response) {
-                    $('#viewOutOfStockmodal').html(response);
+                    $('#viewOutOfStockmodalBody').html(response);
                     $('#viewOutOfStockmodal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -4498,7 +4582,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         fetch_available: "fetch_available"
                     },
                     success: function(response) {
-                        $('#viewAvailablemodal').html(response);
+                        $('#viewAvailablemodalBody').html(response);
                         $('#viewAvailablemodal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
@@ -4518,7 +4602,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     fetch_available: "fetch_available"
                 },
                 success: function(response) {
-                    $('#viewAvailableColormodal').html(response);
+                    $('#viewAvailableColormodalBody').html(response);
                     $('#viewAvailableColormodal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -4784,9 +4868,15 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             const selectedMethod = $(this).val();
 
             if (selectedMethod === 'deliver') {
-                $('#truck_div').removeClass('d-none');
+                $('#truck_div').addClass('d-none');
+                $('#ship_separate_address_div').removeClass('d-none');
+                $('#order_delivery_div').removeClass('d-none');
+                $('#pickup_details_div').removeClass('d-none');
             } else {
                 $('#truck_div').addClass('d-none');
+                $('#ship_separate_address_div').addClass('d-none');
+                $('#order_delivery_div').addClass('d-none');
+                $('#pickup_details_div').addClass('d-none');
             }
 
             calculateDeliveryAmount();

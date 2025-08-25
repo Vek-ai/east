@@ -144,24 +144,26 @@ if(isset($_POST['fetch_order'])){
             $customer_name = get_customer_name($_SESSION["customer_id"]);
         ?>
         <div class="form-group row align-items-center" style="color: #ffffff !important;">
-            <div class="col-6">
-                <label>Customer Name: <?= $customer_name ?></label>
-                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="customer_change_cash">
-                    <i class="fe fe-reload"></i> Change
-                </button>
-            </div>
-            <div class="col-6">
+            <div class="d-flex flex-column gap-2">
                 <div>
-                    <span class="fw-bold">Charge Net 30:</span><br>
-                    <span class="text-primary fs-4 fw-bold pl-3">$<?= number_format($charge_net_30,2) ?></span>
+                    <label>Customer Name: <?= $customer_name ?></label>
+                    <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="customer_change_cash">
+                        <i class="fe fe-reload"></i> Change
+                    </button>
                 </div>
-                <div>
-                    <span class="fw-bold">Unpaid Credit:</span><br>
-                    <span class="text-primary fs-4 fw-bold pl-3">$<?= $credit_total ?></span>
-                </div>
-                <div>
-                    <span class="fw-bold">Store Credit:</span><br>
-                    <span class="text-primary fs-4 fw-bold pl-3">$<?= $store_credit ?></span>
+                <div class="d-flex flex-wrap gap-4">
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="fw-bold">Charge Net 30 Limit:</span>
+                        <span class="text-primary fs-4 fw-bold">$<?= number_format($charge_net_30,2) ?></span>
+                    </div>
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="fw-bold">Current Balance Due:</span>
+                        <span class="text-primary fs-4 fw-bold">$<?= $credit_total ?></span>
+                    </div>
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="fw-bold">Available Credit:</span>
+                        <span class="text-primary fs-4 fw-bold">$<?= $store_credit ?></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -177,10 +179,6 @@ if(isset($_POST['fetch_order'])){
                         <span class="input-group-text"> + </span>
                     </a>
                 </div>
-            </div>
-            <div class="col-3">
-                <span class="fw-bold">Charge Net 30:</span><br>
-                <span class="text-primary fw-bold ms-3">$0.00</span>
             </div>
         </div>
         
@@ -287,14 +285,27 @@ if(isset($_POST['fetch_order'])){
                 <div class="card mb-3" style="color: #ffffff !important;">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <span><i class="fa fa-check-circle text-success me-2"></i>Contact Information</span>
-                        <a href="#" id="toggle_edit_info" class="text-primary">Edit Info</a>
+                        <?php 
+                        if (!empty($_SESSION["customer_id"])) {
+                            ?>
+                            <a href="#" id="toggle_edit_info" class="text-primary">Edit Info</a>
+                            <?php
+                        }
+                        ?>
                     </div>
+
+                    <?php 
+                    if (!empty($_SESSION["customer_id"])) {
+                    ?>
 
                     <div class="card-body">
                         <div id="display_contact_info">
+                            <div class="mb-2">
+                                <h6 class="mb-1"><?= $customer_details['address'] ?></h6>
+                                <p class="mb-1"><?= getCustomerAddress($_SESSION["customer_id"]) ?></p>
+                            </div>
                             <p class="mb-1" id="disp_email"><?= $customer_details['contact_email'] ?></p>
                             <p class="mb-2" id="disp_phone"><?= $customer_details['contact_phone'] ?></p>
-                            <h6 class="fs-2 mb-2">By providing the phone number above, you consent to receive automated text messages...</h6>
                             <div class="row">
                                 <div class="col-md-3">
                                     <label class="form-label mb-0">Tax Status</label>
@@ -359,6 +370,10 @@ if(isset($_POST['fetch_order'])){
                             </div>
                         </div>
                     </div>
+
+                    <?php
+                    }
+                    ?>
                 </div>
 
                 <!-- Job Details -->
@@ -442,8 +457,10 @@ if(isset($_POST['fetch_order'])){
                     <i class="fa fa-check-circle text-success me-2"></i>Pickup Details
                     </div>
                     <div class="card-body">
-                    <h6 class="mb-1"><?= $customer_details['address'] ?></h6>
-                    <p class="mb-1"><?= getCustomerAddress($_SESSION["customer_id"]) ?> <a href="#" class="ms-2">(606) 330-1440</a></p>
+                        <div id="pickup_details_div" class="d-none">
+                            <h6 class="mb-1"><?= $customer_details['address'] ?></h6>
+                            <p class="mb-1"><?= getCustomerAddress($_SESSION["customer_id"]) ?></p>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">How would you like to pick up your order?</label>
 
@@ -455,12 +472,6 @@ if(isset($_POST['fetch_order'])){
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="order_delivery_method" id="deliver_option" value="deliver">
                                 <label class="form-check-label" for="delivery_option">Delivery</label>
-                            </div>
-
-                            <div class="mb-3">
-                                <small>
-                                    We'll email you when your order is ready.
-                                </small>
                             </div>
 
                             <div id="truck_div" class="col-md-3 mb-3 d-none">
@@ -496,7 +507,7 @@ if(isset($_POST['fetch_order'])){
                                 </div>
                             </div>
 
-                            <div class="mb-2">
+                            <div class="my-2 d-none" id="ship_separate_address_div">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="ship_separate_address">
                                     <label class="form-check-label" for="ship_separate_address">
@@ -549,7 +560,7 @@ if(isset($_POST['fetch_order'])){
                 <!-- Payment -->
                 <div class="card mb-3" style="color: #ffffff !important;">
                     <div class="card-header bg-white">
-                    <i class="fa fa-check-circle text-success me-2"></i>Pickup Details Payment
+                    <i class="fa fa-check-circle text-success me-2"></i>Payment
                     </div>
                     <div class="card-body">
                     
@@ -624,7 +635,7 @@ if(isset($_POST['fetch_order'])){
                     </div>
                     <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center flex-column flex-sm-row mb-2">
-                        <span>Item Subtotal (<?= $_SESSION["total_quantity"] ?? '0' ?>)</span>
+                        <span>Materials Price</span>
                         <div class="d-flex flex-column align-items-end">
                             <span>$<?= number_format($total_customer_price,2) ?></span>
                             <div style="width: 100px; height: 2px; background-color: white; margin-top: 2px;"></div>
@@ -632,11 +643,11 @@ if(isset($_POST['fetch_order'])){
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center pb-2">
-                        <span>Estimated Tax</span>
+                        <span>Sales Tax</span>
                         <span>$<?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center pb-2">
+                    <div id="order_delivery_div" class="d-flex justify-content-between align-items-center pb-2 d-none">
                         <span>Delivery</span>
                         <span>$<span id="order_delivery_amt"><?= number_format(0, 2) ?></span></span>
                     </div>
@@ -665,7 +676,7 @@ if(isset($_POST['fetch_order'])){
                     </div>
                     
                     <div class="d-flex justify-content-between">
-                        <strong>Estimated Total</strong>
+                        <strong>Total Price</strong>
                         <p><strong id="order_total"></strong></p>
                     </div>
                     <button class="btn btn-success w-100 mt-3" id="save_order">Place Order</button>

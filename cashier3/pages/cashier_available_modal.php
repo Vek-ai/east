@@ -16,43 +16,32 @@ if(isset($_POST['fetch_available'])){
 
     if (mysqli_num_rows($result) > 0) {
         ?>
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content modal-content-demo">
-                <div class="modal-header">
-                    <h6 class="modal-title">Stock Details</h6>
-                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <table id="productTable" class="table align-middle text-nowrap mb-0">
-                        <thead>
-                            <tr>
-                                <th scope="col">Products</th>
-                                <th scope="col">Grade</th>
-                                <th scope="col">Color</th>
-                                <th scope="col">Gauge</th>
-                                <th scope="col">Width</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                                while($row = mysqli_fetch_assoc($result)){
-                                ?>
-                                <td><?= $row['coil'] ?></td>
-                                <td><?= getGradeName($row['grade']) ?></td>
-                                <td><?= getColorName($row['color']) ?></td>
-                                <td><?= getGaugeName($row['gauge']) ?></td>
-                                <td><?= $row['width'] ?></td>
-                                <?php
-                                }                    
+        <div class="card">
+            <div class="card-body">
+                <table id="productTable" class="table align-middle text-nowrap mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Products</th>
+                            <th scope="col">Grade</th>
+                            <th scope="col">Color</th>
+                            <th scope="col">Gauge</th>
+                            <th scope="col">Width</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                            while($row = mysqli_fetch_assoc($result)){
                             ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-                </div>
+                            <td><?= $row['coil'] ?></td>
+                            <td><?= getGradeName($row['grade']) ?></td>
+                            <td><?= getColorName($row['color']) ?></td>
+                            <td><?= getGaugeName($row['gauge']) ?></td>
+                            <td><?= $row['width'] ?></td>
+                            <?php
+                            }                    
+                        ?>
+                    </tbody>
+                </table>
             </div>
         </div>
 <?php

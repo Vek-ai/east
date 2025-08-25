@@ -17,131 +17,130 @@ if(isset($_POST['fetch_details_modal'])){
         $row = mysqli_fetch_assoc($result);
         
         ?>
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content modal-content-demo">
-                <div class="modal-header">
-                    <h6 class="modal-title">Product Details</h6>
-                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                <div class="card">
-                    <div class="card-body p-4">
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <div id="sync1" class="owl-carousel owl-theme">
-                                <?php
-                                    $query_prod_img = "SELECT * FROM product_images WHERE productid = '$product_id'";
-                                    $result_prod_img = mysqli_query($conn, $query_prod_img);  
+        <style>
+        #sync1 .item img {
+            width: 100%;
+            height: 400px;
+            object-fit: contain;
+            object-position: center;
+            border-radius: 6px;
+            display: block;
+        }
+        #sync2 .item img {
+            width: 100%;
+            height: 50px;
+            object-fit: contain;
+            object-position: center;
+            border-radius: 4px;
+            display: block;
+        }
+        </style>
+        <div class="row">
+            <div class="col-lg-6">
+                <div id="sync1" class="owl-carousel owl-theme">
+                    <?php
+                        $query_prod_img = "SELECT * FROM product_images WHERE productid = '$product_id'";
+                        $result_prod_img = mysqli_query($conn, $query_prod_img);  
 
-                                    if ($result_prod_img && mysqli_num_rows($result_prod_img) > 0) {
-                                        while ($row_prod_img = mysqli_fetch_array($result_prod_img)) {
-                                            $image_url = !empty($row_prod_img['image_url'])
-                                                ? "../" . $row_prod_img['image_url']
-                                                : "../images/product/product.jpg";
-                                            ?>
-                                            <div class="item rounded overflow-hidden">
-                                                <img src="<?=$image_url?>" alt="materialpro-img" class="img-fluid">
-                                            </div>
-                                            <?php 
-                                        }
-                                    } else {
-                                        ?>
-                                        <div class="item rounded overflow-hidden">
-                                            <img src="../images/product/product.jpg" alt="materialpro-img" class="img-fluid">
-                                        </div>
-                                        <?php
-                                    } 
-                                ?> 
-                            </div>
-
-                            <div id="sync2" class="owl-carousel owl-theme">
-                                <?php
-                                    if ($result_prod_img && mysqli_num_rows($result_prod_img) > 0) {
-                                        mysqli_data_seek($result_prod_img, 0);
-                                        while ($row_prod_img = mysqli_fetch_array($result_prod_img)) {
-                                            $image_url = !empty($row_prod_img['image_url'])
-                                                ? "../" . $row_prod_img['image_url']
-                                                : "../images/product/product.jpg";
-                                            ?>
-                                            <div class="item rounded overflow-hidden">
-                                                <img src="<?=$image_url?>" alt="materialpro-img" class="img-fluid">
-                                            </div>
-                                            <?php 
-                                        }
-                                    } else {
-                                        ?>
-                                        <div class="item rounded overflow-hidden">
-                                            <img src="../images/product/product.jpg" alt="materialpro-img" class="img-fluid">
-                                        </div>
-                                        <?php
-                                    } 
+                        if ($result_prod_img && mysqli_num_rows($result_prod_img) > 0) {
+                            while ($row_prod_img = mysqli_fetch_array($result_prod_img)) {
+                                $image_url = !empty($row_prod_img['image_url'])
+                                    ? "../" . $row_prod_img['image_url']
+                                    : "../images/product/product.jpg";
                                 ?>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="shop-content">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                <?php
-                                $totalQuantity = getProductStockTotal($row['product_id']);
-                                if($totalQuantity > 0){
-                                ?>
-                                    <span class="badge text-bg-success fs-2 fw-semibold">In Stock</span>
-                                <?php
-                                }else{
-                                ?>
-                                    <span class="badge text-bg-danger fs-2 fw-semibold">Out of Stock</span>
-                                <?php
-                                }
-                                ?>
-                                
-                                <span class="fs-2"><?= getProductCategoryName($row['product_category']) ?></span>
+                                <div class="item rounded overflow-hidden">
+                                    <img src="<?=$image_url?>" alt="materialpro-img" class="img-fluid">
                                 </div>
-                                <h4><?= $row['product_item'] ?></h4>
-                                <p class="mb-3"><?= $row['description'] ?></p>
-                                <h4 class="fw-semibold mb-3">
-                                    $<?= $row['unit_price'] ?> 
-                                </h4>
-                                <div class="d-flex align-items-center gap-8 py-7">
-                                    <?php
-                                    if (!empty($row['color'])) {
-                                    ?>
-                                        <h6 class="mb-0 fs-4 fw-semibold">Colors:</h6>
-                                        <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color: <?= getColorHexFromColorID($row['color']) ?>"></a>
-                                    <?php 
-                                    }
-                                    ?> 
-                                </div>
-
-                            </div>
-                        </div>
-                        <div class="col-lg-12">
-                            <?php
-                                $statusMessages = [];
-                                if (!empty($row['on_sale']) && $row['on_sale'] == 1) {
-                                    $statusMessages[] = "<span class='badge bg-success me-1'>On Sale</span>";
-                                }
-                                if (!empty($row['on_promotion']) && $row['on_promotion'] == 1) {
-                                    $statusMessages[] = "<span class='badge bg-warning text-dark'>On Promotion</span>";
-                                }
-                                
-                                if (!empty($statusMessages)) {
-                                    echo "<h5>Status: " . implode(" & ", $statusMessages) . "</h5>";
-
-                                    if (!empty($row['reason'])) {
-                                        echo "<p class='mb-0'><em>Reason:</em> " . htmlspecialchars($row['reason']) . "</p>";
-                                    }
-                                }
+                                <?php 
+                            }
+                        } else {
                             ?>
-                        </div>
+                            <div class="item rounded overflow-hidden">
+                                <img src="../images/product/product.jpg" alt="materialpro-img" class="img-fluid">
+                            </div>
+                            <?php
+                        } 
+                    ?> 
+                </div>
+
+                <div id="sync2" class="owl-carousel owl-theme">
+                    <?php
+                        if ($result_prod_img && mysqli_num_rows($result_prod_img) > 0) {
+                            mysqli_data_seek($result_prod_img, 0);
+                            while ($row_prod_img = mysqli_fetch_array($result_prod_img)) {
+                                $image_url = !empty($row_prod_img['image_url'])
+                                    ? "../" . $row_prod_img['image_url']
+                                    : "../images/product/product.jpg";
+                                ?>
+                                <div class="item rounded overflow-hidden">
+                                    <img src="<?=$image_url?>" alt="materialpro-img" class="img-fluid">
+                                </div>
+                                <?php 
+                            }
+                        } else {
+                            ?>
+                            <div class="item rounded overflow-hidden">
+                                <img src="../images/product/product.jpg" alt="materialpro-img" class="img-fluid">
+                            </div>
+                            <?php
+                        } 
+                    ?>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="shop-content">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                    <?php
+                    $totalQuantity = getProductStockTotal($row['product_id']);
+                    if($totalQuantity > 0){
+                    ?>
+                        <span class="badge text-bg-success fs-2 fw-semibold">In Stock</span>
+                    <?php
+                    }else{
+                    ?>
+                        <span class="badge text-bg-danger fs-2 fw-semibold">Out of Stock</span>
+                    <?php
+                    }
+                    ?>
+                    
+                    <span class="fs-2"><?= getProductCategoryName($row['product_category']) ?></span>
                     </div>
+                    <h4><?= $row['product_item'] ?></h4>
+                    <p class="mb-3"><?= $row['description'] ?></p>
+                    <h4 class="fw-semibold mb-3">
+                        $<?= $row['unit_price'] ?> 
+                    </h4>
+                    <div class="d-flex align-items-center gap-8 py-7">
+                        <?php
+                        if (!empty($row['color'])) {
+                        ?>
+                            <h6 class="mb-0 fs-4 fw-semibold">Colors:</h6>
+                            <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color: <?= getColorHexFromColorID($row['color']) ?>"></a>
+                        <?php 
+                        }
+                        ?> 
                     </div>
+
                 </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-                </div>
+            </div>
+            <div class="col-lg-12">
+                <?php
+                    $statusMessages = [];
+                    if (!empty($row['on_sale']) && $row['on_sale'] == 1) {
+                        $statusMessages[] = "<span class='badge bg-success me-1'>On Sale</span>";
+                    }
+                    if (!empty($row['on_promotion']) && $row['on_promotion'] == 1) {
+                        $statusMessages[] = "<span class='badge bg-warning text-dark'>On Promotion</span>";
+                    }
+                    
+                    if (!empty($statusMessages)) {
+                        echo "<h5>Status: " . implode(" & ", $statusMessages) . "</h5>";
+
+                        if (!empty($row['reason'])) {
+                            echo "<p class='mb-0'><em>Reason:</em> " . htmlspecialchars($row['reason']) . "</p>";
+                        }
+                    }
+                ?>
             </div>
         </div>
         <script>
@@ -230,6 +229,7 @@ if(isset($_POST['fetch_details_modal'])){
                 });
                 });
         </script>
+        
 <?php
     }
 }

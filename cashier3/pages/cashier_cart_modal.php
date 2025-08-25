@@ -98,6 +98,14 @@ if(isset($_POST['fetch_cart'])){
         .select2-container--default .select2-results__option[aria-disabled=true] { 
             display: none;
         }
+
+        .short-border {
+            display: inline-block;
+            padding-bottom: 2px;
+            border-bottom: 2px solid #000;
+            width: 120px;
+            text-align: right;
+        }
     </style>
     <div id="customer_cart_section">
         <?php 
@@ -107,27 +115,31 @@ if(isset($_POST['fetch_cart'])){
                 $charge_net_30 = floatval($customer_details['charge_net_30'] ?? 0);
                 $credit_total = getCustomerCreditTotal($customer_id);
                 $store_credit = floatval($customer_details['store_credit'] ?? 0);
+
+                $customer_name = get_customer_name($_SESSION["customer_id"]);
             ?>
 
             <div class="form-group row align-items-center" style="color: #ffffff !important;">
-                <div class="col-6">
-                    <label class="mb-0 me-3">Customer Name: <?= get_customer_name($_SESSION["customer_id"]);?></label>
-                    <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">
-                        <i class="fe fe-reload"></i> Change
-                    </button>
-                </div>
-                <div class="col-6">
+                <div class="d-flex flex-column gap-2">
                     <div>
-                        <span class="fw-bold">Charge Net 30:</span><br>
-                        <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($charge_net_30,2) ?></span>
+                        <label class="fw-bold fs-5">Customer Name: <?= $customer_name ?></label>
+                        <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">
+                            <i class="fe fe-reload"></i> Change
+                        </button>
                     </div>
-                    <div>
-                        <span class="fw-bold">Unpaid Credit:</span><br>
-                        <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($credit_total,2) ?></span>
-                    </div>
-                    <div>
-                        <span class="fw-bold">Store Credit:</span><br>
-                        <span class="text-primary fs-5 fw-bold pl-3">$<?= number_format($store_credit,2) ?></span>
+                    <div class="d-flex flex-wrap gap-5">
+                        <div class="d-flex flex-column align-items-start">
+                            <span class="fw-bold">Charge Net 30 Limit:</span>
+                            <span class="text-primary fs-4 fw-bold">$<?= number_format($charge_net_30,2) ?></span>
+                        </div>
+                        <div class="d-flex flex-column align-items-start">
+                            <span class="fw-bold">Current Balance Due:</span>
+                            <span class="text-primary fs-4 fw-bold">$<?= $credit_total ?></span>
+                        </div>
+                        <div class="d-flex flex-column align-items-start">
+                            <span class="fw-bold">Available Credit:</span>
+                            <span class="text-primary fs-4 fw-bold">$<?= $store_credit ?></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -141,10 +153,6 @@ if(isset($_POST['fetch_cart'])){
                             <span class="input-group-text"> + </span>
                         </a>
                     </div>
-                </div>
-                <div class="col-6">
-                    <span class="fw-bold">Charge Net 30:</span><br>
-                    <span class="text-primary fw-bold ms-3">$0.00</span>
                 </div>
             </div>
         <?php } ?>
@@ -161,7 +169,7 @@ if(isset($_POST['fetch_cart'])){
                         <th class="text-center">Grade</th>
                         <th class="text-center">Profile</th>
                         <th class="text-center pl-3">Quantity</th>
-                        <th class="text-center">Dimensions<br>(Width x Length)</th>
+                        <th class="text-center">Length</th>
                         <th class="text-center">Stock</th>
                         <th class="text-center">Price</th>
                         <th class="text-center small">Customer<br>Price</th>
@@ -268,7 +276,7 @@ if(isset($_POST['fetch_cart'])){
                                         <?php endif; ?>
                                     </h6>
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     <select id="color_cart<?= $line ?>" class="form-control color-cart text-start" name="color" onchange="updateColor(this)" data-line="<?= $line; ?>" data-id="<?= $data_id; ?>">
                                         <option value="">Select Color...</option>
                                         <?php
@@ -292,7 +300,7 @@ if(isset($_POST['fetch_cart'])){
                                         ?>
                                     </select>
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     <?php
                                     if(!empty($product['grade'])){
                                     ?>
@@ -316,10 +324,10 @@ if(isset($_POST['fetch_cart'])){
                                     }
                                     ?>
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     <?php echo getProfileFromID($data_id); ?>
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                         <button class="btn btn-primary btn-sm p-1" type="button"
                                             data-line="<?php echo $line; ?>" 
@@ -479,8 +487,8 @@ if(isset($_POST['fetch_cart'])){
                                     <?php
                                     }
                                     ?>
-                                <td><?= $stock_text ?></td>
-                                <td class="text-end pl-3">$
+                                <td class="text-center"><?= $stock_text ?></td>
+                                <td class="text-center pl-3">$
                                     <?php
                                     $subtotal = $product_price;
                                     echo number_format($subtotal, 2);
@@ -492,7 +500,7 @@ if(isset($_POST['fetch_cart'])){
                                     echo number_format($customer_price, 2);
                                     ?>
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
                                     <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $line; ?>" data-id="<?php echo $data_id; ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
                                     <input type="hidden" class="form-control" data-id="<?php echo $data_id; ?>" id="item_id<?php echo $data_id; ?>" value="<?php echo $values["product_id"]; ?>">
@@ -545,40 +553,29 @@ if(isset($_POST['fetch_cart'])){
                         <td colspan="1" class="text-end"><span id="ammount_due">$<?= number_format($customer_savings,2) ?></span></td>
                         <td colspan="1"></td>
                     </tr>
+                    <tr>
+                        <th colspan="8" style="border-bottom: none; border-top: none;"></th>
+                        <th class="text-end" style="border-bottom: 1px solid #dee2e6;">Materials Price:</th>
+                        <td class="text-end" style="border-bottom: 1px solid #dee2e6;">
+                            $<span id="total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="8" style="border-bottom: none; border-top: none;"></th>
+                        <th class="text-end" style="border-bottom: 1px solid #dee2e6;">Sales Tax:</th>
+                        <td class="text-end" style="border-bottom: 1px solid #dee2e6;">
+                            $<span id="sales_tax"><?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="8" style="border-bottom: none; border-top: none;"></th>
+                        <th class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">Total Due:</th>
+                        <td class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">
+                            $<span id="total_payable_est"><?= number_format((floatval($total_customer_price)), 2) ?></span>
+                        </td>
+                    </tr>
                 </tfoot>
             </table>
-        </div>
-        <div id="checkout" class="row mt-3">
-            <div class="col-md-8">
-                
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body pricing">
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <tbody>
-                                    <tr>
-                                        <th class="text-right border-bottom">Materials Price</th>
-                                        <td class="text-right border-bottom">$ <span id="total_amt"><?= number_format(floatval($total_customer_price), 2) ?></span></td>
-                                        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                                    </tr>
-                                    <tr>
-                                        <th class="text-right border-bottom">Sales Tax</th>
-                                        <td class="text-right border-bottom">$ <span id="sales_tax"><?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span></td>
-                                        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                                    </tr>
-                                    <tr>
-                                        <th class="text-right border-bottom">Total Due</th>
-                                        <td class="text-right border-bottom">$ <span id="total_payable_est"><?= number_format((floatval($total_customer_price)), 2) ?></span></td>
-                                        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>   
     <script>

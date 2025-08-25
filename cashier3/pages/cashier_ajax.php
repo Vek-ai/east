@@ -282,13 +282,14 @@ if (isset($_REQUEST['query'])) {
             $is_special_trim = $row_product['product_id'] == $special_trim_id ? true : false;
             $is_custom_length = $row_product['is_custom_length'] == 1 ? true : false;
 
-            $qty_input = !$is_panel  && !$is_custom_truss && !$is_special_trim && !$is_trim && !$is_custom_length && !$is_screw
-                ? ' <div class="input-group input-group-sm">
+            $qty_input = !$is_panel && !$is_custom_truss && !$is_special_trim && !$is_trim && !$is_custom_length && !$is_screw
+                ? ' <div class="input-group input-group-sm d-flex justify-content-center">
                         <button class="btn btn-outline-primary btn-minus" type="button" data-id="' . $row_product['product_id'] . '">-</button>
-                        <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1">
+                        <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1" style="max-width:70px;">
                         <button class="btn btn-outline-primary btn-plus" type="button" data-id="' . $row_product['product_id'] . '">+</button>
                     </div>'
                 : '';
+
 
             if($is_custom_truss){
                 $btn_id = 'add-to-cart-custom-truss-btn';
@@ -319,16 +320,16 @@ if (isset($_REQUEST['query'])) {
                     </a>
                 </td>
                 <td>
-                    <div class="d-flex mb-0 gap-8">
+                    <div class="d-flex justify-content-center mb-0 gap-8 text-center">
                         <a href="javascript:void(0)" id="view_available_color" data-id="'.$row_product['product_id'].'">See Colors</a>
                     </div>
                 </td>
-                <td><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0">'. getGradeName($row_product['grade']) .'</a></td>
-                <td><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0">'. getGaugeName($row_product['gauge']) .'</a></td>
-                <td><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0">'. getProductTypeName($row_product['product_type']) .'</a></td>
-                <td><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0">'. getProfileTypeName($row_product['profile']) .'</a></td>
+                <td class="text-center"><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'. getGradeName($row_product['grade']) .'</a></td>
+                <td class="text-center"><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'. getGaugeName($row_product['gauge']) .'</a></td>
+                <td class="text-center"><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'. getProductTypeName($row_product['product_type']) .'</a></td>
+                <td class="text-center"><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'. getProfileTypeName($row_product['profile']) .'</a></td>
                 <td>
-                    <div class="d-flex align-items-center">'.$stock_text.'</div>
+                    <div class="d-flex justify-content-center align-items-center">'.$stock_text.'</div>
                 </td>
                 <td>
                     '.$qty_input.'
