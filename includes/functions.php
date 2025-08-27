@@ -2614,4 +2614,31 @@ function getSalePrice($id) {
 
     return $unit_price;
 }
+
+function parseNumber($input) {
+    // Allow only digits, one space, slash, and dot
+    $input = trim($input);
+
+    // Reject if it has disallowed characters
+    if (!preg_match('/^[0-9]+(\.[0-9]+)?$|^[0-9]+ [0-9]+\/[0-9]+$|^[0-9]+\/[0-9]+$/', $input)) {
+        return 0;
+    }
+
+    // If it's already a decimal number (like 1.25)
+    if (is_numeric($input)) {
+        return floatval($input);
+    }
+
+    // If it contains a fraction (with optional whole number + ONE space)
+    if (preg_match('/^(\d+)? ?(\d+)\/(\d+)$/', $input, $matches)) {
+        $whole = isset($matches[1]) && $matches[1] !== '' ? intval($matches[1]) : 0;
+        $numerator = intval($matches[2]);
+        $denominator = intval($matches[3]);
+
+        if ($denominator == 0) return 0; // prevent division by zero
+        return $whole + ($numerator / $denominator);
+    }
+
+    return 0;
+}
 ?>

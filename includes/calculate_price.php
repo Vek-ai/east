@@ -11,7 +11,7 @@ function calculateUnitPrice($basePrice, $lengthFeet, $lengthInch, $panelType, $s
         $extraCostPerFoot = getPaymentSetting('drip_stop');
     }
 
-    $totalLength = $lengthFeet + ($lengthInch / 12);
+    $totalLength = parseNumber($lengthFeet) + (parseNumber($lengthInch) / 12);
 
     if ($soldByFeet == 1) {
         $computedPrice = $totalLength * ($basePrice + $extraCostPerFoot);

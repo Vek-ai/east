@@ -2533,11 +2533,10 @@ if (isset($_POST['add_to_cart'])) {
     $line = 1;
 
     foreach ($quantity as $index => $qty) {
-        $length_feet = isset($lengthFeet[$index]) ? floatval($lengthFeet[$index]) : 0;
-        $inch        = isset($lengthInch[$index]) ? floatval($lengthInch[$index]) : 0;
-        $fractionVal = isset($lengthFraction[$index]) ? floatval($lengthFraction[$index]) : 0;
+        $length_feet = isset($lengthFeet[$index]) ? parseNumber($lengthFeet[$index]) : 0;
+        $inch        = isset($lengthInch[$index]) ? parseNumber($lengthInch[$index]) : 0;
 
-        $length_inch = $inch + $fractionVal;
+        $length_inch = $inch;
 
         $quantityInStock = getProductStockInStock($product_id);
         $totalQuantity   = getProductStockTotal($product_id);

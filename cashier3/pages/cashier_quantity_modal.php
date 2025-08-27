@@ -141,14 +141,10 @@ if(isset($_POST['fetch_prompt_quantity'])){
                                 placeholder="FT" style="color:#ffffff; max-width:70px;">
 
                             <input step="0.0001" class="form-control form-control-sm mr-1 length_inch" 
-                                type="number" id="length_inch" name="length_inch[]" 
+                                type="text" id="length_inch" name="length_inch[]" 
                                 list="length_inch_datalist" 
                                 value="<?= $values["estimate_length_inch"]; ?>" 
                                 placeholder="IN" style="color:#ffffff; max-width:70px;">
-
-                            <input class="form-control form-control-sm fraction_input" 
-                                type="number" step="0.01" id="length_fraction" name="length_fraction[]" 
-                                placeholder="Fraction" style="color:#ffffff; max-width:80px;">
                         </div>
                     </fieldset>
                 </div>
@@ -277,12 +273,8 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 });
                 
                 $('.length_inch').each(function(i) {
-                    let inch = parseFloat($(this).val()) || 0;
-                    let fraction = parseFraction($('.fraction_input').eq(i).val());
-
-                    console.log(fraction)
-
-                    lengthInchArr.push(inch + fraction);
+                    let inch = $(this).val();
+                    lengthInchArr.push(inch);
                 });
 
                 const panelType = $('input[name="panel_type"]:checked').val();
@@ -381,7 +373,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 }
             });
 
-            $(document).on("keydown", ".fraction_input", function(e) {
+            $(document).on("keydown", ".length_inch", function(e) {
                 if (e.key === "Tab" && !e.shiftKey) {
                     e.preventDefault();
 
@@ -477,7 +469,7 @@ if (isset($_POST['fetch_price'])) {
 
             foreach ($quantities as $index => $quantity) {
                 $length_feet = isset($lengthFeet[$index]) ? floatval($lengthFeet[$index]) : 0;
-                $length_inch = isset($lengthInch[$index]) ? floatval($lengthInch[$index]) : 0;
+                $length_inch = isset($lengthInch[$index]) ? $lengthInch[$index] : 0;
 
                 $totalPrice += $quantity * calculateUnitPrice(
                     $basePrice,
