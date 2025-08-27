@@ -197,7 +197,7 @@ if(isset($_POST['fetch_order'])){
         foreach ($_SESSION["cart"] as $keys => $values) {
             $data_id = $values["product_id"];
             $product = getProductDetails($data_id);
-            $totalstockquantity = $values["quantity_ttl"] + $values["quantity_in_stock"];
+            $totalstockquantity = getProductStockTotal($data_id);
             $category_id = $product["product_category"];
             if ($totalstockquantity > 0) {
                 $stock_text = '
