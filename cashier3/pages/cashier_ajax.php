@@ -48,10 +48,14 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
     }
 
     $key = false;
-    foreach ($_SESSION['cart'] as $k => $item) {
-        if ($item['product_id'] == $product_id) {
-            $key = $k;
-            break;
+    if ($line > 0 && isset($_SESSION['cart'][$line])) {
+        $key = $line;
+    } else {
+        foreach ($_SESSION['cart'] as $k => $item) {
+            if ($item['product_id'] == $product_id) {
+                $key = $k;
+                break;
+            }
         }
     }
 
