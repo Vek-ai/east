@@ -1918,7 +1918,7 @@ function getAvailableCoils($color_id = '', $grade = '', $width = '') {
     global $conn;
 
     $assigned_ids = [];
-    $res = mysqli_query($conn, "SELECT assigned_coils FROM work_order WHERE assigned_coils IS NOT NULL AND assigned_coils != ''");
+    $res = mysqli_query($conn, "SELECT assigned_coils FROM work_order WHERE assigned_coils IS NOT NULL AND assigned_coils != '' AND status != 4");
     while ($row = mysqli_fetch_assoc($res)) {
         $decoded = json_decode($row['assigned_coils'], true);
         if (is_array($decoded)) {
