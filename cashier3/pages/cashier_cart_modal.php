@@ -176,6 +176,7 @@ if(isset($_POST['fetch_cart'])){
                         <th class="text-center"> </th>
                     </tr>
                 </thead>
+                <script><?= print_r($_SESSION["cart"]) ?></script>
                 <tbody>
                     <?php 
                     $total = 0;
@@ -390,7 +391,7 @@ if(isset($_POST['fetch_cart'])){
                                                             step="0.001" 
                                                             placeholder="IN" 
                                                             size="5" 
-                                                            style="width: 40px; color:#ffffff;" 
+                                                            style="width: 60px; color:#ffffff;" 
                                                             data-line="<?= $line; ?>" 
                                                             data-id="<?= $data_id; ?>" 
                                                             onchange="updateEstimateLengthInch(this)">

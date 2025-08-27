@@ -249,7 +249,21 @@ if(isset($_POST['fetch_prompt_quantity'])){
         </div>
         <script>
         $(document).ready(function () {
+            function parseFraction(val) {
+                if (!val) return 0;
+                if (val.includes('/')) {
+                    let parts = val.split('/');
+                    if (parts.length === 2) {
+                        let num = parseFloat(parts[0]) || 0;
+                        let den = parseFloat(parts[1]) || 1;
+                        return den !== 0 ? num / den : 0;
+                    }
+                }
+                return parseFloat(val) || 0;
+            }
+
             function calculateProductCost() {
+                const product_id = $('#product_id').val();
                 const quantities = [];
                 const lengthFeetArr = [];
                 const lengthInchArr = [];
@@ -262,8 +276,13 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     lengthFeetArr.push(parseInt($(this).val()) || 0);
                 });
                 
-                $('.length-field #length_inch').each(function() {
-                    lengthInchArr.push(parseInt($(this).val()) || 0);
+                $('.length_inch').each(function(i) {
+                    let inch = parseFloat($(this).val()) || 0;
+                    let fraction = parseFraction($('.fraction_input').eq(i).val());
+
+                    console.log(fraction)
+
+                    lengthInchArr.push(inch + fraction);
                 });
 
                 const panelType = $('input[name="panel_type"]:checked').val();
@@ -289,6 +308,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     url: 'pages/cashier_quantity_modal.php',
                     method: 'POST',
                     data: {
+                        product_id: product_id,
                         quantity: quantities,
                         lengthFeet: lengthFeetArr,
                         lengthInch: lengthInchArr,
@@ -382,7 +402,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 $('.quantity-length-container').last().after($newRow);
             });
 
-            $(document).on('change input', '.quantity-product, .length_feet, .length_inch, input[name="panel_type"], #bend_product, #hem_product', calculateProductCost);
+            $(document).on('change input', '.quantity-product, .length_feet, .length_inch, .fraction_input, input[name="panel_type"], #bend_product, #hem_product', calculateProductCost);
 
             $('input[name="panel_type"]').on('change', calculateProductCost);
 
@@ -438,22 +458,38 @@ if(isset($_POST['fetch_prompt_quantity'])){
 }
 
 if (isset($_POST['fetch_price'])) {
+    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
     $quantities = isset($_POST['quantity']) ? $_POST['quantity'] : [];
     $lengthFeet = isset($_POST['lengthFeet']) ? $_POST['lengthFeet'] : [];
     $lengthInch = isset($_POST['lengthInch']) ? $_POST['lengthInch'] : [];
-    $panelType = isset($_POST['panelType']) ? $_POST['panelType'] : '';
-    $soldByFeet = isset($_POST['soldByFeet']) ? intval($_POST['soldByFeet']) : 0;
-    $bends = isset($_POST['bends']) ? intval($_POST['bends']) : 0;
-    $hems = isset($_POST['hems']) ? intval($_POST['hems']) : 0;
-    $basePrice = isset($_POST['basePrice']) ? floatval($_POST['basePrice']) : 0;
+    $panelType  = isset($_POST['panelType']) ? $_POST['panelType'] : '';
+    $bends      = isset($_POST['bends']) ? intval($_POST['bends']) : 0;
+    $hems       = isset($_POST['hems']) ? intval($_POST['hems']) : 0;
 
     $totalPrice = 0;
 
-    foreach ($quantities as $index => $quantity) {
-        $length_feet = isset($lengthFeet[$index]) ? intval($lengthFeet[$index]) : 0;
-        $length_inch = isset($lengthInch[$index]) ? intval($lengthInch[$index]) : 0;
+    if ($product_id > 0) {
+        $product = getProductDetails($product_id);
 
-        $totalPrice += $quantity * calculateUnitPrice($basePrice, $length_feet, $length_inch, $panelType, $soldByFeet, $bends, $hems);
+        if ($product) {
+            $basePrice   = floatval($product['unit_price']);
+            $soldByFeet  = intval($product['sold_by_feet']);
+
+            foreach ($quantities as $index => $quantity) {
+                $length_feet = isset($lengthFeet[$index]) ? floatval($lengthFeet[$index]) : 0;
+                $length_inch = isset($lengthInch[$index]) ? floatval($lengthInch[$index]) : 0;
+
+                $totalPrice += $quantity * calculateUnitPrice(
+                    $basePrice,
+                    $length_feet,
+                    $length_inch,
+                    $panelType,
+                    $soldByFeet,
+                    $bends,
+                    $hems
+                );
+            }
+        }
     }
 
     echo number_format($totalPrice, 2);
