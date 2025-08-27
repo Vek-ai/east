@@ -27,7 +27,7 @@ function findCartKey($cart, $product_id, $line) {
 
 if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
-    $line = isset($_POST['line']) ? (int)$_POST['line'] : 1;
+    $line = isset($_POST['line']) ? (int)$_POST['line'] : 0;
     $qty = isset($_POST['qty']) ? (int)$_POST['qty'] : 1;
 
     $quantityInStock = getProductStockInStock($product_id);
@@ -37,7 +37,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         $_SESSION["cart"] = array();
     }
 
-    $key = isset($_SESSION["cart"][$line]) ? $line : false;
+    $key = ($line > 0 && isset($_SESSION["cart"][$line])) ? $line : false;
 
     if (isset($_POST['duplicate_product']) && $key !== false) {
         $oldItem = $_SESSION["cart"][$key];

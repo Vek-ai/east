@@ -3925,7 +3925,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 type: "POST",
                 data: {
                     product_id: product_id,
-                    line: 1,
+                    line: 0,
                     qty: qty,
                     modifyquantity: 'modifyquantity',
                     addquantity: 'addquantity'
