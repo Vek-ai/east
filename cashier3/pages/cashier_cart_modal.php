@@ -509,8 +509,8 @@ if(isset($_POST['fetch_cart'])){
                                     <input class="form-control" type="hidden" size="5" value="<?php echo $line;?>" id="line<?php echo $data_id;?>">
                                     <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $data_id;?>">
                                     <?php 
-                                    if ($category_id == $panel_id) { // Panels ID
-                                    $is_panel_present = 1;
+                                    if ($category_id == $panel_id || $category_id == $trim_id) { // Panels ID
+                                        $is_panel_present = 1;
                                     }
                                     ?>
                                 </td>
