@@ -1614,6 +1614,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 set_estimate_length_inch: "set_estimate_length_inch"
             },
             success: function(response) {
+                console.log(length_inch);
                 loadCart();
                 loadEstimateContents();
             },

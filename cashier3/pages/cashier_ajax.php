@@ -414,7 +414,7 @@ if (isset($_POST['set_estimate_width'])) {
 if (isset($_POST['set_estimate_length'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
-    $length = mysqli_real_escape_string($conn, $_POST['length']);
+    $length = parseNumber(mysqli_real_escape_string($conn, $_POST['length']));
 
     $key = findCartKey($_SESSION["cart"], $product_id, $line);
     if ($key !== false && isset($_SESSION["cart"][$key])) {
@@ -426,7 +426,7 @@ if (isset($_POST['set_estimate_length'])) {
 if (isset($_POST['set_estimate_length_inch'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
-    $length_inch = mysqli_real_escape_string($conn, $_POST['length_inch']);
+    $length_inch = parseNumber(mysqli_real_escape_string($conn, $_POST['length_inch']));
 
     $key = findCartKey($_SESSION["cart"], $product_id, $line);
     if ($key !== false && isset($_SESSION["cart"][$key])) {
@@ -1871,8 +1871,8 @@ if (isset($_POST['save_custom_length'])) {
 
         foreach ($quantities as $idx => $qty) {
             $quantity           = floatval($qty);
-            $estimate_length    = floatval($feet_list[$idx] ?? 0);
-            $estimate_length_in = floatval($inch_list[$idx] ?? 0);
+            $estimate_length    = round(floatval($feet_list[$idx] ?? 0), 2);
+            $estimate_length_in = round(floatval($inch_list[$idx] ?? 0), 2);
             $price              = floatval($prices[$idx] ?? 0);
 
             if ($quantity <= 0) continue;
@@ -1892,31 +1892,26 @@ if (isset($_POST['save_custom_length'])) {
             unset($item);
 
             if (!$found) {
-                $line_to_use = is_numeric($line) ? intval($line) : 1;
-                foreach ($_SESSION["cart"] as $item) {
-                    if ($item['product_id'] == $id && $item['line'] >= $line_to_use) {
-                        $line_to_use = $item['line'] + 1;
-                    }
-                }
+                $line_to_use = (count($_SESSION["cart"]) > 0) ? max(array_column($_SESSION["cart"], 'line')) + 1 : 1;
 
                 $item_array = array(
-                    'product_id'         => $row['product_id'],
-                    'product_item'       => $row['product_item'],
-                    'unit_price'         => $price,
-                    'line'               => $line_to_use,
-                    'quantity_ttl'       => getProductStockTotal($row['product_id']),
-                    'quantity_in_stock'  => 0,
-                    'quantity_cart'      => $quantity,
-                    'estimate_width'     => 0,
-                    'estimate_length'    => $estimate_length,
+                    'product_id'          => $row['product_id'],
+                    'product_item'        => $row['product_item'],
+                    'unit_price'          => $price,
+                    'line'                => $line_to_use,
+                    'quantity_ttl'        => getProductStockTotal($row['product_id']),
+                    'quantity_in_stock'   => 0,
+                    'quantity_cart'       => $quantity,
+                    'estimate_width'      => 0,
+                    'estimate_length'     => $estimate_length,
                     'estimate_length_inch'=> $estimate_length_in,
-                    'usage'              => 0,
-                    'custom_color'       => '',
-                    'weight'             => 0,
-                    'supplier_id'        => '',
-                    'custom_grade'       => '',
-                    'custom_profile'     => 0,
-                    'custom_gauge'       => ''
+                    'usage'               => 0,
+                    'custom_color'        => '',
+                    'weight'              => 0,
+                    'supplier_id'         => '',
+                    'custom_grade'        => '',
+                    'custom_profile'      => 0,
+                    'custom_gauge'        => ''
                 );
 
                 $_SESSION["cart"][] = $item_array;
