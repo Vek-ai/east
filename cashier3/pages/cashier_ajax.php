@@ -26,82 +26,86 @@ function findCartKey($cart, $product_id, $line) {
 }
 
 if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
-    $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
-    $line = isset($_POST['line']) ? (int)$_POST['line'] : 0;
-    $qty = isset($_POST['qty']) ? (int)$_POST['qty'] : 1;
+    $product_id = (int)($_POST['product_id'] ?? 0);
+    $line       = (int)($_POST['line'] ?? 0);
+    $qty        = max((int)($_POST['qty'] ?? 1), 1);
 
     $quantityInStock = getProductStockInStock($product_id);
-    $totalStock = getProductStockTotal($product_id);
+    $totalStock      = getProductStockTotal($product_id);
 
     if (!isset($_SESSION["cart"])) {
-        $_SESSION["cart"] = array();
+        $_SESSION["cart"] = [];
     }
 
-    $key = ($line > 0 && isset($_SESSION["cart"][$line])) ? $line : false;
+    $newLine = empty($_SESSION['cart']) ? 1 : (max(array_keys($_SESSION['cart'])) + 1);
 
-    if (isset($_POST['duplicate_product']) && $key !== false) {
-        $oldItem = $_SESSION["cart"][$key];
-        $newLine = empty($_SESSION['cart']) ? 1 : (max(array_keys($_SESSION['cart'])) + 1);
+    if (isset($_POST['duplicate_product']) && isset($_SESSION['cart'][$line])) {
+        $oldItem = $_SESSION['cart'][$line];
+        $oldItem['line'] = $newLine;
+        $oldItem['quantity_cart'] = $qty;
+        $_SESSION['cart'][$newLine] = $oldItem;
+        return;
+    }
 
-        $_SESSION["cart"][$newLine] = $oldItem;
-        $_SESSION["cart"][$newLine]['line'] = $newLine;
-        $_SESSION["cart"][$newLine]['quantity_cart'] = max($qty, 1);
+    $key = false;
+    foreach ($_SESSION['cart'] as $k => $item) {
+        if ($item['product_id'] == $product_id) {
+            $key = $k;
+            break;
+        }
+    }
 
-    } elseif ($key !== false) {
+    if ($key !== false) {
         if (isset($_POST['setquantity'])) {
-            $_SESSION["cart"][$key]['quantity_cart'] = max($qty, 1);
-            echo $_SESSION["cart"][$key]['quantity_cart'];
+            $_SESSION["cart"][$key]['quantity_cart'] = $qty;
         } elseif (isset($_POST['addquantity'])) {
             $_SESSION["cart"][$key]['quantity_cart'] += $qty;
-            echo $_SESSION["cart"][$key]['quantity_cart'];
         } elseif (isset($_POST['deductquantity'])) {
-            if ($_SESSION["cart"][$key]['quantity_cart'] <= 1) {
+            $_SESSION["cart"][$key]['quantity_cart'] -= 1;
+            if ($_SESSION["cart"][$key]['quantity_cart'] <= 0) {
                 unset($_SESSION["cart"][$key]);
                 echo 'removed';
-            } else {
-                $_SESSION["cart"][$key]['quantity_cart'] -= 1;
-                echo $_SESSION["cart"][$key]['quantity_cart'];
+                return;
             }
         }
-    } else {
-        $query = "SELECT * FROM product WHERE product_id = '$product_id'";
-        $result = mysqli_query($conn, $query);
+        echo $_SESSION["cart"][$key]['quantity_cart'];
+        return;
+    }
 
-        if (mysqli_num_rows($result) > 0) {
-            $row = mysqli_fetch_assoc($result);
-            $item_quantity = min($qty, $totalStock);
+    $query = "SELECT * FROM product WHERE product_id = '$product_id' LIMIT 1";
+    $result = mysqli_query($conn, $query);
 
-            $weight = floatval($row['weight']);
-            $basePrice = floatval($row['unit_price']);
-            if ($row['sold_by_feet'] == '1') {
-                $basePrice = $basePrice / max(floatval($row['length']), 1);
-            }
+    if ($row = mysqli_fetch_assoc($result)) {
+        $item_quantity = min($qty, $totalStock);
 
-            $unitPrice = calculateUnitPrice($basePrice, 0, 0, '', $row['sold_by_feet'], 0, 0);
-
-            $newLine = empty($_SESSION['cart']) ? 1 : (max(array_keys($_SESSION['cart'])) + 1);
-            $_SESSION["cart"][$newLine] = [
-                'product_id' => $row['product_id'],
-                'product_item' => getProductName($row['product_id']),
-                'unit_price' => $unitPrice,
-                'line' => $newLine,
-                'quantity_ttl' => $totalStock,
-                'quantity_in_stock' => $quantityInStock,
-                'quantity_cart' => $item_quantity,
-                'estimate_width' => $row['width'],
-                'estimate_length' => '',
-                'estimate_length_inch' => '',
-                'usage' => 0,
-                'custom_color' => $row['color'],
-                'weight' => $weight,
-                'supplier_id' => $row['supplier_id'],
-                'custom_grade' => intval($row['grade']),
-                'custom_profile' => intval($row['profile'])
-            ];
+        $weight    = floatval($row['weight']);
+        $basePrice = floatval($row['unit_price']);
+        if ($row['sold_by_feet'] == '1') {
+            $basePrice = $basePrice / max(floatval($row['length']), 1);
         }
+
+        $unitPrice = calculateUnitPrice($basePrice, 0, 0, '', $row['sold_by_feet'], 0, 0);
+
+        $_SESSION["cart"][$newLine] = [
+            'product_id'         => $row['product_id'],
+            'product_item'       => getProductName($row['product_id']),
+            'unit_price'         => $unitPrice,
+            'line'               => $newLine,
+            'quantity_ttl'       => $totalStock,
+            'quantity_in_stock'  => $quantityInStock,
+            'quantity_cart'      => $item_quantity,
+            'estimate_width'     => $row['width'],
+            'estimate_length'    => '',
+            'estimate_length_inch' => '',
+            'usage'              => 0,
+            'custom_color'       => $row['color'],
+            'weight'             => $weight,
+            'supplier_id'        => $row['supplier_id'],
+            'custom_grade'       => (int)$row['grade'],
+            'custom_profile'     => (int)$row['profile'],
+        ];
     }
 }
-
 
 if (isset($_POST['deleteitem'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id_del']);
@@ -1797,38 +1801,54 @@ if (isset($_POST['save_trim'])) {
         $decimalFeet = $length - $feet;
         $inches      = $decimalFeet * 12;
 
-        $newLine = empty($_SESSION['cart']) ? 1 : (max(array_keys($_SESSION['cart'])) + 1);
+        $foundKey = false;
+        foreach ($_SESSION["cart"] as $key => $item) {
+            if (
+                $item['product_id'] == $row['product_id'] &&
+                $item['custom_grade'] == $grade &&
+                $item['custom_gauge'] == $gauge &&
+                $item['custom_color'] == $color
+            ) {
+                $foundKey = $key;
+                break;
+            }
+        }
 
-        $item_array = [
-            'product_id'        => $row['product_id'],
-            'product_item'      => $row['product_item'],
-            'unit_price'        => $price,
-            'line'              => $newLine,
-            'quantity_ttl'      => 0,
-            'quantity_in_stock' => getProductStockTotal($row['product_id']),
-            'quantity_cart'     => $quantity,
-            'estimate_width'    => 0,
-            'estimate_length'   => $feet,
-            'estimate_length_inch' => $inches,
-            'usage'             => 0,
-            'custom_color'      => $color,
-            'weight'            => 0,
-            'supplier_id'       => '',
-            'custom_grade'      => $grade,
-            'custom_profile'    => $row['profile'],
-            'custom_gauge'      => $gauge,
-            'is_pre_order'      => $is_pre_order,
-            'is_custom'         => $is_custom,
-            'custom_trim_src'   => $img_src,
-            'drawing_data'      => $drawing_data
-        ];
+        if ($foundKey !== false) {
+            $_SESSION["cart"][$foundKey]['quantity_cart'] += $quantity;
+        } else {
+            $newLine = empty($_SESSION['cart']) ? 1 : (max(array_keys($_SESSION['cart'])) + 1);
 
-        $_SESSION["cart"][$newLine] = $item_array;
+            $item_array = [
+                'product_id'        => $row['product_id'],
+                'product_item'      => $row['product_item'],
+                'unit_price'        => $price,
+                'line'              => $newLine,
+                'quantity_ttl'      => 0,
+                'quantity_in_stock' => getProductStockTotal($row['product_id']),
+                'quantity_cart'     => $quantity,
+                'estimate_width'    => 0,
+                'estimate_length'   => $feet,
+                'estimate_length_inch' => $inches,
+                'usage'             => 0,
+                'custom_color'      => $color,
+                'weight'            => 0,
+                'supplier_id'       => '',
+                'custom_grade'      => $grade,
+                'custom_profile'    => $row['profile'],
+                'custom_gauge'      => $gauge,
+                'is_pre_order'      => $is_pre_order,
+                'is_custom'         => $is_custom,
+                'custom_trim_src'   => $img_src,
+                'drawing_data'      => $drawing_data
+            ];
+
+            $_SESSION["cart"][$newLine] = $item_array;
+        }
     }
 
     echo json_encode(['success' => true]);
 }
-
 
 if (isset($_POST['save_custom_length'])) {
     $id   = mysqli_real_escape_string($conn, $_POST['id']);
@@ -1909,7 +1929,6 @@ if (isset($_POST['save_custom_length'])) {
 
     echo json_encode(['success' => $_SESSION["cart"]]);
 }
-
 
 if (isset($_POST['save_drawing'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
@@ -2546,7 +2565,19 @@ if (isset($_POST['add_to_cart'])) {
             $_SESSION["cart"] = [];
         }
 
-        $key = findCartKey($_SESSION["cart"], $product_id, $line);
+        $key = false;
+        foreach ($_SESSION["cart"] as $cartKey => $item) {
+            if (
+                $item['product_id'] == $product_id &&
+                $item['custom_grade'] == $grade &&
+                $item['custom_gauge'] == $gauge &&
+                $item['custom_color'] == $color
+            ) {
+                $key = $cartKey;
+                break;
+            }
+        }
+
         if ($key !== false) {
             $requestedQuantity = max($qty, 1);
             $_SESSION["cart"][$key]['quantity_cart'] += min($requestedQuantity, $totalStock);
