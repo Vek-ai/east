@@ -49,7 +49,12 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
 
     $key = false;
     foreach ($_SESSION['cart'] as $k => $item) {
-        if ($item['product_id'] == $product_id) {
+        if (
+            $item['product_id'] == $product_id &&
+            (int)($item['custom_grade'] ?? 0) == $grade_id &&
+            (int)($item['custom_profile'] ?? 0) == $gauge_id &&
+            (int)($item['custom_color'] ?? 0) == $color_id
+        ) {
             $key = $k;
             break;
         }
