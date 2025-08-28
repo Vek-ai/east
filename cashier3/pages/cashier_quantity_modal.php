@@ -42,6 +42,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
             $standing_seam = $product_details["standing_seam"];
             $board_batten = $product_details["board_batten"];
             $category_id = $product_details["product_category"];
+            $basePrice = $product_details["unit_price"];
         ?>
         <input type="hidden" id="product_id" name="product_id" value="<?= $id ?>" />
         <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
@@ -244,40 +245,21 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
             function calculateProductCost() {
                 const product_id = $('#product_id').val();
-                const quantities = [];
-                const lengthFeetArr = [];
-                const lengthInchArr = [];
-                
-                $('.quantity-field input').each(function() {
-                    quantities.push(parseInt($(this).val()) || 0);
-                });
-                
-                $('.length-field #length_feet').each(function() {
-                    lengthFeetArr.push(parseInt($(this).val()) || 0);
-                });
-                
-                $('.length_inch').each(function(i) {
-                    let inch = $(this).val();
-                    lengthInchArr.push(inch);
+                const quantities = [], lengthFeetArr = [], lengthInchArr = [];
+                const panelTypeArr = [], panelDripStopArr = [];
+
+                $('.quantity-length-container').each(function() {
+                    quantities.push(parseInt($(this).find('.quantity-product').val()) || 0);
+                    lengthFeetArr.push(parseFloat($(this).find('.length_feet').val()) || 0);
+                    lengthInchArr.push($(this).find('.length_inch').val() || 0);
+
+                    panelTypeArr.push($(this).find('input[name="panel_type[]"]:checked').val() || 'solid');
+                    panelDripStopArr.push($(this).find('input[name="panel_drip_stop[]"]:checked').val() || '');
                 });
 
-                const panelType = $('input[name="panel_type"]:checked').val();
-                const panelDripStop = $('input[name="panel_drip_stop"]:checked').val();
                 const bends = parseInt($('#bend_product').val()) || 0;
                 const hems = parseInt($('#hem_product').val()) || 0;
                 const soldByFeet = <?= $sold_by_feet; ?>;
-
-                <?php 
-                $basePrice = floatval($product_details['unit_price'] ?? 0);
-
-                if (!empty($product_details['sold_by_feet']) && $product_details['sold_by_feet'] == '1') {
-                    $length = floatval($product_details['length'] ?? 0);
-                    if ($length > 0) {
-                        $basePrice = $basePrice / $length;
-                    }
-                }
-                ?>
-
                 const basePrice = <?= $basePrice; ?>;
 
                 $.ajax({
@@ -288,8 +270,8 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         quantity: quantities,
                         lengthFeet: lengthFeetArr,
                         lengthInch: lengthInchArr,
-                        panelType: panelType,
-                        panel_drip_stop: panelDripStop,
+                        panel_type: panelTypeArr,
+                        panel_drip_stop: panelDripStopArr,
                         soldByFeet: soldByFeet,
                         bends: bends,
                         hems: hems,
@@ -298,10 +280,10 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     },
                     success: function(response) {
                         $('#product-cost').text(response);
-                        console.log(response);
                     }
                 });
             }
+
 
             function fetchCoilStock() {
                 const color = parseInt($('#qty-color').val()) || 0;
@@ -403,6 +385,8 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 $newRow.find('.vented_panel').prop('checked', false);
 
                 $('.quantity-length-container').last().after($newRow);
+
+                calculateProductCost();
             });
 
 
@@ -468,37 +452,40 @@ if(isset($_POST['fetch_prompt_quantity'])){
 }
 
 if (isset($_POST['fetch_price'])) {
-    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
-    $quantities = isset($_POST['quantity']) ? $_POST['quantity'] : [];
-    $lengthFeet = isset($_POST['lengthFeet']) ? $_POST['lengthFeet'] : [];
-    $lengthInch = isset($_POST['lengthInch']) ? $_POST['lengthInch'] : [];
-    $panelType  = isset($_POST['panelType']) ? $_POST['panelType'] : '';
-    $bends      = isset($_POST['bends']) ? intval($_POST['bends']) : 0;
-    $hems       = isset($_POST['hems']) ? intval($_POST['hems']) : 0;
+    $product_id      = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+    $quantities      = $_POST['quantity'] ?? [];
+    $lengthFeet      = $_POST['lengthFeet'] ?? [];
+    $lengthInch      = $_POST['lengthInch'] ?? [];
+    $panelTypes      = $_POST['panel_type'] ?? [];
+    $panelDripStops  = $_POST['panel_drip_stop'] ?? [];
+    $bends           = isset($_POST['bends']) ? intval($_POST['bends']) : 0;
+    $hems            = isset($_POST['hems']) ? intval($_POST['hems']) : 0;
 
     $totalPrice = 0;
 
     if ($product_id > 0) {
-        $product = getProductDetails($product_id);
+        $product      = getProductDetails($product_id);
+        $basePrice    = floatval($product['unit_price']);
+        $soldByFeet   = intval($product['sold_by_feet']);
 
-        if ($product) {
-            $basePrice   = floatval($product['unit_price']);
-            $soldByFeet  = intval($product['sold_by_feet']);
+        foreach ($quantities as $index => $qty) {
+            if ($qty <= 0) continue;
 
-            foreach ($quantities as $index => $quantity) {
-                $length_feet = isset($lengthFeet[$index]) ? floatval($lengthFeet[$index]) : 0;
-                $length_inch = isset($lengthInch[$index]) ? $lengthInch[$index] : 0;
+            $feet = isset($lengthFeet[$index]) ? parseNumber($lengthFeet[$index]) : 0;
+            $inch = isset($lengthInch[$index]) ? parseNumber($lengthInch[$index]) : 0;
 
-                $totalPrice += $quantity * calculateUnitPrice(
-                    $basePrice,
-                    $length_feet,
-                    $length_inch,
-                    $panelType,
-                    $soldByFeet,
-                    $bends,
-                    $hems
-                );
-            }
+            $panelType = $panelTypes[$index] ?? 'solid';
+            $panelDripStop = $panelDripStops[$index] ?? '';
+
+            $totalPrice += $qty * calculateUnitPrice(
+                $basePrice,
+                $feet,
+                $inch,
+                $panelType,
+                $soldByFeet,
+                $bends,
+                $hems
+            );
         }
     }
 
