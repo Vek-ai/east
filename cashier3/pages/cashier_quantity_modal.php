@@ -145,13 +145,12 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 <div class="col-6 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
                     <div class="d-flex gap-2">
                         <div class="form-check">
-                            <input id="solid_panel" class="form-check-input solid_panel" type="radio" name="panel_type[]" value="solid" checked>
+                            <input id="solid_panel" class="form-check-input solid_panel" type="checkbox" name="panel_type[]" value="solid" checked>
                             <label class="form-check-label">Solid</label>
                         </div>
                         <div class="form-check position-relative">
-                            <input id="vented_panel" class="form-check-input vented_panel" type="radio" name="panel_type[]" value="vented">
+                            <input class="form-check-input vented_panel" type="checkbox" name="panel_type[]" value="vented">
                             <label class="form-check-label">Vented</label>
-                            <div id="tooltip" class="tooltip-custom small" style="display: none;"> Double-click to select Vented </div>
                             <div class="tooltip-custom small" style="display: none;">Double-click to select Vented</div>
                         </div>
                         <div class="form-check">
@@ -299,6 +298,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     },
                     success: function(response) {
                         $('#product-cost').text(response);
+                        console.log(response);
                     }
                 });
             }
@@ -382,52 +382,76 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
 
             $('#duplicateFields').click(function() {
-                var $newRow = $('.quantity-length-container').first().clone();
-                $newRow.find("input").val("");
+                var $newRow = $('.quantity-length-container').first().clone(true, true);
+                var uniqueId = Date.now();
+
+                $newRow.find('input, div').each(function() {
+                    var oldId = $(this).attr('id');
+                    if (oldId) {
+                        $(this).attr('id', oldId + '_' + uniqueId);
+                    }
+                });
+
+                $newRow.find('label').each(function() {
+                    var oldFor = $(this).attr('for');
+                    if (oldFor) {
+                        $(this).attr('for', oldFor + '_' + uniqueId);
+                    }
+                });
+
+                $newRow.find('.solid_panel').prop('checked', true);
+                $newRow.find('.vented_panel').prop('checked', false);
+
                 $('.quantity-length-container').last().after($newRow);
             });
+
 
             $(document).on('change input', '.quantity-product, .length_feet, .length_inch, .fraction_input, input[name="panel_type"], #bend_product, #hem_product', calculateProductCost);
 
             $('input[name="panel_type"]').on('change', calculateProductCost);
 
-            $(document).on('change', '#solid_panel', function () {
+            $(document).on('change', '.solid_panel', function () {
+                const $row = $(this).closest('.col-6');
                 if ($(this).is(':checked')) {
-                    $('#vented_panel').prop('checked', false);
+                    $row.find('.vented_panel').prop('checked', false);
                 }
                 calculateProductCost();
             });
 
-            $(document).on('change', '#vented_panel', function () {
+            $(document).on('change', '.vented_panel', function () {
+                const $row = $(this).closest('.col-6');
                 if ($(this).is(':checked')) {
-                    $('#solid_panel').prop('checked', false);
+                    $row.find('.solid_panel').prop('checked', false);
                 }
                 calculateProductCost();
             });
 
-            $(document).on('click', '#vented_panel', function (e) {
+            $(document).on('click', '.vented_panel', function(e) {
                 if (!$(this).data('clicked')) {
                     e.preventDefault();
-                    $('#tooltip').fadeIn(200);
+                    const $tooltip = $(this).closest('.form-check.position-relative').find('.tooltip-custom');
+                    $tooltip.fadeIn(200);
 
                     $(this).data('clicked', true);
 
                     setTimeout(() => {
-                        $('#tooltip').fadeOut(200);
+                        $tooltip.fadeOut(200);
                         $(this).data('clicked', false);
                     }, 2000);
                 }
             });
 
-            $(document).on('dblclick', '#vented_panel', function () {
+            $(document).on('dblclick', '.vented_panel', function () {
                 $(this).prop('checked', true);
-                $('#tooltip').fadeOut(200);
+                const $tooltip = $(this).closest('.form-check.position-relative').find('.tooltip-custom');
+                $tooltip.fadeOut(200);
                 calculateProductCost();
             });
 
-            $(document).on('click', '#solid_panel', function () {
-                $('#tooltip').fadeOut(200);
-                $('#vented_panel').data('clicked', false);
+            $(document).on('click', '.solid_panel', function () {
+                const $row = $(this).closest('.col-6');
+                $row.find('.tooltip-custom').fadeOut(200);
+                $row.find('.vented_panel').data('clicked', false);
             });
 
         });
