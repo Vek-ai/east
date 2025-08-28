@@ -124,31 +124,44 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 </div>
             </div>
             
-            <div class="quantity-length-container row mx-0">
-                <div class="quantity-field <?= empty($sold_by_feet) ? 'col-12 col-md-6' : 'col-6 col-md-3'; ?> mb-1">
-                    <input type="number" value="1" id="quantity-product" name="quantity_product[]" 
-                        class="form-control form-control-sm mb-1 quantity-product" 
+            <div class="quantity-length-container row mx-0 align-items-center mb-2">
+                <div class="<?= empty($sold_by_feet) ? 'col-12 col-md-3' : 'col-2 col-md-2'; ?> mb-1">
+                    <input type="number" value="1" name="quantity_product[]" 
+                        class="form-control form-control-sm quantity-product" 
                         placeholder="Qty" list="quantity-product-list" autocomplete="off">
                 </div>
 
-                <div class="col-8 col-md-4 mb-1 <?= empty($sold_by_feet) ? 'd-none' : '';?> length-field">
-                    <fieldset class="p-0 position-relative">
-                        <div id="length-field" class="input-group d-flex align-items-center mb-1">
-                            <input step="0.0001" class="form-control form-control-sm mr-1 length_feet" 
-                                type="number" id="length_feet" name="length_feet[]" 
-                                list="length_feet_datalist" 
-                                value="<?= $values["estimate_length"] ?>" 
-                                placeholder="FT" style="color:#ffffff; max-width:70px;">
+                <div class="<?= empty($sold_by_feet) ? 'd-none' : 'col-4 col-md-3'; ?> mb-1">
+                    <div class="input-group">
+                        <input step="0.0001" class="form-control form-control-sm length_feet" 
+                            type="number" name="length_feet[]" list="length_feet_datalist" 
+                            value="<?= $values['estimate_length'] ?>" placeholder="FT">
+                        <input step="0.0001" class="form-control form-control-sm length_inch" 
+                            type="text" name="length_inch[]" list="length_inch_datalist" 
+                            value="<?= $values['estimate_length_inch'] ?>" placeholder="IN">
+                    </div>
+                </div>
 
-                            <input step="0.0001" class="form-control form-control-sm mr-1 length_inch" 
-                                type="text" id="length_inch" name="length_inch[]" 
-                                list="length_inch_datalist" 
-                                value="<?= $values["estimate_length_inch"]; ?>" 
-                                placeholder="IN" style="color:#ffffff; max-width:70px;">
+                <div class="col-6 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
+                    <div class="d-flex gap-2">
+                        <div class="form-check">
+                            <input id="solid_panel" class="form-check-input solid_panel" type="radio" name="panel_type[]" value="solid" checked>
+                            <label class="form-check-label">Solid</label>
                         </div>
-                    </fieldset>
+                        <div class="form-check position-relative">
+                            <input id="vented_panel" class="form-check-input vented_panel" type="radio" name="panel_type[]" value="vented">
+                            <label class="form-check-label">Vented</label>
+                            <div id="tooltip" class="tooltip-custom small" style="display: none;"> Double-click to select Vented </div>
+                            <div class="tooltip-custom small" style="display: none;">Double-click to select Vented</div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="panel_drip_stop[]" value="drip_stop">
+                            <label class="form-check-label">Drip Stop</label>
+                        </div>
+                    </div>
                 </div>
             </div>
+
 
 
             <?php
@@ -194,34 +207,6 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     </div>
                 </div>
             </div> 
-        </div>
-        <div class="panel_options">
-            <div class="mb-2 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
-                <label class="fs-4 fw-semibold" for="quantity-product">Select Panel Type</label>
-                <div class="row g-2 align-items-center">
-                    <div class="col-2 ">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="solid_panel" name="panel_type" value="solid" checked>
-                            <label class="form-check-label" for="solid_panel">Solid</label>
-                        </div>
-                    </div>
-                    <div class="col-2 position-relative">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="vented_panel" name="panel_type" value="vented">
-                            <label class="form-check-label" for="vented_panel">Vented</label>
-                        </div>
-                        <div id="tooltip" class="tooltip-custom small" style="display: none;">
-                            Double-click to select Vented
-                        </div>
-                    </div>
-                    <div class="col-2">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="drip_stop_panel" name="panel_drip_stop" value="drip_stop">
-                            <label class="form-check-label" for="drip_stop_panel">Drip Stop</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="input-group d-flex align-items-center justify-content-between flex-wrap w-100 mt-3 mb-2 <?= empty($is_special) ? 'd-none' : '';?>">
@@ -373,20 +358,28 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 }
             });
 
+            $(".quantity-length-container .panel-options *").attr("tabindex", "-1");
+
             $(document).on("keydown", ".length_inch", function(e) {
                 if (e.key === "Tab" && !e.shiftKey) {
                     e.preventDefault();
 
                     let $currentRow = $(this).closest(".quantity-length-container");
-                    let $nextRow = $currentRow.next(".quantity-length-container");
+                    let $allRows = $(".quantity-length-container").filter(function() {
+                        return $(this).find(".quantity-product").length > 0;
+                    });
+
+                    let currentIndex = $allRows.index($currentRow);
+                    let $nextRow = $allRows.eq(currentIndex + 1);
 
                     if ($nextRow.length) {
                         $nextRow.find(".quantity-product").focus().select();
                     } else {
-                        $(".quantity-length-container").first().find(".quantity-product").focus().select();
+                        $("#duplicateFields").focus();
                     }
                 }
             });
+
 
             $('#duplicateFields').click(function() {
                 var $newRow = $('.quantity-length-container').first().clone();
@@ -398,21 +391,21 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
             $('input[name="panel_type"]').on('change', calculateProductCost);
 
-            $('#solid_panel').on('change', function () {
+            $(document).on('change', '#solid_panel', function () {
                 if ($(this).is(':checked')) {
                     $('#vented_panel').prop('checked', false);
                 }
                 calculateProductCost();
             });
 
-            $('#vented_panel').on('change', function () {
+            $(document).on('change', '#vented_panel', function () {
                 if ($(this).is(':checked')) {
                     $('#solid_panel').prop('checked', false);
                 }
                 calculateProductCost();
             });
 
-            $('#vented_panel').on('click', function (e) {
+            $(document).on('click', '#vented_panel', function (e) {
                 if (!$(this).data('clicked')) {
                     e.preventDefault();
                     $('#tooltip').fadeIn(200);
@@ -426,16 +419,17 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 }
             });
 
-            $('#vented_panel').on('dblclick', function () {
+            $(document).on('dblclick', '#vented_panel', function () {
                 $(this).prop('checked', true);
                 $('#tooltip').fadeOut(200);
                 calculateProductCost();
             });
 
-            $('#solid_panel').on('click', function () {
+            $(document).on('click', '#solid_panel', function () {
                 $('#tooltip').fadeOut(200);
                 $('#vented_panel').data('clicked', false);
             });
+
         });
         </script>
         <?php

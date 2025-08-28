@@ -50,17 +50,20 @@ if(isset($_POST['fetch_modal'])){
                             $display = trim($display);
 
                             $lumber_type = $item['lumber_type'] ?: '';
+                            $price = $item['price'] ?: '';
 
                             echo "<option 
                                     value=\"$length_in_feet\" 
                                     data-feet=\"$feet\" 
                                     data-inch=\"$inch\" 
+                                    data-price=\"$price\" 
                                     data-lumber-type=\"$lumber_type\">
                                     $display ($lumber_type)
                                   </option>";
                         }
                         ?>
                     </select>
+                    <input type="hidden" name="price[]" class="lumber_price">
                     <input type="hidden" name="length_feet[]" class="custom_length_feet">
                     <input type="hidden" name="length_inch[]" class="custom_length_inch">
                 </div>
@@ -99,7 +102,7 @@ if(isset($_POST['fetch_modal'])){
         <script>
         $(document).ready(function() {
             function updateAllPrices() {
-                const basePrice = parseFloat($('#product_price').val()) || 0;
+                
                 let grandTotal = 0;
 
                 $('.custom-length-row').each(function () {
@@ -107,6 +110,7 @@ if(isset($_POST['fetch_modal'])){
                     const feet = parseFloat($row.find('.custom_length_feet').val()) || 0;
                     const inches = parseFloat($row.find('.custom_length_inch').val()) || 0;
                     const quantity = parseFloat($row.find('.lumber_quantity').val()) || 1;
+                    const basePrice = parseFloat($row.find('.lumber_price').val()) || 0;
 
                     const totalLength = feet + (inches / 12);
                     const multiplier = totalLength > 0 ? totalLength : 1;
@@ -123,11 +127,12 @@ if(isset($_POST['fetch_modal'])){
                 let feet = $(this).find(':selected').data('feet') || 0;
                 let inch = $(this).find(':selected').data('inch') || 0;
                 let type = $(this).find(':selected').data('lumber-type') || '';
+                let price = $(this).find(':selected').data('price') || '';
 
                 $row.find('.custom_length_feet').val(feet);
                 $row.find('.custom_length_inch').val(inch);
+                $row.find('.lumber_price').val(price);
 
-                // auto-select lumber type
                 if(type) $row.find('.lumber_type_select').val(type);
 
                 updateAllPrices();

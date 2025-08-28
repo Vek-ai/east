@@ -38,26 +38,30 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         $_SESSION["cart"] = [];
     }
 
-    if (!isset($_SESSION["cart"]) || empty($_SESSION["cart"])) {
-        $newLine = 1;
-    } else {
-        end($_SESSION["cart"]);
-        $lastItem = current($_SESSION["cart"]); 
-        $newLine = $lastItem['line'] + 1;
+    $newLine = !empty($_SESSION["cart"]) ? max(array_column($_SESSION["cart"], 'line')) + 1 : 1;
+
+    if (isset($_POST['duplicate_product']) && $line > 0) {
+        $oldItem = null;
+        foreach ($_SESSION['cart'] as $key => $item) {
+            if ($item['line'] == $line) {
+                $oldItem = $item;
+                break;
+            }
+        }
+
+        if ($oldItem) {
+            $oldItem['line'] = $newLine;
+            $oldItem['quantity_cart'] = $qty;
+            $_SESSION['cart'][$newLine] = $oldItem;
+            echo "Duplicated line $line as $newLine";
+            return;
+        }
     }
 
-    if (isset($_POST['duplicate_product']) && isset($_SESSION['cart'][$line])) {
-        $oldItem = $_SESSION['cart'][$line];
-        $oldItem['line'] = $newLine;
-        $oldItem['quantity_cart'] = $qty;
-        $_SESSION['cart'][$newLine] = $oldItem;
-        return;
-    }
-
-    $key = false;
     if ($line > 0 && isset($_SESSION['cart'][$line])) {
         $key = $line;
     } else {
+        $key = false;
         foreach ($_SESSION['cart'] as $k => $item) {
             if ($item['product_id'] == $product_id) {
                 $key = $k;
@@ -109,7 +113,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             'estimate_length'    => '',
             'estimate_length_inch' => '',
             'usage'              => 0,
-            'custom_color'       => $row['color'],
+            'custom_color'       => '',
             'weight'             => $weight,
             'supplier_id'        => $row['supplier_id'],
             'custom_grade'       => (int)$row['grade'],
@@ -120,7 +124,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
 
 if (isset($_POST['deleteitem'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id_del']);
-    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $line       = mysqli_real_escape_string($conn, $_POST['line']);
 
     $found = false;
 

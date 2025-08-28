@@ -132,6 +132,8 @@ if(isset($_POST['fetch_modal'])){
                     grandTotal += rowPrice;
                 });
 
+                console.log(grandTotal)
+
                 $('#price_display').text(grandTotal.toFixed(2));
             }
 
