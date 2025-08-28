@@ -12,6 +12,7 @@ $admin_email = getSetting('admin_email');
 
 $emailSender = new EmailTemplates();
 
+$lumber_id = 1;
 $trim_id = 4;
 $panel_id = 3;
 $custom_truss_id = 47;
@@ -37,7 +38,13 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         $_SESSION["cart"] = [];
     }
 
-    $newLine = empty($_SESSION['cart']) ? 1 : (max(array_keys($_SESSION['cart'])) + 1);
+    if (!isset($_SESSION["cart"]) || empty($_SESSION["cart"])) {
+        $newLine = 1;
+    } else {
+        end($_SESSION["cart"]);
+        $lastItem = current($_SESSION["cart"]); 
+        $newLine = $lastItem['line'] + 1;
+    }
 
     if (isset($_POST['duplicate_product']) && isset($_SESSION['cart'][$line])) {
         $oldItem = $_SESSION['cart'][$line];
@@ -115,16 +122,19 @@ if (isset($_POST['deleteitem'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id_del']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
 
-    if (!empty($_SESSION["cart"]) && 
-        isset($_SESSION["cart"][$line]) && 
-        $_SESSION["cart"][$line]['product_id'] == $product_id) {
-        
-        unset($_SESSION["cart"][$line]);
+    $found = false;
 
-        if (empty($_SESSION["cart"])) {
-            $_SESSION["cart"] = [];
+    if (!empty($_SESSION["cart"])) {
+        foreach ($_SESSION["cart"] as $key => $item) {
+            if ($item['product_id'] == $product_id && $item['line'] == $line) {
+                unset($_SESSION["cart"][$key]);
+                $found = true;
+                break;
+            }
         }
+    }
 
+    if ($found) {
         echo "Removed line $line (Product ID: $product_id)";
     } else {
         echo "Item not found in cart.";
@@ -283,6 +293,7 @@ if (isset($_REQUEST['query'])) {
             ? "../" .$row_product['main_image']
             : $default_image;
 
+            $is_lumber = $row_product['product_category'] == $lumber_id ? true : false;
             $is_panel = $row_product['product_category'] == $panel_id ? true : false;
             $is_trim = $row_product['product_category'] == $trim_id ? true : false;
             $is_screw = $row_product['product_category'] == $screw_id ? true : false;
@@ -290,7 +301,7 @@ if (isset($_REQUEST['query'])) {
             $is_special_trim = $row_product['product_id'] == $special_trim_id ? true : false;
             $is_custom_length = $row_product['is_custom_length'] == 1 ? true : false;
 
-            $qty_input = !$is_panel && !$is_custom_truss && !$is_special_trim && !$is_trim && !$is_custom_length && !$is_screw
+            $qty_input = !$is_panel && !$is_custom_truss && !$is_special_trim && !$is_trim && !$is_custom_length && !$is_screw && !$is_lumber
                 ? ' <div class="input-group input-group-sm d-flex justify-content-center">
                         <button class="btn btn-outline-primary btn-minus" type="button" data-id="' . $row_product['product_id'] . '">-</button>
                         <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1" style="max-width:70px;">
@@ -308,7 +319,9 @@ if (isset($_REQUEST['query'])) {
             }else if($is_trim){
                 $btn_id = 'add-to-cart-trim-btn';
             }else if($is_screw){
-                $btn_id = 'add-to-cart-custom-length-btn';
+                $btn_id = 'add-to-cart-screw-btn';
+            }else if($is_lumber){
+                $btn_id = 'add-to-cart-lumber-btn';
             }else if($is_custom_length){
                 $btn_id = 'add-to-cart-custom-length-btn';
             }else{
@@ -1862,6 +1875,7 @@ if (isset($_POST['save_custom_length'])) {
     $feet_list   = $_POST['length_feet'] ?? [];
     $inch_list   = $_POST['length_inch'] ?? [];
     $prices      = $_POST['price'] ?? [];
+    $color_id    = $_POST['color_id'] ?? [];
 
     if (!isset($_SESSION["cart"])) {
         $_SESSION["cart"] = array();
@@ -1878,6 +1892,7 @@ if (isset($_POST['save_custom_length'])) {
             $estimate_length    = round(floatval($feet_list[$idx] ?? 0), 2);
             $estimate_length_in = round(floatval($inch_list[$idx] ?? 0), 2);
             $price              = floatval($prices[$idx] ?? 0);
+            $custom_color       = intval($color_id[$idx] ?? 0);
 
             if ($quantity <= 0) continue;
 
@@ -1886,7 +1901,8 @@ if (isset($_POST['save_custom_length'])) {
                 if (
                     $item['product_id'] == $id &&
                     $item['estimate_length'] == $estimate_length &&
-                    $item['estimate_length_inch'] == $estimate_length_in
+                    $item['estimate_length_inch'] == $estimate_length_in &&
+                    $item['custom_color'] == $custom_color
                 ) {
                     $item['quantity_cart'] += $quantity;
                     $found = true;
@@ -1910,7 +1926,7 @@ if (isset($_POST['save_custom_length'])) {
                     'estimate_length'     => $estimate_length,
                     'estimate_length_inch'=> $estimate_length_in,
                     'usage'               => 0,
-                    'custom_color'        => '',
+                    'custom_color'        => $custom_color,
                     'weight'              => 0,
                     'supplier_id'         => '',
                     'custom_grade'        => '',
@@ -1926,7 +1942,7 @@ if (isset($_POST['save_custom_length'])) {
         exit;
     }
 
-    echo json_encode(['success' => $_SESSION["cart"]]);
+    echo json_encode(['success' => print_r($_SESSION["cart"])]);
 }
 
 if (isset($_POST['save_drawing'])) {

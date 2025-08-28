@@ -324,7 +324,7 @@ function getStockTypeName($stock_type_id){
     return  $stock_type;
 }
 
-function getColorName($color_id ){
+function getColorName($color_id){
     global $conn;
     $query = "SELECT color_name FROM paint_colors WHERE color_id  = '$color_id '";
     $result = mysqli_query($conn,$query);
@@ -2089,6 +2089,98 @@ function getInventoryLengths($product_id) {
     return $lengths;
 }
 
+function getLumberLengths($product_id) {
+    global $conn;
+
+    $dimensions = [];
+
+    $product_id = (int)$product_id;
+
+    $query = "
+        SELECT iv.inventory_id, d.dimension, d.dimension_unit
+        FROM inventory iv
+        JOIN dimensions d ON iv.dimension_id = d.dimension_id
+        WHERE iv.Product_id = '$product_id'
+          AND d.dimension_category = 1
+    ";
+
+    $result = mysqli_query($conn, $query);
+
+    if (!$result) {
+        return [];
+    }
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $dimensionStr = trim($row['dimension'] . ' ' . $row['dimension_unit']);
+
+        $dimensions[] = [
+            'inventory_id' => $row['inventory_id'],
+            'dimension'    => $row['dimension'],
+            'unit'         => $row['dimension_unit'],
+            'feet'         => convertLengthToFeet($dimensionStr)
+        ];
+    }
+
+    usort($dimensions, function ($a, $b) {
+        return $a['feet'] <=> $b['feet'];
+    });
+
+    return $dimensions;
+}
+
+function getAvailableInventory($product_id) {
+    global $conn;
+
+    $product_id = (int)$product_id;
+
+    $inventory = [];
+
+    $query = "
+        SELECT 
+            iv.Inventory_id,
+            iv.color_id,
+            iv.quantity,
+            iv.quantity_ttl,
+            iv.pack,
+            iv.lumber_type,
+            iv.cost,
+            iv.price,
+            d.dimension,
+            d.dimension_unit
+        FROM inventory iv
+        LEFT JOIN dimensions d ON iv.dimension_id = d.dimension_id
+        WHERE iv.Product_id = '$product_id'
+          AND iv.quantity > 0
+        ORDER BY iv.Inventory_id ASC
+    ";
+
+    $result = mysqli_query($conn, $query);
+
+    if (!$result) {
+        return [];
+    }
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $dimensionStr = '';
+        if (!empty($row['dimension']) && !empty($row['dimension_unit'])) {
+            $dimensionStr = $row['dimension'] . ' ' . ucwords($row['dimension_unit']);
+        }
+
+        $inventory[] = [
+            'inventory_id' => $row['Inventory_id'],
+            'color_id'     => $row['color_id'],
+            'quantity'     => (int)$row['quantity'],
+            'quantity_ttl' => (int)$row['quantity_ttl'],
+            'pack'         => (int)$row['pack'],
+            'lumber_type'  => $row['lumber_type'],
+            'cost'         => (float)$row['cost'],
+            'price'        => (float)$row['price'],
+            'dimension'    => $dimensionStr
+        ];
+    }
+
+    return $inventory;
+}
 
 function loadSupplierOrders($supplier_id) {
     global $conn;
@@ -2640,5 +2732,31 @@ function parseNumber($input) {
     }
 
     return 0;
+}
+
+function getInventoryDimensions($inventory_id) {
+    global $conn;
+    $inventory_id = (int)$inventory_id;
+
+    $query = "
+        SELECT d.dimension, d.dimension_unit
+        FROM inventory i
+        LEFT JOIN dimensions d ON i.dimension_id = d.dimension_id
+        WHERE i.inventory_id = '$inventory_id'
+        LIMIT 1";
+
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $dimension     = $row['dimension'] ?? '';
+        $dimensionUnit = $row['dimension_unit'] ?? '';
+
+        if ($dimension && $dimensionUnit) {
+            return $dimension . ' ' . ucwords($dimensionUnit);
+        }
+    }
+
+    return null;
 }
 ?>

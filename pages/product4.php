@@ -1022,8 +1022,14 @@ function showCol($name) {
 
         $(document).on('click', '.hideProduct', function(event) {
             event.preventDefault();
+
             var product_id = $(this).data('id');
             var rowId = $(this).data('row');
+
+            if (!confirm("Are you sure you want to archive this product?")) {
+                return;
+            }
+
             $.ajax({
                 url: 'pages/product4_ajax.php',
                 type: 'POST',
@@ -1043,6 +1049,7 @@ function showCol($name) {
                 }
             });
         });
+
 
         $(document).on('submit', '#product_form', function(event) {
             event.preventDefault(); 
