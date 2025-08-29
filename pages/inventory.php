@@ -790,8 +790,8 @@ function showCol($name) {
                         $("#inventory_form [name=pack]").val(response.data.pack).trigger("change");
                         $("#inventory_form [name=quantity_ttl]").val(response.data.quantity_ttl);
                         $("#inventory_form [name=Date]").val(response.data.Date);
-                        $("#inventory_form [name=length_value]").val(response.data.length_value);
-                        $("#inventory_form [name=length_unit]").val(response.data.length_unit);
+                        $("#inventory_form [name=length_value]").val(response.length_value);
+                        $("#inventory_form [name=length_unit]").val(response.length_unit);
 
                         $("#inventory_form [name=cost]").val(response.data.cost);
                         $("#inventory_form [name=price]").val(response.data.price);
