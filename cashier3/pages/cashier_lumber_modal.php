@@ -26,8 +26,9 @@ if(isset($_POST['fetch_modal'])){
         <div class="row">
             <div class="row">
                 <div class="col-3"><label class="fs-4 fw-semibold">Quantity</label></div>
-                <div class="col-3"><label class="fs-4 fw-semibold">Length</label></div>
+                <div class="col-3"><label class="fs-4 fw-semibold">Dimension</label></div>
                 <div class="col-3"><label class="fs-4 fw-semibold">Lumber Type</label></div>
+                <div class="col-3"><label class="fs-4 fw-semibold">Length</label></div>
             </div>
 
             <div class="custom-length-row row mt-1">
@@ -35,52 +36,70 @@ if(isset($_POST['fetch_modal'])){
                     <input type="number" name="quantity[]" class="form-control mb-1 lumber_quantity" value="1" placeholder="Enter Quantity">
                 </div>
                 <div class="col-3 col-6-md">
-                    <select class="form-control mb-1 length_select">
-                        <option value="0">Select Length</option>
+                    <select id="dimension_select" name="dimension_id" class="form-control">
+                        <option value="" hidden>Select Dimension</option>
+                        <?php foreach ($inventoryItems as $item): ?>
+                            <option 
+                                value="<?= $item['dimension_id'] ?>"
+                            >
+                                <?= htmlspecialchars($item['dimension']) ?> <?= htmlspecialchars($item['dimension_unit']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-3 col-6-md d-none">
+                    <select class="form-control mb-1 lumber_type_select">
+                        <option value="" hidden>Select Type</option>
                         <?php
+                        $types = array_unique(array_filter(array_column($inventoryItems, 'lumber_type')));
                         foreach ($inventoryItems as $item) {
-                            $length_in_feet = convertLengthToFeet($item['dimension']);
-                            $feet = floor($length_in_feet);
-                            $inch = round(($length_in_feet - $feet) * 12);
+                            ?>
+                            <option value="<?= htmlspecialchars($item['lumber_type']) ?>" 
+                                    data-dim-id="<?= $item['dimension_id'] ?>"
+                                >
+                                <?= htmlspecialchars($item['lumber_type']) ?>
+                            </option>
+                            <?php
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div class="col-3 col-6-md d-none">
+                    <select class="form-control mb-1 length_select">
+                        <option value="" hidden>Select Length</option>
+                        <?php foreach ($inventoryItems as $item){
+                            $lengthFeet = $item['length_feet'] ?? 0;
+                            $feet = floor($lengthFeet);
+                            $inch = round(($lengthFeet - $feet) * 12);
                             if ($inch === 12) { $feet += 1; $inch = 0; }
-
                             $display = '';
                             if ($feet > 0) $display .= "{$feet}ft ";
                             if ($inch > 0) $display .= "{$inch}in";
                             $display = trim($display);
-
                             $lumber_type = $item['lumber_type'] ?: '';
                             $price = $item['price'] ?: '';
-
-                            echo "<option 
-                                    value=\"$length_in_feet\" 
-                                    data-feet=\"$feet\" 
-                                    data-inch=\"$inch\" 
-                                    data-price=\"$price\" 
-                                    data-lumber-type=\"$lumber_type\">
-                                    $display ($lumber_type)
-                                  </option>";
-                        }
                         ?>
+                            <option 
+                                value="<?= htmlspecialchars($item['length']) ?>" 
+                                data-feet="<?= $feet ?>" 
+                                data-inch="<?= $inch ?>" 
+                                data-price="<?= $price ?>" 
+                                data-dim-id="<?= $item['dimension_id'] ?>" 
+                                data-lumber-type="<?= $lumber_type ?>"
+                                data-inventory-id="<?= $item['inventory_id'] ?>"
+                            >
+                                <?= $display ?>
+                            </option>
+                        <?php } ?>
                     </select>
                     <input type="hidden" name="price[]" class="lumber_price">
                     <input type="hidden" name="length_feet[]" class="custom_length_feet">
                     <input type="hidden" name="length_inch[]" class="custom_length_inch">
                 </div>
-                <div class="col-3 col-6-md">
-                    <select class="form-control mb-1 lumber_type_select">
-                        <option value="">Select Type</option>
-                        <?php
-                        $types = array_unique(array_filter(array_column($inventoryItems, 'lumber_type')));
-                        foreach ($types as $type) {
-                            echo "<option value=\"$type\">".ucwords($type)."</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
+                
             </div>
 
-            <div class="col-9 text-end"> 
+            <div class="col-12 text-end"> 
                 <a href="javascript:void(0)" type="button" id="duplicateLumberFields" title="Add Another">
                     <i class="fas fa-plus"></i>
                 </a>
@@ -121,6 +140,45 @@ if(isset($_POST['fetch_modal'])){
 
                 $('#price_display').text(grandTotal.toFixed(2));
             }
+
+            $(document).on('change', '.custom-length-row #dimension_select', function() {
+                const $row = $(this).closest('.custom-length-row');
+                const selectedDim = $(this).val();
+
+                const $lumberCol = $row.find('.lumber_type_select').closest('.col-3');
+                const $lengthCol = $row.find('.length_select').closest('.col-3');
+
+                if (selectedDim) {
+                    $lumberCol.removeClass('d-none');
+                    $lumberCol.find('select option').each(function() {
+                        const dimId = $(this).data('dim-id')?.toString();
+                        $(this).toggle(dimId === selectedDim || $(this).val() === '');
+                    });
+                    $lumberCol.find('select').val('');
+                } else {
+                    $lumberCol.addClass('d-none').find('select').val('');
+                    $lengthCol.find('select').val('');
+                }
+            });
+
+            $(document).on('change', '.custom-length-row .lumber_type_select', function() {
+                const $row = $(this).closest('.custom-length-row');
+                const selectedDim = $row.find('#dimension_select').val();
+                const selectedLumber = $(this).val();
+                const $lengthCol = $row.find('.length_select').closest('.col-3');
+
+                if (selectedLumber) {
+                    $lengthCol.removeClass('d-none');
+                    $lengthCol.find('select option').each(function() {
+                        const dimId = $(this).data('dim-id')?.toString();
+                        const lumber = $(this).data('lumber-type');
+                        $(this).toggle((dimId === selectedDim) && (lumber === selectedLumber) || $(this).index() === 0);
+                    });
+                    $lengthCol.find('select').val('');
+                } else {
+                    $lengthCol.addClass('d-none').find('select').val('');
+                }
+            });
 
             $(document).on('change', '.length_select', function () {
                 let $row = $(this).closest('.custom-length-row');

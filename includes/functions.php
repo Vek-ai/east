@@ -2132,7 +2132,6 @@ function getAvailableInventory($product_id) {
     global $conn;
 
     $product_id = (int)$product_id;
-
     $inventory = [];
 
     $query = "
@@ -2145,37 +2144,53 @@ function getAvailableInventory($product_id) {
             iv.lumber_type,
             iv.cost,
             iv.price,
+            iv.dimension_id,
             d.dimension,
-            d.dimension_unit
+            d.dimension_unit,
+            pvl.length AS variant_length
         FROM inventory iv
         LEFT JOIN dimensions d ON iv.dimension_id = d.dimension_id
+        LEFT JOIN product_variant_length pvl ON iv.Inventory_id = pvl.inventory_id
         WHERE iv.Product_id = '$product_id'
           AND iv.quantity > 0
         ORDER BY iv.Inventory_id ASC
     ";
 
     $result = mysqli_query($conn, $query);
-
     if (!$result) {
         return [];
     }
 
     while ($row = mysqli_fetch_assoc($result)) {
-        $dimensionStr = '';
-        if (!empty($row['dimension']) && !empty($row['dimension_unit'])) {
-            $dimensionStr = $row['dimension'] . ' ' . ucwords($row['dimension_unit']);
+        $lengthValue = '';
+        $lengthUnit = '';
+        $lengthFeet = 0;
+
+        if (!empty($row['variant_length'])) {
+            $parts = explode(' ', trim($row['variant_length']));
+            if (count($parts) === 2) {
+                $lengthValue = floatval($parts[0]);
+                $lengthUnit = strtolower(trim($parts[1]));
+                $lengthFeet = convertLengthToFeet($row['variant_length']);
+            }
         }
 
         $inventory[] = [
-            'inventory_id' => $row['Inventory_id'],
-            'color_id'     => $row['color_id'],
-            'quantity'     => (int)$row['quantity'],
-            'quantity_ttl' => (int)$row['quantity_ttl'],
-            'pack'         => (int)$row['pack'],
-            'lumber_type'  => $row['lumber_type'],
-            'cost'         => (float)$row['cost'],
-            'price'        => (float)$row['price'],
-            'dimension'    => $dimensionStr
+            'inventory_id'   => $row['Inventory_id'],
+            'color_id'       => $row['color_id'],
+            'quantity'       => (int)$row['quantity'],
+            'quantity_ttl'   => (int)$row['quantity_ttl'],
+            'pack'           => (int)$row['pack'],
+            'lumber_type'    => $row['lumber_type'],
+            'cost'           => (float)$row['cost'],
+            'price'          => (float)$row['price'],
+            'dimension_id'   => (int)$row['dimension_id'],
+            'dimension'      => $row['dimension'],
+            'dimension_unit' => $row['dimension_unit'],
+            'length'         => $row['variant_length'] ?? '',
+            'length_value'   => $lengthValue,
+            'length_unit'    => $lengthUnit,
+            'length_feet'    => $lengthFeet
         ];
     }
 
