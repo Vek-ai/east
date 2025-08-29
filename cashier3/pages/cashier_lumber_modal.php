@@ -55,14 +55,14 @@ if(isset($_POST['fetch_modal'])){
                     <select class="form-control mb-1 lumber_type_select">
                         <option value="" hidden>Select Type</option>
                         <?php 
-                        $seen = [];
-                        foreach ($inventoryItems as $item): 
-                            $type = $item['lumber_type'];
-                            if (!$type || isset($seen[$type])) continue; 
-                            $seen[$type] = true;
-                        ?>
-                            <option value="<?= htmlspecialchars($type) ?>" 
-                                    data-dim-id="<?= $item['dimension_id'] ?>">
+                        $typeMap = [];
+                        foreach ($inventoryItems as $item) {
+                            if (!$item['lumber_type']) continue;
+                            $typeMap[$item['lumber_type']][] = $item['dimension_id'];
+                        }
+                        foreach ($typeMap as $type => $dimIds): ?>
+                            <option value="<?= htmlspecialchars($type) ?>"
+                                    data-dim-ids="<?= implode(',', array_unique($dimIds)) ?>">
                                 <?= htmlspecialchars($type) ?>
                             </option>
                         <?php endforeach; ?>
@@ -155,8 +155,8 @@ if(isset($_POST['fetch_modal'])){
                 if (selectedDim) {
                     $lumberCol.removeClass('d-none');
                     $lumberCol.find('select option').each(function() {
-                        const dimId = $(this).data('dim-id')?.toString();
-                        $(this).toggle(dimId === selectedDim || $(this).val() === '');
+                        const dimIds = ($(this).data('dim-ids') || '').toString().split(',');
+                        $(this).toggle(dimIds.includes(selectedDim) || $(this).val() === '');
                     });
                     $lumberCol.find('select').val('');
                 } else {
