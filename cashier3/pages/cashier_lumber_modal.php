@@ -38,30 +38,34 @@ if(isset($_POST['fetch_modal'])){
                 <div class="col-3 col-6-md">
                     <select id="dimension_select" name="dimension_id" class="form-control">
                         <option value="" hidden>Select Dimension</option>
-                        <?php foreach ($inventoryItems as $item): ?>
-                            <option 
-                                value="<?= $item['dimension_id'] ?>"
-                            >
-                                <?= htmlspecialchars($item['dimension']) ?> <?= htmlspecialchars($item['dimension_unit']) ?>
-                            </option>
-                        <?php endforeach; ?>
+                        <?php 
+                            $seen = [];
+                            foreach ($inventoryItems as $item){
+                                $key = $item['dimension'] . ' ' . $item['dimension_unit'];
+                                if (in_array($key, $seen)) continue;
+                                $seen[] = $key;
+                            ?>
+                                <option value="<?= $item['dimension_id'] ?>">
+                                    <?= htmlspecialchars($item['dimension']) ?> <?= htmlspecialchars($item['dimension_unit']) ?>
+                                </option>
+                            <?php } ?>
                     </select>
                 </div>
                 <div class="col-3 col-6-md d-none">
                     <select class="form-control mb-1 lumber_type_select">
                         <option value="" hidden>Select Type</option>
-                        <?php
-                        $types = array_unique(array_filter(array_column($inventoryItems, 'lumber_type')));
-                        foreach ($inventoryItems as $item) {
-                            ?>
-                            <option value="<?= htmlspecialchars($item['lumber_type']) ?>" 
-                                    data-dim-id="<?= $item['dimension_id'] ?>"
-                                >
-                                <?= htmlspecialchars($item['lumber_type']) ?>
-                            </option>
-                            <?php
-                        }
+                        <?php 
+                        $seen = [];
+                        foreach ($inventoryItems as $item): 
+                            $type = $item['lumber_type'];
+                            if (!$type || isset($seen[$type])) continue; 
+                            $seen[$type] = true;
                         ?>
+                            <option value="<?= htmlspecialchars($type) ?>" 
+                                    data-dim-id="<?= $item['dimension_id'] ?>">
+                                <?= htmlspecialchars($type) ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="col-3 col-6-md d-none">
