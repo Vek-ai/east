@@ -90,39 +90,65 @@ if(isset($_POST['fetch_details_modal'])){
             <div class="col-lg-6">
                 <div class="shop-content">
                     <div class="d-flex align-items-center gap-2 mb-2">
-                    <?php
-                    $totalQuantity = getProductStockTotal($row['product_id']);
-                    if($totalQuantity > 0){
-                    ?>
-                        <span class="badge text-bg-success fs-2 fw-semibold">In Stock</span>
-                    <?php
-                    }else{
-                    ?>
-                        <span class="badge text-bg-danger fs-2 fw-semibold">Out of Stock</span>
-                    <?php
-                    }
-                    ?>
-                    
-                    <span class="fs-2"><?= getProductCategoryName($row['product_category']) ?></span>
-                    </div>
-                    <h4><?= $row['product_item'] ?></h4>
-                    <p class="mb-3"><?= $row['description'] ?></p>
-                    <h4 class="fw-semibold mb-3">
-                        $<?= $row['unit_price'] ?> 
-                    </h4>
-                    <div class="d-flex align-items-center gap-8 py-7">
                         <?php
-                        if (!empty($row['color'])) {
-                        ?>
-                            <h6 class="mb-0 fs-4 fw-semibold">Colors:</h6>
-                            <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color: <?= getColorHexFromColorID($row['color']) ?>"></a>
-                        <?php 
+                        $totalQuantity = getProductStockTotal($row['product_id']);
+                        if ($totalQuantity > 0) {
+                            ?>
+                            <span class="badge text-bg-success fs-2 fw-semibold">In Stock</span>
+                            <?php
+                        } else {
+                            ?>
+                            <span class="badge text-bg-danger fs-2 fw-semibold">Out of Stock</span>
+                            <?php
                         }
-                        ?> 
+                        ?>
+
+                        <span class="fs-2"><?= getProductCategoryName($row['product_category']) ?></span>
                     </div>
 
+                    <h4><?= $row['product_item'] ?></h4>
+                    <p class="mb-3"><?= $row['description'] ?></p>
+
+                    <?php
+                    $inventoryList = getAvailableInventory($row['product_id']);
+                    if (!empty($inventoryList)) {
+                        ?>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Color</th>
+                                        <th>Dimensions</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($inventoryList as $inv) { ?>
+                                        <tr>
+                                            <td>
+                                                <?php if (!empty($inv['color_id'])) { ?>
+                                                    <span class="d-inline-block rounded-circle me-2" 
+                                                        style="width:20px; height:20px; background-color:<?= getColorHexFromColorID($inv['color_id']) ?>;">
+                                                    </span>
+                                                <?php } else { ?>
+                                                    None
+                                                <?php } ?>
+                                            </td>
+                                            <td>
+                                                <?= htmlspecialchars($inv['dimension'] . ' ' . $inv['dimension_unit']) ?>
+                                            </td>
+                                            <td>$<?= number_format($inv['price'], 2) ?></td>
+                                        </tr>
+                                    <?php } ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <?php
+                    }
+                    ?>
                 </div>
             </div>
+
             <div class="col-lg-12">
                 <?php
                     $statusMessages = [];
