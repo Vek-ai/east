@@ -113,7 +113,7 @@ if(isset($_POST['fetch_modal'])){
                 </div>
             </div>
 
-            <div class="col-5 text-end">
+            <div class="col-12 text-end">
                 <a href="javascript:void(0)" id="duplicateScrewFields" title="Add Another">
                     <i class="fas fa-plus"></i>
                 </a>

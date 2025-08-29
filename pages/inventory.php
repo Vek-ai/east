@@ -128,7 +128,11 @@ function showCol($name) {
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            
+                        </div>
+
+                        <div class="row pt-3">
+                            <div class="col-md-6">
                                 <label class="form-label">Color</label>
                                 <div class="mb-3">
                                     <select id="color<?= $no ?>" class="form-control color-cart select2-inventory" name="color_id">
@@ -143,7 +147,66 @@ function showCol($name) {
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-6" id="lumber_type_group" style="display:none;">
+                                <div class="mb-3">
+                                    <label for="lumber_type" class="form-label">Lumber Type</label>
+                                    <select class="form-select" name="lumber_type" id="lumber_type">
+                                        <option value="">-- Select --</option>
+                                        <option value="treated">Treated</option>
+                                        <option value="untreated">Untreated</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label for="dimension" class="form-label">Dimension</label>
+                                        <a href="?page=dimensions" target="_blank" class="text-decoration-none">Edit</a>
+                                    </div>
+                                    <select name="dimension_id" id="dimension_id" class="form-control">
+                                        <option value="" hidden>Select Dimension</option>
+                                        <?php
+                                        $query = "SELECT * FROM dimensions ORDER BY dimension ASC";
+                                        $result = mysqli_query($conn, $query);
+
+                                        while ($row = mysqli_fetch_assoc($result)) {
+                                            $id = $row['dimension_id'];
+                                            $category = $row['dimension_category'];
+                                            $display = trim($row['dimension'] . ' ' . $row['dimension_unit']);
+                                            echo "<option value='{$id}' data-category='{$category}'>{$display}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="length_group" style="display:none;">
+                                    <label class="form-label">Length</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" name="length_value" class="form-control" placeholder="Enter length">
+                                        <select name="length_unit" class="form-control">
+                                            <option value="" hidden>Select Unit</option>
+                                            <option value="inches">Inches</option>
+                                            <option value="meter">Meter</option>
+                                            <option value="feet">Feet</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <div class="row pt-3">
+                            <div class="col-md-6 mb-3">
+                                <label for="cost" class="form-label">Cost</label>
+                                <input type="number" step="0.01" class="form-control" name="cost" id="cost" placeholder="Enter cost">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="price" class="form-label">Price</label>
+                                <input type="number" step="0.01" class="form-control" name="price" id="price" placeholder="Enter price">
+                            </div>
+                        </div>
+
                         <div class="row pt-3">
                             <div class="col-md-6">
                                 <label class="form-label">Supplier</label>
@@ -261,76 +324,6 @@ function showCol($name) {
                             <div class="col-md-6">
                                 <label class="form-label">Date</label>
                                 <input type="date" id="Date" name="Date" class="form-control" />
-                            </div>
-                            <div class="col-md-6">
-                                <div id="length_group" style="display:none;">
-                                    <label class="form-label">Length</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.01" name="length_value" class="form-control" placeholder="Enter length">
-                                        <select name="length_unit" class="form-control">
-                                            <option value="inches">Inches</option>
-                                            <option value="meter">Meter</option>
-                                            <option value="feet">Feet</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div id="size_group" style="display:none;">
-                                    <label class="form-label">Size</label>
-                                    <select id="size" class="form-control calculate" name="size">
-                                        <option value="0" hidden>0</option>
-                                        <option value="1">1</option>
-                                        <option value="1.5">1.5</option>
-                                        <option value="2">2</option>
-                                        <option value="2.5">2.5</option>
-                                        <option value="3">3</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row pt-3">
-                            <div class="col-md-6 mb-3">
-                                <label for="cost" class="form-label">Cost</label>
-                                <input type="number" step="0.01" class="form-control" name="cost" id="cost" placeholder="Enter cost">
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="price" class="form-label">Price</label>
-                                <input type="number" step="0.01" class="form-control" name="price" id="price" placeholder="Enter price">
-                            </div>
-                        </div>
-                        <div class="row pt-3">
-                            <div class="col-6">
-                                <div class="mb-3" id="lumber_type_group" style="display:none;">
-                                    <label for="lumber_type" class="form-label">Lumber Type</label>
-                                    <select class="form-select" name="lumber_type" id="lumber_type">
-                                        <option value="">-- Select --</option>
-                                        <option value="treated">Treated</option>
-                                        <option value="untreated">Untreated</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <label for="dimension" class="form-label">Dimension</label>
-                                        <a href="?page=dimensions" target="_blank" class="text-decoration-none">Edit</a>
-                                    </div>
-                                    <select name="dimension_id" id="dimension_id" class="form-control">
-                                        <option value="" hidden>Select Dimension</option>
-                                        <?php
-                                        $query = "SELECT * FROM dimensions ORDER BY dimension ASC";
-                                        $result = mysqli_query($conn, $query);
-
-                                        while ($row = mysqli_fetch_assoc($result)) {
-                                            $id = $row['dimension_id'];
-                                            $category = $row['dimension_category'];
-                                            $display = trim($row['dimension'] . ' ' . $row['dimension_unit']);
-                                            echo "<option value='{$id}' data-category='{$category}'>{$display}</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -739,23 +732,12 @@ function showCol($name) {
             if (parseInt(category) === 1) {
                 $("#lumber_type_group").show();
                 $("#length_group").show();
-                $("#size_group").hide();
 
                 $("#inventory_form [name=lumber_type]").val("treated").trigger("change");
-
-            } else if (parseInt(category) === 16) {
-                $("#size_group").show();
-                $("#lumber_type_group").hide();
-                $("#length_group").hide();
-
-                $("#inventory_form [name=length_value]").val("");
-                $("#inventory_form [name=length_unit]").val("");
-                $("#inventory_form [name=lumber_type]").val("").trigger("change");
 
             } else {
                 $("#lumber_type_group").hide();
                 $("#length_group").hide();
-                $("#size_group").hide();
 
                 $("#inventory_form [name=length_value]").val("");
                 $("#inventory_form [name=length_unit]").val("");
