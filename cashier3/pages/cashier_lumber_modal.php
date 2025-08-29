@@ -56,14 +56,30 @@ if(isset($_POST['fetch_modal'])){
                         <option value="" hidden>Select Type</option>
                         <?php 
                         $typeMap = [];
+
                         foreach ($inventoryItems as $item) {
                             if (!$item['lumber_type']) continue;
-                            $typeMap[$item['lumber_type']][] = $item['dimension_id'];
+
+                            $typeMap[$item['lumber_type']][] = [
+                                'dimension_id' => $item['dimension_id'],
+                                'quantity_ttl' => $item['quantity_ttl']
+                            ];
                         }
-                        foreach ($typeMap as $type => $dimIds): ?>
+
+                        foreach ($typeMap as $type => $rows): 
+                            $dimIds = array_unique(array_column($rows, 'dimension_id'));
+                            $isOut  = true;
+                            foreach ($rows as $r) {
+                                if ($r['quantity_ttl'] > 0) {
+                                    $isOut = false;
+                                    break;
+                                }
+                            }
+                        ?>
                             <option value="<?= htmlspecialchars($type) ?>"
-                                    data-dim-ids="<?= implode(',', array_unique($dimIds)) ?>">
-                                <?= htmlspecialchars($type) ?>
+                                    data-dim-ids="<?= implode(',', $dimIds) ?>"
+                                    <?= $isOut ? 'disabled' : '' ?>>
+                                <?= htmlspecialchars($type) ?><?= $isOut ? ' (Out of Stock)' : '' ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -82,6 +98,9 @@ if(isset($_POST['fetch_modal'])){
                             $display = trim($display);
                             $lumber_type = $item['lumber_type'] ?: '';
                             $price = $item['price'] ?: '';
+                            if (($item['quantity_ttl'] ?? 0) < 1) {
+                                $display .= " (Out of Stock)";
+                            }
                         ?>
                             <option 
                                 value="<?= htmlspecialchars($item['length']) ?>" 
