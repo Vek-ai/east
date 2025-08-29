@@ -26,29 +26,43 @@ if(isset($_REQUEST['action'])) {
         $pack         = mysqli_real_escape_string($conn, $_POST['pack']);
         $cost         = mysqli_real_escape_string($conn, $_POST['cost'] ?? '0');
         $price        = mysqli_real_escape_string($conn, $_POST['price'] ?? '0');
-        $price        = mysqli_real_escape_string($conn, $_POST['price'] ?? '0');
         $dimension_id = mysqli_real_escape_string($conn, $_POST['dimension_id'] ?? '0');
         $addedby      = $_SESSION['userid'];
 
-        $lumber_type         = mysqli_real_escape_string($conn, $_POST['lumber_type']);
+        $lumber_type  = mysqli_real_escape_string($conn, $_POST['lumber_type']);
 
-        $length_value = mysqli_real_escape_string($conn, $_POST['length_value']);
-        $length_unit  = mysqli_real_escape_string($conn, $_POST['length_unit']);
-        $formatted_length = "$length_value $length_unit";
+        $length_value = trim(mysqli_real_escape_string($conn, $_POST['length_value'] ?? ''));
+        $length_unit  = trim(mysqli_real_escape_string($conn, $_POST['length_unit'] ?? ''));
 
-        $product = getProductDetails($Product_id);
-        $product_category = $product['product_category'] ?? 0;
+        if ($length_value !== '' && $length_unit !== '') {
+            $formatted_length = $length_value . ' ' . $length_unit;
+        } else {
+            $formatted_length = null;
+        }
 
-        $checkQuery = "SELECT inventory_id FROM inventory WHERE Product_id = '$Product_id' AND color_id = '$color_id' LIMIT 1";
+        $checkQuery = "
+            SELECT i.inventory_id, i.quantity_ttl
+            FROM inventory i
+            LEFT JOIN product_variant_length l ON i.inventory_id = l.inventory_id
+            WHERE i.Product_id   = '$Product_id'
+            AND i.color_id     = '$color_id'
+            AND i.lumber_type  = '$lumber_type'
+            AND i.dimension_id = '$dimension_id'
+            AND (l.length = '$formatted_length' OR (l.length IS NULL AND '$formatted_length' = ''))
+            LIMIT 1
+        ";
         $result = mysqli_query($conn, $checkQuery);
 
         if (!$result) {
             die("Error executing query: " . mysqli_error($conn));
         }
 
+        $new_total_qty = 0;
+
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
-            $inventory_id = $row['inventory_id'];
+            $inventory_id   = $row['inventory_id'];
+            $current_total  = (int)$row['quantity_ttl'];
 
             if ($operation == 'add') {
                 $updateQuery = "
@@ -68,6 +82,7 @@ if(isset($_REQUEST['action'])) {
                         dimension_id = '$dimension_id',
                         addedby      = '$addedby'
                     WHERE inventory_id = '$inventory_id'";
+                $new_total_qty = $current_total + $quantity_ttl;
             } else {
                 $updateQuery = "
                     UPDATE inventory SET
@@ -86,6 +101,7 @@ if(isset($_REQUEST['action'])) {
                         dimension_id = '$dimension_id',
                         addedby      = '$addedby'
                     WHERE inventory_id = '$inventory_id'";
+                $new_total_qty = $quantity_ttl;
             }
 
             if (!mysqli_query($conn, $updateQuery)) {
@@ -110,7 +126,8 @@ if(isset($_REQUEST['action'])) {
                 die("Error inserting inventory: " . mysqli_error($conn));
             }
 
-            $inventory_id = mysqli_insert_id($conn);
+            $inventory_id   = mysqli_insert_id($conn);
+            $new_total_qty  = $quantity_ttl;
         }
 
         $check_length = mysqli_query($conn, "SELECT variant_id FROM product_variant_length WHERE inventory_id = '$inventory_id'");
@@ -120,19 +137,41 @@ if(isset($_REQUEST['action'])) {
         }
 
         if (mysqli_num_rows($check_length) > 0) {
-            if (!mysqli_query($conn, "UPDATE product_variant_length SET length = '$formatted_length' WHERE inventory_id = '$inventory_id'")) {
-                echo "Error updating length: " . mysqli_error($conn);
-                exit;
+            if ($formatted_length === null) {
+                $sql = "UPDATE product_variant_length SET length = NULL WHERE inventory_id = '$inventory_id'";
+            } else {
+                $sql = "UPDATE product_variant_length SET length = '$formatted_length' WHERE inventory_id = '$inventory_id'";
             }
         } else {
-            if (!mysqli_query($conn, "INSERT INTO product_variant_length (inventory_id, length) VALUES ('$inventory_id', '$formatted_length')")) {
-                echo "Error inserting length: " . mysqli_error($conn);
-                exit;
+            if ($formatted_length === null) {
+                $sql = "INSERT INTO product_variant_length (inventory_id, length) VALUES ('$inventory_id', NULL)";
+            } else {
+                $sql = "INSERT INTO product_variant_length (inventory_id, length) VALUES ('$inventory_id', '$formatted_length')";
             }
+        }
+
+        if (!mysqli_query($conn, $sql)) {
+            echo "Error saving length: " . mysqli_error($conn);
+            exit;
+        }
+
+        $date_part = date("mdY", strtotime($Date)); 
+        $batchno   = $Product_id . $supplier_id . $inventory_id . $date_part;
+
+        $insertProductInventory = "
+            INSERT INTO product_inventory 
+                (productid, inventoryid, supplierid, cost, price, delivery_date, batchno, entered_by, quantity, pack_id, total_quantity)
+            VALUES 
+                ('$Product_id', '$inventory_id', '$supplier_id', '$cost', '$price', NOW(), '$batchno', '$addedby', '$quantity_ttl', '$pack', '$new_total_qty')
+        ";
+
+        if (!mysqli_query($conn, $insertProductInventory)) {
+            die('Error inserting product_inventory: ' . mysqli_error($conn));
         }
 
         echo "success";
     }
+
 
     if ($action == "fetch_modal") {
         $Inventory_id = (int)($_POST['id'] ?? 0);
