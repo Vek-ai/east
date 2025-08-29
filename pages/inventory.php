@@ -310,6 +310,28 @@ function showCol($name) {
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label for="dimension" class="form-label">Dimension</label>
+                                        <a href="?page=dimensions" target="_blank" class="text-decoration-none">Edit</a>
+                                    </div>
+                                    <select name="dimension_id" id="dimension_id" class="form-control">
+                                        <option value="" hidden>Select Dimension</option>
+                                        <?php
+                                        $query = "SELECT * FROM dimensions ORDER BY dimension ASC";
+                                        $result = mysqli_query($conn, $query);
+
+                                        while ($row = mysqli_fetch_assoc($result)) {
+                                            $id = $row['dimension_id'];
+                                            $category = $row['dimension_category'];
+                                            $display = trim($row['dimension'] . ' ' . $row['dimension_unit']);
+                                            echo "<option value='{$id}' data-category='{$category}'>{$display}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -703,6 +725,17 @@ function showCol($name) {
         $(document).on("change", "#product_id_filter", function () {
             let category = $(this).find(":selected").data("category");
 
+            $("#dimension_id option").each(function () {
+                let optionCategory = $(this).data("category");
+                if (parseInt(optionCategory) === parseInt(category)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            $("#dimension_id").val($("#dimension_id option:visible:first").val());
+
             if (parseInt(category) === 1) {
                 $("#lumber_type_group").show();
                 $("#length_group").show();
@@ -762,6 +795,7 @@ function showCol($name) {
 
                         $("#inventory_form [name=cost]").val(response.data.cost);
                         $("#inventory_form [name=price]").val(response.data.price);
+                        $("#inventory_form [name=dimension_id]").val(response.data.dimension_id);
 
                         if (parseInt(response.data.product_category) === 1) {
                             $("#lumber_type_group").show();

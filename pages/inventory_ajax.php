@@ -26,70 +26,12 @@ if(isset($_REQUEST['action'])) {
         $pack         = mysqli_real_escape_string($conn, $_POST['pack']);
         $cost         = mysqli_real_escape_string($conn, $_POST['cost'] ?? '0');
         $price        = mysqli_real_escape_string($conn, $_POST['price'] ?? '0');
-        $lumber_type  = mysqli_real_escape_string($conn, $_POST['lumber_type'] ?? '');
+        $price        = mysqli_real_escape_string($conn, $_POST['price'] ?? '0');
+        $dimension_id = mysqli_real_escape_string($conn, $_POST['dimension_id'] ?? '0');
         $addedby      = $_SESSION['userid'];
 
         $product = getProductDetails($Product_id);
         $product_category = $product['product_category'] ?? 0;
-
-        $dimension_id = null;
-
-        if ($product_category == 1) {
-            $length_value = mysqli_real_escape_string($conn, $_POST['length_value'] ?? '');
-            $length_unit  = mysqli_real_escape_string($conn, $_POST['length_unit'] ?? '');
-
-            if (!empty($length_value) && !empty($length_unit)) {
-                $checkDim = "
-                    SELECT dimension_id 
-                    FROM dimensions 
-                    WHERE dimension_category = 1 
-                    AND dimension = '$length_value' 
-                    AND dimension_unit = '$length_unit' 
-                    LIMIT 1";
-                $resDim = mysqli_query($conn, $checkDim);
-
-                if ($resDim && mysqli_num_rows($resDim) > 0) {
-                    $rowDim = mysqli_fetch_assoc($resDim);
-                    $dimension_id = $rowDim['dimension_id'];
-                } else {
-                    $insertDim = "
-                        INSERT INTO dimensions (dimension_category, dimension, dimension_unit) 
-                        VALUES (1, '$length_value', '$length_unit')";
-                    if (!mysqli_query($conn, $insertDim)) {
-                        die("Error inserting lumber dimension: " . mysqli_error($conn));
-                    }
-                    $dimension_id = mysqli_insert_id($conn);
-                }
-            }
-        }
-
-        if ($product_category == 16) {
-            $size = mysqli_real_escape_string($conn, $_POST['size'] ?? '');
-
-            if (!empty($size)) {
-                $checkDim = "
-                    SELECT dimension_id 
-                    FROM dimensions 
-                    WHERE dimension_category = 16 
-                    AND dimension = '$size' 
-                    AND dimension_unit = 'inches' 
-                    LIMIT 1";
-                $resDim = mysqli_query($conn, $checkDim);
-
-                if ($resDim && mysqli_num_rows($resDim) > 0) {
-                    $rowDim = mysqli_fetch_assoc($resDim);
-                    $dimension_id = $rowDim['dimension_id'];
-                } else {
-                    $insertDim = "
-                        INSERT INTO dimensions (dimension_category, dimension, dimension_unit) 
-                        VALUES (16, '$size', 'size')";
-                    if (!mysqli_query($conn, $insertDim)) {
-                        die("Error inserting screw dimension: " . mysqli_error($conn));
-                    }
-                    $dimension_id = mysqli_insert_id($conn);
-                }
-            }
-        }
 
         $checkQuery = "SELECT inventory_id FROM inventory WHERE Product_id = '$Product_id' AND color_id = '$color_id' LIMIT 1";
         $result = mysqli_query($conn, $checkQuery);
@@ -117,7 +59,7 @@ if(isset($_REQUEST['action'])) {
                         cost         = '$cost',
                         price        = '$price',
                         lumber_type  = '$lumber_type',
-                        dimension_id = " . ($dimension_id ?: "NULL") . ",
+                        dimension_id = '$dimension_id',
                         addedby      = '$addedby'
                     WHERE inventory_id = '$inventory_id'";
             } else {
@@ -135,7 +77,7 @@ if(isset($_REQUEST['action'])) {
                         cost         = '$cost',
                         price        = '$price',
                         lumber_type  = '$lumber_type',
-                        dimension_id = " . ($dimension_id ?: "NULL") . ",
+                        dimension_id = '$dimension_id',
                         addedby      = '$addedby'
                     WHERE inventory_id = '$inventory_id'";
             }
@@ -155,7 +97,7 @@ if(isset($_REQUEST['action'])) {
                     '$Shelves_id', '$Bin_id', '$Row_id', '$Date',
                     '$quantity', '$pack', '$quantity_ttl',
                     '$cost', '$price', '$lumber_type', '$addedby',
-                    " . ($dimension_id ?: "NULL") . "
+                    '$dimension_id'
                 )";
 
             if (!mysqli_query($conn, $insertQuery)) {
@@ -163,6 +105,24 @@ if(isset($_REQUEST['action'])) {
             }
 
             $inventory_id = mysqli_insert_id($conn);
+        }
+
+        $check_length = mysqli_query($conn, "SELECT variant_id FROM product_variant_length WHERE inventory_id = '$inventory_id'");
+        if (!$check_length) {
+            echo "Error checking length: " . mysqli_error($conn);
+            exit;
+        }
+
+        if (mysqli_num_rows($check_length) > 0) {
+            if (!mysqli_query($conn, "UPDATE product_variant_length SET length = '$formatted_length' WHERE inventory_id = '$inventory_id'")) {
+                echo "Error updating length: " . mysqli_error($conn);
+                exit;
+            }
+        } else {
+            if (!mysqli_query($conn, "INSERT INTO product_variant_length (inventory_id, length) VALUES ('$inventory_id', '$formatted_length')")) {
+                echo "Error inserting length: " . mysqli_error($conn);
+                exit;
+            }
         }
 
         echo "success";
@@ -175,18 +135,31 @@ if(isset($_REQUEST['action'])) {
 
         if ($Inventory_id > 0) {
             $checkQuery = "
-                SELECT i.*, p.product_category 
+                SELECT i.*, p.product_category, pvl.length AS variant_length
                 FROM inventory i
                 LEFT JOIN product p ON i.Product_id = p.product_id
-                WHERE i.Inventory_id = '$Inventory_id' 
-                LIMIT 1";
+                LEFT JOIN product_variant_length pvl ON i.Inventory_id = pvl.inventory_id
+                WHERE i.Inventory_id = '$Inventory_id'
+                LIMIT 1
+            ";
                 
             $result = mysqli_query($conn, $checkQuery);
             
             if ($row = mysqli_fetch_assoc($result)) {
+                $length_value = 0;
+                $length_unit  = '';
+
+                if (!empty($row['variant_length'])) {
+                    $parts = explode(' ', $row['variant_length'], 2);
+                    $length_value = floatval($parts[0]);
+                    $length_unit  = $parts[1] ?? '';
+                }
+
                 $response = [
-                    "status" => "found",
-                    "data"   => $row
+                    "status"       => "found",
+                    "data"         => $row,
+                    "length_value" => $length_value,
+                    "length_unit"  => $length_unit
                 ];
             }
         }
@@ -194,6 +167,7 @@ if(isset($_REQUEST['action'])) {
         echo json_encode($response);
         exit;
     }
+
 
     if ($action == "change_status") {
         $Inventory_id = mysqli_real_escape_string($conn, $_POST['inventory_id']);
