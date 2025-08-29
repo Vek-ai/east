@@ -47,14 +47,47 @@ if(isset($_POST['fetch_modal'])){
                     <input type="number" name="quantity[]" class="form-control mb-1 screw_quantity" value="1" placeholder="Enter Quantity">
                 </div>
                 <div class="col-3 col-6-md">
+                    <select class="form-control mb-1 color_select select-2" name="color_id[]">
+                        <option value="">Select Color...</option>
+                        <?php
+                        foreach ($inventoryItems as $item) {
+                            if (!empty($item['color_id'])) {
+                                $display = getColorName($item['color_id']);
+                                echo "<option value='{$item['color_id']}'>{$display}</option>";
+                            }
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div class="col-3 col-6-md d-none">
+                    <select id="dimension_select" name="dimension_id" class="form-control">
+                        <option value="" hidden>Select Dimension</option>
+                        <?php foreach ($inventoryItems as $item) { 
+                            $colorId   = $item['color_id'] ?? 0;
+                            $dimension = trim($item['dimension'] ?? '');
+                            $unit      = trim($item['dimension_unit'] ?? '');
+                            
+                            if ($dimension !== '') { ?>
+                                <option 
+                                    value="<?= $item['dimension_id'] ?>"
+                                    data-color="<?= $colorId ?>"
+                                >
+                                    <?= htmlspecialchars($dimension) ?> <?= htmlspecialchars($unit) ?>
+                                </option>
+                            <?php }
+                        } ?>
+                    </select>
+                </div>
+                <div class="col-3 col-6-md d-none">
                     <select class="form-control mb-1 screw_select select-2">
-                        <option value="0">Select Pack...</option>
+                        <option value="">Select Pack</option>
                         <?php
                         foreach ($inventoryItems as $item) {
                             $inventoryId = $item['inventory_id'];
                             $pack = getPackPieces($item['pack']);
                             $colorId = $item['color_id'] ?? 0;
                             $price = $item['price'] ?? 0;
+                            $dim_id = $item['dimension_id'];
 
                             $dimensionParts = [];
                             if (!empty($item['dimension'])) {
@@ -66,7 +99,7 @@ if(isset($_POST['fetch_modal'])){
                                 $display .= ' - ' . $dimensionDisplay;
                             }
 
-                            echo "<option value='{$inventoryId}' data-pack='{$pack}' data-color='{$colorId}' data-price='{$price}' data-dimension='{$dimensionDisplay}'>
+                            echo "<option value='{$inventoryId}' data-pack='{$pack}' data-dim-id='{$dim_id}' data-color='{$colorId}' data-price='{$price}' data-dimension='{$dimensionDisplay}'>
                                     {$display}
                                 </option>";
                         }
@@ -76,29 +109,6 @@ if(isset($_POST['fetch_modal'])){
                     <input type="hidden" name="length_feet[]" class="custom_pack">
                     <input type="hidden" name="length_inch[]" class="custom_length_inch">
                 </div>
-                <div class="col-3 col-6-md">
-                    <select class="form-control mb-1 color_select select-2" name="color_id[]">
-                        <option value="0">Select Color...</option>
-                        <?php
-                        foreach ($inventoryItems as $item) {
-                            if (!empty($item['color_id'])) {
-                                $dimensionParts = [];
-                                if (!empty($item['dimension'])) {
-                                    $dimensionParts = array_map('trim', explode('-', $item['dimension']));
-                                }
-                                $dimensionDisplay = !empty($dimensionParts) ? implode(' - ', $dimensionParts) : '';
-
-                                $display = '';
-                                if ($dimensionDisplay !== '') $display .= $dimensionDisplay . ' - ';
-                                $display .= $colorOptions[$item['color_id']] ?? '';
-
-                                echo "<option value='{$item['color_id']}'>{$display}</option>";
-                            }
-                        }
-                        ?>
-                    </select>
-                </div>
-
             </div>
 
             <div class="col-5 text-end">
@@ -139,6 +149,45 @@ if(isset($_POST['fetch_modal'])){
 
             $(document).on('change', '.screw_select', updateAllPrices);
             $(document).on('input', '.screw_quantity', updateAllPrices);
+
+            $(document).on('change', '.screw-row .color_select', function() {
+                const $row = $(this).closest('.screw-row');
+                const selectedColor = $(this).val();
+
+                const $dimensionSelect = $row.find('#dimension_select');
+                const $packSelect = $row.find('.screw_select');
+
+                if (selectedColor && selectedColor !== '0') {
+                    $dimensionSelect.closest('.col-3').removeClass('d-none');
+                    $dimensionSelect.find('option').each(function() {
+                        const color = $(this).data('color')?.toString();
+                        $(this).toggle(color === selectedColor || $(this).val() === '');
+                    });
+                    $dimensionSelect.val('');
+                } else {
+                    $dimensionSelect.closest('.col-3').addClass('d-none').find('select').val('');
+                    $packSelect.closest('.col-3').addClass('d-none').find('select').val('');
+                }
+            });
+
+            $(document).on('change', '.screw-row #dimension_select', function() {
+                const $row = $(this).closest('.screw-row');
+                const selectedDim = $(this).val();
+                const selectedColor = $row.find('.color_select').val();
+                const $packSelect = $row.find('.screw_select');
+
+                if (selectedDim && selectedDim !== '') {
+                    $packSelect.closest('.col-3').removeClass('d-none');
+                    $packSelect.find('option').each(function() {
+                        const color = $(this).data('color')?.toString();
+                        const dimId = $(this).data('dim-id')?.toString();
+                        $(this).toggle((color === selectedColor && dimId === selectedDim) || $(this).index() === 0);
+                    });
+                    $packSelect.val('');
+                } else {
+                    $packSelect.closest('.col-3').addClass('d-none').find('select').val('');
+                }
+            });
 
             $(document).on('change', '.screw_select', function () {
                 let $row = $(this).closest('.screw-row');
