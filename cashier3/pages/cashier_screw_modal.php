@@ -38,8 +38,10 @@ if(isset($_POST['fetch_modal'])){
         <div class="row">
             <div class="row">
                 <div class="col-3"><label class="fs-4 fw-semibold">Quantity</label></div>
-                <div class="col-3"><label class="fs-4 fw-semibold">Pack</label></div>
+                <div class="col-3"><label class="fs-4 fw-semibold">Dimension</label></div>
                 <div class="col-3"><label class="fs-4 fw-semibold">Color</label></div>
+                <div class="col-3"><label class="fs-4 fw-semibold">Pack</label></div>
+                
             </div>
 
             <div class="screw-row row mt-1">
