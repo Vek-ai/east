@@ -30,6 +30,12 @@ if(isset($_REQUEST['action'])) {
         $dimension_id = mysqli_real_escape_string($conn, $_POST['dimension_id'] ?? '0');
         $addedby      = $_SESSION['userid'];
 
+        $lumber_type         = mysqli_real_escape_string($conn, $_POST['lumber_type']);
+
+        $length_value = mysqli_real_escape_string($conn, $_POST['length_value']);
+        $length_unit  = mysqli_real_escape_string($conn, $_POST['length_unit']);
+        $formatted_length = "$length_value $length_unit";
+
         $product = getProductDetails($Product_id);
         $product_category = $product['product_category'] ?? 0;
 
