@@ -138,13 +138,13 @@ if(isset($_REQUEST['action'])) {
 
         if (mysqli_num_rows($check_length) > 0) {
             if ($formatted_length === null) {
-                $sql = "UPDATE product_variant_length SET length = NULL WHERE inventory_id = '$inventory_id'";
+                $sql = "UPDATE product_variant_length SET length = '' WHERE inventory_id = '$inventory_id'";
             } else {
                 $sql = "UPDATE product_variant_length SET length = '$formatted_length' WHERE inventory_id = '$inventory_id'";
             }
         } else {
             if ($formatted_length === null) {
-                $sql = "INSERT INTO product_variant_length (inventory_id, length) VALUES ('$inventory_id', NULL)";
+                $sql = "INSERT INTO product_variant_length (inventory_id, length) VALUES ('$inventory_id', '')";
             } else {
                 $sql = "INSERT INTO product_variant_length (inventory_id, length) VALUES ('$inventory_id', '$formatted_length')";
             }

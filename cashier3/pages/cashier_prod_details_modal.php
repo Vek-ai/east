@@ -110,14 +110,25 @@ if(isset($_POST['fetch_details_modal'])){
                     <p class="mb-3"><?= $row['description'] ?></p>
 
                     <?php
+                    $lumber_id = 1;
                     $inventoryList = getAvailableInventory($row['product_id']);
+                    $product = getProductDetails($row['product_id']);
+                    $category_id = $product['product_category'];
+
                     if (!empty($inventoryList)) {
+                        if ($category_id == $lumber_id) {
+                            usort($inventoryList, function($a, $b) {
+                                return strcasecmp($a['lumber_type'], $b['lumber_type']);
+                            });
+                        }
                         ?>
                         <div class="table-responsive">
                             <table class="table table-sm align-middle mb-0">
                                 <thead>
                                     <tr>
-                                        <th>Color</th>
+                                        <th>
+                                            <?= ($category_id == $lumber_id) ? "Lumber Type" : "Color" ?>
+                                        </th>
                                         <th>Dimensions</th>
                                         <th>Price</th>
                                     </tr>
@@ -126,12 +137,16 @@ if(isset($_POST['fetch_details_modal'])){
                                     <?php foreach ($inventoryList as $inv) { ?>
                                         <tr>
                                             <td>
-                                                <?php if (!empty($inv['color_id'])) { ?>
-                                                    <span class="d-inline-block rounded-circle me-2" 
-                                                        style="width:20px; height:20px; background-color:<?= getColorHexFromColorID($inv['color_id']) ?>;">
-                                                    </span>
+                                                <?php if ($category_id == $lumber_id) { ?>
+                                                    <?= htmlspecialchars(ucwords($inv['lumber_type'] ?? 'None')) ?>
                                                 <?php } else { ?>
-                                                    None
+                                                    <?php if (!empty($inv['color_id'])) { ?>
+                                                        <span class="d-inline-block rounded-circle me-2" 
+                                                            style="width:20px; height:20px; background-color:<?= getColorHexFromColorID($inv['color_id']) ?>;">
+                                                        </span>
+                                                    <?php } else { ?>
+                                                        None
+                                                    <?php } ?>
                                                 <?php } ?>
                                             </td>
                                             <td>
@@ -146,6 +161,7 @@ if(isset($_POST['fetch_details_modal'])){
                         <?php
                     }
                     ?>
+
                 </div>
             </div>
 

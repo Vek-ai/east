@@ -118,10 +118,13 @@ if(isset($_POST['fetch_prompt_quantity'])){
             
             <div class="row">
                 <div class="col-3">
-                    <label class="fs-4 fw-semibold">Quantity</label>
+                    <label class="fs-4 fw-semibold text-center">Quantity</label>
                 </div>
-                <div class="col-9">
-                    <label class="fs-4 fw-semibold">Length</label>
+                <div class="col-3">
+                    <label class="fs-4 fw-semibold text-center">Length</label>
+                </div>
+                <div class="col-3">
+                    <label class="fs-4 fw-semibold text-center">Panel</label>
                 </div>
             </div>
             
@@ -143,26 +146,14 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     </div>
                 </div>
 
-                <div class="col-6 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
-                    <div class="d-flex gap-2">
-                        <div class="form-check">
-                            <input id="solid_panel" class="form-check-input solid_panel" type="checkbox" name="panel_type[]" value="solid" checked>
-                            <label class="form-check-label">Solid</label>
-                        </div>
-                        <div class="form-check position-relative">
-                            <input class="form-check-input vented_panel" type="checkbox" name="panel_type[]" value="vented">
-                            <label class="form-check-label">Vented</label>
-                            <div class="tooltip-custom small" style="display: none;">Double-click to select Vented</div>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="panel_drip_stop[]" value="drip_stop">
-                            <label class="form-check-label">Drip Stop</label>
-                        </div>
-                    </div>
+                <div class="col-3 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
+                    <select id="panel_option" name="panel_option" class="form-control form-control-sm">
+                        <option value="solid" selected>Solid</option>
+                        <option value="vented">Vented</option>
+                        <option value="drip_stop">Drip Stop</option>
+                    </select>
                 </div>
             </div>
-
-
 
             <?php
             if($category_id == $panel_id){
@@ -245,16 +236,14 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
             function calculateProductCost() {
                 const product_id = $('#product_id').val();
-                const quantities = [], lengthFeetArr = [], lengthInchArr = [];
-                const panelTypeArr = [], panelDripStopArr = [];
+                const quantities = [], lengthFeetArr = [], lengthInchArr = [], panelOptionArr = [];
 
                 $('.quantity-length-container').each(function() {
                     quantities.push(parseInt($(this).find('.quantity-product').val()) || 0);
                     lengthFeetArr.push(parseFloat($(this).find('.length_feet').val()) || 0);
                     lengthInchArr.push($(this).find('.length_inch').val() || 0);
 
-                    panelTypeArr.push($(this).find('input[name="panel_type[]"]:checked').val() || 'solid');
-                    panelDripStopArr.push($(this).find('input[name="panel_drip_stop[]"]:checked').val() || '');
+                    panelOptionArr.push($(this).find('select[name="panel_option"]').val() || 'solid');
                 });
 
                 const bends = parseInt($('#bend_product').val()) || 0;
@@ -270,8 +259,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         quantity: quantities,
                         lengthFeet: lengthFeetArr,
                         lengthInch: lengthInchArr,
-                        panel_type: panelTypeArr,
-                        panel_drip_stop: panelDripStopArr,
+                        panel_option: panelOptionArr,
                         soldByFeet: soldByFeet,
                         bends: bends,
                         hems: hems,
@@ -283,6 +271,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     }
                 });
             }
+
 
 
             function fetchCoilStock() {
@@ -390,54 +379,9 @@ if(isset($_POST['fetch_prompt_quantity'])){
             });
 
 
-            $(document).on('change input', '.quantity-product, .length_feet, .length_inch, .fraction_input, input[name="panel_type"], #bend_product, #hem_product', calculateProductCost);
+            $(document).on('change input', '.quantity-product, .length_feet, .length_inch, .fraction_input, #panel_option, #bend_product, #hem_product', calculateProductCost);
 
             $('input[name="panel_type"]').on('change', calculateProductCost);
-
-            $(document).on('change', '.solid_panel', function () {
-                const $row = $(this).closest('.col-6');
-                if ($(this).is(':checked')) {
-                    $row.find('.vented_panel').prop('checked', false);
-                }
-                calculateProductCost();
-            });
-
-            $(document).on('change', '.vented_panel', function () {
-                const $row = $(this).closest('.col-6');
-                if ($(this).is(':checked')) {
-                    $row.find('.solid_panel').prop('checked', false);
-                }
-                calculateProductCost();
-            });
-
-            $(document).on('click', '.vented_panel', function(e) {
-                if (!$(this).data('clicked')) {
-                    e.preventDefault();
-                    const $tooltip = $(this).closest('.form-check.position-relative').find('.tooltip-custom');
-                    $tooltip.fadeIn(200);
-
-                    $(this).data('clicked', true);
-
-                    setTimeout(() => {
-                        $tooltip.fadeOut(200);
-                        $(this).data('clicked', false);
-                    }, 2000);
-                }
-            });
-
-            $(document).on('dblclick', '.vented_panel', function () {
-                $(this).prop('checked', true);
-                const $tooltip = $(this).closest('.form-check.position-relative').find('.tooltip-custom');
-                $tooltip.fadeOut(200);
-                calculateProductCost();
-            });
-
-            $(document).on('click', '.solid_panel', function () {
-                const $row = $(this).closest('.col-6');
-                $row.find('.tooltip-custom').fadeOut(200);
-                $row.find('.vented_panel').data('clicked', false);
-            });
-
         });
         </script>
         <?php
@@ -456,7 +400,7 @@ if (isset($_POST['fetch_price'])) {
     $quantities      = $_POST['quantity'] ?? [];
     $lengthFeet      = $_POST['lengthFeet'] ?? [];
     $lengthInch      = $_POST['lengthInch'] ?? [];
-    $panelTypes      = $_POST['panel_type'] ?? [];
+    $panelTypes      = $_POST['panel_option'] ?? [];
     $panelDripStops  = $_POST['panel_drip_stop'] ?? [];
     $bends           = isset($_POST['bends']) ? intval($_POST['bends']) : 0;
     $hems            = isset($_POST['hems']) ? intval($_POST['hems']) : 0;

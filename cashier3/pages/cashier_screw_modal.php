@@ -52,10 +52,12 @@ if(isset($_POST['fetch_modal'])){
                     <select class="form-control mb-1 color_select select-2" name="color_id[]">
                         <option value="">Select Color...</option>
                         <?php
+                        $seenColors = [];
                         foreach ($inventoryItems as $item) {
-                            if (!empty($item['color_id'])) {
+                            if (!empty($item['color_id']) && !in_array($item['color_id'], $seenColors)) {
                                 $display = getColorName($item['color_id']);
-                                echo "<option value='{$item['color_id']}'>{$display}</option>";
+                                echo "<option value='{$item['color_id']}'>" . htmlspecialchars($display) . "</option>";
+                                $seenColors[] = $item['color_id'];
                             }
                         }
                         ?>

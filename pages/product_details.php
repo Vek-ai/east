@@ -138,41 +138,56 @@ if (!empty($_REQUEST['product_id'])) {
                     <div class="col-12 mt-3">
                         <h5 class="mb-3 fs-5 fw-semibold text-center">Available Variations</h5>
                         <?php
-                        $inventoryList = getAvailableInventory($row['product_id']);
-                        if (!empty($inventoryList)) {
-                            ?>
-                            <div class="table-responsive">
-                                <table class="table table-sm align-middle mb-0 w-100">
-                                    <thead>
-                                        <tr>
-                                            <th>Color</th>
-                                            <th>Dimensions</th>
-                                            <th>Price</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($inventoryList as $inv) { ?>
+                            $lumber_id = 1;
+                            $inventoryList = getAvailableInventory($row['product_id']);
+                            $product = getProductDetails($row['product_id']);
+                            $category_id = $product['product_category'];
+
+                            if (!empty($inventoryList)) {
+                                if ($category_id == $lumber_id) {
+                                    usort($inventoryList, function($a, $b) {
+                                        return strcasecmp($a['lumber_type'], $b['lumber_type']);
+                                    });
+                                }
+                                ?>
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle mb-0">
+                                        <thead>
                                             <tr>
-                                                <td>
-                                                    <?php if (!empty($inv['color_id'])) { ?>
-                                                        <span class="d-inline-block rounded-circle me-2" 
-                                                            style="width:20px; height:20px; background-color:<?= getColorHexFromColorID($inv['color_id']) ?>;">
-                                                        </span>
-                                                    <?php } else { ?>
-                                                        None
-                                                    <?php } ?>
-                                                </td>
-                                                <td>
-                                                    <?= htmlspecialchars($inv['dimension'] . ' ' . $inv['dimension_unit']) ?>
-                                                </td>
-                                                <td>$<?= number_format($inv['price'], 2) ?></td>
+                                                <th>
+                                                    <?= ($category_id == $lumber_id) ? "Lumber Type" : "Color" ?>
+                                                </th>
+                                                <th>Dimensions</th>
+                                                <th>Price</th>
                                             </tr>
-                                        <?php } ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <?php
-                        }
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($inventoryList as $inv) { ?>
+                                                <tr>
+                                                    <td>
+                                                        <?php if ($category_id == $lumber_id) { ?>
+                                                            <?= htmlspecialchars(ucwords($inv['lumber_type'] ?? 'None')) ?>
+                                                        <?php } else { ?>
+                                                            <?php if (!empty($inv['color_id'])) { ?>
+                                                                <span class="d-inline-block rounded-circle me-2" 
+                                                                    style="width:20px; height:20px; background-color:<?= getColorHexFromColorID($inv['color_id']) ?>;">
+                                                                </span>
+                                                            <?php } else { ?>
+                                                                None
+                                                            <?php } ?>
+                                                        <?php } ?>
+                                                    </td>
+                                                    <td>
+                                                        <?= htmlspecialchars($inv['dimension'] . ' ' . $inv['dimension_unit']) ?>
+                                                    </td>
+                                                    <td>$<?= number_format($inv['price'], 2) ?></td>
+                                                </tr>
+                                            <?php } ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <?php
+                            }
                         ?>
                     </div>
                 </div>
