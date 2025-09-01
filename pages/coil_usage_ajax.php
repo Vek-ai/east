@@ -173,6 +173,9 @@ if(isset($_POST['fetch_usage_details'])){
                                 case 3:
                                     $statusText = 'Done';
                                     break;
+                                case 4:
+                                    $statusText = 'Released';
+                                    break;
                                 default:
                                     $statusText = 'Unknown';
                             }
@@ -264,6 +267,10 @@ if(isset($_POST['fetch_usage_details'])){
                                         case 3:
                                             $statusText = 'Done';
                                             $statusClass = 'badge bg-success';
+                                            break;
+                                        case 4:
+                                            $statusText = 'Released';
+                                            $statusClass = 'badge bg-info';
                                             break;
                                         default:
                                             $statusText = 'Unknown';
