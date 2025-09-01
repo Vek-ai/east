@@ -29,13 +29,19 @@ if(isset($_REQUEST['action'])) {
             SELECT
                 op.*,  
                 p.*, 
-                COALESCE(SUM(i.quantity_ttl), 0) AS inv_quantity,
-                i.Warehouse_id as warehouse
+                COALESCE(inv.inv_quantity, 0) AS inv_quantity
             FROM order_product AS op 
-            LEFT JOIN product AS p ON p.product_id = op.productid 
-            LEFT JOIN inventory AS i ON i.product_id = op.productid 
-            WHERE p.hidden = 0 AND op.status = 0 AND p.product_origin = 1
-            GROUP BY p.product_id
+            LEFT JOIN product AS p 
+                ON p.product_id = op.productid 
+            LEFT JOIN (
+                SELECT product_id, SUM(quantity_ttl) AS inv_quantity
+                FROM inventory
+                GROUP BY product_id
+            ) AS inv 
+                ON inv.product_id = op.productid
+            WHERE p.hidden = 0 
+            AND op.status = 0 
+            AND p.product_origin = 1;
         ";
         $result = mysqli_query($conn, $query);
         $no = 1;
@@ -151,8 +157,13 @@ if(isset($_REQUEST['action'])) {
                 LIMIT 1
             ";
             if (mysqli_query($conn, $upd_inventory)) {
-                $inv_check = "SELECT quantity_ttl FROM inventory WHERE product_id = $productid AND color_id = $custom_color LIMIT 1";
-                $inv_res   = mysqli_query($conn, $inv_check);
+                $inv_check = "
+                    SELECT quantity_ttl 
+                    FROM inventory 
+                    WHERE product_id = $productid AND color_id = $custom_color
+                    LIMIT 1
+                ";
+                $inv_res = mysqli_query($conn, $inv_check);
                 $remaining_inventory = 0;
                 if ($inv_res && mysqli_num_rows($inv_res) > 0) {
                     $inv_row = mysqli_fetch_assoc($inv_res);
