@@ -6,7 +6,7 @@ if (!defined('APP_SECURE')) {
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Coil Usage";
+$page_title = "Stockable Inventory Report";
 
 $permission = $_SESSION['permission'];
 ?>
@@ -90,13 +90,15 @@ $permission = $_SESSION['permission'];
             <div class="datatables">
                 <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
                 <div class="table-responsive text-nowrap">
-                    <table id="coil_usage_table" class="table table-hover mb-0 text-md-nowrap">
+                    <table id="stockable_table" class="table table-hover mb-0 text-md-nowrap">
                         <thead>
                             <tr>
-                                <th>Coil #</th>
-                                <th>Used Feet</th>
-                                <th>Remaining Feet</th>
-                                <th>Action</th>
+                                <th>Product ID</th>
+                                <th>Product Name</th>
+                                <th>Quantity</th>
+                                <th>Date</th>
+                                <th>Remaining Inventory</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -110,34 +112,34 @@ $permission = $_SESSION['permission'];
     </div>
 </div>
 
-<div class="modal" id="view_coil_details_modal" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-xl" role="document">
+<div class="modal" id="view_stockable_details_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-xl" role="document" style="max-width: 80%">
         <div class="modal-content p-2">
             <div class="modal-header">
-                <h6 class="modal-title">Coil Details</h6>
+                <h6 class="modal-title">Stockable Details</h6>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <div id="coil-details">
+                <div id="stockable-details">
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal" id="view_coil_usage_modal" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-dialog-centered modal-xl" role="document" style="max-width: 80%;">
+<div class="modal" id="view_product_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content p-2">
             <div class="modal-header">
-                <h6 class="modal-title">Work Order</h6>
+                <h6 class="modal-title">Product Details</h6>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <div id="usage-details">
+                <div id="product-details">
                 </div>
             </div>
         </div>
@@ -145,16 +147,16 @@ $permission = $_SESSION['permission'];
 </div>
 
 <script>
-    function loadCoilDetails(coil_id){
+    function loadProductDetails(product_id){
         $.ajax({
-            url: 'pages/coil_usage_ajax.php',
+            url: 'pages/stockable_report_ajax.php',
             type: 'POST',
             data: {
-                coil_id: coil_id,
-                fetch_coil_details: "fetch_coil_details"
+                product_id: product_id,
+                fetch_product_details: "fetch_product_details"
             },
             success: function(response) {
-                $('#coil-details').html(response);
+                $('#product-details').html(response);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -162,17 +164,16 @@ $permission = $_SESSION['permission'];
         });
     }
 
-    function loadUsageDetails(id){
+    function loadStockableDetails(id){
         $.ajax({
-            url: 'pages/coil_usage_ajax.php',
+            url: 'pages/stockable_report_ajax.php',
             type: 'POST',
             data: {
                 id: id,
-                fetch_usage_details: "fetch_usage_details"
+                fetch_stockable_details: "fetch_stockable_details"
             },
             success: function(response) {
-                console.log(response);
-                $('#usage-details').html(response);
+                $('#stockable-details').html(response);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -267,7 +268,7 @@ $permission = $_SESSION['permission'];
             const year_select = $('#year_select').val() || [];
 
             $.ajax({
-                url: 'pages/coil_usage_ajax.php',
+                url: 'pages/stockable_report_ajax.php',
                 type: 'POST',
                 dataType: 'json',
                 data: {
@@ -275,20 +276,20 @@ $permission = $_SESSION['permission'];
                     date_to,
                     month_select,
                     year_select,
-                    search_returns: 'search_returns'
+                    search_stockable: 'search_stockable'
                 },
                 success: function (response) {
                     console.log(response);
 
-                    if ($.fn.DataTable.isDataTable('#coil_usage_table')) {
-                        $('#coil_usage_table').DataTable().clear().destroy();
+                    if ($.fn.DataTable.isDataTable('#stockable_table')) {
+                        $('#stockable_table').DataTable().clear().destroy();
                     }
 
-                    const table = $('#coil_usage_table').DataTable({
+                    const table = $('#stockable_table').DataTable({
                         pageLength: 100
                     });
 
-                    $('#coil_usage_table_filter').hide();
+                    $('#stockable_table_filter').hide();
 
                     table.clear();
 
@@ -296,21 +297,23 @@ $permission = $_SESSION['permission'];
                         table.search(this.value).draw();
                     });
 
-                    if (response.coils.length > 0) {
-                        response.coils.forEach(coil => {
+                    if (response.stockables.length > 0) {
+                        response.stockables.forEach(stockable => {
                             let rowData = [];
 
-                            let coil_details_btn = `
-                                <a href="javascript:void(0)" class="text-primary" id="view_coil_details" data-id="${coil.coilid}">
-                                    ${coil.entry_no}
+                            rowData.push(stockable.product_id);
+                            let stockable_details_btn = `
+                                <a href="javascript:void(0)" class="text-primary" id="view_product_details" data-id="${stockable.product_id}">
+                                    ${stockable.product_name}
                                 </a>
                             `;
-                            rowData.push(coil_details_btn);
-                            rowData.push(coil.used_feet);
-                            rowData.push(coil.remaining_feet);
+                            rowData.push(stockable_details_btn);
+                            rowData.push(stockable.quantity);
+                            rowData.push(stockable.date);
+                            rowData.push(stockable.remaining);
 
                             let actionButtons = `
-                                <a href="javascript:void(0)" class="text-primary" id="view_coil_usage" data-id="${coil.used_in_workorders}" title="View Coil Usage">
+                                <a href="javascript:void(0)" class="text-primary" id="view_stockable" data-id="${stockable.order_id}" title="View Order">
                                     <i class="fa fa-eye"></i>
                                 </a>
                             `;
@@ -337,16 +340,16 @@ $permission = $_SESSION['permission'];
             performSearch();
         });
 
-        $(document).on('click', '#view_coil_details', function(event) {
-            var coil_id = $(this).data('id');
-            loadCoilDetails(coil_id);
-            $('#view_coil_details_modal').modal('toggle');
+        $(document).on('click', '#view_stockable', function(event) {
+            var id = $(this).data('id');
+            loadStockableDetails(id);
+            $('#view_stockable_details_modal').modal('toggle');
         });
 
-        $(document).on('click', '#view_coil_usage', function(event) {
-            var id = $(this).data('id');
-            loadUsageDetails(id);
-            $('#view_coil_usage_modal').modal('toggle');
+        $(document).on('click', '#view_product_details', function(event) {
+            var product_id = $(this).data('id');
+            loadProductDetails(product_id);
+            $('#view_product_modal').modal('toggle');
         });
 
         performSearch();

@@ -114,20 +114,26 @@ if(isset($_REQUEST['action'])) {
         $product_order_id = intval($_POST['product_id']);
         $status = 2;
 
-        $fetch_sql = "SELECT productid, custom_color, quantity FROM order_product WHERE id = $product_order_id LIMIT 1";
+        $fetch_sql = "SELECT id, orderid, productid, custom_color, quantity 
+                    FROM order_product 
+                    WHERE id = $product_order_id 
+                    LIMIT 1";
         $fetch_result = mysqli_query($conn, $fetch_sql);
 
         if ($fetch_result && mysqli_num_rows($fetch_result) > 0) {
             $row = mysqli_fetch_assoc($fetch_result);
-            $productid = intval($row['productid']);
-            $custom_color = isset($row['custom_color']) && is_numeric($row['custom_color']) ? intval($row['custom_color']) : 0;
+            $order_product_id = intval($row['id']);
+            $order_id        = intval($row['orderid']);
+            $productid       = intval($row['productid']);
+            $custom_color    = (isset($row['custom_color']) && is_numeric($row['custom_color'])) 
+                                ? intval($row['custom_color']) 
+                                : 0;
 
             $quantity_cart = (isset($row['quantity']) && is_numeric($row['quantity']) && $row['quantity'] > 0) 
                             ? intval($row['quantity']) 
                             : 1;
 
             $update_sql = "UPDATE order_product SET status = $status WHERE id = $product_order_id";
-
             if (mysqli_query($conn, $update_sql)) {
                 if (mysqli_affected_rows($conn) > 0) {
                     echo json_encode(['success' => true]);
@@ -144,8 +150,24 @@ if(isset($_REQUEST['action'])) {
                 WHERE product_id = $productid AND color_id = $custom_color
                 LIMIT 1
             ";
+            if (mysqli_query($conn, $upd_inventory)) {
+                $inv_check = "SELECT quantity_ttl FROM inventory WHERE product_id = $productid AND color_id = $custom_color LIMIT 1";
+                $inv_res   = mysqli_query($conn, $inv_check);
+                $remaining_inventory = 0;
+                if ($inv_res && mysqli_num_rows($inv_res) > 0) {
+                    $inv_row = mysqli_fetch_assoc($inv_res);
+                    $remaining_inventory = intval($inv_row['quantity_ttl']);
+                }
 
-            if (!mysqli_query($conn, $upd_inventory)) {
+                $insert_report = "
+                    INSERT INTO stockable_report (product_id, date, remaining_inventory, quantity_ordered, order_id, order_product_id)
+                    VALUES ($productid, NOW(), '$remaining_inventory', '$quantity_cart', '$order_id', '$order_product_id')
+                ";
+                if (!mysqli_query($conn, $insert_report)) {
+                    echo "Error inserting into stockable_report: " . mysqli_error($conn);
+                }
+
+            } else {
                 echo "Error updating inventory: " . mysqli_error($conn);
             }
         } else {
@@ -155,7 +177,6 @@ if(isset($_REQUEST['action'])) {
         mysqli_close($conn);
         exit;
     }
-
     
     mysqli_close($conn);
 }
