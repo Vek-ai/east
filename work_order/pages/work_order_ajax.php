@@ -1460,16 +1460,35 @@ if (isset($_POST['run_work_order'])) {
         if (is_array($assigned_coils)) {
             foreach ($assigned_coils as $coil_id) {
                 $coil_id = intval($coil_id);
-                mysqli_query($conn, "UPDATE coil_product SET remaining_feet = GREATEST(remaining_feet - $total_length_ft, 0) WHERE coil_id = $coil_id");
-                $coil_details = getCoilProductDetails($coil_id);
+                $coil_before = getCoilProductDetails($coil_id);
+                $length_before_use = floatval($coil_before['remaining_feet']);
+
+                mysqli_query($conn, "
+                    UPDATE coil_product 
+                    SET remaining_feet = GREATEST(remaining_feet - $total_length_ft, 0) 
+                    WHERE coil_id = $coil_id
+                ");
+
+                $coil_after = getCoilProductDetails($coil_id);
+                $remaining_length = floatval($coil_after['remaining_feet']);
+
+                mysqli_query($conn, "
+                    INSERT INTO coil_transaction (coilid, remaining_length, length_before_use, used_in_workorders)
+                    VALUES (
+                        $coil_id,
+                        '" . mysqli_real_escape_string($conn, $remaining_length) . "',
+                        '" . mysqli_real_escape_string($conn, $length_before_use) . "',
+                        '" . mysqli_real_escape_string($conn, $id) . "'
+                    )
+                ");
 
                 $coils_data[] = [
                     'C',
-                    $coil_details['entry_no'],
-                    getWarehouseName($coil_details['warehouse']),
+                    $coil_after['entry_no'],
+                    getWarehouseName($coil_after['warehouse']),
                     '',
-                    date('m/d/Y', strtotime($coil_details['date'])),
-                    match($coil_details['status']) {
+                    date('m/d/Y', strtotime($coil_after['date'])),
+                    match($coil_after['status']) {
                         0 => 'AVAILABLE',
                         1 => 'USED',
                         2 => 'REWORK',
@@ -1477,11 +1496,11 @@ if (isset($_POST['run_work_order'])) {
                         4 => 'ARCHIVED',
                         default => 'UNKNOWN'
                     },
-                    getSupplierName($coil_details['supplier']),
-                    floatval($coil_details['weight']),
-                    floatval($coil_details['price']),
-                    floatval($coil_details['remaining_feet']),
-                    getGradeName($coil_details['grade']),
+                    getSupplierName($coil_after['supplier']),
+                    floatval($coil_after['weight']),
+                    floatval($coil_after['price']),
+                    $remaining_length,
+                    getGradeName($coil_after['grade']),
                     'NotesHere'
                 ];
             }
