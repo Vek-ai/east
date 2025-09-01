@@ -731,13 +731,11 @@ function showCol($name) {
 
             if (parseInt(category) === 1) {
                 $("#lumber_type_group").show();
-                $("#length_group").show();
 
                 $("#inventory_form [name=lumber_type]").val("treated").trigger("change");
-
             } else {
                 $("#lumber_type_group").hide();
-                $("#length_group").hide();
+                $("#length_group").show();
 
                 $("#inventory_form [name=length_value]").val("");
                 $("#inventory_form [name=length_unit]").val("");
