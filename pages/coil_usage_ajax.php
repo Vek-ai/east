@@ -78,7 +78,7 @@ if (isset($_POST['search_returns'])) {
                 'coilid' => $coilid,
                 'entry_no' => $entry_no,
                 'date' => $date,
-                'used_feet' => $used_feet,
+                'used_feet' => round($used_feet,2),
                 'remaining_feet' => round($remaining_feet,2),
                 'used_in_workorders' => $used_in_workorders,
             ];
@@ -325,7 +325,7 @@ if (isset($_POST['fetch_coil_details'])) {
             <div class="row g-3">
                 <div class="col-md-6">
                     <div class="p-1">
-                        <small class="text-muted d-block">Entry No</small>
+                        <small class="text-muted d-block">Coil #</small>
                         <span class="fw-bold fs-6"><?= $coil['entry_no'] ?></span>
                     </div>
                 </div>
