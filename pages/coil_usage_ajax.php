@@ -79,7 +79,7 @@ if (isset($_POST['search_returns'])) {
                 'entry_no' => $entry_no,
                 'date' => $date,
                 'used_feet' => $used_feet,
-                'remaining_feet' => $remaining_feet,
+                'remaining_feet' => round($remaining_feet,2),
                 'used_in_workorders' => $used_in_workorders,
             ];
         }
