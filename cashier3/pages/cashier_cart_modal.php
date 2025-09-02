@@ -753,14 +753,14 @@ if(isset($_POST['fetch_cart'])){
                         <th colspan="8" style="border-bottom: none; border-top: none;"></th>
                         <th class="text-end" style="border-bottom: 1px solid #dee2e6;">Sales Tax:</th>
                         <td class="text-end" style="border-bottom: 1px solid #dee2e6;">
-                            $<span id="sales_tax"><?= number_format((floatval($grand_customer_price)) * $tax, 2) ?></span>
+                            $<span id="sales_tax"><?= number_format($total_tax = floatval($grand_customer_price) * $tax, 2) ?></span>
                         </td>
                     </tr>
                     <tr>
                         <th colspan="8" style="border-bottom: none; border-top: none;"></th>
                         <th class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">Total Due:</th>
                         <td class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">
-                            $<span id="total_payable_est"><?= number_format((floatval($grand_customer_price)), 2) ?></span>
+                            $<span id="total_payable_est"><?= number_format((floatval($grand_customer_price) + $total_tax), 2) ?></span>
                         </td>
                     </tr>
                 </tfoot>

@@ -1354,18 +1354,19 @@ if (isset($_POST['save_order'])) {
             $stiff_board_batten = !empty($item['stiff_board_batten']) ? $item['stiff_board_batten'] : '0';
             $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
             $custom_img_src = $item['custom_trim_src'];
+            $bundle_id = $item['bundle_name'];
 
             $query = "INSERT INTO order_product (
                 orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem,
                 custom_length, custom_length2, actual_price, discounted_price, product_category,
                 custom_color, custom_grade, custom_profile, current_customer_discount, current_loyalty_discount,
-                used_discount, stiff_stand_seam, stiff_board_batten, panel_type, custom_img_src
+                used_discount, stiff_stand_seam, stiff_board_batten, panel_type, custom_img_src, bundle_id
             ) VALUES (
                 '$orderid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width',
                 '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch',
                 '$actual_price', '$discounted_price', '$product_category', '$custom_color',
                 '$custom_grade', '$custom_profile', '$curr_discount', '$loyalty_discount', '$used_discount',
-                '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$custom_img_src'
+                '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$custom_img_src', '$bundle_id'
             )";
 
             if ($conn->query($query) !== TRUE) {
