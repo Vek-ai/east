@@ -148,7 +148,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         <div class="quantity-length-container row mx-0 align-items-center mb-2">
                             <div class="col-1 text-center bundle-checkbox-wrapper d-none">
                                 <input type="checkbox" class="bundle-checkbox">
-                                <input type="hidden" name="batch_name[]" value="">
+                                <input type="hidden" name="bundle_name[]" value="">
                             </div>
                             <div class="<?= empty($sold_by_feet) ? 'col-12 col-md-3' : 'col-2 col-md-2'; ?> mb-1">
                                 <input type="number" value="1" name="quantity_product[]" 
@@ -445,7 +445,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 $('.bundle-checkbox:checked').each(function () {
                     $(this)
                         .closest('.quantity-length-container')
-                        .find('input[name="batch_name[]"]')
+                        .find('input[name="bundle_name[]"]')
                         .val(bundleName);
                 });
 
