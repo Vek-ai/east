@@ -431,12 +431,13 @@ if(isset($_POST['fetch_cart'])){
 
                                 foreach ($bundle_items as $values) {
                                     $line = $values["line"];
-                                    $estimate_length = floatval($values["estimate_length"] ?? 1);
-                                    $estimate_length_inch = floatval($values["estimate_length_inch"] ?? 0);
+                                    $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 1;
+                                    $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
+
                                     $total_length = $estimate_length + ($estimate_length_inch / 12);
 
                                     $quantity   = floatval($values["quantity_cart"] ?? 0);
-                                    $unit_price = floatval($product["unit_price"] ?? 0);
+                                    $unit_price = isset($values["unit_price"]) && is_numeric($values["unit_price"]) ? floatval($values["unit_price"]) : 0;
                                     $amount_discount = floatval($values["amount_discount"] ?? 0);
 
                                     if($total_length == 0){
