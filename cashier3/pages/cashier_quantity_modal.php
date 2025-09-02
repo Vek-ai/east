@@ -115,89 +115,126 @@ if(isset($_POST['fetch_prompt_quantity'])){
             </div>
 
             <div class="col-12"><hr class="w-100"></div>
-            
-            <div class="row">
-                <div class="col-3">
-                    <label class="fs-4 fw-semibold text-center">Quantity</label>
-                </div>
-                <div class="col-3">
-                    <label class="fs-4 fw-semibold text-center">Length</label>
-                </div>
-                <div class="col-3">
-                    <label class="fs-4 fw-semibold text-center">Panel</label>
+
+            <div class="row align-items-center mb-2">
+                <div class="col-12 text-end">
+                    <button type="button" id="createBundleBtn" class="btn btn-sm btn-primary">
+                        Create Bundles
+                    </button>
                 </div>
             </div>
             
-            <div class="quantity-length-container row mx-0 align-items-center mb-2">
-                <div class="<?= empty($sold_by_feet) ? 'col-12 col-md-3' : 'col-2 col-md-2'; ?> mb-1">
-                    <input type="number" value="1" name="quantity_product[]" 
-                        class="form-control form-control-sm quantity-product" 
-                        placeholder="Qty" list="quantity-product-list" autocomplete="off">
-                </div>
+            <div class="row align-items-center mb-2">
+                <div class="col-12" id="productFormCol">
 
-                <div class="<?= empty($sold_by_feet) ? 'd-none' : 'col-4 col-md-3'; ?> mb-1">
-                    <div class="input-group">
-                        <input step="0.0001" class="form-control form-control-sm length_feet" 
-                            type="number" name="length_feet[]" list="length_feet_datalist" 
-                            value="<?= $values['estimate_length'] ?>" placeholder="FT">
-                        <input step="0.0001" class="form-control form-control-sm length_inch" 
-                            type="text" name="length_inch[]" list="length_inch_datalist" 
-                            value="<?= $values['estimate_length_inch'] ?>" placeholder="IN">
+                    <div class="row">
+                        <div class="col-1">
+                            
+                        </div>
+                        <div class="col-3">
+                            <label class="fs-4 fw-semibold text-center">Quantity</label>
+                        </div>
+                        <div class="col-3">
+                            <label class="fs-4 fw-semibold text-center">Length</label>
+                        </div>
+                        <div class="col-3">
+                            <label class="fs-4 fw-semibold text-center">Panel</label>
+                        </div>
+                    </div>
+
+                    <div id="bundleGroups"></div>
+
+                    <div id="unbundledRows">
+                        <div class="quantity-length-container row mx-0 align-items-center mb-2">
+                            <div class="col-1 text-center bundle-checkbox-wrapper d-none">
+                                <input type="checkbox" class="bundle-checkbox">
+                                <input type="hidden" name="batch_name[]" value="">
+                            </div>
+                            <div class="<?= empty($sold_by_feet) ? 'col-12 col-md-3' : 'col-2 col-md-2'; ?> mb-1">
+                                <input type="number" value="1" name="quantity_product[]" 
+                                    class="form-control form-control-sm quantity-product" 
+                                    placeholder="Qty" list="quantity-product-list" autocomplete="off">
+                            </div>
+
+                            <div class="<?= empty($sold_by_feet) ? 'd-none' : 'col-4 col-md-3'; ?> mb-1">
+                                <div class="input-group">
+                                    <input step="0.0001" class="form-control form-control-sm length_feet" 
+                                        type="number" name="length_feet[]" list="length_feet_datalist" 
+                                        value="<?= $values['estimate_length'] ?>" placeholder="FT">
+                                    <input step="0.0001" class="form-control form-control-sm length_inch" 
+                                        type="text" name="length_inch[]" list="length_inch_datalist" 
+                                        value="<?= $values['estimate_length_inch'] ?>" placeholder="IN">
+                                </div>
+                            </div>
+
+                            <div class="col-3 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
+                                <select id="panel_option" name="panel_option" class="form-control form-control-sm">
+                                    <option value="solid" selected>Solid</option>
+                                    <option value="vented">Vented</option>
+                                    <option value="drip_stop">Drip Stop</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <?php
+                    if($category_id == $panel_id){
+                    ?>
+                    <div class="col-7 text-end">
+                        <a href="javascript:void(0)" type="button" id="duplicateFields" class="text-end">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    </div>
+                    <?php 
+                    } 
+                    ?>
+                    <div class="mb-2 <?= (($category_id == $fastener_id) || $id == 21) ? '' : 'd-none';?>">
+                        <label class="fs-4 fw-bold" for="case_type">Select Case</label>
+                        <div class="input-group d-flex align-items-center">
+                            <select class="form-control mr-1" id="case_type" name="case_type" style="color:#ffffff;">
+                                <option>100</option>
+                                <option>250</option>
+                                <option>500</option>
+                                <option>1000</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group d-flex align-items-center justify-content-between flex-wrap w-100 mt-3">
+                        <div class="mb-2 <?= empty($standing_seam) ? 'd-none' : '';?>">
+                            <div class="me-2 flex-grow-1">
+                                <label class="fs-4 fw-bold" for="stiff_stand_seam">Standing Seam Style</label>
+                                <select class="form-control" id="stiff_stand_seam" name="stiff_stand_seam" style="color:#ffffff; width: 100%;">
+                                    <option value="1" selected>Striated</option>
+                                    <option value="2">Flat</option>
+                                    <option value="3">Minor Rib</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-2 <?= empty($board_batten) ? 'd-none' : '';?>">
+                            <div class="me-2 flex-grow-1">
+                                <label class="fs-4 fw-bold" for="stiff_board_batten">Board and Batten Style</label>
+                                <select class="form-control" id="stiff_board_batten" name="stiff_board_batten" style="color:#ffffff; width: 100%;">
+                                    <option value="1" selected>Flat</option>
+                                    <option value="2">Minor Rib</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+                <div class="col-3 d-none" id="bundleSection">
+                    <div class="card p-3">
+                        <h6 class="fw-bold">Add Bundle Info</h6>
+                        <p class="mb-1">Bundle <span id="bundleCounter">1</span></p>
+                        <div class="mb-2">
+                            <label for="bundleName" class="form-label">Name of Bundle:</label>
+                            <input type="text" id="bundleName" class="form-control form-control-sm" placeholder="Enter bundle name">
+                        </div>
+                        <button type="button" id="addToBundleBtn" class="btn btn-success btn-sm w-100">
+                            Add to Bundles
+                        </button>
                     </div>
                 </div>
-
-                <div class="col-3 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
-                    <select id="panel_option" name="panel_option" class="form-control form-control-sm">
-                        <option value="solid" selected>Solid</option>
-                        <option value="vented">Vented</option>
-                        <option value="drip_stop">Drip Stop</option>
-                    </select>
-                </div>
             </div>
-
-            <?php
-            if($category_id == $panel_id){
-            ?>
-            <div class="col-7 text-end">
-                <a href="javascript:void(0)" type="button" id="duplicateFields" class="text-end">
-                    <i class="fas fa-plus"></i>
-                </a>
-            </div>
-            <?php 
-            } 
-            ?>
-            <div class="mb-2 <?= (($category_id == $fastener_id) || $id == 21) ? '' : 'd-none';?>">
-                <label class="fs-4 fw-bold" for="case_type">Select Case</label>
-                <div class="input-group d-flex align-items-center">
-                    <select class="form-control mr-1" id="case_type" name="case_type" style="color:#ffffff;">
-                        <option>100</option>
-                        <option>250</option>
-                        <option>500</option>
-                        <option>1000</option>
-                    </select>
-                </div>
-            </div>
-            <div class="input-group d-flex align-items-center justify-content-between flex-wrap w-100 mt-3">
-                <div class="mb-2 <?= empty($standing_seam) ? 'd-none' : '';?>">
-                    <div class="me-2 flex-grow-1">
-                        <label class="fs-4 fw-bold" for="stiff_stand_seam">Standing Seam Style</label>
-                        <select class="form-control" id="stiff_stand_seam" name="stiff_stand_seam" style="color:#ffffff; width: 100%;">
-                            <option value="1" selected>Striated</option>
-                            <option value="2">Flat</option>
-                            <option value="3">Minor Rib</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="mb-2 <?= empty($board_batten) ? 'd-none' : '';?>">
-                    <div class="me-2 flex-grow-1">
-                        <label class="fs-4 fw-bold" for="stiff_board_batten">Board and Batten Style</label>
-                        <select class="form-control" id="stiff_board_batten" name="stiff_board_batten" style="color:#ffffff; width: 100%;">
-                            <option value="1" selected>Flat</option>
-                            <option value="2">Minor Rib</option>
-                        </select>
-                    </div>
-                </div>
-            </div> 
         </div>
 
         <div class="input-group d-flex align-items-center justify-content-between flex-wrap w-100 mt-3 mb-2 <?= empty($is_special) ? 'd-none' : '';?>">
@@ -221,6 +258,9 @@ if(isset($_POST['fetch_prompt_quantity'])){
         </div>
         <script>
         $(document).ready(function () {
+            let bundleCount = 1;
+            let bundleVisible = false;
+
             function parseFraction(val) {
                 if (!val) return 0;
                 if (val.includes('/')) {
@@ -271,8 +311,6 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     }
                 });
             }
-
-
 
             function fetchCoilStock() {
                 const color = parseInt($('#qty-color').val()) || 0;
@@ -351,7 +389,6 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 }
             });
 
-
             $('#duplicateFields').click(function() {
                 var $newRow = $('.quantity-length-container').first().clone(true, true);
                 var uniqueId = Date.now();
@@ -373,15 +410,79 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 $newRow.find('.solid_panel').prop('checked', true);
                 $newRow.find('.vented_panel').prop('checked', false);
 
-                $('.quantity-length-container').last().after($newRow);
+                $newRow.find('.bundle-checkbox').prop('checked', false);
+                $('#unbundledRows').append($newRow);
 
                 calculateProductCost();
             });
 
-
             $(document).on('change input', '.quantity-product, .length_feet, .length_inch, .fraction_input, #panel_option, #bend_product, #hem_product', calculateProductCost);
 
             $('input[name="panel_type"]').on('change', calculateProductCost);
+
+            $(document).off('click', '#createBundleBtn').on('click', '#createBundleBtn', function () {
+                bundleVisible = !bundleVisible;
+
+                if (bundleVisible) {
+                    $('#productFormCol').removeClass('col-12').addClass('col-9');
+                    $('#bundleSection').removeClass('d-none');
+                    $('.bundle-checkbox-wrapper, .bundle-checkbox-header').removeClass('d-none');
+                } else {
+                    $('#productFormCol').removeClass('col-9').addClass('col-12');
+                    $('#bundleSection').addClass('d-none');
+                    $('.bundle-checkbox-wrapper, .bundle-checkbox-header').addClass('d-none');
+                    $('.bundle-checkbox').prop('checked', false);
+                }
+            });
+
+            $(document).off('click', '#addToBundleBtn').on('click', '#addToBundleBtn', function () {
+                const bundleName = $('#bundleName').val().trim();
+                if (!bundleName) {
+                    alert("Please enter a bundle name");
+                    return;
+                }
+
+                $('.bundle-checkbox:checked').each(function () {
+                    $(this)
+                        .closest('.quantity-length-container')
+                        .find('input[name="batch_name[]"]')
+                        .val(bundleName);
+                });
+
+                let $selectedRows = $('.bundle-checkbox:checked').closest('.quantity-length-container');
+                if ($selectedRows.length === 0) {
+                    alert("Please select at least one row to add to the bundle");
+                    return;
+                }
+
+                let $bundleWrapper = $(`
+                    <div class="card p-2 mb-3 bundle-wrapper">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0">Bundle ${bundleCount}: ${bundleName}</h6>
+                            <button class="btn btn-sm btn-outline-danger removeBundleBtn">Remove Bundle</button>
+                        </div>
+                        <div class="bundle-rows"></div>
+                    </div>
+                `);
+
+                $selectedRows.appendTo($bundleWrapper.find('.bundle-rows'));
+
+                $('#bundleGroups').append($bundleWrapper);
+
+                $('#bundleName').val('');
+                $('#bundleCounter').text(++bundleCount);
+
+                $('#bundleSection').addClass('d-none');
+                $('.bundle-checkbox-wrapper, .bundle-checkbox-header').addClass('d-none');
+                $('.bundle-checkbox').prop('checked', false);
+                bundleVisible = false;
+            });
+
+            $(document).off('click', '.removeBundleBtn').on('click', '.removeBundleBtn', function() {
+                const $bundle = $(this).closest('.bundle-wrapper');
+                $bundle.find('.quantity-length-container').appendTo('#unbundledRows');
+                $bundle.remove();
+            });
         });
         </script>
         <?php
@@ -392,7 +493,6 @@ if(isset($_POST['fetch_prompt_quantity'])){
         }
         ?>
 <?php
-    
 }
 
 if (isset($_POST['fetch_price'])) {

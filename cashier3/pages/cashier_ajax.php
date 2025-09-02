@@ -2555,6 +2555,7 @@ if (isset($_POST['add_to_cart'])) {
     $lengthFraction = $_POST['length_fraction'] ?? [];
     $panel_types    = $_POST['panel_type'] ?? [];
     $panel_drip_stops = $_POST['panel_drip_stop'] ?? [];
+    $bundle_names = $_POST['bundle_name'] ?? [];
 
     $product_id    = mysqli_real_escape_string($conn, $_POST['product_id']);
     $is_pre_order  = mysqli_real_escape_string($conn, $_POST['is_pre_order'] ?? 0);
@@ -2580,6 +2581,8 @@ if (isset($_POST['add_to_cart'])) {
         // Panel handling per row
         $panel_type_row      = isset($panel_types[$index]) ? $panel_types[$index][0] : 'solid';
         $panel_drip_stop_row = isset($panel_drip_stops[$index]) ? $panel_drip_stops[$index] : '';
+
+        $bundle_name_row = $bundle_names[$index] ?? '';
 
         $quantityInStock = getProductStockInStock($product_id);
         $totalQuantity   = getProductStockTotal($product_id);
@@ -2657,7 +2660,8 @@ if (isset($_POST['add_to_cart'])) {
                     'custom_profile'      => !empty($profile) ? $profile : $row['profile'],
                     'stiff_board_batten'  => $stiff_board_batten,
                     'stiff_stand_seam'    => $stiff_stand_seam,
-                    'is_pre_order'        => $is_pre_order
+                    'is_pre_order'        => $is_pre_order,
+                    'bundle_name'          => $bundle_name_row
                 ];
 
                 $_SESSION['cart'][$nextLine] = $item_array;
