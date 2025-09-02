@@ -382,8 +382,12 @@ if(isset($_POST['fetch_cart'])){
                                 $total_length = $estimate_length + ($estimate_length_inch / 12);
 
                                 $quantity   = floatval($values["quantity_cart"] ?? 0);
-                                $unit_price = floatval($values["unit_price"] ?? 0);
+                                $unit_price = floatval($product["unit_price"] ?? 0);
                                 $amount_discount = floatval($values["amount_discount"] ?? 0);
+
+                                if($total_length == 0){
+                                    $total_length = 1;
+                                }
 
                                 $product_price = ($quantity * $unit_price * $total_length) - $amount_discount;
                                 $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
@@ -599,13 +603,11 @@ if(isset($_POST['fetch_cart'])){
                                     </td>
                                     <td class="text-center pl-3">$
                                         <?php
-                                        $subtotal = $product_price;
-                                        echo number_format($subtotal, 2);
+                                        echo number_format($product_price, 2);
                                         ?>
                                     </td>
                                     <td class="text-end pl-3">$
                                         <?php
-                                        $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
                                         echo number_format($customer_price, 2);
                                         ?>
                                     </td>
