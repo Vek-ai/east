@@ -359,7 +359,7 @@ if(isset($_POST['fetch_cart'])){
                                     <?= $total_qty ?>
                                 </td>
                                 <td class="text-center">
-                                    <?= $total_length_cart ?>
+                                    <?= number_format($total_length_cart,2) ?>
                                 </td>
                                 <td class="text-center">
                                     <?= $stock_text ?>
