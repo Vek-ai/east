@@ -236,7 +236,7 @@ if (mysqli_num_rows($result) > 0) {
                         $pdf->SetFont('Arial', 'B', 8);
                         $rowHeight = 5;
                         $summaryRow = [
-                            $g['product_name'] . 'adqwdqw iquwdiujqw iquwhd uiqwhd',
+                            $g['product_name'],
                             $g['color'],
                             $g['grade'],
                             $g['profile'],
