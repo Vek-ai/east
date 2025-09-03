@@ -114,181 +114,209 @@ if (mysqli_num_rows($result) > 0) {
 
         $total_price = 0;
         $total_qty = 0;
-
         $screw_id = 16;
+
         $query_category = "SELECT * FROM product_category WHERE hidden = 0";
         $result_category = mysqli_query($conn, $query_category);
+
         if (mysqli_num_rows($result_category) > 0) {
             while ($row_category = mysqli_fetch_assoc($result_category)) {
                 $product_category_id = $row_category['product_category_id'];
-                
-                $data = array();
-                $query_product="SELECT
-                                    p.product_category,
-                                    op.*
-                                FROM
-                                    `order_product` AS op
-                                LEFT JOIN product AS p
-                                ON
-                                    p.product_id = op.`productid`
-                                WHERE orderid = '$orderid' AND p.product_category = '$product_category_id'";
+
+                // Fetch products in this category
+                $query_product = "
+                    SELECT p.product_category, op.* 
+                    FROM order_product AS op
+                    LEFT JOIN product AS p ON p.product_id = op.productid
+                    WHERE orderid = '$orderid' AND p.product_category = '$product_category_id'
+                ";
                 $result_product = mysqli_query($conn, $query_product);
+
                 if (mysqli_num_rows($result_product) > 0) {
+
                     $pdf->Ln();
                     $pdf->SetFont('Arial', 'B', 9);
                     $pdf->SetXY($col1_x, $pdf->GetY());
                     $pdf->Cell(10, 5, getProductCategoryName($product_category_id), 0, 1, 'L');
 
-                    $pdf->SetFont('Arial', 'B', 7);
                     if ($product_category_id == $screw_id) {
-                        $headers = ['QTY', "IMAGE", 'DESCRIPTION', 'COLOR', 'Grade', 'PACK COUNT', 'PRICE', 'DISC PRICE', 'TOTAL'];
-                        $widths = [15, 20, 55, 20, 10, 20, 18, 18, 15];
+                        $columns = [
+                            ['label' => 'DESCRIPTION', 'width' => 45, 'align' => 'C'],
+                            ['label' => 'COLOR', 'width' => 30, 'align' => 'C'],
+                            ['label' => 'Grade', 'width' => 20, 'align' => 'C'],
+                            ['label' => 'Profile', 'width' => 20, 'align' => 'C'],
+                            ['label' => 'QTY', 'width' => 20, 'align' => 'C'],
+                            ['label' => 'PACK COUNT', 'width' => 25, 'align' => 'C'],
+                            ['label' => 'CUSTOMER PRICE', 'width' => 28, 'align' => 'R'],
+                        ];
                     } else {
-                        $headers = ['QTY', "IMAGE", 'DESCRIPTION', 'COLOR', 'Grade', 'FT.', 'IN.', 'PRICE', 'DISC PRICE', 'TOTAL'];
-                        $widths = [15, 20, 55, 20, 10, 10, 10, 18, 18, 15];
+                        $columns = [
+                            ['label' => 'DESCRIPTION', 'width' => 45, 'align' => 'C'],
+                            ['label' => 'COLOR', 'width' => 30, 'align' => 'C'],
+                            ['label' => 'Grade', 'width' => 20, 'align' => 'C'],
+                            ['label' => 'Profile', 'width' => 20, 'align' => 'C'],
+                            ['label' => 'QTY', 'width' => 20, 'align' => 'C'],
+                            ['label' => 'LENGTH (FT)', 'width' => 25, 'align' => 'C'],
+                            ['label' => 'CUSTOMER PRICE', 'width' => 28, 'align' => 'R'],
+                        ];
                     }
 
-                    for ($i = 0; $i < count($headers); $i++) {
-                        $pdf->Cell($widths[$i], 10, $headers[$i], 1, 0, 'C');
+                    $pdf->SetFont('Arial', 'B', 7);
+                    foreach ($columns as $col) {
+                        $pdf->Cell($col['width'], 10, $col['label'], 1, 0, $col['align']);
                     }
                     $pdf->Ln();
 
+                    $data = [];
+                    $grouped = [];
                     $trim_directory = "images/drawing/";
 
                     while ($row_product = mysqli_fetch_assoc($result_product)) {
                         $productid = $row_product['productid'];
                         $product_details = getProductDetails($productid);
-                        $grade_details = getGradeDetails($product_details['grade']);
+                        $grade_details   = getGradeDetails($product_details['grade']);
+                        $profile_details = getProfileTypeDetails($product_details['profile']);
 
                         $product_name = !empty($row_product['product_item']) ? $row_product['product_item'] : $product_details['product_item'];
-                        $picture_path = !empty($row_product['custom_img_src']) ? $trim_directory . $row_product["custom_img_src"] : '';
 
-                        $quantity = is_numeric($row_product['quantity']) ? floatval($row_product['quantity']) : 0;
-                        $unit_price = floatval($row_product['actual_price']);
-                        $discounted_price = floatval($row_product['discounted_price']);
+                        $quantity = floatval($row_product['quantity'] ?? 0);
+                        $unit_price = floatval($row_product['actual_price']);       // <-- actual price
+                        $discounted_price = floatval($row_product['discounted_price']); // <-- discounted price
 
-                        $total_line_price = $discounted_price;
+                        $ft = floatval($row_product['custom_length'] ?? 0);
+                        $in = floatval($row_product['custom_length2'] ?? 0);
+                        $length_ft_decimal = $ft + ($in / 12);
 
-                        if ($product_category_id == $screw_id) {
-                            $pack_count = !empty($row_product['custom_length']) ? $row_product['custom_length'] : 0;
-                            $data[] = [
-                                $quantity,
-                                '',
-                                $product_name,
-                                getColorName($row_product['custom_color']),
-                                $grade_details['grade_abbreviations'] ?? '',
-                                $pack_count,
-                                '$ ' . number_format($unit_price, 2),
-                                '$ ' . number_format($discounted_price, 2),
-                                '$ ' . number_format($total_line_price, 2),
-                                $picture_path
-                            ];
-                        } else {
-                            $ft = !empty($row_product['custom_length']) ? $row_product['custom_length'] : '';
-                            $in = !empty($row_product['custom_length2']) ? $row_product['custom_length2'] : '';
-                            $data[] = [
-                                $quantity,
-                                '',
-                                $product_name,
-                                getColorName($product_details['color']),
-                                $grade_details['grade_abbreviations'] ?? '',
-                                $ft,
-                                $in,
-                                '$ ' . number_format($unit_price, 2),
-                                '$ ' . number_format($discounted_price, 2),
-                                '$ ' . number_format($total_line_price, 2),
-                                $picture_path
+                        $key = $productid;
+
+                        $bundle_name = $row_product['bundle_id'];
+
+                        if (!isset($grouped[$key])) {
+                            $grouped[$key] = [
+                                'product_name' => $product_name,
+                                'color' => getColorName($product_details['color']),
+                                'grade' => $grade_details['grade_abbreviations'] ?? '',
+                                'profile' => $profile_details['profile_type'] ?? '',
+                                'quantity' => 0,
+                                'length' => 0,
+                                'discounted_total' => 0,
+                                'actual_total' => 0,
+                                'bundles' => []
                             ];
                         }
 
-                        $total_price += $total_line_price;
-                        $total_qty += $quantity;
+                        $grouped[$key]['quantity'] += $quantity;
+                        $grouped[$key]['length']   += $length_ft_decimal;
+                        $grouped[$key]['discounted_total'] += $discounted_price;
+                        $grouped[$key]['actual_total']     += $unit_price;
+
+                        if (!isset($grouped[$key]['bundles'][$bundle_name])) {
+                            $grouped[$key]['bundles'][$bundle_name] = [
+                                'bundle_name' => $bundle_name,
+                                'rows' => []
+                            ];
+                        }
+
+                        $grouped[$key]['bundles'][$bundle_name]['rows'][] = [
+                            'product_name' => $product_name,
+                            'color' => getColorName($product_details['color']),
+                            'grade' => $grade_details['grade_abbreviations'] ?? '',
+                            'profile' => $profile_details['profile_type'] ?? '',
+                            'qty' => $quantity,
+                            'length' => $length_ft_decimal,
+                            'unit_price' => $unit_price,
+                            'disc_price' => $discounted_price
+                        ];
                     }
 
                     $pdf->SetFont('Arial', '', 8);
 
-                    foreach ($data as $row) {
-                        $height_product = NbLines($pdf, $widths[2], $row[2]) * 5; 
-                        $height_color = NbLines($pdf, $widths[3], $row[3]) * 5;
+                    foreach ($grouped as $g) {
+                        // --- GROUPED SUMMARY ROW ---
+                        $pdf->SetFont('Arial', 'B', 8);
+                        $rowHeight = 5;
+                        $total_price += $g['discounted_total'];
+                        $total_qty += $g['quantity'];
+                        $summaryRow = [
+                            $g['product_name'],
+                            $g['color'],
+                            $g['grade'],
+                            $g['profile'],
+                            $g['quantity'],
+                            number_format($g['length'], 2),
+                            '$ ' . number_format($g['discounted_total'], 2)
+                        ];
 
-                        $isTrim = false;
-                        $height = max($height_product, $height_color);
-
-                        if (!empty($row[ count($row)-1 ])) {
-                            $isTrim = true;
-                            $height = 30;
+                        foreach ($summaryRow as $i => $cell) {
+                            $pdf->Cell($columns[$i]['width'], $rowHeight, $cell, 1, 0, $columns[$i]['align']);
                         }
-                        
-                        $y_initial = $pdf->GetY();
-
-                        $pdf->Cell($widths[0], $height, $row[0], 'LR', 0, 'C');
-
-                        if ($isTrim) {
-                            $pdf->Cell($widths[1], $height, '', 'LR', 0, 'C');
-                            $xImg = $pdf->GetX() - $widths[1];
-                            $yImg = $y_initial;
-                            $imgWidth = $widths[1] - 2;
-                            $imgHeight = $height - 2;
-                            $pdf->Image($row[ count($row)-1 ], $xImg + 1, $yImg, $imgWidth, $imgHeight);
-                        } else {
-                            $pdf->Cell($widths[1], $height, $row[1], 'LR', 0, 'C');
-                        }
-                        
-                        $lineHeight = 5;
-
-                        $numLines = NbLines($pdf, $widths[2], $row[2]);
-                        $contentHeight = $numLines * $lineHeight;
-                        $verticalOffset = $y_initial + ($height - $contentHeight) / 2;
-
-                        $x = $pdf->GetX();
-                        $y = $verticalOffset;
-
-                        $pdf->Line($x, $y_initial, $x, $y_initial + $height);
-                        $pdf->Line($x + $widths[2], $y_initial, $x + $widths[2], $y_initial + $height);
-
-                        $pdf->SetXY($x, $y);
-                        $pdf->MultiCell($widths[2], $lineHeight, $row[2], 0, 'C');
-                        $pdf->SetXY($x + $widths[2], $y_initial);
-
-                        $numLines = NbLines($pdf, $widths[3], $row[3]);
-                        $contentHeight = $numLines * $lineHeight;
-                        $verticalOffset = $y_initial + ($height - $contentHeight) / 2;
-
-                        $x = $pdf->GetX();
-                        $y = $verticalOffset;
-
-                        $pdf->Line($x, $y_initial, $x, $y_initial + $height);
-                        $pdf->Line($x + $widths[3], $y_initial, $x + $widths[3], $y_initial + $height);
-
-                        $pdf->SetXY($x, $y);
-                        $pdf->MultiCell($widths[3], $lineHeight, $row[3], 0, 'C');
-                        $pdf->SetXY($x + $widths[3], $y_initial);
-
-                        if ($product_category_id == $screw_id) {
-                            $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'C');  
-                            $pdf->Cell($widths[5], $height, $row[5], 'LR', 0, 'C');  
-                            $pdf->Cell($widths[6], $height, $row[6], 'LR', 0, 'R');  
-                            $pdf->Cell($widths[7], $height, $row[7], 'LR', 0, 'R');  
-                            $pdf->Cell($widths[8], $height, $row[8], 'LR', 0, 'R');  
-                        } else {
-                            $pdf->Cell($widths[4], $height, $row[4], 'LR', 0, 'C');  
-                            $pdf->Cell($widths[5], $height, $row[5], 'LR', 0, 'C');  
-                            $pdf->Cell($widths[6], $height, $row[6], 'LR', 0, 'C');  
-                            $pdf->Cell($widths[7], $height, $row[7], 'LR', 0, 'R');  
-                            $pdf->Cell($widths[8], $height, $row[8], 'LR', 0, 'R');  
-                            $pdf->Cell($widths[9], $height, $row[9], 'LR', 0, 'R');  
-                        }
-
                         $pdf->Ln();
-                        $y_bottom = $pdf->GetY();
-                        $pdf->Line(10, $y_initial + $height, 210 - 10, $y_initial + $height);
+
+                        $subColumns = [
+                            ['label' => 'Bundle Name', 'width' => 45, 'align' => 'C'],
+                            ['label' => 'Qty', 'width' => 30, 'align' => 'C'],
+                            ['label' => 'Length', 'width' => 20, 'align' => 'C'],
+                            ['label' => 'Panel Type', 'width' => 20, 'align' => 'C'],
+                            ['label' => 'Panel Style', 'width' => 20, 'align' => 'C'],
+                            ['label' => 'Bundle Name', 'width' => 25, 'align' => 'R'],
+                            ['label' => 'Line Item Price (Disc)', 'width' => 28, 'align' => 'R'],
+                        ];
+                        $pdf->SetFont('Arial', 'B', 6.5);
+                        foreach ($subColumns as $col) {
+                            $pdf->Cell($col['width'], 6, $col['label'], 1, 0, $col['align']);
+                        }
+                        $pdf->Ln();
+
+                        $pdf->SetFont('Arial', '', 7);
+                        $bundle_qty_total = $bundle_length_total = $bundle_price_total = $bundle_disc_total = 0;
+
+                        foreach ($g['bundles'] as $bundle) {
+                            foreach ($bundle['rows'] as $row) {
+                                $subRow = [
+                                    $bundle['bundle_name'],
+                                    $row['qty'],
+                                    number_format($row['length'], 2),
+                                    '', 
+                                    '',
+                                    '',
+                                    '$ ' . number_format($row['disc_price'], 2)
+                                ];
+                                foreach ($subRow as $i => $cell) {
+                                    $pdf->Cell($subColumns[$i]['width'], 6, $cell, 1, 0, $subColumns[$i]['align']);
+                                }
+                                $pdf->Ln();
+
+                                $bundle_qty_total    += $row['qty'];
+                                $bundle_length_total += $row['length'];
+                                $bundle_price_total  += $row['unit_price'];
+                                $bundle_disc_total   += $row['disc_price'];
+                            }
+                        }
+
+                        $pdf->SetFont('Arial', 'B', 7);
+                        $totalsRow = [
+                            'TOTAL',
+                            $bundle_qty_total,
+                            number_format($bundle_length_total, 2),
+                            '',
+                            '',
+                            '',
+                            '$ ' . number_format($bundle_disc_total, 2)
+                        ];
+                        foreach ($totalsRow as $i => $cell) {
+                            $pdf->Cell($subColumns[$i]['width'], 6, $cell, 1, 0, $subColumns[$i]['align']);
+                        }
+                        $pdf->Ln(10);
                     }
+
+
+
                 }
             }
-            
-        }else{
+        } else {
             echo "No key components found";
         }
+
 
         $pdf->Ln(5);
 
