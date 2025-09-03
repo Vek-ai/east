@@ -235,10 +235,8 @@ if (mysqli_num_rows($result) > 0) {
                         // --- GROUPED SUMMARY ROW ---
                         $pdf->SetFont('Arial', 'B', 8);
                         $rowHeight = 5;
-                        $total_price += $g['discounted_total'];
-                        $total_qty += $g['quantity'];
                         $summaryRow = [
-                            $g['product_name'],
+                            $g['product_name'] . 'adqwdqw iquwdiujqw iquwhd uiqwhd',
                             $g['color'],
                             $g['grade'],
                             $g['profile'],
@@ -247,10 +245,24 @@ if (mysqli_num_rows($result) > 0) {
                             '$ ' . number_format($g['discounted_total'], 2)
                         ];
 
-                        foreach ($summaryRow as $i => $cell) {
-                            $pdf->Cell($columns[$i]['width'], $rowHeight, $cell, 1, 0, $columns[$i]['align']);
+                        $xStart = $pdf->GetX();
+                        $yStart = $pdf->GetY();
+
+                        $firstColWidth = $columns[0]['width'];
+                        $xStart = $pdf->GetX();
+                        $yStart = $pdf->GetY();
+
+                        $pdf->MultiCell($firstColWidth, $rowHeight, $summaryRow[0], 1, $columns[0]['align']);
+
+                        $yEnd = $pdf->GetY();
+                        $cellHeight = $yEnd - $yStart;
+                        $xAfter = $xStart + $firstColWidth;
+                        $pdf->SetXY($xAfter, $yStart);
+
+                        for ($i = 1; $i < count($summaryRow); $i++) {
+                            $pdf->Cell($columns[$i]['width'], $cellHeight, $summaryRow[$i], 1, 0, $columns[$i]['align']);
                         }
-                        $pdf->Ln();
+                        $pdf->Ln($cellHeight);
 
                         $subColumns = [
                             ['label' => 'Bundle Name', 'width' => 45, 'align' => 'C'],
