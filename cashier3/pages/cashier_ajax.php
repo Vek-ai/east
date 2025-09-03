@@ -2554,7 +2554,8 @@ if (isset($_POST['add_to_cart'])) {
     $lengthFeet     = $_POST['length_feet'] ?? [];
     $lengthInch     = $_POST['length_inch'] ?? [];
     $lengthFraction = $_POST['length_fraction'] ?? [];
-    $panel_types    = $_POST['panel_type'] ?? [];
+    $panel_types    = $_POST['panel_option'] ?? [];
+    $panel_styles    = $_POST['panel_style'] ?? [];
     $panel_drip_stops = $_POST['panel_drip_stop'] ?? [];
     $bundle_names = $_POST['bundle_name'] ?? [];
 
@@ -2580,7 +2581,8 @@ if (isset($_POST['add_to_cart'])) {
         $length_inch = isset($lengthInch[$index]) ? parseNumber($lengthInch[$index]) : 0;
 
         // Panel handling per row
-        $panel_type_row      = isset($panel_types[$index]) ? $panel_types[$index][0] : 'solid';
+        $panel_type_row  = $panel_types[$index]  ?? 'solid';
+        $panel_style_row = $panel_styles[$index] ?? 'regular';
         $panel_drip_stop_row = isset($panel_drip_stops[$index]) ? $panel_drip_stops[$index] : '';
 
         $bundle_name_row = $bundle_names[$index] ?? '';
@@ -2654,6 +2656,7 @@ if (isset($_POST['add_to_cart'])) {
                     'usage'               => 0,
                     'custom_color'        => !empty($color) ? $color : $row['color'],
                     'panel_type'          => $panel_type_row,
+                    'panel_style'          => $panel_style_row,
                     'panel_drip_stop'     => $panel_drip_stop_row,
                     'weight'              => $weight,
                     'custom_grade'        => !empty($grade) ? $grade : $row['grade'],

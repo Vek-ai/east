@@ -654,6 +654,8 @@ if(isset($_POST['fetch_cart'])){
                                                 <option value="">Select...</option>
                                                 <option value="regular" <?= $values['panel_style'] == 'regular' ? 'selected' : '' ?>>Regular</option>
                                                 <option value="reversed" <?= $values['panel_style'] == 'reversed' ? 'selected' : '' ?>>Reversed</option>
+                                                <option value="flat" <?= $values['panel_style'] == 'flat' ? 'selected' : '' ?>>Flat</option>
+                                                <option value="striated" <?= $values['panel_style'] == 'striated' ? 'selected' : '' ?>>Striated</option>
                                             </select>
                                         </td>
                                         <td class="text-center">

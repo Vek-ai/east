@@ -288,8 +288,8 @@ if (mysqli_num_rows($result) > 0) {
                                     $bundle['bundle_name'],
                                     $row['qty'],
                                     number_format($row['length'], 2),
-                                    '', 
-                                    '',
+                                    $row['panel_type'] ?? '', 
+                                    $row['panel_style'] ?? '',
                                     '',
                                     '$ ' . number_format($row['disc_price'], 2)
                                 ];

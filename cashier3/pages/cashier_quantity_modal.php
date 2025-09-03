@@ -126,19 +126,18 @@ if(isset($_POST['fetch_prompt_quantity'])){
             
             <div class="row align-items-center mb-2">
                 <div class="col-12" id="productFormCol">
-
                     <div class="row">
-                        <div class="col-1">
-                            
-                        </div>
-                        <div class="col-3">
+                        <div class="col-3 text-center">
                             <label class="fs-4 fw-semibold text-center">Quantity</label>
                         </div>
                         <div class="col-3">
                             <label class="fs-4 fw-semibold text-center">Length</label>
                         </div>
                         <div class="col-3">
-                            <label class="fs-4 fw-semibold text-center">Panel</label>
+                            <label class="fs-4 fw-semibold text-center">Panel Type</label>
+                        </div>
+                        <div class="col-3">
+                            <label class="fs-4 fw-semibold text-center">Panel Style</label>
                         </div>
                     </div>
 
@@ -156,7 +155,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                                     placeholder="Qty" list="quantity-product-list" autocomplete="off">
                             </div>
 
-                            <div class="<?= empty($sold_by_feet) ? 'd-none' : 'col-4 col-md-3'; ?> mb-1">
+                            <div class="<?= empty($sold_by_feet) ? 'd-none' : 'col-3 col-md-3'; ?> mb-1">
                                 <div class="input-group">
                                     <input step="0.0001" class="form-control form-control-sm length_feet" 
                                         type="number" name="length_feet[]" list="length_feet_datalist" 
@@ -168,14 +167,23 @@ if(isset($_POST['fetch_prompt_quantity'])){
                             </div>
 
                             <div class="col-3 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
-                                <select id="panel_option" name="panel_option" class="form-control form-control-sm">
+                                <select id="panel_option" name="panel_option[]" class="form-control form-control-sm">
                                     <option value="solid" selected>Solid</option>
                                     <option value="vented">Vented</option>
                                     <option value="drip_stop">Drip Stop</option>
                                 </select>
                             </div>
+                            <div class="col-3 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
+                                <select id="panel_style" name="panel_style[]" class="form-control form-control-sm panel_style">
+                                    <option value="regular" selected>Regular</option>
+                                    <option value="flat">Flat</option>
+                                    <option value="striated">Striated</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
+
+                    
 
                     <?php
                     if($category_id == $panel_id){
@@ -188,6 +196,13 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     <?php 
                     } 
                     ?>
+
+                    <div class="col-auto backer-rod-container d-none">
+                        <label class="fs-4 fw-semibold text-start me-2">Backer Rod (3/8in)</label><br>
+                        <input type="number" step="0.001" name="backer_rod" 
+                            class="form-control form-control-sm backer_rod d-inline-block" style="width:120px;">
+                    </div>
+
                     <div class="mb-2 <?= (($category_id == $fastener_id) || $id == 21) ? '' : 'd-none';?>">
                         <label class="fs-4 fw-bold" for="case_type">Select Case</label>
                         <div class="input-group d-flex align-items-center">
@@ -260,6 +275,10 @@ if(isset($_POST['fetch_prompt_quantity'])){
         $(document).ready(function () {
             let bundleCount = 1;
             let bundleVisible = false;
+
+            for (let i = 0; i < 9; i++) {
+                duplicateRow();
+            }
 
             function parseFraction(val) {
                 if (!val) return 0;
@@ -389,9 +408,9 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 }
             });
 
-            $('#duplicateFields').click(function() {
+            function duplicateRow() {
                 var $newRow = $('.quantity-length-container').first().clone(true, true);
-                var uniqueId = Date.now();
+                var uniqueId = Date.now() + Math.floor(Math.random() * 1000);
 
                 $newRow.find('input, div').each(function() {
                     var oldId = $(this).attr('id');
@@ -414,6 +433,10 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 $('#unbundledRows').append($newRow);
 
                 calculateProductCost();
+            }
+
+            $('#duplicateFields').click(function() {
+                duplicateRow();
             });
 
             $(document).on('change input', '.quantity-product, .length_feet, .length_inch, .fraction_input, #panel_option, #bend_product, #hem_product', calculateProductCost);
@@ -477,6 +500,38 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 $('.bundle-checkbox').prop('checked', false);
                 bundleVisible = false;
             });
+
+            function calculateBackerRod() {
+                let totalBackerRod = 0;
+
+                $('.quantity-length-container').each(function () {
+                    let $row = $(this);
+
+                    let style  = ($row.find('.panel_style').val() || '').toLowerCase();
+                    let qty    = parseFloat($row.find('.quantity-product').val()) || 0;
+                    let ft     = parseFloat($row.find('.length_feet').val()) || 0;
+                    let inch   = parseFloat($row.find('.length_inch').val()) || 0;
+
+                    let length = ft + (inch / 12);
+
+                    if (style === 'flat' && length >= 3) {
+                        totalBackerRod += qty * length;
+                    }
+                });
+
+                if (totalBackerRod > 0) {
+                    $('.backer-rod-container').removeClass('d-none');
+                    $('.backer_rod').val(totalBackerRod.toFixed(3));
+                } else {
+                    $('.backer-rod-container').addClass('d-none');
+                    $('.backer_rod').val('');
+                }
+            }
+
+            $(document).on('change', 'select[name="panel_style"]', calculateBackerRod);
+            $(document).on('input', '.quantity-product, .length_feet, .length_inch', calculateBackerRod);
+
+            calculateBackerRod();
 
             $(document).off('click', '.removeBundleBtn').on('click', '.removeBundleBtn', function() {
                 const $bundle = $(this).closest('.bundle-wrapper');

@@ -204,13 +204,21 @@ if(isset($_POST['fetch_modal'])){
                 updateAllPrices();
             });
 
-            $('#duplicateScrewFields').on("click", function() {
+            function duplicateScrewRow() {
                 let $newRow = $(".screw-row").first().clone();
                 $newRow.find('.screw_quantity').val("1");
                 $newRow.find('.screw_select').prop("selectedIndex", 0);
                 $newRow.find('.color_select').prop("selectedIndex", 0);
                 $(".screw-row").last().after($newRow);
+            }
+
+            $('#duplicateScrewFields').on("click", function() {
+                duplicateScrewRow();
             });
+
+            for (let i = 0; i < 5; i++) {
+                duplicateScrewRow();
+            }
 
             updateAllPrices();
         });
