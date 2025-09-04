@@ -371,7 +371,19 @@ if(isset($_POST['fetch_cart'])){
                                     $ <?= number_format($total_customer_price,2) ?>
                                 </td>
                                 <td class="text-center">
-                                    
+                                    <a href="javascript:void(0)" 
+                                        class="text-decoration-none me-2 toggleSortBtn" 
+                                        role="button" 
+                                        data-id="<?php echo $product_id; ?>">
+                                        <i class="fa fs-6 fa-sort"></i>
+                                    </a>
+                                    <a href="javascript:void(0)" 
+                                        role="button" 
+                                        data-id="<?php echo $product_id; ?>"
+                                        onClick="delete_product(this)"       
+                                        >
+                                            <i class="fa fs-6 fa-trash"></i>
+                                    </a>
                                 </td>
                             </tr>
                             
@@ -697,8 +709,35 @@ if(isset($_POST['fetch_cart'])){
                                             ?>
                                         </td>
                                         <td class="text-center">
-                                            <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $line; ?>" data-id="<?php echo $product_id; ?>" onClick="delete_item(this)"><i class="fa fa-trash"></i></button>
-                                            <button class="btn btn-danger-gradient btn-sm" type="button" data-line="<?php echo $line; ?>" data-id="<?php echo $product_id; ?>" onClick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
+                                            <a href="javascript:void(0)" 
+                                                class="text-decoration-none btn-sm me-1 delete-item-btn" 
+                                                data-line="<?php echo $line; ?>" 
+                                                data-id="<?php echo $product_id; ?>" 
+                                                onClick="delete_item(this)">
+                                                <i class="fa fa-trash fs-6"></i>
+                                            </a>
+
+                                            <a href="javascript:void(0)" 
+                                                class="text-decoration-none btn-sm duplicate-item-btn" 
+                                                data-line="<?php echo $line; ?>" 
+                                                data-id="<?php echo $product_id; ?>" 
+                                                onClick="duplicate_item(this)">
+                                                <i class="fa fa-plus fs-6"></i>
+                                            </a>
+
+                                            <a href="javascript:void(0)" 
+                                                class="text-decoration-none btn-sm me-1 sortArrowSec sort-up d-none"
+                                                data-id="<?php echo $product_id; ?>" 
+                                                data-line="<?php echo $line; ?>">
+                                                <i class="fa fs-6 fa-arrow-up"></i>
+                                            </a>
+
+                                            <a href="javascript:void(0)" 
+                                                class="text-decoration-none btn-sm sortArrowSec sort-down d-none"
+                                                data-id="<?php echo $product_id; ?>" 
+                                                data-line="<?php echo $line; ?>">
+                                                <i class="fa fs-6 fa-arrow-down"></i>
+                                            </a>
                                             <input type="hidden" class="form-control" data-id="<?php echo $product_id; ?>" id="item_id<?php echo $product_id; ?>" value="<?php echo $values["product_id"]; ?>">
                                             <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $product_id;?>">
                                             <input class="form-control" type="hidden" size="5" value="<?php echo $line;?>" id="line<?php echo $product_id;?>">

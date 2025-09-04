@@ -1875,6 +1875,18 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         });
     }
 
+    function applySort() {
+        let sortVisible = localStorage.getItem('sortArrowSecVisible') === 'true';
+
+        if (sortVisible) {
+            $('.sortArrowSec').removeClass('d-none');
+            $('.delete-item-btn, .duplicate-item-btn').addClass('d-none');
+        } else {
+            $('.sortArrowSec').addClass('d-none');
+            $('.delete-item-btn, .duplicate-item-btn').removeClass('d-none');
+        }
+    }
+
     function loadCart(){      
         $.ajax({
             url: 'pages/cashier_cart_modal.php',
@@ -1886,6 +1898,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 $('#cart-tbl').html(''); 
                 $('#cart-tbl').html(response); 
                 loadCartItemsHeader();
+                applySort();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -2071,6 +2084,25 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 product_id_del: id,
                 line: line,
                 deleteitem: 'deleteitem'
+            },
+            type: "POST",
+            success: function(data) {
+                loadCart();
+                console.log(data);
+            },
+            error: function() {}
+        });
+    }
+
+    function delete_product(element) {
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+        $.ajax({
+            url: "pages/cashier_ajax.php",
+            data: {
+                product_id_del: id,
+                line: line,
+                deleteproduct: 'deleteproduct'
             },
             type: "POST",
             success: function(data) {
@@ -5044,6 +5076,44 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 $section.removeClass('d-none');
                 $checkboxWrappers.removeClass('d-none');
             }
+        });
+
+        $(document).on('click', '.toggleSortBtn', function () {
+            let isVisible = !$('.sortArrowSec').first().hasClass('d-none'); 
+
+            if (isVisible) {
+                $('.sortArrowSec').addClass('d-none');
+                $('.delete-item-btn, .duplicate-item-btn').removeClass('d-none');
+                localStorage.setItem('sortArrowSecVisible', false);
+            } else {
+                $('.sortArrowSec').removeClass('d-none');
+                $('.delete-item-btn, .duplicate-item-btn').addClass('d-none');
+                localStorage.setItem('sortArrowSecVisible', true);
+            }
+        });
+
+        $(document).on('click', '.sortArrowSec', function () {
+            let $btn = $(this);
+            let productId = $btn.data('id');
+            let line = $btn.data('line');
+            let direction = $btn.hasClass('sort-up') ? 'up' : 'down';
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    reorder_cart: 'reorder_cart',
+                    product_id: productId,
+                    line: line,
+                    direction: direction
+                },
+                success: function (response) {
+                    loadCart();
+                },
+                error: function () {
+                    alert('Error reordering cart.');
+                }
+            });
         });
 
 

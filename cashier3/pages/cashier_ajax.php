@@ -145,6 +145,26 @@ if (isset($_POST['deleteitem'])) {
     }
 }
 
+if (isset($_POST['deleteproduct'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['product_id_del']);
+    $deleted = 0;
+
+    if (!empty($_SESSION["cart"])) {
+        foreach ($_SESSION["cart"] as $key => $item) {
+            if ($item['product_id'] == $product_id) {
+                unset($_SESSION["cart"][$key]);
+                $deleted++;
+            }
+        }
+    }
+
+    if ($deleted > 0) {
+        echo "Removed all items with Product ID: $product_id ($deleted removed)";
+    } else {
+        echo "No items found for Product ID: $product_id.";
+    }
+}
+
 if (isset($_REQUEST['query'])) {
     $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
     $color_id = isset($_REQUEST['color_id']) ? mysqli_real_escape_string($conn, $_REQUEST['color_id']) : '';
@@ -3042,6 +3062,50 @@ if (isset($_POST['set_bundle_name'])) {
         "bundle_name" => $bundle_name,
         "lines_updated" => $lines
     ]);
+    exit;
+}
+
+if (isset($_POST['reorder_cart'])) {
+    $product_id = $_POST['product_id'];
+    $line = (int)$_POST['line'];
+    $direction = $_POST['direction'];
+
+    if (isset($_SESSION['cart'][$line])) {
+        $currentItem = $_SESSION['cart'][$line];
+        $bundle_name = $currentItem['bundle_name'] ?? '';
+
+        $keys = [];
+        foreach ($_SESSION['cart'] as $k => $item) {
+            if (
+                $item['product_id'] == $product_id &&
+                ($item['bundle_name'] ?? '') == $bundle_name
+            ) {
+                $keys[] = $k;
+            }
+        }
+
+        $index = array_search($line, $keys);
+
+        if ($index !== false) {
+            if ($direction === 'up' && $index > 0) {
+                $swapIndex = $index - 1;
+            } elseif ($direction === 'down' && $index < count($keys) - 1) {
+                $swapIndex = $index + 1;
+            } else {
+                exit;
+            }
+
+            $tmp = $keys[$index];
+            $keys[$index] = $keys[$swapIndex];
+            $keys[$swapIndex] = $tmp;
+            $reordered = [];
+            foreach ($keys as $k) {
+                $reordered[$k] = $_SESSION['cart'][$k];
+            }
+            $_SESSION['cart'] = $reordered + $_SESSION['cart'];
+        }
+    }
+
     exit;
 }
 
