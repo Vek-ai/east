@@ -245,6 +245,8 @@ if (mysqli_num_rows($result) > 0) {
                             '$ ' . number_format($g['discounted_total'], 2)
                         ];
 
+                        $total_price += $g['discounted_total'];
+
                         $xStart = $pdf->GetX();
                         $yStart = $pdf->GetY();
 
