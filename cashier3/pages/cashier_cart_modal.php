@@ -752,27 +752,6 @@ if(isset($_POST['fetch_cart'])){
                                 <?php
                                 }
 
-                                if(!empty($bundle_name)) {
-                                    $bundle_actual_price += $product_price;
-                                    $bundle_customer_price += $customer_price;
-                                    ?>
-                                    <tr>
-                                        <th class="text-center" colspan="8"></th>
-                                        <th class="text-right">Bundle Price</th>
-                                        <th class="text-right">Bundle Price</th>
-                                        <th class="text-center"></th>
-                                    </tr>
-                                    <tr>
-                                        <th class="text-center" colspan="8"></th>
-                                        <th class="text-right">$ <?= number_format($bundle_actual_price,2) ?></th>
-                                        <th class="text-right">$ <?= number_format($bundle_customer_price,2) ?></th>
-                                        <th class="text-center"></th>
-                                    </tr>
-                                    <?php
-                                }
-
-                                
-
                             }
 
                             
