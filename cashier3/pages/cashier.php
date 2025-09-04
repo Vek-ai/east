@@ -5025,6 +5025,63 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             calculateDeliveryAmount();
         });
 
+        let bundleVisible = false;
+        $(document).on('click', '.createBundleCartBtn', function () {
+            let $btn = $(this);
+
+            let $section = $btn.closest('tr').prev('.bundleCartSection');
+            let $table = $btn.closest('table');
+            let $checkboxWrappers = $table.find('.bundle-checkbox-cart');
+            let $checkboxes = $table.find('.bundle-checkbox');
+            let isVisible = !$section.hasClass('d-none');
+
+            if (isVisible) {
+                $section.addClass('d-none');
+                $section.find('.bundleNameCart').val('');
+                $checkboxWrappers.addClass('d-none');
+                $checkboxes.prop('checked', false);
+            } else {
+                $section.removeClass('d-none');
+                $checkboxWrappers.removeClass('d-none');
+            }
+        });
+
+
+
+        $(document).on('click', '.addToBundleCartBtn', function () {
+            let $section = $(this).closest('.bundleCartSection');
+            let bundleName = $section.find('.bundleNameCart').val().trim();
+
+            if (bundleName === "") {
+                alert("Please enter a bundle name.");
+                return;
+            }
+
+            let selectedLines = [];
+            $(".bundle-checkbox-cart:checked").each(function () {
+                selectedLines.push($(this).data("line"));
+            });
+
+            if (selectedLines.length === 0) {
+                alert("Please select at least one product to bundle.");
+                return;
+            }
+
+            $.ajax({
+                url: "pages/cashier_ajax.php",
+                type: "POST",
+                data: {
+                    set_bundle_name: "set_bundle_name",
+                    lines: selectedLines,
+                    bundle_name: bundleName
+                },
+                success: function (res) {
+                    loadCart();
+                }
+            });
+        });
+
+
         $(document).on("click", ".btn-add-screw", function () {
             let $row = $(this).closest("tr");
             let product_id = $(this).data("id");

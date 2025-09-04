@@ -114,7 +114,7 @@ if(isset($_POST['fetch_cart'])){
 
         .thick-border th {
             border-top: 5px solid #fff !important;
-            padding-top: 0px;  
+            padding-top: 20px;  
         }
     </style>
     <div id="customer_cart_section">
@@ -403,29 +403,44 @@ if(isset($_POST['fetch_cart'])){
                                 }
                                 $bundle_count++;
                                 ?>
+                                <tr class="thick-border d-none bundleCartSection">
+                                    <td class="text-center" colspan="11">
+                                        <div class="text-end">
+                                            <div class="card p-3 mb-0 d-inline-block text-center">
+                                                <h6 class="fw-bold">Add Bundle Info</h6>
+                                                <div class="mb-2">
+                                                    <input type="text" class="form-control form-control-sm bundleNameCart" placeholder="Enter bundle name">
+                                                </div>
+                                                <button type="button" class="btn btn-success btn-sm w-100 addToBundleCartBtn">
+                                                    Add to Bundles
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
                                 <tr class="thick-border">
                                     <th class="text-center" colspan="3">
-                                        <?php 
-                                        if(!empty($bundle_name)) {
-                                            echo "($bundle_name)";
-                                        }
-                                        ?>
+                                        <?php if (!empty($bundle_name)) : ?>
+                                            (<?= $bundle_name ?>)
+                                        <?php else: ?>
+                                            <button type="button" class="btn btn-sm btn-primary createBundleCartBtn">
+                                                Create Bundles
+                                            </button>
+                                        <?php endif; ?>
                                     </th>
                                     <th class="text-center">Qty</th>
                                     <th class="text-center">Length</th>
                                     <th class="text-center">Panel Type</th>
                                     <th class="text-center">Panel Style</th>
                                     <th class="text-center">
-                                        <?php 
-                                        if(!empty($bundle_name)) {
-                                            echo "($bundle_name)";
-                                        }
-                                        ?>
+                                        <?php if (!empty($bundle_name)) echo "($bundle_name)"; ?>
                                     </th>
                                     <th class="text-center">Line Item Price</th>
                                     <th class="text-center">Line Item Price</th>
                                     <th class="text-center"></th>
                                 </tr>
+
                                 <?php
                                 
 
@@ -455,7 +470,7 @@ if(isset($_POST['fetch_cart'])){
                                     $drawing_data = $values['drawing_data'];
                                     ?>
                                     <tr>
-                                        <td data-color="<?= getColorName($color_id) ?>" data-pricing="<?=$customer_pricing?>" data-category="<?=$category_id?>" data-customer-pricing="<?=$customer_details_pricing?>">
+                                        <td>
                                             <?php
                                             if($category_id == $trim_id){
                                                 if(!empty($values["custom_trim_src"])){
@@ -477,7 +492,17 @@ if(isset($_POST['fetch_cart'])){
                                                 
                                             <?php } ?>
                                         </td>
-                                        <td></td>
+                                        <td>
+                                            <div class="bundle-checkbox-cart d-none">
+                                                <div class="form-check text-center">
+                                                    <input class="form-check-input bundle-checkbox-cart" 
+                                                            type="checkbox" 
+                                                            data-line="<?= $line; ?>" 
+                                                            data-id="<?= $product_id; ?>" 
+                                                            value="<?= $line; ?>">
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td class="text-center">
                                             
                                         </td>

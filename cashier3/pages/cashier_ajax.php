@@ -3025,5 +3025,25 @@ if (isset($_POST['add_cart_screw'])) {
     echo "Added $packs_needed pack(s) of screws (Apply Type: $type_to_apply, Apply Color: $selected_color_id, Screw Distance: {$screw_distance}) to cart";
 }
 
+if (isset($_POST['set_bundle_name'])) {
+    $lines = $_POST['lines'];
+    $bundle_name = trim($_POST['bundle_name']);
+
+    if (!empty($lines) && $bundle_name !== "") {
+        foreach ($lines as $line) {
+            if (isset($_SESSION['cart'][$line])) {
+                $_SESSION['cart'][$line]['bundle_name'] = $bundle_name;
+            }
+        }
+    }
+
+    echo json_encode([
+        "status" => "ok",
+        "bundle_name" => $bundle_name,
+        "lines_updated" => $lines
+    ]);
+    exit;
+}
+
 ?>
 
