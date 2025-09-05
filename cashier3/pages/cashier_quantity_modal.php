@@ -150,13 +150,13 @@ if(isset($_POST['fetch_prompt_quantity'])){
                                 <input type="checkbox" class="bundle-checkbox">
                                 <input type="hidden" name="bundle_name[]" value="">
                             </div>
-                            <div class="<?= empty($sold_by_feet) ? 'col-12 col-md-3' : 'col-2 col-md-2'; ?> mb-1">
+                            <div class="col-2">
                                 <input type="number" value="1" name="quantity_product[]" 
                                     class="form-control form-control-sm quantity-product" 
                                     placeholder="Qty" list="quantity-product-list" autocomplete="off">
                             </div>
 
-                            <div class="<?= empty($sold_by_feet) ? 'd-none' : 'col-3 col-md-3'; ?> mb-1">
+                            <div class="col-3">
                                 <div class="input-group">
                                     <input step="0.0001" class="form-control form-control-sm length_feet" 
                                         type="number" name="length_feet[]" list="length_feet_datalist" 
@@ -167,14 +167,14 @@ if(isset($_POST['fetch_prompt_quantity'])){
                                 </div>
                             </div>
 
-                            <div class="col-3 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
+                            <div class="col-3">
                                 <select id="panel_option" name="panel_option[]" class="form-control form-control-sm">
                                     <option value="solid" selected>Solid</option>
                                     <option value="vented">Vented</option>
                                     <option value="drip_stop">Drip Stop</option>
                                 </select>
                             </div>
-                            <div class="col-3 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
+                            <div class="col-3">
                                 <select id="panel_style" name="panel_style[]" class="form-control form-control-sm panel_style">
                                     <?php if (!empty($standing_seam)): ?>
                                         <option value="striated" <?= ($row['stiff_stand_seam'] ?? '') === 'striated' ? 'selected' : '' ?>>Striated</option>
