@@ -521,67 +521,59 @@ if(isset($_POST['fetch_prompt_quantity'])){
             $("label:contains('Panel Style')").closest(".col-3").removeClass("d-none");
             $("select[name='panel_option[]']").closest(".col-3").removeClass("d-none");
             $("select[name='panel_style[]']").closest(".col-3").removeClass("d-none");
-            
+
             $("label:contains('Quantity')").closest("div")
                 .removeClass("col-6").addClass("col-3");
             $("label:contains('Length')").closest("div")
                 .removeClass("col-6").addClass("col-3");
+
             $("input[name='quantity_product[]']").closest("div")
                 .removeClass("col-6 col-md-6").addClass("col-2 col-md-2");
-            $(".length_feet").closest(".col-6").removeClass("col-6 col-md-6").addClass("col-3 col-md-3");
-            if (product_system == 11) {
-                // low rib
-                for (let i = 0; i < 10; i++) {
-                    duplicateRow();
-                }
+            $(".length_feet").closest(".col-6, .col-12, .col-2, .col-3")
+                .removeClass("col-6 col-md-6 col-12 col-2 col-3").addClass("col-3 col-md-3");
+
+            if (product_system == 11 || product_system == 12) {
+                for (let i = 0; i < 10; i++) duplicateRow();
                 maxLength = 60;
-            }else if (product_system == 12) {
-                // hi-rib
-                for (let i = 0; i < 10; i++) {
-                    duplicateRow();
-                }
-                maxLength = 60;
-            }else if (product_system == 13 || product_system == 7) {
-                // corrugated or 5-v
-                for (let i = 0; i < 10; i++) {
-                    duplicateRow();
-                }
+
+            } else if (product_system == 13 || product_system == 7) {
+                for (let i = 0; i < 10; i++) duplicateRow();
                 maxLength = 20;
+
                 $("label:contains('Panel Type')").closest(".col-3").addClass("d-none");
                 $("label:contains('Panel Style')").closest(".col-3").addClass("d-none");
-                $("select[name='panel_option[]']").closest("div").addClass("d-none");
-                $("select[name='panel_style[]']").closest("div").addClass("d-none");
-                
+                $("select[name='panel_option[]']").closest(".col-3").addClass("d-none");
+                $("select[name='panel_style[]']").closest(".col-3").addClass("d-none");
+
                 $("label:contains('Quantity')").closest("div")
-                    .removeClass("col-3").addClass("col-6");
+                    .removeClass("col-3").addClass("col-4");
                 $("label:contains('Length')").closest("div")
-                    .removeClass("col-3").addClass("col-6");
+                    .removeClass("col-3").addClass("col-6 text-center");
+
                 $("input[name='quantity_product[]']").closest("div")
-                    .removeClass("col-2 col-md-2 col-3 col-md-3").addClass("col-6 col-md-6");
-                $(".length_feet").closest(".col-3").removeClass("col-3 col-md-3").addClass("col-6 col-md-6");
-            } else if (product_system == 14 || product_system == 15 || product_system == 16) {
-                // all standing seam
-                for (let i = 0; i < 10; i++) {
-                    duplicateRow();
-                }
+                    .removeClass("col-2 col-md-2 col-3 col-md-3")
+                    .addClass("col-4 col-md-4");
+
+                $(".length_feet").closest(".col-3, .col-md-3")
+                    .removeClass("col-3 col-md-3")
+                    .addClass("col-6 col-md-6");
+
+            } else if ([14, 15, 16].includes(product_system)) {
+                for (let i = 0; i < 10; i++) duplicateRow();
                 maxLength = 60;
 
                 $(document).on('change', 'select[name="panel_style"]', calculateBackerRod);
                 $(document).on('input', '.quantity-product, .length_feet, .length_inch', calculateBackerRod);
+
             } else if (product_system == 5) {
-                // all board and batten
-                for (let i = 0; i < 10; i++) {
-                    duplicateRow();
-                }
+                for (let i = 0; i < 10; i++) duplicateRow();
                 maxLength = 20;
 
                 $(document).on('change', 'select[name="panel_style"]', calculateBackerRod);
                 $(document).on('input', '.quantity-product, .length_feet, .length_inch', calculateBackerRod);
+
             } else {
-                // default
-                for (let i = 0; i < 9; i++) {
-                    duplicateRow();
-                }
+                for (let i = 0; i < 9; i++) duplicateRow();
             }
 
             $(document).on("input", ".length_feet, .length_inch", function () {
