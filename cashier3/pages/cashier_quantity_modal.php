@@ -43,6 +43,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
             $board_batten = $product_details["board_batten"];
             $category_id = $product_details["product_category"];
             $basePrice = $product_details["unit_price"];
+            $product_system = $product_details["product_system"];
         ?>
         <input type="hidden" id="product_id" name="product_id" value="<?= $id ?>" />
         <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
@@ -175,15 +176,20 @@ if(isset($_POST['fetch_prompt_quantity'])){
                             </div>
                             <div class="col-3 <?= ($category_id == $panel_id) ? '' : 'd-none'; ?>">
                                 <select id="panel_style" name="panel_style[]" class="form-control form-control-sm panel_style">
-                                    <option value="regular" selected>Regular</option>
-                                    <option value="flat">Flat</option>
-                                    <option value="striated">Striated</option>
+                                    <?php if (!empty($standing_seam)): ?>
+                                        <option value="striated" <?= ($row['stiff_stand_seam'] ?? '') === 'striated' ? 'selected' : '' ?>>Striated</option>
+                                        <option value="flat" <?= ($row['stiff_stand_seam'] ?? '') === 'flat' ? 'selected' : '' ?>>Flat</option>
+                                        <option value="minor_rib" <?= ($row['stiff_stand_seam'] ?? '') === 'minor_rib' ? 'selected' : '' ?>>Minor Rib</option>
+                                    <?php elseif (!empty($board_batten)): ?>
+                                        <option value="flat" <?= ($row['stiff_board_batten'] ?? '') === 'flat' ? 'selected' : '' ?>>Flat</option>
+                                        <option value="minor_rib" <?= ($row['stiff_board_batten'] ?? '') === 'minor_rib' ? 'selected' : '' ?>>Minor Rib</option>
+                                    <?php else: ?>
+                                        <option value="regular" <?= ($row['panel_style'] ?? '') === 'regular' ? 'selected' : '' ?>>Regular</option>
+                                    <?php endif; ?>
                                 </select>
                             </div>
                         </div>
                     </div>
-
-                    
 
                     <?php
                     if($category_id == $panel_id){
@@ -214,27 +220,6 @@ if(isset($_POST['fetch_prompt_quantity'])){
                             </select>
                         </div>
                     </div>
-                    <div class="input-group d-flex align-items-center justify-content-between flex-wrap w-100 mt-3">
-                        <div class="mb-2 <?= empty($standing_seam) ? 'd-none' : '';?>">
-                            <div class="me-2 flex-grow-1">
-                                <label class="fs-4 fw-bold" for="stiff_stand_seam">Standing Seam Style</label>
-                                <select class="form-control" id="stiff_stand_seam" name="stiff_stand_seam" style="color:#ffffff; width: 100%;">
-                                    <option value="1" selected>Striated</option>
-                                    <option value="2">Flat</option>
-                                    <option value="3">Minor Rib</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-2 <?= empty($board_batten) ? 'd-none' : '';?>">
-                            <div class="me-2 flex-grow-1">
-                                <label class="fs-4 fw-bold" for="stiff_board_batten">Board and Batten Style</label>
-                                <select class="form-control" id="stiff_board_batten" name="stiff_board_batten" style="color:#ffffff; width: 100%;">
-                                    <option value="1" selected>Flat</option>
-                                    <option value="2">Minor Rib</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div> 
                 </div>
                 <div class="col-3 d-none" id="bundleSection">
                     <div class="card p-3">
@@ -275,10 +260,8 @@ if(isset($_POST['fetch_prompt_quantity'])){
         $(document).ready(function () {
             let bundleCount = 1;
             let bundleVisible = false;
-
-            for (let i = 0; i < 9; i++) {
-                duplicateRow();
-            }
+            let product_system = <?= !empty($product_system) ? $product_system : 'null' ?>;
+            var maxLength = 99999;
 
             function parseFraction(val) {
                 if (!val) return 0;
@@ -528,16 +511,98 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 }
             }
 
-            $(document).on('change', 'select[name="panel_style"]', calculateBackerRod);
-            $(document).on('input', '.quantity-product, .length_feet, .length_inch', calculateBackerRod);
-
-            calculateBackerRod();
-
             $(document).off('click', '.removeBundleBtn').on('click', '.removeBundleBtn', function() {
                 const $bundle = $(this).closest('.bundle-wrapper');
                 $bundle.find('.quantity-length-container').appendTo('#unbundledRows');
                 $bundle.remove();
             });
+
+            $("label:contains('Panel Type')").closest(".col-3").removeClass("d-none");
+            $("label:contains('Panel Style')").closest(".col-3").removeClass("d-none");
+            $("select[name='panel_option[]']").closest(".col-3").removeClass("d-none");
+            $("select[name='panel_style[]']").closest(".col-3").removeClass("d-none");
+            
+            $("label:contains('Quantity')").closest("div")
+                .removeClass("col-6").addClass("col-3");
+            $("label:contains('Length')").closest("div")
+                .removeClass("col-6").addClass("col-3");
+            $("input[name='quantity_product[]']").closest("div")
+                .removeClass("col-6 col-md-6").addClass("col-2 col-md-2");
+            $(".length_feet").closest(".col-6").removeClass("col-6 col-md-6").addClass("col-3 col-md-3");
+            if (product_system == 11) {
+                // low rib
+                for (let i = 0; i < 10; i++) {
+                    duplicateRow();
+                }
+                maxLength = 60;
+            }else if (product_system == 12) {
+                // hi-rib
+                for (let i = 0; i < 10; i++) {
+                    duplicateRow();
+                }
+                maxLength = 60;
+            }else if (product_system == 13 || product_system == 7) {
+                // corrugated or 5-v
+                for (let i = 0; i < 10; i++) {
+                    duplicateRow();
+                }
+                maxLength = 20;
+                $("label:contains('Panel Type')").closest(".col-3").addClass("d-none");
+                $("label:contains('Panel Style')").closest(".col-3").addClass("d-none");
+                $("select[name='panel_option[]']").closest("div").addClass("d-none");
+                $("select[name='panel_style[]']").closest("div").addClass("d-none");
+                
+                $("label:contains('Quantity')").closest("div")
+                    .removeClass("col-3").addClass("col-6");
+                $("label:contains('Length')").closest("div")
+                    .removeClass("col-3").addClass("col-6");
+                $("input[name='quantity_product[]']").closest("div")
+                    .removeClass("col-2 col-md-2 col-3 col-md-3").addClass("col-6 col-md-6");
+                $(".length_feet").closest(".col-3").removeClass("col-3 col-md-3").addClass("col-6 col-md-6");
+            } else if (product_system == 14 || product_system == 15 || product_system == 16) {
+                // all standing seam
+                for (let i = 0; i < 10; i++) {
+                    duplicateRow();
+                }
+                maxLength = 60;
+
+                $(document).on('change', 'select[name="panel_style"]', calculateBackerRod);
+                $(document).on('input', '.quantity-product, .length_feet, .length_inch', calculateBackerRod);
+            } else if (product_system == 5) {
+                // all board and batten
+                for (let i = 0; i < 10; i++) {
+                    duplicateRow();
+                }
+                maxLength = 20;
+
+                $(document).on('change', 'select[name="panel_style"]', calculateBackerRod);
+                $(document).on('input', '.quantity-product, .length_feet, .length_inch', calculateBackerRod);
+            } else {
+                // default
+                for (let i = 0; i < 9; i++) {
+                    duplicateRow();
+                }
+            }
+
+            $(document).on("input", ".length_feet, .length_inch", function () {
+                let $group = $(this).closest('.input-group');
+                let feet = parseFloat($group.find(".length_feet").val()) || 0;
+                let inch = parseFloat($group.find(".length_inch").val()) || 0;
+
+                if (inch >= 12) {
+                    feet += Math.floor(inch / 12);
+                    inch = inch % 12;
+                }
+
+                let totalFeet = feet + (inch / 12);
+
+                if (totalFeet > maxLength) {
+                    $group.find(".length_feet").val(maxLength);
+                    $group.find(".length_inch").val(0);
+                    alert("Maximum length allowed is " + maxLength + " ft.");
+                }
+            });
+
         });
         </script>
         <?php

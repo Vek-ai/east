@@ -97,6 +97,38 @@ function showCol($name) {
         background-color: #f8f9fa !important;
         color: #6c757d !important;
     }
+
+    #standing_seam[type="checkbox"],
+    #board_batten[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #666;
+        border-radius: 50%;
+        outline: none;
+        cursor: pointer;
+        position: relative;
+    }
+
+    #standing_seam[type="checkbox"]:checked,
+    #board_batten[type="checkbox"]:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    #standing_seam[type="checkbox"]:checked::after,
+    #board_batten[type="checkbox"]:checked::after {
+        content: "";
+        width: 10px;
+        height: 10px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 3px;
+        left: 3px;
+    }
 </style>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -1500,6 +1532,14 @@ function showCol($name) {
             $('#text-srh').val('');
 
             filterTable();
+        });
+
+        $(document).on("change", "#standing_seam, #board_batten", function () {
+            if ($(this).is("#standing_seam")) {
+                $("#board_batten").prop("checked", false);
+            } else if ($(this).is("#board_batten")) {
+                $("#standing_seam").prop("checked", false);
+            }
         });
 
     });
