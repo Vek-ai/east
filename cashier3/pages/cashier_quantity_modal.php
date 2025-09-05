@@ -177,14 +177,15 @@ if(isset($_POST['fetch_prompt_quantity'])){
                             <div class="col-3">
                                 <select id="panel_style" name="panel_style[]" class="form-control form-control-sm panel_style">
                                     <?php if (!empty($standing_seam)): ?>
-                                        <option value="striated" <?= ($row['stiff_stand_seam'] ?? '') === 'striated' ? 'selected' : '' ?>>Striated</option>
-                                        <option value="flat" <?= ($row['stiff_stand_seam'] ?? '') === 'flat' ? 'selected' : '' ?>>Flat</option>
-                                        <option value="minor_rib" <?= ($row['stiff_stand_seam'] ?? '') === 'minor_rib' ? 'selected' : '' ?>>Minor Rib</option>
+                                        <option value="striated" selected>Striated</option>
+                                        <option value="flat">Flat</option>
+                                        <option value="minor_rib">Minor Rib</option>
                                     <?php elseif (!empty($board_batten)): ?>
-                                        <option value="flat" <?= ($row['stiff_board_batten'] ?? '') === 'flat' ? 'selected' : '' ?>>Flat</option>
+                                        <option value="flat" selected>Flat</option>
                                         <option value="minor_rib" <?= ($row['stiff_board_batten'] ?? '') === 'minor_rib' ? 'selected' : '' ?>>Minor Rib</option>
                                     <?php else: ?>
-                                        <option value="regular" <?= ($row['panel_style'] ?? '') === 'regular' ? 'selected' : '' ?>>Regular</option>
+                                        <option value="regular">Regular</option>
+                                        <option value="reversed">Reversed</option>
                                     <?php endif; ?>
                                 </select>
                             </div>
