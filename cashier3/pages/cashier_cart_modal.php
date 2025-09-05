@@ -687,12 +687,23 @@ if(isset($_POST['fetch_cart'])){
                                             </select>
                                         </td>
                                         <td class="text-center">
+                                            <?php
+                                            $standing_seam = $product["standing_seam"];
+                                            $board_batten   = $product["board_batten"];
+                                            ?>
+
                                             <select class="form-control panel_style_cart" name="panel_style" onchange="updatePanelStyle(this)" data-line="<?= $values['line']; ?>" data-id="<?= $product_id; ?>">
-                                                <option value="">Select...</option>
-                                                <option value="regular" <?= $values['panel_style'] == 'regular' ? 'selected' : '' ?>>Regular</option>
-                                                <option value="reversed" <?= $values['panel_style'] == 'reversed' ? 'selected' : '' ?>>Reversed</option>
-                                                <option value="flat" <?= $values['panel_style'] == 'flat' ? 'selected' : '' ?>>Flat</option>
-                                                <option value="striated" <?= $values['panel_style'] == 'striated' ? 'selected' : '' ?>>Striated</option>
+                                                <?php if (!empty($standing_seam)): ?>
+                                                    <option value="striated" <?= $values['panel_style'] == 'striated' ? 'selected' : '' ?>>Striated</option>
+                                                    <option value="flat" <?= $values['panel_style'] == 'flat' ? 'selected' : '' ?>>Flat</option>
+                                                    <option value="minor_rib" <?= $values['panel_style'] == 'minor_rib' ? 'selected' : '' ?>>Minor Rib</option>
+                                                <?php elseif (!empty($board_batten)): ?>
+                                                    <option value="flat" <?= $values['panel_style'] == 'flat' ? 'selected' : '' ?>>Flat</option>
+                                                    <option value="minor_rib" <?= $values['panel_style'] == 'minor_rib' ? 'selected' : '' ?>>Minor Rib</option>
+                                                <?php else: ?>
+                                                    <option value="regular" <?= $values['panel_style'] == 'regular' ? 'selected' : '' ?>>Regular</option>
+                                                    <option value="reversed" <?= $values['panel_style'] == 'reversed' ? 'selected' : '' ?>>Reversed</option>
+                                                <?php endif; ?>
                                             </select>
                                         </td>
                                         <td class="text-center">
@@ -756,8 +767,6 @@ if(isset($_POST['fetch_cart'])){
 
                             
                         }
-                        
-                        
                     }
                     
                     ?>

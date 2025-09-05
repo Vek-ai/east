@@ -286,7 +286,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                                             $result_gauge = mysqli_query($conn, $query_gauge);
                                             while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                                             ?>
-                                                <option value="<?= htmlspecialchars($row_gauge['product_gauge_id']) ?>" 
+                                                <option value="<?= htmlspecialchars($row_gauge['product_gauge']) ?>" 
                                                         data-category="gauge">
                                                     <?= htmlspecialchars($row_gauge['product_gauge']) ?>
                                                 </option>

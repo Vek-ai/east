@@ -204,7 +204,7 @@ if (isset($_REQUEST['query'])) {
     }
 
     if (!empty($grade)) {
-        $query_product .= " AND pg.product_grade = '$grade'";
+        $query_product .= " AND p.grade = '$grade'";
     }
 
     if (!empty($gauge_id)) {

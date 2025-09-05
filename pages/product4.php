@@ -633,7 +633,7 @@ function showCol($name) {
             ajax: {
                 url: 'pages/product4_ajax.php',
                 type: 'POST',
-                data: { action: 'fetch_products' }
+                data: { action: 'fetch_products' },
             },
             columns: [
                 <?php if (showCol('product_name')): ?>
