@@ -266,14 +266,14 @@ if(isset($_REQUEST['action'])) {
                 </div>
                 <div class="mb-1 d-flex justify-content-center">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="standing_seam" name="standing_seam" value="1" <?= $row['standing_seam'] == 1 ? 'checked' : '' ?>>
+                        <input class="form-check-input" type="radio" id="standing_seam" name="panel_type" value="standing_seam" 
+                            <?= $row['standing_seam'] == 1 ? 'checked' : '' ?>>
                         <label class="form-check-label" for="standing_seam">Standing Seam Panel</label>
                     </div>
-                </div>
-                <div class="mb-1 d-flex justify-content-center">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="board_batten" name="board_batten" value="1" <?= $row['board_batten'] == 1 ? 'checked' : '' ?>>
-                        <label class="form-check-label" for="board_batten">Board & Batten Panel</label>
+                        <input class="form-check-input" type="radio" id="board_batten" name="panel_type" value="board_batten" 
+                            <?= $row['board_batten'] == 1 ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="board_batten">Board &amp; Batten Panel</label>
                     </div>
                 </div>
             </div>

@@ -43,6 +43,18 @@ if(isset($_REQUEST['action'])) {
                 $fields['color'] = $escapedValue;
             }
         }
+
+        $standing_seam = 0;
+        $board_batten  = 0;
+        if (isset($_POST['panel_type'])) {
+            if ($_POST['panel_type'] === 'standing_seam') {
+                $standing_seam = 1;
+            } elseif ($_POST['panel_type'] === 'board_batten') {
+                $board_batten = 1;
+            }
+        }
+        $fields['standing_seam'] = $standing_seam;
+        $fields['board_batten']  = $board_batten;
         
         $checkQuery = "SELECT * FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $checkQuery);
