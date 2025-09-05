@@ -2600,6 +2600,10 @@ if (isset($_POST['add_to_cart'])) {
         $length_feet = isset($lengthFeet[$index]) ? parseNumber($lengthFeet[$index]) : 0;
         $length_inch = isset($lengthInch[$index]) ? parseNumber($lengthInch[$index]) : 0;
 
+        if ($length_feet == 0 && $length_inch == 0) {
+            continue;
+        }
+        
         // Panel handling per row
         $panel_type_row  = $panel_types[$index]  ?? 'solid';
         $panel_style_row = $panel_styles[$index] ?? 'regular';
