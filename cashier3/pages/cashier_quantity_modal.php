@@ -548,7 +548,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 $("label:contains('Quantity')").closest("div")
                     .removeClass("col-3").addClass("col-4");
                 $("label:contains('Length')").closest("div")
-                    .removeClass("col-3").addClass("col-6 text-center");
+                    .removeClass("col-3").addClass("col-7 text-center");
 
                 $("input[name='quantity_product[]']").closest("div")
                     .removeClass("col-2 col-md-2 col-3 col-md-3")
@@ -556,8 +556,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
                 $(".length_feet").closest(".col-3, .col-md-3")
                     .removeClass("col-3 col-md-3")
-                    .addClass("col-6 col-md-6");
-
+                    .addClass("col-7 col-md-7");
             } else if ([14, 15, 16].includes(product_system)) {
                 for (let i = 0; i < 10; i++) duplicateRow();
                 maxLength = 60;
