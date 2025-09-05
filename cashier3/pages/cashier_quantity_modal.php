@@ -182,9 +182,9 @@ if(isset($_POST['fetch_prompt_quantity'])){
                                         <option value="minor_rib">Minor Rib</option>
                                     <?php elseif (!empty($board_batten)): ?>
                                         <option value="flat" selected>Flat</option>
-                                        <option value="minor_rib" <?= ($row['stiff_board_batten'] ?? '') === 'minor_rib' ? 'selected' : '' ?>>Minor Rib</option>
+                                        <option value="minor_rib">Minor Rib</option>
                                     <?php else: ?>
-                                        <option value="regular">Regular</option>
+                                        <option value="regular" selected>Regular</option>
                                         <option value="reversed">Reversed</option>
                                     <?php endif; ?>
                                 </select>
