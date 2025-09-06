@@ -2095,6 +2095,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     }
 
     function delete_product(element) {
+        if (!confirm("Are you sure you want to delete this product?")) {
+            return;
+        }
         var id = $(element).data('id');
         var line = $(element).data('line');
         $.ajax({

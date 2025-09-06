@@ -518,65 +518,54 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 $bundle.remove();
             });
 
-            $("label:contains('Panel Type')").closest(".col-3").removeClass("d-none");
-            $("label:contains('Panel Style')").closest(".col-3").removeClass("d-none");
-            $("select[name='panel_option[]']").closest(".col-3").removeClass("d-none");
-            $("select[name='panel_style[]']").closest(".col-3").removeClass("d-none");
+            function setupLayout() {
+                $("label:contains('Panel Type')").closest(".col-3").removeClass("d-none");
+                $("label:contains('Panel Style')").closest(".col-3").removeClass("d-none");
+                $("select[name='panel_option[]']").closest(".col-3").removeClass("d-none");
+                $("select[name='panel_style[]']").closest(".col-3").removeClass("d-none");
 
-            $("label:contains('Quantity')").closest("div")
-                .removeClass("col-6").addClass("col-3");
-            $("label:contains('Length')").closest("div")
-                .removeClass("col-6").addClass("col-3");
+                $("label:contains('Quantity')").closest("div").removeClass("col-6").addClass("col-3");
+                $("label:contains('Length')").closest("div").removeClass("col-6").addClass("col-3");
 
-            $("input[name='quantity_product[]']").closest("div")
-                .removeClass("col-6 col-md-6").addClass("col-2 col-md-2");
-            $(".length_feet").closest(".col-6, .col-12, .col-2, .col-3")
-                .removeClass("col-6 col-md-6 col-12 col-2 col-3").addClass("col-3 col-md-3");
+                $("input[name='quantity_product[]']").closest("div").removeClass("col-6 col-md-6").addClass("col-2 col-md-2");
+                $(".length_feet").closest(".col-6, .col-12, .col-2, .col-3").removeClass("col-6 col-md-6 col-12 col-2 col-3").addClass("col-3 col-md-3");
 
-            if (product_system == 11 || product_system == 12) {
-                for (let i = 0; i < 10; i++) duplicateRow();
-                maxLength = 60;
+                if ([11, 12].includes(product_system)) {
+                    for (let i = 0; i < 10; i++) duplicateRow();
+                    maxLength = 60;
 
-            } else if (product_system == 13 || product_system == 7) {
-                for (let i = 0; i < 10; i++) duplicateRow();
-                maxLength = 20;
+                } else if ([13, 7].includes(product_system)) {
+                    for (let i = 0; i < 10; i++) duplicateRow();
+                    maxLength = 20;
 
-                $("label:contains('Panel Type')").closest(".col-3").addClass("d-none");
-                $("label:contains('Panel Style')").closest(".col-3").addClass("d-none");
-                $("select[name='panel_option[]']").closest(".col-3").addClass("d-none");
-                $("select[name='panel_style[]']").closest(".col-3").addClass("d-none");
+                    $("label:contains('Panel Type')").closest(".col-3").addClass("d-none");
+                    $("label:contains('Panel Style')").closest(".col-3").addClass("d-none");
+                    $("select[name='panel_option[]']").closest(".col-3").addClass("d-none");
+                    $("select[name='panel_style[]']").closest(".col-3").addClass("d-none");
 
-                $("label:contains('Quantity')").closest("div")
-                    .removeClass("col-3").addClass("col-4");
-                $("label:contains('Length')").closest("div")
-                    .removeClass("col-3").addClass("col-7 text-center");
+                    $("label:contains('Quantity')").closest("div").removeClass("col-3").addClass("col-4");
+                    $("label:contains('Length')").closest("div").removeClass("col-3").addClass("col-7 text-center");
 
-                $("input[name='quantity_product[]']").closest("div")
-                    .removeClass("col-2 col-md-2 col-3 col-md-3")
-                    .addClass("col-4 col-md-4");
+                    $("input[name='quantity_product[]']").closest("div").removeClass("col-2 col-md-2 col-3 col-md-3").addClass("col-4 col-md-4");
+                    $(".length_feet").closest(".col-3, .col-md-3").removeClass("col-3 col-md-3").addClass("col-7 col-md-7");
 
-                $(".length_feet").closest(".col-3, .col-md-3")
-                    .removeClass("col-3 col-md-3")
-                    .addClass("col-7 col-md-7");
-            } else if ([14, 15, 16].includes(product_system)) {
-                for (let i = 0; i < 10; i++) duplicateRow();
-                maxLength = 60;
+                } else if ([14, 15, 16, 5].includes(product_system)) {
+                    let loopCount = (product_system == 5) ? 10 : 10;
+                    for (let i = 0; i < loopCount; i++) duplicateRow();
+                    maxLength = [14, 15, 16].includes(product_system) ? 60 : 20;
 
-                $(document).on('change', 'select[name="panel_style"]', calculateBackerRod);
-                $(document).on('input', '.quantity-product, .length_feet, .length_inch', calculateBackerRod);
+                    $(document).off('change', 'select[name="panel_style"]').on('change', 'select[name="panel_style"]', calculateBackerRod);
+                    $(document).off('input', '.quantity-product, .length_feet, .length_inch').on('input', '.quantity-product, .length_feet, .length_inch', calculateBackerRod);
 
-            } else if (product_system == 5) {
-                for (let i = 0; i < 10; i++) duplicateRow();
-                maxLength = 20;
-
-                $(document).on('change', 'select[name="panel_style"]', calculateBackerRod);
-                $(document).on('input', '.quantity-product, .length_feet, .length_inch', calculateBackerRod);
-
-            } else {
-                for (let i = 0; i < 9; i++) duplicateRow();
+                } else {
+                    for (let i = 0; i < 9; i++) duplicateRow();
+                    maxLength = 60;
+                }
             }
 
-            $(document).on("input", ".length_feet, .length_inch", function () {
+            setupLayout();
+
+            $(document).off("input", ".length_feet, .length_inch").on("input", ".length_feet, .length_inch", function () {
                 let $group = $(this).closest('.input-group');
                 let feet = parseFloat($group.find(".length_feet").val()) || 0;
                 let inch = parseFloat($group.find(".length_inch").val()) || 0;
@@ -588,9 +577,11 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
                 let totalFeet = feet + (inch / 12);
 
+                if (typeof maxLength === "undefined" || maxLength <= 0) maxLength = 60;
+
                 if (totalFeet > maxLength) {
-                    $group.find(".length_feet").val(maxLength);
-                    $group.find(".length_inch").val(0);
+                    $group.find(".length_feet").val(Math.floor(maxLength));
+                    $group.find(".length_inch").val(Math.round((maxLength - Math.floor(maxLength)) * 12));
                     alert("Maximum length allowed is " + maxLength + " ft.");
                 }
             });

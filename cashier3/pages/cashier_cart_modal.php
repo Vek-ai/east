@@ -331,9 +331,24 @@ if(isset($_POST['fetch_cart'])){
                                         $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
                                         $result_colors = mysqli_query($conn, $query_colors);
 
+                                        $inventory_color_ids = [];
+
                                         if (mysqli_num_rows($result_colors) > 0) {
                                             while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                                echo '<option value="' . $row_colors['color_id'] . '" data-color="' . getColorHexFromColorID($row_colors['color_id']) . '" data-grade="' . $product_details['grade'] . '">' . getColorName($row_colors['color_id']) . '</option>';
+                                                $inventory_color_ids[] = $row_colors['color_id'];
+                                                $selected = ($values['custom_color'] == $row_colors['color_id']) ? 'selected' : '';
+                                                $colorDetails = getColorDetails($row_colors['color_id']);
+                                                $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                                $colorName = $colorDetails['color_name'] ?? '';
+                                                echo '<option value="' . $row_colors['color_id'] . '" data-color="' . $colorHex . '" data-grade="' . $product_details['grade'] . '" ' . $selected . '>' . $colorName . '</option>';
+                                            }
+                                        }
+
+                                        if (!empty($values['custom_color']) && !in_array($values['custom_color'], $inventory_color_ids)) {
+                                            $color = getColorDetails($values['custom_color']);
+                                            if (!empty($color)) {
+                                                $colorHex = getColorHexFromColorID($color['color_id']);
+                                                echo '<option value="' . $color['color_id'] . '" data-color="' . $colorHex . '" data-grade="' . $product_details['grade'] . '" selected>' . $color['color_name'] . '</option>';
                                             }
                                         }
                                         ?>
@@ -771,6 +786,7 @@ if(isset($_POST['fetch_cart'])){
                             }
                         }
 
+                        //non panels
                         foreach ($_SESSION["cart"] as $keys => $values) {
                             $data_id = $values["product_id"];
                             $line = $values["line"];
