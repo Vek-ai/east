@@ -15,6 +15,8 @@ $fastener_id = 5;
 $stiffening_rib_id = 7;
 if(isset($_POST['fetch_prompt_quantity'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $grade = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
+    $gauge = mysqli_real_escape_string($conn, $_POST['gauge'] ?? '');
     $product_details = getProductDetails($id);
     $type_details = getProductTypeDetails($product_details['product_type']);
     $is_special = $type_details['special'];
@@ -83,7 +85,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         $result_grade = mysqli_query($conn, $query_grade);
                         while ($row_grade = mysqli_fetch_array($result_grade)) {
                         ?>
-                            <option value="<?= htmlspecialchars($row_grade['product_grade_id']) ?>" 
+                            <option value="<?= htmlspecialchars($row_grade['product_grade']) ?>" 
                                     data-category="<?= htmlspecialchars($row_grade['product_category']) ?>">
                                 <?= htmlspecialchars($row_grade['product_grade']) ?>
                             </option>
@@ -102,7 +104,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         $result_gauge = mysqli_query($conn, $query_gauge);
                         while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                         ?>
-                            <option value="<?= htmlspecialchars($row_gauge['product_gauge_id']) ?>" 
+                            <option value="<?= htmlspecialchars($row_gauge['product_gauge']) ?>" 
                                     data-category="gauge">
                                 <?= htmlspecialchars($row_gauge['product_gauge']) ?>
                             </option>
@@ -151,7 +153,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                                 <input type="hidden" name="bundle_name[]" value="">
                             </div>
                             <div class="col-2">
-                                <input type="number" value="1" name="quantity_product[]" 
+                                <input type="number" value="" name="quantity_product[]" 
                                     class="form-control form-control-sm quantity-product" 
                                     placeholder="Qty" list="quantity-product-list" autocomplete="off">
                             </div>
