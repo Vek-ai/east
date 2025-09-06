@@ -210,12 +210,15 @@ $permission = $_SESSION['permission'];
                                                 </td>
                                                 <td class="text-center">
                                                     <?php 
-                                                    if (!empty($bend)) {
-                                                        echo "Bend: " . htmlspecialchars($bend) . "<br>";
-                                                    }
+                                                    $panel_type = $row['panel_type'];
+                                                    $panel_style = $row['panel_style'];
                                                     
-                                                    if (!empty($hem)) {
-                                                        echo "Hem: " . htmlspecialchars($hem) . "<br>";
+                                                    if (!empty($panel_type) && $panel_type != '0') {
+                                                        echo "Panel Type: " . htmlspecialchars($panel_type) .'<br>';
+                                                    }
+
+                                                    if (!empty($panel_style) && $panel_style != '0') {
+                                                        echo "Panel Style: " . htmlspecialchars($panel_style) .'<br>';
                                                     }
                                                     ?>
                                                 </td>

@@ -159,15 +159,29 @@ if(isset($_REQUEST['action'])) {
                                                     echo htmlspecialchars($pack_count) . ' pcs';
                                                 }else{
                                                     $width = $row['custom_width'];
-                                                    $height = $row['custom_height'];
+                                                    $ft = $row['custom_length'];
+                                                    $in = $row['custom_length2'];
+
+                                                    $length = $ft + ($in / 12);
                                                     
-                                                    if (!empty($width) && !empty($height)) {
-                                                        echo htmlspecialchars($width) . " X " . htmlspecialchars($height);
+                                                    if (!empty($width) && !empty($length)) {
+                                                        echo htmlspecialchars($width) . " X " . htmlspecialchars($length) .'<br>';
                                                     } elseif (!empty($width)) {
-                                                        echo "Width: " . htmlspecialchars($width);
-                                                    } elseif (!empty($height)) {
-                                                        echo "Height: " . htmlspecialchars($height);
+                                                        echo "Width: " . htmlspecialchars($width) .'<br>';
+                                                    } elseif (!empty($length)) {
+                                                        echo "Length: " . htmlspecialchars($length) .'<br>';
                                                     }
+                                                }
+
+                                                $panel_type = $row['panel_type'];
+                                                $panel_style = $row['panel_style'];
+                                                
+                                                if (!empty($panel_type) && $panel_type != '0') {
+                                                    echo "Panel Type: " . htmlspecialchars($panel_type) .'<br>';
+                                                }
+
+                                                if (!empty($panel_style) && $panel_style != '0') {
+                                                    echo "Panel Style: " . htmlspecialchars($panel_style) .'<br>';
                                                 }
                                                 ?>
                                             </td>

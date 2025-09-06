@@ -1035,6 +1035,7 @@ if (isset($_POST['save_order'])) {
             'stiff_stand_seam' => $item['stiff_stand_seam'],
             'stiff_board_batten' => $item['stiff_board_batten'],
             'panel_type' => $item['panel_type'],
+            'panel_style' => $item['panel_style'],
         ];
     }
 
@@ -1080,7 +1081,7 @@ if (isset($_POST['save_order'])) {
                     custom_grade, custom_profile, custom_width, custom_height, custom_bend, custom_hem,
                     custom_length, custom_length2, actual_price, discounted_price,
                     product_category, usageid, current_customer_discount, current_loyalty_discount,
-                    used_discount, stiff_stand_seam, stiff_board_batten, panel_type
+                    used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style
                 ) VALUES (
                     '$approval_id',
                     '" . intval($p['productid']) . "',
@@ -1105,7 +1106,8 @@ if (isset($_POST['save_order'])) {
                     " . (isset($p['used_discount']) ? intval($p['used_discount']) : "NULL") . ",
                     '" . intval($p['stiff_stand_seam']) . "',
                     '" . intval($p['stiff_board_batten']) . "',
-                    '" . intval($p['panel_type']) . "'
+                    '" . intval($p['panel_type']) . "',
+                    '" . intval($p['panel_style']) . "'
                 )
             ";
 
@@ -1372,7 +1374,8 @@ if (isset($_POST['save_order'])) {
 
             $stiff_stand_seam = !empty($item['stiff_stand_seam']) ? $item['stiff_stand_seam'] : '0';
             $stiff_board_batten = !empty($item['stiff_board_batten']) ? $item['stiff_board_batten'] : '0';
-            $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '0';
+            $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '';
+            $panel_style = !empty($item['panel_style']) ? $item['panel_style'] : '';
             $custom_img_src = $item['custom_trim_src'];
             $bundle_id = $item['bundle_name'];
 
@@ -1380,13 +1383,13 @@ if (isset($_POST['save_order'])) {
                 orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem,
                 custom_length, custom_length2, actual_price, discounted_price, product_category,
                 custom_color, custom_grade, custom_profile, current_customer_discount, current_loyalty_discount,
-                used_discount, stiff_stand_seam, stiff_board_batten, panel_type, custom_img_src, bundle_id
+                used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style, custom_img_src, bundle_id
             ) VALUES (
                 '$orderid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width',
                 '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch',
                 '$actual_price', '$discounted_price', '$product_category', '$custom_color',
                 '$custom_grade', '$custom_profile', '$curr_discount', '$loyalty_discount', '$used_discount',
-                '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$custom_img_src', '$bundle_id'
+                '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$panel_style', '$custom_img_src', '$bundle_id'
             )";
 
             if ($conn->query($query) !== TRUE) {
@@ -1419,6 +1422,7 @@ if (isset($_POST['save_order'])) {
                             stiff_stand_seam, 
                             stiff_board_batten, 
                             panel_type,
+                            panel_style,
                             custom_img_src,
                             user_id
                         ) 
@@ -1445,6 +1449,7 @@ if (isset($_POST['save_order'])) {
                             '$stiff_stand_seam', 
                             '$stiff_board_batten', 
                             '$panel_type', 
+                            '$panel_style', 
                             '$custom_img_src',
                             '$cashierid'
                         )";
@@ -1679,7 +1684,8 @@ if (isset($_POST['save_approval'])) {
             'used_discount' => $item['used_discount'] ?? 'NULL',
             'stiff_stand_seam' => intval($item['stiff_stand_seam'] ?? 0),
             'stiff_board_batten' => intval($item['stiff_board_batten'] ?? 0),
-            'panel_type' => intval($item['panel_type'] ?? 0)
+            'panel_type' => intval($item['panel_type'] ?? 0),
+            'panel_style' => intval($item['panel_style'] ?? 0)
         ];
     }
 
@@ -1703,7 +1709,7 @@ if (isset($_POST['save_approval'])) {
                 {$p['custom_color']}, {$p['custom_grade']}, {$p['custom_profile']}, '{$p['custom_width']}', {$p['custom_height']}, {$p['custom_bend']}, {$p['custom_hem']},
                 {$p['custom_length']}, {$p['custom_length2']}, '{$p['actual_price']}', '{$p['discounted_price']}', '{$p['product_category']}',
                 '{$p['usageid']}', {$p['current_customer_discount']}, {$p['current_loyalty_discount']}, {$p['used_discount']},
-                '{$p['stiff_stand_seam']}', '{$p['stiff_board_batten']}', '{$p['panel_type']}'
+                '{$p['stiff_stand_seam']}', '{$p['stiff_board_batten']}', '{$p['panel_type']}', '{$p['panel_style']}'
             )";
         }
 
@@ -1711,7 +1717,7 @@ if (isset($_POST['save_approval'])) {
             approval_id, productid, product_item, status, quantity, custom_color, custom_grade, custom_profile, custom_width,
             custom_height, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price,
             product_category, usageid, current_customer_discount, current_loyalty_discount,
-            used_discount, stiff_stand_seam, stiff_board_batten, panel_type
+            used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style
         ) VALUES " . implode(', ', $values);
 
         if ($conn->query($insert_products)) {
