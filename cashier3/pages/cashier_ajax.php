@@ -1827,6 +1827,7 @@ if (isset($_POST['save_trim'])) {
 
     $quantities = $_POST['quantity'] ?? [];
     $lengths    = $_POST['length'] ?? [];
+    $notes    = $_POST['notes'] ?? [];
 
     if (!isset($_SESSION["cart"])) {
         $_SESSION["cart"] = [];
@@ -1844,10 +1845,13 @@ if (isset($_POST['save_trim'])) {
     foreach ($quantities as $i => $quantity) {
         $quantity = floatval($quantity);
         $length   = floatval($lengths[$i] ?? 0);
+        $note   = floatval($notes[$i] ?? 0);
 
         $feet        = floor($length);
         $decimalFeet = $length - $feet;
         $inches      = $decimalFeet * 12;
+
+        if ($quantity <= 0) continue;
 
         $foundKey = false;
         foreach ($_SESSION["cart"] as $key => $item) {
@@ -1855,7 +1859,8 @@ if (isset($_POST['save_trim'])) {
                 $item['product_id'] == $row['product_id'] &&
                 $item['custom_grade'] == $grade &&
                 $item['custom_gauge'] == $gauge &&
-                $item['custom_color'] == $color
+                $item['custom_color'] == $color &&
+                $item['note'] == $note
             ) {
                 $foundKey = $key;
                 break;
@@ -1888,7 +1893,8 @@ if (isset($_POST['save_trim'])) {
                 'is_pre_order'      => $is_pre_order,
                 'is_custom'         => $is_custom,
                 'custom_trim_src'   => $img_src,
-                'drawing_data'      => $drawing_data
+                'drawing_data'      => $drawing_data,
+                'note'              => $note
             ];
 
             $_SESSION["cart"][$newLine] = $item_array;

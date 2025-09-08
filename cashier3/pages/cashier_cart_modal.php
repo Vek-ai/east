@@ -35,9 +35,7 @@ if(isset($_POST['fetch_cart'])){
     }
     $delivery_price = is_numeric(getDeliveryCost()) ? floatval(getDeliveryCost()) : 0;
     ?>
-    <script>
-        //console.log("<pre><?= print_r($_SESSION["cart"]) ?></pre>");
-    </script>
+    
     <style>
         input[type="number"]::-webkit-inner-spin-button, 
         input[type="number"]::-webkit-outer-spin-button { 
@@ -1177,27 +1175,6 @@ if(isset($_POST['fetch_cart'])){
         }
         $(document).ready(function() {
             initAutocomplete();
-
-            updateAllColspans();
-
-            $(document).on("dblclick", ".customer_price_col", function () {
-                $(".price_col").toggleClass("d-none");
-
-                updateAllColspans();
-            });
-
-            function updateAllColspans() {
-                let colCount = $("table tr:first td:visible, table tr:first th:visible").length;
-
-                $("td[colspan], th[colspan]").not(".bundleCartSection td, .create_bundle_row td, .create_bundle_row th").each(function () {
-                    let current = parseInt($(this).attr("colspan"), 10);
-                    if ($(".price_col").is(":visible")) {
-                        $(this).attr("colspan", current + 1);
-                    } else {
-                        $(this).attr("colspan", current - 1);
-                    }
-                });
-            }
 
             $(document).on('change', '#customer_select_cart', function(event) {
                 var customer_id = $('#customer_id_cart').val();

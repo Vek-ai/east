@@ -123,20 +123,23 @@ if(isset($_POST['fetch_modal'])){
 
             <div class="col-12"><hr class="w-100"></div>
 
-            <div class="row">
-                <div class="col-3">
+            <div class="row justify-content-center">
+                <div class="col-3 text-center">
                     <label class="fs-4 fw-semibold">Quantity</label>
                 </div>
-                <div class="col-9">
+                <div class="col-3 text-center">
                     <label class="fs-4 fw-semibold">Length</label>
                 </div>
+                <div class="col-3 notes-col text-center d-none">
+                    <label class="fs-4 fw-semibold">Notes</label>
+                </div>
             </div>
-            
-            <div class="quantity-length-row row mb-1">
+
+            <div class="quantity-length-row row justify-content-center mb-1">
                 <div class="col-3 col-6-md">
                     <input type="number" name="quantity[]" 
                         class="form-control mb-0 trim_qty" 
-                        value="1" placeholder="Enter Quantity">
+                        value="" placeholder="Enter Quantity">
                 </div>
 
                 <div class="col-3 col-6-md">
@@ -152,12 +155,16 @@ if(isset($_POST['fetch_modal'])){
                         }
                         ?>
                     </select>
-                    <input type="hidden" name="length[]" 
-                        class="form-control mb-0 trim_length">
+                    <input type="hidden" name="length[]" class="form-control mb-0 trim_length">
+                </div>
+
+                <div class="col-3 col-6-md notes-col d-none">
+                    <input type="text" name="notes[]" class="form-control mb-1" placeholder="Enter Notes">
                 </div>
             </div>
 
-            <div class="col-6 text-end">
+
+            <div class="col-9 text-end">
                 <a href="javascript:void(0)" type="button" id="duplicateTrimFields" class="text-end" title="Add Another">
                     <i class="fas fa-plus"></i>
                 </a>
@@ -169,7 +176,10 @@ if(isset($_POST['fetch_modal'])){
                 </div>
             </div>
             <div class="modal-footer d-flex justify-content-between align-items-center px-0">
-                <div class="d-flex justify-content-start">
+                <div class="d-flex justify-content-center">
+                    <button type="button" class="btn btn-secondary" id="toggleNotes">Add Notes</button>
+                </div>
+                <div class="d-flex justify-content-center">
                     <button
                         class="btn btn-warning ripple btn-secondary"
                         id="trim_draw"
@@ -179,7 +189,7 @@ if(isset($_POST['fetch_modal'])){
                         Modify Trim
                     </button>                
                 </div>
-                <div class="d-flex justify-content-center">
+                <div class="d-flex justify-content-center d-none">
                     <button id="btnCustomChart" class="btn btn-primary ripple" type="button" data-category="<?= $category_id ?>">View Trim Profile</button>
                 </div>
                 <div class="d-flex justify-content-end">
@@ -261,15 +271,23 @@ if(isset($_POST['fetch_modal'])){
                     $(this).closest(".quantity-length-row").find(".trim-length").val(val);
                 });
 
-                $('#duplicateTrimFields').on("click", function() {
+                function duplicateTrimRow() {
                     let $newRow = $(".quantity-length-row").first().clone();
 
-                    $newRow.find(".trim-qty").val("1");
-                    $newRow.find(".trim-length-select").prop("selectedIndex", 0);
-                    $newRow.find(".trim-length").val("");
+                    $newRow.find(".trim_qty").val("");
+                    $newRow.find(".trim_length_select").prop("selectedIndex", 0);
+                    $newRow.find(".trim_length").val("");
 
                     $(".quantity-length-row").last().after($newRow);
+                }
+
+                $('#duplicateTrimFields').on("click", function() {
+                    duplicateTrimRow();
                 });
+
+                for (let i = 0; i < 4; i++) {
+                    duplicateTrimRow();
+                }
             });
         </script>
 <?php

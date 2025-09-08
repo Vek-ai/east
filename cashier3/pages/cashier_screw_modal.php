@@ -133,7 +133,7 @@ if(isset($_POST['fetch_modal'])){
             </div>
         </div>
 
-        <div class="modal-footer d-flex justify-content-end align-items-center px-0">
+        <div class="modal-footer d-flex justify-content-between align-items-center px-0">
             <button type="button" class="btn btn-outline-secondary" id="toggleNotes">Add Notes</button>
             <button class="btn btn-success ripple btn-secondary" type="submit">Add to Cart</button>
         </div>
