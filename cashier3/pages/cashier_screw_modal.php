@@ -37,35 +37,20 @@ if(isset($_POST['fetch_modal'])){
 
         <div class="row">
             <div class="row">
-                <div class="col-3"><label class="fs-4 fw-semibold">Quantity</label></div>
-                <div class="col-3"><label class="fs-4 fw-semibold">Dimension</label></div>
-                <div class="col-3"><label class="fs-4 fw-semibold">Color</label></div>
-                <div class="col-3"><label class="fs-4 fw-semibold">Pack</label></div>
-                
+                <div class="col"><label class="fs-4 fw-semibold">Quantity</label></div>
+                <div class="col"><label class="fs-4 fw-semibold">Size</label></div>
+                <div class="col"><label class="fs-4 fw-semibold">Color</label></div>
+                <div class="col"><label class="fs-4 fw-semibold">Pack</label></div>
+                <div class="col notes-col text-center d-none"><label class="fs-4 fw-semibold">Notes</label></div>
             </div>
 
             <div class="screw-row row mt-1">
-                <div class="col-3 col-6-md">
-                    <input type="number" name="quantity[]" class="form-control mb-1 screw_quantity" value="1" placeholder="Enter Quantity">
+                <div class="col col-6-md">
+                    <input type="number" name="quantity[]" class="form-control mb-1 screw_quantity" value="" placeholder="Enter Quantity">
                 </div>
-                <div class="col-3 col-6-md">
-                    <select class="form-control mb-1 color_select select-2" name="color_id[]">
-                        <option value="">Select Color...</option>
-                        <?php
-                        $seenColors = [];
-                        foreach ($inventoryItems as $item) {
-                            if (!empty($item['color_id']) && !in_array($item['color_id'], $seenColors)) {
-                                $display = getColorName($item['color_id']);
-                                echo "<option value='{$item['color_id']}'>" . htmlspecialchars($display) . "</option>";
-                                $seenColors[] = $item['color_id'];
-                            }
-                        }
-                        ?>
-                    </select>
-                </div>
-                <div class="col-3 col-6-md d-none">
+                <div class="col">
                     <select id="dimension_select" name="dimension_id" class="form-control">
-                        <option value="" hidden>Select Dimension</option>
+                        <option value="" hidden>Select Size</option>
                         <?php foreach ($inventoryItems as $item) { 
                             $colorId   = $item['color_id'] ?? 0;
                             $dimension = trim($item['dimension'] ?? '');
@@ -82,7 +67,24 @@ if(isset($_POST['fetch_modal'])){
                         } ?>
                     </select>
                 </div>
-                <div class="col-3 col-6-md d-none">
+                <div class="col">
+                    <select class="form-control mb-1 color_select select-2" name="color_id[]">
+                        <option value="">Select Color...</option>
+                        <?php
+                        $seenColors = [];
+                        foreach ($inventoryItems as $item) {
+                            if (!empty($item['color_id'])) {
+                                $colorId = $item['color_id'];
+                                $dimId   = $item['dimension_id'];
+                                $display = htmlspecialchars(getColorName($colorId));
+
+                                echo "<option value='{$colorId}' data-dim-id='{$dimId}'>{$display}</option>";
+                            }
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div class="col">
                     <select class="form-control mb-1 screw_select select-2">
                         <option value="">Select Pack</option>
                         <?php
@@ -113,6 +115,9 @@ if(isset($_POST['fetch_modal'])){
                     <input type="hidden" name="length_feet[]" class="custom_pack">
                     <input type="hidden" name="length_inch[]" class="custom_length_inch">
                 </div>
+                <div class="col notes-col d-none">
+                    <input type="text" name="notes[]" class="form-control mb-1" placeholder="Enter Notes">
+                </div>
             </div>
 
             <div class="col-12 text-end">
@@ -129,6 +134,7 @@ if(isset($_POST['fetch_modal'])){
         </div>
 
         <div class="modal-footer d-flex justify-content-end align-items-center px-0">
+            <button type="button" class="btn btn-outline-secondary" id="toggleNotes">Add Notes</button>
             <button class="btn btn-success ripple btn-secondary" type="submit">Add to Cart</button>
         </div>
 
@@ -154,42 +160,35 @@ if(isset($_POST['fetch_modal'])){
             $(document).on('change', '.screw_select', updateAllPrices);
             $(document).on('input', '.screw_quantity', updateAllPrices);
 
-            $(document).on('change', '.screw-row .color_select', function() {
-                const $row = $(this).closest('.screw-row');
-                const selectedColor = $(this).val();
-
-                const $dimensionSelect = $row.find('#dimension_select');
-                const $packSelect = $row.find('.screw_select');
-
-                if (selectedColor && selectedColor !== '0') {
-                    $dimensionSelect.closest('.col-3').removeClass('d-none');
-                    $dimensionSelect.find('option').each(function() {
-                        const color = $(this).data('color')?.toString();
-                        $(this).toggle(color === selectedColor || $(this).val() === '');
-                    });
-                    $dimensionSelect.val('');
-                } else {
-                    $dimensionSelect.closest('.col-3').addClass('d-none').find('select').val('');
-                    $packSelect.closest('.col-3').addClass('d-none').find('select').val('');
-                }
-            });
-
             $(document).on('change', '.screw-row #dimension_select', function() {
                 const $row = $(this).closest('.screw-row');
                 const selectedDim = $(this).val();
-                const selectedColor = $row.find('.color_select').val();
+                const $colorSelect = $row.find('.color_select');
+
+                if (selectedDim) {
+                    $colorSelect.closest('.col').removeClass('d-none');
+                    $colorSelect.find('option').each(function() {
+                        const dimId = $(this).data('dim-id')?.toString();
+                        $(this).toggle(dimId === selectedDim || $(this).val() === '');
+                    });
+                    $colorSelect.val('');
+                }
+            });
+
+            $(document).on('change', '.screw-row .color_select', function() {
+                const $row = $(this).closest('.screw-row');
+                const selectedColor = $(this).val();
+                const selectedDim = $row.find('#dimension_select').val();
                 const $packSelect = $row.find('.screw_select');
 
-                if (selectedDim && selectedDim !== '') {
-                    $packSelect.closest('.col-3').removeClass('d-none');
+                if (selectedColor && selectedDim) {
+                    $packSelect.closest('.col').removeClass('d-none');
                     $packSelect.find('option').each(function() {
                         const color = $(this).data('color')?.toString();
                         const dimId = $(this).data('dim-id')?.toString();
                         $(this).toggle((color === selectedColor && dimId === selectedDim) || $(this).index() === 0);
                     });
                     $packSelect.val('');
-                } else {
-                    $packSelect.closest('.col-3').addClass('d-none').find('select').val('');
                 }
             });
 
@@ -206,7 +205,7 @@ if(isset($_POST['fetch_modal'])){
 
             function duplicateScrewRow() {
                 let $newRow = $(".screw-row").first().clone();
-                $newRow.find('.screw_quantity').val("1");
+                $newRow.find('.screw_quantity').val("");
                 $newRow.find('.screw_select').prop("selectedIndex", 0);
                 $newRow.find('.color_select').prop("selectedIndex", 0);
                 $(".screw-row").last().after($newRow);

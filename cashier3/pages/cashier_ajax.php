@@ -2609,7 +2609,7 @@ if (isset($_POST['add_to_cart'])) {
         $length_feet = isset($lengthFeet[$index]) ? parseNumber($lengthFeet[$index]) : 0;
         $length_inch = isset($lengthInch[$index]) ? parseNumber($lengthInch[$index]) : 0;
 
-        if ($length_feet == 0 && $length_inch == 0) {
+        if ($length_feet == 0 && $length_inch == 0 || ($qty == 0)) {
             continue;
         }
         
