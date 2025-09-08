@@ -1907,6 +1907,7 @@ if (isset($_POST['save_custom_length'])) {
     $inch_list   = $_POST['length_inch'] ?? [];
     $prices      = $_POST['price'] ?? [];
     $color_id    = $_POST['color_id'] ?? [];
+    $notes       = $_POST['notes'] ?? [];
 
     if (!isset($_SESSION["cart"])) {
         $_SESSION["cart"] = array();
@@ -1924,6 +1925,7 @@ if (isset($_POST['save_custom_length'])) {
             $estimate_length_in = round(floatval($inch_list[$idx] ?? 0), 2);
             $price              = floatval($prices[$idx] ?? 0);
             $custom_color       = intval($color_id[$idx] ?? 0);
+            $note               = $notes[$idx] ?? '';
 
             if ($quantity <= 0) continue;
 
@@ -1962,7 +1964,8 @@ if (isset($_POST['save_custom_length'])) {
                     'supplier_id'         => '',
                     'custom_grade'        => '',
                     'custom_profile'      => 0,
-                    'custom_gauge'        => ''
+                    'custom_gauge'        => '',
+                    'note'                => $note
                 );
 
                 $_SESSION["cart"][] = $item_array;

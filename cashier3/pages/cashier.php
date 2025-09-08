@@ -5223,6 +5223,19 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             });
         });
 
+        $(document).on("click", "#toggleNotes", function () {
+            let $modal = $(this).closest(".modal");
+            let $notes = $modal.find(".notes-col");
+
+            $notes.toggleClass("d-none");
+
+            if ($notes.hasClass("d-none")) {
+                $(this).text("Add Notes");
+            } else {
+                $(this).text("Hide Notes");
+            }
+        });
+
         
     });
 </script>

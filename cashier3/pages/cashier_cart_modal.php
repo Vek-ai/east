@@ -15,6 +15,7 @@ if(isset($_POST['fetch_cart'])){
     $discount = 0;
     $tax = 0;
     $customer_details_pricing = 0;
+    $show_disc_price = 0;
     if(isset($_SESSION['customer_id'])){
         $customer_id = $_SESSION['customer_id'];
         $customer_details = getCustomerDetails($customer_id);
@@ -29,11 +30,13 @@ if(isset($_POST['fetch_cart'])){
         $discount = is_numeric(getCustomerDiscount($customer_id)) ? floatval(getCustomerDiscount($customer_id)) / 100 : 0;
         $tax = is_numeric(getCustomerTax($customer_id)) ? floatval(getCustomerTax($customer_id)) / 100 : 0;
         $customer_details_pricing = $customer_details['customer_pricing'];
+
+        $show_disc_price = 1;
     }
     $delivery_price = is_numeric(getDeliveryCost()) ? floatval(getDeliveryCost()) : 0;
     ?>
     <script>
-        console.log("<pre><?= print_r($_SESSION["cart"]) ?></pre>");
+        //console.log("<pre><?= print_r($_SESSION["cart"]) ?></pre>");
     </script>
     <style>
         input[type="number"]::-webkit-inner-spin-button, 
@@ -181,8 +184,8 @@ if(isset($_POST['fetch_cart'])){
                         <th class="text-center pl-3">Quantity</th>
                         <th class="text-center">Length</th>
                         <th class="text-center">Stock</th>
-                        <th class="text-center">Price</th>
-                        <th class="text-center small">Customer<br>Price</th>
+                        <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">Price</th>
+                        <th class="text-center <?= $show_disc_price ? 'customer_price_col' : 'd-none' ?>" style="cursor: pointer;">Customer<br>Price</th>
                         <th class="text-center"> </th>
                     </tr>
                 </thead>
@@ -322,6 +325,10 @@ if(isset($_POST['fetch_cart'])){
                                         <?php if ($is_preorder == 1): ?>
                                             <br>( PREORDER )
                                         <?php endif; ?>
+
+                                        <?php if (!empty($values["note"])): ?>
+                                            <br>Notes: <?= htmlspecialchars($values["note"]) ?>
+                                        <?php endif; ?>
                                     </h6>
                                 </td>
                                 <td class="text-center">
@@ -384,10 +391,10 @@ if(isset($_POST['fetch_cart'])){
                                 <td class="text-center">
                                     <?= $stock_text ?>
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">
                                     $ <?= number_format($total_price_actual,2) ?>
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center <?= $show_disc_price ? '' : 'd-none' ?>">
                                     $ <?= number_format($total_customer_price,2) ?>
                                 </td>
                                 <td class="text-center">
@@ -436,7 +443,7 @@ if(isset($_POST['fetch_cart'])){
                                 $bundle_count++;
                                 ?>
                                 <tr class="thick-border d-none bundleCartSection">
-                                    <td class="text-center" colspan="11">
+                                    <td class="text-center" colspan="10">
                                         <div class="text-end">
                                             <div class="card p-3 mb-0 d-inline-block text-center">
                                                 <h6 class="fw-bold">Add Bundle Info</h6>
@@ -451,7 +458,7 @@ if(isset($_POST['fetch_cart'])){
                                     </td>
                                 </tr>
 
-                                <tr class="thick-border">
+                                <tr class="thick-border create_bundle_row">
                                     <th class="text-center" colspan="3">
                                         <?php if (!empty($bundle_name)) : ?>
                                             (<?= $bundle_name ?>)
@@ -468,8 +475,8 @@ if(isset($_POST['fetch_cart'])){
                                     <th class="text-center">
                                         <?php if (!empty($bundle_name)) echo "($bundle_name)"; ?>
                                     </th>
-                                    <th class="text-center">Line Item Price</th>
-                                    <th class="text-center">Line Item Price</th>
+                                    <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">Line Item Price</th>
+                                    <th class="text-center <?= $show_disc_price ? '' : 'd-none' ?>">Line Item Price</th>
                                     <th class="text-center"></th>
                                 </tr>
 
@@ -729,12 +736,12 @@ if(isset($_POST['fetch_cart'])){
                                         <td class="text-center">
 
                                         </td>
-                                        <td class="text-center pl-3">$
+                                        <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">$
                                             <?php
                                             echo number_format($product_price, 2);
                                             ?>
                                         </td>
-                                        <td class="text-end pl-3">$
+                                        <td class="text-end pl-3 <?= $show_disc_price ? '' : 'd-none' ?>">$
                                             <?php
                                             echo number_format($customer_price, 2);
                                             ?>
@@ -877,6 +884,10 @@ if(isset($_POST['fetch_cart'])){
                                             <?= $values["product_item"] ?>
                                             <?php if ($values["is_pre_order"] == 1): ?>
                                                 <br>( PREORDER )
+                                            <?php endif; ?>
+
+                                            <?php if (!empty($values["note"])): ?>
+                                                <br>Notes: <?= htmlspecialchars($values["note"]) ?>
                                             <?php endif; ?>
                                         </h6>
                                     </td>
@@ -1036,13 +1047,13 @@ if(isset($_POST['fetch_cart'])){
                                         }
                                         ?>
                                     <td class="text-center"><?= $stock_text ?></td>
-                                    <td class="text-center pl-3">$
+                                    <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">$
                                         <?php
                                         $subtotal = $product_price;
                                         echo number_format($subtotal, 2);
                                         ?>
                                     </td>
-                                    <td class="text-end pl-3">$
+                                    <td class="text-end pl-3 <?= $show_disc_price ? '' : 'd-none' ?>">$
                                         <?php
                                         $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
                                         echo number_format($customer_price, 2);
@@ -1097,11 +1108,11 @@ if(isset($_POST['fetch_cart'])){
                     }
                     ?>
                     <tr>
-                        <td colspan="2" class="text-end">Total Weight</td>
+                        <td colspan="3" class="text-end">Total Weight</td>
                         <td><?= number_format(floatval($total_weight), 2) ?> LBS</td>
                         <td colspan="2" class="text-end">Total Quantity:</td>
                         <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
-                        <td colspan="3" class="text-end">Customer Savings:</td>
+                        <td colspan="2" class="text-end">Customer Savings:</td>
                         <td colspan="1" class="text-end"><span id="ammount_due">$<?= number_format($customer_savings,2) ?></span></td>
                         <td colspan="1"></td>
                     </tr>
@@ -1166,6 +1177,27 @@ if(isset($_POST['fetch_cart'])){
         }
         $(document).ready(function() {
             initAutocomplete();
+
+            updateAllColspans();
+
+            $(document).on("dblclick", ".customer_price_col", function () {
+                $(".price_col").toggleClass("d-none");
+
+                updateAllColspans();
+            });
+
+            function updateAllColspans() {
+                let colCount = $("table tr:first td:visible, table tr:first th:visible").length;
+
+                $("td[colspan], th[colspan]").not(".bundleCartSection td, .create_bundle_row td, .create_bundle_row th").each(function () {
+                    let current = parseInt($(this).attr("colspan"), 10);
+                    if ($(".price_col").is(":visible")) {
+                        $(this).attr("colspan", current + 1);
+                    } else {
+                        $(this).attr("colspan", current - 1);
+                    }
+                });
+            }
 
             $(document).on('change', '#customer_select_cart', function(event) {
                 var customer_id = $('#customer_id_cart').val();

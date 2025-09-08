@@ -40,19 +40,20 @@ if(isset($_POST['fetch_modal'])){
 
             <h5 class="text-center">Treated Lumber</h5>
             <div class="row">
-                <div class="col-3"><label class="fs-4 fw-semibold">Quantity</label></div>
-                <div class="col-3"><label class="fs-4 fw-semibold">Dimension</label></div>
-                <div class="col-3"><label class="fs-4 fw-semibold">Length</label></div>
+                <div class="col text-center"><label class="fs-4 fw-semibold">Quantity</label></div>
+                <div class="col text-center"><label class="fs-4 fw-semibold">Description</label></div>
+                <div class="col text-center"><label class="fs-4 fw-semibold">Length</label></div>
+                <div class="col notes-col text-center d-none"><label class="fs-4 fw-semibold">Notes</label></div>
             </div>
 
             <div id="untreated-section">
                 <div class="custom-length-row row mt-1">
-                    <div class="col-3 col-6-md">
-                        <input type="number" name="quantity[]" class="form-control mb-1 lumber_quantity" value="1" placeholder="Enter Quantity">
+                    <div class="col">
+                        <input type="number" name="quantity[]" class="form-control mb-1 lumber_quantity" value="" placeholder="Enter Quantity">
                     </div>
-                    <div class="col-3 col-6-md">
+                    <div class="col">
                         <select name="dimension_id[]" class="form-control dimension_select">
-                            <option value="" hidden>Select Dimension</option>
+                            <option value="" hidden>Select Description</option>
                             <?php 
                                 $seen = [];
                                 foreach ($treatedItems as $item){
@@ -66,7 +67,7 @@ if(isset($_POST['fetch_modal'])){
                             <?php } ?>
                         </select>
                     </div>
-                    <div class="col-3 col-6-md">
+                    <div class="col">
                         <select class="form-control mb-1 length_select">
                             <option value="" hidden>Select Length</option>
                             <?php foreach ($treatedItems as $item){
@@ -97,9 +98,12 @@ if(isset($_POST['fetch_modal'])){
                         <input type="hidden" name="length_feet[]" class="custom_length_feet">
                         <input type="hidden" name="length_inch[]" class="custom_length_inch">
                     </div>
+                    <div class="col notes-col d-none">
+                        <input type="text" name="notes[]" class="form-control mb-1" placeholder="Enter Notes">
+                    </div>
                 </div>
             </div>
-            <div class="col-9 text-end"> 
+            <div class="col text-end"> 
                 <a href="javascript:void(0)" type="button" id="duplicateUntreated" title="Add Untreated">
                     <i class="fas fa-plus"></i>
                 </a>
@@ -108,19 +112,20 @@ if(isset($_POST['fetch_modal'])){
 
             <h5 class="mt-4 text-center">Untreated Lumber</h5>
             <div class="row">
-                <div class="col-3"><label class="fs-4 fw-semibold">Quantity</label></div>
-                <div class="col-3"><label class="fs-4 fw-semibold">Dimension</label></div>
-                <div class="col-3"><label class="fs-4 fw-semibold">Length</label></div>
+                <div class="col text-center"><label class="fs-4 fw-semibold">Quantity</label></div>
+                <div class="col text-center"><label class="fs-4 fw-semibold">Description</label></div>
+                <div class="col text-center"><label class="fs-4 fw-semibold">Length</label></div>
+                <div class="col notes-col text-center d-none"><label class="fs-4 fw-semibold">Notes</label></div>
             </div>
 
             <div id="treated-section">
                 <div class="custom-length-row row mt-1">
-                    <div class="col-3 col-6-md">
-                        <input type="number" name="quantity[]" class="form-control mb-1 lumber_quantity" value="1" placeholder="Enter Quantity">
+                    <div class="col">
+                        <input type="number" name="quantity[]" class="form-control mb-1 lumber_quantity" value="" placeholder="Enter Quantity">
                     </div>
-                    <div class="col-3 col-6-md">
+                    <div class="col">
                         <select name="dimension_id[]" class="form-control dimension_select">
-                            <option value="" hidden>Select Dimension</option>
+                            <option value="" hidden>Select Description</option>
                             <?php 
                                 $seen = [];
                                 foreach ($untreatedItems as $item){
@@ -134,7 +139,7 @@ if(isset($_POST['fetch_modal'])){
                             <?php } ?>
                         </select>
                     </div>
-                    <div class="col-3 col-6-md">
+                    <div class="col">
                         <select class="form-control mb-1 length_select">
                             <option value="" hidden>Select Length</option>
                             <?php foreach ($untreatedItems as $item){
@@ -165,9 +170,12 @@ if(isset($_POST['fetch_modal'])){
                         <input type="hidden" name="length_feet[]" class="custom_length_feet">
                         <input type="hidden" name="length_inch[]" class="custom_length_inch">
                     </div>
+                    <div class="col notes-col d-none">
+                        <input type="text" name="notes[]" class="form-control mb-1" placeholder="Enter Notes">
+                    </div>
                 </div>
             </div>
-            <div class="col-9 text-end"> 
+            <div class="col text-end"> 
                 <a href="javascript:void(0)" type="button" id="duplicateTreated" title="Add Treated">
                     <i class="fas fa-plus"></i>
                 </a>
@@ -182,8 +190,9 @@ if(isset($_POST['fetch_modal'])){
             </div>
         </div>
 
-        <div class="modal-footer d-flex justify-content-end align-items-center px-0">
-            <button class="btn btn-success ripple btn-secondary" type="submit">Add to Cart</button>
+        <div class="modal-footer d-flex justify-content-between align-items-center px-0">
+            <button type="button" class="btn btn-outline-secondary" id="toggleNotes">Add Notes</button>
+            <button type="submit" class="btn btn-success ripple btn-secondary">Add to Cart</button>
         </div>
 
         <script>
@@ -266,17 +275,30 @@ if(isset($_POST['fetch_modal'])){
 
             $(document).on('input', '.lumber_quantity', updateAllPrices);
 
-            $('#duplicateUntreated').on("click", function() {
+            function duplicateUntreatedRow() {
                 let $newRow = $("#untreated-section .custom-length-row").first().clone();
                 $newRow.find('input, select').val('');
                 $("#untreated-section").append($newRow);
-            });
+            }
 
-            $('#duplicateTreated').on("click", function() {
+            function duplicateTreatedRow() {
                 let $newRow = $("#treated-section .custom-length-row").first().clone();
                 $newRow.find('input, select').val('');
                 $("#treated-section").append($newRow);
+            }
+
+            $('#duplicateUntreated').on("click", function() {
+                duplicateUntreatedRow();
             });
+
+            $('#duplicateTreated').on("click", function() {
+                duplicateTreatedRow();
+            });
+
+            for (let i = 0; i < 5; i++) {
+                duplicateUntreatedRow();
+                duplicateTreatedRow();
+            }
 
             updateAllPrices();
         });
