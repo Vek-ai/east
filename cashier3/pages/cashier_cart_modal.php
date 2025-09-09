@@ -323,10 +323,6 @@ if(isset($_POST['fetch_cart'])){
                                         <?php if ($is_preorder == 1): ?>
                                             <br>( PREORDER )
                                         <?php endif; ?>
-
-                                        <?php if (!empty($values["note"])): ?>
-                                            <br>Notes: <?= htmlspecialchars($values["note"]) ?>
-                                        <?php endif; ?>
                                     </h6>
                                 </td>
                                 <td class="text-center">
@@ -539,6 +535,9 @@ if(isset($_POST['fetch_cart'])){
                                                             value="<?= $line; ?>">
                                                 </div>
                                             </div>
+                                            <?php if (!empty($values["note"])): ?>
+                                                <br>Notes: <?= htmlspecialchars($values["note"]) ?>
+                                            <?php endif; ?>
                                         </td>
                                         <td class="text-center">
                                             

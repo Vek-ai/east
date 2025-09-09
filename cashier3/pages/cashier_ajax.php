@@ -1845,7 +1845,7 @@ if (isset($_POST['save_trim'])) {
     foreach ($quantities as $i => $quantity) {
         $quantity = floatval($quantity);
         $length   = floatval($lengths[$i] ?? 0);
-        $note   = floatval($notes[$i] ?? 0);
+        $note   = $notes[$i] ?? '';
 
         $feet        = floor($length);
         $decimalFeet = $length - $feet;
@@ -2586,13 +2586,14 @@ if (isset($_POST['add_to_cart'])) {
     $quantity       = $_POST['quantity_product'] ?? [];
     $quantity       = array_map(fn($qty) => empty($qty) ? 0 : $qty, $quantity);
 
-    $lengthFeet     = $_POST['length_feet'] ?? [];
-    $lengthInch     = $_POST['length_inch'] ?? [];
-    $lengthFraction = $_POST['length_fraction'] ?? [];
-    $panel_types    = $_POST['panel_option'] ?? [];
-    $panel_styles    = $_POST['panel_style'] ?? [];
-    $panel_drip_stops = $_POST['panel_drip_stop'] ?? [];
-    $bundle_names = $_POST['bundle_name'] ?? [];
+    $lengthFeet         = $_POST['length_feet'] ?? [];
+    $lengthInch         = $_POST['length_inch'] ?? [];
+    $lengthFraction     = $_POST['length_fraction'] ?? [];
+    $panel_types        = $_POST['panel_option'] ?? [];
+    $panel_styles       = $_POST['panel_style'] ?? [];
+    $panel_drip_stops   = $_POST['panel_drip_stop'] ?? [];
+    $bundle_names       = $_POST['bundle_name'] ?? [];
+    $notes              = $_POST['notes'] ?? [];
 
     $product_id    = mysqli_real_escape_string($conn, $_POST['product_id']);
     $is_pre_order  = mysqli_real_escape_string($conn, $_POST['is_pre_order'] ?? 0);
@@ -2614,6 +2615,7 @@ if (isset($_POST['add_to_cart'])) {
     foreach ($quantity as $index => $qty) {
         $length_feet = isset($lengthFeet[$index]) ? parseNumber($lengthFeet[$index]) : 0;
         $length_inch = isset($lengthInch[$index]) ? parseNumber($lengthInch[$index]) : 0;
+        $note   = $notes[$index] ?? '';
 
         if ($length_feet == 0 && $length_inch == 0 || ($qty == 0)) {
             continue;
@@ -2641,7 +2643,8 @@ if (isset($_POST['add_to_cart'])) {
                 $item['panel_type'] == $panel_type_row &&
                 $item['panel_drip_stop'] == $panel_drip_stop_row &&
                 $item['estimate_length'] == $length_feet &&
-                $item['estimate_length_inch'] == $length_inch
+                $item['estimate_length_inch'] == $length_inch &&
+                $item['note'] == $note
             ) {
                 $key = $cartKey;
                 break;
@@ -2704,7 +2707,8 @@ if (isset($_POST['add_to_cart'])) {
                     'stiff_board_batten'  => $stiff_board_batten,
                     'stiff_stand_seam'    => $stiff_stand_seam,
                     'is_pre_order'        => $is_pre_order,
-                    'bundle_name'          => $bundle_name_row
+                    'bundle_name'          => $bundle_name_row,
+                    'note'              => $note
                 ];
 
                 $_SESSION['cart'][$nextLine] = $item_array;
