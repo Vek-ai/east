@@ -367,6 +367,28 @@ function showCol($name) {
                                                 </select>
                                             </div>
                                         </div>
+
+                                        <div class="col-md-4 hidden-field d-none">
+                                            <div class="mb-3">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                    <label class="form-label">Product Profile</label>
+                                                    <a href="?page=profile_type" target="_blank" class="text-decoration-none">Edit</a>
+                                                        </div>
+                                                <select id="profile" class="form-control add-category" name="profile">
+                                                    <option value="" >Select Profile...</option>
+                                                                    <?php
+                                                    $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1'";
+                                                    $result_profile_type = mysqli_query($conn, $query_profile_type);            
+                                                    while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
+                                                        $selected = ($row['profile'] == $row_profile_type['profile_type_id']) ? 'selected' : '';
+                                                                    ?>
+                                                        <option value="<?= $row_profile_type['profile_type_id'] ?>" data-category="<?= $row_profile_type['product_category'] ?>"  <?= $selected ?>><?= $row_profile_type['profile_type'] ?></option>
+                                                                    <?php   
+                                                                    }
+                                                                    ?>
+                                                            </select>
+                                                        </div>
+                                                    </div>
                                     </div>
                                 </div>
                             </div>
