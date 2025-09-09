@@ -22,6 +22,7 @@ if(isset($_REQUEST['action'])) {
         $grade_abbreviations = mysqli_real_escape_string($conn, $_POST['grade_abbreviations']);
 
         $product_category_array = $_POST['product_category'] ?? [];
+        $product_category_array = array_map('intval', $product_category_array);
         $product_category = mysqli_real_escape_string($conn, json_encode($product_category_array));
 
         $defect_code = mysqli_real_escape_string($conn, $_POST['defect_code']);

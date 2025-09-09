@@ -556,7 +556,7 @@ if(isset($_REQUEST['action'])) {
             }
 
             $data[] = [
-                'profile_type' => '('.$no.')' .$profile_type,
+                'profile_type' => $profile_type,
                 'profile_abbreviations' => $abbreviations,
                 'product_category_name' => $category_name_str,
                 'notes' => $notes,
