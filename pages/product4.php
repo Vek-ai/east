@@ -900,13 +900,34 @@ function showCol($name) {
             }
         }
 
-        $(document).on('click', '#addProductModalBtn, #edit_product_btn', function(event) {
+        $(document).on('click', '#addProductModalBtn', function(event) {
             event.preventDefault();
             $('#product_id').val($(this).data('id') || '');
             $('#product_category').val($(this).data('category') || '');
 
             $('.hidden-field').addClass('d-none');
 
+            updateSearchCategory();
+            $('#product_form')[0].reset();
+            $('#product_id').val("");
+            
+            $('#addProductModal').modal('show');
+        });
+
+        $(document).on('click', '#edit_product_btn', function(event) {
+            event.preventDefault();
+
+            $('#product_id').val($(this).data('id') || '');
+            $('#product_category').val($(this).data('category') || '');
+            $('#product_line').val($(this).data('line') || '');
+            $('#product_type').val($(this).data('type') || '');
+            $('#product_system').val($(this).data('system') || '');
+            $('#grade').val($(this).data('grade') || '');
+            $('#gauge').val($(this).data('gauge') || '');
+            $('#profile').val($(this).data('profile') || '');
+            $('#color').val($(this).data('color') || '');
+
+            $('.hidden-field').removeClass('d-none');
             updateSearchCategory();
             $('#addProductModal').modal('show');
         });
@@ -1199,7 +1220,6 @@ function showCol($name) {
                 }
             });
         });
-
 
         $(document).on('submit', '#product_form', function(event) {
             event.preventDefault(); 

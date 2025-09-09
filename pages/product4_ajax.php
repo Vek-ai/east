@@ -1354,12 +1354,34 @@ if(isset($_REQUEST['action'])) {
             if ($permission === 'edit') {
                 $action_html = "
                     <div class='action-btn text-center'>
-                        <a href='javascript:void(0)' id='view_product_btn' title='View' class='text-primary edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-eye fs-7'></i></a>
-                        <a href='javascript:void(0)' id='edit_product_btn' title='Edit' class='text-warning edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-pencil fs-7'></i></a>
+                        <a href='javascript:void(0)' 
+                        id='view_product_btn' 
+                        title='View' 
+                        class='text-primary edit' 
+                        data-id='{$product_id}' 
+                        data-category='{$row['product_category']}'>
+                        <i class='ti ti-eye fs-7'></i>
+                        </a>
+                        <a href='javascript:void(0)' 
+                        id='edit_product_btn' 
+                        title='Edit' 
+                        class='text-warning edit'
+                        data-id='{$product_id}' 
+                        data-category='{$row['product_category']}'
+                        data-line='{$row['product_line']}'
+                        data-type='{$row['product_type']}'
+                        data-system='{$row['product_system']}'
+                        data-grade='{$row['grade']}'
+                        data-gauge='{$row['gauge']}'
+                        data-profile='{$row['profile']}'
+                        data-color='{$row['color']}'>
+                        <i class='ti ti-pencil fs-7'></i>
+                        </a>
                         <a href='javascript:void(0)' id='duplicate_product_btn' title='Duplicate' class='text-info edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-copy fs-7'></i></a>
                         <a href='javascript:void(0)' id='add_inventory_btn' title='Add Inventory' class='text-secondary edit' data-id='{$product_id}' data-category='{$category_id}'><i class='ti ti-plus fs-7'></i></a>
                         <a href='javascript:void(0)' id='delete_product_btn' title='Archive' class='text-danger edit hideProduct' data-no='{$no}' data-id='{$product_id}' data-status='{$status}'><i class='ti ti-trash fs-7'></i></a>
                     </div>";
+
             }
     
             $data[] = [
