@@ -46,198 +46,41 @@ if(isset($_POST['fetch_prompt_quantity'])){
             $category_id = $product_details["product_category"];
             $basePrice = $product_details["unit_price"];
             $product_system = $product_details["product_system"];
+            $profile = $product_details["profile"];
         ?>
         <input type="hidden" id="product_id" name="product_id" value="<?= $id ?>" />
         <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
         <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
         <div class="row">
-
-            <!-- Colors -->
-            <div class="col-3">
-                <select class="form-control qty_select2" id="qty-color" name="color" >
-                    <option value="" data-category="">All Colors</option>
-                    <optgroup label="Product Colors">
-                        <?php
-                        $query_color = "SELECT MIN(color_id) AS color_id, color_name, product_category FROM paint_colors 
-                                        WHERE hidden = '0' AND color_status = '1'
-                                        GROUP BY color_name 
-                                        ORDER BY color_name ASC";
-
-                        $result_color = mysqli_query($conn, $query_color);
-                        while ($row_color = mysqli_fetch_array($result_color)) {
-                        ?>
-                            <option value="<?= htmlspecialchars($row_color['color_id']) ?>" 
-                                    data-category="<?= htmlspecialchars($row_color['product_category']) ?>">
-                                <?= htmlspecialchars($row_color['color_name']) ?>
-                            </option>
-                        <?php } ?>
-                    </optgroup>
-                </select>
-            </div>
-
-            <!-- Grade -->
-            <div class="col-3">
-                <select class="form-control qty_select2" id="qty-grade" name="grade">
-                    <option value="" data-category="">All Grades</option>
-                    <optgroup label="Product Grades">
-                        <?php
-                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY product_grade ASC";
-                        $result_grade = mysqli_query($conn, $query_grade);
-                        while ($row_grade = mysqli_fetch_array($result_grade)) {
-                        ?>
-                            <option value="<?= htmlspecialchars($row_grade['product_grade']) ?>" 
-                                    data-category="<?= htmlspecialchars($row_grade['product_category']) ?>">
-                                <?= htmlspecialchars($row_grade['product_grade']) ?>
-                            </option>
-                        <?php } ?>
-                    </optgroup>
-                </select>
-            </div>
-
-            <!-- Gauge -->
-            <div class="col-3">
-                <select class="form-control qty_select2" id="qty-gauge" name="gauge">
-                    <option value="" data-category="">All Gauges</option>
-                    <optgroup label="Product Gauges">
-                        <?php
-                        $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY product_gauge ASC";
-                        $result_gauge = mysqli_query($conn, $query_gauge);
-                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                        ?>
-                            <option value="<?= htmlspecialchars($row_gauge['product_gauge']) ?>" 
-                                    data-category="gauge">
-                                <?= htmlspecialchars($row_gauge['product_gauge']) ?>
-                            </option>
-                        <?php } ?>
-                    </optgroup>
-                </select>
-            </div>
-
-            <div class="col-12">
-                <h5 class="text-center pt-3 fs-4 fw-bold"><span id="coil-stock"></span></h5>
-            </div>
-
-            <div class="col-12"><hr class="w-100"></div>
-
-            <div class="row align-items-center mb-2">
-                <div class="col-12 text-end">
-                    <button type="button" id="createBundleBtn" class="btn btn-sm btn-primary">
-                        Create Bundles
-                    </button>
-                </div>
-            </div>
             
-            <div class="row align-items-center mb-2">
-                <div class="col-12" id="productFormCol">
-                    <div class="row">
-                        <div class="col-3 text-center">
-                            <label class="fs-4 fw-semibold text-center">Quantity</label>
-                        </div>
-                        <div class="col-3">
-                            <label class="fs-4 fw-semibold text-center">Length</label>
-                        </div>
-                        <div class="col-3">
-                            <label class="fs-4 fw-semibold text-center">Panel Type</label>
-                        </div>
-                        <div class="col-3">
-                            <label class="fs-4 fw-semibold text-center">Panel Style</label>
-                        </div>
-                    </div>
-
-                    <div id="bundleGroups"></div>
-
-                    <div id="unbundledRows">
-                        <div class="quantity-length-container row mx-0 align-items-center mb-2">
-                            <div class="col-1 text-center bundle-checkbox-wrapper d-none">
-                                <input type="checkbox" class="bundle-checkbox">
-                                <input type="hidden" name="bundle_name[]" value="">
-                            </div>
-                            <div class="col-2">
-                                <input type="number" value="" name="quantity_product[]" 
-                                    class="form-control form-control-sm quantity-product" 
-                                    placeholder="Qty" list="quantity-product-list" autocomplete="off">
-                            </div>
-
-                            <div class="col-3">
-                                <div class="input-group">
-                                    <input step="0.0001" class="form-control form-control-sm length_feet" 
-                                        type="number" name="length_feet[]" list="length_feet_datalist" 
-                                        value="<?= $values['estimate_length'] ?>" placeholder="FT">
-                                    <input step="0.0001" class="form-control form-control-sm length_inch" 
-                                        type="text" name="length_inch[]" list="length_inch_datalist" 
-                                        value="<?= $values['estimate_length_inch'] ?>" placeholder="IN">
-                                </div>
-                            </div>
-
-                            <div class="col-3">
-                                <select id="panel_option" name="panel_option[]" class="form-control form-control-sm">
-                                    <option value="solid" selected>Solid</option>
-                                    <option value="vented">Vented</option>
-                                    <option value="drip_stop">Drip Stop</option>
-                                </select>
-                            </div>
-                            <div class="col-3">
-                                <select id="panel_style" name="panel_style[]" class="form-control form-control-sm panel_style">
-                                    <?php if (!empty($standing_seam)): ?>
-                                        <option value="striated" selected>Striated</option>
-                                        <option value="flat">Flat</option>
-                                        <option value="minor_rib">Minor Rib</option>
-                                    <?php elseif (!empty($board_batten)): ?>
-                                        <option value="flat" selected>Flat</option>
-                                        <option value="minor_rib">Minor Rib</option>
-                                    <?php else: ?>
-                                        <option value="regular" selected>Regular</option>
-                                        <option value="reversed">Reversed</option>
-                                    <?php endif; ?>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <?php
-                    if($category_id == $panel_id){
-                    ?>
-                    <div class="col-7 text-end">
-                        <a href="javascript:void(0)" type="button" id="duplicateFields" class="text-end">
-                            <i class="fas fa-plus"></i>
-                        </a>
-                    </div>
-                    <?php 
-                    } 
-                    ?>
-
-                    <div class="col-auto backer-rod-container d-none">
-                        <label class="fs-4 fw-semibold text-start me-2">Backer Rod (3/8in)</label><br>
-                        <input type="number" step="0.001" name="backer_rod" 
-                            class="form-control form-control-sm backer_rod d-inline-block" style="width:120px;">
-                    </div>
-
-                    <div class="mb-2 <?= (($category_id == $fastener_id) || $id == 21) ? '' : 'd-none';?>">
-                        <label class="fs-4 fw-bold" for="case_type">Select Case</label>
-                        <div class="input-group d-flex align-items-center">
-                            <select class="form-control mr-1" id="case_type" name="case_type" style="color:#ffffff;">
-                                <option>100</option>
-                                <option>250</option>
-                                <option>500</option>
-                                <option>1000</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-3 d-none" id="bundleSection">
-                    <div class="card p-3">
-                        <h6 class="fw-bold">Add Bundle Info</h6>
-                        <p class="mb-1">Bundle <span id="bundleCounter">1</span></p>
-                        <div class="mb-2">
-                            <label for="bundleName" class="form-label">Name of Bundle:</label>
-                            <input type="text" id="bundleName" class="form-control form-control-sm" placeholder="Enter bundle name">
-                        </div>
-                        <button type="button" id="addToBundleBtn" class="btn btn-success btn-sm w-100">
-                            Add to Bundles
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <?php
+            
+            if($profile == 14){ //low-rib
+                include "panel_layouts/low_rib.php";
+            }else if($profile == 15){ //hi-rib
+                include "panel_layouts/hi_rib.php";
+            }else if($profile == 16){ //corrugated
+                include "panel_layouts/corrugated.php";
+            }else if($profile == 17){ //5v
+                include "panel_layouts/5v.php";
+            }else if($profile == 18){ //standing_seam
+                include "panel_layouts/standing_seam.php";
+            }else if($profile == 19){ //snap_lock
+                include "panel_layouts/snap_lock.php";
+            }else if($profile == 20){ //mechanical_seam
+                include "panel_layouts/mechanical_seam.php";
+            }else if($profile == 21){ //board_batten
+                include "panel_layouts/board_batten.php";
+            }else if($profile == 41){ //flush_wall
+                include "panel_layouts/flush_wall.php";
+            }else if($profile == 42){ //plank panel
+                include "panel_layouts/plank_panel.php";
+            }else{
+                ?>
+                <h5 class="text-center text-danger pt-3 fs-5 fw-bold">Product Profile is not set.</h5>
+                <?php
+            }
+            ?>
         </div>
 
         <div class="input-group d-flex align-items-center justify-content-between flex-wrap w-100 mt-3 mb-2 <?= empty($is_special) ? 'd-none' : '';?>">
@@ -254,108 +97,163 @@ if(isset($_POST['fetch_prompt_quantity'])){
             <h5 class="text-center pt-3 fs-5 fw-bold">Product Cost: $<span id="product-cost">0.00</span></h5>
         </div>
 
-        <div class="modal-footer d-flex justify-content-end align-items-center px-0">
-            <div class="d-flex justify-content-end">
-                <button class="btn btn-success ripple btn-secondary" type="submit">Add to Cart</button>
-            </div>
+        <div class="modal-footer d-flex justify-content-between align-items-center px-0">
+            <button type="button" class="btn btn-outline-secondary" id="toggleNotes">Add Notes</button>
+            <button class="btn btn-success ripple btn-secondary" type="submit">Add to Cart</button>
         </div>
         <script>
+        var maxLength = 99999;
+
+        function duplicateRow() {
+            var $newRow = $('.quantity-length-container').first().clone(true, true);
+            var uniqueId = Date.now() + Math.floor(Math.random() * 1000);
+
+            $newRow.find('input, div').each(function() {
+                var oldId = $(this).attr('id');
+                if (oldId) {
+                    $(this).attr('id', oldId + '_' + uniqueId);
+                }
+            });
+
+            $newRow.find('label').each(function() {
+                var oldFor = $(this).attr('for');
+                if (oldFor) {
+                    $(this).attr('for', oldFor + '_' + uniqueId);
+                }
+            });
+
+            $newRow.find('.solid_panel').prop('checked', true);
+            $newRow.find('.vented_panel').prop('checked', false);
+
+            $newRow.find('.bundle-checkbox').prop('checked', false);
+            $('#unbundledRows').append($newRow);
+
+            calculateProductCost();
+        }
+
+        function parseFraction(val) {
+            if (!val) return 0;
+            if (val.includes('/')) {
+                let parts = val.split('/');
+                if (parts.length === 2) {
+                    let num = parseFloat(parts[0]) || 0;
+                    let den = parseFloat(parts[1]) || 1;
+                    return den !== 0 ? num / den : 0;
+                }
+            }
+            return parseFloat(val) || 0;
+        }
+
+        function calculateProductCost() {
+            const product_id = $('#product_id').val();
+            const quantities = [], lengthFeetArr = [], lengthInchArr = [], panelOptionArr = [];
+
+            $('.quantity-length-container').each(function() {
+                quantities.push(parseInt($(this).find('.quantity-product').val()) || 0);
+                lengthFeetArr.push(parseFloat($(this).find('.length_feet').val()) || 0);
+                lengthInchArr.push($(this).find('.length_inch').val() || 0);
+
+                panelOptionArr.push($(this).find('select[name="panel_option"]').val() || 'solid');
+            });
+
+            const bends = parseInt($('#bend_product').val()) || 0;
+            const hems = parseInt($('#hem_product').val()) || 0;
+            const soldByFeet = <?= $sold_by_feet; ?>;
+            const basePrice = <?= $basePrice; ?>;
+
+            $.ajax({
+                url: 'pages/cashier_quantity_modal.php',
+                method: 'POST',
+                data: {
+                    product_id: product_id,
+                    quantity: quantities,
+                    lengthFeet: lengthFeetArr,
+                    lengthInch: lengthInchArr,
+                    panel_option: panelOptionArr,
+                    soldByFeet: soldByFeet,
+                    bends: bends,
+                    hems: hems,
+                    basePrice: basePrice,
+                    fetch_price: 'fetch_price'
+                },
+                success: function(response) {
+                    $('#product-cost').text(response);
+                }
+            });
+        }
+
+        function fetchCoilStock() {
+            const color = parseInt($('#qty-color').val()) || 0;
+            const grade = parseInt($('#qty-grade').val()) || 0;
+            const gauge = parseInt($('#qty-gauge').val()) || 0;
+
+            if (color === 0 || grade === 0 || gauge === 0) {
+                $('#coil-stock').text('');
+                $('#is_pre_order').val('0');
+                return;
+            }
+
+            $.ajax({
+                url: 'pages/cashier_quantity_modal.php',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    color: color,
+                    grade: grade,
+                    gauge: gauge,
+                    fetch_stock_coil: 'fetch_stock_coil'
+                },
+                success: function(response) {
+                    if (response.success === true) {
+                        $('#coil-stock').text('AVAILABLE');
+                        $('#is_pre_order').val('0');
+                    } else {
+                        $('#coil-stock').text('PREORDER');
+                        $('#is_pre_order').val('1');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                }
+            });
+        }
+        
+        function calculateBackerRod() {
+            let totalBackerRod = 0;
+
+            $('.quantity-length-container').each(function () {
+                let $row = $(this);
+
+                let style  = ($row.find('.panel_style').val() || '').toLowerCase();
+                let qty    = parseFloat($row.find('.quantity-product').val()) || 0;
+                let ft     = parseFloat($row.find('.length_feet').val()) || 0;
+                let inch   = parseFloat($row.find('.length_inch').val()) || 0;
+
+                let length = ft + (inch / 12);
+
+                if (style === 'flat' && length >= 3) {
+                    totalBackerRod += qty * length;
+                }
+            });
+
+            if (totalBackerRod > 0) {
+                $('.backer-rod-container').removeClass('d-none');
+                $('.backer_rod').val(totalBackerRod.toFixed(3));
+            } else {
+                $('.backer-rod-container').addClass('d-none');
+                $('.backer_rod').val('');
+            }
+        }
+
         $(document).ready(function () {
             let bundleCount = 1;
             let bundleVisible = false;
             let product_system = <?= !empty($product_system) ? $product_system : 'null' ?>;
-            var maxLength = 99999;
-
-            function parseFraction(val) {
-                if (!val) return 0;
-                if (val.includes('/')) {
-                    let parts = val.split('/');
-                    if (parts.length === 2) {
-                        let num = parseFloat(parts[0]) || 0;
-                        let den = parseFloat(parts[1]) || 1;
-                        return den !== 0 ? num / den : 0;
-                    }
-                }
-                return parseFloat(val) || 0;
-            }
-
-            function calculateProductCost() {
-                const product_id = $('#product_id').val();
-                const quantities = [], lengthFeetArr = [], lengthInchArr = [], panelOptionArr = [];
-
-                $('.quantity-length-container').each(function() {
-                    quantities.push(parseInt($(this).find('.quantity-product').val()) || 0);
-                    lengthFeetArr.push(parseFloat($(this).find('.length_feet').val()) || 0);
-                    lengthInchArr.push($(this).find('.length_inch').val() || 0);
-
-                    panelOptionArr.push($(this).find('select[name="panel_option"]').val() || 'solid');
-                });
-
-                const bends = parseInt($('#bend_product').val()) || 0;
-                const hems = parseInt($('#hem_product').val()) || 0;
-                const soldByFeet = <?= $sold_by_feet; ?>;
-                const basePrice = <?= $basePrice; ?>;
-
-                $.ajax({
-                    url: 'pages/cashier_quantity_modal.php',
-                    method: 'POST',
-                    data: {
-                        product_id: product_id,
-                        quantity: quantities,
-                        lengthFeet: lengthFeetArr,
-                        lengthInch: lengthInchArr,
-                        panel_option: panelOptionArr,
-                        soldByFeet: soldByFeet,
-                        bends: bends,
-                        hems: hems,
-                        basePrice: basePrice,
-                        fetch_price: 'fetch_price'
-                    },
-                    success: function(response) {
-                        $('#product-cost').text(response);
-                    }
-                });
-            }
-
-            function fetchCoilStock() {
-                const color = parseInt($('#qty-color').val()) || 0;
-                const grade = parseInt($('#qty-grade').val()) || 0;
-                const gauge = parseInt($('#qty-gauge').val()) || 0;
-
-                if (color === 0 || grade === 0 || gauge === 0) {
-                    $('#coil-stock').text('');
-                    $('#is_pre_order').val('0');
-                    return;
-                }
-
-                $.ajax({
-                    url: 'pages/cashier_quantity_modal.php',
-                    method: 'POST',
-                    dataType: 'json',
-                    data: {
-                        color: color,
-                        grade: grade,
-                        gauge: gauge,
-                        fetch_stock_coil: 'fetch_stock_coil'
-                    },
-                    success: function(response) {
-                        if (response.success === true) {
-                            $('#coil-stock').text('AVAILABLE');
-                            $('#is_pre_order').val('0');
-                        } else {
-                            $('#coil-stock').text('PREORDER');
-                            $('#is_pre_order').val('1');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", {
-                            status: status,
-                            error: error,
-                            responseText: xhr.responseText
-                        });
-                    }
-                });
-            }
+            
 
             $(document).on('change', '#qty-color, #qty-grade, #qty-gauge', function() {
                 fetchCoilStock();
@@ -393,33 +291,6 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     }
                 }
             });
-
-            function duplicateRow() {
-                var $newRow = $('.quantity-length-container').first().clone(true, true);
-                var uniqueId = Date.now() + Math.floor(Math.random() * 1000);
-
-                $newRow.find('input, div').each(function() {
-                    var oldId = $(this).attr('id');
-                    if (oldId) {
-                        $(this).attr('id', oldId + '_' + uniqueId);
-                    }
-                });
-
-                $newRow.find('label').each(function() {
-                    var oldFor = $(this).attr('for');
-                    if (oldFor) {
-                        $(this).attr('for', oldFor + '_' + uniqueId);
-                    }
-                });
-
-                $newRow.find('.solid_panel').prop('checked', true);
-                $newRow.find('.vented_panel').prop('checked', false);
-
-                $newRow.find('.bundle-checkbox').prop('checked', false);
-                $('#unbundledRows').append($newRow);
-
-                calculateProductCost();
-            }
 
             $('#duplicateFields').click(function() {
                 duplicateRow();
@@ -487,85 +358,11 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 bundleVisible = false;
             });
 
-            function calculateBackerRod() {
-                let totalBackerRod = 0;
-
-                $('.quantity-length-container').each(function () {
-                    let $row = $(this);
-
-                    let style  = ($row.find('.panel_style').val() || '').toLowerCase();
-                    let qty    = parseFloat($row.find('.quantity-product').val()) || 0;
-                    let ft     = parseFloat($row.find('.length_feet').val()) || 0;
-                    let inch   = parseFloat($row.find('.length_inch').val()) || 0;
-
-                    let length = ft + (inch / 12);
-
-                    if (style === 'flat' && length >= 3) {
-                        totalBackerRod += qty * length;
-                    }
-                });
-
-                if (totalBackerRod > 0) {
-                    $('.backer-rod-container').removeClass('d-none');
-                    $('.backer_rod').val(totalBackerRod.toFixed(3));
-                } else {
-                    $('.backer-rod-container').addClass('d-none');
-                    $('.backer_rod').val('');
-                }
-            }
-
             $(document).off('click', '.removeBundleBtn').on('click', '.removeBundleBtn', function() {
                 const $bundle = $(this).closest('.bundle-wrapper');
                 $bundle.find('.quantity-length-container').appendTo('#unbundledRows');
                 $bundle.remove();
             });
-
-            function setupLayout() {
-                $("label:contains('Panel Type')").closest(".col-3").removeClass("d-none");
-                $("label:contains('Panel Style')").closest(".col-3").removeClass("d-none");
-                $("select[name='panel_option[]']").closest(".col-3").removeClass("d-none");
-                $("select[name='panel_style[]']").closest(".col-3").removeClass("d-none");
-
-                $("label:contains('Quantity')").closest("div").removeClass("col-6").addClass("col-3");
-                $("label:contains('Length')").closest("div").removeClass("col-6").addClass("col-3");
-
-                $("input[name='quantity_product[]']").closest("div").removeClass("col-6 col-md-6").addClass("col-2 col-md-2");
-                $(".length_feet").closest(".col-6, .col-12, .col-2, .col-3").removeClass("col-6 col-md-6 col-12 col-2 col-3").addClass("col-3 col-md-3");
-
-                if ([11, 12].includes(product_system)) {
-                    for (let i = 0; i < 10; i++) duplicateRow();
-                    maxLength = 60;
-
-                } else if ([13, 7].includes(product_system)) {
-                    for (let i = 0; i < 10; i++) duplicateRow();
-                    maxLength = 20;
-
-                    $("label:contains('Panel Type')").closest(".col-3").addClass("d-none");
-                    $("label:contains('Panel Style')").closest(".col-3").addClass("d-none");
-                    $("select[name='panel_option[]']").closest(".col-3").addClass("d-none");
-                    $("select[name='panel_style[]']").closest(".col-3").addClass("d-none");
-
-                    $("label:contains('Quantity')").closest("div").removeClass("col-3").addClass("col-4");
-                    $("label:contains('Length')").closest("div").removeClass("col-3").addClass("col-7 text-center");
-
-                    $("input[name='quantity_product[]']").closest("div").removeClass("col-2 col-md-2 col-3 col-md-3").addClass("col-4 col-md-4");
-                    $(".length_feet").closest(".col-3, .col-md-3").removeClass("col-3 col-md-3").addClass("col-7 col-md-7");
-
-                } else if ([14, 15, 16, 5].includes(product_system)) {
-                    let loopCount = (product_system == 5) ? 10 : 10;
-                    for (let i = 0; i < loopCount; i++) duplicateRow();
-                    maxLength = [14, 15, 16].includes(product_system) ? 60 : 20;
-
-                    $(document).off('change', 'select[name="panel_style"]').on('change', 'select[name="panel_style"]', calculateBackerRod);
-                    $(document).off('input', '.quantity-product, .length_feet, .length_inch').on('input', '.quantity-product, .length_feet, .length_inch', calculateBackerRod);
-
-                } else {
-                    for (let i = 0; i < 9; i++) duplicateRow();
-                    maxLength = 60;
-                }
-            }
-
-            setupLayout();
 
             $(document).off("input", ".length_feet, .length_inch").on("input", ".length_feet, .length_inch", function () {
                 let $group = $(this).closest('.input-group');
