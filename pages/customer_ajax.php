@@ -56,6 +56,7 @@ if(isset($_REQUEST['action'])) {
         $credit_limit = mysqli_real_escape_string($conn, $_POST['credit_limit'] ?? 0);
         $loyalty = mysqli_real_escape_string($conn, $_POST['loyalty'] ?? 0);
         $customer_pricing = mysqli_real_escape_string($conn, $_POST['customer_pricing'] ?? 0);
+        $is_approved = mysqli_real_escape_string($conn, $_POST['portal_access'] ?? 0);
 
         $checkQuery = "SELECT * FROM customer WHERE customer_id = '$customer_id'";
         $result = mysqli_query($conn, $checkQuery);
@@ -98,6 +99,7 @@ if(isset($_REQUEST['action'])) {
                     customer_type_id = '$new_customer_type_id',
                     loyalty = '$loyalty',
                     customer_pricing = '$customer_pricing',
+                    is_approved = '$is_approved',
                     updated_at = NOW()
                 WHERE customer_id = '$customer_id'";
             mysqli_query($conn, $updateQuery) or die("Error updating customer: " . mysqli_error($conn));
@@ -115,7 +117,7 @@ if(isset($_REQUEST['action'])) {
                     ap_contact_name, ap_contact_email, ap_contact_phone,
                     tax_status, tax_exempt_number, customer_notes,
                     customer_type_id, call_status, is_charge_net, charge_net_30,
-                    credit_limit, loyalty, customer_pricing, created_at, updated_at
+                    credit_limit, loyalty, customer_pricing, is_approved, created_at, updated_at
                 ) VALUES (
                     '$customer_first_name', '$customer_last_name', '$customer_business_name',
                     '$contact_email', '$contact_phone', '$primary_contact', '$contact_fax',
@@ -125,7 +127,7 @@ if(isset($_REQUEST['action'])) {
                     '$ap_contact_name', '$ap_contact_email', '$ap_contact_phone',
                     '$tax_status', '$tax_exempt_number', '$customer_notes',
                     '$new_customer_type_id', '$call_status', '$is_charge_net', '$charge_net_30',
-                    '$credit_limit', '$loyalty', '$customer_pricing', NOW(), NOW()
+                    '$credit_limit', '$loyalty', '$customer_pricing', '$is_approved',NOW(), NOW()
                 )";
             mysqli_query($conn, $insertQuery) or die("Error adding customer: " . mysqli_error($conn));
             echo "New customer added successfully.";
@@ -578,7 +580,15 @@ if(isset($_REQUEST['action'])) {
                         <div class="mb-3 d-flex justify-content-between align-items-center">
                             
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="portal_access" id="portal_access" value="1" <?= ($portal_access ?? '' == '1' ? 'checked' : '') ?>><br>
+                                <input class="form-check-input" 
+                                        type="checkbox" 
+                                        name="portal_access" 
+                                        id="portal_access" 
+                                        value="1" 
+                                        <?= !empty($portal_access) && $portal_access == '1' ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="portal_access">
+                                    Portal Access
+                                </label>
                             </div>
                         </div>
                     </div>
