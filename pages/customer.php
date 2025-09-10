@@ -717,7 +717,7 @@ if ($permission === 'edit') {
       }
   }
 
-  function getPlaceName(lat, lng, inputId) {
+  function getPlaceName(lat, lng, inputId, prefix = '') {
       const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
 
       $.ajax({
@@ -728,29 +728,29 @@ if ($permission === 'edit') {
                   $(inputId).val(data.display_name);
 
                   let address = data.address;
-                  $('#address').val(
+                  $(`#${prefix}address`).val(
                       address.road || 
                       address.neighbourhood || 
                       address.suburb || 
                       ''
                   );
-                  $('#city').val(
+                  $(`#${prefix}city`).val(
                       address.city || 
                       address.town || 
                       address.village || 
                       ''
                   );
-                  $('#state').val(
+                  $(`#${prefix}state`).val(
                       address.state || 
                       address.province || 
                       address.region || 
                       address.county || 
                       ''
                   );
-                  $('#zip').val(address.postcode || '');
+                  $(`#${prefix}zip`).val(address.postcode || '');
 
-                  $('#lat').val(lat);
-                  $('#lng').val(lng);
+                  $(`#${prefix}lat`).val(lat);
+                  $(`#${prefix}lng`).val(lng);
 
               } else {
                   console.error("Address not found for these coordinates.");
@@ -770,7 +770,7 @@ if ($permission === 'edit') {
       lng1 = parseFloat(selectedOption.data('lon'));
       
       updateMarker(map1, marker1, lat1, lng1, "Starting Point");
-      getPlaceName(lat1, lng1, '#searchBox1');
+      getPlaceName(lat1, lng1, '#searchBox1', '');
   });
 
   $('#searchBox2').on('change', function() {
@@ -779,7 +779,7 @@ if ($permission === 'edit') {
       lng2 = parseFloat(selectedOption.data('lon'));
 
       marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
-      getPlaceName(lat2, lng2, '#searchBox2');
+      getPlaceName(lat2, lng2, '#searchBox2', 'ship_');
   });
 
   $('#address').on('change', function() {
@@ -788,7 +788,7 @@ if ($permission === 'edit') {
       lng1 = parseFloat(selectedOption.data('lon'));
       
       updateMarker(map1, marker1, lat1, lng1, "Starting Point");
-      getPlaceName(lat1, lng1, '#address');
+      getPlaceName(lat1, lng1, '#address', '');
   });
 
   function updateMarker(map, marker, lat, lng, title) {
@@ -816,7 +816,7 @@ if ($permission === 'edit') {
           lat1 = event.latLng.lat();
           lng1 = event.latLng.lng();
           marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
-          getPlaceName(lat1, lng1, '#searchBox1');
+          getPlaceName(lat1, lng1, '#searchBox1', '');
       });
 
       map2 = new google.maps.Map(document.getElementById("map2"), {
@@ -828,7 +828,7 @@ if ($permission === 'edit') {
           lat2 = event.latLng.lat();
           lng2 = event.latLng.lng();
           marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
-          getPlaceName(lat2, lng2, '#searchBox2');
+          getPlaceName(lat2, lng2, '#searchBox2', 'ship_');
       });
   }
 
