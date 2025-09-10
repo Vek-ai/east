@@ -717,7 +717,7 @@ if ($permission === 'edit') {
       }
   }
 
-  function getPlaceName(lat, lng, inputId, prefix = '') {
+  function getPlaceName(lat, lng, type = "main") {
       const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
 
       $.ajax({
@@ -725,41 +725,29 @@ if ($permission === 'edit') {
           dataType: 'json',
           success: function(data) {
               if (data && data.display_name) {
-                  $(inputId).val(data.display_name);
-
-                  let address = data.address;
-                  $(`#${prefix}address`).val(
-                      address.road || 
-                      address.neighbourhood || 
-                      address.suburb || 
-                      ''
-                  );
-                  $(`#${prefix}city`).val(
-                      address.city || 
-                      address.town || 
-                      address.village || 
-                      ''
-                  );
-                  $(`#${prefix}state`).val(
-                      address.state || 
-                      address.province || 
-                      address.region || 
-                      address.county || 
-                      ''
-                  );
-                  $(`#${prefix}zip`).val(address.postcode || '');
-
-                  $(`#${prefix}lat`).val(lat);
-                  $(`#${prefix}lng`).val(lng);
-
+                  if (type === "main") {
+                      $('#searchBox1').val(data.display_name);
+                      $('#address').val(data.address.road || data.address.neighbourhood || data.address.suburb || '');
+                      $('#city').val(data.address.city || data.address.town || data.address.village || '');
+                      $('#state').val(data.address.state || data.address.province || data.address.region || data.address.county || '');
+                      $('#zip').val(data.address.postcode || '');
+                      $('#lat').val(lat);
+                      $('#lng').val(lng);
+                  } else if (type === "ship") {
+                      $('#searchBox2').val(data.display_name);
+                      $('#ship_address').val(data.address.road || data.address.neighbourhood || data.address.suburb || '');
+                      $('#ship_city').val(data.address.city || data.address.town || data.address.village || '');
+                      $('#ship_state').val(data.address.state || data.address.province || data.address.region || data.address.county || '');
+                      $('#ship_zip').val(data.address.postcode || '');
+                      $('#ship_lat').val(lat);
+                      $('#ship_lng').val(lng);
+                  }
               } else {
                   console.error("Address not found for these coordinates.");
-                  $(inputId).val("Address not found");
               }
           },
           error: function() {
               console.error("Error retrieving address from Nominatim.");
-              $(inputId).val("Error retrieving address");
           }
       });
   }
@@ -768,18 +756,16 @@ if ($permission === 'edit') {
       let selectedOption = $('#address1-list option[value="' + $(this).val() + '"]');
       lat1 = parseFloat(selectedOption.data('lat'));
       lng1 = parseFloat(selectedOption.data('lon'));
-      
-      updateMarker(map1, marker1, lat1, lng1, "Starting Point");
-      getPlaceName(lat1, lng1, '#searchBox1', '');
+      marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+      getPlaceName(lat1, lng1, "main");
   });
 
   $('#searchBox2').on('change', function() {
       let selectedOption = $('#address2-list option[value="' + $(this).val() + '"]');
       lat2 = parseFloat(selectedOption.data('lat'));
       lng2 = parseFloat(selectedOption.data('lon'));
-
       marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
-      getPlaceName(lat2, lng2, '#searchBox2', 'ship_');
+      getPlaceName(lat2, lng2, "ship");
   });
 
   $('#address').on('change', function() {
@@ -788,7 +774,7 @@ if ($permission === 'edit') {
       lng1 = parseFloat(selectedOption.data('lon'));
       
       updateMarker(map1, marker1, lat1, lng1, "Starting Point");
-      getPlaceName(lat1, lng1, '#address', '');
+      getPlaceName(lat1, lng1, 'main', '');
   });
 
   function updateMarker(map, marker, lat, lng, title) {
@@ -812,11 +798,12 @@ if ($permission === 'edit') {
           zoom: 13,
       });
       marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+
       google.maps.event.addListener(map1, 'click', function(event) {
           lat1 = event.latLng.lat();
           lng1 = event.latLng.lng();
           marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
-          getPlaceName(lat1, lng1, '#searchBox1', '');
+          getPlaceName(lat1, lng1, "main");
       });
 
       map2 = new google.maps.Map(document.getElementById("map2"), {
@@ -824,11 +811,12 @@ if ($permission === 'edit') {
           zoom: 13,
       });
       marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
+
       google.maps.event.addListener(map2, 'click', function(event) {
           lat2 = event.latLng.lat();
           lng2 = event.latLng.lng();
           marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
-          getPlaceName(lat2, lng2, '#searchBox2', 'ship_');
+          getPlaceName(lat2, lng2, "ship");
       });
   }
 
