@@ -3,42 +3,13 @@ if (!defined('APP_SECURE')) {
     header("Location: /not_authorized.php");
     exit;
 }
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $page_title = "Customer";
-
-$customer_id = "";
-$customer_first_name = "";
-$customer_last_name = "";
-$customer_business_name = "";
-$old_customer_type_id = "";
-$contact_email = "";
-$contact_phone = "";
-$contact_fax = "";
-$address = "";
-$city = "";
-$state = "";
-$zip = "";
-$secondary_contact_name = "";
-$secondary_contact_phone = "";
-$ap_contact_name = "";
-$ap_contact_email = "";
-$ap_contact_phone = "";
-$tax_status = "";
-$tax_exempt_number = "";
-$customer_notes = "";
-$call_status = "";
-$customer_pricing = 0;
-$credit_limit = 0;
-$lat = 0;
-$lng = 0;
-$primary_contact = 1;
-
-$customer_name = $customer_first_name . " " . $customer_last_name;
-
-$saveBtnTxt = "Add";
-$addHeaderTxt = "Add New";
 
 $permission = $_SESSION['permission'];
 $staff_id = intval($_SESSION['userid']);
@@ -484,7 +455,7 @@ if ($permission === 'edit') {
             <form id="mapForm" class="form-horizontal">
               <div class="modal-body">
                   <div class="mb-2">
-                      <input id="searchBox1" class="form-control" placeholder="<?= $addressDetails ?>" list="address1-list" autocomplete="off">
+                      <input id="searchBox1" class="form-control" list="address1-list" autocomplete="off">
                       <datalist id="address1-list"></datalist>
                   </div>
                   <div id="map1" class="map-container" style="height: 60vh; width: 100%;"></div>
@@ -500,6 +471,36 @@ if ($permission === 'edit') {
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="map2Modal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel2" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mapsModalLabel2">Search Shipping Address</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="mapForm2" class="form-horizontal">
+              <div class="modal-body">
+                  <div class="mb-2">
+                      <input id="searchBox2" class="form-control" list="address2-list" autocomplete="off">
+                      <datalist id="address2-list"></datalist>
+                  </div>
+                  <div id="map2" class="map-container" style="height: 60vh; width: 100%;"></div>
+              </div>
+              <div class="modal-footer">
+                  <div class="form-actions">
+                      <div class="card-body">
+                          <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
+                      </div>
+                  </div>
+              </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -522,357 +523,17 @@ if ($permission === 'edit') {
 </div>
 
 <div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="customerModalLabel"><?= $addHeaderTxt ?> Customer</h5>
+        <h4 class="modal-title" id="customerModalLabel">Customer Details</h4>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div class="card">
-          <div id="form_section" class="card-body">
-            <form id="lineForm" class="form-horizontal">
-              <?php
-                $customer_id = $_SESSION['active_customer_id'] ?? '';
-                $query = "SELECT * FROM customer WHERE customer_id = '$customer_id'";
-                $result = mysqli_query($conn, $query);
-                while ($row = mysqli_fetch_array($result)) {
-                  $customer_id = $row['customer_id'];
-                  $customer_first_name = $row['customer_first_name'];
-                  $customer_last_name = $row['customer_last_name'];
-                  $customer_business_name = $row['customer_business_name'];
-                  $old_customer_type_id = $row['customer_type_id'];
-                  $contact_email = $row['contact_email'];
-                  $contact_phone = $row['contact_phone'];
-                  $primary_contact = $row['primary_contact'];
-                  $contact_fax = $row['contact_fax'];
-                  $address = $row['address'];
-                  $city = $row['city'];
-                  $state = $row['state'];
-                  $zip = $row['zip'];
-                  $secondary_contact_name = $row['secondary_contact_name'];
-                  $secondary_contact_phone = $row['secondary_contact_phone'];
-                  $ap_contact_name = $row['ap_contact_name'];
-                  $ap_contact_email = $row['ap_contact_email'];
-                  $ap_contact_phone = $row['ap_contact_phone'];
-                  $tax_status = $row['tax_status'];
-                  $tax_exempt_number = $row['tax_exempt_number'];
-                  $customer_notes = $row['customer_notes'];
-                  $call_status = $row['call_status'] ?? 0;
-                  $charge_net_30 = $row['charge_net_30'] ?? 0;
-                  $credit_limit = $row['credit_limit'] ?? 0;
-                  $customer_pricing = $row['customer_pricing'] ?? 0;
-                  $lat = !empty($row['lat']) ? $row['lat'] : 0;
-                  $lng = !empty($row['lng']) ? $row['lng'] : 0;
-
-                  $addressDetails = implode(', ', [
-                    $address ?? '',
-                    $city ?? '',
-                    $state ?? '',
-                    $zip ?? ''
-                  ]);
-                  $loyalty = $row['loyalty'];
-                }
-                $saveBtnTxt = "Update";
-                $addHeaderTxt = "Update";
-              
-              ?>
-              <div class="row pt-3">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">First Name</label>
-                    <input type="text" id="customer_first_name" name="customer_first_name" class="form-control"
-                      value="<?= $customer_first_name ?>" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Last Name</label>
-                    <input type="text" id="customer_last_name" name="customer_last_name" class="form-control"
-                      value="<?= $customer_last_name ?>" />
-                  </div>
-                </div>
-              </div>
-
-              <div class="row pt-3">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Customer Email</label>
-                    <input type="text" id="contact_email" name="contact_email" class="form-control"
-                      value="<?= $contact_email ?>" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Customer Phone</label>
-                    <input type="text" id="contact_phone" name="contact_phone" class="form-control"
-                      value="<?= $contact_phone ?>" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Customer Fax</label>
-                    <input type="text" id="contact_fax" name="contact_fax" class="form-control"
-                      value="<?= $contact_fax ?>" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Primary Contact</label>
-                    <div class="mb-3">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="primary_contact" id="contact_email_radio" value="email" <?= ($primary_contact != '2' ? 'checked' : '') ?>>
-                            <label class="form-check-label" for="contact_email_radio">Email</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="primary_contact" id="contact_phone_radio" value="phone" <?= ($primary_contact == '2' ? 'checked' : '') ?>>
-                            <label class="form-check-label" for="contact_phone_radio">Phone</label>
-                        </div>
-                    </div>
-                </div>
-              </div>
-
-              <div class="row pt-3">
-                <div class="col-md-12">
-                  <div class="mb-3">
-                    <label class="form-label">Customer Business Name</label>
-                    <input type="text" id="customer_business_name" name="customer_business_name" class="form-control"
-                      value="<?= $customer_business_name ?>" />
-                  </div>
-                </div>
-              </div>
-
-              <div class="row pt-3">
-                <div class="col-md-12">
-                <label class="form-label">Address</label>
-                    <div class="mb-3 d-flex justify-content-between align-items-center">
-                        
-                        <div class="d-flex w-100">
-                            <input type="text" id="address" name="address" class="form-control" value="<?= $address ?>" list="address-data-list"/>
-                            <datalist id="address-data-list"></datalist>
-                            <button type="button" class="btn btn-primary py-1 ms-2 toggleElements" id="showMapsBtn" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#map1Modal">Change</button>
-                        </div>
-                    </div>
-                </div>
-              </div>
-
-              <div class="row pt-3">
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">City</label>
-                    <input type="text" id="city" name="city" class="form-control" value="<?= $city ?>" />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">State</label>
-                    <input type="text" id="state" name="state" class="form-control" value="<?= $state ?>" />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">Zip</label>
-                    <input type="text" id="zip" name="zip" class="form-control" value="<?= $zip ?>" />
-                  </div>
-                </div>
-              </div>
-
-              <input type="hidden" id="lat" name="lat" class="form-control" value="<?= $lat ?>" />
-              <input type="hidden" id="lng" name="lng" class="form-control" value="<?= $lng ?>" />
-
-              <div class="row pt-3">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Secondary Contact Name</label>
-                    <input type="text" id="secondary_contact_name" name="secondary_contact_name" class="form-control"
-                      value="<?= $secondary_contact_name ?>" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Secondary Contact Phone</label>
-                    <input type="text" id="secondary_contact_phone" name="secondary_contact_phone" class="form-control"
-                      value="<?= $secondary_contact_phone ?>" />
-                  </div>
-                </div>
-              </div>
-
-              <div class="row pt-3">
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">AP Contact Name</label>
-                    <input type="text" id="ap_contact_name" name="ap_contact_name" class="form-control"
-                      value="<?= $ap_contact_name ?>" />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">AP Contact Email</label>
-                    <input type="text" id="ap_contact_email" name="ap_contact_email" class="form-control"
-                      value="<?= $ap_contact_email ?>" />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label">AP Contact Phone</label>
-                    <input type="text" id="ap_contact_phone" name="ap_contact_phone" class="form-control"
-                      value="<?= $ap_contact_phone ?>" />
-                  </div>
-                </div>
-              </div>
-
-              <!-- LastOrderDate -->
-              <!-- LastQuoteDate -->
-
-              <div class="row pt-3">
-                <div class="col-md-6 opt_field_update">
-                  <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <label class="form-label">Tax Status</label>
-                        <a href="?page=customer_tax" target="_blank" class="text-decoration-none toggleElements">Edit</a>
-                    </div>
-                    <select id="tax_status" class="form-select form-control" name="tax_status">
-                      <option value="">Select Tax Status...</option>
-                      <?php
-                      $query_tax_status = "SELECT * FROM customer_tax";
-                      $result_tax_status = mysqli_query($conn, $query_tax_status);
-                      while ($row_tax_status = mysqli_fetch_array($result_tax_status)) {
-                        $selected = ($tax_status == $row_tax_status['taxid']) ? 'selected' : '';
-                        ?>
-                        <option value="<?= $row_tax_status['taxid'] ?>" <?= $selected ?>>
-                          (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?></option>
-                      <?php
-                      }
-                      ?>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Tax Exempt Number</label>
-                    <input type="text" id="tax_exempt_number" name="tax_exempt_number" class="form-control"
-                      value="<?= $tax_exempt_number ?>" />
-                  </div>
-                </div>
-
-              </div>
-
-              <div class="row pt-3">
-                <div class="col-md-6 d-none">
-                  <?php
-                  // Fetch all customer types
-                  $query = "SELECT * FROM customer_types";
-                  $result = mysqli_query($conn, $query);
-
-                  // Fetch the name for the old customer type ID
-                  $default_customer_type_name = '';
-                  if ($old_customer_type_id > 0) {
-                    $default_query = "SELECT customer_type_name FROM customer_types WHERE customer_type_id = $old_customer_type_id";
-                    $default_result = mysqli_query($conn, $default_query);
-                    if ($default_row = mysqli_fetch_assoc($default_result)) {
-                      $default_customer_type_name = htmlspecialchars($default_row['customer_type_name']);
-                    }
-                  }
-                  ?>
-                  <div class="mb-3">
-                    <label class="form-label">Customer Type</label>
-                    <select class="form-select form-control" id="customer_type" name="customer_type">
-                      <option value="">
-                        <?php echo $default_customer_type_name ? $default_customer_type_name : 'Choose...'; ?></option>
-                      <?php
-                      // Generate options for the dropdown
-                      while ($row = mysqli_fetch_assoc($result)) {
-                        $selected = ($old_customer_type_id == $row['customer_type_id']) ? 'selected' : '';
-                        echo '<option value="' . htmlspecialchars($row['customer_type_id']) . '" ' . $selected . '>' . htmlspecialchars($row['customer_type_name']) . '</option>';
-                      }
-                      ?>
-                    </select>
-                  </div>
-                </div>
-
-                <?php if (!empty($customer_id)) { ?>
-                  <div class="col-md-6">
-                    <label for="loyalty">Loyalty</label>
-                    <select name="loyalty" id="loyalty" class="form-select form-control">
-                      <option value="0" <?php if ($loyalty == '0')
-                        echo 'selected'; ?>>Off</option>
-                      <option value="1" <?php if ($loyalty == '1')
-                        echo 'selected'; ?>>On</option>
-                    </select>
-                  </div>
-                <?php } ?>
-
-                <div class="col-6 mb-3 d-none">
-                  <label class="form-label">Credit Limit</label>
-                  <input class="form-control" type="text" id="credit_limit" name="credit_limit" value="<?= $credit_limit ?>">
-                </div>
-
-                <div class="col-6">
-                  <div class="d-flex justify-content-between align-items-center">
-                      <label class="form-label">Customer Pricing</label>
-                      <a href="?page=customer_pricing" target="_blank" class="text-decoration-none toggleElements">Edit</a>
-                  </div>
-                  <div class="mb-3" data-pricing="<?= $customer_pricing ?>">
-                      <select id="customer_pricing" class="form-control" name="customer_pricing">
-                          <option value="">Select One...</option>
-                          <?php
-                          $query_pricing = "SELECT * FROM customer_pricing WHERE hidden = '0' AND status = '1'";
-                          $result_pricing = mysqli_query($conn, $query_pricing);            
-                          while ($row_pricing = mysqli_fetch_array($result_pricing)) {
-                              $selected = ($customer_pricing == $row_pricing['id']) ? 'selected' : '';
-                          ?>
-                              <option value="<?= $row_pricing['id'] ?>" <?= $selected ?>><?= $row_pricing['pricing_name'] ?></option>
-                          <?php   
-                          }
-                          ?>
-                      </select>
-                  </div>
-                </div>
-
-                <div class="col-6 mb-3">
-                  <label class="form-label">Charge Net 30</label>
-                  <input class="form-control" type="number" step="0.001" id="charge_net_30" name="charge_net_30" value="<?= $charge_net_30 ?>">
-                </div>
-              
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Customer Notes</label>
-                <textarea class="form-control" id="customer_notes" name="customer_notes"
-                  rows="5"><?= $customer_notes ?></textarea>
-              </div>
-
-              <div class="row mb-3">
-                  <div class="col">
-                    <label class="form-label">Customer Call Status</label>
-                    <input type="checkbox" id="call_status" name="call_status" <?= $call_status ? 'checked' : '' ?>>
-                  </div>
-                  <!-- <div class="col">
-                    <label class="form-label">Charge Net 30</label>
-                    <input type="checkbox" id="charge_net_30" <?= $charge_net_30 ? 'checked' : '' ?>>
-                  </div> -->
-                  
-              </div>
-
-              <div class="form-actions toggleElements">
-                <div class="card-body border-top ">
-                  <input type="hidden" id="customer_id" name="customer_id" class="form-control"
-                    value="<?= $customer_id ?>" />
-                  <div class="row">
-
-                    <div class="col-6 text-start">
-
-                    </div>
-                    <div class="col-6 text-end">
-                      <button type="submit" class="btn btn-primary"
-                        style="border-radius: 10%;"><?= $saveBtnTxt ?></button>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-            </form>
-          </div>
+        <div id="form_section">
+          <form id="lineForm" class="form-horizontal">
+              <div class="form_body"></div>
+          </form>
         </div>
       </div>
     </div>
@@ -1008,10 +669,20 @@ if ($permission === 'edit') {
 <script>
   let map1;
   let marker1;
-  let lat1 = <?= $lat ?>, lng1 = <?= $lng ?>;
+  let lat1 = parseFloat($('#lat').val()) || 0;
+  let lng1 = parseFloat($('#lng').val()) || 0;
+
+  let map2;
+  let marker2;
+  let lat2 = parseFloat($('#ship_lat').val()) || lat1;
+  let lng2 = parseFloat($('#ship_lng').val()) || lng1;
 
   $('#searchBox1').on('input', function() {
       updateSuggestions('#searchBox1', '#address1-list');
+  });
+
+  $('#searchBox2').on('input', function() {
+      updateSuggestions('#searchBox2', '#address2-list');
   });
 
   $('#address').on('input', function() {
@@ -1102,6 +773,15 @@ if ($permission === 'edit') {
       getPlaceName(lat1, lng1, '#searchBox1');
   });
 
+  $('#searchBox2').on('change', function() {
+      let selectedOption = $('#address2-list option[value="' + $(this).val() + '"]');
+      lat2 = parseFloat(selectedOption.data('lat'));
+      lng2 = parseFloat(selectedOption.data('lon'));
+
+      marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
+      getPlaceName(lat2, lng2, '#searchBox2');
+  });
+
   $('#address').on('change', function() {
       let selectedOption = $('#address-data-list option[value="' + $(this).val() + '"]');
       lat1 = parseFloat(selectedOption.data('lat'));
@@ -1128,7 +808,7 @@ if ($permission === 'edit') {
 
   function initMaps() {
       map1 = new google.maps.Map(document.getElementById("map1"), {
-          center: { lat: <?= $lat ?>, lng: <?= $lng ?> },
+          center: { lat: lat1, lng: lng1 },
           zoom: 13,
       });
       marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
@@ -1138,11 +818,23 @@ if ($permission === 'edit') {
           marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
           getPlaceName(lat1, lng1, '#searchBox1');
       });
+
+      map2 = new google.maps.Map(document.getElementById("map2"), {
+          center: { lat: lat2, lng: lng2 },
+          zoom: 13,
+      });
+      marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
+      google.maps.event.addListener(map2, 'click', function(event) {
+          lat2 = event.latLng.lat();
+          lng2 = event.latLng.lng();
+          marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
+          getPlaceName(lat2, lng2, '#searchBox2');
+      });
   }
 
   function loadGoogleMapsAPI() {
       const script = document.createElement('script');
-      script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDFpFbxFFK7-daOKoIk9y_GB4m512Tii8M&callback=initMaps&libraries=geometry,places';
+      script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDuAVEip7o5bmQQ4wWVMvTMzPrXXdhYW7s&callback=initMaps&libraries=places';
       script.async = true;
       script.defer = true;
       document.head.appendChild(script);
@@ -1175,16 +867,6 @@ if ($permission === 'edit') {
 
     $(".toggleElements").each(function () {
       $(this).toggleClass("d-none", !enable);
-    });
-  }
-
-  function loadCustomerModal(type = 'v'){
-    $("#form_section").load(location.href + " #form_section", function () {
-        if (type === "e") {
-          toggleFormEditable("lineForm", true, false);
-        } else {
-          toggleFormEditable("lineForm", false, true);
-        }
     });
   }
 
@@ -1226,7 +908,14 @@ if ($permission === 'edit') {
             action: 'change_act_cust_id'
           },
           success: function (response) {
-            loadCustomerModal(type);
+            $('.form_body').html(response);
+
+            if (type === "e") {
+              toggleFormEditable("lineForm", true, false);
+            } else {
+              toggleFormEditable("lineForm", false, true);
+            }
+
             $('#customerModal').modal('show');
           },
           error: function (jqXHR, textStatus, errorThrown) {
@@ -1544,6 +1233,47 @@ if ($permission === 'edit') {
         filterTable();
     });
 
+    $(document).on('click', '#showMapsBtn', function() {
+        let address = $(this).data('address') || "";
+        $('#searchBox1').val(address);
+        if (address) {
+            $('#searchBox1').trigger('change');
+        }
+    });
+
+    $(document).on('click', '#showMapsShipBtn', function() {
+        let address = $(this).data('address') || "";
+        $('#searchBox2').val(address);
+        if (address) {
+            $('#searchBox2').trigger('change');
+        }
+    });
+
+    $(document).on('click', '.remove-image-btn', function(event) {
+        event.preventDefault();
+        let imageId = $(this).data('image-id');
+
+        if (confirm("Are you sure you want to remove this image?")) {
+            $.ajax({
+                url: 'pages/customer_ajax.php',
+                type: 'POST',
+                data: { 
+                    image_id: imageId,
+                    action: "remove_image"
+                },
+                success: function(response) {
+                    if(response.trim() == 'success') {
+                        $('button[data-image-id="' + imageId + '"]').closest('.col-md-2').remove();
+                    } else {
+                        alert('Failed to remove image.');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        }
+    });
 
   });
 </script>

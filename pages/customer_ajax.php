@@ -21,45 +21,48 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "add_update") {
         $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
-        $customer_first_name = mysqli_real_escape_string($conn, $_POST['customer_first_name']);
-        $customer_last_name = mysqli_real_escape_string($conn, $_POST['customer_last_name']);
-        $customer_business_name = mysqli_real_escape_string($conn, $_POST['customer_business_name']);
-        $contact_email = mysqli_real_escape_string($conn, $_POST['contact_email']);
-        $contact_phone = mysqli_real_escape_string($conn, $_POST['contact_phone']);
-        $primary_contact = mysqli_real_escape_string($conn, $_POST['primary_contact']);
-        $contact_fax = mysqli_real_escape_string($conn, $_POST['contact_fax']);
-        $address = mysqli_real_escape_string($conn, $_POST['address']);
-        $city = mysqli_real_escape_string($conn, $_POST['city']);
-        $state = mysqli_real_escape_string($conn, $_POST['state']);
-        $zip = mysqli_real_escape_string($conn, $_POST['zip']);
-        $lat = mysqli_real_escape_string($conn, isset($_POST['lat']) ? $_POST['lat'] : '');
-        $lng = mysqli_real_escape_string($conn, isset($_POST['lng']) ? $_POST['lng'] : '');
-        $secondary_contact_name = mysqli_real_escape_string($conn, $_POST['secondary_contact_name']);
-        $secondary_contact_phone = mysqli_real_escape_string($conn, $_POST['secondary_contact_phone']);
-        $ap_contact_name = mysqli_real_escape_string($conn, $_POST['ap_contact_name']);
-        $ap_contact_email = mysqli_real_escape_string($conn, $_POST['ap_contact_email']);
-        $ap_contact_phone = mysqli_real_escape_string($conn, $_POST['ap_contact_phone']);
-        $tax_status = mysqli_real_escape_string($conn, $_POST['tax_status']);
-        $tax_exempt_number = mysqli_real_escape_string($conn, $_POST['tax_exempt_number']);
+        $customer_first_name = mysqli_real_escape_string($conn, $_POST['customer_first_name'] ?? '');
+        $customer_last_name = mysqli_real_escape_string($conn, $_POST['customer_last_name'] ?? '');
+        $customer_business_name = mysqli_real_escape_string($conn, $_POST['customer_business_name'] ?? '');
+        $contact_email = mysqli_real_escape_string($conn, $_POST['contact_email'] ?? '');
+        $contact_phone = mysqli_real_escape_string($conn, $_POST['contact_phone'] ?? '');
+        $primary_contact = mysqli_real_escape_string($conn, $_POST['primary_contact'] ?? '');
+        $contact_fax = mysqli_real_escape_string($conn, $_POST['contact_fax'] ?? '');
+        $address = mysqli_real_escape_string($conn, $_POST['address'] ?? '');
+        $city = mysqli_real_escape_string($conn, $_POST['city'] ?? '');
+        $state = mysqli_real_escape_string($conn, $_POST['state'] ?? '');
+        $zip = mysqli_real_escape_string($conn, $_POST['zip'] ?? '');
+        $lat = mysqli_real_escape_string($conn, $_POST['lat'] ?? '');
+        $lng = mysqli_real_escape_string($conn, $_POST['lng'] ?? '');
+        $different_ship_address = mysqli_real_escape_string($conn, $_POST['different_ship_address'] ?? 0);
+        $ship_address = mysqli_real_escape_string($conn, $_POST['ship_address'] ?? '');
+        $ship_city = mysqli_real_escape_string($conn, $_POST['ship_city'] ?? '');
+        $ship_state = mysqli_real_escape_string($conn, $_POST['ship_state'] ?? '');
+        $ship_zip = mysqli_real_escape_string($conn, $_POST['ship_zip'] ?? '');
+        $ship_lat = mysqli_real_escape_string($conn, $_POST['ship_lat'] ?? '');
+        $ship_lng = mysqli_real_escape_string($conn, $_POST['ship_lng'] ?? '');
+        $secondary_contact_name = mysqli_real_escape_string($conn, $_POST['secondary_contact_name'] ?? '');
+        $secondary_contact_phone = mysqli_real_escape_string($conn, $_POST['secondary_contact_phone'] ?? '');
+        $ap_contact_name = mysqli_real_escape_string($conn, $_POST['ap_contact_name'] ?? '');
+        $ap_contact_email = mysqli_real_escape_string($conn, $_POST['ap_contact_email'] ?? '');
+        $ap_contact_phone = mysqli_real_escape_string($conn, $_POST['ap_contact_phone'] ?? '');
+        $tax_status = mysqli_real_escape_string($conn, $_POST['tax_status'] ?? '');
+        $tax_exempt_number = mysqli_real_escape_string($conn, $_POST['tax_exempt_number'] ?? '');
         $customer_notes = mysqli_real_escape_string($conn, $_POST['customer_notes']);
-        $new_customer_type_id = mysqli_real_escape_string($conn, $_POST['customer_type']);
-        $call_status = isset($_POST['call_status']) ? mysqli_real_escape_string($conn, $_POST['call_status']) : 0;
+        $new_customer_type_id = mysqli_real_escape_string($conn, $_POST['customer_type'] ?? '');
+        $call_status = mysqli_real_escape_string($conn, $_POST['call_status'] ?? 0);
+        $is_charge_net = mysqli_real_escape_string($conn, $_POST['is_charge_net'] ?? 0);
         $charge_net_30 = mysqli_real_escape_string($conn, $_POST['charge_net_30']);
-        $credit_limit = isset($_POST['credit_limit']) ? mysqli_real_escape_string($conn, $_POST['credit_limit']) : 0;
-        $loyalty = isset($_POST['loyalty']) ? mysqli_real_escape_string($conn, $_POST['loyalty']) : '';
-        $customer_pricing = isset($_POST['customer_pricing']) ? mysqli_real_escape_string($conn, $_POST['customer_pricing']) : 0;
-        
-        $customer_name = $customer_first_name . "" . $customer_last_name;
-
-        $userid = mysqli_real_escape_string($conn, $_POST['userid']);
+        $credit_limit = mysqli_real_escape_string($conn, $_POST['credit_limit'] ?? 0);
+        $loyalty = mysqli_real_escape_string($conn, $_POST['loyalty'] ?? 0);
+        $customer_pricing = mysqli_real_escape_string($conn, $_POST['customer_pricing'] ?? 0);
 
         $checkQuery = "SELECT * FROM customer WHERE customer_id = '$customer_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
             $updateQuery = "
-                UPDATE customer
-                SET  
+                UPDATE customer SET  
                     customer_first_name = '$customer_first_name', 
                     customer_last_name = '$customer_last_name', 
                     customer_business_name = '$customer_business_name', 
@@ -73,6 +76,13 @@ if(isset($_REQUEST['action'])) {
                     zip = '$zip',
                     lat = '$lat',
                     lng = '$lng',
+                    different_ship_address = '$different_ship_address',
+                    ship_address = '$ship_address',
+                    ship_city = '$ship_city',
+                    ship_state = '$ship_state',
+                    ship_zip = '$ship_zip',
+                    ship_lat = '$ship_lat',
+                    ship_lng = '$ship_lng',
                     secondary_contact_name = '$secondary_contact_name',
                     secondary_contact_phone = '$secondary_contact_phone',
                     ap_contact_name = '$ap_contact_name',
@@ -82,149 +92,80 @@ if(isset($_REQUEST['action'])) {
                     tax_exempt_number = '$tax_exempt_number',
                     customer_notes = '$customer_notes',
                     call_status = '$call_status',
+                    is_charge_net = '$is_charge_net',
                     charge_net_30 = '$charge_net_30',
                     credit_limit = '$credit_limit',
                     customer_type_id = '$new_customer_type_id',
                     loyalty = '$loyalty',
-                    customer_pricing = '$customer_pricing'
-                WHERE 
-                    customer_id = '$customer_id'";
-            if (mysqli_query($conn, $updateQuery)) {
-                // Get the currently added customer
-                    $sql = "SELECT c.customer_id, c.customer_type_id, ct.customer_type_name
-                            FROM customer c
-                            JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id
-                            WHERE c.customer_first_name = '$customer_first_name' 
-                            AND c.customer_last_name = '$customer_last_name'";
+                    customer_pricing = '$customer_pricing',
+                    updated_at = NOW()
+                WHERE customer_id = '$customer_id'";
+            mysqli_query($conn, $updateQuery) or die("Error updating customer: " . mysqli_error($conn));
+            echo "Customer updated successfully.";
 
-                // Get the current customer type ID
-                    $resultSql = mysqli_query($conn, $sql);
-                    if($new_customer_type_id != 0 && mysqli_num_rows($resultSql) > 0) {
-                        $row = mysqli_fetch_assoc($resultSql);
-                        $customer_id = $row['customer_id'];
-                        $customer_type_name = $row['customer_type_name'];
-
-                        if($current_customer_type_id != $new_customer_type_id) {
-                            $insertQuery = "INSERT INTO customer_customer_type (
-                                customer_id,
-                                customer_type,
-                                date_added
-                            ) VALUE (
-                                '$customer_id',
-                                '$customer_type_name',
-                                NOW()
-                            )";
-                            
-                            if (mysqli_query($conn, $insertQuery)) {
-                                echo "Customer updated successfully.";
-                            } else {
-                                echo "Error updating customer: " . mysqli_error($conn);
-                            }
-                        } else {
-                            echo "Customer updated successfully.";
-                        }
-                    } else {
-                        echo "Customer updated successfully.";
-                    }
-            } else {
-                echo "Error updating customer: " . mysqli_error($conn);
-            }
+            $isUpdate = true;
         } else {
             $insertQuery = "
                 INSERT INTO customer (
-                    customer_first_name, 
-                    customer_last_name, 
-                    customer_business_name, 
-                    contact_email,
-                    contact_phone,
-                    primary_contact,
-                    contact_fax,
-                    address,
-                    city,
-                    state,
-                    zip,
-                    lat,
-                    lng,
-                    secondary_contact_name,
-                    secondary_contact_phone,
-                    ap_contact_name,
-                    ap_contact_email,
-                    ap_contact_phone,
-                    tax_status,
-                    tax_exempt_number,
-                    customer_notes,
-                    customer_type_id,
-                    call_status,
-                    charge_net_30,
-                    credit_limit,
-                    loyalty,
-                    customer_pricing) 
-                    VALUES (
-                    '$customer_first_name', 
-                    '$customer_last_name', 
-                    '$customer_business_name',
-                    '$contact_email',
-                    '$contact_phone',
-                    '$primary_contact',
-                    '$contact_fax',
-                    '$address',
-                    '$city',
-                    '$state',
-                    '$zip',
-                    '$lat',
-                    '$lng',
-                    '$secondary_contact_name',
-                    '$secondary_contact_phone',
-                    '$ap_contact_name',
-                    '$ap_contact_email',
-                    '$ap_contact_phone',
-                    '$tax_status',
-                    '$tax_exempt_number',
-                    '$customer_notes',
-                    '$new_customer_type_id',
-                    '$call_status',
-                    '$charge_net_30',
-                    '$credit_limit',
-                    '$loyalty',
-                    '$customer_pricing')";
+                    customer_first_name, customer_last_name, customer_business_name,
+                    contact_email, contact_phone, primary_contact, contact_fax,
+                    address, city, state, zip, lat, lng,
+                    different_ship_address, ship_address, ship_city, ship_state, ship_zip, ship_lat, ship_lng,
+                    secondary_contact_name, secondary_contact_phone,
+                    ap_contact_name, ap_contact_email, ap_contact_phone,
+                    tax_status, tax_exempt_number, customer_notes,
+                    customer_type_id, call_status, is_charge_net, charge_net_30,
+                    credit_limit, loyalty, customer_pricing, created_at, updated_at
+                ) VALUES (
+                    '$customer_first_name', '$customer_last_name', '$customer_business_name',
+                    '$contact_email', '$contact_phone', '$primary_contact', '$contact_fax',
+                    '$address', '$city', '$state', '$zip', '$lat', '$lng',
+                    '$different_ship_address', '$ship_address', '$ship_city', '$ship_state', '$ship_zip', '$ship_lat', '$ship_lng',
+                    '$secondary_contact_name', '$secondary_contact_phone',
+                    '$ap_contact_name', '$ap_contact_email', '$ap_contact_phone',
+                    '$tax_status', '$tax_exempt_number', '$customer_notes',
+                    '$new_customer_type_id', '$call_status', '$is_charge_net', '$charge_net_30',
+                    '$credit_limit', '$loyalty', '$customer_pricing', NOW(), NOW()
+                )";
+            mysqli_query($conn, $insertQuery) or die("Error adding customer: " . mysqli_error($conn));
+            echo "New customer added successfully.";
 
-            if (mysqli_query($conn, $insertQuery)) {
-                    // Get the currently added customer
-                    $sql = "SELECT c.customer_id, ct.customer_type_name
-                                        FROM customer c
-                                        JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id
-                                        WHERE c.customer_first_name = '$customer_first_name' 
-                                        AND c.customer_last_name = '$customer_last_name'";
-                                    
-                    $resultSql = mysqli_query($conn, $sql);
-                    if($new_customer_type_id != 0 && mysqli_num_rows($resultSql) > 0) {
-                        $row = mysqli_fetch_assoc($resultSql);
-                        $customer_id = $row['customer_id'];
-                        $customer_type_name = $row['customer_type_name'];
+            $isUpdate = false;
+        }
 
-                        $insertQuery = "INSERT INTO customer_customer_type (
-                            customer_id,
-                            customer_type,
-                            date_added
-                        ) VALUE (
-                            '$customer_id',
-                            '$customer_type_name',
-                            NOW()
-                        )";
+        if (!empty($_POST['password'])) {
+            $hashedPassword = password_hash($_POST['password'], PASSWORD_DEFAULT);
+            $passwordQuery = "
+                UPDATE customer 
+                SET password = '$hashedPassword', updated_at = NOW()
+                WHERE customer_id = '$customer_id'
+            ";
+            mysqli_query($conn, $passwordQuery) or die("Error updating password: " . mysqli_error($conn));
+        }
 
-                        if (mysqli_query($conn, $insertQuery)) {
-                            echo "New customer added successfully.";
-                        } else {
-                            echo "Error adding customer type: " . mysqli_error($conn);
-                        }
-                    } else {
-                        echo "New customer added successfully.";
+        if (!empty($_FILES['picture_path']['name'][0])) {
+            $uploadDir = __DIR__ . "/../images/customer_tax_documents/";
+
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            foreach ($_FILES['picture_path']['tmp_name'] as $key => $tmpName) {
+                if (!empty($tmpName)) {
+                    $filename = time() . "_" . preg_replace("/[^A-Za-z0-9\._-]/", "_", $_FILES['picture_path']['name'][$key]);
+                    $targetFile = $uploadDir . $filename;
+
+                    if (move_uploaded_file($tmpName, $targetFile)) {
+                        $filePath = "images/customer_tax_documents/" . $filename;
+                        $insertImg = "INSERT INTO customer_tax_images (customer_id, image_url) 
+                                    VALUES ('$customer_id', '$filePath')";
+                        mysqli_query($conn, $insertImg);
                     }
-            } else {
-                echo "Error adding customer: " . mysqli_error($conn);
+                }
             }
         }
-    } 
+    }
+
     if ($action == "change_status") {
         $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
         $status = mysqli_real_escape_string($conn, $_POST['status']);
@@ -237,6 +178,7 @@ if(isset($_REQUEST['action'])) {
             echo "Error updating status: " . mysqli_error($conn);
         }
     }
+
     if ($action == 'hide_customer') {
         $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id']);
         $query = "UPDATE customer SET hidden='1' WHERE customer_id='$customer_id'";
@@ -246,11 +188,456 @@ if(isset($_REQUEST['action'])) {
             echo 'error';
         }
     }
-    if ($action == 'change_act_cust_id') {
-        $id = mysqli_real_escape_string($conn, $_POST['id']);
-        $_SESSION['active_customer_id'] = $id;
 
-        echo "ID: " .$_SESSION['active_customer_id'];
+    if ($action == "remove_image") {
+        $image_id = $_POST['image_id'];
+    
+        $delete_query = "DELETE FROM customer_tax_images WHERE taximgid = '$image_id'";
+        if (mysqli_query($conn, $delete_query)) {
+            /* if (file_exists($image_url)) {
+                unlink($image_url);
+            } */
+            echo 'success';
+        } else {
+            echo "Error removing image: " . mysqli_error($conn);
+        }
+    }
+
+    if ($action == 'change_act_cust_id') {
+        $customer_id = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM customer WHERE customer_id = '$customer_id'";
+        $result = mysqli_query($conn, $query);
+        while ($row = mysqli_fetch_array($result)) {
+            $customer_id = $row['customer_id'] ?? 0;
+            $customer_first_name = $row['customer_first_name'] ?? '';
+            $customer_last_name = $row['customer_last_name'] ?? '';
+            $customer_business_name = $row['customer_business_name'] ?? '';
+            $old_customer_type_id = $row['customer_type_id'] ?? '';
+            $contact_email = $row['contact_email'] ?? '';
+            $contact_phone = $row['contact_phone'] ?? '';
+            $primary_contact = $row['primary_contact'] ?? '';
+            $contact_fax = $row['contact_fax'] ?? '';
+            $address = $row['address'] ?? '';
+            $city = $row['city'] ?? '';
+            $state = $row['state'] ?? '';
+            $zip = $row['zip'] ?? '';
+            $ship_address = $row['ship_address'] ?? '';
+            $ship_city = $row['ship_city'] ?? '';
+            $ship_state = $row['ship_state'] ?? '';
+            $ship_zip = $row['ship_zip'] ?? '';
+            $secondary_contact_name = $row['secondary_contact_name'] ?? '';
+            $secondary_contact_phone = $row['secondary_contact_phone'] ?? '';
+            $tax_status = $row['tax_status'] ?? '';
+            $tax_exempt_number = $row['tax_exempt_number'] ?? '';
+            $customer_notes = $row['customer_notes'] ?? '';
+            $call_status = $row['call_status'] ?? 0;
+            $charge_net_30 = $row['charge_net_30'] ?? 0;
+            $credit_limit = $row['credit_limit'] ?? 0;
+            $customer_pricing = $row['customer_pricing'] ?? 0;
+            $lat = !empty($row['lat']) ? $row['lat'] : 0;
+            $lng = !empty($row['lng']) ? $row['lng'] : 0;
+            $ship_lat = !empty($row['ship_lat']) ? $row['ship_lat'] : 0;
+            $ship_lng = !empty($row['ship_lng']) ? $row['ship_lng'] : 0;
+            $portal_access = $row['is_approved'] ?? 0;
+            $different_ship_address = $row['different_ship_address'] ?? 0;
+            $is_charge_net = $row['is_charge_net'] ?? 0;
+            $username = $row['username'] ?? 0;
+
+            $addressDetails = implode(', ', [
+                $address ?? '',
+                $city ?? '',
+                $state ?? '',
+                $zip ?? ''
+            ]);
+
+            $shipAddressDetails = implode(', ', [
+                $ship_address ?? '',
+                $ship_City ?? '',
+                $ship_state ?? '',
+                $ship_zip ?? ''
+            ]);
+            $loyalty = $row['loyalty'];
+            }
+        ?>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Contact Information</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">First Name</label>
+                        <input type="text" id="customer_first_name" name="customer_first_name" class="form-control"
+                            value="<?= $customer_first_name ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" id="customer_last_name" name="customer_last_name" class="form-control"
+                            value="<?= $customer_last_name ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">Business Name</label>
+                        <input type="text" id="customer_business_name" name="customer_business_name" class="form-control"
+                            value="<?= $customer_business_name ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" id="contact_phone" name="contact_phone" class="form-control"
+                            value="<?= $contact_phone ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="text" id="contact_email" name="contact_email" class="form-control"
+                            value="<?= $contact_email ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">Fax Number</label>
+                        <input type="text" id="contact_fax" name="contact_fax" class="form-control"
+                            value="<?= $contact_fax ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Preferred Method of Contact</label>
+                        <div class="mb-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="primary_contact" id="contact_phone_radio" value="phone" <?= ($primary_contact ?? '' == '2' ? 'checked' : '') ?>>
+                                <label class="form-check-label" for="contact_phone_radio">Phone</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="primary_contact" id="contact_email_radio" value="email" <?= ($primary_contact ?? '' != '1' ? 'checked' : '') ?>>
+                                <label class="form-check-label" for="contact_email_radio">Email</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="primary_contact" id="contact_call_radio" value="call" <?= ($primary_contact ?? '' == '3' ? 'checked' : '') ?>>
+                                <label class="form-check-label" for="contact_phone_radio">Call</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">Secondary Contact Name</label>
+                        <input type="text" id="secondary_contact_name" name="secondary_contact_name" class="form-control"
+                            value="<?= $secondary_contact_name ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">Secondary Contact Phone</label>
+                        <input type="text" id="secondary_contact_phone" name="secondary_contact_phone" class="form-control"
+                            value="<?= $secondary_contact_phone ?? '' ?>" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Address Information</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-12">
+                        <label class="form-label">Billing Address</label>
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            
+                            <div class="d-flex w-100">
+                                <input type="text" id="address" name="address" class="form-control" value="<?= $address ?? '' ?>" list="address-data-list"/>
+                                <datalist id="address-data-list"></datalist>
+                                <button type="button" class="btn btn-primary py-1 ms-2 toggleElements" id="showMapsBtn" data-address="<?=$addressDetails ?? ''?>" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#map1Modal">Change</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">City</label>
+                        <input type="text" id="city" name="city" class="form-control" value="<?= $city ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">State</label>
+                        <input type="text" id="state" name="state" class="form-control" value="<?= $state ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">Zip</label>
+                        <input type="text" id="zip" name="zip" class="form-control" value="<?= $zip ?? '' ?>" />
+                        </div>
+                    </div>
+                    <input type="hidden" id="lat" name="lat" class="form-control" value="<?= $lat ?? '' ?>" />
+                    <input type="hidden" id="lng" name="lng" class="form-control" value="<?= $lng ?? '' ?>" />
+                    
+                    
+                    <div class="col-md-12">
+                        <label class="form-label">Shipping Address different than Billing Address?</label>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="different_ship_address" id="different_ship_address" value="1" <?= ($different_ship_address ?? '' == '1' ? 'checked' : '') ?>><br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Shipping Address</label>
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            
+                            <div class="d-flex w-100">
+                                <input type="text" id="ship_address" name="ship_address" class="form-control" value="<?= $ship_address ?? '' ?>" list="address-data-list"/>
+                                <datalist id="address-data-list"></datalist>
+                                <button type="button" class="btn btn-primary py-1 ms-2 toggleElements" id="showMapsShipBtn" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#map1Modal">Change</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">City</label>
+                        <input type="text" id="ship_city" name="ship_city" class="form-control" value="<?= $ship_city ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">State</label>
+                        <input type="text" id="ship_state" name="ship_state" class="form-control" value="<?= $ship_state ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">Zip</label>
+                        <input type="text" id="ship_zip" name="ship_zip" class="form-control" value="<?= $ship_zip ?? '' ?>" />
+                        </div>
+                    </div>
+                    <input type="hidden" id="ship_lat" name="ship_lat" class="form-control" value="<?= $ship_lat ?? '' ?>" />
+                    <input type="hidden" id="ship_lng" name="ship_lng" class="form-control" value="<?= $ship_lng ?? '' ?>" />
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Tax Information</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-6 opt_field_update">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Tax Status</label>
+                            <a href="?page=customer_tax" target="_blank" class="text-decoration-none toggleElements">Edit</a>
+                        </div>
+                        <select id="tax_status" class="form-select form-control" name="tax_status">
+                        <option value="">Select Tax Status...</option>
+                        <?php
+                        $query_tax_status = "SELECT * FROM customer_tax";
+                        $result_tax_status = mysqli_query($conn, $query_tax_status);
+                        while ($row_tax_status = mysqli_fetch_array($result_tax_status)) {
+                            $selected = (($tax_status ?? 0) == $row_tax_status['taxid']) ? 'selected' : '';
+                            ?>
+                            <option value="<?= $row_tax_status['taxid'] ?>" <?= $selected ?>>
+                            (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?></option>
+                        <?php
+                        }
+                        ?>
+                        </select>
+                    </div>
+                    </div>
+                    <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Tax Exempt Number</label>
+                        <input type="text" id="tax_exempt_number" name="tax_exempt_number" class="form-control"
+                        value="<?= $tax_exempt_number ?? '' ?>" />
+                    </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="card-body p-0">
+                            <h4 class="card-title text-center">Tax Documents</h4>
+                            <p action="#" id="myUpdateDropzone" class="dropzone">
+                                <div class="fallback">
+                                <input type="file" id="picture_path_update" name="picture_path[]" class="form-control" style="display: none" multiple/>
+                                </div>
+                            </p>
+                        </div>
+                    </div>
+
+                    <?php
+                    $query_img = "SELECT * FROM customer_tax_images WHERE customer_id = '" . ($customer_id ?? 0) . "'";
+                    $result_img = mysqli_query($conn, $query_img);
+                    if (mysqli_num_rows($result_img) > 0) { ?>
+                        <div class="col-md-12">
+                            <h5>Tax Documents</h5>
+                            <div class="row pt-3">
+                                <?php while ($row_img = mysqli_fetch_array($result_img)) { 
+                                    $image_id = $row_img['taximgid'];
+                                    ?>
+                                    <div class="col-md-2 position-relative">
+                                        <div class="mb-3">
+                                            <img src="<?= $row_img['image_url'] ?>" class="img-fluid" alt="Tax Image" />
+                                            <button class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn" data-image-id="<?= $image_id ?>">X</button>
+                                        </div>
+                                    </div>
+                                <?php } ?>
+                            </div>
+                        </div>
+                    <?php } ?>
+
+                    <script>
+                        window.uploadedUpdateFiles = window.uploadedUpdateFiles || [];
+                        $('#myUpdateDropzone').dropzone({
+                            addRemoveLinks: true,
+                            dictRemoveFile: "X",
+                            init: function() {
+                                this.on("addedfile", function(file) {
+                                    uploadedUpdateFiles.push(file);
+                                    updateFileInput2();
+                                });
+
+                                this.on("removedfile", function(file) {
+                                    uploadedUpdateFiles = uploadedUpdateFiles.filter(f => f.name !== file.name);
+                                    updateFileInput2();
+                                });
+                            }
+                        });
+                        function updateFileInput2() {
+                            const fileInput = document.getElementById('picture_path_update');
+                            const dataTransfer = new DataTransfer();
+                            uploadedUpdateFiles.forEach(file => {
+                                const fileBlob = new Blob([file], { type: file.type });
+                                dataTransfer.items.add(new File([fileBlob], file.name, { type: file.type }));
+                            });
+                            fileInput.files = dataTransfer.files;
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Pricing Information</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Customer Pricing</label>
+                            <a href="?page=customer_pricing" target="_blank" class="text-decoration-none toggleElements">Edit</a>
+                        </div>
+                        <div class="mb-3" data-pricing="<?= $customer_pricing ?? '' ?>">
+                            <select id="customer_pricing" class="form-control" name="customer_pricing">
+                                <option value="">Select One...</option>
+                                <?php
+                                $query_pricing = "SELECT * FROM customer_pricing WHERE hidden = '0' AND status = '1'";
+                                $result_pricing = mysqli_query($conn, $query_pricing);            
+                                while ($row_pricing = mysqli_fetch_array($result_pricing)) {
+                                    $selected = ($customer_pricing ?? '' == $row_pricing['id']) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_pricing['id'] ?>" <?= $selected ?>><?= $row_pricing['pricing_name'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="loyalty">Loyalty</label>
+                        <select name="loyalty" id="loyalty" class="form-select form-control">
+                        <option value="0" <?php if ($loyalty ?? '' == '0')
+                            echo 'selected'; ?>>Off</option>
+                        <option value="1" <?php if ($loyalty ?? '' == '1')
+                            echo 'selected'; ?>>On</option>
+                        </select>
+                    </div>
+                    <div class="col-4"></div>
+                    <div class="col-4 mb-3">
+                        <label class="form-label">Charge Net 30</label>
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_charge_net" id="is_charge_net" value="1" <?= ($is_charge_net ?? '' == '1' ? 'checked' : '') ?>><br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4 mb-3">
+                        <label class="form-label">Charge Net 30 Limit</label>
+                        <input class="form-control" type="number" step="0.001" id="charge_net_30" name="charge_net_30" value="<?= $charge_net_30 ?? '' ?>">
+                    </div>
+                    <div class="col-4"></div>
+                    <div class="col-md-4">
+                        <label class="form-label">Portal Access</label>
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="portal_access" id="portal_access" value="1" <?= ($portal_access ?? '' == '1' ? 'checked' : '') ?>><br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3 col-md-4">
+                        <label class="form-label" for="username">Username</label>
+                        <input
+                            class="form-control"
+                            type="text"
+                            name="username"
+                            id="username"
+                            placeholder="Enter Username" 
+                            value="<?= $username ?? ''  ?>"
+                            />
+                    </div>
+                    <div class="mb-3 col-md-4 form-password-toggle">
+                        <label class="form-label" for="password">Password</label>
+                        <div class="input-group input-group-merge">
+                        <input
+                            class="form-control"
+                            type="password"
+                            name="password"
+                            id="password"
+                            placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                        <span class="input-group-text cursor-pointer"><i class="ti ti-eye-off"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Customer Notes</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="customer_notes" name="customer_notes"
+                            rows="3"><?= $customer_notes ?? '' ?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" id="customer_id" name="customer_id" class="form-control" value="<?= $customer_id ?? 0 ?>" />
+
+        <div class="form-actions toggleElements">
+            <div class="card-body border-top ">
+                <div class="row">
+                    <div class="col text-end">
+                    <button type="submit" class="btn btn-primary"
+                        style="border-radius: 10%;">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php
     }
 
     if ($action == "download_excel") {
