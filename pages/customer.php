@@ -774,7 +774,7 @@ if ($permission === 'edit') {
       lng1 = parseFloat(selectedOption.data('lon'));
       
       updateMarker(map1, marker1, lat1, lng1, "Starting Point");
-      getPlaceName(lat1, lng1, 'main', '');
+      getPlaceName(lat1, lng1, 'main');
   });
 
   function updateMarker(map, marker, lat, lng, title) {
@@ -805,7 +805,9 @@ if ($permission === 'edit') {
           marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
           getPlaceName(lat1, lng1, "main");
       });
+  }
 
+    function initShipMaps() {
       map2 = new google.maps.Map(document.getElementById("map2"), {
           center: { lat: lat2, lng: lng2 },
           zoom: 13,
@@ -880,7 +882,17 @@ if ($permission === 'edit') {
         }
     });
 
+    $('#map2Modal').on('shown.bs.modal', function () {
+        if (!map2) {
+            initShipMaps();
+        }
+    });
+
     $('#map1Modal').on('hidden.bs.modal', function () {
+        $('#customerModal').modal('show');
+    });
+
+    $('#map2Modal').on('hidden.bs.modal', function () {
         $('#customerModal').modal('show');
     });
 

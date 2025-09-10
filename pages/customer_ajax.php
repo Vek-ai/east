@@ -397,7 +397,7 @@ if(isset($_REQUEST['action'])) {
                             <div class="d-flex w-100">
                                 <input type="text" id="ship_address" name="ship_address" class="form-control" value="<?= $ship_address ?? '' ?>" list="address-data-list"/>
                                 <datalist id="address-data-list"></datalist>
-                                <button type="button" class="btn btn-primary py-1 ms-2 toggleElements" id="showMapsShipBtn" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#map1Modal">Change</button>
+                                <button type="button" class="btn btn-primary py-1 ms-2 toggleElements" id="showMapsShipBtn" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#map2Modal">Change</button>
                             </div>
                         </div>
                     </div>
