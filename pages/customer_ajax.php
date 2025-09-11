@@ -34,13 +34,6 @@ if(isset($_REQUEST['action'])) {
         $zip = mysqli_real_escape_string($conn, $_POST['zip'] ?? '');
         $lat = mysqli_real_escape_string($conn, $_POST['lat'] ?? '');
         $lng = mysqli_real_escape_string($conn, $_POST['lng'] ?? '');
-        $different_ship_address = mysqli_real_escape_string($conn, $_POST['different_ship_address'] ?? 0);
-        $ship_address = mysqli_real_escape_string($conn, $_POST['ship_address'] ?? '');
-        $ship_city = mysqli_real_escape_string($conn, $_POST['ship_city'] ?? '');
-        $ship_state = mysqli_real_escape_string($conn, $_POST['ship_state'] ?? '');
-        $ship_zip = mysqli_real_escape_string($conn, $_POST['ship_zip'] ?? '');
-        $ship_lat = mysqli_real_escape_string($conn, $_POST['ship_lat'] ?? '');
-        $ship_lng = mysqli_real_escape_string($conn, $_POST['ship_lng'] ?? '');
         $secondary_contact_name = mysqli_real_escape_string($conn, $_POST['secondary_contact_name'] ?? '');
         $secondary_contact_phone = mysqli_real_escape_string($conn, $_POST['secondary_contact_phone'] ?? '');
         $ap_contact_name = mysqli_real_escape_string($conn, $_POST['ap_contact_name'] ?? '');
@@ -57,6 +50,23 @@ if(isset($_REQUEST['action'])) {
         $loyalty = mysqli_real_escape_string($conn, $_POST['loyalty'] ?? 0);
         $customer_pricing = mysqli_real_escape_string($conn, $_POST['customer_pricing'] ?? 0);
         $is_approved = mysqli_real_escape_string($conn, $_POST['portal_access'] ?? 0);
+
+        $different_ship_address = isset($_POST['different_ship_address']) ? 1 : 0;
+        if ($different_ship_address == 0) {
+            $ship_address = $address;
+            $ship_city    = $city;
+            $ship_state   = $state;
+            $ship_zip     = $zip;
+            $ship_lat     = $lat;
+            $ship_lng     = $lng;
+        } else {
+            $ship_address = mysqli_real_escape_string($conn, $_POST['ship_address']);
+            $ship_city    = mysqli_real_escape_string($conn, $_POST['ship_city']);
+            $ship_state   = mysqli_real_escape_string($conn, $_POST['ship_state']);
+            $ship_zip     = mysqli_real_escape_string($conn, $_POST['ship_zip']);
+            $ship_lat     = mysqli_real_escape_string($conn, $_POST['ship_lat']);
+            $ship_lng     = mysqli_real_escape_string($conn, $_POST['ship_lng']);
+        }
 
         $checkQuery = "SELECT * FROM customer WHERE customer_id = '$customer_id'";
         $result = mysqli_query($conn, $checkQuery);

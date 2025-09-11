@@ -17,3 +17,4 @@ $enable_email = true;
 $enable_phone_message = true;
 
 $google_auth_client_id = '1036649042415-rikd0a70bflr3l1h2jsjsvd4np4aigae.apps.googleusercontent.com';
+$google_api = "AIzaSyDuAVEip7o5bmQQ4wWVMvTMzPrXXdhYW7s";

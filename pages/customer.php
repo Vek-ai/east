@@ -807,24 +807,24 @@ if ($permission === 'edit') {
       });
   }
 
-    function initShipMaps() {
-      map2 = new google.maps.Map(document.getElementById("map2"), {
-          center: { lat: lat2, lng: lng2 },
-          zoom: 13,
-      });
-      marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
+  function initShipMaps() {
+    map2 = new google.maps.Map(document.getElementById("map2"), {
+        center: { lat: lat2, lng: lng2 },
+        zoom: 13,
+    });
+    marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
 
-      google.maps.event.addListener(map2, 'click', function(event) {
-          lat2 = event.latLng.lat();
-          lng2 = event.latLng.lng();
-          marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
-          getPlaceName(lat2, lng2, "ship");
-      });
+    google.maps.event.addListener(map2, 'click', function(event) {
+        lat2 = event.latLng.lat();
+        lng2 = event.latLng.lng();
+        marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
+        getPlaceName(lat2, lng2, "ship");
+    });
   }
 
   function loadGoogleMapsAPI() {
       const script = document.createElement('script');
-      script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDuAVEip7o5bmQQ4wWVMvTMzPrXXdhYW7s&callback=initMaps&libraries=places';
+      script.src = 'https://maps.googleapis.com/maps/api/js?key=<?= $google_api ?>&callback=initMaps&libraries=places';
       script.async = true;
       script.defer = true;
       document.head.appendChild(script);

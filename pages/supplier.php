@@ -60,7 +60,6 @@ function showCol($name) {
         margin: 0 !important;
         line-height: inherit !important;
     }
-
 </style>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -294,7 +293,67 @@ function showCol($name) {
 
 <div class="modal fade" id="viewProductModal" tabindex="-1" role="dialog" aria-labelledby="viewProductModal" aria-hidden="true"></div>
 
-<div class="modal fade" id="updateContactModal" tabindex="-1" role="dialog" aria-labelledby="updateContactModal" aria-hidden="true"></div>
+<div class="modal fade" id="updateContactModal" tabindex="-1" role="dialog" aria-labelledby="updateContactModal" aria-hidden="true">
+
+</div>
+
+<div class="modal fade" id="map1Modal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mapsModalLabel">Search Address</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="mapForm" class="form-horizontal">
+              <div class="modal-body">
+                  <div class="mb-2">
+                      <input id="searchBox1" class="form-control" list="address1-list" autocomplete="off">
+                      <datalist id="address1-list"></datalist>
+                  </div>
+                  <div id="map1" class="map-container" style="height: 60vh; width: 100%;"></div>
+              </div>
+              <div class="modal-footer">
+                  <div class="form-actions">
+                      <div class="card-body">
+                          <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
+                      </div>
+                  </div>
+              </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="map2Modal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel2" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mapsModalLabel2">Search Shipping Address</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="mapForm2" class="form-horizontal">
+              <div class="modal-body">
+                  <div class="mb-2">
+                      <input id="searchBox2" class="form-control" list="address2-list" autocomplete="off">
+                      <datalist id="address2-list"></datalist>
+                  </div>
+                  <div id="map2" class="map-container" style="height: 60vh; width: 100%;"></div>
+              </div>
+              <div class="modal-footer">
+                  <div class="form-actions">
+                      <div class="card-body">
+                          <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
+                      </div>
+                  </div>
+              </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -327,19 +386,15 @@ function showCol($name) {
             </div>
             <form id="supplierForm" class="form-horizontal">
                 <div class="modal-body">
-                    <div class="card">
-                        <div class="card-body">
-                        <div id="add-fields" class=""></div>
-                        <div class="form-actions toggleElements">
-                            <div class="border-top">
-                                <div class="row mt-2">
-                                    <div class="col-6 text-start"></div>
-                                    <div class="col-6 text-end ">
-                                        <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
-                                    </div>
+                    <div id="add-fields" class=""></div>
+                    <div class="form-actions toggleElements">
+                        <div class="border-top">
+                            <div class="row mt-2">
+                                <div class="col-6 text-start"></div>
+                                <div class="col-6 text-end ">
+                                    <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
                                 </div>
                             </div>
-                        </div>
                         </div>
                     </div>
                 </div>
@@ -470,6 +525,217 @@ function showCol($name) {
 </div>
 
 <script>
+    let map1;
+    let marker1;
+    let lat1 = parseFloat($('#lat').val()) || 0;
+    let lng1 = parseFloat($('#lng').val()) || 0;
+
+    let map2;
+    let marker2;
+    let lat2 = parseFloat($('#ship_lat').val()) || lat1;
+    let lng2 = parseFloat($('#ship_lng').val()) || lng1;
+
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    $('#searchBox1').on('input', debounce(function() {
+        updateSuggestions('#searchBox1', '#address1-list');
+    }, 400));
+
+    $('#searchBox2').on('input', debounce(function() {
+        updateSuggestions('#searchBox2', '#address2-list');
+    }, 400));
+
+    $('#address').on('input', debounce(function() {
+        updateSuggestions('#address', '#address-data-list');
+    }, 400));
+
+    function updateSuggestions(inputId, listId) {
+        var query = $(inputId).val();
+        if (query.length >= 2) {
+            $.ajax({
+                url: 'pages/supplier_ajax.php',
+                method: 'POST',
+                data: {
+                    action: 'search_address',
+                    query: query
+                },
+                dataType: 'json',
+                success: function(data) {
+                    var datalist = $(listId);
+                    datalist.empty();
+                    data.forEach(function(item) {
+                        var option = $('<option>')
+                            .attr('value', item.display_name)
+                            .data('lat', item.lat)
+                            .data('lon', item.lon);
+                        datalist.append(option);
+                    });
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("Error fetching suggestions from server.");
+                    console.error("Status: " + textStatus);
+                    console.error("Error: " + errorThrown);
+                    console.error("Response Text: " + jqXHR.responseText);
+                }
+            });
+        }
+    }
+
+    function getPlaceName(lat, lng, type = "main") {
+        $.ajax({
+            url: 'pages/supplier_ajax.php',
+            method: 'POST',
+            data: {
+                action: 'get_place_name',
+                lat: lat,
+                lng: lng,
+                type: type
+            },
+            dataType: 'json',
+            success: function(data) {
+                if (data && data.display_name) {
+                    if (type === "main") {
+                        $('#searchBox1').val(data.display_name);
+                        $('#address').val(data.address.road || data.address.neighbourhood || data.address.suburb || '');
+                        $('#city').val(data.address.city || data.address.town || data.address.village || '');
+                        $('#state').val(data.address.state || data.address.province || data.address.region || data.address.county || '');
+                        $('#zip').val(data.address.postcode || '');
+                        $('#lat').val(lat);
+                        $('#lng').val(lng);
+                    } else if (type === "ship") {
+                        $('#searchBox2').val(data.display_name);
+                        $('#ship_address').val(data.address.road || data.address.neighbourhood || data.address.suburb || '');
+                        $('#ship_city').val(data.address.city || data.address.town || data.address.village || '');
+                        $('#ship_state').val(data.address.state || data.address.province || data.address.region || data.address.county || '');
+                        $('#ship_zip').val(data.address.postcode || '');
+                        $('#ship_lat').val(lat);
+                        $('#ship_lng').val(lng);
+                    }
+                } else {
+                    console.error("Address not found for these coordinates.");
+                }
+            },
+            error: function() {
+                console.error("Error retrieving address from server.");
+            }
+        });
+    }
+
+    const debouncedGetPlaceName = debounce(getPlaceName, 400);
+
+    $('#searchBox1').on('change', function() {
+        let selectedOption = $('#address1-list option[value="' + $(this).val() + '"]');
+        lat1 = parseFloat(selectedOption.data('lat'));
+        lng1 = parseFloat(selectedOption.data('lon'));
+        marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+        debouncedGetPlaceName(lat1, lng1, "main");
+    });
+
+    $('#searchBox2').on('change', function() {
+        let selectedOption = $('#address2-list option[value="' + $(this).val() + '"]');
+        lat2 = parseFloat(selectedOption.data('lat'));
+        lng2 = parseFloat(selectedOption.data('lon'));
+        marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
+        debouncedGetPlaceName(lat2, lng2, "ship");
+    });
+
+    $('#address').on('change', function() {
+        let selectedOption = $('#address-data-list option[value="' + $(this).val() + '"]');
+        lat1 = parseFloat(selectedOption.data('lat'));
+        lng1 = parseFloat(selectedOption.data('lon'));
+        updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+        debouncedGetPlaceName(lat1, lng1, "main");
+    });
+
+    function updateMarker(map, marker, lat, lng, title) {
+        if (!map) return;
+        const position = new google.maps.LatLng(lat, lng);
+        if (marker) {
+            marker.setMap(null);
+        }
+        marker = new google.maps.Marker({
+            position: position,
+            map: map,
+            title: title
+        });
+        map.setCenter(position);
+        return marker;
+    }
+
+    function initMaps() {
+        map1 = new google.maps.Map(document.getElementById("map1"), {
+            center: { lat: lat1, lng: lng1 },
+            zoom: 13,
+        });
+        marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+
+        google.maps.event.addListener(map1, 'click', function(event) {
+            lat1 = event.latLng.lat();
+            lng1 = event.latLng.lng();
+            marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
+            debouncedGetPlaceName(lat1, lng1, "main");
+        });
+    }
+
+    function initShipMaps() {
+        map2 = new google.maps.Map(document.getElementById("map2"), {
+            center: { lat: lat2, lng: lng2 },
+            zoom: 13,
+        });
+        marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
+
+        google.maps.event.addListener(map2, 'click', function(event) {
+            lat2 = event.latLng.lat();
+            lng2 = event.latLng.lng();
+            marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
+            debouncedGetPlaceName(lat2, lng2, "ship");
+        });
+    }
+
+    function loadGoogleMapsAPI() {
+        const script = document.createElement('script');
+        script.src = 'https://maps.googleapis.com/maps/api/js?key=<?= $google_api ?>&callback=initMaps&libraries=places';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+    }
+
+    window.onload = loadGoogleMapsAPI;
+
+    function toggleFormEditable(formId, enable = true, hideBorders = false, hideControls = false) {
+        const $form = $("#" + formId);
+        if ($form.length === 0) return;
+
+        $form.find("input, select, textarea").each(function () {
+        const $element = $(this);
+        if (enable) {
+            $element.removeAttr("readonly").removeAttr("disabled");
+            $element.css("border", hideBorders ? "none" : "");
+            $element.css("background-color", "");
+            if ($element.is("select")) {
+            $element.removeClass("hide-dropdown");
+            }
+        } else {
+            $element.attr("readonly", true).attr("disabled", true);
+            $element.css("border", hideBorders ? "none" : "1px solid #ccc");
+            $element.css("background-color", "#f8f9fa");
+            if ($element.is("select")) {
+            $element.addClass("hide-dropdown");
+            }
+        }
+        });
+
+        $(".toggleElements").each(function () {
+        $(this).toggleClass("d-none", !enable);
+        });
+    }
+
     function formatOption(state) {
         if (!state.id) {
             return state.text;
@@ -542,7 +808,6 @@ function showCol($name) {
         console.log(`Form '${formId}' toggled successfully.`);
     }
 
-
     $(document).ready(function() {
         document.title = "<?= $page_title ?>";
 
@@ -558,6 +823,42 @@ function showCol($name) {
                 width: '100%',
                 dropdownParent: $(this).parent()
             });
+        });
+
+        $('#map1Modal').on('shown.bs.modal', function () {
+            if (!map1) {
+                initMaps();
+            }
+        });
+
+        $('#map2Modal').on('shown.bs.modal', function () {
+            if (!map2) {
+                initShipMaps();
+            }
+        });
+
+        $('#map1Modal').on('hidden.bs.modal', function () {
+            $('#addModal').modal('show');
+        });
+
+        $('#map2Modal').on('hidden.bs.modal', function () {
+            $('#addModal').modal('show');
+        });
+
+        $(document).on('click', '#showMapsBtn', function() {
+            let address = $(this).data('address') || "";
+            $('#searchBox1').val(address);
+            if (address) {
+                $('#searchBox1').trigger('change');
+            }
+        });
+
+        $(document).on('click', '#showMapsShipBtn', function() {
+            let address = $(this).data('address') || "";
+            $('#searchBox2').val(address);
+            if (address) {
+                $('#searchBox2').trigger('change');
+            }
         });
 
         $(document).on('click', '#upload_logo_add', function(event) {
@@ -1034,7 +1335,6 @@ function showCol($name) {
 
             filterTable();
         });
-
     });
 </script>
 
