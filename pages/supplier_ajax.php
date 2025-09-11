@@ -112,7 +112,7 @@ if(isset($_REQUEST['action'])) {
         } else {
             $isInsert = true;
 
-            if (isDuplicateSupplier($conn, $supplier_name)) {
+            if (isDuplicateSupplier($supplier_name)) {
                 echo "Supplier Name already exists! Please use a unique value";
                 exit;
             }
