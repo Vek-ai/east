@@ -228,6 +228,8 @@ if(isset($_REQUEST['action'])) {
         }
             ?>
 
+            <input type="hidden" id="supplier_id" name="supplier_id" class="form-control" value="<?= $row['supplier_id'] ?? "" ?>" />
+
             <div class="card shadow-sm rounded-3 mb-3">
                 <div class="card-header bg-light border-bottom">
                     <h5 class="mb-0 fw-bold">Contact Information</h5>
