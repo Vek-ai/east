@@ -34,7 +34,7 @@ if(isset($_POST['fetch_order'])){
         ])));
         $fname = $customer_details['customer_first_name'];
         $lname = $customer_details['customer_last_name'];
-        $discount = floatval(getCustomerDiscount($customer_id)) / 100;
+        $discount = is_numeric(getCustomerDiscount($customer_id)) ? floatval(getCustomerDiscount($customer_id)) / 100 : 0;
         $tax = floatval(getCustomerTax($customer_id)) / 100;
         $customer_details_pricing = $customer_details['customer_pricing'];
     }
@@ -193,6 +193,7 @@ if(isset($_POST['fetch_order'])){
     $timestamp = time();
     $no = $timestamp . 1;
     $total_weight = 0;
+    $customer_savings = 0;
     if (!empty($_SESSION["cart"])) {
         foreach ($_SESSION["cart"] as $keys => $values) {
             $data_id = $values["product_id"];
@@ -227,6 +228,10 @@ if(isset($_POST['fetch_order'])){
             $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
 
             $total_length = $estimate_length + ($estimate_length_inch / 12);
+            if($total_length == 0){
+                $total_length = 1;
+            }
+
             $amount_discount = isset($values["amount_discount"]) && is_numeric($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
 
             $quantity = isset($values["quantity_cart"]) && is_numeric($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
@@ -248,7 +253,7 @@ if(isset($_POST['fetch_order'])){
 
             $subtotal = $product_price;
             $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
-        
+            $customer_savings += $product_price - $customer_price;
             $totalquantity += $values["quantity_cart"];
             $total += $subtotal;
             $total_customer_price += $customer_price;
@@ -652,7 +657,7 @@ if(isset($_POST['fetch_order'])){
                     <hr>
                     <div class="d-flex justify-content-between text-success mb-2">
                         <span>Savings</span>
-                        <span>$<?= number_format(floatval($total) * floatval($discount)) ?></span>
+                        <span>$<?= number_format(floatval($customer_savings), 2) ?></span>
                     </div>
                     <div id="storeCreditDisplay" class="d-flex justify-content-between mb-2 d-none text-success">
                         <span>Store Credit:</span>

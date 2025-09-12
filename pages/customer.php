@@ -336,16 +336,6 @@ if ($permission === 'edit') {
                                       data-toggle="tooltip" data-placement="top" title="Dashboard"><i
                                         class="fa fa-chart-bar text-primary"></i>
                                     </a>
-                                    <?php                                                    
-                                    if ($permission === 'edit') {
-                                    ?>
-                                    <a href="?page=customer_login_creds&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
-                                      data-toggle="tooltip" data-placement="top" title="Username and Password">
-                                      <i class="fa-solid fa-lock text-info"></i>
-                                    </a>
-                                    <?php
-                                    }
-                                    ?>
                                     <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
                                       style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i
                                         class="fa fa-calculator text-secondary"></i>
@@ -1274,6 +1264,5 @@ if ($permission === 'edit') {
             });
         }
     });
-
   });
 </script>

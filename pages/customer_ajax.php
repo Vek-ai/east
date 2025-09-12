@@ -146,11 +146,12 @@ if(isset($_REQUEST['action'])) {
         }
 
         if (!empty($_POST['password'])) {
-            $hashedPassword = password_hash($_POST['password'], PASSWORD_DEFAULT);
+            $encryptedPassword = encrypt_password_for_storage($_POST['password']);
             $passwordQuery = "
                 UPDATE customer 
-                SET password = '$hashedPassword', updated_at = NOW()
-                WHERE customer_id = '$customer_id'
+                SET password = '" . mysqli_real_escape_string($conn, $encryptedPassword) . "', 
+                    updated_at = NOW()
+                WHERE customer_id = '" . mysqli_real_escape_string($conn, $customer_id) . "'
             ";
             mysqli_query($conn, $passwordQuery) or die("Error updating password: " . mysqli_error($conn));
         }
@@ -253,7 +254,17 @@ if(isset($_REQUEST['action'])) {
             $portal_access = $row['is_approved'] ?? 0;
             $different_ship_address = $row['different_ship_address'] ?? 0;
             $is_charge_net = $row['is_charge_net'] ?? 0;
-            $username = $row['username'] ?? 0;
+            $username = $row['username'] ?? '';
+            $password = $row['password'] ?? '';
+
+            $decryptedPassword = '';
+            if (!empty($password)) {
+                try {
+                    $decryptedPassword = decrypt_password_from_storage($password);
+                } catch (Exception $e) {
+                    $decryptedPassword = '';
+                }
+            }
 
             $addressDetails = implode(', ', [
                 $address ?? '',
@@ -402,37 +413,41 @@ if(isset($_REQUEST['action'])) {
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-12">
-                        <label class="form-label">Shipping Address</label>
-                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                            
-                            <div class="d-flex w-100">
-                                <input type="text" id="ship_address" name="ship_address" class="form-control" value="<?= $ship_address ?? '' ?>" list="address-data-list"/>
-                                <datalist id="address-data-list"></datalist>
-                                <button type="button" class="btn btn-primary py-1 ms-2 toggleElements" id="showMapsShipBtn" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#map2Modal">Change</button>
+                    <div class="shipping_address_section">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="form-label">Shipping Address</label>
+                                <div class="mb-3 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex w-100">
+                                        <input type="text" id="ship_address" name="ship_address" class="form-control" value="<?= $ship_address ?? '' ?>" list="address-data-list"/>
+                                        <datalist id="address-data-list"></datalist>
+                                        <button type="button" class="btn btn-primary py-1 ms-2 toggleElements" id="showMapsShipBtn" style="border-radius: 10%;" data-bs-toggle="modal" data-bs-target="#map2Modal">Change</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">City</label>
+                                    <input type="text" id="ship_city" name="ship_city" class="form-control" value="<?= $ship_city ?? '' ?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">State</label>
+                                    <input type="text" id="ship_state" name="ship_state" class="form-control" value="<?= $ship_state ?? '' ?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Zip</label>
+                                    <input type="text" id="ship_zip" name="ship_zip" class="form-control" value="<?= $ship_zip ?? '' ?>" />
+                                </div>
                             </div>
                         </div>
+                        
+                        <input type="hidden" id="ship_lat" name="ship_lat" value="<?= $ship_lat ?? '' ?>" />
+                        <input type="hidden" id="ship_lng" name="ship_lng" value="<?= $ship_lng ?? '' ?>" />
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                        <label class="form-label">City</label>
-                        <input type="text" id="ship_city" name="ship_city" class="form-control" value="<?= $ship_city ?? '' ?>" />
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                        <label class="form-label">State</label>
-                        <input type="text" id="ship_state" name="ship_state" class="form-control" value="<?= $ship_state ?? '' ?>" />
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                        <label class="form-label">Zip</label>
-                        <input type="text" id="ship_zip" name="ship_zip" class="form-control" value="<?= $ship_zip ?? '' ?>" />
-                        </div>
-                    </div>
-                    <input type="hidden" id="ship_lat" name="ship_lat" class="form-control" value="<?= $ship_lat ?? '' ?>" />
-                    <input type="hidden" id="ship_lng" name="ship_lng" class="form-control" value="<?= $ship_lng ?? '' ?>" />
                 </div>
             </div>
         </div>
@@ -553,7 +568,7 @@ if(isset($_REQUEST['action'])) {
                                 $query_pricing = "SELECT * FROM customer_pricing WHERE hidden = '0' AND status = '1'";
                                 $result_pricing = mysqli_query($conn, $query_pricing);            
                                 while ($row_pricing = mysqli_fetch_array($result_pricing)) {
-                                    $selected = ($customer_pricing ?? '' == $row_pricing['id']) ? 'selected' : '';
+                                    $selected = (($customer_pricing ?? '') == $row_pricing['id']) ? 'selected' : '';
                                 ?>
                                     <option value="<?= $row_pricing['id'] ?>" <?= $selected ?>><?= $row_pricing['pricing_name'] ?></option>
                                 <?php   
@@ -580,11 +595,16 @@ if(isset($_REQUEST['action'])) {
                             </div>
                         </div>
                     </div>
-                    <div class="col-4 mb-3">
-                        <label class="form-label">Charge Net 30 Limit</label>
-                        <input class="form-control" type="number" step="0.001" id="charge_net_30" name="charge_net_30" value="<?= $charge_net_30 ?? '' ?>">
+                    <div class="col-8">
+                        <div class="chargeNetLimitSection row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Charge Net 30 Limit</label>
+                                <input class="form-control" type="number" step="0.001" id="charge_net_30" name="charge_net_30" value="<?= $charge_net_30 ?? '' ?>">
+                            </div>
+                            <div class="col-6"></div>
+                        </div>
                     </div>
-                    <div class="col-4"></div>
+                    
                     <div class="col-md-4">
                         <label class="form-label">Portal Access</label>
                         <div class="mb-3 d-flex justify-content-between align-items-center">
@@ -602,27 +622,33 @@ if(isset($_REQUEST['action'])) {
                             </div>
                         </div>
                     </div>
-                    <div class="mb-3 col-md-4">
-                        <label class="form-label" for="username">Username</label>
-                        <input
-                            class="form-control"
-                            type="text"
-                            name="username"
-                            id="username"
-                            placeholder="Enter Username" 
-                            value="<?= $username ?? ''  ?>"
-                            />
-                    </div>
-                    <div class="mb-3 col-md-4 form-password-toggle">
-                        <label class="form-label" for="password">Password</label>
-                        <div class="input-group input-group-merge">
-                        <input
-                            class="form-control"
-                            type="password"
-                            name="password"
-                            id="password"
-                            placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
-                        <span class="input-group-text cursor-pointer"><i class="ti ti-eye-off"></i></span>
+
+                    <div class="col-8">
+                        <div class="portal_user_pass_section row">
+                            <div class="mb-3 col-md-6">
+                                <label class="form-label" for="username">Username</label>
+                                <input
+                                    class="form-control"
+                                    type="text"
+                                    name="username"
+                                    id="username"
+                                    placeholder="Enter Username" 
+                                    value="<?= $username ?? ''  ?>"
+                                    />
+                            </div>
+                            <div class="mb-3 col-md-6 form-password-toggle">
+                                <label class="form-label" for="password">Password</label>
+                                <div class="input-group input-group-merge">
+                                <input
+                                    class="form-control"
+                                    type="password"
+                                    name="password"
+                                    id="password"
+                                    value="<?= $decryptedPassword  ?? ''  ?>"
+                                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                                <span class="input-group-text cursor-pointer"><i class="ti ti-eye-off"></i></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -657,6 +683,65 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
         </div>
+
+        <script>
+            $(document).ready(function () {
+                if ($('#different_ship_address').is(':checked')) {
+                    $('.shipping_address_section').removeClass('d-none');
+                } else {
+                    $('.shipping_address_section').addClass('d-none');
+                }
+
+                $(document).on('change', '#different_ship_address', function () {
+                    if ($(this).is(':checked')) {
+                        $('.shipping_address_section').removeClass('d-none');
+                    } else {
+                        $('.shipping_address_section').addClass('d-none');
+                    }
+                });
+
+                if ($('#is_charge_net').is(':checked')) {
+                    $('.chargeNetLimitSection').removeClass('d-none');
+                } else {
+                    $('.chargeNetLimitSection').addClass('d-none');
+                }
+
+                $(document).on('change', '#is_charge_net', function () {
+                    if ($(this).is(':checked')) {
+                        $('.chargeNetLimitSection').removeClass('d-none');
+                    } else {
+                        $('.chargeNetLimitSection').addClass('d-none');
+                    }
+                });
+
+                if ($('#portal_access').is(':checked')) {
+                    $('.portal_user_pass_section').removeClass('d-none');
+                } else {
+                    $('.portal_user_pass_section').addClass('d-none');
+                }
+
+                $(document).on('change', '#portal_access', function () {
+                    if ($(this).is(':checked')) {
+                        $('.portal_user_pass_section').removeClass('d-none');
+                    } else {
+                        $('.portal_user_pass_section').addClass('d-none');
+                    }
+                });
+
+                $('.input-group-text').on('click', function () {
+                    const $input = $(this).siblings('input');
+                    const $icon = $(this).find('i');
+                    
+                    if ($input.attr('type') === 'password') {
+                        $input.attr('type', 'text');
+                        $icon.removeClass('ti-eye-off').addClass('ti-eye');
+                    } else {
+                        $input.attr('type', 'password');
+                        $icon.removeClass('ti-eye').addClass('ti-eye-off');
+                    }
+                });
+            });
+        </script>
     <?php
     }
 

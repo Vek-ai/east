@@ -1109,7 +1109,7 @@ if(isset($_POST['fetch_cart'])){
                         <td><?= number_format(floatval($total_weight), 2) ?> LBS</td>
                         <td colspan="2" class="text-end">Total Quantity:</td>
                         <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
-                        <td colspan="2" class="text-end">Customer Savings:</td>
+                        <td colspan="2" class="text-end">Customer Savings: </td>
                         <td colspan="1" class="text-end"><span id="ammount_due">$<?= number_format($customer_savings,2) ?></span></td>
                         <td colspan="1"></td>
                     </tr>

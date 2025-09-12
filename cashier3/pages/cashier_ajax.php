@@ -1001,7 +1001,10 @@ if (isset($_POST['save_order'])) {
         $estimate_length_inch = floatval($item['estimate_length_inch']);
         $amount_discount = !empty($item["amount_discount"]) ? floatval($item["amount_discount"]) : 0;
 
-        $total_length = ($estimate_length + ($estimate_length_inch / 12));
+        $total_length = $estimate_length + ($estimate_length_inch / 12);
+        if ($total_length == 0) {
+            $total_length = 1;
+        }
         $actual_price = $unit_price * $quantity_cart * $total_length;
 
         $price_after_discount = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
@@ -1360,6 +1363,9 @@ if (isset($_POST['save_order'])) {
             $custom_gauge = $item['custom_gauge'];
 
             $total_length = $estimate_length + ($estimate_length_inch / 12);
+            if ($total_length == 0) {
+                $total_length = 1;
+            }
 
             $amount_discount   = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
             $product_category  = intval($product_details['product_category']);
@@ -1378,18 +1384,19 @@ if (isset($_POST['save_order'])) {
             $panel_style = !empty($item['panel_style']) ? $item['panel_style'] : '';
             $custom_img_src = $item['custom_trim_src'];
             $bundle_id = $item['bundle_name'];
+            $note = $item['note'];
 
             $query = "INSERT INTO order_product (
                 orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem,
                 custom_length, custom_length2, actual_price, discounted_price, product_category,
                 custom_color, custom_grade, custom_profile, current_customer_discount, current_loyalty_discount,
-                used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style, custom_img_src, bundle_id
+                used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style, custom_img_src, bundle_id, note
             ) VALUES (
                 '$orderid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width',
                 '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch',
                 '$actual_price', '$discounted_price', '$product_category', '$custom_color',
                 '$custom_grade', '$custom_profile', '$curr_discount', '$loyalty_discount', '$used_discount',
-                '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$panel_style', '$custom_img_src', '$bundle_id'
+                '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$panel_style', '$custom_img_src', '$bundle_id', '$note'
             )";
 
             if ($conn->query($query) !== TRUE) {

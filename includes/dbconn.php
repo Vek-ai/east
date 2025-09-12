@@ -18,3 +18,5 @@ $enable_phone_message = true;
 
 $google_auth_client_id = '1036649042415-rikd0a70bflr3l1h2jsjsvd4np4aigae.apps.googleusercontent.com';
 $google_api = "AIzaSyDuAVEip7o5bmQQ4wWVMvTMzPrXXdhYW7s";
+
+putenv("PASSWORD_ENCRYPTION_KEY=1f8d5b74c9e302f64a9d88b65d1e0fa4c37a0e92dff61cb48d2f50c6a7e84b33");

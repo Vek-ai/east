@@ -2774,4 +2774,36 @@ function getInventoryDimensions($inventory_id) {
 
     return null;
 }
+
+function getEncryptionKey() {
+    $hex = getenv('PASSWORD_ENCRYPTION_KEY');
+    if (!$hex) throw new Exception('Encryption key not set in env');
+    $key = hex2bin($hex);
+    if ($key === false || strlen($key) !== 32) throw new Exception('Invalid encryption key length');
+    return $key;
+}
+
+function encrypt_password_for_storage(string $plaintext): string {
+    $key = getEncryptionKey();
+    $method = 'AES-256-CBC';
+    $ivlen = openssl_cipher_iv_length($method);
+    $iv = random_bytes($ivlen);
+    $ciphertext_raw = openssl_encrypt($plaintext, $method, $key, OPENSSL_RAW_DATA, $iv);
+    if ($ciphertext_raw === false) throw new Exception('Encryption failed');
+    return base64_encode($iv . $ciphertext_raw);
+}
+
+function decrypt_password_from_storage(string $b64): string {
+    $key = getEncryptionKey();
+    $method = 'AES-256-CBC';
+    $data = base64_decode($b64, true);
+    if ($data === false) throw new Exception('Invalid base64 data');
+    $ivlen = openssl_cipher_iv_length($method);
+    if (strlen($data) < $ivlen) throw new Exception('Data too short');
+    $iv = substr($data, 0, $ivlen);
+    $ciphertext_raw = substr($data, $ivlen);
+    $plaintext = openssl_decrypt($ciphertext_raw, $method, $key, OPENSSL_RAW_DATA, $iv);
+    if ($plaintext === false) throw new Exception('Decryption failed');
+    return $plaintext;
+}
 ?>

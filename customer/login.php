@@ -2,39 +2,49 @@
 session_start();
 
 include "../includes/dbconn.php";
+include "../includes/functions.php";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  $username = $conn->real_escape_string($_POST['username']);
-  $password = $_POST['password'];
-  $redirect = (!empty($_REQUEST['redirect']) && $_REQUEST['redirect'] !== 'login.php') ? $_REQUEST['redirect'] : 'index.php';
+    $username = $conn->real_escape_string($_POST['username']);
+    $password = $_POST['password'];
+    $redirect = (!empty($_REQUEST['redirect']) && $_REQUEST['redirect'] !== 'login.php') ? $_REQUEST['redirect'] : 'index.php';
 
-  $sql = "SELECT customer_id, password, is_approved FROM customer WHERE username = '$username'";
-  $result = $conn->query($sql);
+    $sql = "SELECT customer_id, password, is_approved FROM customer WHERE username = '$username'";
+    $result = $conn->query($sql);
 
-  if ($result && $result->num_rows > 0) {
-      $row = $result->fetch_assoc();
-      $db_password = $row['password'];
-      $customer_id = $row['customer_id'];
-      $is_approved = $row['is_approved'];
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $db_password = $row['password'];
+        $customer_id = $row['customer_id'];
+        $is_approved = $row['is_approved'];
 
-      if($is_approved == 1){
-        if (password_verify($password, $db_password)) {
-            $_SESSION['customer_id'] = $customer_id;
-            setcookie("userid", $customer_id, time() + (86400 * 30), "/");
+        if ($is_approved == 1) {
+            $decryptedPassword = '';
 
-            header("Location: $redirect");
-            exit();
+            if (!empty($db_password) && strpos($db_password, '$2y$') !== 0) {
+                try {
+                    $decryptedPassword = decrypt_password_from_storage($db_password);
+                } catch (Exception $e) {
+                    $decryptedPassword = '';
+                }
+            }
+
+            if (!empty($decryptedPassword) && hash_equals($decryptedPassword, $password)) {
+                $_SESSION['customer_id'] = $customer_id;
+                setcookie("userid", $customer_id, time() + (86400 * 30), "/");
+
+                header("Location: $redirect");
+                exit();
+            } else {
+                $error = 'Invalid username or password.';
+            }
         } else {
-            $error = 'Invalid username or password.';
+            $error = 'Account not yet approved. Please wait for admin to approve your application.';
         }
-      }else{
-        $error = 'Account not yet approved. Please wait for admin to approve your application.';
-      }
 
-      
-  } else {
-      $error = 'Invalid username or password.';
-  }
+    } else {
+        $error = 'Invalid username or password.';
+    }
 }
 
 ?>
