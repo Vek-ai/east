@@ -79,7 +79,7 @@
 
 <div class="card shadow-sm rounded-3 mb-3">
     <div class="card-header bg-light border-bottom">
-        <h5 class="mb-0 fw-bold">Product Color Mapping</h5>
+        <h5 class="mb-0 fw-bold">Product Information</h5>
     </div>
     <div class="card-body border rounded p-3">
         <div class="row">
@@ -201,7 +201,7 @@
 
 <div class="card shadow-sm rounded-3 mb-3">
     <div class="card-header bg-light border-bottom">
-        <h5 class="mb-0 fw-bold">Product Color Mapping</h5>
+        <h5 class="mb-0 fw-bold">Product Pricing</h5>
     </div>
     <div class="card-body border rounded p-3">
         <div class="row">
@@ -345,7 +345,7 @@
 
 <div class="card shadow-sm rounded-3 mb-3">
     <div class="card-header bg-light border-bottom">
-        <h5 class="mb-0 fw-bold">Correlated products</h5>
+        <h5 class="mb-0 fw-bold">Correlated Products</h5>
     </div>
     <div class="card-body border rounded p-3">
         <div class="row">
