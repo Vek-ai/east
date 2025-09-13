@@ -30,9 +30,29 @@ if(isset($_REQUEST['action'])) {
             $shipping_company = $shipping_comp_details['shipping_company'];
 
             $deliver_method = $order_details['deliver_method'];
+            $contractor_id = $order_details['contractor_id'];
 
             $response = array();
             ?>
+            <div class="card-body">
+                <div class="col-md-4">
+                    <div class="mb-2">
+                        <strong>Contractor</strong>
+                        <div class="d-flex align-items-center">
+                            <h4 class="mb-0 flex-grow-1" id="constructor_name_display">
+                                <?php echo $contractor_id > 0 ? htmlspecialchars(get_customer_name($contractor_id)) : 'No contractor assigned'; ?>
+                            </h4>
+                            <button type="button" 
+                                    class="btn btn-outline-secondary ms-2" 
+                                    id="select_contractor_btn"
+                                    data-orderid="<?php echo $orderid; ?>">
+                                <?php echo $contractor_id > 0 ? 'Change Contractor' : 'Add Contractor'; ?>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="card">
                 <div class="card-body datatables">
                     <h4 class="modal-title" id="myLargeModalLabel">
@@ -1878,6 +1898,18 @@ if(isset($_REQUEST['action'])) {
         $update = "UPDATE work_order SET status = 3 WHERE id = $id";
         mysqli_query($conn, $update);
         exit;
+    }
+
+    if ($action == "update_contractor") {
+        $orderid = mysqli_real_escape_string($conn, $_POST['orderid']);
+        $contractor_id = mysqli_real_escape_string($conn, $_POST['contractor_id']);
+
+        $query = "UPDATE orders SET contractor_id = '$contractor_id' WHERE orderid = '$orderid'";
+        if (mysqli_query($conn, $query)) {
+            echo "success";
+        } else {
+            echo "error";
+        }
     }
 
     mysqli_close($conn);

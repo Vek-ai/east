@@ -635,6 +635,38 @@ function showCol($name) {
     </div>
 </div>
 
+<div class="modal fade" id="contractorModal" tabindex="-1" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Contractor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <select class="form-select" id="contractor_select">
+                    <?php
+                    $query = "SELECT * FROM customer WHERE is_contractor = 1";
+                    $result = mysqli_query($conn, $query);
+                    if (mysqli_num_rows($result) > 0) {
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            $id = $row['customer_id'];
+                            $name = get_customer_name($id);
+                            $contact = htmlspecialchars($row['contact_phone']);
+                            echo "<option value='{$id}' data-name='{$name}' data-contact='{$contact}'>{$name} ({$contact})</option>";
+                        }
+                    } else {
+                        echo "<option disabled selected>No contractors available</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="confirm_contractor">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -762,6 +794,8 @@ function showCol($name) {
         var pdfUrl = '';
         var isPrinting = false;
         var print_order_id = '';
+
+        var active_order_id = 0;
 
         var table = $('#order_list_tbl').DataTable({
             "order": [],
@@ -908,24 +942,33 @@ function showCol($name) {
             });
         });
 
+        function fetchOrderView() {
+            if (!active_order_id) {
+                alert("No active order selected.");
+                return;
+            }
+
+            $.ajax({
+                url: 'pages/order_list_ajax.php',
+                type: 'POST',
+                data: {
+                    id: active_order_id,
+                    action: "fetch_view_modal"
+                },
+                success: function (response) {
+                    $('#viewOrderBody').html(response);
+                    $('#viewOrderModal').modal('show');
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
+
         $(document).on('click', '#view_order_btn', function(event) {
             event.preventDefault(); 
-            var id = $(this).data('id');
-            $.ajax({
-                    url: 'pages/order_list_ajax.php',
-                    type: 'POST',
-                    data: {
-                        id: id,
-                        action: "fetch_view_modal"
-                    },
-                    success: function(response) {
-                        $('#viewOrderBody').html(response);
-                        $('#viewOrderModal').modal('show');
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
-            });
+            active_order_id = $(this).data('id');
+            fetchOrderView();
         });
 
         $(document).on('click', '#edit_order_btn', function(event) {
@@ -1291,6 +1334,38 @@ function showCol($name) {
                 $('#payment_details_group').addClass('d-none');
                 $('#check_no_group').addClass('d-none');
                 $('#check_no').removeAttr('required').val('');
+            }
+        });
+
+        $(document).on('click', '#select_contractor_btn', function () {
+            $('#contractorModal').modal('show');
+        });
+
+        $(document).on('click', '#confirm_contractor', function () {
+            var selected = $('#contractor_select option:selected');
+            if (selected.length) {
+                var contractorId = selected.val();
+                var contractorName = selected.data('name');
+
+                $.ajax({
+                    url: 'pages/order_list_ajax.php',
+                    type: 'POST',
+                    data: {
+                        orderid: active_order_id,
+                        contractor_id: contractorId,
+                        action: 'update_contractor'
+                    },
+                    success: function (response) {
+                        fetchOrderView();
+                        $('#contractorModal').modal('hide');
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log(
+                            'Error: ' + textStatus + ' - ' + errorThrown + '\n\n' +
+                            'Response: ' + jqXHR.responseText
+                        );
+                    }
+                });
             }
         });
 

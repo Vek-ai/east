@@ -45,6 +45,7 @@ if(isset($_REQUEST['action'])) {
         $new_customer_type_id = mysqli_real_escape_string($conn, $_POST['customer_type'] ?? '');
         $call_status = mysqli_real_escape_string($conn, $_POST['call_status'] ?? 0);
         $is_charge_net = mysqli_real_escape_string($conn, $_POST['is_charge_net'] ?? 0);
+        $is_contractor = mysqli_real_escape_string($conn, $_POST['is_contractor'] ?? 0);
         $charge_net_30 = mysqli_real_escape_string($conn, $_POST['charge_net_30']);
         $credit_limit = mysqli_real_escape_string($conn, $_POST['credit_limit'] ?? 0);
         $loyalty = mysqli_real_escape_string($conn, $_POST['loyalty'] ?? 0);
@@ -104,6 +105,7 @@ if(isset($_REQUEST['action'])) {
                     customer_notes = '$customer_notes',
                     call_status = '$call_status',
                     is_charge_net = '$is_charge_net',
+                    is_contractor = '$is_contractor',
                     charge_net_30 = '$charge_net_30',
                     credit_limit = '$credit_limit',
                     customer_type_id = '$new_customer_type_id',
@@ -126,7 +128,7 @@ if(isset($_REQUEST['action'])) {
                     secondary_contact_name, secondary_contact_phone,
                     ap_contact_name, ap_contact_email, ap_contact_phone,
                     tax_status, tax_exempt_number, customer_notes,
-                    customer_type_id, call_status, is_charge_net, charge_net_30,
+                    customer_type_id, call_status, is_charge_net, is_contractor, charge_net_30,
                     credit_limit, loyalty, customer_pricing, is_approved, created_at, updated_at
                 ) VALUES (
                     '$customer_first_name', '$customer_last_name', '$customer_business_name',
@@ -136,7 +138,7 @@ if(isset($_REQUEST['action'])) {
                     '$secondary_contact_name', '$secondary_contact_phone',
                     '$ap_contact_name', '$ap_contact_email', '$ap_contact_phone',
                     '$tax_status', '$tax_exempt_number', '$customer_notes',
-                    '$new_customer_type_id', '$call_status', '$is_charge_net', '$charge_net_30',
+                    '$new_customer_type_id', '$call_status', '$is_charge_net', '$is_contractor', '$charge_net_30',
                     '$credit_limit', '$loyalty', '$customer_pricing', '$is_approved',NOW(), NOW()
                 )";
             mysqli_query($conn, $insertQuery) or die("Error adding customer: " . mysqli_error($conn));
@@ -256,6 +258,7 @@ if(isset($_REQUEST['action'])) {
             $is_charge_net = $row['is_charge_net'] ?? 0;
             $username = $row['username'] ?? '';
             $password = $row['password'] ?? '';
+            $is_contractor = $row['is_contractor'] ?? '';
 
             $decryptedPassword = '';
             if (!empty($password)) {
@@ -360,6 +363,14 @@ if(isset($_REQUEST['action'])) {
                         <label class="form-label">Secondary Contact Phone</label>
                         <input type="text" id="secondary_contact_phone" name="secondary_contact_phone" class="form-control"
                             value="<?= $secondary_contact_phone ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Is this Customer a Contractor?</label>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_contractor" id="is_contractor" value="1" <?= ($is_contractor ?? '' == '1' ? 'checked' : '') ?>><br>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -949,6 +949,7 @@ if (isset($_POST['save_order'])) {
     $deliver_lname = mysqli_real_escape_string($conn, $_POST['deliver_lname'] ?? '');
     $pay_type = mysqli_real_escape_string($conn, $_POST['payment_method'] ?? '');
     $customer_tax = mysqli_real_escape_string($conn, $_POST['customer_tax'] ?? '');
+    $contractor_id = mysqli_real_escape_string($conn, $_POST['contractor_id'] ?? '');
     $truck = intval($_POST['truck']);
 
     if (!isset($_SESSION['customer_id']) || empty($_SESSION['cart'])) {
@@ -1193,8 +1194,8 @@ if (isset($_POST['save_order'])) {
     } 
     */
 
-    $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_method, deliver_fname, deliver_lname, pay_type, tax_status, tax_exempt_number, truck) 
-              VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt', '$deliver_method' , '$deliver_fname' , '$deliver_lname', '$pay_type', '$tax_status', '$tax_exempt_number', '$truck')";
+    $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_method, deliver_fname, deliver_lname, pay_type, tax_status, tax_exempt_number, truck, contractor_id) 
+              VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt', '$deliver_method' , '$deliver_fname' , '$deliver_lname', '$pay_type', '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id')";
 
     if ($conn->query($query) === TRUE) {
         $orderid = $conn->insert_id;

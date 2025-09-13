@@ -4262,6 +4262,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var deliver_fname = $('#order_deliver_fname').val();
             var deliver_lname = $('#order_deliver_lname').val();
             var customer_tax = $('#customer_tax').val();
+            var contractor_id = $('#constructor_id').val();
             var applyStoreCredit = $('#applyStoreCredit').is(':checked') ? $('#applyStoreCredit').val() : 0;
             var applyJobDeposit = $('#pay_via_job_deposit').is(':checked') ? $('#pay_via_job_deposit').val() : 0;
 
@@ -4292,6 +4293,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         applyJobDeposit: applyJobDeposit,
                         payment_method: payment_method,
                         truck: truck,
+                        contractor_id: contractor_id,
                         save_order: 'save_order'
                     },
                     success: function(response) {

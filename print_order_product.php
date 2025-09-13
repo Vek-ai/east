@@ -444,20 +444,20 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->Cell(0, 5, 'Email: Sales@Eastkentuckymetal.com', 0, 1);
         $pdf->Cell(0, 5, 'Website: Eastkentuckymetal.com', 0, 1);
 
-        $pdf->SetXY($col2_x-30, 26);
+        $pdf->SetXY($col2_x-10, 6);
         $pdf->SetFont('Arial', '', 10);
         $pdf->MultiCell(95, 5, "Invoice #: $orderid", 0, 'L');
-        $pdf->SetXY($col2_x-30, $pdf->GetY());
+        $pdf->SetXY($col2_x-10, $pdf->GetY());
         $pdf->Cell(95, 5, "Order Date: " .$order_date, 0, 1, 'L');
         
-        $pdf->SetXY($col2_x-30, $pdf->GetY());
+        $pdf->SetXY($col2_x-10, $pdf->GetY());
         $pdf->Cell(95, 5, 'Pick-up or Delivery: ' . $delivery_method, 0, 1, 'L');
-        $pdf->SetXY($col2_x-30, $pdf->GetY());
+        $pdf->SetXY($col2_x-10, $pdf->GetY());
         $pdf->Cell(95, 5, 'Scheduled Date: ' . $scheduled_date, 0, 1, 'L');
-        $pdf->SetXY($col2_x-30, $pdf->GetY());
+        $pdf->SetXY($col2_x-10, $pdf->GetY());
         $pdf->Cell(95, 5, 'Salesperson: ' . get_staff_name($current_user_id), 0, 1, 'L');
 
-        $pdf->Ln();
+        $pdf->Ln(30);
 
         $col1_x = 10;
         $col2_x -= 30;
