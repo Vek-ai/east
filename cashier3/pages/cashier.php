@@ -476,6 +476,11 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                                 </button>
                             </div>
                             <div class="col-auto mb-2">
+                                <button type="button" class="btn btn-warning px-3" id="btnAddContractor">
+                                    <i class="fa fa-plus fs-5 me-2"></i> Add Contractor
+                                </button>
+                            </div>
+                            <div class="col-auto mb-2">
                                 <button type="button" class="btn btn-primary px-3" id="btnPriceGroupModal">
                                     <i class="fa fa-tag fs-5 me-2"></i> Change Price Group
                                 </button>
@@ -1207,6 +1212,39 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         </div>
     </div>
   </div>
+</div>
+
+<div class="modal fade" id="contractorModal" tabindex="-1" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Contractor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <select class="form-select" id="contractor_select">
+                    <?php
+                    $query = "SELECT * FROM customer WHERE is_contractor = 1";
+                    $result = mysqli_query($conn, $query);
+
+                    if (mysqli_num_rows($result) > 0) {
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            $id = $row['customer_id'];
+                            $name = get_customer_name($id);
+                            $contact = htmlspecialchars($row['contact_phone']);
+                            echo "<option value='{$id}' data-name='{$name}' data-contact='{$contact}'>{$name} ({$contact})</option>";
+                        }
+                    } else {
+                        echo "<option disabled selected>No contractors available</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="confirm_contractor">Confirm</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
@@ -5259,6 +5297,41 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             }
         });
 
-        
+        $(document).on('click', '#btnAddContractor, #select_contractor_btn', function () {
+            $('#contractorModal').modal('show');
+        });
+
+        $(document).on('click', '#confirm_contractor', function() {
+            var selected = $('#contractor_select option:selected');
+            if (selected.length) {
+                var id = selected.val();
+                var name = selected.data('name');
+                var contact = selected.data('contact');
+
+                $('#constructor_id').val(id);
+                $('#constructor_name_hidden').val(name);
+                $('#contact_phone_hidden').val(contact);
+
+                $('#constructor_name_display').val(name);
+                $('#constructor_contact_display').val(contact);
+
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        set_contractor: 'set_contractor',
+                        contractor_id: id
+                    },
+                    success: function(response) {
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error setting contractor:', error);
+                    }
+                });
+            }
+
+            $('#contractorModal').modal('hide');
+        });
+
     });
 </script>

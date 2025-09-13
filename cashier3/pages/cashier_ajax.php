@@ -3140,5 +3140,9 @@ if (isset($_POST['reorder_cart'])) {
     exit;
 }
 
+if (isset($_POST['set_contractor'])) {
+    $_SESSION['contractor_id']   = $_POST['contractor_id'];
+}
+
 ?>
 

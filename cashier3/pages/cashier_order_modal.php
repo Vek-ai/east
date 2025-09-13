@@ -119,38 +119,6 @@ if(isset($_POST['fetch_order'])){
             display: none;
         }
     </style>
-    <div class="modal fade" id="contractorModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Select Contractor</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <select class="form-select" id="contractor_select">
-                        <?php
-                        $query = "SELECT * FROM customer WHERE is_contractor = 1";
-                        $result = mysqli_query($conn, $query);
-
-                        if (mysqli_num_rows($result) > 0) {
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                $id = $row['customer_id'];
-                                $name = get_customer_name($id);
-                                $contact = htmlspecialchars($row['contact_phone']);
-                                echo "<option value='{$id}' data-name='{$name}' data-contact='{$contact}'>{$name} ({$contact})</option>";
-                            }
-                        } else {
-                            echo "<option disabled selected>No contractors available</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="confirm_contractor">Confirm</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div id="customer_cash_section">
         <?php 
@@ -447,24 +415,45 @@ if(isset($_POST['fetch_order'])){
                         </div>
 
                         <div class="col-md-4">
-                            <input type="hidden" id="constructor_id" name="constructor_id">
-                            <input type="hidden" id="constructor_name" name="constructor_name" value="">
-                            <input type="hidden" id="constructor_contact" name="contact_phone" value="">
+                            <?php
+                            $contractor_id = $_SESSION['contractor_id'] ?? 0;
+                            $contractor_name = '';
+                            $contractor_phone = '';
+
+                            if ($contractor_id) {
+                                $contractor_name = get_customer_name($contractor_id);
+                                $contractor_details = getCustomerDetails($contractor_id);
+                                $contractor_phone = $contractor_details['contact_phone'] ?? '';
+                            }
+                            ?>
+                            
+                            <input type="hidden" id="constructor_id" name="contractor_id" value="<?= htmlspecialchars($contractor_id) ?>">
+                            <input type="hidden" id="constructor_name" name="contractor_name" value="<?= htmlspecialchars($contractor_name) ?>">
+                            <input type="hidden" id="constructor_contact" name="contact_phone" value="<?= htmlspecialchars($contractor_phone) ?>">
 
                             <div class="mb-2">
                                 <strong>Contractor Name:</strong>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="constructor_name_display" readonly>
-                                    <button type="button" class="btn btn-outline-secondary" id="select_contractor_btn">Select</button>
+                                    <input type="text" class="form-control" 
+                                        id="constructor_name_display" 
+                                        value="<?= htmlspecialchars($contractor_name) ?>" 
+                                        readonly>
+                                    <button type="button" 
+                                            class="btn btn-outline-secondary" 
+                                            id="select_contractor_btn">
+                                        <?= $contractor_id ? 'Change Contractor' : 'Add Contractor' ?>
+                                    </button>
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <strong>Contractor Cell Phone:</strong>
-                                <input type="text" class="form-control" id="constructor_contact_display" readonly>
+                                <input type="text" class="form-control" 
+                                    id="constructor_contact_display" 
+                                    value="<?= htmlspecialchars($contractor_phone) ?>" 
+                                    readonly>
                             </div>
                         </div>
-
                         
                         <div class="col-md-8 mb-3 d-none align-items-end">
                             <div class="form-check">
@@ -1009,27 +998,6 @@ if(isset($_POST['fetch_order'])){
                         templateSelection: formatSelected
                     });
                 }
-            });
-
-            $('#select_contractor_btn').on('click', function() {
-                $('#contractorModal').modal('show');
-            });
-
-            $('#confirm_contractor').on('click', function() {
-                var selected = $('#contractor_select option:selected');
-                if (selected.length) {
-                    var id = selected.val();
-                    var name = selected.data('name');
-                    var contact = selected.data('contact');
-
-                    $('#constructor_id').val(id);        // hidden input
-                    $('#constructor_name').val(name);    // display
-                    $('#constructor_contact').val(contact); // display
-
-                    $('#constructor_name_display').val(name);
-                    $('#constructor_contact_display').val(contact);
-                }
-                $('#contractorModal').modal('hide');
             });
         });
     </script>
