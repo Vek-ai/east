@@ -111,8 +111,8 @@ if (!empty($_REQUEST['id'])) {
     ])));
 
     $pdf->SetXY($marginLeft, $mailToY);
-    $pdf->SetFillColor(...$blueColor);
-    $pdf->SetTextColor(255, 255, 255);
+    $pdf->SetFillColor(230, 230, 230);
+    $pdf->SetTextColor(0, 0, 0);
     $pdf->SetFont('Arial', 'B', 12);
     $pdf->Cell($mailToWidth, 10, 'Mail to:', 0, 0, 'L', true);
     $pdf->ln(8);
@@ -126,8 +126,8 @@ if (!empty($_REQUEST['id'])) {
     $pdf->Cell($mailToWidth, 6, $line2, 0, 0, 'L', true);
 
     $pdf->SetXY($rightX, $mailToY);
-    $pdf->SetFillColor(...$blueColor);
-    $pdf->SetTextColor(255, 255, 255);
+    $pdf->SetFillColor(230, 230, 230);
+    $pdf->SetTextColor(0, 0, 0);
     $pdf->SetX($rightX);
     $pdf->SetFont('Arial', 'B', 12);
     $pdf->Cell($mailToWidth, 10, 'Customer:', 0, 0, 'L', true);
@@ -161,8 +161,8 @@ if (!empty($_REQUEST['id'])) {
     $w4 = 30 * $scale;
     $w5 = 25 * $scale;
 
-    $pdf->SetTextColor(255, 255, 255);
-    $pdf->SetFillColor(...$blueColor);
+    $pdf->SetTextColor(0, 0, 0);
+    $pdf->SetFillColor(255, 255, 255);
 
     $pdf->Cell($w1, 7, 'Date', 1, 0, 'C', true);
     $pdf->Cell($w2, 7, 'Order ID', 1, 0, 'C', true);
@@ -171,8 +171,6 @@ if (!empty($_REQUEST['id'])) {
     $pdf->Cell($w5, 7, 'Amount', 1, 1, 'C', true);
 
     $pdf->SetFont('Arial', '', 10);
-    $pdf->SetFillColor(255, 255, 255);
-    $pdf->SetTextColor(0, 0, 0);
 
     $total_credit = 0;
     
@@ -304,8 +302,8 @@ if (!empty($_REQUEST['id'])) {
         $w4 = 30 * $scale;
         $w5 = 25 * $scale;
 
-        $pdf->SetTextColor(255, 255, 255);
-        $pdf->SetFillColor(...$blueColor);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->SetFillColor(255, 255, 255);
 
         $pdf->Cell($w1, 7, 'Date', 1, 0, 'C', true);
         $pdf->Cell($w2, 7, 'Credit #', 1, 0, 'C', true);
@@ -354,13 +352,13 @@ if (!empty($_REQUEST['id'])) {
 
     
 
-    $pdf->SetFillColor(...$blueColor);
-    $pdf->SetTextColor(255, 255, 255);
+    $pdf->SetFillColor(230, 230, 230);
+    $pdf->SetTextColor(0, 0, 0);
     $pdf->SetFont('Arial', 'B', 12);
     $pdf->Cell($usableWidth, 7, 'Remaining Balance Due (if all Credits applied)', 0, 0, 'C', true);
     $pdf->ln(7);
 
-    $pdf->SetX(115);
+    /* $pdf->SetX(115);
     $pdf->SetFillColor(230, 230, 230);
     $pdf->SetTextColor(0, 0, 0);
     $pdf->SetFont('Arial', 'B', 10);
@@ -377,11 +375,11 @@ if (!empty($_REQUEST['id'])) {
         $pdf->SetFillColor(255, 255, 255);
         $pdf->SetTextColor(0, 0, 0);
         $pdf->Cell($w5, 5, '$' . number_format($total_available, 2), 1, 1, 'R', true);
-    }
+    } */
 
     $pdf->SetX(115);
-    $pdf->SetFillColor(255, 0, 0);
-    $pdf->SetTextColor(255, 255, 255);
+    $pdf->SetFillColor(255, 255, 255);
+    $pdf->SetTextColor(0, 0, 0);
     $pdf->Cell(50, 5, 'Balance Due:', 1, 0, 'R', true);
     $pdf->Cell($w5, 5, '$' . number_format(max(0, $total_credit - $total_available), 2), 1, 1, 'R', true);
     $pdf->Ln(5);
@@ -415,7 +413,7 @@ if (!empty($_REQUEST['id'])) {
         "Scan me for a Digital copy of this Statement of Account", 0, 'C');
     $qrX = $marginLeft + $colWidthLeft + ($colWidthRight / 2) - 12;
     $qrY = $pdf->GetY() + 3;
-    $pdf->Image('assets/images/logo-bw.png', $qrX, $qrY, 25, 25);
+    $pdf->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 50, 50);
 
     $pdf->SetTitle('Statement of Account');
     $pdf->Output('Statement_of_Account.pdf', 'I');
