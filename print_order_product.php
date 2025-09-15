@@ -95,6 +95,7 @@ function renderScrewCategory($pdf, $products, $conn) {
 
     $totalQty   = 0;
     $totalPrice = 0;
+    $totalActual = 0;
 
     foreach ($products as $row_product) {
         $product_details = getProductDetails($row_product['productid']);
@@ -114,9 +115,10 @@ function renderScrewCategory($pdf, $products, $conn) {
 
         $totalQty   += $row_product['quantity'];
         $totalPrice += floatval($row_product['discounted_price']);
+        $totalActual += floatval($row_product['actual_price']);
     }
 
-    return [$totalPrice, $totalQty];
+    return [$totalPrice, $totalQty, $totalActual];
 }
 
 function renderPanelCategory($pdf, $products, $conn) {
@@ -133,7 +135,6 @@ function renderPanelCategory($pdf, $products, $conn) {
     renderTableHeader($pdf, $columns);
 
     $grouped = [];
-
     foreach ($products as $row_product) {
         $productid       = $row_product['productid'];
         $bundle_name     = $row_product['bundle_id'];
@@ -142,7 +143,7 @@ function renderPanelCategory($pdf, $products, $conn) {
         $profile_details = getProfileTypeDetails($product_details['profile']);
 
         $quantity   = floatval($row_product['quantity'] ?? 0);
-        $unit_price = floatval($row_product['actual_price']);
+        $act_price  = floatval($row_product['actual_price']);
         $disc_price = floatval($row_product['discounted_price']);
         $note       = $row_product['note'] ?? '';
 
@@ -154,7 +155,6 @@ function renderPanelCategory($pdf, $products, $conn) {
         $len = $ft + ($in / 12);
 
         $key = $productid;
-
         if (!isset($grouped[$key])) {
             $grouped[$key] = [
                 'product_name'    => $product_details['product_item'],
@@ -164,6 +164,7 @@ function renderPanelCategory($pdf, $products, $conn) {
                 'quantity'        => 0,
                 'length'          => 0,
                 'discounted_total'=> 0,
+                'actual_total'    => 0,
                 'note'            => $note,
                 'bundles'         => []
             ];
@@ -172,6 +173,7 @@ function renderPanelCategory($pdf, $products, $conn) {
         $grouped[$key]['quantity']        += $quantity;
         $grouped[$key]['length']          += $len;
         $grouped[$key]['discounted_total']+= $disc_price;
+        $grouped[$key]['actual_total']    += $act_price;
 
         if (!isset($grouped[$key]['bundles'][$bundle_name])) {
             $grouped[$key]['bundles'][$bundle_name] = [
@@ -187,15 +189,16 @@ function renderPanelCategory($pdf, $products, $conn) {
             'panel_type' => $panel_type,
             'panel_style'=> $panel_style,
             'disc_price' => $disc_price,
-            'note'       => $note, // pass note for sub-row if needed
+            'act_price'  => $act_price,
+            'note'       => $note,
         ];
     }
 
-    $totalQty   = 0;
-    $totalPrice = 0;
+    $totalQty    = 0;
+    $totalPrice  = 0;
+    $totalActual = 0;
 
     foreach ($grouped as $g) {
-        // Summary row
         $summaryRow = [
             $g['product_name'],
             $g['color'],
@@ -207,8 +210,9 @@ function renderPanelCategory($pdf, $products, $conn) {
         ];
         renderRow($pdf, $columns, $summaryRow, true);
 
-        $totalQty   += $g['quantity'];
-        $totalPrice += $g['discounted_total'];
+        $totalQty    += $g['quantity'];
+        $totalPrice  += $g['discounted_total'];
+        $totalActual += $g['actual_total'];
 
         foreach ($g['bundles'] as $bundle) {
             $subColumns = [
@@ -239,7 +243,7 @@ function renderPanelCategory($pdf, $products, $conn) {
         }
     }
 
-    return [$totalPrice, $totalQty];
+    return [$totalPrice, $totalQty, $totalActual];
 }
 
 function renderDefaultCategory($pdf, $products, $conn) {
@@ -256,8 +260,9 @@ function renderDefaultCategory($pdf, $products, $conn) {
     renderTableHeader($pdf, $columns);
     $pdf->SetFont('Arial', '', 8);
 
-    $totalQty   = 0;
-    $totalPrice = 0;
+    $totalQty    = 0;
+    $totalPrice  = 0;
+    $totalActual = 0;
 
     foreach ($products as $row_product) {
         $product_details = getProductDetails($row_product['productid']);
@@ -280,11 +285,12 @@ function renderDefaultCategory($pdf, $products, $conn) {
 
         renderRow($pdf, $columns, $row);
 
-        $totalQty   += $row_product['quantity'];
-        $totalPrice += floatval($row_product['discounted_price']);
+        $totalQty    += $row_product['quantity'];
+        $totalPrice  += floatval($row_product['discounted_price']);
+        $totalActual += floatval($row_product['actual_price']);
     }
 
-    return [$totalPrice, $totalQty];
+    return [$totalPrice, $totalQty, $totalActual];
 }
 
 function renderTrimCategory($pdf, $products, $conn) {
@@ -301,8 +307,9 @@ function renderTrimCategory($pdf, $products, $conn) {
     renderTableHeader($pdf, $columns);
     $pdf->SetFont('Arial', '', 8);
 
-    $totalQty   = 0;
-    $totalPrice = 0;
+    $totalQty    = 0;
+    $totalPrice  = 0;
+    $totalActual = 0;
 
     foreach ($products as $row_product) {
         $product_details = getProductDetails($row_product['productid']);
@@ -325,11 +332,12 @@ function renderTrimCategory($pdf, $products, $conn) {
 
         renderRow($pdf, $columns, $row);
 
-        $totalQty   += $row_product['quantity'];
-        $totalPrice += floatval($row_product['discounted_price']);
+        $totalQty    += $row_product['quantity'];
+        $totalPrice  += floatval($row_product['discounted_price']);
+        $totalActual += floatval($row_product['actual_price']);
     }
 
-    return [$totalPrice, $totalQty];
+    return [$totalPrice, $totalQty, $totalActual];
 }
 
 function renderLumberCategory($pdf, $products, $conn) {
@@ -343,13 +351,12 @@ function renderLumberCategory($pdf, $products, $conn) {
     renderTableHeader($pdf, $columns);
     $pdf->SetFont('Arial', '', 8);
 
-    $totalQty   = 0;
-    $totalPrice = 0;
+    $totalQty    = 0;
+    $totalPrice  = 0;
+    $totalActual = 0;
 
     foreach ($products as $row_product) {
         $product_details = getProductDetails($row_product['productid']);
-        $grade_details   = getGradeDetails($product_details['grade']);
-        $profile_details = getProfileTypeDetails($product_details['profile']);
 
         $ft  = floatval($row_product['custom_length'] ?? 0);
         $in  = floatval($row_product['custom_length2'] ?? 0);
@@ -364,11 +371,12 @@ function renderLumberCategory($pdf, $products, $conn) {
 
         renderRow($pdf, $columns, $row);
 
-        $totalQty   += $row_product['quantity'];
-        $totalPrice += floatval($row_product['discounted_price']);
+        $totalQty    += $row_product['quantity'];
+        $totalPrice  += floatval($row_product['discounted_price']);
+        $totalActual += floatval($row_product['actual_price']);
     }
 
-    return [$totalPrice, $totalQty];
+    return [$totalPrice, $totalQty, $totalActual];
 }
 
 function renderRow($pdf, $columns, $row, $bold = false) {
@@ -562,28 +570,43 @@ if (mysqli_num_rows($result) > 0) {
             $productsByCategory[$cat][] = $row_product;
         }
 
-        $total_price = 0;
-        $total_qty   = 0;
+        $total_price  = 0;
+        $total_qty    = 0;
+        $total_actual = 0;
+        $total_saved  = 0;
 
         foreach ($productsByCategory as $categoryId => $products) {
             if ($categoryId == $screw_id) {
-                [$catTotal, $catQty] = renderScrewCategory($pdf, $products, $conn);
+                [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $products, $conn);
             } elseif ($categoryId == $panel_id) {
-                [$catTotal, $catQty] = renderPanelCategory($pdf, $products, $conn);
-            }elseif ($categoryId == $trim_id) {
-                [$catTotal, $catQty] = renderTrimCategory($pdf, $products, $conn);
-            }elseif ($categoryId == $lumber_id) {
-                [$catTotal, $catQty] = renderLumberCategory($pdf, $products, $conn);
+                [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $products, $conn);
+            } elseif ($categoryId == $trim_id) {
+                [$catTotal, $catQty, $catActual] = renderTrimCategory($pdf, $products, $conn);
+            } elseif ($categoryId == $lumber_id) {
+                [$catTotal, $catQty, $catActual] = renderLumberCategory($pdf, $products, $conn);
             } else {
-                [$catTotal, $catQty] = renderDefaultCategory($pdf, $products, $conn);
+                [$catTotal, $catQty, $catActual] = renderDefaultCategory($pdf, $products, $conn);
             }
 
-            $total_price += $catTotal;
-            $total_qty   += $catQty;
+            $catSaved = floatval($catActual) - floatval($catTotal);
+
+            $total_price  += floatval($catTotal);
+            $total_qty    += intval($catQty);
+            $total_actual += floatval($catActual);
+            $total_saved  += $catSaved;
 
             $pdf->Ln(3);
         }
 
+        $lineheight = 6;
+
+        $pdf->SetX(130);
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->Cell(40, $lineheight, 'Customer Savings:', 1, 0, 'L', true);
+
+        $pdf->SetFillColor(255, 255, 255);
+        $pdf->Cell(28, $lineheight, '$ ' . number_format($total_saved, 2), 1, 1, 'R', true);
 
         $pdf->Ln(5);
 
@@ -591,7 +614,7 @@ if (mysqli_num_rows($result) > 0) {
         $col2_x = 140;
         $col_y = $pdf->GetY();
 
-        $lineheight = 6;
+        
 
         $pdf->SetFont('Arial', '', 10);
         $pdf->SetXY($col1_x, $col_y);
@@ -610,8 +633,6 @@ if (mysqli_num_rows($result) > 0) {
         $subtotal   = $total_price;
         $sales_tax  = $subtotal * $tax;
         $grand_total = $subtotal + $delivery_price + $sales_tax;
-
-        $pdf->SetXY($col2_x, $col_y);
 
         $pdf->SetXY($col2_x, $col_y);
         $pdf->Cell(40, $lineheight, 'MISC:', 0, 0);

@@ -78,7 +78,6 @@ if(isset($_REQUEST['action'])) {
                                                     <th class="text-center">Status</th>
                                                     <th class="text-end">Actual Price</th>
                                                     <th class="text-end">Disc Price</th>
-                                                    <th class="text-end">Total</th>
                                                     <?php if($status_code == 3){ ?>
                                                         <th class="text-center">Action</th>
                                                     <?php } ?>
@@ -133,7 +132,6 @@ if(isset($_REQUEST['action'])) {
                                                     </td>
                                                     <td class="text-end">$ <?= number_format(floatval($row['actual_price']),2) ?></td>
                                                     <td class="text-end">$ <?= number_format(floatval($row['discounted_price']),2) ?></td>
-                                                    <td class="text-end">$ <?= number_format(floatval($row['discounted_price'] * $row['quantity']),2) ?></td>
                                                     <?php if($status_code == 3){ ?>
                                                         <td class="text-center">
                                                             <a class="fs-6 text-muted btn-edit" href="javascript:void(0)" 
@@ -151,17 +149,16 @@ if(isset($_REQUEST['action'])) {
                                                         $totalquantity += $row['quantity'] ;
                                                         $total_actual_price += floatval($row['actual_price']);
                                                         $total_disc_price += floatval($row['discounted_price']);
-                                                        $total_amount += floatval($row['discounted_price']) * $row['quantity'];
                                                     }
                                                 ?>
                                             </tbody>
                                             <tfoot>
                                                 <tr>
-                                                    <td colspan="6" class="text-end">Total</td>
+                                                    <td colspan="5" class="text-end">Total</td>
                                                     <td><?= $totalquantity ?></td>
                                                     <td></td>
                                                     <td></td>
-                                                    <td class="text-end">$ <?= number_format($total_amount,2) ?></td>
+                                                    <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
                                                     <?php
                                                     if($status_code == 3){
                                                     ?>

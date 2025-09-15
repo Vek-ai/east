@@ -27,9 +27,10 @@ if (!empty($_REQUEST['id'])) {
     $pageWidth = $pdf->GetPageWidth();
     $usableWidth = $pageWidth - $marginLeft - $marginRight;
 
-    $pdf->Image('assets/images/logo-bw.png', $marginLeft, 6, 60, 20);
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
 
-    $pdf->SetXY($marginLeft, 26);
+    $pdf->SetXY(10, 26);
     $pdf->SetFont('Arial', '', 10);
     $pdf->Cell(0, 5, '977 E Hal Rogers Parkway', 0, 1);
     $pdf->Cell(0, 5, 'London, KY 40741', 0, 1);
@@ -49,8 +50,8 @@ if (!empty($_REQUEST['id'])) {
     $rightX = $marginLeft + $usableWidth / 2;
     $rightWidth = $usableWidth / 2;
 
-    $pdf->SetXY($rightX, 26);
-    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->SetXY($rightX, 10);
+    $pdf->SetFont('Arial', 'B', 16);
     $pdf->Cell($rightWidth, 10, 'Statement of Account', 0, 1, 'C', true);
 
     $pdf->SetTextColor(0, 0, 0);
@@ -94,7 +95,7 @@ if (!empty($_REQUEST['id'])) {
     
 
     $pdf->SetTextColor(0, 0, 0);
-    $pdf->Ln(10);
+    $pdf->Ln(20);
 
     $mailToWidth = $usableWidth / 2;
     $mailToY =  $pdf->GetY();
@@ -384,6 +385,37 @@ if (!empty($_REQUEST['id'])) {
     $pdf->Cell(50, 5, 'Balance Due:', 1, 0, 'R', true);
     $pdf->Cell($w5, 5, '$' . number_format(max(0, $total_credit - $total_available), 2), 1, 1, 'R', true);
     $pdf->Ln(5);
+
+    $colWidthLeft  = 90;
+    $colWidthRight = 90;
+
+    $yStart = $pdf->GetY();
+
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->SetTextColor(0, 0, 255); // blue
+    $pdf->SetX($marginLeft);
+    $pdf->Cell(0, 8, 'East Kentucky Metal', 0, 1, 'L');
+    $pdf->SetTextColor(0, 0, 0);
+
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->SetX($marginLeft);
+    $pdf->MultiCell($colWidthLeft, 5,
+        "977 E Hal Rogers Parkway\nLondon, KY 40741", 0, 'L');
+
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->SetX($marginLeft);
+    $pdf->MultiCell($colWidthLeft, 5,
+        "Phone: (606) 877-1848 | Fax: (606) 864-4280\n" .
+        "Email: Sales@Eastkentuckymetal.com\n" .
+        "Website: Eastkentuckymetal.com", 0, 'L');
+
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->SetXY($marginLeft + $colWidthLeft + 10, $yStart);
+    $pdf->MultiCell($colWidthRight, 5,
+        "Scan me for a Digital copy of this Statement of Account", 0, 'C');
+    $qrX = $marginLeft + $colWidthLeft + ($colWidthRight / 2) - 12;
+    $qrY = $pdf->GetY() + 3;
+    $pdf->Image('assets/images/logo-bw.png', $qrX, $qrY, 25, 25);
 
     $pdf->SetTitle('Statement of Account');
     $pdf->Output('Statement_of_Account.pdf', 'I');
