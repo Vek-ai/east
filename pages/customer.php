@@ -97,7 +97,7 @@ if ($permission === 'edit') {
 <div class="card card-body">
     <div class="row">
       <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
-          <button type="button" class="btn btn-primary d-flex align-items-center addModalBtn" data-id="" data-type="e">
+          <button type="button" class="btn btn-primary d-flex align-items-center addCustomerBtn" data-id="" data-type="e">
               <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title ?>
           </button>
           <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
@@ -251,23 +251,20 @@ if ($permission === 'edit') {
                           $fax = $row_customer['contact_fax'];
                           $address = $row_customer['address'];
                           $customer_type_name = $row_customer['customer_type_name'];
+                          $type = $row_customer['customer_type_id'];
                           $db_status = $row_customer['status'];
                           $order_count = $row_customer['order_count'];
                         
-                          // Check loyalty field and display accordingly
                           if ($row_customer['loyalty'] == '1') {
-                            // Show loyalty program name if loyalty is 1
                             if ($order_count >= $row_customer['accumulated_total_orders']) {
                               $loyalty = $row_customer['loyalty_program_name'];
                             } else {
                               $loyalty = "No Loyalty Level";
                             }
                           } else {
-                            // Show "Off" if loyalty is not 1
                             $loyalty = "Off";
                           }
 
-                          // Display status
                           if ($row_customer['status'] == '0' || $row_customer['status'] == '3') {
                             $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
                           } else {
@@ -325,7 +322,7 @@ if ($permission === 'edit') {
                                     <?php                                                    
                                     if ($permission === 'edit') {
                                     ?>
-                                    <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="e" class="py-1 pe-1 addModalBtn"
+                                    <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="<?= $type ?>" data-type="e" class="py-1 pe-1 editCustomerBtn"
                                       data-toggle="tooltip" data-placement="top" title="Edit">
                                       <i class="fa fa-pencil text-warning"></i>
                                     </a>
@@ -432,65 +429,35 @@ if ($permission === 'edit') {
     </div>
 </div>
 
-
-<div class="modal fade" id="map1Modal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+<div class="modal fade" id="addCustomerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="mapsModalLabel">Search Address</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form id="mapForm" class="form-horizontal">
-              <div class="modal-body">
-                  <div class="mb-2">
-                      <input id="searchBox1" class="form-control" list="address1-list" autocomplete="off">
-                      <datalist id="address1-list"></datalist>
-                  </div>
-                  <div id="map1" class="map-container" style="height: 60vh; width: 100%;"></div>
+
+          <div class="modal-header">
+              <h5 class="modal-title">Add New Customer</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+              <div class="mb-3">
+                <label for="customerType" class="form-label">Customer Type</label>
+                <select id="customerType" class="form-select">
+                    <option value="" selected disabled>Select Customer Type</option>
+                    <option value="1">Personal</option>
+                    <option value="2">Business</option>
+                    <option value="3">Farm</option>
+                    <option value="4">Exempt - (Church/School/Municipal)</option>
+                </select>
               </div>
-              <div class="modal-footer">
-                  <div class="form-actions">
-                      <div class="card-body">
-                          <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
-                      </div>
-                  </div>
-              </div>
-            </form>
+          </div>
+
+          <div class="modal-footer">
+              <button type="button" class="btn btn-success" id="saveCustomerTypeBtn">Next</button>
+          </div>
+
         </div>
     </div>
 </div>
-
-<div class="modal fade" id="map2Modal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel2" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="mapsModalLabel2">Search Shipping Address</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form id="mapForm2" class="form-horizontal">
-              <div class="modal-body">
-                  <div class="mb-2">
-                      <input id="searchBox2" class="form-control" list="address2-list" autocomplete="off">
-                      <datalist id="address2-list"></datalist>
-                  </div>
-                  <div id="map2" class="map-container" style="height: 60vh; width: 100%;"></div>
-              </div>
-              <div class="modal-footer">
-                  <div class="form-actions">
-                      <div class="card-body">
-                          <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
-                      </div>
-                  </div>
-              </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -657,171 +624,6 @@ if ($permission === 'edit') {
 </div>
 
 <script>
-  let map1;
-  let marker1;
-  let lat1 = parseFloat($('#lat').val()) || 0;
-  let lng1 = parseFloat($('#lng').val()) || 0;
-
-  let map2;
-  let marker2;
-  let lat2 = parseFloat($('#ship_lat').val()) || lat1;
-  let lng2 = parseFloat($('#ship_lng').val()) || lng1;
-
-  $('#searchBox1').on('input', function() {
-      updateSuggestions('#searchBox1', '#address1-list');
-  });
-
-  $('#searchBox2').on('input', function() {
-      updateSuggestions('#searchBox2', '#address2-list');
-  });
-
-  $('#address').on('input', function() {
-      updateSuggestions('#address', '#address-data-list');
-  });
-
-  function updateSuggestions(inputId, listId) {
-      var query = $(inputId).val();
-      if (query.length >= 2) {
-          $.ajax({
-              url: `https://nominatim.openstreetmap.org/search`,
-              data: {
-                  q: query,
-                  format: 'json',
-                  addressdetails: 1,
-                  limit: 5
-              },
-              dataType: 'json',
-              success: function(data) {
-                  var datalist = $(listId);
-                  datalist.empty();
-                  data.forEach(function(item) {
-                      console.log(item)
-                      var option = $('<option>')
-                          .attr('value', item.display_name)
-                          .data('lat', item.lat)
-                          .data('lon', item.lon);
-                      datalist.append(option);
-                  });
-              }
-          });
-      }
-  }
-
-  function getPlaceName(lat, lng, type = "main") {
-      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
-
-      $.ajax({
-          url: url,
-          dataType: 'json',
-          success: function(data) {
-              if (data && data.display_name) {
-                  if (type === "main") {
-                      $('#searchBox1').val(data.display_name);
-                      $('#address').val(data.address.road || data.address.neighbourhood || data.address.suburb || '');
-                      $('#city').val(data.address.city || data.address.town || data.address.village || '');
-                      $('#state').val(data.address.state || data.address.province || data.address.region || data.address.county || '');
-                      $('#zip').val(data.address.postcode || '');
-                      $('#lat').val(lat);
-                      $('#lng').val(lng);
-                  } else if (type === "ship") {
-                      $('#searchBox2').val(data.display_name);
-                      $('#ship_address').val(data.address.road || data.address.neighbourhood || data.address.suburb || '');
-                      $('#ship_city').val(data.address.city || data.address.town || data.address.village || '');
-                      $('#ship_state').val(data.address.state || data.address.province || data.address.region || data.address.county || '');
-                      $('#ship_zip').val(data.address.postcode || '');
-                      $('#ship_lat').val(lat);
-                      $('#ship_lng').val(lng);
-                  }
-              } else {
-                  console.error("Address not found for these coordinates.");
-              }
-          },
-          error: function() {
-              console.error("Error retrieving address from Nominatim.");
-          }
-      });
-  }
-
-  $('#searchBox1').on('change', function() {
-      let selectedOption = $('#address1-list option[value="' + $(this).val() + '"]');
-      lat1 = parseFloat(selectedOption.data('lat'));
-      lng1 = parseFloat(selectedOption.data('lon'));
-      marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
-      getPlaceName(lat1, lng1, "main");
-  });
-
-  $('#searchBox2').on('change', function() {
-      let selectedOption = $('#address2-list option[value="' + $(this).val() + '"]');
-      lat2 = parseFloat(selectedOption.data('lat'));
-      lng2 = parseFloat(selectedOption.data('lon'));
-      marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
-      getPlaceName(lat2, lng2, "ship");
-  });
-
-  $('#address').on('change', function() {
-      let selectedOption = $('#address-data-list option[value="' + $(this).val() + '"]');
-      lat1 = parseFloat(selectedOption.data('lat'));
-      lng1 = parseFloat(selectedOption.data('lon'));
-      
-      updateMarker(map1, marker1, lat1, lng1, "Starting Point");
-      getPlaceName(lat1, lng1, 'main');
-  });
-
-  function updateMarker(map, marker, lat, lng, title) {
-      if (!map) return;
-      const position = new google.maps.LatLng(lat, lng);
-      if (marker) {
-          marker.setMap(null);
-      }
-      marker = new google.maps.Marker({
-          position: position,
-          map: map,
-          title: title
-      });
-      map.setCenter(position);
-      return marker;
-  }
-
-  function initMaps() {
-      map1 = new google.maps.Map(document.getElementById("map1"), {
-          center: { lat: lat1, lng: lng1 },
-          zoom: 13,
-      });
-      marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
-
-      google.maps.event.addListener(map1, 'click', function(event) {
-          lat1 = event.latLng.lat();
-          lng1 = event.latLng.lng();
-          marker1 = updateMarker(map1, marker1, lat1, lng1, "Starting Point");
-          getPlaceName(lat1, lng1, "main");
-      });
-  }
-
-  function initShipMaps() {
-    map2 = new google.maps.Map(document.getElementById("map2"), {
-        center: { lat: lat2, lng: lng2 },
-        zoom: 13,
-    });
-    marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
-
-    google.maps.event.addListener(map2, 'click', function(event) {
-        lat2 = event.latLng.lat();
-        lng2 = event.latLng.lng();
-        marker2 = updateMarker(map2, marker2, lat2, lng2, "Shipping Address");
-        getPlaceName(lat2, lng2, "ship");
-    });
-  }
-
-  function loadGoogleMapsAPI() {
-      const script = document.createElement('script');
-      script.src = 'https://maps.googleapis.com/maps/api/js?key=<?= $google_api ?>&callback=initMaps&libraries=places';
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-  }
-
-  window.onload = loadGoogleMapsAPI;
-
   function toggleFormEditable(formId, enable = true, hideBorders = false, hideControls = false) {
     const $form = $("#" + formId);
     if ($form.length === 0) return;
@@ -866,24 +668,85 @@ if ($permission === 'edit') {
         });
     });
 
-    $('#map1Modal').on('shown.bs.modal', function () {
-        if (!map1) {
-            initMaps();
+    $(document).on("click", ".addCustomerBtn", function() {
+        $("#addCustomerModal").modal("show");
+    });
+
+    $(document).on("click", "#saveCustomerTypeBtn", function() {
+        let type = $("#customerType").val();
+        if (!type) {
+            alert("Please select a customer type.");
+            return;
         }
-    });
 
-    $('#map2Modal').on('shown.bs.modal', function () {
-        if (!map2) {
-            initShipMaps();
+        if(type == '1'){
+            action = 'customer_personal_modal';
+        }else if(type == '2'){
+            action = 'customer_business_modal';
+        }else if(type == '3'){
+            action = 'customer_farm_modal';
+        }else if(type == '4'){
+            action = 'customer_exempt_modal';
+        }else{
+            action = 'customer_personal_modal';
         }
+
+        $.ajax({
+            url: "pages/customer_ajax_modal.php",
+            type: "POST",
+            data: {
+              id: "",
+              action: action
+            },
+            success: function (response) {
+                $(".form_body").html(response);
+                toggleFormEditable("lineForm", true, false);
+                $("#addCustomerModal").modal("hide");
+
+                $('#customerModal').modal('show');
+
+                $("#customer_type_id").val(type);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert("Error: " + textStatus + " - " + errorThrown);
+            }
+        });
     });
 
-    $('#map1Modal').on('hidden.bs.modal', function () {
-        $('#customerModal').modal('show');
-    });
+    $(document).on("click", ".editCustomerBtn", function() {
+        let type = $(this).data('type');
+        let customer_id = $(this).data('id');
 
-    $('#map2Modal').on('hidden.bs.modal', function () {
-        $('#customerModal').modal('show');
+        if(type == '1'){
+            action = 'customer_personal_modal';
+        }else if(type == '2'){
+            action = 'customer_business_modal';
+        }else if(type == '3'){
+            action = 'customer_farm_modal';
+        }else if(type == '4'){
+            action = 'customer_exempt_modal';
+        }else{
+            action = 'customer_personal_modal';
+        }
+        
+        $.ajax({
+            url: "pages/customer_ajax_modal.php",
+            type: "POST",
+            data: {
+              id: customer_id,
+              action: action
+            },
+            success: function (response) {
+                $(".form_body").html(response);
+                toggleFormEditable("lineForm", true, false);
+                $("#addCustomerModal").modal("hide");
+
+                $('#customerModal').modal('show');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert("Error: " + textStatus + " - " + errorThrown);
+            }
+        });
     });
 
     $('.addModalBtn').on('click', function () {
@@ -891,7 +754,7 @@ if ($permission === 'edit') {
         const type = $(this).data('type');
 
         $.ajax({
-          url: 'pages/customer_ajax.php',
+          url: 'pages/customer_ajax_modal.php',
           type: 'POST',
           data: {
             id: id,
@@ -1221,22 +1084,6 @@ if ($permission === 'edit') {
         $('#text-srh').val('');
 
         filterTable();
-    });
-
-    $(document).on('click', '#showMapsBtn', function() {
-        let address = $(this).data('address') || "";
-        $('#searchBox1').val(address);
-        if (address) {
-            $('#searchBox1').trigger('change');
-        }
-    });
-
-    $(document).on('click', '#showMapsShipBtn', function() {
-        let address = $(this).data('address') || "";
-        $('#searchBox2').val(address);
-        if (address) {
-            $('#searchBox2').trigger('change');
-        }
     });
 
     $(document).on('click', '.remove-image-btn', function(event) {
