@@ -573,75 +573,59 @@ if (mysqli_num_rows($result) > 0) {
         
 
         $currentY = $pdf->GetY();
+
         $pdf->SetFillColor(211, 211, 211);
         $pdf->SetTextColor(0, 0, 0);
         $pdf->SetFont('Arial', 'B', 10);
-        $pdf->Cell($mailToWidth+10, 7, 'Bill to:', 0, 1, 'L', true);
+        $pdf->SetXY($col1_x, $currentY);
+        $pdf->Cell($mailToWidth+10, 7, 'Bill to:', 0, 0, 'L', true);
 
         $pdf->SetXY($col2_x, $currentY);
-        $pdf->SetFillColor(211, 211, 211);
-        $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetFont('Arial', 'B', 10);
-        $pdf->Cell($mailToWidth-10, 7, 'Ship to:', 0, 1, 'L', true);
+        $pdf->Cell($mailToWidth-10, 7, 'Ship to:', 0, 0, 'L', true);
 
+        $pdf->Ln(7);
         $def_y = $pdf->GetY();
 
-        $pdf->SetXY($col1_x, $def_y);
-        $pdf->MultiCell($mailToWidth, 5, get_customer_name($row_orders['customerid']), 0, 'L');
+        $leftX = $col1_x;
+        $leftY = $def_y;
+        $pdf->SetXY($leftX, $leftY);
+
+        $leftText = get_customer_name($row_orders['customerid'])."\n";
+        $addressParts = [];
+        if (!empty($customerDetails['address'])) $addressParts[] = $customerDetails['address'];
+        if (!empty($customerDetails['city'])) $addressParts[] = $customerDetails['city'];
+        if (!empty($customerDetails['state'])) $addressParts[] = $customerDetails['state'];
+        if (!empty($customerDetails['zip'])) $addressParts[] = $customerDetails['zip'];
+        if (!empty($addressParts)) $leftText .= implode(', ', $addressParts)."\n";
+        if (!empty($customerDetails['tax_exempt_number'])) $leftText .= 'Tax Exempt #: '.$customerDetails['tax_exempt_number']."\n";
+        if (!empty($customerDetails['contact_phone'])) $leftText .= $customerDetails['contact_phone']."\n";
+        $leftText .= 'Customer PO #: '.$row_orders['job_po'];
 
         $pdf->SetFont('Arial', '', 10);
-        $addressParts = [];
-        if (!empty($customerDetails['address'])) {
-            $addressParts[] = $customerDetails['address'];
-        }
-        if (!empty($customerDetails['city'])) {
-            $addressParts[] = $customerDetails['city'];
-        }
-        if (!empty($customerDetails['state'])) {
-            $addressParts[] = $customerDetails['state'];
-        }
-        if (!empty($customerDetails['zip'])) {
-            $addressParts[] = $customerDetails['zip'];
-        }
-        $address = implode(', ', $addressParts);
-        $pdf->MultiCell($mailToWidth, 5, $address , 0, 'L');
+        $leftStartY = $pdf->GetY();
+        $pdf->MultiCell($mailToWidth, 5, $leftText, 0, 'L');
+        $leftHeight = $pdf->GetY() - $leftStartY;
 
-        if(!empty($customerDetails['tax_exempt_number'])){
-            $pdf->Cell(10, 5, 'Tax Exempt #: ' .$customerDetails['tax_exempt_number'], 0, 0, 'L');
-        }
+        $rightX = $col2_x;
+        $rightY = $def_y;
+        $pdf->SetXY($rightX, $rightY);
 
-        $pdf->SetXY($col2_x, $def_y);
-        $pdf->MultiCell(60, 5, $row_orders['deliver_fname'] . " " .$row_orders['deliver_lname'], 0, 'L');
-        
+        $rightText = trim($row_orders['deliver_fname'].' '.$row_orders['deliver_lname'])."\n";
         $shipAddressParts = [];
-        if (!empty($row_orders['deliver_address'])) {
-            $shipAddressParts[] = $row_orders['deliver_address'];
-        }
-        if (!empty($row_orders['deliver_city'])) {
-            $shipAddressParts[] = $row_orders['deliver_city'];
-        }
-        if (!empty($row_orders['deliver_state'])) {
-            $shipAddressParts[] = $row_orders['deliver_state'];
-        }
-        if (!empty($row_orders['deliver_zip'])) {
-            $shipAddressParts[] = $row_orders['deliver_zip'];
-        }
-        $shipAddress = implode(', ', $shipAddressParts);
-        $pdf->SetX($col2_x);
-        $pdf->MultiCell($mailToWidth, 5, $shipAddress, 0, 'L');
+        if (!empty($row_orders['deliver_address'])) $shipAddressParts[] = $row_orders['deliver_address'];
+        if (!empty($row_orders['deliver_city'])) $shipAddressParts[] = $row_orders['deliver_city'];
+        if (!empty($row_orders['deliver_state'])) $shipAddressParts[] = $row_orders['deliver_state'];
+        if (!empty($row_orders['deliver_zip'])) $shipAddressParts[] = $row_orders['deliver_zip'];
+        if (!empty($shipAddressParts)) $rightText .= implode(', ', $shipAddressParts)."\n";
+        $rightText .= 'Job Name: '.$row_orders['job_name'];
 
-        $pdf->SetFont('Arial', '', 9);
-        $pdf->SetXY($col1_x, $pdf->GetY());
-        $pdf->Cell(60, 5, $customerDetails['contact_phone'], 0, 0, 'L');
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(60, 5, '', 0, 0, 'L');
-        $pdf->Ln(5);
-        
-        $pdf->SetXY($col1_x, $pdf->GetY());
-        $pdf->Cell(10, 5, 'Customer PO #: ' .$row_orders['job_po'], 0, 0, 'L');
+        $rightStartY = $pdf->GetY();
+        $pdf->MultiCell($mailToWidth, 5, $rightText, 0, 'L');
+        $rightHeight = $pdf->GetY() - $rightStartY;
 
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(60, 5, 'Job Name: ' .$row_orders['job_name'], 0, 1, 'L');
+        $blockHeight = max($leftHeight, $rightHeight);
+        $pdf->SetY($def_y + $blockHeight + 2);
+
 
         $total_price = 0;
         $total_qty = 0;
