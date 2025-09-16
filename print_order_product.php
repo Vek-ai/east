@@ -405,7 +405,122 @@ function renderRow($pdf, $columns, $row, $bold = false) {
     $pdf->Ln($maxHeight);
 }
 
-$pdf = new FPDF();
+class PDF extends FPDF {
+    public $orderid;
+    public $order_date;
+    public $delivery_method;
+    public $scheduled_date;
+    public $salesperson;
+
+    function Header() {
+        $this->SetFont('Arial', '', 10);
+        $this->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
+
+        $col2_x = 140;
+
+        $this->SetXY($col2_x - 10, 6);
+        $this->MultiCell(95, 5, "Invoice #: " . $this->orderid, 0, 'L');
+
+        $this->SetXY($col2_x - 10, $this->GetY());
+        $this->Cell(95, 5, "Order Date: " . $this->order_date, 0, 1, 'L');
+
+        $this->SetXY($col2_x - 10, $this->GetY());
+        $this->Cell(95, 5, "Pick-up or Delivery: " . $this->delivery_method, 0, 1, 'L');
+
+        $this->SetXY($col2_x - 10, $this->GetY());
+        $this->Cell(95, 5, "Scheduled Date: " . $this->scheduled_date, 0, 1, 'L');
+
+        $this->SetXY($col2_x - 10, $this->GetY());
+        $this->Cell(95, 5, "Salesperson: " . $this->salesperson, 0, 0, 'L');
+
+        $this->Ln(5);
+    }
+
+    function Footer() {
+        $marginLeft = 10;
+        $colWidthLeft  = 110;
+        $colWidthRight = 70;
+
+        $this->SetY(-40);
+
+        $this->SetFont('Arial', 'B', 10);
+        $this->SetTextColor(0, 0, 255);
+        $this->SetX($marginLeft);
+        $this->Cell(0, 8, 'We appreciate your continued business with East Kentucky Metal!', 0, 1, 'L');
+        $this->SetTextColor(0, 0, 0);
+
+        $this->SetFont('Arial', '', 10);
+        $this->SetX($marginLeft);
+        $this->MultiCell($colWidthLeft, 5,
+            "977 E Hal Rogers Parkway\nLondon, KY 40741", 0, 'L');
+
+        $this->SetFont('Arial', 'B', 10);
+        $this->SetX($marginLeft);
+        $this->MultiCell($colWidthLeft, 5,
+            "Phone: (606) 877-1848 | Fax: (606) 864-4280\n" .
+            "Email: Sales@Eastkentuckymetal.com\n" .
+            "Website: Eastkentuckymetal.com", 0, 'L');
+
+        $yStart = $this->GetY() - 30;
+        $this->SetFont('Arial', '', 10);
+        $this->SetXY($marginLeft + $colWidthLeft + 10, $yStart);
+        $this->MultiCell($colWidthRight, 5,
+            "Scan me for a Digtal copy of this receipt", 0, 'C');
+
+        $qrX = $marginLeft + $colWidthLeft + ($colWidthRight / 2);
+        $qrY = $this->GetY() + 3;
+        $this->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 25, 25);
+    }
+
+    public function GetMultiCellHeight($w, $h, $txt)
+    {
+        // Calculate number of lines
+        $cw = &$this->CurrentFont['cw'];
+        if ($w == 0)
+            $w = $this->w - $this->rMargin - $this->x;
+        $wmax = ($w - 2 * $this->cMargin) * 1000 / $this->FontSize;
+        $s = str_replace("\r", '', (string)$txt);
+        $nb = strlen($s);
+        if ($nb > 0 && $s[$nb - 1] == "\n")
+            $nb--;
+        $sep = -1;
+        $i = 0;
+        $j = 0;
+        $l = 0;
+        $nl = 1;
+        while ($i < $nb) {
+            $c = $s[$i];
+            if ($c == "\n") {
+                $i++;
+                $sep = -1;
+                $j = $i;
+                $l = 0;
+                $nl++;
+                continue;
+            }
+            if ($c == ' ')
+                $sep = $i;
+            $l += $cw[$c] ?? 0;
+            if ($l > $wmax) {
+                if ($sep == -1) {
+                    if ($i == $j)
+                        $i++;
+                } else
+                    $i = $sep + 1;
+                $sep = -1;
+                $j = $i;
+                $l = 0;
+                $nl++;
+            } else {
+                $i++;
+            }
+        }
+        return $nl * $h;
+    }
+}
+
+$pdf = new PDF();
+$pdf->SetAutoPageBreak(true, 40);
 $pdf->AddPage();
 
 $col1_x = 10;
@@ -439,33 +554,12 @@ if (mysqli_num_rows($result) > 0) {
         if($delivery_price == 0){
             $delivery_method = 'Pickup';
         }
-        $pdf->SetFont('Arial', '', 10);
-        $pdf->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
-
-        $pdf->SetXY(10, 26);
-        $pdf->SetFont('Arial', '', 10);
-        $pdf->Cell(0, 5, '977 E Hal Rogers Parkway', 0, 1);
-        $pdf->Cell(0, 5, 'London, KY 40741', 0, 1);
-
-        $pdf->SetFont('Arial', 'B', 10);
-        $pdf->Cell(0, 5, 'Phone: (606) 877-1848 | Fax: (606) 864-4280', 0, 1);
-        $pdf->Cell(0, 5, 'Email: Sales@Eastkentuckymetal.com', 0, 1);
-        $pdf->Cell(0, 5, 'Website: Eastkentuckymetal.com', 0, 1);
-
-        $pdf->SetXY($col2_x-10, 6);
-        $pdf->SetFont('Arial', '', 10);
-        $pdf->MultiCell(95, 5, "Invoice #: $orderid", 0, 'L');
-        $pdf->SetXY($col2_x-10, $pdf->GetY());
-        $pdf->Cell(95, 5, "Order Date: " .$order_date, 0, 1, 'L');
         
-        $pdf->SetXY($col2_x-10, $pdf->GetY());
-        $pdf->Cell(95, 5, 'Pick-up or Delivery: ' . $delivery_method, 0, 1, 'L');
-        $pdf->SetXY($col2_x-10, $pdf->GetY());
-        $pdf->Cell(95, 5, 'Scheduled Date: ' . $scheduled_date, 0, 1, 'L');
-        $pdf->SetXY($col2_x-10, $pdf->GetY());
-        $pdf->Cell(95, 5, 'Salesperson: ' . get_staff_name($current_user_id), 0, 1, 'L');
-
-        $pdf->Ln(30);
+        $pdf->orderid = $orderid;
+        $pdf->order_date = $order_date;
+        $pdf->delivery_method = $delivery_method;
+        $pdf->scheduled_date = $scheduled_date;
+        $pdf->salesperson = get_staff_name($current_user_id);
 
         $col1_x = 10;
         $col2_x -= 30;
@@ -512,6 +606,9 @@ if (mysqli_num_rows($result) > 0) {
         $address = implode(', ', $addressParts);
         $pdf->MultiCell($mailToWidth, 5, $address , 0, 'L');
 
+        if(!empty($customerDetails['tax_exempt_number'])){
+            $pdf->Cell(10, 5, 'Tax Exempt #: ' .$customerDetails['tax_exempt_number'], 0, 0, 'L');
+        }
 
         $pdf->SetXY($col2_x, $def_y);
         $pdf->MultiCell(60, 5, $row_orders['deliver_fname'] . " " .$row_orders['deliver_lname'], 0, 'L');
@@ -537,14 +634,13 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->SetXY($col1_x, $pdf->GetY());
         $pdf->Cell(60, 5, $customerDetails['contact_phone'], 0, 0, 'L');
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(60, 5, '', 0, 1, 'L');
-
+        $pdf->Cell(60, 5, '', 0, 0, 'L');
+        $pdf->Ln(5);
+        
         $pdf->SetXY($col1_x, $pdf->GetY());
-        $pdf->Cell(10, 5, 'Tax Exempt #: ', 0, 0, 'L');
-        $pdf->SetXY($col2_x-30, $pdf->GetY());
         $pdf->Cell(10, 5, 'Customer PO #: ' .$row_orders['job_po'], 0, 0, 'L');
 
-        $pdf->SetXY($col3_x, $pdf->GetY());
+        $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(60, 5, 'Job Name: ' .$row_orders['job_name'], 0, 1, 'L');
 
         $total_price = 0;
@@ -617,44 +713,71 @@ if (mysqli_num_rows($result) > 0) {
         
 
         $pdf->SetFont('Arial', '', 10);
-        $pdf->SetXY($col1_x, $col_y);
-        $disclaimer = "Customer is solely responsible for accuracy of order and for verifying accuracy of materials before leaving EKMS or at time of delivery. If an agent orders or takes materials on customer's behalf, EKMS is entitled to rely upon the agent as if s/he has full authority to act on customer's behalf. No returns on metal panels or special trim. All other materials returned undamaged within 60 days of invoice date are subject to a restocking fee equal to 25% of current retail price.";
-        $neededHeight = 4 * ceil($pdf->GetStringWidth($disclaimer) / 120);
 
-        if ($pdf->GetY() + $neededHeight > $pdf->GetPageHeight() - 20) {
-            $pdf->AddPage();
-            $col_y = $pdf->GetY();
-        }
+// --- prepare disclaimer + savings text ---
+$disclaimer = "Customer is solely responsible for accuracy of order and for verifying accuracy of materials before leaving EKMS or at time of delivery. If an agent orders or takes materials on customer's behalf, EKMS is entitled to rely upon the agent as if s/he has full authority to act on customer's behalf. No returns on metal panels or special trim. All other materials returned undamaged within 60 days of invoice date are subject to a restocking fee equal to 25% of current retail price.";
 
-        $pdf->MultiCell(120, 4, $disclaimer, 0);
+$savings_note = "*Customer Savings represent your savings on this Order by being an EKM Member.*";
 
-        $pdf->SetFont('Arial', '', 9);
+// measure height of disclaimer
+$disclaimerHeight = $pdf->GetMultiCellHeight(120, 4, $disclaimer); 
 
-        $subtotal   = $total_price;
-        $sales_tax  = $subtotal * $tax;
-        $grand_total = $subtotal + $delivery_price + $sales_tax;
+$savingsHeight = 0;
+if ($total_saved > 0) {
+    $savingsHeight = $pdf->GetMultiCellHeight(120, 4, $savings_note) + 3; // +3 for spacing
+}
 
-        $pdf->SetXY($col2_x, $col_y);
-        $pdf->Cell(40, $lineheight, 'MISC:', 0, 0);
-        $pdf->Cell(20, $lineheight, ($discount < 0 ? '-' : '') . $discount * 100 .'%', 0, 1, 'R');
+// measure height of summary block (5 lines approx)
+$lineheight = 6;
+$summaryHeight = (5 * $lineheight) + 2; // 5 rows incl. GRAND TOTAL
 
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'SUBTOTAL:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 0, 1 , 'R');
+// total block height
+$blockHeight = $disclaimerHeight + $savingsHeight + $summaryHeight;
 
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'DELIVERY:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1 , 'R');
+// check if block fits
+if ($pdf->GetY() + $blockHeight > $pdf->GetPageHeight() - 20) {
+    $pdf->AddPage();
+    $col_y = $pdf->GetY();
+} else {
+    $col_y = $pdf->GetY();
+}
 
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
+// --- print disclaimer ---
+$pdf->SetXY($col1_x, $col_y);
+$pdf->MultiCell(120, 4, $disclaimer, 0, 'L');
 
-        $pdf->SetFont('Arial', 'B', 10);
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'GRAND TOTAL:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
+if ($total_saved > 0) {
+    $pdf->Ln(3);
+    $pdf->MultiCell(120, 4, $savings_note, 0, 'L');
+}
 
+// --- print summary aligned to disclaimer top ---
+$pdf->SetFont('Arial', '', 9);
+
+$subtotal   = $total_price;
+$sales_tax  = $subtotal * $tax;
+$grand_total = $subtotal + $delivery_price + $sales_tax;
+
+$pdf->SetXY($col2_x, $col_y);
+$pdf->Cell(40, $lineheight, 'MISC:', 0, 0);
+$pdf->Cell(20, $lineheight, ($discount < 0 ? '-' : '') . $discount * 100 .'%', 0, 1, 'R');
+
+$pdf->SetXY($col2_x, $pdf->GetY());
+$pdf->Cell(40, $lineheight, 'SUBTOTAL:', 0, 0);
+$pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 0, 1 , 'R');
+
+$pdf->SetXY($col2_x, $pdf->GetY());
+$pdf->Cell(40, $lineheight, 'DELIVERY:', 0, 0);
+$pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1 , 'R');
+
+$pdf->SetXY($col2_x, $pdf->GetY());
+$pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
+$pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
+
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->SetXY($col2_x, $pdf->GetY());
+$pdf->Cell(40, $lineheight, 'GRAND TOTAL:', 0, 0);
+$pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
 
         $pdf->Ln(5);
 
