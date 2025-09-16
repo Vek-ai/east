@@ -231,6 +231,15 @@ if(isset($_REQUEST['action'])) {
                             value="<?= $secondary_contact_phone ?? '' ?>" />
                         </div>
                     </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Is this Customer a Contractor?</label>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_contractor" id="is_contractor" value="1" <?= ($is_contractor ?? '' == '1' ? 'checked' : '') ?>><br>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1157,6 +1166,15 @@ if(isset($_REQUEST['action'])) {
                         </div>
                     </div>
 
+                    <div class="col-md-4">
+                        <label class="form-label">Is this Customer a Contractor?</label>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_contractor" id="is_contractor" value="1" <?= ($is_contractor ?? '' == '1' ? 'checked' : '') ?>><br>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -2029,6 +2047,15 @@ if(isset($_REQUEST['action'])) {
                         <label class="form-label">Secondary Contact Phone</label>
                         <input type="text" id="secondary_contact_phone" name="secondary_contact_phone" class="form-control"
                             value="<?= $secondary_contact_phone ?? '' ?>" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Is this Customer a Contractor?</label>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_contractor" id="is_contractor" value="1" <?= ($is_contractor ?? '' == '1' ? 'checked' : '') ?>><br>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2921,7 +2948,15 @@ if(isset($_REQUEST['action'])) {
 
                             </div>
                         </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Is this Customer a Contractor?</label>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_contractor" id="is_contractor" value="1" <?= ($is_contractor ?? '' == '1' ? 'checked' : '') ?>><br>
+                            </div>
                         </div>
+                    </div>
 
 
                 </div>
