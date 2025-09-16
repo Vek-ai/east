@@ -315,7 +315,7 @@ if ($permission === 'edit') {
                                       style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Archive"><i
                                         class="fa fa-box-archive text-danger"></i></a>
                                   <?php } else { ?>
-                                    <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="v" class="py-1 pe-1 addModalBtn"
+                                    <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="v" class="py-1 pe-1 viewCustomerBtn"
                                       title="View">
                                       <i class="fa fa-eye text-light"></i>
                                     </a>
@@ -706,6 +706,42 @@ if ($permission === 'edit') {
                 $('#customerModal').modal('show');
 
                 $("#customer_type_id").val(type);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert("Error: " + textStatus + " - " + errorThrown);
+            }
+        });
+    });
+
+    $(document).on("click", ".viewCustomerBtn", function() {
+        let type = $(this).data('type');
+        let customer_id = $(this).data('id');
+
+        if(type == '1'){
+            action = 'customer_personal_modal';
+        }else if(type == '2'){
+            action = 'customer_business_modal';
+        }else if(type == '3'){
+            action = 'customer_farm_modal';
+        }else if(type == '4'){
+            action = 'customer_exempt_modal';
+        }else{
+            action = 'customer_personal_modal';
+        }
+        
+        $.ajax({
+            url: "pages/customer_ajax_modal.php",
+            type: "POST",
+            data: {
+              id: customer_id,
+              action: action
+            },
+            success: function (response) {
+                $(".form_body").html(response);
+                toggleFormEditable("lineForm", false, true);
+                $("#addCustomerModal").modal("hide");
+
+                $('#customerModal').modal('show');
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 alert("Error: " + textStatus + " - " + errorThrown);
