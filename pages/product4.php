@@ -546,6 +546,29 @@ function showCol($name) {
         </div>
     </div>
 
+    <div class="modal" id="viewDetailsModal">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title">Product Details</h6>
+                    <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                <div class="card">
+                    <div class="card-body mb-0" id="viewDetailsModalBody">
+                    
+                    </div>
+                </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -1146,6 +1169,26 @@ function showCol($name) {
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
                     }
+            });
+        });
+
+        $(document).on('click', '#view_product_details', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id');
+            $.ajax({
+                url: 'pages/product4_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    action: "fetch_details_modal"
+                },
+                success: function(response) {
+                    $('#viewDetailsModalBody').html(response);
+                    $('#viewDetailsModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
             });
         });
 

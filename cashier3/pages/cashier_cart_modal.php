@@ -318,12 +318,14 @@ if(isset($_POST['fetch_cart'])){
                                     </div>
                                 </td>
                                 <td>
-                                    <h6 class="fw-semibold mb-0 fs-4">
-                                        <?= $values["product_item"] ?>
-                                        <?php if ($is_preorder == 1): ?>
-                                            <br>( PREORDER )
-                                        <?php endif; ?>
-                                    </h6>
+                                    <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
+                                        <h6 class="fw-semibold mb-0 fs-4">
+                                            <?= $values["product_item"] ?>
+                                            <?php if ($is_preorder == 1): ?>
+                                                <br>( PREORDER )
+                                            <?php endif; ?>
+                                        </h6>
+                                    </a>
                                 </td>
                                 <td class="text-center">
                                     <select id="color_cart<?= $line ?>" class="form-control color-cart text-start" name="color" onchange="updateColor(this)" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
@@ -877,16 +879,18 @@ if(isset($_POST['fetch_cart'])){
                                         } ?>
                                     </td>
                                     <td>
-                                        <h6 class="fw-semibold mb-0 fs-4">
-                                            <?= $values["product_item"] ?>
-                                            <?php if ($values["is_pre_order"] == 1): ?>
-                                                <br>( PREORDER )
-                                            <?php endif; ?>
+                                        <a href="javascript:void(0);" data-id="<?= $data_id ?>" class="d-flex align-items-center view_product_details">
+                                            <h6 class="fw-semibold mb-0 fs-4">
+                                                <?= $values["product_item"] ?>
+                                                <?php if ($values["is_pre_order"] == 1): ?>
+                                                    <br>( PREORDER )
+                                                <?php endif; ?>
 
-                                            <?php if (!empty($values["note"])): ?>
-                                                <br>Notes: <?= htmlspecialchars($values["note"]) ?>
-                                            <?php endif; ?>
-                                        </h6>
+                                                <?php if (!empty($values["note"])): ?>
+                                                    <br>Notes: <?= htmlspecialchars($values["note"]) ?>
+                                                <?php endif; ?>
+                                            </h6>
+                                        </a>
                                     </td>
                                     <td class="text-center">
                                         <select id="color_cart<?= $line ?>" class="form-control color-cart text-start" name="color" onchange="updateColor(this)" data-line="<?= $line; ?>" data-id="<?= $data_id; ?>">

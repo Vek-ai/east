@@ -354,10 +354,9 @@ if (isset($_REQUEST['query'])) {
 
             $tableHTML .= '
             <tr>
-                <td>
-                    <a href="javascript:void(0);" id="view_product_details" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
+                <td class="text-start">
+                    <a href="javascript:void(0);" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center view_product_details">
                         <div class="d-flex align-items-center" >
-                            <img src="'.$picture_path.'" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                             <div class="ms-3">
                                 <h6 class="fw-semibold mb-0 fs-4">'. getProductName($row_product['product_id']) .' ' .$dimensions .'</h6>
                             </div>

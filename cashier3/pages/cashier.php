@@ -476,11 +476,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                                 </button>
                             </div>
                             <div class="col-auto mb-2">
-                                <button type="button" class="btn btn-warning px-3" id="btnAddContractor">
-                                    <i class="fa fa-plus fs-5 me-2"></i> Add Contractor
-                                </button>
-                            </div>
-                            <div class="col-auto mb-2">
                                 <button type="button" class="btn btn-primary px-3" id="btnPriceGroupModal">
                                     <i class="fa fa-tag fs-5 me-2"></i> Change Price Group
                                 </button>
@@ -673,29 +668,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 <a href="#" class="btn ripple btn-warning text-dark d-none" type="button" id="print_estimate" target="_blank">
                     <i class="fe fe-print"></i> Print Total
                 </a>
-                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="viewDetailsModal">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content modal-content-demo">
-            <div class="modal-header">
-                <h6 class="modal-title">Product Details</h6>
-                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-            <div class="card">
-                <div class="card-body mb-0" id="viewDetailsModalBody">
-                
-                </div>
-            </div>
-            </div>
-            <div class="modal-footer">
                 <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
@@ -1242,6 +1214,29 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="confirm_contractor">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="viewDetailsModal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Product Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            <div class="card">
+                <div class="card-body mb-0" id="viewDetailsModalBody">
+                
+                </div>
+            </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>
@@ -4409,7 +4404,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             }
         });
 
-        $(document).on('click', '#view_product_details', function(event) {
+        $(document).on('click', '.view_product_details', function(event) {
             event.preventDefault();
             var id = $(this).data('id');
             $.ajax({
