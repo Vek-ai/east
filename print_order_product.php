@@ -521,7 +521,7 @@ class PDF extends FPDF {
 
 $pdf = new PDF();
 $pdf->SetAutoPageBreak(true, 40);
-$pdf->AddPage();
+
 
 $col1_x = 10;
 $col2_x = 140;
@@ -560,6 +560,8 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->delivery_method = $delivery_method;
         $pdf->scheduled_date = $scheduled_date;
         $pdf->salesperson = get_staff_name($current_user_id);
+
+        $pdf->AddPage();
 
         $col1_x = 10;
         $col2_x -= 30;
@@ -698,70 +700,62 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->SetFont('Arial', '', 10);
 
-// --- prepare disclaimer + savings text ---
-$disclaimer = "Customer is solely responsible for accuracy of order and for verifying accuracy of materials before leaving EKMS or at time of delivery. If an agent orders or takes materials on customer's behalf, EKMS is entitled to rely upon the agent as if s/he has full authority to act on customer's behalf. No returns on metal panels or special trim. All other materials returned undamaged within 60 days of invoice date are subject to a restocking fee equal to 25% of current retail price.";
+        $disclaimer = "Customer is solely responsible for accuracy of order and for verifying accuracy of materials before leaving EKMS or at time of delivery. If an agent orders or takes materials on customer's behalf, EKMS is entitled to rely upon the agent as if s/he has full authority to act on customer's behalf. No returns on metal panels or special trim. All other materials returned undamaged within 60 days of invoice date are subject to a restocking fee equal to 25% of current retail price.";
 
-$savings_note = "*Customer Savings represent your savings on this Order by being an EKM Member.*";
+        $savings_note = "*Customer Savings represent your savings on this Order by being an EKM Member.*";
 
-// measure height of disclaimer
-$disclaimerHeight = $pdf->GetMultiCellHeight(120, 4, $disclaimer); 
+        $disclaimerHeight = $pdf->GetMultiCellHeight(120, 4, $disclaimer); 
 
-$savingsHeight = 0;
-if ($total_saved > 0) {
-    $savingsHeight = $pdf->GetMultiCellHeight(120, 4, $savings_note) + 3; // +3 for spacing
-}
+        $savingsHeight = 0;
+        if ($total_saved > 0) {
+            $savingsHeight = $pdf->GetMultiCellHeight(120, 4, $savings_note) + 3;
+        }
 
-// measure height of summary block (5 lines approx)
-$lineheight = 6;
-$summaryHeight = (5 * $lineheight) + 2; // 5 rows incl. GRAND TOTAL
+        $lineheight = 6;
+        $summaryHeight = (5 * $lineheight) + 2;
 
-// total block height
-$blockHeight = $disclaimerHeight + $savingsHeight + $summaryHeight;
+        $blockHeight = $disclaimerHeight + $savingsHeight + $summaryHeight;
+        if ($pdf->GetY() + $blockHeight > $pdf->GetPageHeight() - 20) {
+            $pdf->AddPage();
+            $col_y = $pdf->GetY();
+        } else {
+            $col_y = $pdf->GetY();
+        }
 
-// check if block fits
-if ($pdf->GetY() + $blockHeight > $pdf->GetPageHeight() - 20) {
-    $pdf->AddPage();
-    $col_y = $pdf->GetY();
-} else {
-    $col_y = $pdf->GetY();
-}
+        $pdf->SetXY($col1_x, $col_y);
+        $pdf->MultiCell(120, 4, $disclaimer, 0, 'L');
 
-// --- print disclaimer ---
-$pdf->SetXY($col1_x, $col_y);
-$pdf->MultiCell(120, 4, $disclaimer, 0, 'L');
+        if ($total_saved > 0) {
+            $pdf->Ln(3);
+            $pdf->MultiCell(120, 4, $savings_note, 0, 'L');
+        }
 
-if ($total_saved > 0) {
-    $pdf->Ln(3);
-    $pdf->MultiCell(120, 4, $savings_note, 0, 'L');
-}
+        $pdf->SetFont('Arial', '', 9);
 
-// --- print summary aligned to disclaimer top ---
-$pdf->SetFont('Arial', '', 9);
+        $subtotal   = $total_price;
+        $sales_tax  = $subtotal * $tax;
+        $grand_total = $subtotal + $delivery_price + $sales_tax;
 
-$subtotal   = $total_price;
-$sales_tax  = $subtotal * $tax;
-$grand_total = $subtotal + $delivery_price + $sales_tax;
+        $pdf->SetXY($col2_x, $col_y);
+        $pdf->Cell(40, $lineheight, 'MISC:', 0, 0);
+        $pdf->Cell(20, $lineheight, ($discount < 0 ? '-' : '') . $discount * 100 .'%', 0, 1, 'R');
 
-$pdf->SetXY($col2_x, $col_y);
-$pdf->Cell(40, $lineheight, 'MISC:', 0, 0);
-$pdf->Cell(20, $lineheight, ($discount < 0 ? '-' : '') . $discount * 100 .'%', 0, 1, 'R');
+        $pdf->SetXY($col2_x, $pdf->GetY());
+        $pdf->Cell(40, $lineheight, 'SUBTOTAL:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 0, 1 , 'R');
 
-$pdf->SetXY($col2_x, $pdf->GetY());
-$pdf->Cell(40, $lineheight, 'SUBTOTAL:', 0, 0);
-$pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 0, 1 , 'R');
+        $pdf->SetXY($col2_x, $pdf->GetY());
+        $pdf->Cell(40, $lineheight, 'DELIVERY:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1 , 'R');
 
-$pdf->SetXY($col2_x, $pdf->GetY());
-$pdf->Cell(40, $lineheight, 'DELIVERY:', 0, 0);
-$pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1 , 'R');
+        $pdf->SetXY($col2_x, $pdf->GetY());
+        $pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
 
-$pdf->SetXY($col2_x, $pdf->GetY());
-$pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
-$pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
-
-$pdf->SetFont('Arial', 'B', 10);
-$pdf->SetXY($col2_x, $pdf->GetY());
-$pdf->Cell(40, $lineheight, 'GRAND TOTAL:', 0, 0);
-$pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->SetXY($col2_x, $pdf->GetY());
+        $pdf->Cell(40, $lineheight, 'GRAND TOTAL:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
 
         $pdf->Ln(5);
 
