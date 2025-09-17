@@ -624,6 +624,156 @@ if ($permission === 'edit') {
 </div>
 
 <script>
+  class BaseMap {
+      constructor(inputSelector, listSelector, modalSelector, mapContainerSelector, latField, lngField, title, type) {
+          this.inputSelector = inputSelector;
+          this.listSelector = listSelector;
+          this.modalSelector = modalSelector;
+          this.mapContainerSelector = mapContainerSelector;
+          this.latField = latField;
+          this.lngField = lngField;
+          this.title = title;
+          this.type = type;
+
+          this.lat = this.safeFloat($(latField).val(), 37.8393);
+          this.lng = this.safeFloat($(lngField).val(), -84.2700);
+
+          this.map = null;
+          this.marker = null;
+
+          this.debounce = (func, wait) => {
+              let timeout;
+              return (...args) => {
+                  clearTimeout(timeout);
+                  timeout = setTimeout(() => func.apply(this, args), wait);
+              };
+          };
+
+          this.initUI();
+      }
+
+      safeFloat(val, fallback) {
+          if (val === undefined || val === null || val === "") return fallback;
+          const num = parseFloat(val);
+          return isNaN(num) ? fallback : num;
+      }
+
+      initUI() {
+          $(this.inputSelector).on('input', this.debounce(() => this.updateSuggestions(), 400));
+          $(this.inputSelector).on('change', () => this.onAddressChange());
+
+          $(this.modalSelector).on('shown.bs.modal', () => {
+              if (!this.map) this.initMap();
+          });
+
+          $(this.modalSelector).on('hidden.bs.modal', () => $('#customerModal').modal('show'));
+      }
+
+      updateSuggestions() {
+          let query = $(this.inputSelector).val();
+          if (query.length < 2) return;
+
+          $.ajax({
+              url: 'pages/supplier_ajax.php',
+              method: 'POST',
+              data: { action: 'search_address', query },
+              dataType: 'json',
+              success: (data) => {
+                  let datalist = $(this.listSelector).empty();
+                  data.forEach(item => {
+                      $('<option>')
+                          .attr('value', item.display_name)
+                          .data('lat', item.lat)
+                          .data('lon', item.lon)
+                          .appendTo(datalist);
+                  });
+              },
+              error: (xhr, status, err) => console.error("Suggestion error:", status, err, xhr.responseText)
+          });
+      }
+
+      onAddressChange() {
+          let selectedOption = $(`${this.listSelector} option[value="${$(this.inputSelector).val()}"]`);
+          if (!selectedOption.length) return;
+
+          let lat = parseFloat(selectedOption.data('lat'));
+          let lng = parseFloat(selectedOption.data('lon'));
+
+          this.lat = lat;
+          this.lng = lng;
+
+          this.marker = this.updateMarker(this.lat, this.lng, this.title);
+          this.getPlaceName();
+      }
+
+      updateMarker(lat, lng, title) {
+          if (!this.map) return this.marker;
+          if (this.marker) this.marker.setMap(null);
+          const pos = new google.maps.LatLng(lat, lng);
+          const marker = new google.maps.Marker({ position: pos, map: this.map, title });
+          this.map.setCenter(pos);
+          return marker;
+      }
+
+      initMap() {
+          const container = document.querySelector(this.mapContainerSelector);
+          if (!container) return console.error("Map container not found:", this.mapContainerSelector);
+
+          this.map = new google.maps.Map(container, {
+              center: { lat: this.lat, lng: this.lng },
+              zoom: 13
+          });
+
+          this.marker = this.updateMarker(this.lat, this.lng, this.title);
+
+          google.maps.event.addListener(this.map, 'click', e => {
+              this.lat = e.latLng.lat();
+              this.lng = e.latLng.lng();
+              this.marker = this.updateMarker(this.lat, this.lng, this.title);
+              this.getPlaceName();
+          });
+      }
+
+      getPlaceName() {
+          $.ajax({
+              url: 'pages/supplier_ajax.php',
+              method: 'POST',
+              data: { action: 'get_place_name', lat: this.lat, lng: this.lng, type: this.type },
+              dataType: 'json',
+              success: data => {
+                  if (!data || !data.display_name) return;
+
+                  if (this.type === 'main') {
+                      $('#searchBox1').val(data.display_name);
+                      $('#address').val(data.address.road || data.address.suburb || '');
+                      $('#city').val(data.address.city || data.address.town || '');
+                      $('#state').val(data.address.state || data.address.region || '');
+                      $('#zip').val(data.address.postcode || '');
+                      $('#lat').val(this.lat);
+                      $('#lng').val(this.lng);
+                  } else if (this.type === 'ship') {
+                      $('#searchBox2').val(data.display_name);
+                      $('#ship_address').val(data.address.road || data.address.suburb || '');
+                      $('#ship_city').val(data.address.city || data.address.town || '');
+                      $('#ship_state').val(data.address.state || data.address.region || '');
+                      $('#ship_zip').val(data.address.postcode || '');
+                      $('#ship_lat').val(this.lat);
+                      $('#ship_lng').val(this.lng);
+                  } else if (this.type === 'corpo') {
+                      $('#searchBox3').val(data.display_name);
+                      $('#corpo_address').val(data.address.road || data.address.suburb || '');
+                      $('#corpo_city').val(data.address.city || data.address.town || '');
+                      $('#corpo_state').val(data.address.state || data.address.region || '');
+                      $('#corpo_zip').val(data.address.postcode || '');
+                      $('#corpo_lat').val(this.lat);
+                      $('#corpo_lng').val(this.lng);
+                  }
+              },
+              error: () => console.error("Error retrieving place name")
+          });
+      }
+  }
+
   function toggleFormEditable(formId, enable = true, hideBorders = false, hideControls = false) {
     const $form = $("#" + formId);
     if ($form.length === 0) return;
@@ -864,9 +1014,9 @@ if ($permission === 'edit') {
         contentType: false,
         success: function (response) {
           $('.modal').modal("hide");
-          if (response === "Customer updated successfully.") {
+          if (response.trim() === "success_update") {
             $('#responseHeader').text("Success");
-            $('#responseMsg').text(response);
+            $('#responseMsg').text("Customer updated successfully.");
             $('#responseHeaderContainer').removeClass("bg-danger");
             $('#responseHeaderContainer').addClass("bg-success");
             $('#response-modal').modal("show");
@@ -874,9 +1024,9 @@ if ($permission === 'edit') {
             $('#response-modal').on('hide.bs.modal', function () {
               window.location.href = "?page=customer";
             });
-          } else if (response === "New customer added successfully.") {
+          } else if (response.trim() === "success_add") {
             $('#responseHeader').text("Success");
-            $('#responseMsg').text(response);
+            $('#responseMsg').text("New customer added successfully.");
             $('#responseHeaderContainer').removeClass("bg-danger");
             $('#responseHeaderContainer').addClass("bg-success");
             $('#response-modal').modal("show");
@@ -884,10 +1034,15 @@ if ($permission === 'edit') {
             $('#response-modal').on('hide.bs.modal', function () {
               location.reload();
             });
+          } else if (response.trim() === "username_exist") {
+            $('#responseHeader').text("Failed to update");
+            $('#responseMsg').text("Username already exist");
+            $('#responseHeaderContainer').removeClass("bg-success");
+            $('#responseHeaderContainer').addClass("bg-danger");
+            $('#response-modal').modal("show");
           } else {
             $('#responseHeader').text("Failed");
             $('#responseMsg').text(response);
-
             $('#responseHeaderContainer').removeClass("bg-success");
             $('#responseHeaderContainer').addClass("bg-danger");
             $('#response-modal').modal("show");
@@ -1145,6 +1300,51 @@ if ($permission === 'edit') {
                     alert('An error occurred. Please try again.');
                 }
             });
+        }
+    });
+
+    $(document).on('change', '#different_ship_address', function () {
+        if ($(this).is(':checked')) {
+            $('.shipping_address_section').removeClass('d-none');
+        } else {
+            $('.shipping_address_section').addClass('d-none');
+        }
+    });
+
+    $(document).on('change', '#is_charge_net', function () {
+        if ($(this).is(':checked')) {
+            $('.chargeNetLimitSection').removeClass('d-none');
+        } else {
+            $('.chargeNetLimitSection').addClass('d-none');
+        }
+    });
+
+    $(document).on('change', '#portal_access', function () {
+        if ($(this).is(':checked')) {
+            $('.portal_user_pass_section').removeClass('d-none');
+        } else {
+            $('.portal_user_pass_section').addClass('d-none');
+        }
+    });
+
+    $(document).on('change', '#is_corporate_parent', function () {
+        if ($(this).is(':checked')) {
+            $('.corporate_parent_section').removeClass('d-none');
+        } else {
+            $('.corporate_parent_section').addClass('d-none');
+        }
+    });
+
+    $(document).on('click', '.input-group-text', function () {
+        const $input = $(this).siblings('input');
+        const $icon = $(this).find('i');
+        
+        if ($input.attr('type') === 'password') {
+            $input.attr('type', 'text');
+            $icon.removeClass('ti-eye-off').addClass('ti-eye');
+        } else {
+            $input.attr('type', 'password');
+            $icon.removeClass('ti-eye').addClass('ti-eye-off');
         }
     });
   });

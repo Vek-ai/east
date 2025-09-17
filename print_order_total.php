@@ -58,13 +58,18 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->SetXY($col2_x,  10);
         $pdf->SetFont('Arial', '', 10);
-        $pdf->MultiCell(95, 5, "Estimate #: $orderid", 0, 'L');
+        $pdf->MultiCell(95, 5, "Invoice #: $orderid", 0, 'L');
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(95, 5, "Date: " .date("F d, Y", strtotime($row_orders['order_date'])), 0, 1, 'L');
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(95, 5, 'Salesperson: ' . get_staff_name($current_user_id), 0, 0, 'L');
 
-        $pdf->Ln(20);
+        $pdf->Ln(10);
+
+        $pdf->SetX($col2_x);
+        $pdf->Cell(60, 5, 'Delivery Method: ' .$delivery_method, 0, 1, 'L');
+
+        $pdf->Ln(5);
 
         $col1_x = 10;
         $col2_x = 70;
@@ -73,45 +78,52 @@ if (mysqli_num_rows($result) > 0) {
 
         $def_y = $pdf->GetY();
 
+        $heights = [];
+
         $pdf->SetXY($col1_x, $def_y);
-        $pdf->MultiCell(60, 5, 'Sold To: ' .$row_orders['deliver_fname'] . " " .$row_orders['deliver_lname'], 0, 'L');
+        $pdf->MultiCell(60, 5, 'Sold To: ' . $row_orders['deliver_fname'] . " " . $row_orders['deliver_lname'], 0, 'L');
+        $heights[] = $pdf->GetY() - $def_y;
 
         $addressParts = [];
-        if (!empty($row_orders['deliver_address'])) {
-            $addressParts[] = $row_orders['deliver_address'];
-        }
-        if (!empty($row_orders['deliver_city'])) {
-            $addressParts[] = $row_orders['deliver_city'];
-        }
-        if (!empty($row_orders['deliver_state'])) {
-            $addressParts[] = $row_orders['deliver_state'];
-        }
-        if (!empty($row_orders['deliver_zip'])) {
-            $addressParts[] = $row_orders['deliver_zip'];
-        }
+        if (!empty($row_orders['deliver_address'])) $addressParts[] = $row_orders['deliver_address'];
+        if (!empty($row_orders['deliver_city'])) $addressParts[] = $row_orders['deliver_city'];
+        if (!empty($row_orders['deliver_state'])) $addressParts[] = $row_orders['deliver_state'];
+        if (!empty($row_orders['deliver_zip'])) $addressParts[] = $row_orders['deliver_zip'];
         $address = implode(', ', $addressParts);
+
         $pdf->SetXY($col2_x, $def_y);
-        $pdf->MultiCell(60, 5, 'Ship To: ' .$address, 0, 'L');
+        $pdf->MultiCell(60, 5, 'Ship To: ' . $address, 0, 'L');
+        $heights[] = $pdf->GetY() - $def_y;
 
+        $contractor_name = get_customer_name((int)$row_orders['contractor_id']);
         $pdf->SetXY($col3_x, $def_y);
-        $pdf->Cell(60, 5, 'Delivery Method: ' .$delivery_method, 0, 1, 'L');
+        $pdf->MultiCell(60, 5, 'Contractor Name: ' . $contractor_name, 0, 'L');
+        $heights[] = $pdf->GetY() - $def_y;
 
+        $pdf->SetY($def_y + max($heights));
         $pdf->SetFont('Arial', '', 9);
         $pdf->SetXY($col1_x, $pdf->GetY());
         $pdf->Cell(60, 5, $customerDetails['contact_phone'], 0, 0, 'L');
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(60, 5, '', 0, 1, 'L');
 
-        $pdf->Ln(5);
-        $pdf->SetXY($col1_x, $pdf->GetY());
-        $pdf->Cell(10, 5, 'Tax Exempt #', 0, 0, 'L');
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(10, 5, 'Customer PO #: ' .$row_orders['job_po'], 0, 0, 'L');
+        $pdf->Cell(60, 5, '', 0, 0, 'L');
 
         $pdf->SetXY($col3_x, $pdf->GetY());
-        $pdf->Cell(60, 5, 'Job Name: ' .$row_orders['job_name'], 0, 1, 'L');
+        $pdf->Cell(60, 5, '', 0, 0, 'L');
 
-        $pdf->Ln(5);
+        $pdf->Ln(2);
+
+        $pdf->SetXY($col1_x, $pdf->GetY());
+        $pdf->Cell(40, 5, 'Tax Exempt #', 0, 0, 'L');
+
+        $pdf->SetXY($col2_x, $pdf->GetY());
+        $pdf->Cell(60, 5, 'Customer PO #: ' . $row_orders['job_po'], 0, 0, 'L');
+
+        $pdf->SetXY($col3_x, $pdf->GetY());
+        $pdf->Cell(60, 5, 'Job Name: ' . $row_orders['job_name'], 0, 1, 'L');
+
+        // Optional: small space if needed
+        $pdf->Ln(2);
 
         $total_price = 0;
         $total_qty = 0;

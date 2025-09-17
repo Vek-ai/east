@@ -477,7 +477,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_pickup" name="payment_pickup"
-                                            <?= (($payment_pickup ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_pickup ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -487,7 +487,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_delivery" name="payment_delivery"
-                                            <?= (($payment_delivery ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_delivery ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -497,7 +497,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_cash" name="payment_cash"
-                                            <?= (($payment_cash ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_cash ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -507,7 +507,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_check" name="payment_check"
-                                            <?= (($payment_check ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_check ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -517,7 +517,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_card" name="payment_card"
-                                            <?= (($payment_card ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_card ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -624,215 +624,68 @@ if(isset($_REQUEST['action'])) {
         </div>
 
         <script>
-            class CustomerMaps {
-                constructor(apiKey) {
-                    this.apiKey = apiKey;
+            (() => {
+                class MainMap extends BaseMap {
+                    constructor() {
+                        super('#searchBox1', '#address1-list', '#map1Modal', '#map1', '#lat', '#lng', 'Starting Point', 'main');
+                    }
+                }
 
-                    function safeFloat(val, fallback) {
-                        if (val === undefined || val === null || val === "") return fallback;
-                        const num = parseFloat(val);
-                        return isNaN(num) ? fallback : num;
+                class ShipMap extends BaseMap {
+                    constructor() {
+                        super('#searchBox2', '#address2-list', '#map2Modal', '#map2', '#ship_lat', '#ship_lng', 'Shipping Address', 'ship');
+                    }
+                }
+
+                class CorpoMap extends BaseMap {
+                    constructor() {
+                        super('#searchBox3', '#address3-list', '#map3Modal', '#map3', '#corpo_lat', '#corpo_lng', 'Corporate Address', 'corpo');
+                    }
+                }
+
+                class CustomerMaps {
+                    constructor(apiKey) {
+                        this.apiKey = apiKey;
+                        this.mainMap = new MainMap();
+                        this.shipMap = new ShipMap();
+                        this.corpoMap = new CorpoMap();
+                        this.loadGoogleMapsAPI();
+
+                        $(document).on('click', '#showMapsBtn', e => {
+                            const address = $(e.currentTarget).data('address') || "";
+                            $('#searchBox1').val(address).trigger(address ? 'change' : '');
+                            $('#map1Modal').modal('show');
+                        });
+
+                        $(document).on('click', '#showMapsShipBtn', e => {
+                            const address = $(e.currentTarget).data('address') || "";
+                            $('#searchBox2').val(address).trigger(address ? 'change' : '');
+                            $('#map2Modal').modal('show');
+                        });
+
+                        $(document).on('click', '#showMapsCorpoBtn', e => {
+                            const address = $(e.currentTarget).data('address') || "";
+                            $('#searchBox3').val(address).trigger(address ? 'change' : '');
+                            $('#map3Modal').modal('show');
+                        });
                     }
 
-                    const DEFAULT_LAT = 37.8393;
-                    const DEFAULT_LNG = -84.2700;
-
-                    this.lat1 = safeFloat($('#lat').val(), DEFAULT_LAT);
-                    this.lng1 = safeFloat($('#lng').val(), DEFAULT_LNG);
-
-                    this.lat2 = safeFloat($('#ship_lat').val(), DEFAULT_LAT);
-                    this.lng2 = safeFloat($('#ship_lng').val(), DEFAULT_LNG);
-
-                    this.map1 = null;
-                    this.marker1 = null;
-                    this.map2 = null;
-                    this.marker2 = null;
-
-                    this.debounce = (func, wait) => {
-                        let timeout;
-                        return (...args) => {
-                            clearTimeout(timeout);
-                            timeout = setTimeout(() => func.apply(this, args), wait);
-                        };
-                    };
-
-                    $(document).ready(() => this.initUI());
-
-                    this.loadGoogleMapsAPI();
-                }
-
-                initUI() {
-                    $('#searchBox1').on('input', this.debounce(() => this.updateSuggestions('#searchBox1', '#address1-list'), 400));
-                    $('#searchBox2').on('input', this.debounce(() => this.updateSuggestions('#searchBox2', '#address2-list'), 400));
-                    $('#address').on('input', this.debounce(() => this.updateSuggestions('#address', '#address-data-list'), 400));
-
-                    $('#searchBox1').on('change', () => this.onAddressChange('#searchBox1', '#address1-list', 'main'));
-                    $('#searchBox2').on('change', () => this.onAddressChange('#searchBox2', '#address2-list', 'ship'));
-                    $('#address').on('change', () => this.onAddressChange('#address', '#address-data-list', 'main'));
-
-                    $('#map1Modal, #map2Modal').on('shown.bs.modal', (e) => {
-                        if (e.target.id === 'map1Modal' && !this.map1) this.initMap1();
-                        if (e.target.id === 'map2Modal' && !this.map2) this.initMap2();
-                    });
-
-                    $('#map1Modal, #map2Modal').on('hidden.bs.modal', () => $('#customerModal').modal('show'));
-
-                    $(document).on('click', '#showMapsBtn', (e) => {
-                        let address = $(e.currentTarget).data('address') || "";
-                        $('#searchBox1').val(address).trigger(address ? 'change' : '');
-                        $('#map1Modal').modal('show');
-                    });
-
-                    $(document).on('click', '#showMapsShipBtn', (e) => {
-                        let address = $(e.currentTarget).data('address') || "";
-                        $('#searchBox2').val(address).trigger(address ? 'change' : '');
-                        $('#map2Modal').modal('show');
-                    });
-                }
-
-                updateSuggestions(inputId, listId) {
-                    let query = $(inputId).val();
-                    if (query.length < 2) return;
-
-                    $.ajax({
-                        url: 'pages/supplier_ajax.php',
-                        method: 'POST',
-                        data: { action: 'search_address', query },
-                        dataType: 'json',
-                        success: (data) => {
-                            let datalist = $(listId).empty();
-                            data.forEach((item) => {
-                                $('<option>')
-                                    .attr('value', item.display_name)
-                                    .data('lat', item.lat)
-                                    .data('lon', item.lon)
-                                    .appendTo(datalist);
-                            });
-                        },
-                        error: (xhr, status, err) => console.error("Suggestion error:", status, err, xhr.responseText)
-                    });
-                }
-
-                onAddressChange(inputSelector, listSelector, type) {
-                    let selectedOption = $(`${listSelector} option[value="${$(inputSelector).val()}"]`);
-                    let lat = parseFloat(selectedOption.data('lat'));
-                    let lng = parseFloat(selectedOption.data('lon'));
-
-                    if (type === 'main') {
-                        this.lat1 = lat; this.lng1 = lng;
-                        this.marker1 = this.updateMarker(this.map1, this.marker1, lat, lng, "Starting Point");
-                    } else {
-                        this.lat2 = lat; this.lng2 = lng;
-                        this.marker2 = this.updateMarker(this.map2, this.marker2, lat, lng, "Shipping Address");
+                    loadGoogleMapsAPI() {
+                        const script = document.createElement('script');
+                        script.src = `https://maps.googleapis.com/maps/api/js?key=${this.apiKey}&callback=initDummy&libraries=places`;
+                        script.async = true;
+                        script.defer = true;
+                        document.head.appendChild(script);
                     }
-                    this.getPlaceName(lat, lng, type);
                 }
 
-                updateMarker(map, marker, lat, lng, title) {
-                    if (!map) return marker;
-                    if (marker) marker.setMap(null);
-                    let pos = new google.maps.LatLng(lat, lng);
-                    marker = new google.maps.Marker({ position: pos, map, title });
-                    map.setCenter(pos);
-                    return marker;
-                }
+                const customerMaps = new CustomerMaps("<?= $google_api ?>");
 
-                getPlaceName(lat, lng, type = "main") {
-                    $.ajax({
-                        url: 'pages/supplier_ajax.php',
-                        method: 'POST',
-                        data: { action: 'get_place_name', lat, lng, type },
-                        dataType: 'json',
-                        success: (data) => {
-                            if (!data || !data.display_name) return;
-                            if (type === "main") {
-                                $('#searchBox1').val(data.display_name);
-                                $('#address').val(data.address.road || data.address.suburb || '');
-                                $('#city').val(data.address.city || data.address.town || '');
-                                $('#state').val(data.address.state || data.address.region || '');
-                                $('#zip').val(data.address.postcode || '');
-                                $('#lat').val(lat); $('#lng').val(lng);
-                            } else {
-                                $('#searchBox2').val(data.display_name);
-                                $('#ship_address').val(data.address.road || data.address.suburb || '');
-                                $('#ship_city').val(data.address.city || data.address.town || '');
-                                $('#ship_state').val(data.address.state || data.address.region || '');
-                                $('#ship_zip').val(data.address.postcode || '');
-                                $('#ship_lat').val(lat); $('#ship_lng').val(lng);
-                            }
-                        },
-                        error: () => console.error("Error retrieving place name")
-                    });
-                }
-
-                initMap1() {
-                    const lat = parseFloat($('#lat').val()) || 37.8393;
-                    const lng = parseFloat($('#lng').val()) || -84.2700;
-
-                    this.map1 = new google.maps.Map(document.getElementById("map1"), {
-                        center: { lat: lat, lng: lng },
-                        zoom: 13
-                    });
-                    this.marker1 = this.updateMarker(this.map1, this.marker1, lat, lng, "Starting Point");
-
-                    google.maps.event.addListener(this.map1, 'click', (e) => {
-                        this.lat1 = e.latLng.lat();
-                        this.lng1 = e.latLng.lng();
-                        this.marker1 = this.updateMarker(this.map1, this.marker1, this.lat1, this.lng1, "Starting Point");
-                        this.getPlaceName(this.lat1, this.lng1, "main");
-                    });
-                }
-
-                initMap2() {
-                    const lat = parseFloat($('#ship_lat').val()) || 37.8393;
-                    const lng = parseFloat($('#ship_lng').val()) || -84.2700;
-
-                    console.log("Init Map2 with values:", lat, lng);
-
-                    this.lat2 = lat;
-                    this.lng2 = lng;
-
-                    this.map2 = new google.maps.Map(document.getElementById("map2"), {
-                        center: { lat: lat, lng: lng },
-                        zoom: 13
-                    });
-
-                    this.marker2 = this.updateMarker(this.map2, this.marker2, lat, lng, "Shipping Address");
-
-                    google.maps.event.addListener(this.map2, 'click', (e) => {
-                        this.lat2 = e.latLng.lat();
-                        this.lng2 = e.latLng.lng();
-                        this.marker2 = this.updateMarker(this.map2, this.marker2, this.lat2, this.lng2, "Shipping Address");
-                        this.getPlaceName(this.lat2, this.lng2, "ship");
-                    });
-                }
-
-
-                loadGoogleMapsAPI() {
-                    const script = document.createElement('script');
-                    script.src = `https://maps.googleapis.com/maps/api/js?key=${this.apiKey}&callback=initDummy&libraries=places`;
-                    script.async = true;
-                    script.defer = true;
-                    document.head.appendChild(script);
-                }
-            }
-
-            // init
-            const customerMaps = new CustomerMaps("<?= $google_api ?>");
-            $(document).ready(function () {
                 if ($('#different_ship_address').is(':checked')) {
                     $('.shipping_address_section').removeClass('d-none');
                 } else {
                     $('.shipping_address_section').addClass('d-none');
                 }
-
-                $(document).on('change', '#different_ship_address', function () {
-                    if ($(this).is(':checked')) {
-                        $('.shipping_address_section').removeClass('d-none');
-                    } else {
-                        $('.shipping_address_section').addClass('d-none');
-                    }
-                });
 
                 if ($('#is_charge_net').is(':checked')) {
                     $('.chargeNetLimitSection').removeClass('d-none');
@@ -840,41 +693,12 @@ if(isset($_REQUEST['action'])) {
                     $('.chargeNetLimitSection').addClass('d-none');
                 }
 
-                $(document).on('change', '#is_charge_net', function () {
-                    if ($(this).is(':checked')) {
-                        $('.chargeNetLimitSection').removeClass('d-none');
-                    } else {
-                        $('.chargeNetLimitSection').addClass('d-none');
-                    }
-                });
-
                 if ($('#portal_access').is(':checked')) {
                     $('.portal_user_pass_section').removeClass('d-none');
                 } else {
                     $('.portal_user_pass_section').addClass('d-none');
                 }
-
-                $(document).on('change', '#portal_access', function () {
-                    if ($(this).is(':checked')) {
-                        $('.portal_user_pass_section').removeClass('d-none');
-                    } else {
-                        $('.portal_user_pass_section').addClass('d-none');
-                    }
-                });
-
-                $('.input-group-text').on('click', function () {
-                    const $input = $(this).siblings('input');
-                    const $icon = $(this).find('i');
-                    
-                    if ($input.attr('type') === 'password') {
-                        $input.attr('type', 'text');
-                        $icon.removeClass('ti-eye-off').addClass('ti-eye');
-                    } else {
-                        $input.attr('type', 'password');
-                        $icon.removeClass('ti-eye').addClass('ti-eye-off');
-                    }
-                });
-            });
+            })();
         </script>
     <?php
     }
@@ -1023,6 +847,35 @@ if(isset($_REQUEST['action'])) {
             </div>
         </div>
 
+        <div class="modal fade" id="map3Modal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel2" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="mapsModalLabel2">Search Shipping Address</h5>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form id="mapForm2" class="form-horizontal">
+                    <div class="modal-body">
+                        <div class="mb-2">
+                            <input id="searchBox3" class="form-control" list="address3-list" autocomplete="off">
+                            <datalist id="address3-list"></datalist>
+                        </div>
+                        <div id="map3" class="map-container" style="height: 60vh; width: 100%;"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="form-actions">
+                            <div class="card-body">
+                                <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <div class="card shadow-sm rounded-3 mb-3">
             <div class="card-header bg-light border-bottom">
                 <h5 class="mb-0 fw-bold">Contact Information</h5>
@@ -1104,67 +957,71 @@ if(isset($_REQUEST['action'])) {
                         </div>
                     </div>
 
-                    <div class="col-md-8">
-                        <div class="mb-3">
-                        <label class="form-label">Corporate Name/Parent Company Name</label>
-                        <input type="text" id="corpo_parent_name" name="corpo_parent_name" class="form-control"
-                            value="<?= $corpo_parent_name ?? '' ?>" />
+                    <div class="corporate_parent_section row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                            <label class="form-label">Corporate Name/Parent Company Name</label>
+                            <input type="text" id="corpo_parent_name" name="corpo_parent_name" class="form-control"
+                                value="<?= $corpo_parent_name ?? '' ?>" />
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                        <label class="form-label">Primary Contact Phone</label>
-                        <input type="text" id="corpo_phone_no" name="corpo_phone_no" class="form-control"
-                            value="<?= $corpo_phone_no ?? '' ?>" />
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                            <label class="form-label">Primary Contact Phone</label>
+                            <input type="text" id="corpo_phone_no" name="corpo_phone_no" class="form-control"
+                                value="<?= $corpo_phone_no ?? '' ?>" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label">Address</label>
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                
+                                <div class="d-flex w-100">
+                                    <input type="text" id="corpo_address" name="corpo_address" class="form-control" value="<?= $corpo_address ?? '' ?>" list="address-data-list"/>
+                                    <datalist id="address-data-list"></datalist>
+                                    <button type="button" class="btn btn-primary py-1 ms-2 toggleElements" id="showMapsCorpoBtn" data-address="<?=$addressDetails ?? ''?>" style="border-radius: 10%;">Change</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                            <label class="form-label">City</label>
+                            <input type="text" id="corpo_city" name="corpo_city" class="form-control" value="<?= $corpo_city ?? '' ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                            <label class="form-label">State</label>
+                            <input type="text" id="corpo_state" name="corpo_state" class="form-control" value="<?= $corpo_state ?? '' ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                            <label class="form-label">Zip</label>
+                            <input type="text" id="corpo_zip" name="corpo_zip" class="form-control" value="<?= $corpo_zip ?? '' ?>" />
+                            </div>
+                        </div>
+                        <input type="hidden" id="corpo_lat" name="corpo_lat" class="form-control" value="<?= $corpo_lat ?? '' ?>" />
+                        <input type="hidden" id="corpo_lng" name="corpo_lng" class="form-control" value="<?= $corpo_lng ?? '' ?>" />
+                        
+                        <div class="col-md-12">
+                            <label class="form-label">Use Corporate/Parent Company Address for Billing address</label>
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                            type="checkbox" 
+                                            name="is_bill_corpo_address" 
+                                            id="is_bill_corpo_address" 
+                                            value="1" 
+                                            <?= !empty($is_bill_corpo_address) && $is_bill_corpo_address == '1' ? 'checked' : '' ?>>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-md-12">
-                        <label class="form-label">Address</label>
-                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                            
-                            <div class="d-flex w-100">
-                                <input type="text" id="corpo_address" name="corpo_address" class="form-control" value="<?= $corpo_address ?? '' ?>" list="address-data-list"/>
-                                <datalist id="address-data-list"></datalist>
-                                <button type="button" class="btn btn-primary py-1 ms-2 toggleElements" id="showMapsBtn" data-address="<?=$addressDetails ?? ''?>" style="border-radius: 10%;">Change</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                        <label class="form-label">City</label>
-                        <input type="text" id="corpo_city" name="corpo_city" class="form-control" value="<?= $corpo_city ?? '' ?>" />
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                        <label class="form-label">State</label>
-                        <input type="text" id="corpo_state" name="corpo_state" class="form-control" value="<?= $corpo_state ?? '' ?>" />
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                        <label class="form-label">Zip</label>
-                        <input type="text" id="corpo_zip" name="corpo_zip" class="form-control" value="<?= $corpo_zip ?? '' ?>" />
-                        </div>
-                    </div>
-                    <input type="hidden" id="corpo_lat" name="corpo_lat" class="form-control" value="<?= $corpo_lat ?? '' ?>" />
-                    <input type="hidden" id="corpo_lng" name="corpo_lng" class="form-control" value="<?= $corpo_lng ?? '' ?>" />
                     
-                    <div class="col-md-12">
-                        <label class="form-label">Use Corporate/Parent Company Address for Billing address</label>
-                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                            
-                            <div class="form-check">
-                                <input class="form-check-input" 
-                                        type="checkbox" 
-                                        name="is_bill_corpo_address" 
-                                        id="is_bill_corpo_address" 
-                                        value="1" 
-                                        <?= !empty($is_bill_corpo_address) && $is_bill_corpo_address == '1' ? 'checked' : '' ?>>
-                            </div>
-                        </div>
-                    </div>
 
                     <div class="col-md-4">
                         <label class="form-label">Is this Customer a Contractor?</label>
@@ -1412,7 +1269,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_pickup" name="payment_pickup"
-                                            <?= (($payment_pickup ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_pickup ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -1422,7 +1279,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_delivery" name="payment_delivery"
-                                            <?= (($payment_delivery ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_delivery ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -1432,7 +1289,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_cash" name="payment_cash"
-                                            <?= (($payment_cash ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_cash ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -1442,7 +1299,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_check" name="payment_check"
-                                            <?= (($payment_check ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_check ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -1452,7 +1309,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_card" name="payment_card"
-                                            <?= (($payment_card ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_card ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -1557,260 +1414,6 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
         </div>
-
-        <script>
-            class CustomerMaps {
-                constructor(apiKey) {
-                    this.apiKey = apiKey;
-
-                    function safeFloat(val, fallback) {
-                        if (val === undefined || val === null || val === "") return fallback;
-                        const num = parseFloat(val);
-                        return isNaN(num) ? fallback : num;
-                    }
-
-                    const DEFAULT_LAT = 37.8393;
-                    const DEFAULT_LNG = -84.2700;
-
-                    this.lat1 = safeFloat($('#lat').val(), DEFAULT_LAT);
-                    this.lng1 = safeFloat($('#lng').val(), DEFAULT_LNG);
-
-                    this.lat2 = safeFloat($('#ship_lat').val(), DEFAULT_LAT);
-                    this.lng2 = safeFloat($('#ship_lng').val(), DEFAULT_LNG);
-
-                    this.map1 = null;
-                    this.marker1 = null;
-                    this.map2 = null;
-                    this.marker2 = null;
-
-                    this.debounce = (func, wait) => {
-                        let timeout;
-                        return (...args) => {
-                            clearTimeout(timeout);
-                            timeout = setTimeout(() => func.apply(this, args), wait);
-                        };
-                    };
-
-                    $(document).ready(() => this.initUI());
-
-                    this.loadGoogleMapsAPI();
-                }
-
-                initUI() {
-                    $('#searchBox1').on('input', this.debounce(() => this.updateSuggestions('#searchBox1', '#address1-list'), 400));
-                    $('#searchBox2').on('input', this.debounce(() => this.updateSuggestions('#searchBox2', '#address2-list'), 400));
-                    $('#address').on('input', this.debounce(() => this.updateSuggestions('#address', '#address-data-list'), 400));
-
-                    $('#searchBox1').on('change', () => this.onAddressChange('#searchBox1', '#address1-list', 'main'));
-                    $('#searchBox2').on('change', () => this.onAddressChange('#searchBox2', '#address2-list', 'ship'));
-                    $('#address').on('change', () => this.onAddressChange('#address', '#address-data-list', 'main'));
-
-                    $('#map1Modal, #map2Modal').on('shown.bs.modal', (e) => {
-                        if (e.target.id === 'map1Modal' && !this.map1) this.initMap1();
-                        if (e.target.id === 'map2Modal' && !this.map2) this.initMap2();
-                    });
-
-                    $('#map1Modal, #map2Modal').on('hidden.bs.modal', () => $('#customerModal').modal('show'));
-
-                    $(document).on('click', '#showMapsBtn', (e) => {
-                        let address = $(e.currentTarget).data('address') || "";
-                        $('#searchBox1').val(address).trigger(address ? 'change' : '');
-                        $('#map1Modal').modal('show');
-                    });
-
-                    $(document).on('click', '#showMapsShipBtn', (e) => {
-                        let address = $(e.currentTarget).data('address') || "";
-                        $('#searchBox2').val(address).trigger(address ? 'change' : '');
-                        $('#map2Modal').modal('show');
-                    });
-                }
-
-                updateSuggestions(inputId, listId) {
-                    let query = $(inputId).val();
-                    if (query.length < 2) return;
-
-                    $.ajax({
-                        url: 'pages/supplier_ajax.php',
-                        method: 'POST',
-                        data: { action: 'search_address', query },
-                        dataType: 'json',
-                        success: (data) => {
-                            let datalist = $(listId).empty();
-                            data.forEach((item) => {
-                                $('<option>')
-                                    .attr('value', item.display_name)
-                                    .data('lat', item.lat)
-                                    .data('lon', item.lon)
-                                    .appendTo(datalist);
-                            });
-                        },
-                        error: (xhr, status, err) => console.error("Suggestion error:", status, err, xhr.responseText)
-                    });
-                }
-
-                onAddressChange(inputSelector, listSelector, type) {
-                    let selectedOption = $(`${listSelector} option[value="${$(inputSelector).val()}"]`);
-                    let lat = parseFloat(selectedOption.data('lat'));
-                    let lng = parseFloat(selectedOption.data('lon'));
-
-                    if (type === 'main') {
-                        this.lat1 = lat; this.lng1 = lng;
-                        this.marker1 = this.updateMarker(this.map1, this.marker1, lat, lng, "Starting Point");
-                    } else {
-                        this.lat2 = lat; this.lng2 = lng;
-                        this.marker2 = this.updateMarker(this.map2, this.marker2, lat, lng, "Shipping Address");
-                    }
-                    this.getPlaceName(lat, lng, type);
-                }
-
-                updateMarker(map, marker, lat, lng, title) {
-                    if (!map) return marker;
-                    if (marker) marker.setMap(null);
-                    let pos = new google.maps.LatLng(lat, lng);
-                    marker = new google.maps.Marker({ position: pos, map, title });
-                    map.setCenter(pos);
-                    return marker;
-                }
-
-                getPlaceName(lat, lng, type = "main") {
-                    $.ajax({
-                        url: 'pages/supplier_ajax.php',
-                        method: 'POST',
-                        data: { action: 'get_place_name', lat, lng, type },
-                        dataType: 'json',
-                        success: (data) => {
-                            if (!data || !data.display_name) return;
-                            if (type === "main") {
-                                $('#searchBox1').val(data.display_name);
-                                $('#address').val(data.address.road || data.address.suburb || '');
-                                $('#city').val(data.address.city || data.address.town || '');
-                                $('#state').val(data.address.state || data.address.region || '');
-                                $('#zip').val(data.address.postcode || '');
-                                $('#lat').val(lat); $('#lng').val(lng);
-                            } else {
-                                $('#searchBox2').val(data.display_name);
-                                $('#ship_address').val(data.address.road || data.address.suburb || '');
-                                $('#ship_city').val(data.address.city || data.address.town || '');
-                                $('#ship_state').val(data.address.state || data.address.region || '');
-                                $('#ship_zip').val(data.address.postcode || '');
-                                $('#ship_lat').val(lat); $('#ship_lng').val(lng);
-                            }
-                        },
-                        error: () => console.error("Error retrieving place name")
-                    });
-                }
-
-                initMap1() {
-                    const lat = parseFloat($('#lat').val()) || 37.8393;
-                    const lng = parseFloat($('#lng').val()) || -84.2700;
-
-                    this.map1 = new google.maps.Map(document.getElementById("map1"), {
-                        center: { lat: lat, lng: lng },
-                        zoom: 13
-                    });
-                    this.marker1 = this.updateMarker(this.map1, this.marker1, lat, lng, "Starting Point");
-
-                    google.maps.event.addListener(this.map1, 'click', (e) => {
-                        this.lat1 = e.latLng.lat();
-                        this.lng1 = e.latLng.lng();
-                        this.marker1 = this.updateMarker(this.map1, this.marker1, this.lat1, this.lng1, "Starting Point");
-                        this.getPlaceName(this.lat1, this.lng1, "main");
-                    });
-                }
-
-                initMap2() {
-                    const lat = parseFloat($('#ship_lat').val()) || 37.8393;
-                    const lng = parseFloat($('#ship_lng').val()) || -84.2700;
-
-                    console.log("Init Map2 with values:", lat, lng);
-
-                    this.lat2 = lat;
-                    this.lng2 = lng;
-
-                    this.map2 = new google.maps.Map(document.getElementById("map2"), {
-                        center: { lat: lat, lng: lng },
-                        zoom: 13
-                    });
-
-                    this.marker2 = this.updateMarker(this.map2, this.marker2, lat, lng, "Shipping Address");
-
-                    google.maps.event.addListener(this.map2, 'click', (e) => {
-                        this.lat2 = e.latLng.lat();
-                        this.lng2 = e.latLng.lng();
-                        this.marker2 = this.updateMarker(this.map2, this.marker2, this.lat2, this.lng2, "Shipping Address");
-                        this.getPlaceName(this.lat2, this.lng2, "ship");
-                    });
-                }
-
-
-                loadGoogleMapsAPI() {
-                    const script = document.createElement('script');
-                    script.src = `https://maps.googleapis.com/maps/api/js?key=${this.apiKey}&callback=initDummy&libraries=places`;
-                    script.async = true;
-                    script.defer = true;
-                    document.head.appendChild(script);
-                }
-            }
-
-            // init
-            const customerMaps = new CustomerMaps("<?= $google_api ?>");
-            $(document).ready(function () {
-                if ($('#different_ship_address').is(':checked')) {
-                    $('.shipping_address_section').removeClass('d-none');
-                } else {
-                    $('.shipping_address_section').addClass('d-none');
-                }
-
-                $(document).on('change', '#different_ship_address', function () {
-                    if ($(this).is(':checked')) {
-                        $('.shipping_address_section').removeClass('d-none');
-                    } else {
-                        $('.shipping_address_section').addClass('d-none');
-                    }
-                });
-
-                if ($('#is_charge_net').is(':checked')) {
-                    $('.chargeNetLimitSection').removeClass('d-none');
-                } else {
-                    $('.chargeNetLimitSection').addClass('d-none');
-                }
-
-                $(document).on('change', '#is_charge_net', function () {
-                    if ($(this).is(':checked')) {
-                        $('.chargeNetLimitSection').removeClass('d-none');
-                    } else {
-                        $('.chargeNetLimitSection').addClass('d-none');
-                    }
-                });
-
-                if ($('#portal_access').is(':checked')) {
-                    $('.portal_user_pass_section').removeClass('d-none');
-                } else {
-                    $('.portal_user_pass_section').addClass('d-none');
-                }
-
-                $(document).on('change', '#portal_access', function () {
-                    if ($(this).is(':checked')) {
-                        $('.portal_user_pass_section').removeClass('d-none');
-                    } else {
-                        $('.portal_user_pass_section').addClass('d-none');
-                    }
-                });
-
-                $('.input-group-text').on('click', function () {
-                    const $input = $(this).siblings('input');
-                    const $icon = $(this).find('i');
-                    
-                    if ($input.attr('type') === 'password') {
-                        $input.attr('type', 'text');
-                        $icon.removeClass('ti-eye-off').addClass('ti-eye');
-                    } else {
-                        $input.attr('type', 'password');
-                        $icon.removeClass('ti-eye').addClass('ti-eye-off');
-                    }
-                });
-            });
-        </script>
     <?php
     }
 
@@ -2295,7 +1898,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_pickup" name="payment_pickup"
-                                            <?= (($payment_pickup ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_pickup ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -2305,7 +1908,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_delivery" name="payment_delivery"
-                                            <?= (($payment_delivery ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_delivery ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -2315,7 +1918,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_cash" name="payment_cash"
-                                            <?= (($payment_cash ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_cash ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -2325,7 +1928,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_check" name="payment_check"
-                                            <?= (($payment_check ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_check ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -2335,7 +1938,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_card" name="payment_card"
-                                            <?= (($payment_card ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_card ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -2440,260 +2043,6 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
         </div>
-
-        <script>
-            class CustomerMaps {
-                constructor(apiKey) {
-                    this.apiKey = apiKey;
-
-                    function safeFloat(val, fallback) {
-                        if (val === undefined || val === null || val === "") return fallback;
-                        const num = parseFloat(val);
-                        return isNaN(num) ? fallback : num;
-                    }
-
-                    const DEFAULT_LAT = 37.8393;
-                    const DEFAULT_LNG = -84.2700;
-
-                    this.lat1 = safeFloat($('#lat').val(), DEFAULT_LAT);
-                    this.lng1 = safeFloat($('#lng').val(), DEFAULT_LNG);
-
-                    this.lat2 = safeFloat($('#ship_lat').val(), DEFAULT_LAT);
-                    this.lng2 = safeFloat($('#ship_lng').val(), DEFAULT_LNG);
-
-                    this.map1 = null;
-                    this.marker1 = null;
-                    this.map2 = null;
-                    this.marker2 = null;
-
-                    this.debounce = (func, wait) => {
-                        let timeout;
-                        return (...args) => {
-                            clearTimeout(timeout);
-                            timeout = setTimeout(() => func.apply(this, args), wait);
-                        };
-                    };
-
-                    $(document).ready(() => this.initUI());
-
-                    this.loadGoogleMapsAPI();
-                }
-
-                initUI() {
-                    $('#searchBox1').on('input', this.debounce(() => this.updateSuggestions('#searchBox1', '#address1-list'), 400));
-                    $('#searchBox2').on('input', this.debounce(() => this.updateSuggestions('#searchBox2', '#address2-list'), 400));
-                    $('#address').on('input', this.debounce(() => this.updateSuggestions('#address', '#address-data-list'), 400));
-
-                    $('#searchBox1').on('change', () => this.onAddressChange('#searchBox1', '#address1-list', 'main'));
-                    $('#searchBox2').on('change', () => this.onAddressChange('#searchBox2', '#address2-list', 'ship'));
-                    $('#address').on('change', () => this.onAddressChange('#address', '#address-data-list', 'main'));
-
-                    $('#map1Modal, #map2Modal').on('shown.bs.modal', (e) => {
-                        if (e.target.id === 'map1Modal' && !this.map1) this.initMap1();
-                        if (e.target.id === 'map2Modal' && !this.map2) this.initMap2();
-                    });
-
-                    $('#map1Modal, #map2Modal').on('hidden.bs.modal', () => $('#customerModal').modal('show'));
-
-                    $(document).on('click', '#showMapsBtn', (e) => {
-                        let address = $(e.currentTarget).data('address') || "";
-                        $('#searchBox1').val(address).trigger(address ? 'change' : '');
-                        $('#map1Modal').modal('show');
-                    });
-
-                    $(document).on('click', '#showMapsShipBtn', (e) => {
-                        let address = $(e.currentTarget).data('address') || "";
-                        $('#searchBox2').val(address).trigger(address ? 'change' : '');
-                        $('#map2Modal').modal('show');
-                    });
-                }
-
-                updateSuggestions(inputId, listId) {
-                    let query = $(inputId).val();
-                    if (query.length < 2) return;
-
-                    $.ajax({
-                        url: 'pages/supplier_ajax.php',
-                        method: 'POST',
-                        data: { action: 'search_address', query },
-                        dataType: 'json',
-                        success: (data) => {
-                            let datalist = $(listId).empty();
-                            data.forEach((item) => {
-                                $('<option>')
-                                    .attr('value', item.display_name)
-                                    .data('lat', item.lat)
-                                    .data('lon', item.lon)
-                                    .appendTo(datalist);
-                            });
-                        },
-                        error: (xhr, status, err) => console.error("Suggestion error:", status, err, xhr.responseText)
-                    });
-                }
-
-                onAddressChange(inputSelector, listSelector, type) {
-                    let selectedOption = $(`${listSelector} option[value="${$(inputSelector).val()}"]`);
-                    let lat = parseFloat(selectedOption.data('lat'));
-                    let lng = parseFloat(selectedOption.data('lon'));
-
-                    if (type === 'main') {
-                        this.lat1 = lat; this.lng1 = lng;
-                        this.marker1 = this.updateMarker(this.map1, this.marker1, lat, lng, "Starting Point");
-                    } else {
-                        this.lat2 = lat; this.lng2 = lng;
-                        this.marker2 = this.updateMarker(this.map2, this.marker2, lat, lng, "Shipping Address");
-                    }
-                    this.getPlaceName(lat, lng, type);
-                }
-
-                updateMarker(map, marker, lat, lng, title) {
-                    if (!map) return marker;
-                    if (marker) marker.setMap(null);
-                    let pos = new google.maps.LatLng(lat, lng);
-                    marker = new google.maps.Marker({ position: pos, map, title });
-                    map.setCenter(pos);
-                    return marker;
-                }
-
-                getPlaceName(lat, lng, type = "main") {
-                    $.ajax({
-                        url: 'pages/supplier_ajax.php',
-                        method: 'POST',
-                        data: { action: 'get_place_name', lat, lng, type },
-                        dataType: 'json',
-                        success: (data) => {
-                            if (!data || !data.display_name) return;
-                            if (type === "main") {
-                                $('#searchBox1').val(data.display_name);
-                                $('#address').val(data.address.road || data.address.suburb || '');
-                                $('#city').val(data.address.city || data.address.town || '');
-                                $('#state').val(data.address.state || data.address.region || '');
-                                $('#zip').val(data.address.postcode || '');
-                                $('#lat').val(lat); $('#lng').val(lng);
-                            } else {
-                                $('#searchBox2').val(data.display_name);
-                                $('#ship_address').val(data.address.road || data.address.suburb || '');
-                                $('#ship_city').val(data.address.city || data.address.town || '');
-                                $('#ship_state').val(data.address.state || data.address.region || '');
-                                $('#ship_zip').val(data.address.postcode || '');
-                                $('#ship_lat').val(lat); $('#ship_lng').val(lng);
-                            }
-                        },
-                        error: () => console.error("Error retrieving place name")
-                    });
-                }
-
-                initMap1() {
-                    const lat = parseFloat($('#lat').val()) || 37.8393;
-                    const lng = parseFloat($('#lng').val()) || -84.2700;
-
-                    this.map1 = new google.maps.Map(document.getElementById("map1"), {
-                        center: { lat: lat, lng: lng },
-                        zoom: 13
-                    });
-                    this.marker1 = this.updateMarker(this.map1, this.marker1, lat, lng, "Starting Point");
-
-                    google.maps.event.addListener(this.map1, 'click', (e) => {
-                        this.lat1 = e.latLng.lat();
-                        this.lng1 = e.latLng.lng();
-                        this.marker1 = this.updateMarker(this.map1, this.marker1, this.lat1, this.lng1, "Starting Point");
-                        this.getPlaceName(this.lat1, this.lng1, "main");
-                    });
-                }
-
-                initMap2() {
-                    const lat = parseFloat($('#ship_lat').val()) || 37.8393;
-                    const lng = parseFloat($('#ship_lng').val()) || -84.2700;
-
-                    console.log("Init Map2 with values:", lat, lng);
-
-                    this.lat2 = lat;
-                    this.lng2 = lng;
-
-                    this.map2 = new google.maps.Map(document.getElementById("map2"), {
-                        center: { lat: lat, lng: lng },
-                        zoom: 13
-                    });
-
-                    this.marker2 = this.updateMarker(this.map2, this.marker2, lat, lng, "Shipping Address");
-
-                    google.maps.event.addListener(this.map2, 'click', (e) => {
-                        this.lat2 = e.latLng.lat();
-                        this.lng2 = e.latLng.lng();
-                        this.marker2 = this.updateMarker(this.map2, this.marker2, this.lat2, this.lng2, "Shipping Address");
-                        this.getPlaceName(this.lat2, this.lng2, "ship");
-                    });
-                }
-
-
-                loadGoogleMapsAPI() {
-                    const script = document.createElement('script');
-                    script.src = `https://maps.googleapis.com/maps/api/js?key=${this.apiKey}&callback=initDummy&libraries=places`;
-                    script.async = true;
-                    script.defer = true;
-                    document.head.appendChild(script);
-                }
-            }
-
-            // init
-            const customerMaps = new CustomerMaps("<?= $google_api ?>");
-            $(document).ready(function () {
-                if ($('#different_ship_address').is(':checked')) {
-                    $('.shipping_address_section').removeClass('d-none');
-                } else {
-                    $('.shipping_address_section').addClass('d-none');
-                }
-
-                $(document).on('change', '#different_ship_address', function () {
-                    if ($(this).is(':checked')) {
-                        $('.shipping_address_section').removeClass('d-none');
-                    } else {
-                        $('.shipping_address_section').addClass('d-none');
-                    }
-                });
-
-                if ($('#is_charge_net').is(':checked')) {
-                    $('.chargeNetLimitSection').removeClass('d-none');
-                } else {
-                    $('.chargeNetLimitSection').addClass('d-none');
-                }
-
-                $(document).on('change', '#is_charge_net', function () {
-                    if ($(this).is(':checked')) {
-                        $('.chargeNetLimitSection').removeClass('d-none');
-                    } else {
-                        $('.chargeNetLimitSection').addClass('d-none');
-                    }
-                });
-
-                if ($('#portal_access').is(':checked')) {
-                    $('.portal_user_pass_section').removeClass('d-none');
-                } else {
-                    $('.portal_user_pass_section').addClass('d-none');
-                }
-
-                $(document).on('change', '#portal_access', function () {
-                    if ($(this).is(':checked')) {
-                        $('.portal_user_pass_section').removeClass('d-none');
-                    } else {
-                        $('.portal_user_pass_section').addClass('d-none');
-                    }
-                });
-
-                $('.input-group-text').on('click', function () {
-                    const $input = $(this).siblings('input');
-                    const $icon = $(this).find('i');
-                    
-                    if ($input.attr('type') === 'password') {
-                        $input.attr('type', 'text');
-                        $icon.removeClass('ti-eye-off').addClass('ti-eye');
-                    } else {
-                        $input.attr('type', 'password');
-                        $icon.removeClass('ti-eye').addClass('ti-eye-off');
-                    }
-                });
-            });
-        </script>
     <?php
     }
 
@@ -3196,7 +2545,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_pickup" name="payment_pickup"
-                                            <?= (($payment_pickup ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_pickup ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -3206,7 +2555,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_delivery" name="payment_delivery"
-                                            <?= (($payment_delivery ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_delivery ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -3216,7 +2565,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_cash" name="payment_cash"
-                                            <?= (($payment_cash ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_cash ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -3226,7 +2575,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_check" name="payment_check"
-                                            <?= (($payment_check ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_check ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -3236,7 +2585,7 @@ if(isset($_REQUEST['action'])) {
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input" type="checkbox" 
                                             id="payment_card" name="payment_card"
-                                            <?= (($payment_card ?? 0)== 1) ? 'checked' : ''; ?>>
+                                            <?= (($payment_card ?? 1)== 1) ? 'checked' : ''; ?>>
                                     </div>
                                 </div>
 
@@ -3341,193 +2690,61 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
         </div>
+    <?php
+    }
 
-        <script>
+    ?>
+    <script>
+        (() => {
+            class MainMap extends BaseMap {
+                constructor() {
+                    super('#searchBox1', '#address1-list', '#map1Modal', '#map1', '#lat', '#lng', 'Starting Point', 'main');
+                }
+            }
+
+            class ShipMap extends BaseMap {
+                constructor() {
+                    super('#searchBox2', '#address2-list', '#map2Modal', '#map2', '#ship_lat', '#ship_lng', 'Shipping Address', 'ship');
+                }
+            }
+
+            class CorpoMap extends BaseMap {
+                constructor() {
+                    super('#searchBox3', '#address3-list', '#map3Modal', '#map3', '#corpo_lat', '#corpo_lng', 'Corporate Address', 'corpo');
+                }
+            }
+
             class CustomerMaps {
                 constructor(apiKey) {
                     this.apiKey = apiKey;
-
-                    function safeFloat(val, fallback) {
-                        if (val === undefined || val === null || val === "") return fallback;
-                        const num = parseFloat(val);
-                        return isNaN(num) ? fallback : num;
-                    }
-
-                    const DEFAULT_LAT = 37.8393;
-                    const DEFAULT_LNG = -84.2700;
-
-                    this.lat1 = safeFloat($('#lat').val(), DEFAULT_LAT);
-                    this.lng1 = safeFloat($('#lng').val(), DEFAULT_LNG);
-
-                    this.lat2 = safeFloat($('#ship_lat').val(), DEFAULT_LAT);
-                    this.lng2 = safeFloat($('#ship_lng').val(), DEFAULT_LNG);
-
-                    this.map1 = null;
-                    this.marker1 = null;
-                    this.map2 = null;
-                    this.marker2 = null;
-
-                    this.debounce = (func, wait) => {
-                        let timeout;
-                        return (...args) => {
-                            clearTimeout(timeout);
-                            timeout = setTimeout(() => func.apply(this, args), wait);
-                        };
-                    };
-
-                    $(document).ready(() => this.initUI());
-
+                    this.mainMap = new MainMap();
+                    this.shipMap = new ShipMap();
+                    this.corpoMap = new CorpoMap();
                     this.loadGoogleMapsAPI();
-                }
 
-                initUI() {
-                    $('#searchBox1').on('input', this.debounce(() => this.updateSuggestions('#searchBox1', '#address1-list'), 400));
-                    $('#searchBox2').on('input', this.debounce(() => this.updateSuggestions('#searchBox2', '#address2-list'), 400));
-                    $('#address').on('input', this.debounce(() => this.updateSuggestions('#address', '#address-data-list'), 400));
-
-                    $('#searchBox1').on('change', () => this.onAddressChange('#searchBox1', '#address1-list', 'main'));
-                    $('#searchBox2').on('change', () => this.onAddressChange('#searchBox2', '#address2-list', 'ship'));
-                    $('#address').on('change', () => this.onAddressChange('#address', '#address-data-list', 'main'));
-
-                    $('#map1Modal, #map2Modal').on('shown.bs.modal', (e) => {
-                        if (e.target.id === 'map1Modal' && !this.map1) this.initMap1();
-                        if (e.target.id === 'map2Modal' && !this.map2) this.initMap2();
-                    });
-
-                    $('#map1Modal, #map2Modal').on('hidden.bs.modal', () => $('#customerModal').modal('show'));
-
-                    $(document).on('click', '#showMapsBtn', (e) => {
-                        let address = $(e.currentTarget).data('address') || "";
+                    $(document).on('click', '#showMapsBtn', e => {
+                        const address = $(e.currentTarget).data('address') || "";
                         $('#searchBox1').val(address).trigger(address ? 'change' : '');
                         $('#map1Modal').modal('show');
                     });
 
-                    $(document).on('click', '#showMapsShipBtn', (e) => {
-                        let address = $(e.currentTarget).data('address') || "";
+                    $(document).on('click', '#showMapsShipBtn', e => {
+                        const address = $(e.currentTarget).data('address') || "";
                         $('#searchBox2').val(address).trigger(address ? 'change' : '');
                         $('#map2Modal').modal('show');
                     });
-                }
 
-                updateSuggestions(inputId, listId) {
-                    let query = $(inputId).val();
-                    if (query.length < 2) return;
-
-                    $.ajax({
-                        url: 'pages/supplier_ajax.php',
-                        method: 'POST',
-                        data: { action: 'search_address', query },
-                        dataType: 'json',
-                        success: (data) => {
-                            let datalist = $(listId).empty();
-                            data.forEach((item) => {
-                                $('<option>')
-                                    .attr('value', item.display_name)
-                                    .data('lat', item.lat)
-                                    .data('lon', item.lon)
-                                    .appendTo(datalist);
-                            });
-                        },
-                        error: (xhr, status, err) => console.error("Suggestion error:", status, err, xhr.responseText)
+                    $(document).on('click', '#showMapsCorpoBtn', e => {
+                        const address = $(e.currentTarget).data('address') || "";
+                        $('#searchBox3').val(address).trigger(address ? 'change' : '');
+                        $('#map3Modal').modal('show');
                     });
                 }
-
-                onAddressChange(inputSelector, listSelector, type) {
-                    let selectedOption = $(`${listSelector} option[value="${$(inputSelector).val()}"]`);
-                    let lat = parseFloat(selectedOption.data('lat'));
-                    let lng = parseFloat(selectedOption.data('lon'));
-
-                    if (type === 'main') {
-                        this.lat1 = lat; this.lng1 = lng;
-                        this.marker1 = this.updateMarker(this.map1, this.marker1, lat, lng, "Starting Point");
-                    } else {
-                        this.lat2 = lat; this.lng2 = lng;
-                        this.marker2 = this.updateMarker(this.map2, this.marker2, lat, lng, "Shipping Address");
-                    }
-                    this.getPlaceName(lat, lng, type);
-                }
-
-                updateMarker(map, marker, lat, lng, title) {
-                    if (!map) return marker;
-                    if (marker) marker.setMap(null);
-                    let pos = new google.maps.LatLng(lat, lng);
-                    marker = new google.maps.Marker({ position: pos, map, title });
-                    map.setCenter(pos);
-                    return marker;
-                }
-
-                getPlaceName(lat, lng, type = "main") {
-                    $.ajax({
-                        url: 'pages/supplier_ajax.php',
-                        method: 'POST',
-                        data: { action: 'get_place_name', lat, lng, type },
-                        dataType: 'json',
-                        success: (data) => {
-                            if (!data || !data.display_name) return;
-                            if (type === "main") {
-                                $('#searchBox1').val(data.display_name);
-                                $('#address').val(data.address.road || data.address.suburb || '');
-                                $('#city').val(data.address.city || data.address.town || '');
-                                $('#state').val(data.address.state || data.address.region || '');
-                                $('#zip').val(data.address.postcode || '');
-                                $('#lat').val(lat); $('#lng').val(lng);
-                            } else {
-                                $('#searchBox2').val(data.display_name);
-                                $('#ship_address').val(data.address.road || data.address.suburb || '');
-                                $('#ship_city').val(data.address.city || data.address.town || '');
-                                $('#ship_state').val(data.address.state || data.address.region || '');
-                                $('#ship_zip').val(data.address.postcode || '');
-                                $('#ship_lat').val(lat); $('#ship_lng').val(lng);
-                            }
-                        },
-                        error: () => console.error("Error retrieving place name")
-                    });
-                }
-
-                initMap1() {
-                    const lat = parseFloat($('#lat').val()) || 37.8393;
-                    const lng = parseFloat($('#lng').val()) || -84.2700;
-
-                    this.map1 = new google.maps.Map(document.getElementById("map1"), {
-                        center: { lat: lat, lng: lng },
-                        zoom: 13
-                    });
-                    this.marker1 = this.updateMarker(this.map1, this.marker1, lat, lng, "Starting Point");
-
-                    google.maps.event.addListener(this.map1, 'click', (e) => {
-                        this.lat1 = e.latLng.lat();
-                        this.lng1 = e.latLng.lng();
-                        this.marker1 = this.updateMarker(this.map1, this.marker1, this.lat1, this.lng1, "Starting Point");
-                        this.getPlaceName(this.lat1, this.lng1, "main");
-                    });
-                }
-
-                initMap2() {
-                    const lat = parseFloat($('#ship_lat').val()) || 37.8393;
-                    const lng = parseFloat($('#ship_lng').val()) || -84.2700;
-
-                    console.log("Init Map2 with values:", lat, lng);
-
-                    this.lat2 = lat;
-                    this.lng2 = lng;
-
-                    this.map2 = new google.maps.Map(document.getElementById("map2"), {
-                        center: { lat: lat, lng: lng },
-                        zoom: 13
-                    });
-
-                    this.marker2 = this.updateMarker(this.map2, this.marker2, lat, lng, "Shipping Address");
-
-                    google.maps.event.addListener(this.map2, 'click', (e) => {
-                        this.lat2 = e.latLng.lat();
-                        this.lng2 = e.latLng.lng();
-                        this.marker2 = this.updateMarker(this.map2, this.marker2, this.lat2, this.lng2, "Shipping Address");
-                        this.getPlaceName(this.lat2, this.lng2, "ship");
-                    });
-                }
-
 
                 loadGoogleMapsAPI() {
+                    if (window.googleMapsAPILoaded) return;
+                    window.googleMapsAPILoaded = true;
+
                     const script = document.createElement('script');
                     script.src = `https://maps.googleapis.com/maps/api/js?key=${this.apiKey}&callback=initDummy&libraries=places`;
                     script.async = true;
@@ -3536,67 +2753,34 @@ if(isset($_REQUEST['action'])) {
                 }
             }
 
-            // init
             const customerMaps = new CustomerMaps("<?= $google_api ?>");
-            $(document).ready(function () {
-                if ($('#different_ship_address').is(':checked')) {
-                    $('.shipping_address_section').removeClass('d-none');
-                } else {
-                    $('.shipping_address_section').addClass('d-none');
-                }
 
-                $(document).on('change', '#different_ship_address', function () {
-                    if ($(this).is(':checked')) {
-                        $('.shipping_address_section').removeClass('d-none');
-                    } else {
-                        $('.shipping_address_section').addClass('d-none');
-                    }
-                });
+            if ($('#different_ship_address').is(':checked')) {
+                $('.shipping_address_section').removeClass('d-none');
+            } else {
+                $('.shipping_address_section').addClass('d-none');
+            }
 
-                if ($('#is_charge_net').is(':checked')) {
-                    $('.chargeNetLimitSection').removeClass('d-none');
-                } else {
-                    $('.chargeNetLimitSection').addClass('d-none');
-                }
+            if ($('#is_charge_net').is(':checked')) {
+                $('.chargeNetLimitSection').removeClass('d-none');
+            } else {
+                $('.chargeNetLimitSection').addClass('d-none');
+            }
 
-                $(document).on('change', '#is_charge_net', function () {
-                    if ($(this).is(':checked')) {
-                        $('.chargeNetLimitSection').removeClass('d-none');
-                    } else {
-                        $('.chargeNetLimitSection').addClass('d-none');
-                    }
-                });
+            if ($('#portal_access').is(':checked')) {
+                $('.portal_user_pass_section').removeClass('d-none');
+            } else {
+                $('.portal_user_pass_section').addClass('d-none');
+            }
 
-                if ($('#portal_access').is(':checked')) {
-                    $('.portal_user_pass_section').removeClass('d-none');
-                } else {
-                    $('.portal_user_pass_section').addClass('d-none');
-                }
-
-                $(document).on('change', '#portal_access', function () {
-                    if ($(this).is(':checked')) {
-                        $('.portal_user_pass_section').removeClass('d-none');
-                    } else {
-                        $('.portal_user_pass_section').addClass('d-none');
-                    }
-                });
-
-                $('.input-group-text').on('click', function () {
-                    const $input = $(this).siblings('input');
-                    const $icon = $(this).find('i');
-                    
-                    if ($input.attr('type') === 'password') {
-                        $input.attr('type', 'text');
-                        $icon.removeClass('ti-eye-off').addClass('ti-eye');
-                    } else {
-                        $input.attr('type', 'password');
-                        $icon.removeClass('ti-eye').addClass('ti-eye-off');
-                    }
-                });
-            });
-        </script>
+            if ($('#is_corporate_parent').is(':checked')) {
+                $('.corporate_parent_section').removeClass('d-none');
+            } else {
+                $('.corporate_parent_section').addClass('d-none');
+            }
+        })();
+    </script>
     <?php
-    }
 
     mysqli_close($conn);
 }

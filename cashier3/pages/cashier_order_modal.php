@@ -586,51 +586,63 @@ if(isset($_POST['fetch_order'])){
                         <div id="paymentOptions">
                             <label class="form-label fw-bold">Select Payment Method</label><br>
 
+                            <?php if (!empty($customer_details['payment_pickup'])): ?>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payPickup" value="pickup">
                                 <label class="form-check-label" for="payPickup">
-                                <i class="fa-solid fa-store me-1"></i>Pay at Pick-Up
+                                    <i class="fa-solid fa-store me-1"></i>Pay at Pick-Up
                                 </label>
                             </div>
+                            <?php endif; ?>
 
+                            <?php if (!empty($customer_details['payment_delivery'])): ?>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payDelivery" value="delivery">
                                 <label class="form-check-label" for="payDelivery">
-                                <i class="fa-solid fa-truck me-1"></i>Pay at Delivery
+                                    <i class="fa-solid fa-truck me-1"></i>Pay at Delivery
                                 </label>
                             </div>
+                            <?php endif; ?>
 
+                            <?php if (!empty($customer_details['payment_cash'])): ?>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payCash" value="cash">
                                 <label class="form-check-label" for="payCash">
-                                <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
+                                    <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
                                 </label>
                             </div>
+                            <?php endif; ?>
 
+                            <?php if (!empty($customer_details['payment_check'])): ?>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payCheck" value="check">
                                 <label class="form-check-label" for="payCheck">
-                                <i class="fa-solid fa-file-invoice-dollar me-1"></i>Check
+                                    <i class="fa-solid fa-file-invoice-dollar me-1"></i>Check
                                 </label>
                             </div>
+                            <?php endif; ?>
 
+                            <?php if (!empty($customer_details['payment_card'])): ?>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payCard" value="card">
                                 <label class="form-check-label" for="payCard">
-                                <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
+                                    <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
                                 </label>
                             </div>
+                            <?php endif; ?>
 
                             <?php if (!empty($customer_details['charge_net_30'])): ?>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="payMethod" id="payNet30" value="net30">
-                                    <label class="form-check-label" for="payNet30">
-                                        <i class="fa-solid fa-calendar-check me-1"></i>Charge Net 30
-                                    </label>
-                                </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payNet30" value="net30">
+                                <label class="form-check-label" for="payNet30">
+                                    <i class="fa-solid fa-calendar-check me-1"></i>Charge Net 30
+                                </label>
+                            </div>
                             <?php endif; ?>
+
                         </div>
                     </div>
+
                     <?php if (floatval($customer_details['store_credit']) > 0): ?>
                         <div class="mb-3 text-white">
                             <div class="form-check mb-2">

@@ -63,6 +63,7 @@ if(isset($_REQUEST['action'])) {
         $loyalty = mysqli_real_escape_string($conn, $_POST['loyalty'] ?? 0);
         $customer_pricing = mysqli_real_escape_string($conn, $_POST['customer_pricing'] ?? 0);
         $is_approved = mysqli_real_escape_string($conn, $_POST['portal_access'] ?? 0);
+        $username = mysqli_real_escape_string($conn, $_POST['username'] ?? '');
 
         $payment_pickup    = isset($_POST['payment_pickup']) ? 1 : 0;
         $payment_delivery  = isset($_POST['payment_delivery']) ? 1 : 0;
@@ -85,6 +86,23 @@ if(isset($_REQUEST['action'])) {
             $ship_zip     = mysqli_real_escape_string($conn, $_POST['ship_zip']);
             $ship_lat     = mysqli_real_escape_string($conn, $_POST['ship_lat']);
             $ship_lng     = mysqli_real_escape_string($conn, $_POST['ship_lng']);
+        }
+
+        if (!empty($_POST['username'])) {
+            $username = mysqli_real_escape_string($conn, $_POST['username']);
+
+            if (!empty($customer_id)) {
+                $checkQuery = "SELECT customer_id FROM customer WHERE username = '$username' AND customer_id != '$customer_id'";
+            } else {
+                $checkQuery = "SELECT customer_id FROM customer WHERE username = '$username'";
+            }
+
+            $result = mysqli_query($conn, $checkQuery) or die("Error checking username: " . mysqli_error($conn));
+
+            if (mysqli_num_rows($result) > 0) {
+                echo "username_exist";
+                exit;
+            }
         }
 
         $checkQuery = "SELECT * FROM customer WHERE customer_id = '$customer_id'";
@@ -147,10 +165,11 @@ if(isset($_REQUEST['action'])) {
                     payment_cash = '$payment_cash',
                     payment_check = '$payment_check',
                     payment_card = '$payment_card',
+                    username = '$username',
                     updated_at = NOW()
                 WHERE customer_id = '$customer_id'";
             mysqli_query($conn, $updateQuery) or die("Error updating customer: " . mysqli_error($conn));
-            echo "Customer updated successfully.";
+            echo "success_update";
             $isUpdate = true;
         } else {
             $insertQuery = "
@@ -165,7 +184,7 @@ if(isset($_REQUEST['action'])) {
                 customer_type_id, call_status, is_charge_net, is_contractor, is_corporate_parent, is_bill_corpo_address,
                 corpo_parent_name, corpo_phone_no, corpo_address, corpo_city, corpo_state, corpo_zip, corpo_lat, corpo_lng,
                 charge_net_30, credit_limit, loyalty, customer_pricing, is_approved,
-                payment_pickup, payment_delivery, payment_cash, payment_check, payment_card,
+                payment_pickup, payment_delivery, payment_cash, payment_check, payment_card, username,
                 created_at, updated_at
             ) VALUES (
                 '$customer_first_name', '$customer_last_name', '$customer_business_name', '$customer_business_website',
@@ -178,12 +197,14 @@ if(isset($_REQUEST['action'])) {
                 '$customer_type_id', '$call_status', '$is_charge_net', '$is_contractor', '$is_corporate_parent', '$is_bill_corpo_address',
                 '$corpo_parent_name', '$corpo_phone_no', '$corpo_address', '$corpo_city', '$corpo_state', '$corpo_zip', '$corpo_lat', '$corpo_lng',
                 '$charge_net_30', '$credit_limit', '$loyalty', '$customer_pricing', '$is_approved',
-                '$payment_pickup', '$payment_delivery', '$payment_cash', '$payment_check', '$payment_card',
+                '$payment_pickup', '$payment_delivery', '$payment_cash', '$payment_check', '$payment_card', '$username',
                 NOW(), NOW()
             )";
             mysqli_query($conn, $insertQuery) or die("Error adding customer: " . mysqli_error($conn));
-            echo "New customer added successfully.";
+            echo "success_add";
             $isUpdate = false;
+
+            $customer_id = mysqli_insert_id($conn);
         }
 
         if (!empty($_POST['password'])) {

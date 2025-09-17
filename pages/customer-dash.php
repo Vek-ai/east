@@ -497,6 +497,40 @@ $is_points_enabled = getSetting('is_points_enabled');
       </div>
     </div>
   </div>
+
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="card-body pb-3">
+        <div class="d-md-flex no-block">
+          <h4 class="card-title">Customers Jobs</h4>
+          <div class="ms-auto">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="date_from" class="form-label">Date From</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" class="form-control" id="date_from_contractor">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="date_to" class="form-label">Date To</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" class="form-control" id="date_to_contractor">
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <div id="tbl-contractor-jobs"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -741,7 +775,17 @@ $is_points_enabled = getSetting('is_points_enabled');
                   search_orders: 'search_orders'
               },
               success: function(response) {
-                  $('#tbl-orders').html(response);
+                    $('#tbl-orders').html(response);
+
+                    if ($.fn.DataTable.isDataTable('#orders-tbl')) {
+                        $('#orders-tbl').DataTable().destroy();
+                    }
+
+                    $('#orders-tbl').DataTable({
+                        searching: false,
+                        lengthChange: false,
+                        pageLength: 10
+                    });
               },
               error: function(jqXHR, textStatus, errorThrown) {
                   alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -763,7 +807,17 @@ $is_points_enabled = getSetting('is_points_enabled');
                   search_estimates: 'search_estimates'
               },
               success: function(response) {
-                  $('#tbl-estimates').html(response);
+                    $('#tbl-estimates').html(response);
+
+                    if ($.fn.DataTable.isDataTable('#estimates-tbl')) {
+                        $('#estimates-tbl').DataTable().destroy();
+                    }
+
+                    $('#estimates-tbl').DataTable({
+                        searching: false,
+                        lengthChange: false,
+                        pageLength: 10
+                    });
               },
               error: function(jqXHR, textStatus, errorThrown) {
                   alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -802,6 +856,37 @@ $is_points_enabled = getSetting('is_points_enabled');
                                 searchable: false
                             }
                         ]
+                    });
+              },
+              error: function(jqXHR, textStatus, errorThrown) {
+                  alert('Error: ' + textStatus + ' - ' + errorThrown);
+              }
+          });
+      }
+
+      function searchContractorJobs() {
+          var date_from = $('#date_from_contractor').val();
+          var date_to = $('#date_to_contractor').val();
+
+          $.ajax({
+              url: 'pages/customer-dash_ajax.php',
+              type: 'POST',
+              data: {
+                  customerid: <?= $_REQUEST['id'] ?>,
+                  date_from: date_from,
+                  date_to: date_to,
+                  search_contractor_jobs: 'search_contractor_jobs'
+              },
+              success: function(response) {
+                    $('#tbl-contractor-jobs').html(response);
+                    if ($.fn.DataTable.isDataTable('#contractor-jobs-tbl')) {
+                        $('#contractor-jobs-tbl').DataTable().destroy();
+                    }
+
+                    $('#contractor-jobs-tbl').DataTable({
+                        searching: false,
+                        lengthChange: false,
+                        pageLength: 10
                     });
               },
               error: function(jqXHR, textStatus, errorThrown) {
@@ -1056,11 +1141,13 @@ $is_points_enabled = getSetting('is_points_enabled');
       $('#date_from_order, #date_to_order').on('change', searchOrders);
       $('#date_from_estimate, #date_to_estimate').on('change', searchEstimates);
       $('#date_from_jobs, #date_to_jobs').on('change', searchJobs);
+      $('#date_from_contractor, #date_to_contractor').on('change', searchContractorJobs);
       $('#text-srh').on('input', function() { searchProducts(this.value); });
 
       searchOrders();
       searchEstimates();
       searchJobs();
+      searchContractorJobs();
       searchProducts('');
   });
 </script>

@@ -26,87 +26,89 @@ if (isset($_POST['search_orders'])) {
     ];
     ?>
     <div class="month-table">
-        <div class="table-responsive mt-3">
-            <table class="table align-middle mb-0 no-wrap text-center">
-                <thead>
-                <tr>
-                    <th class="border-0 ps-0">Sales Person</th>
-                    <th class="border-0">Date</th>
-                    <th class="border-0 text-end">Total Amount</th>
-                    <th class="border-0 text-end">Discount</th>
-                    <?php if($is_points_enabled == '1'){
-                    ?>
-                        <th class="border-0 text-end">Points</th>
-                    <?php
-                    }
-                    ?>
-                    <th class="border-0">Status</th>
-                    <th class="border-0"></th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php
-                    $query = "SELECT * FROM orders WHERE customerid = '$customerid'";
-
-                    if (!empty($date_from) && !empty($date_to)) {
-                        $date_to .= ' 23:59:59';
-                        $query .= " AND (order_date >= '$date_from' AND order_date <= '$date_to')";
-                    }
-                    $query .= " ORDER BY order_date DESC";
-                    if (empty($date_from) || empty($date_to)) {
-                        $query .= " LIMIT 10";
-                    }
-
-                    $result = mysqli_query($conn, $query);
-                    if ($result && mysqli_num_rows($result) > 0) {
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $status_code = $row['status'];
-                            $status = isset($status_labels[$status_code]) ? $status_labels[$status_code] : ['label' => 'Unknown', 'class' => 'badge bg-dark'];
-                            ?>
-                            <tr>
-                                <td class="ps-0">
-                                    <div class="hstack gap-3">
-                                        <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
-                                            <img src="assets/images/profile/user-2.jpg" alt class="img-fluid">
-                                        </span>
-                                        <div>
-                                            <h5 class="mb-1"><?= get_staff_name($row['cashier']) ?></h5>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <p class="mb-0"><?= date("F d, Y", strtotime($row['order_date'])) ?></p>
-                                </td>
-                                <td class="text-end">
-                                    <p class="mb-0">$<?= getOrderTotals($row['orderid']) ?></p>
-                                </td>
-                                <td class="text-end">
-                                    <p class="mb-0">$<?= getOrderTotalsDiscounted($row['orderid']) ?></p>
-                                </td>
-                                <?php if($is_points_enabled == '1'){
-                                ?>
-                                    <td class="text-end">
-                                        <p class="mb-0"><?= getOrderPoints($row['orderid']) ?></p>
-                                    </td>
-                                <?php
-                                }
-                                ?>
-                                
-                                <td>
-                                    <span class="<?= $status['class']; ?> fw-bold"><?= $status['label']; ?></span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
-                                    <a href="/print_order_product.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
-                                    <a href="/print_order_total.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
-                                </td>
-                            </tr>
-                            <?php
+        <div class="datatables">
+            <div class="table-responsive mt-3">
+                <table id="orders-tbl" class="table align-middle mb-0 no-wrap text-center">
+                    <thead>
+                    <tr>
+                        <th class="border-0 ps-0">Sales Person</th>
+                        <th class="border-0">Date</th>
+                        <th class="border-0 text-end">Total Amount</th>
+                        <th class="border-0 text-end">Discount</th>
+                        <?php if($is_points_enabled == '1'){
+                        ?>
+                            <th class="border-0 text-end">Points</th>
+                        <?php
                         }
-                    }
-                ?>
-                </tbody>
-            </table>
+                        ?>
+                        <th class="border-0">Status</th>
+                        <th class="border-0"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                        $query = "SELECT * FROM orders WHERE customerid = '$customerid'";
+
+                        if (!empty($date_from) && !empty($date_to)) {
+                            $date_to .= ' 23:59:59';
+                            $query .= " AND (order_date >= '$date_from' AND order_date <= '$date_to')";
+                        }
+                        $query .= " ORDER BY order_date DESC";
+                        if (empty($date_from) || empty($date_to)) {
+                            $query .= " LIMIT 10";
+                        }
+
+                        $result = mysqli_query($conn, $query);
+                        if ($result && mysqli_num_rows($result) > 0) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $status_code = $row['status'];
+                                $status = isset($status_labels[$status_code]) ? $status_labels[$status_code] : ['label' => 'Unknown', 'class' => 'badge bg-dark'];
+                                ?>
+                                <tr>
+                                    <td class="ps-0">
+                                        <div class="hstack gap-3">
+                                            <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
+                                                <img src="assets/images/profile/user-2.jpg" alt class="img-fluid">
+                                            </span>
+                                            <div>
+                                                <h5 class="mb-1"><?= get_staff_name($row['cashier']) ?></h5>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="mb-0"><?= date("F d, Y", strtotime($row['order_date'])) ?></p>
+                                    </td>
+                                    <td class="text-end">
+                                        <p class="mb-0">$<?= getOrderTotals($row['orderid']) ?></p>
+                                    </td>
+                                    <td class="text-end">
+                                        <p class="mb-0">$<?= getOrderTotalsDiscounted($row['orderid']) ?></p>
+                                    </td>
+                                    <?php if($is_points_enabled == '1'){
+                                    ?>
+                                        <td class="text-end">
+                                            <p class="mb-0"><?= getOrderPoints($row['orderid']) ?></p>
+                                        </td>
+                                    <?php
+                                    }
+                                    ?>
+                                    
+                                    <td>
+                                        <span class="<?= $status['class']; ?> fw-bold"><?= $status['label']; ?></span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
+                                        <a href="/print_order_product.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
+                                        <a href="/print_order_total.php?id=<?= $row["orderid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                        }
+                    ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 <?php
@@ -118,81 +120,77 @@ if (isset($_POST['search_estimates'])) {
     $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
     ?>
     <div class="month-table">
-        <div class="table-responsive mt-3">
-            <table class="table align-middle  mb-0 no-wrap text-center">
-                <thead>
-                <tr>
-                    <th class="border-0 ps-0">Estimate ID</th>
-                    <th class="border-0">Status</th>
-                    <th class="border-0">No. of changes</th>
-                    <th class="border-0 text-end">Total Amount</th>
-                    <th class="border-0"></th>
-                </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $query = "SELECT * FROM estimates WHERE customerid = '$customerid'";
+        <div class="datatables">
+            <div class="table-responsive mt-3">
+                <table id="estimates-tbl" class="table align-middle  mb-0 no-wrap text-center">
+                    <thead>
+                    <tr>
+                        <th class="border-0 ps-0">Estimate ID</th>
+                        <th class="border-0">Status</th>
+                        <th class="border-0">No. of changes</th>
+                        <th class="border-0 text-end">Total Amount</th>
+                        <th class="border-0"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $query = "SELECT * FROM estimates WHERE customerid = '$customerid'";
 
-                    if (!empty($date_from) && !empty($date_to)) {
-                        $date_to .= ' 23:59:59';
-                        $query .= " AND (estimated_date >= '$date_from' AND estimated_date <= '$date_to')";
-                    }
-                    $query .= " ORDER BY estimated_date DESC";
-                    if (empty($date_from) || empty($date_to)) {
-                        $query .= " LIMIT 10";
-                    }
-
-                    $result = mysqli_query($conn, $query);
-                    if ($result && mysqli_num_rows($result) > 0) {
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $estimate_id = $row['estimateid'];
-                            $total_changes = 0;
-                            $query_est_changes = "SELECT count(*) as total_changes FROM estimate_changes WHERE estimate_id = '$estimate_id'";
-                            $result_est_changes = mysqli_query($conn, $query_est_changes);
-                            if ($result_est_changes && mysqli_num_rows($result_est_changes) > 0) {
-                                $row_est_changes = mysqli_fetch_assoc($result_est_changes);
-                                $total_changes = $row_est_changes['total_changes'];
-                            }
-
-                            $status_html = "";
-                            if(intval($row['status']) == 1){
-                                $status_html = '<span class="badge bg-primary text-light">Not Ordered</span>';
-                            }else if(intval($row['estimateid']) == 2){
-                                $status_html = '<span class="badge bg-success text-light">Ordered</span>';
-                            }
-                        ?>
-                        <tr>
-                            <td class="ps-0">
-                                <h5 class="mb-1 text-center"><?= $row['estimateid'] ?></h5>
-                            </td>
-                            <td>
-                                <?= $status_html ?>
-                            </td>
-                            <td>
-                                <p class="mb-0"><?= $total_changes ?></p>
-                            </td>
-                            <td class="text-end">
-                                <p class="mb-0 fs-3">$<?= getEstimateTotalsDiscounted($row['estimateid']) ?></p>
-                            </td>
-                            <td>
-                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
-                                <a href="/print_estimate_product.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
-                                <a href="/print_estimate_total.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
-                                <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-info fa fa-clock-rotate-left fs-5"></i></button>
-                            </td>
-                        </tr>
-                    <?php
+                        if (!empty($date_from) && !empty($date_to)) {
+                            $date_to .= ' 23:59:59';
+                            $query .= " AND (estimated_date >= '$date_from' AND estimated_date <= '$date_to')";
                         }
-                    }else{
-                    ?>
-                        <tr>
-                            <td colspan="4">No estimates found</td>
-                        </tr>
-                    <?php  
-                    }
-                    ?>
-                </tbody>
-            </table>
+                        $query .= " ORDER BY estimated_date DESC";
+                        if (empty($date_from) || empty($date_to)) {
+                            $query .= " LIMIT 10";
+                        }
+
+                        $result = mysqli_query($conn, $query);
+                        if ($result && mysqli_num_rows($result) > 0) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $estimate_id = $row['estimateid'];
+                                $total_changes = 0;
+                                $query_est_changes = "SELECT count(*) as total_changes FROM estimate_changes WHERE estimate_id = '$estimate_id'";
+                                $result_est_changes = mysqli_query($conn, $query_est_changes);
+                                if ($result_est_changes && mysqli_num_rows($result_est_changes) > 0) {
+                                    $row_est_changes = mysqli_fetch_assoc($result_est_changes);
+                                    $total_changes = $row_est_changes['total_changes'];
+                                }
+
+                                $status_html = "";
+                                if(intval($row['status']) == 1){
+                                    $status_html = '<span class="badge bg-primary text-light">Not Ordered</span>';
+                                }else if(intval($row['estimateid']) == 2){
+                                    $status_html = '<span class="badge bg-success text-light">Ordered</span>';
+                                }
+                            ?>
+                            <tr>
+                                <td class="ps-0">
+                                    <h5 class="mb-1 text-center"><?= $row['estimateid'] ?></h5>
+                                </td>
+                                <td>
+                                    <?= $status_html ?>
+                                </td>
+                                <td>
+                                    <p class="mb-0"><?= $total_changes ?></p>
+                                </td>
+                                <td class="text-end">
+                                    <p class="mb-0 fs-3">$<?= getEstimateTotalsDiscounted($row['estimateid']) ?></p>
+                                </td>
+                                <td>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_estimate_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
+                                    <a href="/print_estimate_product.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-success fa fa-print fs-5"></i></a>
+                                    <a href="/print_estimate_total.php?id=<?= $row["estimateid"]; ?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-white fa fa-file-lines fs-5"></i></a>
+                                    <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?php echo $row["estimateid"]; ?>"><i class="text-info fa fa-clock-rotate-left fs-5"></i></button>
+                                </td>
+                            </tr>
+                        <?php
+                            }
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 <?php
@@ -411,17 +409,89 @@ if (isset($_POST['search_jobs'])) {
                                 <?php
                             }
                         }
-                    } else {
-                        ?>
-                        <tr>
-                            <td colspan="5" class="text-center">No jobs found</td>
-                        </tr>
-                        <?php
                     }
                     ?>
                     </tbody>
 
             </table>
+        </div>
+    </div>
+<?php
+}
+
+if (isset($_POST['search_contractor_jobs'])) {
+    $customerid = mysqli_real_escape_string($conn, $_POST['customerid']);
+    $date_from = mysqli_real_escape_string($conn, $_POST['date_from']);
+    $date_to = mysqli_real_escape_string($conn, $_POST['date_to']);
+
+    $status_labels = [
+        1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
+        2 => ['label' => 'Processing', 'class' => 'badge bg-warning'],
+        3 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
+        4 => ['label' => 'Sent to Customer', 'class' => 'badge bg-success'],
+        5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
+        6 => ['label' => 'Archived/Returned', 'class' => 'badge bg-secondary'],
+    ];
+    ?>
+    <div class="month-table">
+        <div class="datatables">
+            <div class="table-responsive mt-3">
+                <table id="contractor-jobs-tbl" class="table align-middle mb-0 no-wrap text-center">
+                    <thead>
+                    <tr>
+                        <th class="border-0 ps-0">Customer</th>
+                        <th class="border-0">Date</th>
+                        <th class="border-0">Status</th>
+                        <th class="border-0"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                        $query = "SELECT * FROM orders WHERE contractor_id = '$customerid'";
+
+                        if (!empty($date_from) && !empty($date_to)) {
+                            $date_to .= ' 23:59:59';
+                            $query .= " AND (order_date >= '$date_from' AND order_date <= '$date_to')";
+                        }
+                        $query .= " ORDER BY order_date DESC";
+                        if (empty($date_from) || empty($date_to)) {
+                            $query .= " LIMIT 10";
+                        }
+
+                        $result = mysqli_query($conn, $query);
+                        if ($result && mysqli_num_rows($result) > 0) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $status_code = $row['status'];
+                                $status = isset($status_labels[$status_code]) ? $status_labels[$status_code] : ['label' => 'Unknown', 'class' => 'badge bg-dark'];
+                                ?>
+                                <tr>
+                                    <td class="ps-0">
+                                        <div class="hstack gap-3">
+                                            <span class="round-48 rounded-circle overflow-hidden flex-shrink-0 hstack justify-content-center">
+                                                <img src="assets/images/profile/user-2.jpg" alt class="img-fluid">
+                                            </span>
+                                            <div>
+                                                <h5 class="mb-1"><?= get_customer_name($row['customerid']) ?></h5>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="mb-0"><?= date("F d, Y", strtotime($row['order_date'])) ?></p>
+                                    </td>
+                                    <td>
+                                        <span class="<?= $status['class']; ?> fw-bold"><?= $status['label']; ?></span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                        }
+                    ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 <?php
