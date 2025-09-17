@@ -111,7 +111,7 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->SetXY($col3_x, $pdf->GetY());
         $pdf->Cell(60, 5, '', 0, 0, 'L');
 
-        $pdf->Ln(2);
+        $pdf->Ln(5);
 
         $pdf->SetXY($col1_x, $pdf->GetY());
         $pdf->Cell(40, 5, 'Tax Exempt #', 0, 0, 'L');
