@@ -172,9 +172,28 @@ if (!empty($_REQUEST['id'])) {
 
             $this->SetY($y + $rowHeight);
         }
+
+        function Footer() {
+            $marginLeft = 10;
+            $this->SetY(-15);
+
+            $colWidth = ($this->w - 2 * $marginLeft) / 3;
+
+            $this->SetFont('Arial', '', 9);
+
+            $this->SetX($marginLeft);
+            $this->Cell($colWidth, 5, 'Phone: (606) 877-1848 | Fax: (606) 864-4280', 0, 0, 'L');
+
+            $this->SetX($marginLeft + $colWidth + 10);
+            $this->Cell($colWidth, 5, 'Email: Sales@Eastkentuckymetal.com', 0, 0, 'C');
+
+            $this->SetX($marginLeft + 2 * $colWidth);
+            $this->Cell($colWidth, 5, 'Website: Eastkentuckymetal.com', 0, 0, 'R');
+        }
     }
 
     $pdf = new PDF('P', 'mm', 'A4');
+    $pdf->SetAutoPageBreak(true, 15);
     $pdf->AddPage();
     $pdf->SetTitle('Defective Coil List');
 

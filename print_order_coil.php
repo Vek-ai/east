@@ -14,7 +14,28 @@ require 'includes/fpdf/fpdf.php';
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$pdf = new FPDF();
+class PDF extends FPDF {
+    function Footer() {
+        $marginLeft = 10;
+        $this->SetY(-15);
+
+        $colWidth = ($this->w - 2 * $marginLeft) / 3;
+
+        $this->SetFont('Arial', '', 9);
+
+        $this->SetX($marginLeft);
+        $this->Cell($colWidth, 5, 'Phone: (606) 877-1848 | Fax: (606) 864-4280', 0, 0, 'L');
+
+        $this->SetX($marginLeft + $colWidth + 10);
+        $this->Cell($colWidth, 5, 'Email: Sales@Eastkentuckymetal.com', 0, 0, 'C');
+
+        $this->SetX($marginLeft + 2 * $colWidth);
+        $this->Cell($colWidth, 5, 'Website: Eastkentuckymetal.com', 0, 0, 'R');
+    }
+}
+
+$pdf = new PDF();
+$pdf->SetAutoPageBreak(true, 15);
 $pdf->AddPage();
 $pdf->SetFont('Arial', 'B', 16);
 

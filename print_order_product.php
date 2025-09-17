@@ -468,8 +468,20 @@ class PDF extends FPDF {
             "Scan me for a Digtal copy of this receipt", 0, 'C');
 
         $qrX = $marginLeft + $colWidthLeft + ($colWidthRight / 2);
-        $qrY = $this->GetY() + 3;
+        $qrY = $this->GetY();
         $this->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 25, 25);
+
+        $colWidth = ($this->w - 2 * $marginLeft) / 3;
+
+        $this->SetFont('Arial', '', 9);
+        $this->SetXY($marginLeft, $this->GetY() + 25);
+        $this->Cell($colWidth, 5, 'Phone: (606) 877-1848 | Fax: (606) 864-4280', 0, 0, 'L');
+
+        $this->SetXY($marginLeft + $colWidth + 10, $this->GetY());
+        $this->Cell($colWidth, 5, 'Email: Sales@Eastkentuckymetal.com', 0, 0, 'C');
+
+        $this->SetXY($marginLeft + 2 * $colWidth, $this->GetY());
+        $this->Cell($colWidth, 5, 'Website: Eastkentuckymetal.com', 0, 0, 'R');
     }
 
     public function GetMultiCellHeight($w, $h, $txt)
