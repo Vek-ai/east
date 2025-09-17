@@ -1073,6 +1073,26 @@ $is_points_enabled = getSetting('is_points_enabled');
           });
       });
 
+      $(document).on('click', '#view_contractor_order_btn', function(event) {
+          event.preventDefault(); 
+          var orderid = $(this).data('id');
+          $.ajax({
+                  url: 'pages/customer-dash_ajax.php',
+                  type: 'POST',
+                  data: {
+                      orderid: orderid,
+                      fetch_contractor_order_details: "fetch_contractor_order_details"
+                  },
+                  success: function(response) {
+                      $('#order-details').html(response);
+                      $('#view_order_details_modal').modal('show');
+                  },
+                  error: function(jqXHR, textStatus, errorThrown) {
+                      alert('Error: ' + textStatus + ' - ' + errorThrown);
+                  }
+          });
+      });
+
       $(document).on('click', '#view_estimate_btn', function(event) {
           event.preventDefault(); 
           var id = $(this).data('id');

@@ -482,7 +482,7 @@ if (isset($_POST['search_contractor_jobs'])) {
                                         <span class="<?= $status['class']; ?> fw-bold"><?= $status['label']; ?></span>
                                     </td>
                                     <td>
-                                        <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
+                                        <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_contractor_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
                                     </td>
                                 </tr>
                                 <?php
@@ -746,6 +746,270 @@ if(isset($_POST['fetch_order_details'])){
                         <td></td>
                         <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
                         <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <?php 
+        $query = "SELECT * FROM product_returns WHERE orderid='$orderid'";
+        $result = mysqli_query($conn, $query);
+        $totalquantity = $total_actual_price = $total_disc_price = 0;
+        if ($result && mysqli_num_rows($result) > 0) {
+        ?>
+        <div class="card card-body datatables">
+            <div class="return-details table-responsive text-wrap mt-5">
+                <h4>Returned Products</h4>
+                <table id="return_dtls_tbl" class="table table-hover mb-0 text-md-nowrap">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Color</th>
+                            <th>Grade</th>
+                            <th>Profile</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-center">Dimensions</th>
+                            <th class="text-center">Price</th>
+                            <th class="text-center">Customer Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                            $response = array();
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $product_id = $row['productid'];
+                                $actual_price = $discounted_price = 0;
+                                if($row['quantity'] > 0){
+                                    $actual_price = number_format(floatval($row['actual_price'] * $row['quantity']),2);
+                                    $discounted_price = number_format(floatval($row['discounted_price'] * $row['quantity']),2);
+                                    ?>
+                                <tr>
+                                    <td class="text-wrap"> 
+                                        <?php echo getProductName($product_id) ?>
+                                    </td>
+                                    <td>
+                                    <div class="d-flex mb-0 gap-8">
+                                        <span class="rounded-circle d-block p-3" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_id)?>; width: 20px; height: 20px;"></span>
+                                        <?= getColorFromID($product_id); ?>
+                                    </div>
+                                    </td>
+                                    <td>
+                                        <?php echo getGradeFromID($product_id); ?>
+                                    </td>
+                                    <td>
+                                        <?php echo getProfileFromID($product_id); ?>
+                                    </td>
+                                    <td>
+                                        <?php echo $row['quantity']; ?>
+                                    </td>
+                                    <td>
+                                        <?php 
+                                        $width = $row['custom_width'];
+                                        $bend = $row['custom_bend'];
+                                        $hem = $row['custom_hem'];
+                                        $length = $row['custom_length'];
+                                        $inch = $row['custom_length2'];
+                                        
+                                        if (!empty($width)) {
+                                            echo "Width: " . htmlspecialchars($width) . "<br>";
+                                        }
+                                        
+                                        if (!empty($bend)) {
+                                            echo "Bend: " . htmlspecialchars($bend) . "<br>";
+                                        }
+                                        
+                                        if (!empty($hem)) {
+                                            echo "Hem: " . htmlspecialchars($hem) . "<br>";
+                                        }
+                                        
+                                        if (!empty($length)) {
+                                            echo "Length: " . htmlspecialchars($length) . " ft";
+                                            
+                                            if (!empty($inch)) {
+                                                echo " " . htmlspecialchars($inch) . " in";
+                                            }
+                                            echo "<br>";
+                                        } elseif (!empty($inch)) {
+                                            echo "Length: " . htmlspecialchars($inch) . " in<br>";
+                                        }
+                                        ?>
+                                    </td>
+                                    <td class="text-end">$ <?= $actual_price ?></td>
+                                    <td class="text-end">$ <?= $discounted_price ?></td>
+                                </tr>
+                        <?php
+                                $totalquantity += $row['quantity'] ;
+                                $total_actual_price += $actual_price;
+                                $total_disc_price += $discounted_price;
+                                }
+                            
+                        }
+                        ?>
+                    </tbody>
+
+                    <tfoot>
+                        <tr>
+                            <td colspan="4">Total</td>
+                            <td><?= $totalquantity ?></td>
+                            <td></td>
+                            <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
+                            <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        
+    <?php 
+    } 
+    ?>
+       
+    <script>
+        $(document).ready(function() {
+
+            $('#order_dtls_tbl').DataTable({
+                language: {
+                    emptyTable: "Order Details not found"
+                },
+                autoWidth: false,
+                responsive: true
+            });
+
+            $('#return_dtls_tbl').DataTable({
+                language: {
+                    emptyTable: "Order Details not found"
+                },
+                autoWidth: false,
+                responsive: true
+            });
+        });
+    </script>
+    <?php
+}
+
+if(isset($_POST['fetch_contractor_order_details'])){
+    $orderid = mysqli_real_escape_string($conn, $_POST['orderid']);
+    $status_prod_labels = [
+        0 => ['label' => 'New', 'class' => 'badge bg-primary'],
+        1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+        2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
+        3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
+        4 => ['label' => 'Delivered', 'class' => 'badge bg-success'],
+        5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
+        6 => ['label' => 'Returned', 'class' => 'badge bg-danger']
+    ];
+    ?>
+    <style>
+        .tooltip-inner {
+            background-color: white !important;
+            color: black !important;
+            font-size: calc(0.875rem + 2px) !important;
+        }
+    </style>
+    <div class="card card-body datatables">
+        <div class="product-details table-responsive text-wrap">
+            <h4>Products Ordered</h4>
+            <table id="order_dtls_tbl" class="table table-hover mb-0 text-md-nowrap">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Color</th>
+                        <th>Grade</th>
+                        <th>Profile</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-center">Dimensions</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                    $no = 0;
+                    $query = "SELECT * FROM order_product WHERE orderid='$orderid'";
+                    $result = mysqli_query($conn, $query);
+                    $totalquantity = $total_actual_price = $total_disc_price = 0;
+                    if ($result && mysqli_num_rows($result) > 0) {
+                        $response = array();
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            $product_id = $row['productid'];
+                            $actual_price = $discounted_price = 0;
+                            if($row['quantity'] > 0){
+                                $actual_price = number_format(floatval($row['actual_price'] * $row['quantity']),2);
+                                $discounted_price = number_format(floatval($row['discounted_price'] * $row['quantity']),2);
+                                $status_id = $row['status'] ?? 0; 
+                                $label_data = $status_prod_labels[$status_id] ?? ['label' => 'Unknown', 'class' => 'badge bg-dark'];
+                            ?>
+                            <tr>
+                                <td class="text-wrap"> 
+                                    <?php echo getProductName($product_id) ?>
+                                </td>
+                                <td>
+                                <div class="d-flex mb-0 gap-8">
+                                    <span class="rounded-circle d-block p-3" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_id)?>; width: 20px; height: 20px;"></span>
+                                    <?= getColorFromID($product_id); ?>
+                                </div>
+                                </td>
+                                <td>
+                                    <?php echo getGradeFromID($product_id); ?>
+                                </td>
+                                <td>
+                                    <?php echo getProfileFromID($product_id); ?>
+                                </td>
+                                <td>
+                                    <?php echo $row['quantity']; ?>
+                                </td>
+                                <td>
+                                    <?php 
+                                    $width = $row['custom_width'];
+                                    $bend = $row['custom_bend'];
+                                    $hem = $row['custom_hem'];
+                                    $length = $row['custom_length'];
+                                    $inch = $row['custom_length2'];
+                                    
+                                    if (!empty($width)) {
+                                        echo "Width: " . htmlspecialchars($width) . "<br>";
+                                    }
+                                    
+                                    if (!empty($bend)) {
+                                        echo "Bend: " . htmlspecialchars($bend) . "<br>";
+                                    }
+                                    
+                                    if (!empty($hem)) {
+                                        echo "Hem: " . htmlspecialchars($hem) . "<br>";
+                                    }
+                                    
+                                    if (!empty($length)) {
+                                        echo "Length: " . htmlspecialchars($length) . " ft";
+                                        
+                                        if (!empty($inch)) {
+                                            echo " " . htmlspecialchars($inch) . " in";
+                                        }
+                                        echo "<br>";
+                                    } elseif (!empty($inch)) {
+                                        echo "Length: " . htmlspecialchars($inch) . " in<br>";
+                                    }
+                                    ?>
+                                </td>
+                                <td class="text-center">
+                                    <span class="<?= $label_data['class'] ?>">
+                                        <?= htmlspecialchars($label_data['label']) ?>
+                                    </span>
+                                </td>
+                            </tr>
+                    <?php
+                            $totalquantity += $row['quantity'] ;
+                            $total_actual_price += $actual_price;
+                            $total_disc_price += $discounted_price;
+                            }
+                        }
+                    }
+                    ?>
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td colspan="5">Total</td>
+                        <td><?= $totalquantity ?></td>
+                        <td></td>
                     </tr>
                 </tfoot>
             </table>
