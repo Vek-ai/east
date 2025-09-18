@@ -325,9 +325,9 @@ function showCol($name) {
                                                     $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                                                     $result_grade = mysqli_query($conn, $query_grade);            
                                                     while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                                        $selected = (($row['grade'] ?? '') == $row_grade['product_grade']) ? 'selected' : '';
+                                                        $selected = (($row['grade'] ?? '') == $row_grade['product_grade_id']) ? 'selected' : '';
                                                     ?>
-                                                        <option value="<?= $row_grade['product_grade'] ?>" data-category="<?= $row_grade['product_category'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                                        <option value="<?= $row_grade['product_grade_id'] ?>" data-category="<?= $row_grade['product_category'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
                                                     <?php   
                                                     }
                                                     ?>
@@ -1386,10 +1386,9 @@ function showCol($name) {
                         if (response && !response.error && !isNaN(response.multiplier)) {
                             $('#color_multiplier').val(parseFloat(response.multiplier).toFixed(3));
                         } else {
-                            $('#color_multiplier').val("");
+                            $('#color_multiplier').val("0");
                             console.warn(response.error || 'No valid data found');
                             console.log(colorGroup);
-                            console.log(colorPaint);
                         }
                     },
                     error: function(xhr, status, error) {
@@ -1401,6 +1400,29 @@ function showCol($name) {
                 $('#color_multiplier').val("1.000");
             }
         }
+
+        $(document).on('change', '#color, #product_category', function() {
+            let selectedGroup = $('#color').val() || '';
+            let productCategory = $('#product_category').val() || '';
+
+            $('#color_paint option').each(function() {
+                let optionGroup = String($(this).data('group') || '');
+                let optionCategories = [];
+
+                try {
+                    optionCategories = JSON.parse($(this).attr('data-category'));
+                } catch (e) {}
+
+                let groupMatch = (optionGroup === selectedGroup);
+                let categoryMatch = optionCategories.includes(parseInt(productCategory));
+
+                if (groupMatch && categoryMatch) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
 
         $(document).on('click', '#add_inventory_btn', function(event) {
             event.preventDefault(); 
