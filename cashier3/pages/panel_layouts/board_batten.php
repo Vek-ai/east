@@ -38,7 +38,7 @@
                 $result_grade = mysqli_query($conn, $query_grade);
                 while ($row_grade = mysqli_fetch_array($result_grade)) {
                 ?>
-                    <option value="<?= htmlspecialchars($row_grade['product_grade']) ?>" 
+                    <option value="<?= htmlspecialchars($row_grade['product_grade_id']) ?>" 
                             data-category="<?= htmlspecialchars($row_grade['product_category']) ?>">
                         <?= htmlspecialchars($row_grade['product_grade']) ?>
                     </option>
@@ -57,7 +57,7 @@
                 $result_gauge = mysqli_query($conn, $query_gauge);
                 while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                 ?>
-                    <option value="<?= htmlspecialchars($row_gauge['product_gauge']) ?>" 
+                    <option value="<?= htmlspecialchars($row_gauge['product_gauge_id']) ?>" 
                             data-category="gauge">
                         <?= htmlspecialchars($row_gauge['product_gauge']) ?>
                     </option>
