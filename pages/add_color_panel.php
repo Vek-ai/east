@@ -50,7 +50,7 @@ if(isset($_REQUEST['action'])) {
                     <select id="gauge" class="form-control calculate" name="gauge">
                         <option value="">Select Gauge...</option>
                         <?php
-                        $query_gauge = "SELECT DISTINCT product_gauge, multiplier FROM product_gauge WHERE hidden = '0' AND status = '1'";
+                        $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1'";
                         $result_gauge = mysqli_query($conn, $query_gauge);
 
                         $existing_gauges = [];
@@ -58,9 +58,9 @@ if(isset($_REQUEST['action'])) {
                         while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                             if (!in_array($row_gauge['product_gauge'], $existing_gauges)) {
                                 $existing_gauges[] = $row_gauge['product_gauge'];
-                                $selected = (($row['gauge'] ?? '') == $row_gauge['product_gauge']) ? 'selected' : '';
+                                $selected = (($row['gauge'] ?? '') == $row_gauge['product_gauge_id']) ? 'selected' : '';
                                 ?>
-                                <option value="<?= htmlspecialchars($row_gauge['product_gauge']) ?>" 
+                                <option value="<?= htmlspecialchars($row_gauge['product_gauge_id']) ?>" 
                                         data-multiplier="<?= htmlspecialchars($row_gauge['multiplier']) ?>" 
                                         <?= $selected ?>>
                                     <?= htmlspecialchars($row_gauge['product_gauge']) ?>
