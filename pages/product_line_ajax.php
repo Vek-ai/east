@@ -19,8 +19,7 @@ if(isset($_REQUEST['action'])) {
         $product_line = mysqli_real_escape_string($conn, $_POST['product_line']);
         $line_abreviations = mysqli_real_escape_string($conn, $_POST['line_abreviations']);
         
-        $product_category_array = $_POST['product_category'] ?? [];
-        $product_category = mysqli_real_escape_string($conn, json_encode($product_category_array));
+        $product_category = mysqli_real_escape_string($conn, json_encode(array_map('intval', $_POST['product_category'] ?? [])));
 
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $multiplier = mysqli_real_escape_string($conn, floatval($_POST['multiplier'] ?? 0.00));

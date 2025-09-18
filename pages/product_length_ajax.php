@@ -25,8 +25,7 @@ if(isset($_REQUEST['action'])) {
         $length_feet = mysqli_real_escape_string($conn, floatval($_POST['length_feet'] ?? 0.00));
         $length_inch = mysqli_real_escape_string($conn, floatval($_POST['length_inch'] ?? 0.00));
 
-        $product_category_array = $_POST['product_category'] ?? [];
-        $product_category = mysqli_real_escape_string($conn, json_encode($product_category_array));
+        $product_category = mysqli_real_escape_string($conn, json_encode(array_map('intval', $_POST['product_category'] ?? [])));
 
         $product_type_array = $_POST['product_type'] ?? [];
         $product_type = mysqli_real_escape_string($conn, json_encode($product_type_array));
