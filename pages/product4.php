@@ -358,7 +358,10 @@ function showCol($name) {
                                                         
                                                         $selected = (($row['gauge'] ?? '') == $row_gauge['product_gauge_id']) ? 'selected' : '';
                                                         ?>
-                                                        <option value="<?= $row_gauge['product_gauge_id'] ?>" data-multiplier="<?= $row_gauge['multiplier'] ?>" <?= $selected ?>>
+                                                        <option value="<?= $row_gauge['product_gauge_id'] ?>" 
+                                                                data-multiplier="<?= $row_gauge['multiplier'] ?>" 
+                                                                data-abbrev="<?= $row_gauge['gauge_abbreviations'] ?>" 
+                                                                <?= $selected ?>>
                                                             <?= $row_gauge['product_gauge'] ?>
                                                         </option>
                                                         <?php
@@ -1357,7 +1360,7 @@ function showCol($name) {
             });
         });
 
-        function updateColorMult() {
+        function updateColorGroupMult() {
             let colorGroup = ($('#color').val() || '').trim();
 
             if (colorGroup) {
@@ -1460,7 +1463,7 @@ function showCol($name) {
                 $flatSheetWidth.val('');
             }
             
-            updateColorMult();
+            updateColorGroupMult();
 
             let color_multi = parseFloat($("#color_multiplier").val()) || 1;
             let grade_multi = parseFloat($("#grade option:selected").attr("data-multiplier")) || 1;
@@ -1472,12 +1475,30 @@ function showCol($name) {
             $("#cost").val(cost.toFixed(3));
 
             let descriptionParts = [];
+            let gradeVal = $('#grade').val();
+            let gradeText = $('#grade option:selected').text().trim();
 
-            if (selectedSystem) descriptionParts.push($("#product_system option:selected").text().trim());
-            if (selectedGauge) descriptionParts.push(selectedGauge);
+            if (gradeVal && gradeText) {
+                descriptionParts.push(gradeText);
+            }
 
-            $("#description").val(descriptionParts.join(" - "));
-            $("#product_item").val(descriptionParts.join(" - "));
+            if (selectedSystem) {
+                descriptionParts.push($("#product_system option:selected").text().trim());
+            }
+
+            let gaugeAbbrev = $('#gauge option:selected').data('abbrev');
+            if (gaugeAbbrev) {
+                let lastIndex = descriptionParts.length - 1;
+                if (lastIndex >= 0) {
+                    descriptionParts[lastIndex] = descriptionParts[lastIndex] + " (" + gaugeAbbrev + ")";
+                } else {
+                    descriptionParts.push("(" + gaugeAbbrev + ")");
+                }
+            }
+
+            let descriptionString = descriptionParts.join(" ");
+            $("#description").val(descriptionString);
+            $("#product_item").val(descriptionString);
 
         });
         
