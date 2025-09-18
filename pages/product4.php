@@ -1664,6 +1664,7 @@ function showCol($name) {
             }
         });
 
+        filterTable();
     });
 </script>
 
