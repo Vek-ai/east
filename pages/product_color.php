@@ -741,9 +741,23 @@ $permission = $_SESSION['permission'];
                         $('#add-fields').html(response);
 
                         let selectedCategory = $('#product_category').val() || '';
-                        //this hides select options that are not the selected category
                         $('.add-category option').each(function() {
-                            let match = String($(this).data('category')) === String(product_category);
+                            let categories = $(this).data('category');
+                            let match = false;
+
+                            if (Array.isArray(categories)) {
+                                match = categories.includes(parseInt(product_category));
+                            } else if (typeof categories === 'string' && categories.startsWith('[')) {
+                                try {
+                                    let arr = JSON.parse(categories);
+                                    match = arr.includes(parseInt(product_category));
+                                } catch(e) {
+                                    match = false;
+                                }
+                            } else {
+                                match = String(categories) === String(product_category);
+                            }
+
                             $(this).toggle(match);
                         });
                         
