@@ -28,8 +28,7 @@ if(isset($_REQUEST['action'])) {
         $color_code = mysqli_real_escape_string($conn, $_POST['color_code']);
         $color_group = mysqli_real_escape_string($conn, $_POST['color_group']);
 
-        $product_category_array = $_POST['product_category'] ?? [];
-        $product_category = mysqli_real_escape_string($conn, json_encode($product_category_array));
+        $product_category = mysqli_real_escape_string($conn, json_encode(array_map('intval', $_POST['product_category'] ?? [])));
         
         $provider_id = mysqli_real_escape_string($conn, $_POST['provider']);
         $ekm_color_code = mysqli_real_escape_string($conn, $_POST['ekm_color_code']);
