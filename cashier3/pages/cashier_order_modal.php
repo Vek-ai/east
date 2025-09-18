@@ -246,9 +246,23 @@ if(isset($_POST['fetch_order'])){
             }
 
             $color_id = $values["custom_color"];
+            $color_details = getColorDetails($color_id);
             if (isset($values["used_discount"])){
                 $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
             }
+
+            $color_id      = $values["custom_color"];
+            $color_details = getColorDetails($color_id);
+
+            $category_id   = intval($product["product_category"]);
+            $productSystem = intval($product["product_system"]);
+            $grade         = intval($product["grade"]);
+            $gauge         = intval($product["gauge"]);
+            $colorGroup    = intval($color_details['color_group']);
+
+            $color_mult = fetchColorMultiplier($colorGroup, $productSystem, $grade, $gauge, $category_id);
+
+            $product_price *= $color_mult;
 
             $sold_by_feet = $product['sold_by_feet'];
 

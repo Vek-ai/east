@@ -158,6 +158,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
             const bends = parseInt($('#bend_product').val()) || 0;
             const hems = parseInt($('#hem_product').val()) || 0;
+            const color = parseInt($('#qty-color').val()) || 0;
             const soldByFeet = <?= $sold_by_feet; ?>;
             const basePrice = <?= $basePrice; ?>;
 
@@ -174,6 +175,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     bends: bends,
                     hems: hems,
                     basePrice: basePrice,
+                    color: color,
                     fetch_price: 'fetch_price'
                 },
                 success: function(response) {
@@ -257,6 +259,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
             $(document).on('change', '#qty-color, #qty-grade, #qty-gauge', function() {
                 fetchCoilStock();
+                calculateProductCost();
             });
 
             $(document).on("change", ".fraction_input", function() {
@@ -406,9 +409,19 @@ if (isset($_POST['fetch_price'])) {
     $panelDripStops  = $_POST['panel_drip_stop'] ?? [];
     $bends           = isset($_POST['bends']) ? intval($_POST['bends']) : 0;
     $hems            = isset($_POST['hems']) ? intval($_POST['hems']) : 0;
+    $color_id           = isset($_POST['color']) ? intval($_POST['color']) : 0;
+
+    $product = getProductDetails($product_id);
+    $color_details = getColorDetails($color_id);
+    $category_id   = intval($product["product_category"]);
+    $productSystem = intval($product["product_system"]);
+    $grade         = intval($product["grade"]);
+    $gauge         = intval($product["gauge"]);
+    $colorGroup    = intval($color_details['color_group']);
+
+    $color_mult = fetchColorMultiplier($colorGroup, $productSystem, $grade, $gauge, $category_id);
 
     $totalPrice = 0;
-
     if ($product_id > 0) {
         $product      = getProductDetails($product_id);
         $basePrice    = floatval($product['unit_price']);
@@ -434,6 +447,8 @@ if (isset($_POST['fetch_price'])) {
             );
         }
     }
+
+    $totalPrice *= $color_mult;
 
     echo number_format($totalPrice, 2);
 }
