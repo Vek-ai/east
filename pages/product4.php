@@ -370,25 +370,25 @@ function showCol($name) {
 
                                         <div class="col-md-4 hidden-field d-none">
                                             <div class="mb-3">
-                                                        <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex justify-content-between align-items-center">
                                                     <label class="form-label">Product Profile</label>
                                                     <a href="?page=profile_type" target="_blank" class="text-decoration-none">Edit</a>
-                                                        </div>
+                                                </div>
                                                 <select id="profile" class="form-control add-category" name="profile">
                                                     <option value="" >Select Profile...</option>
-                                                                    <?php
+                                                    <?php
                                                     $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1'";
                                                     $result_profile_type = mysqli_query($conn, $query_profile_type);            
                                                     while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
                                                         $selected = ($row['profile'] == $row_profile_type['profile_type_id']) ? 'selected' : '';
                                                                     ?>
                                                         <option value="<?= $row_profile_type['profile_type_id'] ?>" data-category="<?= $row_profile_type['product_category'] ?>"  <?= $selected ?>><?= $row_profile_type['profile_type'] ?></option>
-                                                                    <?php   
-                                                                    }
-                                                                    ?>
-                                                            </select>
-                                                        </div>
-                                                    </div>
+                                                    <?php   
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -883,7 +883,7 @@ function showCol($name) {
             updateSearchCategory();
         });
 
-        /* $(document).on('change', '#color', function() {
+        $(document).on('change', '#color', function() {
             let selectedGroup = $('#color option:selected').data('color') || '';
             let product_category = $('#product_category').val() || '';
 
@@ -893,9 +893,7 @@ function showCol($name) {
                 let match = groupMatch && categoryMatch;
                 $(this).toggle(match);
             });
-
-            $('.color-group-filter').toggleClass("d-none", !selectedGroup);
-        }); */
+        });
        
         function updateSearchCategory() {
             var product_category = $('#product_category').val() || '';
@@ -1373,41 +1371,34 @@ function showCol($name) {
 
         function updateColorSelect() {
             let selectedCategory = $('#product_category').val();
+            let selectedSystem   = $('#product_system').val();
+            let selectedGauge    = $('#gauge').val();
 
-            /* if (String(selectedCategory) == '3') { 
-                let selectedSystem = $('#product_system').val();
-                let selectedGauge = $('#gauge').val();
-
-                let allSelected = selectedCategory && selectedSystem && selectedGauge;
-                $('#color').toggleClass('d-none', !allSelected);
+            if (String(selectedCategory) == '3') {
                 $('#color option').each(function () {
                     let $option = $(this);
 
                     let optionCategory = String($option.data('category') || "");
-                    let optionSystem = String($option.data('system') || "");
-                    let optionGauge = String($option.data('gauge') || "");
+                    let optionSystem   = String($option.data('system') || "");
+                    let optionGauge    = String($option.data('gauge') || "");
 
-                    // Skip options where grade or gauge is empty or "0"
-                    if (optionCategory === "" || optionCategory === "0") { $(this).toggle(false); return; }
-                    if (optionSystem === "" || optionSystem === "0") { $(this).toggle(false); return; }
-                    if (optionGauge === "" || optionGauge === "0") { $(this).toggle(false); return; }
+                    let match = true;
 
-                    let categoryMatch = String(selectedCategory) == optionCategory;
-                    let gradeMatch = String(selectedSystem) == optionSystem;
-                    let gaugeMatch = String(selectedGauge) == optionGauge;
-
-                    let match = categoryMatch && gradeMatch && gaugeMatch;
-                    if(match == true){
-                        $(this).toggle(true);
-                    }else{
-                        $(this).toggle(false);
+                    if (selectedCategory && optionCategory && optionCategory !== "0") {
+                        match = match && (String(selectedCategory) === optionCategory);
                     }
-                    
+
+                    if (selectedSystem && optionSystem && optionSystem !== "0") {
+                        match = match && (String(selectedSystem) === optionSystem);
+                    }
+
+                    if (selectedGauge && optionGauge && optionGauge !== "0") {
+                        match = match && (String(selectedGauge) === optionGauge);
+                    }
+
+                    $(this).toggle(match);
                 });
             }
-
-            $('#color').toggleClass('d-none', !selectedCategory); */
-            
         }
 
         $(document).on('click', '#add_inventory_btn', function(event) {

@@ -24,7 +24,7 @@
                                     data-system="<?=$row_colors['product_system'] ?>" 
                                     data-grade="<?=$row_colors['grade'] ?>" 
                                     data-gauge="<?=$row_colors['gauge'] ?>" 
-                                    data-category="<?=trim($row_colors['product_category']) ?>" 
+                                    data-category="<?=$row_colors['product_category'] ?>" 
                                     data-multiplier="<?= $row_colors['multiplier'] ?>"
                                     <?= $selected ?>
                             >
@@ -43,7 +43,7 @@
                         <label class="form-label">Color</label>
                         <a href="?page=paint_colors" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
-                    <select id="color_paint" class="form-control calculate color-group-filter" name="color_paint">
+                    <select id="color_paint" class="form-control add-category calculate color-group-filter" name="color_paint">
                         <option value="" >Select Color...</option>
                         <?php
                         $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' AND color_group REGEXP '^[0-9]+$' ORDER BY `color_name` ASC";
