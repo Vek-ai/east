@@ -10,27 +10,20 @@
                         <label class="form-label">Color Group</label>
                         <a href="?page=product_color" target="_blank" class="text-decoration-none">Edit</a>
                     </div>
-                    <select id="color" class="form-control add-category calculate" name="color">
+                    <select id="color" class="form-control calculate" name="color">
                         <option value="" >Select Color Group...</option>
                         <?php
-                        $query_colors = "SELECT pc.*, cgn.color_group_name AS color_name FROM product_color AS pc LEFT JOIN color_group_name AS cgn ON pc.color = cgn.color_group_name_id ORDER BY cgn.color_group_name ASC";
-                        $result_colors = mysqli_query($conn, $query_colors);            
-                        while ($row_colors = mysqli_fetch_array($result_colors)) {
-                            $selected = (($row['color'] ?? '') == $row_colors['id']) ? 'selected' : '';
-                        ?>
-                            <option value="<?= $row_colors['id'] ?>" 
-                                    data-price="<?=$row_colors['price'] ?>" 
-                                    data-color="<?=$row_colors['color'] ?>" 
-                                    data-system="<?=$row_colors['product_system'] ?>" 
-                                    data-grade="<?=$row_colors['grade'] ?>" 
-                                    data-gauge="<?=$row_colors['gauge'] ?>" 
-                                    data-category="<?=$row_colors['product_category'] ?>" 
-                                    data-multiplier="<?= $row_colors['multiplier'] ?>"
-                                    <?= $selected ?>
-                            >
-                                        <?= getColorGroupName($row_colors['color']) ?>
+                        $query_groups = "SELECT DISTINCT color_group_name_id, color_group_name 
+                                        FROM color_group_name 
+                                        ORDER BY color_group_name ASC";
+                        $result_groups = mysqli_query($conn, $query_groups);
+                        while ($row_group = mysqli_fetch_array($result_groups)) {
+                            $selected = (($row['color_group'] ?? '') == $row_group['color_group_name_id']) ? 'selected' : '';
+                            ?>
+                            <option value="<?= $row_group['color_group_name_id'] ?>" <?= $selected ?>>
+                                <?= $row_group['color_group_name'] ?>
                             </option>
-                        <?php   
+                            <?php
                         }
                         ?>
                     </select>

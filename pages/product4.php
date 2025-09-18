@@ -882,18 +882,6 @@ function showCol($name) {
         $(document).on('change', '#product_category', function() {
             updateSearchCategory();
         });
-
-        $(document).on('change', '#color', function() {
-            let selectedGroup = $('#color option:selected').data('color') || '';
-            let product_category = $('#product_category').val() || '';
-
-            $('.color-group-filter option').each(function() {
-                let groupMatch = String($(this).data('group')) === String(selectedGroup);
-                let categoryMatch = String($(this).data('category')) === String(product_category);
-                let match = groupMatch && categoryMatch;
-                $(this).toggle(match);
-            });
-        });
        
         function updateSearchCategory() {
             var product_category = $('#product_category').val() || '';
@@ -1369,35 +1357,45 @@ function showCol($name) {
             });
         });
 
-        function updateColorSelect() {
-            let selectedCategory = $('#product_category').val();
-            let selectedSystem   = $('#product_system').val();
-            let selectedGauge    = $('#gauge').val();
+        function updateColorMult() {
+            let colorGroup = ($('#color').val() || '').trim();
 
-            if (String(selectedCategory) == '3') {
-                $('#color option').each(function () {
-                    let $option = $(this);
+            if (colorGroup) {
+                let productSystem = ($('#product_system').val() || '').trim();
+                let grade         = ($('#grade').val() || '').trim();
+                let gauge         = ($('#gauge').val() || '').trim();
+                let category      = ($('#product_category').val() || '').trim();
 
-                    let optionCategory = String($option.data('category') || "");
-                    let optionSystem   = String($option.data('system') || "");
-                    let optionGauge    = String($option.data('gauge') || "");
-
-                    let match = true;
-
-                    if (selectedCategory && optionCategory && optionCategory !== "0") {
-                        match = match && (String(selectedCategory) === optionCategory);
+                $.ajax({
+                    url: 'pages/product4_ajax.php',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        color_group: colorGroup,
+                        product_system: productSystem,
+                        grade: grade,
+                        gauge: gauge,
+                        product_category: category,
+                        action: "fetch_color_multiplier"
+                    },
+                    success: function(response) {
+                        console.log(response);
+                        if (response && !response.error && !isNaN(response.multiplier)) {
+                            $('#color_multiplier').val(parseFloat(response.multiplier).toFixed(3));
+                        } else {
+                            $('#color_multiplier').val("");
+                            console.warn(response.error || 'No valid data found');
+                            console.log(colorGroup);
+                            console.log(colorPaint);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', status, error);
+                        $('#color_multiplier').val("0");
                     }
-
-                    if (selectedSystem && optionSystem && optionSystem !== "0") {
-                        match = match && (String(selectedSystem) === optionSystem);
-                    }
-
-                    if (selectedGauge && optionGauge && optionGauge !== "0") {
-                        match = match && (String(selectedGauge) === optionGauge);
-                    }
-
-                    $(this).toggle(match);
                 });
+            } else {
+                $('#color_multiplier').val("1.000");
             }
         }
 
@@ -1462,138 +1460,25 @@ function showCol($name) {
                 $flatSheetWidth.val('');
             }
             
-            //selectedCategory is declared global
-            if (String(selectedCategory) == '4') { //category 4 = TRIM
-                updateColorSelect();
+            updateColorMult();
 
-                let flat_sheet_width = parseFloat($("#flat_sheet_width").val()) || 0; 
-                var current_retail_price = parseFloat($("#current_retail_price").val()) || 0;
-                var cost_per_sq_in = 0;
-                if (current_retail_price > 0) {
-                    cost_per_sq_in = current_retail_price / flat_sheet_width;
-                }
-                $("#cost_per_sq_in").val(cost_per_sq_in.toFixed(3));
+            let color_multi = parseFloat($("#color_multiplier").val()) || 1;
+            let grade_multi = parseFloat($("#grade option:selected").attr("data-multiplier")) || 1;
+            let color_multiplier = grade_multi * color_multi;
+            $("#color_multiplier").val(color_multiplier.toFixed(3));
 
-                let price = parseFloat($("#color option:selected").attr("data-multiplier")) || 0;
-                let trim_multiplier = price * current_retail_price;
-                $("#trim_multiplier").val(trim_multiplier.toFixed(3));
+            let stock_multi = parseFloat($("#color_paint option:selected").attr("data-stock-multiplier")) || 1;
+            let cost = color_multiplier * stock_multi;
+            $("#cost").val(cost.toFixed(3));
 
-                let length = $("#length").val().trim();
-                let cost = trim_multiplier * price * length;
-                $("#cost").val(cost.toFixed(3));
+            let descriptionParts = [];
 
-                let descriptionParts = [];
+            if (selectedSystem) descriptionParts.push($("#product_system option:selected").text().trim());
+            if (selectedGauge) descriptionParts.push(selectedGauge);
 
-                if (selectedType) descriptionParts.push($("#product_type option:selected").text().trim());
-                if (length) descriptionParts.push(length + "ft");
-                if (flat_sheet_width) descriptionParts.push($("#flat_sheet_width option:selected").text().trim());
+            $("#description").val(descriptionParts.join(" - "));
+            $("#product_item").val(descriptionParts.join(" - "));
 
-                $("#description").val(descriptionParts.join(" - "));
-                $("#product_item").val(descriptionParts.join(" - "));
-            }else if (String(selectedCategory) == '16') { //category 16 = SCREWS
-                /* 
-                let pieces = $("#pack option:selected").data('count') || 0;
-                let price = parseFloat($("#price").val()) || 0;
-
-                let retail = price * pieces;
-                $("#retail").val(retail.toFixed(3)); 
-                */
-
-                /* 
-                let descriptionParts = [];
-                let size = parseFloat($("#size").val()) || 0;
-                if (size) descriptionParts.push(size);
-                if ($("#product_type").length) {
-                    descriptionParts.push($("#product_type option:selected").text().trim());
-                }
-                $("#description").val(descriptionParts.join(" - "));
-                $("#product_item").val(descriptionParts.join(" - ")); 
-                */
-            }else if (String(selectedCategory) == '3') { //category 3 = PANEL
-                updateColorSelect();
-
-                let color_multi = parseFloat($("#color option:selected").attr("data-multiplier")) || 0;
-                let grade_multi = parseFloat($("#grade option:selected").attr("data-multiplier")) || 1;
-                let color_multiplier = grade_multi * color_multi;
-                $("#color_multiplier").val(color_multiplier.toFixed(3));
-
-                let stock_multi = parseFloat($("#color_paint option:selected").attr("data-stock-multiplier")) || 1;
-                let cost = color_multiplier * stock_multi;
-                $("#cost").val(cost.toFixed(3));
-
-                let descriptionParts = [];
-
-                if (selectedSystem) descriptionParts.push($("#product_system option:selected").text().trim());
-                if (selectedGauge) descriptionParts.push(selectedGauge);
-
-                $("#description").val(descriptionParts.join(" - "));
-                $("#product_item").val(descriptionParts.join(" - "));
-            }else if (String(selectedCategory) == '1') { //category 1 = LUMBER
-                updateColorSelect();
-
-                let color_multi = parseFloat($("#color option:selected").attr("data-multiplier")) || 1;
-                let color_multiplier = color_multi;
-
-                let stock_multi = parseFloat($("#color_paint option:selected").attr("data-stock-multiplier")) || 1;
-                let cost = color_multiplier * stock_multi;
-                $("#cost").val(cost.toFixed(3));
-
-                let descriptionParts = [];
-
-                if (selectedType) descriptionParts.push($("#product_type option:selected").text().trim());
-                if (selectedLine) descriptionParts.push($("#product_line option:selected").text().trim());
-
-                $("#description").val(descriptionParts.join(" - "));
-                $("#product_item").val(descriptionParts.join(" - "));
-            }else if (String(selectedCategory) == '17') { //category 17 = CAULK SEALANT
-                updateColorSelect();
-
-                let color_multi = parseFloat($("#color option:selected").attr("data-multiplier")) || 0;
-                let color_multiplier = color_multi;
-
-                let stock_multi = parseFloat($("#color_paint option:selected").attr("data-stock-multiplier")) || 1;
-                let cost = color_multiplier * stock_multi;
-                $("#cost").val(cost.toFixed(3));
-
-                let descriptionParts = [];
-
-                if (selectedType) descriptionParts.push($("#product_type option:selected").text().trim());
-                if (selectedLine) descriptionParts.push($("#product_line option:selected").text().trim());
-
-                $("#description").val(descriptionParts.join(" - "));
-                $("#product_item").val(descriptionParts.join(" - "));
-            }else if (String(selectedCategory) == '18') { //category 18 = PIPE BOOTS
-                updateColorSelect();
-
-                let color_multi = parseFloat($("#color option:selected").attr("data-multiplier")) || 0;
-                let color_multiplier = color_multi;
-
-                let stock_multi = parseFloat($("#color_paint option:selected").attr("data-stock-multiplier")) || 1;
-                let cost = color_multiplier * stock_multi;
-                $("#cost").val(cost.toFixed(3));
-
-                let descriptionParts = [];
-
-                if (selectedType) descriptionParts.push($("#product_type option:selected").text().trim());
-                if (selectedLine) descriptionParts.push($("#product_line option:selected").text().trim());
-
-                $("#description").val(descriptionParts.join(" - "));
-                $("#product_item").val(descriptionParts.join(" - "));
-            } else { 
-                let descriptionParts = [];
-
-                let pieces = $("#pack option:selected").data('count') || 1;
-                let cost = $("#cost").val() || 0;
-                let price = pieces * cost;
-                $("#price").val(price.toFixed(3));
-
-                let size = parseFloat($("#size").val()) || 0; 
-                if (size) descriptionParts.push(size);
-                if (selectedType) descriptionParts.push($("#product_type option:selected").text().trim());
-
-                $("#description").val(descriptionParts.join(" - "));
-                $("#product_item").val(descriptionParts.join(" - "));
-                }
         });
         
         $(document).on('mousedown', '.readonly', function() {

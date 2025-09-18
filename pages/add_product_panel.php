@@ -24,7 +24,6 @@ if(isset($_REQUEST['action'])) {
         }
         ?>
         
-        
         <!--COMMON FIELDS-->
         <?php include "add_product_common_fields.php"; ?>
         <!--END COMMON FIELDS-->

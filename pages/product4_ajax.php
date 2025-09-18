@@ -478,6 +478,48 @@ if(isset($_REQUEST['action'])) {
         }
     } 
 
+    if ($action == 'fetch_color_multiplier') {
+        $colorGroup    = intval($_POST['color_group'] ?? 0);
+        $productSystem = trim($_POST['product_system'] ?? '');
+        $grade         = trim($_POST['grade'] ?? '');
+        $gauge         = intval($_POST['gauge'] ?? 0);
+        $category      = trim($_POST['product_category'] ?? '');
+
+        $query = "SELECT * FROM product_color WHERE color = $colorGroup";
+
+        if ($productSystem !== '') {
+            $query .= " AND product_system = '" . mysqli_real_escape_string($conn, $productSystem) . "'";
+        }
+        if ($grade !== '') {
+            $query .= " AND grade = '" . mysqli_real_escape_string($conn, $grade) . "'";
+        }
+        if ($gauge > 0) {
+            $query .= " AND gauge = $gauge";
+        }
+        if ($category !== '') {
+            $query .= " AND product_category = '" . mysqli_real_escape_string($conn, $category) . "'";
+        }
+
+        $query .= " LIMIT 1";
+
+        $result = mysqli_query($conn, $query);
+
+        if ($result && $row = mysqli_fetch_assoc($result)) {
+            echo json_encode([
+                'multiplier'  => $row['multiplier'] ?? 1,
+                'price'       => $row['price'] ?? 0,
+                'color_name'  => $row['color_name'] ?? '',
+                'availability'=> $row['availability'] ?? ''
+            ]);
+        } else {
+            echo json_encode([
+                'multiplier' => 1,
+                'price' => 0,
+                'error' => 'No matching record found'
+            ]);
+        }
+    }
+
     if ($action == "remove_image") {
         $image_id = $_POST['image_id'];
     
