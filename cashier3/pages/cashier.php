@@ -1562,7 +1562,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 set_color: "set_color"
             },
             success: function(response) {
-                console.log(response);
+                loadCart();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);

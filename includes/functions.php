@@ -2806,4 +2806,41 @@ function decrypt_password_from_storage(string $b64): string {
     if ($plaintext === false) throw new Exception('Decryption failed');
     return $plaintext;
 }
+
+function fetchColorMultiplier($colorGroup, $productSystem = 0, $grade = 0, $gauge = 0, $category = 0) {
+    global $conn;
+
+    $colorGroup    = intval($colorGroup);
+    $productSystem = intval($productSystem);
+    $grade         = intval($grade);
+    $gauge         = intval($gauge);
+    $category      = intval($category);
+
+    $query = "SELECT multiplier 
+              FROM product_color 
+              WHERE color = $colorGroup";
+
+    if ($productSystem > 0) {
+        $query .= " AND product_system = $productSystem";
+    }
+    if ($grade > 0) {
+        $query .= " AND grade = $grade";
+    }
+    if ($gauge > 0) {
+        $query .= " AND gauge = $gauge";
+    }
+    if ($category > 0) {
+        $query .= " AND product_category = $category";
+    }
+
+    $query .= " LIMIT 1";
+
+    $result = mysqli_query($conn, $query);
+
+    if ($result && $row = mysqli_fetch_assoc($result)) {
+        return floatval($row['multiplier']);
+    }
+
+    return 1.0;
+}
 ?>

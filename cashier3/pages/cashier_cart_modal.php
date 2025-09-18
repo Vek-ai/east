@@ -251,6 +251,7 @@ if(isset($_POST['fetch_cart'])){
                                 $product = getProductDetails($product_id);
                                 $totalstockquantity = getProductStockTotal($product_id);
                                 $category_id = $product["product_category"];
+                                
                                 if ($totalstockquantity > 0) {
                                     $stock_text = '
                                         <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($product_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex justify-content-center align-items-center">
@@ -288,10 +289,24 @@ if(isset($_POST['fetch_cart'])){
                                 }
 
                                 $color_id = $values["custom_color"];
+                                $color_details = getColorDetails($color_id);
                                 if (isset($values["used_discount"])){
                                     $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
                                 }
 
+                                $color_id      = $values["custom_color"];
+                                $color_details = getColorDetails($color_id);
+
+                                $category_id   = intval($product["product_category"]);
+                                $productSystem = intval($product["product_system"]);
+                                $grade         = intval($product["grade"]);
+                                $gauge         = intval($product["gauge"]);
+                                $colorGroup    = intval($color_details['color_group']);
+
+                                $color_mult = fetchColorMultiplier($colorGroup, $productSystem, $grade, $gauge, $category_id);
+
+                                $product_price *= $color_mult;
+                                
                                 $total_qty += $values["quantity_cart"];
                                 $total_length_cart += $quantity * $total_length;
                                 $totalquantity += $values["quantity_cart"];
@@ -498,6 +513,8 @@ if(isset($_POST['fetch_cart'])){
                                     $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
                                     $customer_pricing = getPricingCategory($category_id, $customer_details_pricing) / 100;
                                     $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
+
+                                    $product_price *= $color_mult;
 
                                     $bundle_actual_price += $product_price;
                                     $bundle_customer_price += $customer_price;
@@ -841,6 +858,20 @@ if(isset($_POST['fetch_cart'])){
                                 }
 
                                 $color_id = $values["custom_color"];
+
+                                $color_id      = $values["custom_color"];
+                                $color_details = getColorDetails($color_id);
+
+                                $category_id   = intval($product["product_category"]);
+                                $productSystem = intval($product["product_system"]);
+                                $grade         = intval($product["grade"]);
+                                $gauge         = intval($product["gauge"]);
+                                $colorGroup    = intval($color_details['color_group']);
+
+                                $color_mult = fetchColorMultiplier($colorGroup, $productSystem, $grade, $gauge, $category_id);
+
+                                $product_price *= $color_mult;
+                                
                                 if (isset($values["used_discount"])){
                                     $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
                                 }

@@ -5,10 +5,16 @@
             <option value="" data-category="">All Colors</option>
             <optgroup label="Product Colors">
                 <?php
-                $query_color = "SELECT MIN(color_id) AS color_id, color_name, product_category FROM paint_colors 
-                                WHERE hidden = '0' AND color_status = '1'
+                $query_color = "SELECT 
+                                    MIN(color_id) AS color_id, 
+                                    color_name, 
+                                    product_category 
+                                FROM paint_colors 
+                                WHERE hidden = '0' 
+                                AND color_status = '1'
+                                AND FIND_IN_SET('3', REPLACE(REPLACE(product_category, '[', ''), ']', ''))
                                 GROUP BY color_name 
-                                ORDER BY color_name ASC";
+                                ORDER BY color_name ASC;";
 
                 $result_color = mysqli_query($conn, $query_color);
                 while ($row_color = mysqli_fetch_array($result_color)) {
