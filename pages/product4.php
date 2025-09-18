@@ -350,15 +350,15 @@ function showCol($name) {
                                                     $unique_gauges = [];
 
                                                     while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                                                        if (in_array($row_gauge['product_gauge'], $unique_gauges)) {
+                                                        if (in_array($row_gauge['product_gauge_id'], $unique_gauges)) {
                                                             continue;
                                                         }
 
                                                         $unique_gauges[] = $row_gauge['product_gauge'];
                                                         
-                                                        $selected = (($row['gauge'] ?? '') == $row_gauge['product_gauge']) ? 'selected' : '';
+                                                        $selected = (($row['gauge'] ?? '') == $row_gauge['product_gauge_id']) ? 'selected' : '';
                                                         ?>
-                                                        <option value="<?= $row_gauge['product_gauge'] ?>" data-multiplier="<?= $row_gauge['multiplier'] ?>" <?= $selected ?>>
+                                                        <option value="<?= $row_gauge['product_gauge_id'] ?>" data-multiplier="<?= $row_gauge['multiplier'] ?>" <?= $selected ?>>
                                                             <?= $row_gauge['product_gauge'] ?>
                                                         </option>
                                                         <?php
