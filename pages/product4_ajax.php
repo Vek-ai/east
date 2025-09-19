@@ -808,127 +808,30 @@ if(isset($_REQUEST['action'])) {
         $includedColumns = array();
         $column_txt = '*';
     
-        if($product_category == 4){ // TRIM
-            $includedColumns = [ 
-                'product_id',
-                'product_category',
-                'product_system',
-                'product_line',
-                'product_type',
-                'flat_sheet_width',
-                'current_retail_price',
-                'cost_per_sq_in',
-                'grade',
-                'gauge',
-                'color',
-                'trim_multiplier',
-                'length',
-                'retail_cost',
-                'retail',
-                'description'
-            ];
-        } else if($product_category == 16){ // SCREW
-            $includedColumns = [ 
-                'product_id',
-                'product_category',
-                'product_type',
-                'color',
-                'size',
-                'supplier_id',
-                'pack',
-                'cost',
-                'price',
-                'retail',
-                'description'
-            ];
-        } else if($product_category == 3){ // PANELS
-            $includedColumns = [ 
-                'product_id',
-                'product_category',
-                'product_system',
-                'product_line',
-                'product_type',
-                'gauge',
-                'width',
-                'hems',
-                'bends',
-                'thickness',
-                'grade',
-                'color',
-                'color_multiplier',
-                'stock_type',
-                'cost',
-                'retail',
-                'sold_by_feet',
-                'standing_seam',
-                'board_batten',
-                'description'
-            ];
-        } else if($product_category == 1){ // LUMBER
-            $includedColumns = [ 
-                'product_id',
-                'product_category',
-                'product_system',
-                'product_line',
-                'product_type',
-                'width',
-                'length',
-                'thickness',
-                'color',
-                'color_paint',
-                'cost',
-                'retail',
-                'description'
-            ];
-        } else if($product_category == 18){ // PIPE BOOTS
-            $includedColumns = [ 
-                'product_id',
-                'product_category',
-                'product_system',
-                'product_line',
-                'product_type',
-                'width',
-                'length',
-                'thickness',
-                'color',
-                'color_paint',
-                'cost',
-                'retail',
-                'description'
-            ];
-        } else if($product_category == 17){ // CAULK SEALANT
-            $includedColumns = [ 
-                'product_id',
-                'product_category',
-                'product_system',
-                'product_line',
-                'product_type',
-                'width',
-                'length',
-                'thickness',
-                'color',
-                'color_paint',
-                'cost',
-                'retail',
-                'description'
-            ];
-        } else { // OTHERS
-            $includedColumns = [ 
-                'product_id',
-                'product_category',
-                'product_type',
-                'color',
-                'size',
-                'supplier_id',
-                'pack',
-                'cost',
-                'price',
-                'retail',
-                'description'
-            ];
-        }
-
-        $additionalColumns = [ 
+        $includedColumns = [ 
+            'product_id',
+            'product_category',
+            'product_system',
+            'product_line',
+            'product_type',
+            'grade',
+            'gauge',
+            'color',
+            'length',
+            'retail_cost',
+            'retail',
+            'description',
+            'supplier_id',
+            'cost',
+            'price',
+            'width',
+            'thickness',
+            'color_multiplier',
+            'stock_type',
+            'sold_by_feet',
+            'standing_seam',
+            'board_batten',
+            'color_paint',
             'product_item',
             'product_sku',
             'inv_id',
@@ -945,7 +848,6 @@ if(isset($_REQUEST['action'])) {
             'comment'
         ];
 
-        array_push($includedColumns, ...$additionalColumns);
         $column_txt = implode(', ', $includedColumns);
     
         $sql = "SELECT " . $column_txt . " FROM product WHERE hidden = '0' AND status = '1'";
