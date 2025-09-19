@@ -82,6 +82,7 @@
                     <input type="text" id="product_item" name="product_item" class="form-control" value="<?= $row['product_item']?>" />
                 </div>
             </div>
+            <div class="col-md-4"></div>
             <div class="col-md-4">
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">

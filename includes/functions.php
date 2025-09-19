@@ -44,7 +44,7 @@ function getProductName($product_id){
     $query = "SELECT product_item, description FROM product WHERE product_id = '$product_id'";
     $result = mysqli_query($conn,$query);
     $row = mysqli_fetch_array($result); 
-    $product_item = !empty($row['product_item']) ? $row['product_item'] : $row['description'];
+    $product_item = !empty($row['product_item']) ? $row['product_item'] : '';
     return  $product_item;
 }
 
