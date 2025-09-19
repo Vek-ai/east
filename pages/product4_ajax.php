@@ -12,7 +12,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-$table = 'test';
+$product_excel = 'product_excel';
 //4 = TRIM
 $trim_id = 4;
 $category_id = 4;
@@ -574,7 +574,7 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == "fetch_uploaded_modal") {
-        $table = "test";
+        $table = $product_excel;
         
         $sql = "SELECT * FROM $table";
         $result = $conn->query($sql);
@@ -623,39 +623,7 @@ if(isset($_REQUEST['action'])) {
                                     foreach ($columns as $column) {
                                         if (isset($columnsWithData[$column])) {
                                             $value = $row[$column] ?? '';
-                                            if ($column == 'product_category') {
-                                                ?>
-                                                <td contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
-                                                    <?= getProductCategoryName($value) ?>
-                                                </td>
-                                                <?php
-                                            } else if ($column == 'product_system') {
-                                                ?>
-                                                <td contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
-                                                    <?= getProductSystemName($value) ?>
-                                                </td>
-                                                <?php
-                                            } else if ($column == 'product_type') {
-                                                ?>
-                                                <td contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
-                                                    <?= getProductTypeName($value) ?>
-                                                </td>
-                                                <?php
-                                            } else if ($column == 'product_line') {
-                                                ?>
-                                                <td contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
-                                                    <?= getProductLineName($value) ?>
-                                                </td>
-                                                <?php
-                                            } else if ($column == 'color') {
-                                                ?>
-                                                <td contenteditable="false" data-header-name="<?= $column ?>" data-id="<?=$product_id?>">
-                                                    <?= getColorName($value) ?>
-                                                </td>
-                                                <?php
-                                            } else {
-                                                echo "<td contenteditable='true' class='table_data' data-header-name='".$column."' data-id='".$product_id."'>$value</td>";
-                                            }
+                                            echo "<td contenteditable='true' class='table_data' data-header-name='".$column."' data-id='".$product_id."'>$value</td>";
                                         }
                                     }
                                     echo '</tr>';
@@ -682,7 +650,6 @@ if(isset($_REQUEST['action'])) {
             $fileNameCmps = explode(".", $fileName);
             $fileExtension = strtolower(end($fileNameCmps));
     
-            $table_test = 'test';
     
             if ($fileExtension != "xlsx" && $fileExtension != "xls") {
                 echo "Please upload a valid Excel file.";
@@ -707,7 +674,7 @@ if(isset($_REQUEST['action'])) {
                 $columnMapping[$dbColumn] = $col;
             }
     
-            $truncateSql = "TRUNCATE TABLE $table_test";
+            $truncateSql = "TRUNCATE TABLE $product_excel";
             $truncateResult = $conn->query($truncateSql);
     
             if (!$truncateResult) {
@@ -725,7 +692,7 @@ if(isset($_REQUEST['action'])) {
                 $columnNames = implode(", ", array_keys($data));
                 $columnValues = implode("', '", array_map(function($value) { return $value ?? ''; }, array_values($data)));
     
-                $sql = "INSERT INTO $table_test ($columnNames) VALUES ('$columnValues')";
+                $sql = "INSERT INTO $product_excel ($columnNames) VALUES ('$columnValues')";
                 $result = $conn->query($sql);
     
                 if (!$result) {
@@ -744,7 +711,7 @@ if(isset($_REQUEST['action'])) {
     if ($action == "save_table") {
         $table = "product";
     
-        $selectSql = "SELECT * FROM test";
+        $selectSql = "SELECT * FROM $product_excel";
         $result = $conn->query($selectSql);
     
         if ($result->num_rows > 0) {
@@ -792,12 +759,12 @@ if(isset($_REQUEST['action'])) {
     
             echo "Data has been successfully saved";
     
-            $truncateSql = "TRUNCATE TABLE test";
+            $truncateSql = "TRUNCATE TABLE $product_excel";
             if ($conn->query($truncateSql) !== TRUE) {
-                echo " but failed to clear test table: " . $conn->error;
+                echo " but failed to clear $product_excel table: " . $conn->error;
             }
         } else {
-            echo "No data found in test table.";
+            echo "No data found in $product_excel table.";
         }
     }    
 
@@ -1059,7 +1026,7 @@ if(isset($_REQUEST['action'])) {
         $new_value = mysqli_real_escape_string($conn, $new_value);
         $product_id = mysqli_real_escape_string($conn, $product_id);
         
-        $sql = "UPDATE test SET `$column_name` = '$new_value' WHERE product_id = '$product_id'";
+        $sql = "UPDATE $product_excel SET `$column_name` = '$new_value' WHERE product_id = '$product_id'";
 
         if ($conn->query($sql) === TRUE) {
             echo 'Success';
