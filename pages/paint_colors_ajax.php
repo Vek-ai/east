@@ -8,17 +8,6 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-function indexToColumnLetter($index) {
-    $letter = '';
-    
-    while ($index >= 0) {
-        $letter = chr($index % 26 + 65) . $letter;
-        $index = floor($index / 26) - 1;
-    }
-    
-    return $letter;
-}
-
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
@@ -660,9 +649,9 @@ if(isset($_REQUEST['action'])) {
             $edited_by = $row['edited_by'];
     
             if ($edited_by != "0") {
-                $last_user_name = get_name($edited_by);
+                $last_user_name = get_customer_name($edited_by);
             } elseif ($added_by != "0") {
-                $last_user_name = get_name($added_by);
+                $last_user_name = get_customer_name($added_by);
             } else {
                 $last_user_name = "";
             }
