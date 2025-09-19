@@ -1519,7 +1519,6 @@ function showCol($name) {
             }
 
             let descriptionString = descriptionParts.join(" ");
-            $("#description").val(descriptionString);
             $("#product_item").val(descriptionString);
 
         });

@@ -34,10 +34,6 @@ if(isset($_REQUEST['action'])) {
             if ($key != 'product_id') {
                 $fields[$key] = $escapedValue;
             }
-        
-            if ($key == 'retail') {
-                $fields['unit_price'] = $escapedValue;
-            }
 
             if ($key == 'color_paint') {
                 $fields['color'] = $escapedValue;
@@ -230,11 +226,6 @@ if(isset($_REQUEST['action'])) {
                                                 <p><?= getProductTypeName($row['product_type']) ?></p>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">Description:</label>
-                                        <p><?= $row['description'] ?></p>
                                     </div>
 
                                     <div class="row pt-3">
@@ -787,7 +778,6 @@ if(isset($_REQUEST['action'])) {
             'length',
             'retail_cost',
             'retail',
-            'description',
             'supplier_id',
             'cost',
             'price',
@@ -1417,7 +1407,6 @@ if(isset($_REQUEST['action'])) {
                         </div>
 
                         <h4><?= $row['product_item'] ?></h4>
-                        <p class="mb-3"><?= $row['description'] ?></p>
 
                         <?php
                         $lumber_id = 1;

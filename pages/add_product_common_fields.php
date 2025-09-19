@@ -76,16 +76,10 @@
     </div>
     <div class="card-body border rounded p-3">
         <div class="row">
-            <div class="col-md-4">
-                <div class="mb-3">
-                    <label class="form-label">Product Name</label>
-                    <input type="text" id="product_item" name="product_item" class="form-control" value="<?= $row['product_item']?>" />
-                </div>
-            </div>
             <div class="col-md-8">
                 <div class="mb-3">
-                    <label class="form-label">Description</label>
-                    <input type="text" id="description" name="description" class="form-control" value="<?=$row['description']?>"/>
+                    <label class="form-label">Product Description</label>
+                    <input type="text" id="product_item" name="product_item" class="form-control" value="<?= $row['product_item']?>" />
                 </div>
             </div>
             <div class="col-md-4">
@@ -204,16 +198,22 @@
                     <input type="text" id="cost" name="cost" class="form-control calculate" value="<?=$row['cost'] ?? ''?>"/>
                 </div>
             </div>
+            <?php 
+            $unit_price = floatval($row['unit_price']) ?? 0;
+
+            $per_ft_price = $unit_price;
+            $per_in_price = $unit_price / 12;
+            ?>
             <div class="col-md-4">
                 <div class="mb-3">
                     <label class="form-label">Retail Price</label>
-                    <input type="text" id="retail" name="unit_price" class="form-control" value="<?=$row['unit_price'] ?? ''?>"/>
+                    <input type="text" id="retail" name="unit_price" class="form-control" value="<?=number_format($unit_price ?? 0,3)?>"/>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="mb-3">
                     <label class="form-label">Per In Price</label>
-                    <input type="text" id="per_in_price" name="per_in_price" class="form-control" value="<?=$row['unit_price'] ?? ''?>"/>
+                    <input type="text" id="per_in_price" name="per_in_price" class="form-control" value="<?=number_format($per_in_price ?? 0,3)?>"/>
                 </div>
             </div>
             <div class="col-md-4 text-center mb-3">
@@ -230,7 +230,7 @@
             <div class="col-md-4">
                 <div class="mb-3">
                     <label class="form-label">Per Ft Price</label>
-                    <input type="text" id="per_ft_price" name="per_ft_price" class="form-control" value="<?=$row['unit_price'] ?? ''?>"/>
+                    <input type="text" id="per_ft_price" name="per_ft_price" class="form-control" value="<?=number_format($per_ft_price ?? 0,3)?>"/>
                 </div>
             </div>
             <div class="col-md-4 text-center mb-3">
