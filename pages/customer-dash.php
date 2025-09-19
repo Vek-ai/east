@@ -686,304 +686,351 @@ $is_points_enabled = getSetting('is_points_enabled');
 <div class="modal fade" id="viewChangesModal" tabindex="-1" aria-labelledby="viewChangesModalLabel" aria-hidden="true"></div>
 
 <script>
-  $(document).ready(function() {
-      $('[data-toggle="tooltip"]').tooltip(); 
+    $(document).ready(function() {
+        $('[data-toggle="tooltip"]').tooltip(); 
 
-      var currentPage = 1,
-          rowsPerPage = parseInt($('#rowsPerPage').val()),
-          totalRows = 0,
-          totalPages = 0,
-          maxPageButtons = 5,
-          stepSize = 5;
+        var currentPage = 1,
+            rowsPerPage = parseInt($('#rowsPerPage').val()),
+            totalRows = 0,
+            totalPages = 0,
+            maxPageButtons = 5,
+            stepSize = 5;
 
-      function updateTable() {
-          var $rows = $('#productTableBody tr');
-          totalRows = $rows.length;
-          totalPages = Math.ceil(totalRows / rowsPerPage);
+        function updateTable() {
+            var $rows = $('#productTableBody tr');
+            totalRows = $rows.length;
+            totalPages = Math.ceil(totalRows / rowsPerPage);
 
-          var start = (currentPage - 1) * rowsPerPage,
-              end = Math.min(currentPage * rowsPerPage, totalRows);
+            var start = (currentPage - 1) * rowsPerPage,
+                end = Math.min(currentPage * rowsPerPage, totalRows);
 
-          $rows.hide().slice(start, end).show();
+            $rows.hide().slice(start, end).show();
 
-          $('#paginationControls').html(generatePagination());
-          $('#paginationInfo').text(`${start + 1}–${end} of ${totalRows}`);
+            $('#paginationControls').html(generatePagination());
+            $('#paginationInfo').text(`${start + 1}–${end} of ${totalRows}`);
 
-          $('#paginationControls').find('a').click(function(e) {
-              e.preventDefault();
-              if ($(this).hasClass('page-link-next')) {
-                  currentPage = Math.min(currentPage + stepSize, totalPages);
-              } else if ($(this).hasClass('page-link-prev')) {
-                  currentPage = Math.max(currentPage - stepSize, 1);
-              } else {
-                  currentPage = parseInt($(this).text());
-              }
-              updateTable();
-          });
-      }
-
-      function generatePagination() {
-          var pagination = '';
-          var startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
-          var endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
-
-          if (currentPage > 1) {
-              pagination += `<li class="page-item p-1"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center page-link-prev" href="#">‹</a></li>`;
-          }
-
-          for (var i = startPage; i <= endPage; i++) {
-              pagination += `<li class="page-item p-1 ${i === currentPage ? 'active' : ''}"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center" href="#">${i}</a></li>`;
-          }
-
-          if (currentPage < totalPages) {
-              pagination += `<li class="page-item p-1"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center page-link-next" href="#">›</a></li>`;
-          }
-
-          return pagination;
-      }
-
-      function searchProducts(query) {
-          $.ajax({
-              url: 'pages/customer-dash_ajax.php',
-              type: 'POST',
-              data: {
-                  query: query,
-                  customerid: <?= $_REQUEST['id'] ?>
-              },
-              success: function(response) {
-                  $('#productTableBody').html(response);
-                  currentPage = 1;
-                  updateTable();
-              },
-              error: function(jqXHR, textStatus, errorThrown) {
-                  alert('Error: ' + textStatus + ' - ' + errorThrown);
-              }
-          });
-      }
-      
-      function searchOrders() {
-          var date_from = $('#date_from_order').val();
-          var date_to = $('#date_to_order').val();
-
-          $.ajax({
-              url: 'pages/customer-dash_ajax.php',
-              type: 'POST',
-              data: {
-                  customerid: <?= $_REQUEST['id'] ?>,
-                  date_from: date_from,
-                  date_to: date_to,
-                  search_orders: 'search_orders'
-              },
-              success: function(response) {
-                    $('#tbl-orders').html(response);
-
-                    if ($.fn.DataTable.isDataTable('#orders-tbl')) {
-                        $('#orders-tbl').DataTable().destroy();
-                    }
-
-                    $('#orders-tbl').DataTable({
-                        searching: false,
-                        lengthChange: false,
-                        pageLength: 10
-                    });
-              },
-              error: function(jqXHR, textStatus, errorThrown) {
-                  alert('Error: ' + textStatus + ' - ' + errorThrown);
-              }
-          });
-      }
-
-      function searchEstimates() {
-          var date_from = $('#date_from_estimate').val();
-          var date_to = $('#date_to_estimate').val();
-
-          $.ajax({
-              url: 'pages/customer-dash_ajax.php',
-              type: 'POST',
-              data: {
-                  customerid: <?= $_REQUEST['id'] ?>,
-                  date_from: date_from,
-                  date_to: date_to,
-                  search_estimates: 'search_estimates'
-              },
-              success: function(response) {
-                    $('#tbl-estimates').html(response);
-
-                    if ($.fn.DataTable.isDataTable('#estimates-tbl')) {
-                        $('#estimates-tbl').DataTable().destroy();
-                    }
-
-                    $('#estimates-tbl').DataTable({
-                        searching: false,
-                        lengthChange: false,
-                        pageLength: 10
-                    });
-              },
-              error: function(jqXHR, textStatus, errorThrown) {
-                  alert('Error: ' + textStatus + ' - ' + errorThrown);
-              }
-          });
-      }
-
-      function searchJobs() {
-          var date_from = $('#date_from_jobs').val();
-          var date_to = $('#date_to_jobs').val();
-
-          $.ajax({
-              url: 'pages/customer-dash_ajax.php',
-              type: 'POST',
-              data: {
-                  customerid: <?= $_REQUEST['id'] ?>,
-                  date_from: date_from,
-                  date_to: date_to,
-                  search_jobs: 'search_jobs'
-              },
-              success: function(response) {
-                    $('#tbl-jobs').html(response);
-                    if ($.fn.DataTable.isDataTable('#jobs-tbl')) {
-                        $('#jobs-tbl').DataTable().destroy();
-                    }
-
-                    $('#jobs-tbl').DataTable({
-                        searching: false,
-                        lengthChange: false,
-                        pageLength: 10,
-                        order: [[5, 'desc']],
-                        columnDefs: [
-                            {
-                                targets: [5],
-                                visible: false,
-                                searchable: false
-                            }
-                        ]
-                    });
-              },
-              error: function(jqXHR, textStatus, errorThrown) {
-                  alert('Error: ' + textStatus + ' - ' + errorThrown);
-              }
-          });
-      }
-
-      function searchContractorJobs() {
-          var date_from = $('#date_from_contractor').val();
-          var date_to = $('#date_to_contractor').val();
-
-          $.ajax({
-              url: 'pages/customer-dash_ajax.php',
-              type: 'POST',
-              data: {
-                  customerid: <?= $_REQUEST['id'] ?>,
-                  date_from: date_from,
-                  date_to: date_to,
-                  search_contractor_jobs: 'search_contractor_jobs'
-              },
-              success: function(response) {
-                    $('#tbl-contractor-jobs').html(response);
-                    if ($.fn.DataTable.isDataTable('#contractor-jobs-tbl')) {
-                        $('#contractor-jobs-tbl').DataTable().destroy();
-                    }
-
-                    $('#contractor-jobs-tbl').DataTable({
-                        searching: false,
-                        lengthChange: false,
-                        pageLength: 10
-                    });
-              },
-              error: function(jqXHR, textStatus, errorThrown) {
-                  alert('Error: ' + textStatus + ' - ' + errorThrown);
-              }
-          });
-      }
-
-    
-
-    // Toggle display based on type selected
-    $(document).on('change', '#type', function () {
-        const type = $(this).val();
-
-        if (type === 'cash') {
-            $('#deposit_details_group').removeClass('d-none');
-            $('#check_no_group').addClass('d-none');
-            $('#check_no').removeAttr('required').val('');
-        } else if (type === 'check') {
-            $('#deposit_details_group').removeClass('d-none');
-            $('#check_no_group').removeClass('d-none');
-            $('#check_no').attr('required', true);
-        } else {
-            $('#deposit_details_group').addClass('d-none');
-            $('#check_no_group').addClass('d-none');
-            $('#check_no').removeAttr('required').val('');
-        }
-    });
-
-    $(document).on('click', '#addModalBtn', function(event) {
-        event.preventDefault();
-        var job_id = $(this).data('job-id') || '';
-        var customer_id = $(this).data('customer-id') || '';
-        var type = $(this).data('type') || '';
-
-        if(type == 'edit'){
-            $('#add-header').html('Update Job');
-        }else{
-            $('#add-header').html('Add Job');
+            $('#paginationControls').find('a').click(function(e) {
+                e.preventDefault();
+                if ($(this).hasClass('page-link-next')) {
+                    currentPage = Math.min(currentPage + stepSize, totalPages);
+                } else if ($(this).hasClass('page-link-prev')) {
+                    currentPage = Math.max(currentPage - stepSize, 1);
+                } else {
+                    currentPage = parseInt($(this).text());
+                }
+                updateTable();
+            });
         }
 
-        $.ajax({
-            url: 'pages/customer-dash_ajax.php',
-            type: 'POST',
-            data: {
-                customer_id: customer_id,
-                job_id : job_id,
-                fetch_job_modal: 'fetch_job_modal'
-            },
-            success: function (response) {
-                $('#add-fields').html(response);
+        function generatePagination() {
+            var pagination = '';
+            var startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+            var endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
 
-                $(".select2-form").each(function () {
-                    $(this).select2({
-                        width: '100%',
-                        dropdownParent: $(this).parent(),
-                        templateResult: formatOption,
-                        templateSelection: formatOption
-                    });
-                });
+            if (currentPage > 1) {
+                pagination += `<li class="page-item p-1"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center page-link-prev" href="#">‹</a></li>`;
+            }
 
-                $('#addModal').modal('show');
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.error('AJAX Error:', textStatus, errorThrown);
-                console.error('Response:', jqXHR.responseText);
+            for (var i = startPage; i <= endPage; i++) {
+                pagination += `<li class="page-item p-1 ${i === currentPage ? 'active' : ''}"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center" href="#">${i}</a></li>`;
+            }
 
-                $('#responseHeader').text("Error");
-                $('#responseMsg').text("An error occurred while processing your request.");
-                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
-                $('#response-modal').modal("show");
+            if (currentPage < totalPages) {
+                pagination += `<li class="page-item p-1"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center page-link-next" href="#">›</a></li>`;
+            }
+
+            return pagination;
+        }
+
+        function searchProducts(query) {
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    query: query,
+                    customerid: <?= $_REQUEST['id'] ?>
+                },
+                success: function(response) {
+                    $('#productTableBody').html(response);
+                    currentPage = 1;
+                    updateTable();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
+        
+        function searchOrders() {
+            var date_from = $('#date_from_order').val();
+            var date_to = $('#date_to_order').val();
+
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    customerid: <?= $_REQUEST['id'] ?>,
+                    date_from: date_from,
+                    date_to: date_to,
+                    search_orders: 'search_orders'
+                },
+                success: function(response) {
+                        $('#tbl-orders').html(response);
+
+                        if ($.fn.DataTable.isDataTable('#orders-tbl')) {
+                            $('#orders-tbl').DataTable().destroy();
+                        }
+
+                        $('#orders-tbl').DataTable({
+                            searching: false,
+                            lengthChange: false,
+                            pageLength: 10
+                        });
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
+
+        function searchEstimates() {
+            var date_from = $('#date_from_estimate').val();
+            var date_to = $('#date_to_estimate').val();
+
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    customerid: <?= $_REQUEST['id'] ?>,
+                    date_from: date_from,
+                    date_to: date_to,
+                    search_estimates: 'search_estimates'
+                },
+                success: function(response) {
+                        $('#tbl-estimates').html(response);
+
+                        if ($.fn.DataTable.isDataTable('#estimates-tbl')) {
+                            $('#estimates-tbl').DataTable().destroy();
+                        }
+
+                        $('#estimates-tbl').DataTable({
+                            searching: false,
+                            lengthChange: false,
+                            pageLength: 10
+                        });
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
+
+        function searchJobs() {
+            var date_from = $('#date_from_jobs').val();
+            var date_to = $('#date_to_jobs').val();
+
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    customerid: <?= $_REQUEST['id'] ?>,
+                    date_from: date_from,
+                    date_to: date_to,
+                    search_jobs: 'search_jobs'
+                },
+                success: function(response) {
+                        $('#tbl-jobs').html(response);
+                        if ($.fn.DataTable.isDataTable('#jobs-tbl')) {
+                            $('#jobs-tbl').DataTable().destroy();
+                        }
+
+                        $('#jobs-tbl').DataTable({
+                            searching: false,
+                            lengthChange: false,
+                            pageLength: 10,
+                            order: [[5, 'desc']],
+                            columnDefs: [
+                                {
+                                    targets: [5],
+                                    visible: false,
+                                    searchable: false
+                                }
+                            ]
+                        });
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
+
+        function searchContractorJobs() {
+            var date_from = $('#date_from_contractor').val();
+            var date_to = $('#date_to_contractor').val();
+
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    customerid: <?= $_REQUEST['id'] ?>,
+                    date_from: date_from,
+                    date_to: date_to,
+                    search_contractor_jobs: 'search_contractor_jobs'
+                },
+                success: function(response) {
+                        $('#tbl-contractor-jobs').html(response);
+                        if ($.fn.DataTable.isDataTable('#contractor-jobs-tbl')) {
+                            $('#contractor-jobs-tbl').DataTable().destroy();
+                        }
+
+                        $('#contractor-jobs-tbl').DataTable({
+                            searching: false,
+                            lengthChange: false,
+                            pageLength: 10
+                        });
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
+
+        
+
+        // Toggle display based on type selected
+        $(document).on('change', '#type', function () {
+            const type = $(this).val();
+
+            if (type === 'cash') {
+                $('#deposit_details_group').removeClass('d-none');
+                $('#check_no_group').addClass('d-none');
+                $('#check_no').removeAttr('required').val('');
+            } else if (type === 'check') {
+                $('#deposit_details_group').removeClass('d-none');
+                $('#check_no_group').removeClass('d-none');
+                $('#check_no').attr('required', true);
+            } else {
+                $('#deposit_details_group').addClass('d-none');
+                $('#check_no_group').addClass('d-none');
+                $('#check_no').removeAttr('required').val('');
             }
         });
-    });
 
-    $(document).on('click', '#depositModalBtn', function(event) {
-        event.preventDefault();
-        var job_id = $(this).data('job') || '';
-        $('#job_id').val(job_id);
-        $('#depositModal').modal('show');
-    });
+        $(document).on('click', '#addModalBtn', function(event) {
+            event.preventDefault();
+            var job_id = $(this).data('job-id') || '';
+            var customer_id = $(this).data('customer-id') || '';
+            var type = $(this).data('type') || '';
 
-    $('#depositForm').on('submit', function(event) {
-        event.preventDefault(); 
-        var formData = new FormData(this);
-        formData.append('deposit_job', 'deposit_job');
-        $.ajax({
-            url: 'pages/customer-dash_ajax.php',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
+            if(type == 'edit'){
+                $('#add-header').html('Update Job');
+            }else{
+                $('#add-header').html('Add Job');
+            }
+
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    customer_id: customer_id,
+                    job_id : job_id,
+                    fetch_job_modal: 'fetch_job_modal'
+                },
+                success: function (response) {
+                    $('#add-fields').html(response);
+
+                    $(".select2-form").each(function () {
+                        $(this).select2({
+                            width: '100%',
+                            dropdownParent: $(this).parent(),
+                            templateResult: formatOption,
+                            templateSelection: formatOption
+                        });
+                    });
+
+                    $('#addModal').modal('show');
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX Error:', textStatus, errorThrown);
+                    console.error('Response:', jqXHR.responseText);
+
+                    $('#responseHeader').text("Error");
+                    $('#responseMsg').text("An error occurred while processing your request.");
+                    $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            });
+        });
+
+        $(document).on('click', '#depositModalBtn', function(event) {
+            event.preventDefault();
+            var job_id = $(this).data('job') || '';
+            $('#job_id').val(job_id);
+            $('#depositModal').modal('show');
+        });
+
+        $('#depositForm').on('submit', function(event) {
+            event.preventDefault(); 
+            var formData = new FormData(this);
+            formData.append('deposit_job', 'deposit_job');
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('.modal').modal("hide");
+                    if (response == "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Amount Deposited successfully!");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                                location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text("Process Failed");
+                        console.log("Response: "+response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $('#jobForm').on('submit', function(event) {
+            event.preventDefault(); 
+            var formData = new FormData(this);
+            formData.append('save_job', 'save_job');
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
                 $('.modal').modal("hide");
-                if (response == "success") {
+                if (response == "success_add") {
                     $('#responseHeader').text("Success");
-                    $('#responseMsg').text("Amount Deposited successfully!");
+                    $('#responseMsg').text("New Job added successfully!");
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
+
+                    $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                    });
+                } else if (response == "success_update") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("Job updated successfully!");
                     $('#responseHeaderContainer').removeClass("bg-danger");
                     $('#responseHeaderContainer').addClass("bg-success");
                     $('#response-modal').modal("show");
@@ -999,175 +1046,168 @@ $is_points_enabled = getSetting('is_points_enabled');
                     $('#responseHeaderContainer').addClass("bg-danger");
                     $('#response-modal').modal("show");
                 }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    });
-
-    $('#jobForm').on('submit', function(event) {
-        event.preventDefault(); 
-        var formData = new FormData(this);
-        formData.append('save_job', 'save_job');
-        $.ajax({
-            url: 'pages/customer-dash_ajax.php',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-              $('.modal').modal("hide");
-              if (response == "success_add") {
-                  $('#responseHeader').text("Success");
-                  $('#responseMsg').text("New Job added successfully!");
-                  $('#responseHeaderContainer').removeClass("bg-danger");
-                  $('#responseHeaderContainer').addClass("bg-success");
-                  $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                        location.reload();
-                  });
-              } else if (response == "success_update") {
-                  $('#responseHeader').text("Success");
-                  $('#responseMsg').text("Job updated successfully!");
-                  $('#responseHeaderContainer').removeClass("bg-danger");
-                  $('#responseHeaderContainer').addClass("bg-success");
-                  $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                        location.reload();
-                  });
-              } else {
-                  $('#responseHeader').text("Failed");
-                  $('#responseMsg').text("Process Failed");
-                  console.log("Response: "+response);
-                  $('#responseHeaderContainer').removeClass("bg-success");
-                  $('#responseHeaderContainer').addClass("bg-danger");
-                  $('#response-modal').modal("show");
-              }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    });
-
-      $(document).on('click', '#view_order_btn', function(event) {
-          event.preventDefault(); 
-          var orderid = $(this).data('id');
-          $.ajax({
-                  url: 'pages/customer-dash_ajax.php',
-                  type: 'POST',
-                  data: {
-                      orderid: orderid,
-                      fetch_order_details: "fetch_order_details"
-                  },
-                  success: function(response) {
-                      $('#order-details').html(response);
-                      $('#view_order_details_modal').modal('show');
-                  },
-                  error: function(jqXHR, textStatus, errorThrown) {
-                      alert('Error: ' + textStatus + ' - ' + errorThrown);
-                  }
-          });
-      });
-
-      $(document).on('click', '#view_contractor_order_btn', function(event) {
-          event.preventDefault(); 
-          var orderid = $(this).data('id');
-          $.ajax({
-                  url: 'pages/customer-dash_ajax.php',
-                  type: 'POST',
-                  data: {
-                      orderid: orderid,
-                      fetch_contractor_order_details: "fetch_contractor_order_details"
-                  },
-                  success: function(response) {
-                      $('#order-details').html(response);
-                      $('#view_order_details_modal').modal('show');
-                  },
-                  error: function(jqXHR, textStatus, errorThrown) {
-                      alert('Error: ' + textStatus + ' - ' + errorThrown);
-                  }
-          });
-      });
-
-      $(document).on('click', '#view_estimate_btn', function(event) {
-          event.preventDefault(); 
-          var id = $(this).data('id');
-          $.ajax({
-                  url: 'pages/customer-dash_ajax.php',
-                  type: 'POST',
-                  data: {
-                      id: id,
-                      fetch_estimate_details: "fetch_estimate_details"
-                  },
-                  success: function(response) {
-                      $('#viewEstimateModal').html(response);
-                      $('#viewEstimateModal').modal('show');
-                  },
-                  error: function(jqXHR, textStatus, errorThrown) {
-                      alert('Error: ' + textStatus + ' - ' + errorThrown);
-                  }
-          });
-      });
-
-      $(document).on('click', '#view_changes_btn', function(event) {
-          event.preventDefault(); 
-          var id = $(this).data('id');
-          $.ajax({
-                  url: 'pages/customer-dash_ajax.php',
-                  type: 'POST',
-                  data: {
-                      id: id,
-                      fetch_changes_modal: "fetch_changes_modal"
-                  },
-                  success: function(response) {
-                      $('#viewChangesModal').html(response);
-                      $('#viewChangesModal').modal('show');
-                  },
-                  error: function(jqXHR, textStatus, errorThrown) {
-                      alert('Error: ' + textStatus + ' - ' + errorThrown);
-                  }
-          });
-      });
-
-      $(document).on('click', '#view_job_dtls_btn', function(event) {
-          event.preventDefault(); 
-          var job_name = $(this).data('name');
-          var date_from = $(this).data('date-from');
-          var date_to = $(this).data('date-to');
-          $.ajax({
-                url: 'pages/customer-dash_ajax.php',
-                type: 'POST',
-                data: {
-                    customerid: <?= $_REQUEST['id'] ?>,
-                    job_name: job_name,
-                    date_from: date_from,
-                    date_to: date_to,
-                    fetch_job_details: "fetch_job_details"
-                },
-                success: function(response) {
-                    $('#job-details').html(response);
-                    $('#view_job_dtls_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
-          });
-      });
+            });
+        });
 
-      $('#date_from_order, #date_to_order').on('change', searchOrders);
-      $('#date_from_estimate, #date_to_estimate').on('change', searchEstimates);
-      $('#date_from_jobs, #date_to_jobs').on('change', searchJobs);
-      $('#date_from_contractor, #date_to_contractor').on('change', searchContractorJobs);
-      $('#text-srh').on('input', function() { searchProducts(this.value); });
+        $(document).on('click', '#view_order_btn', function(event) {
+            event.preventDefault(); 
+            var orderid = $(this).data('id');
+            $.ajax({
+                    url: 'pages/customer-dash_ajax.php',
+                    type: 'POST',
+                    data: {
+                        orderid: orderid,
+                        fetch_order_details: "fetch_order_details"
+                    },
+                    success: function(response) {
+                        $('#order-details').html(response);
+                        $('#view_order_details_modal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
 
-      searchOrders();
-      searchEstimates();
-      searchJobs();
-      searchContractorJobs();
-      searchProducts('');
-  });
+        $(document).on('click', '#view_contractor_order_btn', function(event) {
+            event.preventDefault(); 
+            var orderid = $(this).data('id');
+            $.ajax({
+                    url: 'pages/customer-dash_ajax.php',
+                    type: 'POST',
+                    data: {
+                        orderid: orderid,
+                        fetch_contractor_order_details: "fetch_contractor_order_details"
+                    },
+                    success: function(response) {
+                        $('#order-details').html(response);
+                        $('#view_order_details_modal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '.convert-points-btn', function () {
+            let orderid = $(this).data('orderid');
+
+            $.ajax({
+                url: 'pages/customer-dash_ajax.php',
+                type: 'POST',
+                data: {
+                    customerid: <?= $_REQUEST['id'] ?>,
+                    orderid: orderid,
+                    convert_points: 'convert_points'
+                },
+                success: function (response) {
+                    try {
+                        let res = JSON.parse(response);
+
+                        if (res.status === "success") {
+                            $('#responseHeader').text("Success");
+                            $('#responseMsg').text("Points successfully converted!");
+                            $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                        } else {
+                            $('#responseHeader').text("Error");
+                            $('#responseMsg').text(res.message || "Failed to convert points.");
+                            $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                        }
+
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } catch (e) {
+                        alert("Invalid response: " + response);
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#view_estimate_btn', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/customer-dash_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        fetch_estimate_details: "fetch_estimate_details"
+                    },
+                    success: function(response) {
+                        $('#viewEstimateModal').html(response);
+                        $('#viewEstimateModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '#view_changes_btn', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                    url: 'pages/customer-dash_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        fetch_changes_modal: "fetch_changes_modal"
+                    },
+                    success: function(response) {
+                        $('#viewChangesModal').html(response);
+                        $('#viewChangesModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '#view_job_dtls_btn', function(event) {
+            event.preventDefault(); 
+            var job_name = $(this).data('name');
+            var date_from = $(this).data('date-from');
+            var date_to = $(this).data('date-to');
+            $.ajax({
+                    url: 'pages/customer-dash_ajax.php',
+                    type: 'POST',
+                    data: {
+                        customerid: <?= $_REQUEST['id'] ?>,
+                        job_name: job_name,
+                        date_from: date_from,
+                        date_to: date_to,
+                        fetch_job_details: "fetch_job_details"
+                    },
+                    success: function(response) {
+                        $('#job-details').html(response);
+                        $('#view_job_dtls_modal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $('#date_from_order, #date_to_order').on('change', searchOrders);
+        $('#date_from_estimate, #date_to_estimate').on('change', searchEstimates);
+        $('#date_from_jobs, #date_to_jobs').on('change', searchJobs);
+        $('#date_from_contractor, #date_to_contractor').on('change', searchContractorJobs);
+        $('#text-srh').on('input', function() { searchProducts(this.value); });
+
+        searchOrders();
+        searchEstimates();
+        searchJobs();
+        searchContractorJobs();
+        searchProducts('');
+    });
 </script>

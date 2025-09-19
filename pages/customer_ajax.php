@@ -324,15 +324,13 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == "download_excel") {
-        $includedColumns = array();
-        $column_txt = '*';
-
-        $includedColumns = [ 
+        $includedColumns = [
             'customer_id',
             'customer_notes',
             'customer_first_name',
             'customer_last_name',
             'customer_business_name',
+            'customer_business_website',
             'customer_type_id',
             'contact_email',
             'contact_phone',
@@ -342,59 +340,75 @@ if(isset($_REQUEST['action'])) {
             'city',
             'state',
             'zip',
-            'lat',
-            'lng',
+            'different_ship_address',
+            'ship_address',
+            'ship_city',
+            'ship_state',
+            'ship_zip',
             'secondary_contact_name',
             'secondary_contact_phone',
-            'ap_contact_name',
-            'ap_contact_email',
-            'ap_contact_phone',
+            'secondary_contact_email',
             'tax_status',
             'tax_exempt_number',
-            'call_status',
+            'is_corporate_parent',
+            'corpo_parent_name',
+            'corpo_phone_no',
+            'corpo_address',
+            'corpo_city',
+            'corpo_state',
+            'corpo_zip',
+            'is_bill_corpo_address',
+            'is_charge_net',
             'charge_net_30',
             'credit_limit',
-            'customer_pricing'
+            'loyalty',
+            'customer_pricing',
+            'is_approved',
+            'payment_pickup',
+            'payment_delivery',
+            'payment_cash',
+            'payment_check',
+            'payment_card',
+            'is_contractor',
+            'username',
+            'password'
         ];
 
         $column_txt = implode(', ', $includedColumns);
-
         $sql = "SELECT " . $column_txt . " FROM $table WHERE hidden = '0' AND status = '1'";
         $result = $conn->query($sql);
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        $headers = [];
         $row = 1;
-        
         foreach ($includedColumns as $index => $column) {
             $header = ucwords(str_replace('_', ' ', $column));
-        
-            if ($index >= 26) {
-                $columnLetter = indexToColumnLetter($index);
-            } else {
-                $columnLetter = chr(65 + $index);
-            }
-        
+            $columnLetter = indexToColumnLetter($index);
             $sheet->setCellValue($columnLetter . $row, $header);
-        }        
+        }
 
         $row = 2;
         while ($data = $result->fetch_assoc()) {
             foreach ($includedColumns as $index => $column) {
-                if ($index >= 26) {
-                    $columnLetter = indexToColumnLetter($index);
-                } else {
-                    $columnLetter = chr(65 + $index);
+                $columnLetter = indexToColumnLetter($index);
+
+                $value = $data[$column] ?? '';
+
+                if ($column === 'password' && !empty($value)) {
+                    try {
+                        $value = decrypt_password_from_storage($value);
+                    } catch (Exception $e) {
+                        $value = '';
+                    }
                 }
-                $sheet->setCellValue($columnLetter . $row, $data[$column] ?? '');
+
+                $sheet->setCellValue($columnLetter . $row, $value);
             }
             $row++;
         }
 
         $name = strtoupper(str_replace('_', ' ', $table));
-
         $filename = "$name.xlsx";
         $filePath = $filename;
 
@@ -407,7 +421,6 @@ if(isset($_REQUEST['action'])) {
         header('Cache-Control: max-age=0');
 
         readfile($filePath);
-
         unlink($filePath);
         exit;
     }
@@ -503,57 +516,75 @@ if(isset($_REQUEST['action'])) {
         
         $selectSql = "SELECT * FROM $test_table";
         $result = $conn->query($selectSql);
-    
+
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $main_primary_id = trim($row[$main_primary] ?? ''); 
-    
                 unset($row[$test_primary]);
-    
+
                 if (!empty($main_primary_id)) {
                     $checkSql = "SELECT COUNT(*) as count FROM $table WHERE $main_primary = '$main_primary_id'";
                     $checkResult = $conn->query($checkSql);
                     $exists = $checkResult->fetch_assoc()['count'] > 0;
-    
+
                     if ($exists) {
                         $updateFields = [];
                         foreach ($row as $column => $value) {
                             if ($column !== $main_primary && $value !== null && $value !== '') {
-                                $updateFields[] = "$column = '$value'";
+                                if ($column === 'password') {
+                                    try {
+                                        $value = encrypt_password_for_storage($value);
+                                    } catch (Exception $e) {
+                                        $value = '';
+                                    }
+                                }
+                                $updateFields[] = "$column = '" . $conn->real_escape_string($value) . "'";
                             }
                         }
                         if (!empty($updateFields)) {
                             $updateSql = "UPDATE $table SET " . implode(", ", $updateFields) . " WHERE $main_primary = '$main_primary_id'";
-                            $conn->query($updateSql);
+                            if (!$conn->query($updateSql)) {
+                                error_log("Update failed for $main_primary_id: " . $conn->error);
+                            }
                         }
                         continue;
                     }
                 }
-    
+
                 $columns = [];
                 $values = [];
                 foreach ($row as $column => $value) {
                     if ($value !== null && $value !== '') {
+                        if ($column === 'password') {
+                            try {
+                                $value = encrypt_password_for_storage($value);
+                            } catch (Exception $e) {
+                                $value = '';
+                            }
+                        }
                         $columns[] = $column;
-                        $values[] = "'$value'";
+                        $values[] = "'" . $conn->real_escape_string($value) . "'";
                     }
                 }
                 if (!empty($columns)) {
                     $insertSql = "INSERT INTO $table (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ")";
-                    $conn->query($insertSql);
+                    if (!$conn->query($insertSql)) {
+                        error_log("Insert failed: " . $conn->error);
+                    }
                 }
             }
-    
+
             echo "Data has been successfully saved";
-    
+
             $truncateSql = "TRUNCATE TABLE $test_table";
             if ($conn->query($truncateSql) !== TRUE) {
-                echo " but failed to clear test color table: " . $conn->error;
+                echo " but failed to clear test table: " . $conn->error;
             }
         } else {
-            echo "No data found in test color table.";
+            echo "No data found in test table.";
         }
-    }     
+    }
+  
 
     if ($action == "fetch_uploaded_modal") {
         $test_primary = getPrimaryKey($test_table);
@@ -567,12 +598,13 @@ if(isset($_REQUEST['action'])) {
                 $columns[] = $field->name;
             }
     
-            $includedColumns = [ 
+            $includedColumns = [
                 'customer_id',
                 'customer_notes',
                 'customer_first_name',
                 'customer_last_name',
                 'customer_business_name',
+                'customer_business_website',
                 'customer_type_id',
                 'contact_email',
                 'contact_phone',
@@ -582,19 +614,38 @@ if(isset($_REQUEST['action'])) {
                 'city',
                 'state',
                 'zip',
-                'lat',
-                'lng',
+                'different_ship_address',
+                'ship_address',
+                'ship_city',
+                'ship_state',
+                'ship_zip',
                 'secondary_contact_name',
                 'secondary_contact_phone',
-                'ap_contact_name',
-                'ap_contact_email',
-                'ap_contact_phone',
+                'secondary_contact_email',
                 'tax_status',
                 'tax_exempt_number',
-                'call_status',
+                'is_corporate_parent',
+                'corpo_parent_name',
+                'corpo_phone_no',
+                'corpo_address',
+                'corpo_city',
+                'corpo_state',
+                'corpo_zip',
+                'is_bill_corpo_address',
+                'is_charge_net',
                 'charge_net_30',
                 'credit_limit',
-                'customer_pricing'
+                'loyalty',
+                'customer_pricing',
+                'is_approved',
+                'payment_pickup',
+                'payment_delivery',
+                'payment_cash',
+                'payment_check',
+                'payment_card',
+                'is_contractor',
+                'username',
+                'password'
             ];
     
             $columns = array_filter($columns, function ($col) use ($includedColumns) {

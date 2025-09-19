@@ -441,6 +441,12 @@ if (isset($_POST['search_contractor_jobs'])) {
                     <tr>
                         <th class="border-0 ps-0">Customer</th>
                         <th class="border-0">Date</th>
+                        <?php if($is_points_enabled == '1'){
+                        ?>
+                            <th class="border-0 text-end">Points Gained</th>
+                        <?php
+                        }
+                        ?>
                         <th class="border-0">Status</th>
                         <th class="border-0"></th>
                     </tr>
@@ -463,6 +469,13 @@ if (isset($_POST['search_contractor_jobs'])) {
                             while ($row = mysqli_fetch_assoc($result)) {
                                 $status_code = $row['status'];
                                 $status = isset($status_labels[$status_code]) ? $status_labels[$status_code] : ['label' => 'Unknown', 'class' => 'badge bg-dark'];
+
+                                $points = getContractorPointsFromOrder($row['orderid']);
+                                $orderid = (int) $row['orderid'];
+                                $check_sql = "SELECT COUNT(*) AS cnt FROM customer_points WHERE order_id = $orderid AND type = 1";
+                                $check_res = mysqli_query($conn, $check_sql);
+                                $check_row = mysqli_fetch_assoc($check_res);
+                                $already_converted = ($check_row['cnt'] > 0);
                                 ?>
                                 <tr>
                                     <td class="ps-0">
@@ -478,14 +491,35 @@ if (isset($_POST['search_contractor_jobs'])) {
                                     <td>
                                         <p class="mb-0"><?= date("F d, Y", strtotime($row['order_date'])) ?></p>
                                     </td>
+                                    <?php if($is_points_enabled == '1'){ ?>
+                                        <td class="text-end">
+                                            <p class="mb-0"><?= $points ?></p>
+                                        </td>
+                                    <?php } ?>
                                     <td>
                                         <span class="<?= $status['class']; ?> fw-bold"><?= $status['label']; ?></span>
                                     </td>
                                     <td>
-                                        <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_contractor_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>"><i class="text-primary fa fa-eye fs-5"></i></button>
+                                        <button class="btn btn-danger-gradient btn-sm p-0 me-1" 
+                                                id="view_contractor_order_btn" 
+                                                title="View"
+                                                type="button" 
+                                                data-id="<?php echo $row["orderid"]; ?>">
+                                            <i class="text-primary fa fa-eye fs-5"></i>
+                                        </button>
+
+                                        <?php if ($points > 0 && !$already_converted) { ?>
+                                            <a href="javascript:void(0);" 
+                                            class="convert-points-btn text-primary text-decoration-none" 
+                                            title="Convert"
+                                            data-orderid="<?= $row['orderid'] ?>" 
+                                            data-points="<?= $points ?>">
+                                                <i class="fa fa-refresh text-success fs-5"></i>
+                                            </a>
+                                        <?php } ?>
                                     </td>
                                 </tr>
-                                <?php
+                            <?php
                             }
                         }
                     ?>
@@ -495,6 +529,48 @@ if (isset($_POST['search_contractor_jobs'])) {
         </div>
     </div>
 <?php
+}
+
+if (isset($_POST['convert_points'])) {
+    $customerid = (int) $_POST['customerid'];
+    $orderid    = (int) $_POST['orderid'];
+
+    $is_points_enabled = getSetting('is_points_enabled');
+    if ($is_points_enabled != '1') {
+        echo json_encode(['status' => 'error', 'message' => 'Points system disabled']);
+        exit;
+    }
+
+    $check_sql = "SELECT COUNT(*) AS cnt FROM customer_points WHERE order_id = $orderid";
+    $check_res = mysqli_query($conn, $check_sql);
+    $check_row = mysqli_fetch_assoc($check_res);
+
+    if ($check_row['cnt'] > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Points already converted for this order']);
+        exit;
+    }
+
+    $points = getContractorPointsFromOrder($orderid);
+
+    if ($points <= 0) {
+        echo json_encode(['status' => 'error', 'message' => 'No points to convert']);
+        exit;
+    }
+
+    $order_total = getOrderTotalsDiscounted($orderid);
+
+    $insert_sql = "
+        INSERT INTO customer_points (customer_id, order_id, total_order_amount, points_earned, type, date)
+        VALUES ($customerid, $orderid, $order_total, $points, 1, NOW())
+    ";
+
+    if (mysqli_query($conn, $insert_sql)) {
+        echo json_encode(['status' => 'success', 'message' => 'Points successfully converted']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Database insert failed: ' . mysqli_error($conn)]);
+    }
+
+    exit;
 }
 
 if (isset($_REQUEST['query'])) {

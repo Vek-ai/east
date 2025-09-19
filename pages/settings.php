@@ -57,9 +57,13 @@ $addressDetails = implode(', ', [
 
 $points_details = getSetting('points');
 $data = json_decode($points_details, true);
-$points_order_total = isset($data['order_total']) ? $data['order_total'] : 0;
-$points_gained = isset($data['points_gained']) ? $data['points_gained'] : 0;
+$points_order_total = $data['order_total'] ?? 0;
+$points_gained      = $data['points_gained'] ?? 0;
 
+$contractor_points_details = getSetting('contractor_points');
+$data_contractor = json_decode($contractor_points_details, true);
+$contractor_points_order_total = $data_contractor['order_total'] ?? 0;
+$contractor_points_gained      = $data_contractor['points_gained'] ?? 0;
 $permission = $_SESSION['permission'];
 
 $is_points_enabled = getSetting('is_points_enabled');
@@ -250,6 +254,30 @@ if ($permission === 'edit') {
                     ?>
                     </td>
               </tr>
+              <tr id="settings-row-<?= $no ?>">
+                  <td>Contractor Points Per Order</td>
+                  <td>
+                    <div class="row">
+                        <div class="col-6 text-center">
+                            Total Customer Order Required<br>
+                            <span class="ms-3"><?= $contractor_points_order_total ?></span>
+                        </div>
+                        <div class="col-6 text-center">
+                            Points Gained<br>
+                            <span class="ms-3"><?= $contractor_points_gained ?></span>
+                        </div>
+                    </div>
+                  </td>
+                  <td class="text-center" id="action-button-<?= $no ?>">
+                    <?php                                                    
+                    if ($permission === 'edit') {
+                    ?>
+                      <a href="#" class="py-1" id="contractorPointsBtn" style="border-radius: 10%;" data-bs-toggle="modal" title="Edit" data-bs-target="#contractorOrderPointsModal"><i class="ti ti-pencil fs-7"></i></a>
+                    <?php
+                    }
+                    ?>
+                    </td>
+              </tr>
               <tr id="points-row">
                   <td>Points</td>
                   <td class="text-center">
@@ -280,7 +308,7 @@ if ($permission === 'edit') {
                   </td>
               </tr>
               <?php
-              $query_setting_name = "SELECT * FROM settings WHERE setting_name != 'address' AND setting_name != 'points'";
+              $query_setting_name = "SELECT * FROM settings WHERE setting_name != 'address' AND setting_name != 'points' AND setting_name != 'contractor_points'";
               $result_setting_name = mysqli_query($conn, $query_setting_name);            
               while ($row_setting = mysqli_fetch_array($result_setting_name)) {
                   $settingid = $row_setting['settingid'];
@@ -401,6 +429,36 @@ if ($permission === 'edit') {
   </div>
 </div>
 
+<div class="modal fade" id="contractorOrderPointsModal" tabindex="-1" aria-labelledby="contractorOrderPointsLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="contractorOrderPointsForm" method="post">
+        <div class="modal-header">
+          <h5 class="modal-title" id="contractorOrderPointsLabel">Contractor Points Per Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        
+        <div class="modal-body">
+          <input type="hidden" name="setting_no" id="setting_no">
+
+          <div class="mb-3">
+            <label for="edit_total_order" class="form-label">Total Order Required</label>
+            <input type="number" step="0.01" class="form-control" id="edit_total_order" value="<?= $contractor_points_order_total ?>" name="order_total" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="edit_points_gained" class="form-label">Points Gained</label>
+            <input type="number" class="form-control" id="edit_points_gained" value="<?= $contractor_points_gained ?>" name="points_gained" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <script>
   let map1;
@@ -705,6 +763,57 @@ if ($permission === 'edit') {
         const form = document.getElementById('orderPointsForm');
         const formData = new FormData(form);
         formData.append('action', 'update_order_points');
+
+        $.ajax({
+            url: 'pages/settings_ajax.php',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (res) {
+                $('.modal').modal("hide");
+                try {
+                    const result = JSON.parse(res);
+                    if (result.success) {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Setting updated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                        console.log(result.message);
+                    }
+                } catch (e) {
+                    $('#responseHeader').text("Failed");
+                    $('#responseMsg').text(response);
+                    $('#responseHeaderContainer').removeClass("bg-success");
+                    $('#responseHeaderContainer').addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                    console.error(res);
+                }
+            },
+            error: function () {
+                alert('AJAX request failed.');
+            }
+        });
+    });
+
+    $(document).on('submit', '#contractorOrderPointsForm', function (e) {
+        e.preventDefault();
+
+        const form = document.getElementById('contractorOrderPointsForm');
+        const formData = new FormData(form);
+        formData.append('action', 'update_contractor_order_points');
 
         $.ajax({
             url: 'pages/settings_ajax.php',

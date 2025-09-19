@@ -568,6 +568,21 @@ function getPointsRatio() {
     return 0;
 }
 
+function getContractorPointsRatio() {
+    global $conn;
+    $query = "SELECT value FROM settings WHERE setting_name = 'contractor_points'";
+    $result = mysqli_query($conn, $query);
+
+    if ($row = mysqli_fetch_assoc($result)) {
+        $data = json_decode(trim($row['value']), true);
+        $order_total     = $data['order_total'] ?? 0;
+        $points_gained   = $data['points_gained'] ?? 0;
+        return ($order_total > 0) ? ($points_gained / $order_total) : 0;
+    }
+
+    return 0;
+}
+
 function addPoints($customer_id, $order_id) {
     global $conn;
 
@@ -626,6 +641,17 @@ function getCustomerPoints($customer_id) {
         return (int)$row['total_points'];
     }
     return 0;
+}
+
+function getContractorPointsFromOrder($orderid) {
+    global $conn;
+
+    $order_total = getOrderTotalsDiscounted($orderid);
+    $ratio = getContractorPointsRatio();
+
+    $points = $order_total * $ratio;
+
+    return (int) floor($points);
 }
 
 function getPaymentSetting($payment_setting_name) {
@@ -923,7 +949,7 @@ function getReturnTotals($orderid) {
     global $conn;
     $query = "
         SELECT 
-            SUM(discounted_price ) AS total_price,
+            SUM(discounted_price) AS total_price,
             SUM((discounted_price) * stock_fee) AS total_fee
         FROM 
             product_returns
@@ -948,14 +974,7 @@ function getOrderTotalsDiscounted($orderid) {
 
     $query = "
         SELECT 
-            SUM(
-                discounted_price * 
-                CASE 
-                    WHEN custom_length > 0 OR custom_length2 > 0 
-                    THEN (custom_length + (custom_length2 / 12))
-                    ELSE 1
-                END
-            ) AS total_discounted_price
+            SUM(discounted_price) AS total_discounted_price
         FROM order_product
         WHERE orderid = '$orderid'
     ";
@@ -2842,5 +2861,14 @@ function fetchColorMultiplier($colorGroup, $productSystem = 0, $grade = 0, $gaug
     }
 
     return 1.0;
+}
+
+function indexToColumnLetter($index) {
+    $letters = '';
+    while ($index >= 0) {
+        $letters = chr($index % 26 + 65) . $letters;
+        $index = floor($index / 26) - 1;
+    }
+    return $letters;
 }
 ?>
