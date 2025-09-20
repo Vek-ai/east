@@ -16,25 +16,43 @@ require 'includes/functions.php';
 class PDF extends FPDF {
     function Footer() {
         $marginLeft = 10;
-        $this->SetY(-15);
+        $colWidthLeft  = 90;
+        $colWidthRight = 90;
 
-        $colWidth = ($this->w - 2 * $marginLeft) / 3;
+        $this->SetY(-40);
 
-        $this->SetFont('Arial', '', 9);
-
+        $this->SetFont('Arial', 'B', 10);
+        $this->SetTextColor(0, 0, 255);
         $this->SetX($marginLeft);
-        $this->Cell($colWidth, 5, 'Phone: (606) 877-1848 | Fax: (606) 864-4280', 0, 0, 'L');
+        $this->Cell(0, 8, 'East Kentucky Metal', 0, 1, 'L');
+        $this->SetTextColor(0, 0, 0);
 
-        $this->SetX($marginLeft + $colWidth + 10);
-        $this->Cell($colWidth, 5, 'Email: Sales@Eastkentuckymetal.com', 0, 0, 'C');
+        $this->SetFont('Arial', '', 10);
+        $this->SetX($marginLeft);
+        $this->MultiCell($colWidthLeft, 5,
+            "977 E Hal Rogers Parkway\nLondon, KY 40741", 0, 'L');
 
-        $this->SetX($marginLeft + 2 * $colWidth);
-        $this->Cell($colWidth, 5, 'Website: Eastkentuckymetal.com', 0, 0, 'R');
+        $this->SetFont('Arial', 'B', 10);
+        $this->SetX($marginLeft);
+        $this->MultiCell($colWidthLeft, 5,
+            "Phone: (606) 877-1848 | Fax: (606) 864-4280\n" .
+            "Email: Sales@Eastkentuckymetal.com\n" .
+            "Website: Eastkentuckymetal.com", 0, 'L');
+
+        $yStart = $this->GetY() - 30;
+        $this->SetFont('Arial', '', 10);
+        $this->SetXY($marginLeft + $colWidthLeft + 10, $yStart);
+        $this->MultiCell($colWidthRight, 5,
+            "Scan me for a Digital copy of this Statement of Account", 0, 'C');
+
+        $qrX = $marginLeft + $colWidthLeft + ($colWidthRight / 2);
+        $qrY = $this->GetY();
+        $this->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 25, 25);
     }
 }
 
 $pdf = new PDF();
-$pdf->SetAutoPageBreak(true, 15);
+$pdf->SetAutoPageBreak(true, 40);
 $pdf->AddPage();
 $pdf->SetFont('Arial', '', 10);
 
@@ -409,32 +427,6 @@ if (!empty($_REQUEST['id'])) {
     $colWidthRight = 90;
 
     $yStart = $pdf->GetY();
-
-    $pdf->SetFont('Arial', 'B', 12);
-    $pdf->SetTextColor(0, 0, 255); // blue
-    $pdf->SetX($marginLeft);
-    $pdf->Cell(0, 8, 'East Kentucky Metal', 0, 1, 'L');
-    $pdf->SetTextColor(0, 0, 0);
-
-    $pdf->SetFont('Arial', '', 10);
-    $pdf->SetX($marginLeft);
-    $pdf->MultiCell($colWidthLeft, 5,
-        "977 E Hal Rogers Parkway\nLondon, KY 40741", 0, 'L');
-
-    $pdf->SetFont('Arial', 'B', 10);
-    $pdf->SetX($marginLeft);
-    $pdf->MultiCell($colWidthLeft, 5,
-        "Phone: (606) 877-1848 | Fax: (606) 864-4280\n" .
-        "Email: Sales@Eastkentuckymetal.com\n" .
-        "Website: Eastkentuckymetal.com", 0, 'L');
-
-    $pdf->SetFont('Arial', '', 10);
-    $pdf->SetXY($marginLeft + $colWidthLeft + 10, $yStart);
-    $pdf->MultiCell($colWidthRight, 5,
-        "Scan me for a Digital copy of this Statement of Account", 0, 'C');
-    $qrX = $marginLeft + $colWidthLeft + ($colWidthRight / 2) - 12;
-    $qrY = $pdf->GetY() + 3;
-    $pdf->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 50, 50);
 
     $pdf->SetTitle('Statement of Account');
     $pdf->Output('Statement_of_Account.pdf', 'I');

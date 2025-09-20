@@ -81,16 +81,25 @@ function renderTableHeader($pdf, $columns) {
 }
 
 function renderScrewCategory($pdf, $products, $conn) {
-    $columns = [
+    /* $columns = [
         ['label' => 'DESCRIPTION', 'width' => 65, 'align' => 'C'],
         ['label' => 'COLOR', 'width' => 30, 'align' => 'C'],
         ['label' => 'Profile', 'width' => 20, 'align' => 'C'],
         ['label' => 'QTY', 'width' => 20, 'align' => 'C'],
         ['label' => 'PACK COUNT', 'width' => 25, 'align' => 'C'],
         ['label' => 'CUSTOMER PRICE', 'width' => 28, 'align' => 'R'],
-    ];
+    ]; */
 
-    renderTableHeader($pdf, $columns);
+    $columns = [
+        ['label' => 'DESCRIPTION',      'width' => 45, 'align' => 'C'],
+        ['label' => 'COLOR',            'width' => 30, 'align' => 'C'],
+        ['label' => 'GRADE',            'width' => 20, 'align' => 'C'],
+        ['label' => 'PROFILE',          'width' => 20, 'align' => 'C'],
+        ['label' => 'QTY',              'width' => 20, 'align' => 'C'],
+        ['label' => 'LENGTH/PACK',      'width' => 25, 'align' => 'C'],
+        ['label' => 'CUSTOMER PRICE',   'width' => 28, 'align' => 'R'],
+    ];
+    
     $pdf->SetFont('Arial', '', 8);
 
     $totalQty   = 0;
@@ -99,12 +108,14 @@ function renderScrewCategory($pdf, $products, $conn) {
 
     foreach ($products as $row_product) {
         $product_details = getProductDetails($row_product['productid']);
-        $profile_details = getProfileTypeDetails($product_details['profile']);
+        $profile_details = getProfileTypeDetails($row_product['custom_profile']);
+        $grade_details = getGradeDetails($row_product['custom_grade']);
 
         $row = [
             $product_details['product_item'] . 
                 (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
             getColorName($row_product['custom_color']),
+            $grade_details['product_grade'] ?? '',
             $profile_details['profile_type'] ?? '',
             $row_product['quantity'],
             $row_product['pack_count'] ?? '',
@@ -132,15 +143,14 @@ function renderPanelCategory($pdf, $products, $conn) {
         ['label' => 'CUSTOMER PRICE', 'width' => 28, 'align' => 'R'],
     ];
 
-    renderTableHeader($pdf, $columns);
-
     $grouped = [];
     foreach ($products as $row_product) {
         $productid       = $row_product['productid'];
         $bundle_name     = $row_product['bundle_id'];
-        $product_details = getProductDetails($productid);
-        $grade_details   = getGradeDetails($product_details['grade']);
-        $profile_details = getProfileTypeDetails($product_details['profile']);
+
+        $product_details = getProductDetails($row_product['productid']);
+        $profile_details = getProfileTypeDetails($row_product['custom_profile']);
+        $grade_details = getGradeDetails($row_product['custom_grade']);
 
         $quantity   = floatval($row_product['quantity'] ?? 0);
         $act_price  = floatval($row_product['actual_price']);
@@ -257,7 +267,6 @@ function renderDefaultCategory($pdf, $products, $conn) {
         ['label' => 'CUSTOMER PRICE', 'width' => 28, 'align' => 'R'],
     ];
 
-    renderTableHeader($pdf, $columns);
     $pdf->SetFont('Arial', '', 8);
 
     $totalQty    = 0;
@@ -266,8 +275,8 @@ function renderDefaultCategory($pdf, $products, $conn) {
 
     foreach ($products as $row_product) {
         $product_details = getProductDetails($row_product['productid']);
-        $grade_details   = getGradeDetails($product_details['grade']);
-        $profile_details = getProfileTypeDetails($product_details['profile']);
+        $profile_details = getProfileTypeDetails($row_product['custom_profile']);
+        $grade_details = getGradeDetails($row_product['custom_grade']);
 
         $ft  = floatval($row_product['custom_length'] ?? 0);
         $in  = floatval($row_product['custom_length2'] ?? 0);
@@ -313,8 +322,8 @@ function renderTrimCategory($pdf, $products, $conn) {
 
     foreach ($products as $row_product) {
         $product_details = getProductDetails($row_product['productid']);
-        $grade_details   = getGradeDetails($product_details['grade']);
-        $profile_details = getProfileTypeDetails($product_details['profile']);
+        $profile_details = getProfileTypeDetails($row_product['custom_profile']);
+        $grade_details = getGradeDetails($row_product['custom_grade']);
 
         $ft  = floatval($row_product['custom_length'] ?? 0);
         $in  = floatval($row_product['custom_length2'] ?? 0);
@@ -324,6 +333,16 @@ function renderTrimCategory($pdf, $products, $conn) {
             $product_details['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
             getColorName($row_product['custom_color']),
             $grade_details['product_grade'] ?? '',
+            $profile_details['profile_type'] ?? '',
+            $row_product['quantity'],
+            number_format($len, 2),
+            '$ ' . number_format($row_product['discounted_price'], 2)
+        ];
+
+        $row = [
+            $product_details['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
+            getColorName($row_product['custom_color']),
+            $grade_details['product_grade'],
             $profile_details['profile_type'] ?? '',
             $row_product['quantity'],
             number_format($len, 2),
@@ -341,11 +360,21 @@ function renderTrimCategory($pdf, $products, $conn) {
 }
 
 function renderLumberCategory($pdf, $products, $conn) {
-    $columns = [
+    /* $columns = [
         ['label' => 'DESCRIPTION', 'width' => 115, 'align' => 'C'],
         ['label' => 'QTY', 'width' => 20, 'align' => 'C'],
         ['label' => 'LENGTH (FT)', 'width' => 25, 'align' => 'C'],
         ['label' => 'CUSTOMER PRICE', 'width' => 28, 'align' => 'R'],
+    ]; */
+
+    $columns = [
+        ['label' => 'DESCRIPTION',      'width' => 45, 'align' => 'C'],
+        ['label' => 'COLOR',            'width' => 30, 'align' => 'C'],
+        ['label' => 'GRADE',            'width' => 20, 'align' => 'C'],
+        ['label' => 'PROFILE',          'width' => 20, 'align' => 'C'],
+        ['label' => 'QTY',              'width' => 20, 'align' => 'C'],
+        ['label' => 'LENGTH/PACK',      'width' => 25, 'align' => 'C'],
+        ['label' => 'CUSTOMER PRICE',   'width' => 28, 'align' => 'R'],
     ];
 
     renderTableHeader($pdf, $columns);
@@ -357,6 +386,8 @@ function renderLumberCategory($pdf, $products, $conn) {
 
     foreach ($products as $row_product) {
         $product_details = getProductDetails($row_product['productid']);
+        $profile_details = getProfileTypeDetails($row_product['custom_profile']);
+        $grade_details = getGradeDetails($row_product['custom_grade']);
 
         $ft  = floatval($row_product['custom_length'] ?? 0);
         $in  = floatval($row_product['custom_length2'] ?? 0);
@@ -364,6 +395,9 @@ function renderLumberCategory($pdf, $products, $conn) {
 
         $row = [
             $product_details['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
+            getColorName($row_product['custom_color']),
+            $grade_details['product_grade'],
+            $profile_details['profile_type'] ?? '',
             $row_product['quantity'],
             number_format($len, 2),
             '$ ' . number_format($row_product['discounted_price'], 2)
@@ -470,18 +504,6 @@ class PDF extends FPDF {
         $qrX = $marginLeft + $colWidthLeft + ($colWidthRight / 2);
         $qrY = $this->GetY();
         $this->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 25, 25);
-
-        $colWidth = ($this->w - 2 * $marginLeft) / 3;
-
-        $this->SetFont('Arial', '', 9);
-        $this->SetXY($marginLeft, $this->GetY() + 25);
-        $this->Cell($colWidth, 5, 'Phone: (606) 877-1848 | Fax: (606) 864-4280', 0, 0, 'L');
-
-        $this->SetXY($marginLeft + $colWidth + 10, $this->GetY());
-        $this->Cell($colWidth, 5, 'Email: Sales@Eastkentuckymetal.com', 0, 0, 'C');
-
-        $this->SetXY($marginLeft + 2 * $colWidth, $this->GetY());
-        $this->Cell($colWidth, 5, 'Website: Eastkentuckymetal.com', 0, 0, 'R');
     }
 
     public function GetMultiCellHeight($w, $h, $txt)
@@ -668,6 +690,18 @@ if (mysqli_num_rows($result) > 0) {
         $total_qty    = 0;
         $total_actual = 0;
         $total_saved  = 0;
+
+        $columns = [
+            ['label' => 'DESCRIPTION',      'width' => 45, 'align' => 'C'],
+            ['label' => 'COLOR',            'width' => 30, 'align' => 'C'],
+            ['label' => 'GRADE',            'width' => 20, 'align' => 'C'],
+            ['label' => 'PROFILE',          'width' => 20, 'align' => 'C'],
+            ['label' => 'QTY',              'width' => 20, 'align' => 'C'],
+            ['label' => 'LENGTH (FT)',      'width' => 25, 'align' => 'C'],
+            ['label' => 'CUSTOMER PRICE',   'width' => 28, 'align' => 'R'],
+        ];
+    
+        renderTableHeader($pdf, $columns);
 
         foreach ($productsByCategory as $categoryId => $products) {
             if ($categoryId == $screw_id) {
