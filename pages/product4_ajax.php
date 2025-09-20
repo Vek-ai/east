@@ -769,8 +769,6 @@ if(isset($_REQUEST['action'])) {
         $includedColumns = [ 
             'product_id',
             'product_category',
-            'product_system',
-            'product_line',
             'product_type',
             'grade',
             'gauge',
@@ -873,16 +871,6 @@ if(isset($_REQUEST['action'])) {
             'category' => [
                 'columns' => ['product_category_id', 'product_category'],
                 'table' => 'product_category',
-                'where' => "status = '1'"
-            ],
-            'system' => [
-                'columns' => ['product_system_id', 'product_system'],
-                'table' => 'product_system',
-                'where' => "status = '1'"
-            ],
-            'line' => [
-                'columns' => ['product_line_id', 'product_line'],
-                'table' => 'product_line',
                 'where' => "status = '1'"
             ],
             'type' => [
@@ -1278,7 +1266,7 @@ if(isset($_REQUEST['action'])) {
                 'product_name_html'   => $product_name_html,
                 'product_category'    => getProductCategoryName($row['product_category']),
                 'product_system'      => getProductSystemName($row['product_system']),
-                'product_line'        => getProductLineName($row['product_line']),
+                'product_gauge'        => getGaugeName($row['gauge']),
                 'product_type'        => getProductTypeName($row['product_type']),
                 'profile'             => getProfileTypeName($row['profile']),
                 'color'               => getColorName($row['color']),

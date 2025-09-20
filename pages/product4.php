@@ -225,7 +225,7 @@ function showCol($name) {
                                 </div>
                                 <div class="card-body border rounded p-3">
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-8">
                                             <label class="form-label">Product Category</label>
                                             <div class="mb-3">
                                             <select id="product_category" class="form-control" name="product_category">
@@ -247,27 +247,7 @@ function showCol($name) {
                                             </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-4 hidden-field d-none">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <label class="form-label">Product Line</label>
-                                                <a href="?page=product_line" target="_blank" class="text-decoration-none">Edit</a>
-                                            </div>
-                                            <div class="mb-3">
-                                            <select id="product_line" class="form-control add-category calculate" name="product_line">
-                                                <option value="" >Select Line...</option>
-                                                <?php
-                                                $query_roles = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
-                                                $result_roles = mysqli_query($conn, $query_roles);            
-                                                while ($row_product_line = mysqli_fetch_array($result_roles)) {
-                                                    $selected = (($row['product_line'] ?? '') == $row_product_line['product_line_id']) ? 'selected' : '';
-                                                ?>
-                                                    <option value="<?= $row_product_line['product_line_id'] ?>" data-category="<?= $row_product_line['product_category'] ?>" <?= $selected ?>><?= $row_product_line['product_line'] ?></option>
-                                                <?php   
-                                                }
-                                                ?>
-                                            </select>
-                                            </div>
-                                        </div>
+                                        <div class="col-md-4"></div>
 
                                         <div class="col-md-4 hidden-field d-none">
                                             <div class="d-flex justify-content-between align-items-center">
@@ -290,28 +270,28 @@ function showCol($name) {
                                             </select>
                                             </div>
                                         </div>
-
                                         <div class="col-md-4 hidden-field d-none">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <label class="form-label">Product System</label>
-                                                <a href="?page=product_system" target="_blank" class="text-decoration-none">Edit</a>
-                                            </div>
                                             <div class="mb-3">
-                                            <select id="product_system" class="form-control add-category calculate" name="product_system">
-                                                <option value="" >Select System...</option>
-                                                <?php
-                                                $query_system = "SELECT * FROM product_system WHERE hidden = '0' AND status = '1' ORDER BY `product_system` ASC";
-                                                $result_system = mysqli_query($conn, $query_system);
-                                                while ($row_system = mysqli_fetch_array($result_system)) {
-                                                    $selected = (($row['product_system'] ?? '') == $row_system['product_system_id']) ? 'selected' : '';
-                                                ?>
-                                                    <option value="<?= $row_system['product_system_id'] ?>" data-category='<?= $row_system['product_category'] ?>' <?= $selected ?>><?= $row_system['product_system'] ?></option>
-                                                <?php
-                                                }
-                                                ?>
-                                            </select>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <label class="form-label">Product Profile</label>
+                                                    <a href="?page=profile_type" target="_blank" class="text-decoration-none">Edit</a>
+                                                </div>
+                                                <select id="profile" class="form-control add-category" name="profile">
+                                                    <option value="" >Select Profile...</option>
+                                                    <?php
+                                                    $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1'";
+                                                    $result_profile_type = mysqli_query($conn, $query_profile_type);            
+                                                    while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
+                                                        $selected = ($row['profile'] == $row_profile_type['profile_type_id']) ? 'selected' : '';
+                                                                    ?>
+                                                        <option value="<?= $row_profile_type['profile_type_id'] ?>" data-category="<?= $row_profile_type['product_category'] ?>"  <?= $selected ?>><?= $row_profile_type['profile_type'] ?></option>
+                                                    <?php   
+                                                    }
+                                                    ?>
+                                                </select>
                                             </div>
                                         </div>
+                                        <div class="col-md-4"></div>
                                         
                                         <div class="col-md-4 hidden-field d-none">
                                             <div class="mb-3">
@@ -334,7 +314,6 @@ function showCol($name) {
                                                 </select>
                                             </div>
                                         </div>
-
                                         <div class="col-md-4 hidden-field d-none">
                                             <div class="mb-3">
                                                 <div class="d-flex justify-content-between align-items-center">
@@ -370,28 +349,8 @@ function showCol($name) {
                                                 </select>
                                             </div>
                                         </div>
-
-                                        <div class="col-md-4 hidden-field d-none">
-                                            <div class="mb-3">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <label class="form-label">Product Profile</label>
-                                                    <a href="?page=profile_type" target="_blank" class="text-decoration-none">Edit</a>
-                                                </div>
-                                                <select id="profile" class="form-control add-category" name="profile">
-                                                    <option value="" >Select Profile...</option>
-                                                    <?php
-                                                    $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1'";
-                                                    $result_profile_type = mysqli_query($conn, $query_profile_type);            
-                                                    while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
-                                                        $selected = ($row['profile'] == $row_profile_type['profile_type_id']) ? 'selected' : '';
-                                                                    ?>
-                                                        <option value="<?= $row_profile_type['profile_type_id'] ?>" data-category="<?= $row_profile_type['product_category'] ?>"  <?= $selected ?>><?= $row_profile_type['profile_type'] ?></option>
-                                                    <?php   
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
-                                        </div>
+                                        
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -460,13 +419,10 @@ function showCol($name) {
                                 <option value="">All Classifications</option>
                                 <optgroup label="Classifications">
                                     <option value="category">Category</option>
-                                    <option value="system">Product System</option>
-                                    <option value="line">Product Line</option> 
                                     <option value="type">Product Type</option> 
                                     <option value="grade">Product Grade</option> 
+                                    <option value="profile">Product Profile</option>  
                                     <option value="color">Color</option> 
-                                    <option value="profile">Profile</option> 
-                                    <option value="flat_sheet_width">Flat Sheet Width</option> 
                                 </optgroup>
                             </select>
                         </div>
@@ -614,38 +570,6 @@ function showCol($name) {
                                 while ($row_category = mysqli_fetch_array($result_category)) {
                                 ?>
                                     <option value="<?= $row_category['product_category'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
-                                <?php
-                                }
-                                ?>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-system" data-filter="system" data-filter-name="Product System">
-                            <option value="" data-category="">All Product Systems</option>
-                            <optgroup label="Product Type">
-                                <?php
-                                $query_system = "SELECT * FROM product_system WHERE hidden = '0' AND status = '1' ORDER BY `product_system` ASC";
-                                $result_system = mysqli_query($conn, $query_system);
-                                while ($row_system = mysqli_fetch_array($result_system)) {
-                                ?>
-                                    <option value="<?= $row_system['product_system'] ?>" data-category="<?= trim(preg_replace('/\s+/', '', $row_system['product_category'])) ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
-                                <?php
-                                }
-                                ?>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-line" data-filter="line" data-filter-name="Product Line">
-                            <option value="" data-category="">All Product Lines</option>
-                            <optgroup label="Product Type">
-                                <?php
-                                $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
-                                $result_line = mysqli_query($conn, $query_line);
-                                while ($row_line = mysqli_fetch_array($result_line)) {
-                                ?>
-                                    <option value="<?= $row_line['product_line'] ?>" data-category="<?= $row_line['product_category'] ?>" <?= $selected ?>><?= $row_line['product_line'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -815,7 +739,7 @@ function showCol($name) {
                 <?php endif; ?>
 
                 <?php if (showCol('product_line')): ?>
-                    { data: 'product_line' },
+                    { data: 'product_gauge' },
                 <?php endif; ?>
 
                 <?php if (showCol('product_type')): ?>

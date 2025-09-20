@@ -2826,11 +2826,10 @@ function decrypt_password_from_storage(string $b64): string {
     return $plaintext;
 }
 
-function fetchColorMultiplier($colorGroup, $productSystem = 0, $grade = 0, $gauge = 0, $category = 0) {
+function fetchColorMultiplier($colorGroup, $grade = 0, $gauge = 0, $category = 0) {
     global $conn;
 
     $colorGroup    = intval($colorGroup);
-    $productSystem = intval($productSystem);
     $grade         = intval($grade);
     $gauge         = intval($gauge);
     $category      = intval($category);
@@ -2839,9 +2838,6 @@ function fetchColorMultiplier($colorGroup, $productSystem = 0, $grade = 0, $gaug
               FROM product_color 
               WHERE color = $colorGroup";
 
-    if ($productSystem > 0) {
-        $query .= " AND product_system = $productSystem";
-    }
     if ($grade > 0) {
         $query .= " AND grade = $grade";
     }

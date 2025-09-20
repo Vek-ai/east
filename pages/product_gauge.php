@@ -107,9 +107,6 @@ if ($permission === 'edit') {
                       <th>Gauge</th>
                       <th>Abbrev.</th>
                       <th>Mult.</th>
-                      <th>Thickness</th>
-                      <th>#/SQFT</th>
-                      <th>#/SQIN</th>
                       <th>Details</th>
                       <th>Status</th>
                       <th>Action</th>
@@ -275,9 +272,6 @@ if ($permission === 'edit') {
             { data: 'product_gauge' },
             { data: 'gauge_abbreviations' },
             { data: 'multiplier' },
-            { data: 'thickness' },
-            { data: 'no_per_sqft' },
-            { data: 'no_per_sqin' },
             { data: 'details' },
             { data: 'status_html' },
             { data: 'action_html' }
