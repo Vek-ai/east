@@ -225,7 +225,7 @@ function showCol($name) {
                                 </div>
                                 <div class="card-body border rounded p-3">
                                     <div class="row">
-                                        <div class="col-md-8">
+                                        <div class="col-md-4">
                                             <label class="form-label">Product Category</label>
                                             <div class="mb-3">
                                             <select id="product_category" class="form-control" name="product_category">
@@ -247,7 +247,28 @@ function showCol($name) {
                                             </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-4"></div>
+
+                                        <div class="col-md-4 hidden-field d-none">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <label class="form-label">Product Line</label>
+                                                <a href="?page=product_line" target="_blank" class="text-decoration-none">Edit</a>
+                                            </div>
+                                            <div class="mb-3">
+                                            <select id="product_line" class="form-control add-category calculate" name="product_line">
+                                                <option value="" >Select Line...</option>
+                                                <?php
+                                                $query_roles = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
+                                                $result_roles = mysqli_query($conn, $query_roles);            
+                                                while ($row_product_line = mysqli_fetch_array($result_roles)) {
+                                                    $selected = (($row['product_line'] ?? '') == $row_product_line['product_line_id']) ? 'selected' : '';
+                                                ?>
+                                                    <option value="<?= $row_product_line['product_line_id'] ?>" data-category="<?= $row_product_line['product_category'] ?>" <?= $selected ?>><?= $row_product_line['product_line'] ?></option>
+                                                <?php   
+                                                }
+                                                ?>
+                                            </select>
+                                            </div>
+                                        </div>
 
                                         <div class="col-md-4 hidden-field d-none">
                                             <div class="d-flex justify-content-between align-items-center">
@@ -291,7 +312,6 @@ function showCol($name) {
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-4"></div>
                                         
                                         <div class="col-md-4 hidden-field d-none">
                                             <div class="mb-3">
@@ -868,6 +888,9 @@ function showCol($name) {
             updateSearchCategory();
             $('#product_form')[0].reset();
             $('#product_id').val("");
+
+            const pid = parseInt($('#profile').val(), 10) || null;
+            filterPanelOptions(pid);
             
             $('#addProductModal').modal('show');
         });
@@ -887,6 +910,10 @@ function showCol($name) {
 
             $('.hidden-field').removeClass('d-none');
             updateSearchCategory();
+
+            const pid = parseInt($('#profile').val(), 10) || null;
+            filterPanelOptions(pid);
+
             $('#addProductModal').modal('show');
         });
 
@@ -1535,7 +1562,6 @@ function showCol($name) {
             let newValue;
             let updatedData = {};
             
-            // Determine the new value based on the element type (select or td)
             if ($(this)[0].tagName.toLowerCase() === 'select') {
                 const selectedValue = $(this).val();
                 const selectedText = $(this).find('option:selected').text();
@@ -1585,6 +1611,57 @@ function showCol($name) {
             } else if ($(this).is("#board_batten")) {
                 $("#standing_seam").prop("checked", false);
             }
+        });
+
+        const panelMap = {
+            14: { types: ['solid','vented','drip_stop'], styles: ['regular','reversed'] },
+            15: { types: ['solid','vented','drip_stop'], styles: ['regular','minor_rib','reversed'] },
+            16: { types: ['solid','vented'], styles: ['striated','flat'] },
+            17: { types: ['solid','vented'], styles: ['striated'] },
+            18: { types: ['solid','vented'], styles: ['striated','flat','minor_rib'] },
+            19: { types: ['solid','vented'], styles: ['striated','flat','minor_rib'] },
+            20: { types: ['solid','vented'], styles: ['striated','flat','minor_rib'] },
+            21: { types: ['solid','vented'], styles: ['flat','minor_rib','striated'] },
+            41: { types: ['solid','vented'], styles: ['striated','flat','minor_rib'] },
+            42: { types: ['solid','vented'], styles: ['flat','striated'] }
+        };
+
+        function filterPanelOptions(profileId) {
+            $('#panel_type, #panel_style').val(null);
+            
+            if (!profileId || !panelMap[profileId]) {
+                $('#panel_type option, #panel_style option').prop('disabled', false).show();
+                return;
+            }
+
+            const allowed = panelMap[profileId];
+
+            $('#panel_type option').each(function() {
+                const key = $(this).val();
+                if (allowed.types.includes(key)) {
+                    $(this).prop('disabled', false).show();
+                } else {
+                    $(this).prop('disabled', true).hide().prop('selected', false);
+                }
+            });
+
+            $('#panel_style option').each(function() {
+                const key = $(this).val();
+                if (allowed.styles.includes(key)) {
+                    $(this).prop('disabled', false).show();
+                } else {
+                    $(this).prop('disabled', true).hide().prop('selected', false);
+                }
+            });
+
+            if ($.fn.select2) {
+                $('#panel_type, #panel_style').trigger('change.select2');
+            }
+        }
+
+        $(document).on('change', '#profile', function() {
+            const pid = parseInt($(this).val(), 10) || null;
+            filterPanelOptions(pid);
         });
 
         filterTable();
