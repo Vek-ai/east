@@ -217,7 +217,7 @@ if(isset($_REQUEST['action'])) {
                             <?= $row['sold_by_feet'] == 1 ? 'checked' : '' ?>>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Usage</label>
+                        <label class="form-label">Panel Type</label>
                         <div class="mb-3">
                             <select id="panel_type" class="form-select">
                                 <option value="solid">Solid</option>
@@ -227,7 +227,7 @@ if(isset($_REQUEST['action'])) {
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Usage</label>
+                        <label class="form-label">Panel Style</label>
                         <div class="mb-3">
                             <select id="panel_style" class="form-select">
                                 <option value="regular">Regular</option>
