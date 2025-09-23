@@ -55,7 +55,14 @@ if(isset($_POST['fetch_prompt_quantity'])){
             
             <?php
             if (!empty($profile)) {
-                if (!is_array($profile)) {
+                if (is_string($profile)) {
+                    $profileArray = json_decode($profile, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($profileArray)) {
+                        $profile = $profileArray;
+                    } else {
+                        $profile = [$profile];
+                    }
+                } elseif (!is_array($profile)) {
                     $profile = [$profile];
                 }
 
@@ -93,10 +100,10 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         include "panel_layouts/plank_panel.php";
                         break;
                     default:
-                        echo '<h5 class="text-center text-danger pt-3 fs-5 fw-bold">Product Profile is not set.</h5>';
+                        echo 'Profile '. $highestProfile .'<h5 class="text-center text-danger pt-3 fs-5 fw-bold">Product Profile is not set.</h5>';
                 }
             } else {
-                echo '<h5 class="text-center text-danger pt-3 fs-5 fw-bold">Product Profile is not set.</h5>';
+                echo 'Profile '. $profile .' <h5 class="text-center text-danger pt-3 fs-5 fw-bold">Product Profile is not set.</h5>';
             }
             ?>
         </div>
