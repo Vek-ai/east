@@ -205,19 +205,19 @@ if (isset($_REQUEST['query'])) {
     }
 
     if ($grade) {
-        $query_product .= " AND JSON_CONTAINS(p.grade, $grade)";
+        $query_product .= " AND JSON_CONTAINS(p.grade, '\"" . intval($grade) . "\"')";
     }
 
     if ($gauge_id) {
-        $query_product .= " AND JSON_CONTAINS(p.gauge, $gauge_id)";
+        $query_product .= " AND JSON_CONTAINS(p.gauge, '\"" . intval($gauge_id) . "\"')";
     }
 
     if ($type_id) {
-        $query_product .= " AND JSON_CONTAINS(p.product_type, $type_id)";
+        $query_product .= " AND JSON_CONTAINS(p.product_type, '\"" . intval($type_id) . "\"')";
     }
 
     if ($profile_id) {
-        $query_product .= " AND JSON_CONTAINS(p.profile, $profile_id)";
+        $query_product .= " AND JSON_CONTAINS(p.profile, '\"" . intval($profile_id) . "\"')";
     }
 
     if (!empty($category_id)) {
