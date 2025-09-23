@@ -313,7 +313,6 @@ function renderTrimCategory($pdf, $products, $conn) {
         ['label' => 'CUSTOMER PRICE', 'width' => 28, 'align' => 'R'],
     ];
 
-    renderTableHeader($pdf, $columns);
     $pdf->SetFont('Arial', '', 8);
 
     $totalQty    = 0;
