@@ -129,6 +129,10 @@ function showCol($name) {
         top: 3px;
         left: 3px;
     }
+
+    .select2-container--default .select2-results__option[aria-disabled=true] {
+        display: none;
+    }
 </style>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -851,9 +855,9 @@ function showCol($name) {
                         let selectedCategory = $('#product_category').val() || '';
 
                         $('.add-category option').each(function () {
-                            let categoryAttr = String($(this).data('category') || '');
-                            let match = categoryAttr.includes(selectedCategory);
-                            $(this).toggle(match);
+                            let categories = $(this).data('category') || '';
+                            let match = categories.toString().includes(selectedCategory);
+                            $(this).prop('disabled', !match);
                         });
 
                         $(".select2").each(function() {
@@ -1352,29 +1356,6 @@ function showCol($name) {
             }
         }
 
-        $(document).on('change', '#color, #product_category', function() {
-            let selectedGroup = $('#color').val() || '';
-            let productCategory = $('#product_category').val() || '';
-
-            $('#color_paint option').each(function() {
-                let optionGroup = String($(this).data('group') || '');
-                let optionCategories = [];
-
-                try {
-                    optionCategories = JSON.parse($(this).attr('data-category'));
-                } catch (e) {}
-
-                let groupMatch = (optionGroup === selectedGroup);
-                let categoryMatch = optionCategories.includes(parseInt(productCategory));
-
-                if (groupMatch && categoryMatch) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-        });
-
         $(document).on('click', '#add_inventory_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
@@ -1415,26 +1396,6 @@ function showCol($name) {
             let selectedType = $('#product_type').val();
             let selectedGrade = $('#grade').val();
             let selectedGauge = $('#gauge').val();
-
-            let $flatSheetWidth = $('#flat_sheet_width');
-
-            let matchedFSheet = $flatSheetWidth.find('option').filter(function () {
-                let $option = $(this);
-                if ($option.val() === "") {
-                    return false;
-                }
-                let categoryMatch = $option.data('category') == selectedCategory || !$option.data('category');
-                let systemMatch = $option.data('system') == selectedSystem || !$option.data('system');
-                let lineMatch = $option.data('line') == selectedLine || !$option.data('line');
-                let typeMatch = $option.data('type') == selectedType || !$option.data('type');
-                return categoryMatch && systemMatch && lineMatch && typeMatch;
-            }).first();
-
-            if (matchedFSheet.length) {
-                $flatSheetWidth.val(matchedFSheet.val());
-            } else {
-                $flatSheetWidth.val('');
-            }
             
             updateColorGroupMult();
 
