@@ -181,7 +181,12 @@ if (isset($_REQUEST['query'])) {
     $query_product = "
         SELECT 
             p.*,
-            COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity,
+            COALESCE(
+                CASE 
+                    WHEN p.product_category IN (3,4) THEN 1  -- treat as always in stock
+                    ELSE SUM(i.quantity_ttl)
+                END, 0
+            ) AS total_quantity,
             pt.profile_type as profile_type_name,
             pg.product_grade as product_grade_name
         FROM 
