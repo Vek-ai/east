@@ -91,7 +91,16 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">Unit</label>
-                    <input type="text" id="dimension_unit" name="dimension_unit" class="form-control" value="<?= $row['dimension_unit'] ?? '' ?>" />
+                    <select id="dimension_unit" name="dimension_unit" class="form-control">
+                        <?php
+                        $units = ['feet' => 'Feet', 'inch' => 'Inches', 'meter' => 'Meters'];
+                        $selectedUnit = strtolower($row['dimension_unit'] ?? '');
+                        foreach ($units as $value => $label) {
+                            $selected = ($selectedUnit === $value) ? 'selected' : '';
+                            echo "<option value=\"$value\" $selected>$label</option>";
+                        }
+                        ?>
+                    </select>
                 </div>
             </div>
         </div>

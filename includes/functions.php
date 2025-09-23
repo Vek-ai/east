@@ -2137,6 +2137,57 @@ function getInventoryLengths($product_id) {
     return $lengths;
 }
 
+function getProductAvailableLengths($product_id) {
+    global $conn;
+
+    $lengths = [];
+
+    $query = "SELECT available_lengths FROM product WHERE product_id = '$product_id'";
+    $result = mysqli_query($conn, $query);
+
+    if (!$result) {
+        return [];
+    }
+
+    $row = mysqli_fetch_assoc($result);
+    if (!$row || empty($row['available_lengths'])) {
+        return [];
+    }
+
+    $available_ids = json_decode($row['available_lengths'], true);
+    if (!is_array($available_ids) || empty($available_ids)) {
+        return [];
+    }
+
+    $ids = implode(',', array_map('intval', $available_ids));
+    $dim_query = "
+        SELECT dimension_id, dimension, dimension_unit 
+        FROM dimensions 
+        WHERE dimension_id IN ($ids)
+    ";
+    $dim_result = mysqli_query($conn, $dim_query);
+
+    if (!$dim_result) {
+        return [];
+    }
+
+    while ($dim = mysqli_fetch_assoc($dim_result)) {
+        $length_value = trim($dim['dimension'] . ' ' . $dim['dimension_unit']);
+
+        $lengths[] = [
+            'inventory_id' => null,
+            'length'       => $length_value,
+            'feet'         => convertLengthToFeet($length_value)
+        ];
+    }
+
+    usort($lengths, function ($a, $b) {
+        return $a['feet'] <=> $b['feet'];
+    });
+
+    return $lengths;
+}
+
 function getLumberLengths($product_id) {
     global $conn;
 
