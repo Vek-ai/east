@@ -112,7 +112,7 @@ function renderScrewCategory($pdf, $products, $conn) {
         $grade_details = getGradeDetails($row_product['custom_grade']);
 
         $row = [
-            $product_details['product_item'] . 
+            $row_product['product_item'] . 
                 (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
             getColorName($row_product['custom_color']),
             $grade_details['product_grade'] ?? '',
@@ -167,7 +167,7 @@ function renderPanelCategory($pdf, $products, $conn) {
         $key = $productid;
         if (!isset($grouped[$key])) {
             $grouped[$key] = [
-                'product_name'    => $product_details['product_item'],
+                'product_name'    => $row_product['product_item'],
                 'color'           => getColorName($row_product['custom_color']),
                 'grade'           => $grade_details['grade_abbreviations'] ?? '',
                 'profile'         => $profile_details['profile_type'] ?? '',
@@ -283,7 +283,7 @@ function renderDefaultCategory($pdf, $products, $conn) {
         $len = $ft + ($in / 12);
 
         $row = [
-            $product_details['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
+            $row_product['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
             getColorName($row_product['custom_color']),
             $grade_details['product_grade'] ?? '',
             $profile_details['profile_type'] ?? '',
@@ -329,17 +329,7 @@ function renderTrimCategory($pdf, $products, $conn) {
         $len = $ft + ($in / 12);
 
         $row = [
-            $product_details['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
-            getColorName($row_product['custom_color']),
-            $grade_details['product_grade'] ?? '',
-            $profile_details['profile_type'] ?? '',
-            $row_product['quantity'],
-            number_format($len, 2),
-            '$ ' . number_format($row_product['discounted_price'], 2)
-        ];
-
-        $row = [
-            $product_details['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
+            $row_product['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
             getColorName($row_product['custom_color']),
             $grade_details['product_grade'],
             $profile_details['profile_type'] ?? '',
@@ -393,7 +383,7 @@ function renderLumberCategory($pdf, $products, $conn) {
         $len = $ft + ($in / 12);
 
         $row = [
-            $product_details['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
+            $row_product['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
             getColorName($row_product['custom_color']),
             $grade_details['product_grade'],
             $profile_details['profile_type'] ?? '',
@@ -471,36 +461,56 @@ class PDF extends FPDF {
 
     function Footer() {
         $marginLeft = 10;
+        $marginLeft = 10;
         $colWidthLeft  = 110;
         $colWidthRight = 70;
-
         $this->SetY(-40);
 
-        $this->SetFont('Arial', 'B', 10);
-        $this->SetTextColor(0, 0, 255);
-        $this->SetX($marginLeft);
-        $this->Cell(0, 8, 'We appreciate your continued business with East Kentucky Metal!', 0, 1, 'L');
+        $colWidth = ($this->w - 2 * $marginLeft) / 3;
+
+        $this->SetFont('Arial', '', 10);
+        $this->SetTextColor(0, 51, 153);
+        $this->Cell($this->w - 2 * $marginLeft, 5, 'We appreciate your continued business with East Kentucky Metal!', 0, 1, 'C');
+
         $this->SetTextColor(0, 0, 0);
+        $this->SetY($this->GetY() + 1);
+        $gpsIcon = 'assets/images/gps.png';
+        $text = '977 E. Hal Rogers Parkway';
+        $iconWidth = 5;
+        $spacing = 2;
 
+        $totalWidth = $iconWidth + $spacing + $this->GetStringWidth($text);
+        $x = ($this->w - $totalWidth) / 2;
+
+        $this->Image($gpsIcon, $x, $this->GetY(), $iconWidth, 5);
+        $this->SetXY($x + $iconWidth + $spacing, $this->GetY());
+        $this->Cell($this->GetStringWidth($text), 5, $text, 0, 1, 'L');
+
+        $this->SetY(-20);
+        $this->SetFont('Arial', '', 9);
+
+        $phoneIcon = 'assets/images/phone.png';
+        $this->Image($phoneIcon, $marginLeft, $this->GetY(), 5, 5);
+        $this->SetXY($marginLeft + 7, $this->GetY());
+        $this->Cell($colWidth, 5, '(606) 877-1848 | Fax: (606) 864-4280', 0, 0, 'L');
+
+        $emailIcon = 'assets/images/email.png';
+        $this->Image($emailIcon, $marginLeft + $colWidth + 10, $this->GetY(), 5, 5);
+        $this->SetXY($marginLeft + $colWidth + 17, $this->GetY());
+        $this->Cell($colWidth, 5, 'Sales@Eastkentuckymetal.com', 0, 0, 'L');
+
+        $webIcon = 'assets/images/web.png';
+        $this->Image($webIcon, $marginLeft + 2 * $colWidth + 10, $this->GetY(), 5, 5);
+        $this->SetXY($marginLeft + 2 * $colWidth + 17, $this->GetY());
+        $this->Cell($colWidth, 5, 'Eastkentuckymetal.com', 0, 0, 'L');
+
+        $yStart = $this->GetY() - 35;
         $this->SetFont('Arial', '', 10);
-        $this->SetX($marginLeft);
-        $this->MultiCell($colWidthLeft, 5,
-            "977 E Hal Rogers Parkway\nLondon, KY 40741", 0, 'L');
-
-        $this->SetFont('Arial', 'B', 10);
-        $this->SetX($marginLeft);
-        $this->MultiCell($colWidthLeft, 5,
-            "Phone: (606) 877-1848 | Fax: (606) 864-4280\n" .
-            "Email: Sales@Eastkentuckymetal.com\n" .
-            "Website: Eastkentuckymetal.com", 0, 'L');
-
-        $yStart = $this->GetY() - 30;
-        $this->SetFont('Arial', '', 10);
-        $this->SetXY($marginLeft + $colWidthLeft + 10, $yStart);
+        $this->SetXY($marginLeft, $yStart);
         $this->MultiCell($colWidthRight, 5,
             "Scan me for a Digtal copy of this receipt", 0, 'C');
 
-        $qrX = $marginLeft + $colWidthLeft + ($colWidthRight / 2);
+        $qrX = 20;
         $qrY = $this->GetY();
         $this->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 25, 25);
     }

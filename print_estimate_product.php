@@ -408,20 +408,45 @@ function renderRow($pdf, $columns, $row, $bold = false) {
 class PDF extends FPDF {
     function Footer() {
         $marginLeft = 10;
-        $this->SetY(-15);
+        $this->SetY(-35);
 
         $colWidth = ($this->w - 2 * $marginLeft) / 3;
 
+        $this->SetFont('Arial', '', 10);
+        $this->SetTextColor(0, 51, 153);
+        $this->Cell($this->w - 2 * $marginLeft, 5, 'We appreciate your continued business with East Kentucky Metal!', 0, 1, 'C');
+
+        $this->SetTextColor(0, 0, 0);
+        $this->SetY($this->GetY() + 1);
+        $gpsIcon = 'assets/images/gps.png';
+        $text = '977 E. Hal Rogers Parkway';
+        $iconWidth = 5;
+        $spacing = 2;
+
+        $totalWidth = $iconWidth + $spacing + $this->GetStringWidth($text);
+        $x = ($this->w - $totalWidth) / 2;
+
+        $this->Image($gpsIcon, $x, $this->GetY(), $iconWidth, 5);
+        $this->SetXY($x + $iconWidth + $spacing, $this->GetY());
+        $this->Cell($this->GetStringWidth($text), 5, $text, 0, 1, 'L');
+
+        $this->SetY(-20);
         $this->SetFont('Arial', '', 9);
 
-        $this->SetX($marginLeft);
-        $this->Cell($colWidth, 5, 'Phone: (606) 877-1848 | Fax: (606) 864-4280', 0, 0, 'L');
+        $phoneIcon = 'assets/images/phone.png';
+        $this->Image($phoneIcon, $marginLeft, $this->GetY(), 5, 5);
+        $this->SetXY($marginLeft + 7, $this->GetY());
+        $this->Cell($colWidth, 5, '(606) 877-1848 | Fax: (606) 864-4280', 0, 0, 'L');
 
-        $this->SetX($marginLeft + $colWidth + 10);
-        $this->Cell($colWidth, 5, 'Sales@Eastkentuckymetal.com', 0, 0, 'C');
+        $emailIcon = 'assets/images/email.png';
+        $this->Image($emailIcon, $marginLeft + $colWidth + 10, $this->GetY(), 5, 5);
+        $this->SetXY($marginLeft + $colWidth + 17, $this->GetY());
+        $this->Cell($colWidth, 5, 'Sales@Eastkentuckymetal.com', 0, 0, 'L');
 
-        $this->SetX($marginLeft + 2 * $colWidth);
-        $this->Cell($colWidth, 5, 'Eastkentuckymetal.com', 0, 0, 'R');
+        $webIcon = 'assets/images/web.png';
+        $this->Image($webIcon, $marginLeft + 2 * $colWidth + 10, $this->GetY(), 5, 5);
+        $this->SetXY($marginLeft + 2 * $colWidth + 17, $this->GetY());
+        $this->Cell($colWidth, 5, 'Eastkentuckymetal.com', 0, 0, 'L');
     }
 }
 
