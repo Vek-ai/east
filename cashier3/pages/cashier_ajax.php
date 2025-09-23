@@ -252,7 +252,7 @@ if (isset($_REQUEST['query'])) {
     $query_product .= " GROUP BY p.product_id";
 
     if ($onlyInStock) {
-        $query_product .= " HAVING total_quantity > 1";
+        $query_product .= " HAVING total_quantity > 0";
     }
 
     $result_product = mysqli_query($conn, $query_product);
