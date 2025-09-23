@@ -3435,18 +3435,14 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         $('.quantity-length-row').each(function () {
             const feet = parseFloat($(this).find('.trim_length').val()) || 0;
-            const qty = parseFloat($(this).find('.trim_qty').val()) || 1;
+            const qty = parseFloat($(this).find('.trim_qty').val()) || 0; // default 0
 
             totalPrice += basePrice * feet * qty;
-
-            console.log(feet)
         });
 
         if (is_custom === 1) {
-            totalPrice += totalPrice * custom_multiplier_trim;
+            totalPrice *= custom_multiplier_trim;
         }
-
-        
 
         $('#trim_price').text(totalPrice.toFixed(2));
     }
