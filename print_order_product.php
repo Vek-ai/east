@@ -589,10 +589,10 @@ if (mysqli_num_rows($result) > 0) {
         $customerDetails = getCustomerDetails($customer_id);
         $tax = floatval(getCustomerTax($customer_id)) / 100;
         $delivery_method = 'Deliver';
-        $order_date = date("F d, Y", strtotime($row_orders['order_date']));
+        $order_date = date("n/j/Y", strtotime($row_orders['order_date']));
         $scheduled_date = '';
         if (!empty($row_orders['scheduled_date']) && strtotime($row_orders['scheduled_date']) !== false) {
-            $scheduled_date = date("F d, Y", strtotime($row_orders['scheduled_date']));
+            $scheduled_date = date("n/j/Y", strtotime($row_orders['scheduled_date']));
         }
         if($delivery_price == 0){
             $delivery_method = 'Pickup';
