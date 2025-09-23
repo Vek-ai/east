@@ -146,7 +146,7 @@ if(isset($_POST['fetch_modal'])){
                     <select class="form-control mb-0 trim_length_select">
                         <option value="0" selected>Select Length</option>
                         <?php
-                        $lengths = getInventoryLengths($id);
+                        $lengths = getProductAvailableLengths($id);
                         foreach ($lengths as $entry) {
                             $product_length = htmlspecialchars($entry['length']);
                             $length_in_feet = htmlspecialchars($entry['feet']);
