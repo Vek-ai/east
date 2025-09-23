@@ -209,20 +209,36 @@ if (isset($_REQUEST['query'])) {
         $query_product .= " AND i.color_id = '$color_id'"; 
     }
 
-    if ($grade) {
-        $query_product .= " AND JSON_CONTAINS(p.grade, '\"" . intval($grade) . "\"')";
+    if (!empty($grade)) {
+        $query_product .= " AND JSON_VALID(p.grade) 
+                            AND (
+                                JSON_CONTAINS(p.grade, '\"" . intval($grade) . "\"') 
+                                OR JSON_CONTAINS(p.grade, '" . intval($grade) . "')
+                            )";
     }
 
-    if ($gauge_id) {
-        $query_product .= " AND JSON_CONTAINS(p.gauge, '\"" . intval($gauge_id) . "\"')";
+    if (!empty($gauge_id)) {
+        $query_product .= " AND JSON_VALID(p.gauge) 
+                            AND (
+                                JSON_CONTAINS(p.gauge, '\"" . intval($gauge_id) . "\"') 
+                                OR JSON_CONTAINS(p.gauge, '" . intval($gauge_id) . "')
+                            )";
     }
 
-    if ($type_id) {
-        $query_product .= " AND JSON_CONTAINS(p.product_type, '\"" . intval($type_id) . "\"')";
+    if (!empty($type_id)) {
+        $query_product .= " AND JSON_VALID(p.product_type) 
+                            AND (
+                                JSON_CONTAINS(p.product_type, '\"" . intval($type_id) . "\"') 
+                                OR JSON_CONTAINS(p.product_type, '" . intval($type_id) . "')
+                            )";
     }
 
-    if ($profile_id) {
-        $query_product .= " AND JSON_CONTAINS(p.profile, '\"" . intval($profile_id) . "\"')";
+    if (!empty($profile_id)) {
+        $query_product .= " AND JSON_VALID(p.profile) 
+                            AND (
+                                JSON_CONTAINS(p.profile, '\"" . intval($profile_id) . "\"') 
+                                OR JSON_CONTAINS(p.profile, '" . intval($profile_id) . "')
+                            )";
     }
 
     if (!empty($category_id)) {
