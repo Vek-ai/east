@@ -73,8 +73,7 @@ if(isset($_REQUEST['action'])) {
                                 <?php
                                 $query_color = "SELECT * FROM paint_colors 
                                                 WHERE hidden = '0' 
-                                                AND color_status = '1' 
-                                                AND color_group REGEXP '^[0-9]+$' 
+                                                AND color_status = '1'
                                                 ORDER BY `color_name` ASC";
                                 $result_color = mysqli_query($conn, $query_color);
                                 while ($row_color = mysqli_fetch_array($result_color)) {
