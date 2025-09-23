@@ -54,31 +54,49 @@ if(isset($_POST['fetch_prompt_quantity'])){
         <div class="row">
             
             <?php
-            
-            if($profile == 14){ //low-rib
-                include "panel_layouts/low_rib.php";
-            }else if($profile == 15){ //hi-rib
-                include "panel_layouts/hi_rib.php";
-            }else if($profile == 16){ //corrugated
-                include "panel_layouts/corrugated.php";
-            }else if($profile == 17){ //5v
-                include "panel_layouts/5v.php";
-            }else if($profile == 18){ //standing_seam
-                include "panel_layouts/standing_seam.php";
-            }else if($profile == 19){ //snap_lock
-                include "panel_layouts/snap_lock.php";
-            }else if($profile == 20){ //mechanical_seam
-                include "panel_layouts/mechanical_seam.php";
-            }else if($profile == 21){ //board_batten
-                include "panel_layouts/board_batten.php";
-            }else if($profile == 41){ //flush_wall
-                include "panel_layouts/flush_wall.php";
-            }else if($profile == 42){ //plank panel
-                include "panel_layouts/plank_panel.php";
-            }else{
-                ?>
-                <h5 class="text-center text-danger pt-3 fs-5 fw-bold">Product Profile is not set.</h5>
-                <?php
+            if (!empty($profile)) {
+                if (!is_array($profile)) {
+                    $profile = [$profile];
+                }
+
+                $highestProfile = max($profile);
+
+                switch ($highestProfile) {
+                    case 14: // low-rib
+                        include "panel_layouts/low_rib.php";
+                        break;
+                    case 15: // hi-rib
+                        include "panel_layouts/hi_rib.php";
+                        break;
+                    case 16: // corrugated
+                        include "panel_layouts/corrugated.php";
+                        break;
+                    case 17: // 5v
+                        include "panel_layouts/5v.php";
+                        break;
+                    case 18: // standing_seam
+                        include "panel_layouts/standing_seam.php";
+                        break;
+                    case 19: // snap_lock
+                        include "panel_layouts/snap_lock.php";
+                        break;
+                    case 20: // mechanical_seam
+                        include "panel_layouts/mechanical_seam.php";
+                        break;
+                    case 21: // board_batten
+                        include "panel_layouts/board_batten.php";
+                        break;
+                    case 41: // flush_wall
+                        include "panel_layouts/flush_wall.php";
+                        break;
+                    case 42: // plank panel
+                        include "panel_layouts/plank_panel.php";
+                        break;
+                    default:
+                        echo '<h5 class="text-center text-danger pt-3 fs-5 fw-bold">Product Profile is not set.</h5>';
+                }
+            } else {
+                echo '<h5 class="text-center text-danger pt-3 fs-5 fw-bold">Product Profile is not set.</h5>';
             }
             ?>
         </div>

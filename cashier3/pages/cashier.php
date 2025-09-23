@@ -3443,7 +3443,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         if (is_custom === 1) {
             totalPrice *= custom_multiplier_trim;
         }
-
+ 
         $('#trim_price').text(totalPrice.toFixed(2));
     }
 
