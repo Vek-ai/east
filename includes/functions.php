@@ -258,11 +258,31 @@ function getWarehouseRowName($WarehouseRowID){
 
 function getProductLineName($product_line_id){
     global $conn;
-    $query = "SELECT product_line FROM product_line WHERE product_line_id = '$product_line_id'";
-    $result = mysqli_query($conn,$query);
-    $row = mysqli_fetch_array($result); 
-    $product_line = $row['product_line'] ?? '';
-    return  $product_line;
+
+    if (is_string($product_line_id) && $product_line_id !== '' && $product_line_id[0] === '[') {
+        $product_line_id = json_decode($product_line_id, true);
+    }
+
+    if (!is_array($product_line_id)) {
+        $product_line_id = [$product_line_id];
+    }
+
+    $product_line_id = array_map('intval', $product_line_id);
+    $ids = implode(",", $product_line_id);
+
+    if (empty($ids)) {
+        return '';
+    }
+
+    $query = "SELECT product_line FROM product_line WHERE product_line_id IN ($ids)";
+    $result = mysqli_query($conn, $query);
+
+    $names = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $names[] = $row['product_line'];
+    }
+
+    return implode(", ", $names);
 }
 
 function getProductCategoryName($product_category_id){
@@ -1467,14 +1487,23 @@ function hasProductVariantLength($product_id) {
 }
 
 function getPrimaryKey($table) {
+    static $cache = [];
     global $conn;
 
-    $sql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
-            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '$table' AND COLUMN_KEY = 'PRI' 
+    if (isset($cache[$table])) {
+        return $cache[$table];
+    }
+
+    $sql = "SELECT COLUMN_NAME 
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_SCHEMA = DATABASE() 
+              AND TABLE_NAME = '$table' 
+              AND COLUMN_KEY = 'PRI' 
             LIMIT 1";
     $result = $conn->query($sql);
 
     if ($row = $result->fetch_assoc()) {
+        $cache[$table] = $row['COLUMN_NAME'];
         return $row['COLUMN_NAME'];
     }
 
@@ -2866,5 +2895,36 @@ function indexToColumnLetter($index) {
         $index = floor($index / 26) - 1;
     }
     return $letters;
+}
+
+function getColumnFromTable($table, $column, $ids = null) {
+    global $conn;
+
+    $idColumn = getPrimaryKey($table);
+    if (!$idColumn || empty($ids)) {
+        return '';
+    }
+
+    if (is_string($ids) && $ids[0] === '[') {
+        $ids = json_decode($ids, true);
+    } elseif (!is_array($ids)) {
+        $ids = [$ids];
+    }
+
+    $ids = array_filter($ids, 'is_numeric');
+    if (!$ids) {
+        return '';
+    }
+
+    $idList = implode(',', array_map('intval', $ids));
+    $query  = "SELECT $column FROM $table WHERE $idColumn IN ($idList)";
+    $result = mysqli_query($conn, $query);
+
+    $data = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $data[] = $row[$column];
+    }
+
+    return implode(', ', $data);
 }
 ?>

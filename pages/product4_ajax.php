@@ -26,11 +26,18 @@ if(isset($_REQUEST['action'])) {
         $fields = [];
         foreach ($_POST as $key => $value) {
             if (is_array($value)) {
+                $allNumeric = array_reduce($value, function($carry, $item) {
+                    return $carry && is_numeric($item);
+                }, true);
+
+                if ($allNumeric) {
+                    $value = array_map('intval', $value);
+                }
                 $value = json_encode($value);
             }
-        
+
             $escapedValue = mysqli_real_escape_string($conn, $value);
-        
+
             if ($key != 'product_id') {
                 $fields[$key] = $escapedValue;
             }
@@ -1265,13 +1272,15 @@ if(isset($_REQUEST['action'])) {
             $data[] = [
                 'product_name_html'   => $product_name_html,
                 'product_category'    => getProductCategoryName($row['product_category']),
-                'product_system'      => getProductSystemName($row['product_system']),
-                'product_gauge'        => getGaugeName($row['gauge']),
-                'product_type'        => getProductTypeName($row['product_type']),
-                'profile'             => getProfileTypeName($row['profile']),
+                'product_system'      => getColumnFromTable("product_system", "product_system", $row['product_system']),
+                'product_gauge'       => getColumnFromTable("product_gauge", "product_gauge", $row['gauge']),
+                'product_type'        => getColumnFromTable("product_type", "product_type", $row['product_type']),
+                'profile'             => getColumnFromTable("profile_type", "profile_type", $row['profile']),
                 'color'               => getColorName($row['color']),
                 'grade'               => $row['grade'],
                 'gauge'               => $row['gauge'],
+                'type'                => $row['product_type'],
+                'line'                => $row['product_line'],
                 'active'              => $status,
                 'instock'             => $instock,
                 'status_html'         => $status_html,

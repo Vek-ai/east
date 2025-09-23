@@ -254,7 +254,7 @@ function showCol($name) {
                                                 <a href="?page=product_line" target="_blank" class="text-decoration-none">Edit</a>
                                             </div>
                                             <div class="mb-3">
-                                            <select id="product_line" class="form-control add-category calculate" name="product_line">
+                                            <select id="product_line" class="form-control add-category calculate select2" name="product_line[]" multiple>
                                                 <option value="" >Select Line...</option>
                                                 <?php
                                                 $query_roles = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
@@ -276,7 +276,7 @@ function showCol($name) {
                                                 <a href="?page=product_type" target="_blank" class="text-decoration-none">Edit</a>
                                             </div>
                                             <div class="mb-3">
-                                            <select id="product_type" class="form-control add-category calculate" name="product_type">
+                                            <select id="product_type" class="form-control add-category calculate select2" name="product_type[]" multiple>
                                                 <option value="" >Select Type...</option>
                                                 <?php
                                                 $query_roles = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
@@ -297,7 +297,7 @@ function showCol($name) {
                                                     <label class="form-label">Product Profile</label>
                                                     <a href="?page=profile_type" target="_blank" class="text-decoration-none">Edit</a>
                                                 </div>
-                                                <select id="profile" class="form-control add-category" name="profile">
+                                                <select id="profile" class="form-control add-category select2" name="profile[]" multiple>
                                                     <option value="" >Select Profile...</option>
                                                     <?php
                                                     $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1'";
@@ -319,7 +319,7 @@ function showCol($name) {
                                                     <label class="form-label">Product Grade</label>
                                                     <a href="?page=product_grade" target="_blank" class="text-decoration-none">Edit</a>
                                                 </div>
-                                                <select id="grade" class="form-control calculate add-category" name="grade">
+                                                <select id="grade" class="form-control calculate add-category select2" name="grade[]" multiple>
                                                     <option value="" >Select Grade...</option>
                                                     <?php
                                                     $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
@@ -340,7 +340,7 @@ function showCol($name) {
                                                     <label class="form-label">Product Gauge</label>
                                                     <a href="?page=product_gauge" target="_blank" class="text-decoration-none">Edit</a>
                                                 </div>
-                                                <select id="gauge" class="form-control calculate" name="gauge">
+                                                <select id="gauge" class="form-control calculate select2" name="gauge[]" multiple>
                                                     <option value="" >Select Gauge...</option>
                                                     <?php
                                                     $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
@@ -605,7 +605,7 @@ function showCol($name) {
                                 $result_type = mysqli_query($conn, $query_type);
                                 while ($row_type = mysqli_fetch_array($result_type)) {
                                 ?>
-                                    <option value="<?= $row_type['product_type'] ?>" data-category="<?= $row_type['product_category'] ?>" <?= $selected ?>><?= $row_type['product_type'] ?></option>
+                                    <option value="<?= $row_type['product_type_id'] ?>" data-category="<?= $row_type['product_category'] ?>" <?= $selected ?>><?= $row_type['product_type'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -621,7 +621,7 @@ function showCol($name) {
                                 $result_profile = mysqli_query($conn, $query_profile);
                                 while ($row_profile = mysqli_fetch_array($result_profile)) {
                                 ?>
-                                    <option value="<?= $row_profile['profile_type'] ?>" data-category="<?= $v['product_category'] ?>" <?= $selected ?>><?= $row_profile['profile_type'] ?></option>
+                                    <option value="<?= $row_profile['profile_type_id'] ?>" data-category="<?= $v['product_category'] ?>" <?= $selected ?>><?= $row_profile['profile_type'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -637,7 +637,7 @@ function showCol($name) {
                                 $result_color = mysqli_query($conn, $query_color);
                                 while ($row_color = mysqli_fetch_array($result_color)) {
                                 ?>
-                                    <option value="<?= $row_color['color_name'] ?>" data-category="category" <?= $selected ?>><?= $row_color['color_name'] ?></option>
+                                    <option value="<?= $row_color['color_id'] ?>" data-category="category" <?= $selected ?>><?= $row_color['color_name'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -653,7 +653,7 @@ function showCol($name) {
                                 $result_grade = mysqli_query($conn, $query_grade);
                                 while ($row_grade = mysqli_fetch_array($result_grade)) {
                                 ?>
-                                    <option value="<?= $row_grade['product_grade'] ?>" data-category="grade" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                    <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -669,7 +669,7 @@ function showCol($name) {
                                 $result_gauge = mysqli_query($conn, $query_gauge);
                                 while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                                 ?>
-                                    <option value="<?= $row_gauge['product_gauge'] ?>" data-category="gauge" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
+                                    <option value="<?= $row_gauge['product_gauge_id'] ?>" data-category="gauge" <?= $selected ?>><?= $row_gauge['product_gauge'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -778,7 +778,7 @@ function showCol($name) {
                 $(row).attr('data-category', data.product_category);
                 $(row).attr('data-system', data.product_system);
                 $(row).attr('data-line', data.product_line);
-                $(row).attr('data-type', data.product_type);
+                $(row).attr('data-type', data.type);
                 $(row).attr('data-profile', data.profile);
                 $(row).attr('data-color', data.color);
                 $(row).attr('data-grade', data.grade);
@@ -1447,7 +1447,7 @@ function showCol($name) {
             let cost = color_multiplier * stock_multi;
             $("#cost").val(cost.toFixed(3));
 
-            let descriptionParts = [];
+            /* let descriptionParts = [];
             let gradeVal = $('#grade').val();
             let gradeText = $('#grade option:selected').text().trim();
 
@@ -1470,8 +1470,7 @@ function showCol($name) {
             }
 
             let descriptionString = descriptionParts.join(" ");
-            $("#product_item").val(descriptionString);
-
+            $("#product_item").val(descriptionString); */
         });
         
         $(document).on('mousedown', '.readonly', function() {
@@ -1507,11 +1506,31 @@ function showCol($name) {
                         .replace(/\s+/g, ' ')
                         .toLowerCase() || '';
 
-                    var filterValue = normalize($(this).val());
-                    var rowValue = normalize(row.data($(this).data('filter')));
+                    var filterKey   = $(this).data('filter');
+                    var filterValue = $(this).val();
 
-                    if (filterValue && filterValue !== '/') {
-                        if (!rowValue.includes(filterValue)) {
+                    var rowNode = row[0];
+                    var rawAttr = $(rowNode).data(filterKey);
+
+                    var rowValue = rawAttr;
+
+                    if (typeof rawAttr === 'string' && rawAttr.startsWith('[')) {
+                        try {
+                            rowValue = JSON.parse(rawAttr);
+                        } catch (e) {
+                            rowValue = rawAttr;
+                        }
+                    }
+
+                    if (Array.isArray(rowValue)) {
+                        if (filterValue && !rowValue.includes(parseInt(filterValue))) {
+                            match = false;
+                            return false;
+                        }
+                    } else {
+                        var normalizedFilter = normalize(filterValue);
+                        var normalizedRow    = normalize(rowValue);
+                        if (normalizedFilter && normalizedFilter !== '/' && !normalizedRow.includes(normalizedFilter)) {
                             match = false;
                             return false;
                         }

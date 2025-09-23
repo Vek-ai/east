@@ -204,14 +204,14 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                                         <optgroup label="Product Line">
                                             <?php
                                                 $query_profile = "
-                                                    SELECT DISTINCT profile_type
+                                                    SELECT *
                                                     FROM profile_type 
                                                     WHERE hidden = '0' $category_condition
                                                     ORDER BY profile_type ASC";
                                                 $result_profile = mysqli_query($conn, $query_profile);
                                                 while ($row_profile = mysqli_fetch_array($result_profile)) {
                                                 ?>
-                                                    <option value="<?= $row_profile['profile_type'] ?>">
+                                                    <option value="<?= $row_profile['profile_type_id'] ?>">
                                                         <?= $row_profile['profile_type'] ?>
                                                     </option>
                                                 <?php } ?>

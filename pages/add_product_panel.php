@@ -30,21 +30,24 @@ if(isset($_REQUEST['action'])) {
             </div>
             <div class="card-body border rounded p-3">
                 <div class="row">
+                    <?php
+                    $color_group_selected = (array) json_decode($row['color_group'] ?? '[]', true);
+                    ?>
                     <div class="col-md-4">
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <label class="form-label">Available Color Groups</label>
                                 <a href="?page=product_color" target="_blank" class="text-decoration-none">Edit</a>
                             </div>
-                            <select id="color" class="form-control calculate" name="color">
-                                <option value="" >Select Color Group...</option>
+                            <select id="color" class="form-control calculate select2" name="color_group[]" multiple>
+                                <option value="">Select Color Group...</option>
                                 <?php
                                 $query_groups = "SELECT DISTINCT color_group_name_id, color_group_name 
                                                 FROM color_group_name 
                                                 ORDER BY color_group_name ASC";
                                 $result_groups = mysqli_query($conn, $query_groups);
                                 while ($row_group = mysqli_fetch_array($result_groups)) {
-                                    $selected = (($row['color_group'] ?? '') == $row_group['color_group_name_id']) ? 'selected' : '';
+                                    $selected = in_array($row_group['color_group_name_id'], $color_group_selected) ? 'selected' : '';
                                     ?>
                                     <option value="<?= $row_group['color_group_name_id'] ?>" <?= $selected ?>>
                                         <?= $row_group['color_group_name'] ?>
@@ -55,20 +58,26 @@ if(isset($_REQUEST['action'])) {
                             </select>
                         </div>
                     </div>
-
+                    <?php
+                    $color_paint_selected = (array) json_decode($row['color_paint'] ?? '[]', true);
+                    ?>
                     <div class="col-md-4">
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <label class="form-label">Available Colors</label>
                                 <a href="?page=paint_colors" target="_blank" class="text-decoration-none">Edit</a>
                             </div>
-                            <select id="color_paint" class="form-control add-category calculate color-group-filter" name="color_paint">
-                                <option value="" >Select Color...</option>
+                            <select id="color_paint" class="form-control add-category calculate color-group-filter select2" name="color_paint[]" multiple>
+                                <option value="">Select Color...</option>
                                 <?php
-                                $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' AND color_group REGEXP '^[0-9]+$' ORDER BY `color_name` ASC";
+                                $query_color = "SELECT * FROM paint_colors 
+                                                WHERE hidden = '0' 
+                                                AND color_status = '1' 
+                                                AND color_group REGEXP '^[0-9]+$' 
+                                                ORDER BY `color_name` ASC";
                                 $result_color = mysqli_query($conn, $query_color);
                                 while ($row_color = mysqli_fetch_array($result_color)) {
-                                    $selected = ($row['color_paint'] == $row_color['color_id']) ? 'selected' : '';
+                                    $selected = in_array($row_color['color_id'], $color_paint_selected) ? 'selected' : '';
                                     $availability_details = getAvailabilityDetails($row_color['stock_availability']);
                                     $multiplier = floatval($availability_details['multiplier'] ?? 1);
                                 ?>
@@ -108,15 +117,20 @@ if(isset($_REQUEST['action'])) {
                                 <label class="form-label">Warranty Type</label>
                                 <a href="?page=product_warranty_type" target="_blank" class="text-decoration-none">Edit</a>
                             </div>
-                            <select id="warranty_type" class="form-control" name="warranty_type">
-                                <option value="" >Select Warranty Type...</option>
+                            <?php
+                            $warranty_selected = (array) json_decode($row['warranty_type'] ?? '[]', true);
+                            ?>
+                            <select id="warranty_type" class="form-control select2" name="warranty_type[]" multiple>
+                                <option value="">Select Warranty Type...</option>
                                 <?php
                                 $query_product_warranty_type = "SELECT * FROM product_warranty_type WHERE hidden = '0' AND status = '1'";
                                 $result_product_warranty_type = mysqli_query($conn, $query_product_warranty_type);            
                                 while ($row_product_warranty_type = mysqli_fetch_array($result_product_warranty_type)) {
-                                    $selected = ($row['warranty_type'] == $row_product_warranty_type['product_warranty_type_id']) ? 'selected' : '';
+                                    $selected = in_array($row_product_warranty_type['product_warranty_type_id'], $warranty_selected) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_product_warranty_type['product_warranty_type_id'] ?>" <?= $selected ?>><?= $row_product_warranty_type['product_warranty_type'] ?></option>
+                                    <option value="<?= $row_product_warranty_type['product_warranty_type_id'] ?>" <?= $selected ?>>
+                                        <?= $row_product_warranty_type['product_warranty_type'] ?>
+                                    </option>
                                 <?php   
                                 }
                                 ?>
@@ -216,37 +230,43 @@ if(isset($_REQUEST['action'])) {
                         <input type="checkbox" class="form-check-input" id="sold_by_feet" name="sold_by_feet" value="1"
                             <?= $row['sold_by_feet'] == 1 ? 'checked' : '' ?>>
                     </div>
+                    <?php
+                    $panel_type_selected = (array) json_decode($row['panel_type'] ?? '[]', true);
+                    ?>
                     <div class="col-md-4">
                         <label class="form-label">Panel Type</label>
                         <div class="mb-3">
-                            <select id="panel_type" class="form-select">
-                                <option value="solid">Solid</option>
-                                <option value="vented">Vented</option>
-                                <option value="drip_stop">Drip Stop</option>
+                            <select id="panel_type" class="form-select select2" name="panel_type[]" multiple>
+                                <option value="solid"     <?= in_array('solid', $panel_type_selected) ? 'selected' : '' ?>>Solid</option>
+                                <option value="vented"    <?= in_array('vented', $panel_type_selected) ? 'selected' : '' ?>>Vented</option>
+                                <option value="drip_stop" <?= in_array('drip_stop', $panel_type_selected) ? 'selected' : '' ?>>Drip Stop</option>
                             </select>
                         </div>
                     </div>
+                    <?php
+                    $panel_style_selected = (array) json_decode($row['panel_style'] ?? '[]', true);
+                    ?>
                     <div class="col-md-4">
                         <label class="form-label">Panel Style</label>
                         <div class="mb-3">
-                            <select id="panel_style" class="form-select">
-                                <option value="regular">Regular</option>
-                                <option value="reversed">Reversed</option>
-                                <option value="striated">Striated</option>
-                                <option value="flat">Flat</option>
-                                <option value="minor_rib">Minor Rib</option>
+                            <select id="panel_style" class="form-select select2" name="panel_style[]" multiple>
+                                <option value="regular"   <?= in_array('regular', $panel_style_selected) ? 'selected' : '' ?>>Regular</option>
+                                <option value="reversed"  <?= in_array('reversed', $panel_style_selected) ? 'selected' : '' ?>>Reversed</option>
+                                <option value="striated"  <?= in_array('striated', $panel_style_selected) ? 'selected' : '' ?>>Striated</option>
+                                <option value="flat"      <?= in_array('flat', $panel_style_selected) ? 'selected' : '' ?>>Flat</option>
+                                <option value="minor_rib" <?= in_array('minor_rib', $panel_style_selected) ? 'selected' : '' ?>>Minor Rib</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="col-md-4 text-center mb-3">
                         <label for="standing_seam" class="form-label d-block">Standing Seam Panel</label>
-                        <input type="radio" class="form-check-input" id="standing_seam" name="panel_type" value="standing_seam"
+                        <input type="radio" class="form-check-input" id="standing_seam" name="standing_seam" value="standing_seam"
                             <?= $row['standing_seam'] == 1 ? 'checked' : '' ?>>
                     </div>
                     <div class="col-md-4 text-center mb-3">
                         <label for="board_batten" class="form-label d-block">Board &amp; Batten Panel</label>
-                        <input type="radio" class="form-check-input" id="board_batten" name="panel_type" value="board_batten"
+                        <input type="radio" class="form-check-input" id="board_batten" name="board_batten" value="board_batten"
                             <?= $row['board_batten'] == 1 ? 'checked' : '' ?>>
                     </div>
                     <?php 
@@ -304,7 +324,7 @@ if(isset($_REQUEST['action'])) {
                     </div>
 
                     <div class="col-md-4">
-                        <div class="mb-3">
+                        <div class="mb-3 d-none">
                             <label class="form-label">Usage</label>
                             <select id="product_usage" class="form-control" name="product_usage">
                                 <option value="" >Select Product Usage...</option>
@@ -328,14 +348,17 @@ if(isset($_REQUEST['action'])) {
                             <a href="?page=product_supplier" target="_blank" class="text-decoration-none">Edit</a>
                         </div>
                         <div class="mb-3">
-                            <select id="supplier_id" class="form-control select-2 inventory_supplier" name="supplier_id">
-                                <option value="" >Select Supplier...</option>
+                            <?php
+                            $supplier_selected = (array) json_decode($row['supplier_id'] ?? '[]', true);
+                            ?>
+                            <select id="supplier_id" class="form-control select2 inventory_supplier" name="supplier_id[]" multiple>
+                                <option value="">Select Supplier...</option>
                                 <optgroup label="Supplier">
                                     <?php
                                     $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
                                     $result_supplier = mysqli_query($conn, $query_supplier);            
                                     while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                                        $selected = (($row['supplier_id'] ?? '') == $row_supplier['supplier_id']) ? 'selected' : '';
+                                        $selected = in_array($row_supplier['supplier_id'], $supplier_selected) ? 'selected' : '';
                                     ?>
                                         <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
                                     <?php   
