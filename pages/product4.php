@@ -850,6 +850,14 @@ function showCol($name) {
                     success: function(response) {
                         $('#add-fields').html(response);
 
+                        if (product_category == 4) {
+                            
+                            $('#product_type').removeAttr('multiple');
+                            $('#product_type').val('');
+                        } else {
+                            $('#product_type').attr('multiple', 'multiple');
+                        }
+
                         $('.hidden-field').removeClass('d-none');
 
                         let selectedCategory = $('#product_category').val() || '';
@@ -917,6 +925,13 @@ function showCol($name) {
 
             const pid = parseInt($('#profile').val(), 10) || null;
             filterPanelOptions(pid);
+
+            const category = parseInt($('#product_category').val(), 10) || 0;
+            if (category == 4) {
+                $('#product_type').removeAttr('multiple');
+            } else {
+                $('#product_type').attr('multiple', 'multiple');
+            }
 
             $('#addProductModal').modal('show');
         });
@@ -1316,13 +1331,13 @@ function showCol($name) {
         });
 
         function updateColorGroupMult() {
-            let colorGroup = ($('#color').val() || '').trim();
+            let colorGroup = $('#color').val() || '';
 
             if (colorGroup) {
-                let productSystem = ($('#product_system').val() || '').trim();
-                let grade         = ($('#grade').val() || '').trim();
-                let gauge         = ($('#gauge').val() || '').trim();
-                let category      = ($('#product_category').val() || '').trim();
+                let productSystem = ($('#product_system').val() || '').toString().trim();
+                let grade         = ($('#grade').val() || '').toString().trim();
+                let gauge         = ($('#gauge').val() || '').toString().trim();
+                let category      = ($('#product_category').val() || '').toString().trim();
 
                 $.ajax({
                     url: 'pages/product4_ajax.php',

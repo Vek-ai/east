@@ -662,11 +662,12 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 <button class="btn ripple btn-success d-none" type="button" id="save_estimate_modal">
                     <i class="fe fe-hard-drive"></i> Save
                 </button>
-                <a href="#" class="btn ripple btn-light text-dark d-none" type="button" id="print_estimate_category" target="_blank">
-                    <i class="fe fe-print"></i> Print Details
+                <a href="#" class="btn btn-light text-dark d-none" 
+                    type="button" id="print_estimate_category" target="_blank">
+                        <i class="fe fe-print"></i> Print Details
                 </a>
                 <a href="#" class="btn ripple btn-warning text-dark d-none" type="button" id="print_estimate" target="_blank">
-                    <i class="fe fe-print"></i> Print Total
+                    <i class="fe fe-print"></i> Print Summary Total
                 </a>
                 <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
@@ -770,13 +771,17 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 <button class="btn ripple btn-danger previous d-none" type="button" id="prev_page_order">
                     <i class="fe fe-hard-drive"></i> Previous
                 </button>
-                <a href="#" class="btn ripple btn-light text-dark d-none" type="button" id="print_order_category" target="_blank">
+                <a href="#" 
+                    class="btn btn-light" 
+                    style="color: #000 !important; background-color: #f8f9fa !important"
+                    type="button" 
+                    id="print_order_category" target="_blank">
                     <i class="fe fe-print"></i> Print Details
                 </a>
-                <a href="#" class="btn ripple btn-warning text-dark d-none" type="button" id="print_order" target="_blank">
+                <a href="#" class="btn btn-warning" style="color: #000 !important;" type="button" id="print_order" target="_blank">
                     <i class="fe fe-print"></i> Print Total
                 </a>
-                <a href="#" class="btn ripple btn-info d-none" type="button" id="print_deliver" target="_blank">
+                <a href="#" class="btn btn-info " type="button" id="print_deliver" target="_blank">
                     <i class="fe fe-print"></i> Print Delivery
                 </a>
             </div>
