@@ -392,24 +392,56 @@ if (isset($_REQUEST['query'])) {
                 </td>
                 <td class="text-center">
                     <a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'
-                        . mb_strimwidth(getColumnFromTable("product_grade", "product_grade", $row_product['grade']), 0, 30, '...') .
-                    '</a>
+                        . mb_strimwidth(
+                            getColumnFromTable(
+                                "product_grade",
+                                "product_grade",
+                                !empty($grade) ? $grade : $row_product['grade']
+                            ),
+                            0, 30, '...'
+                        ) . '
+                    </a>
                 </td>
+
                 <td class="text-center">
                     <a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'
-                        . mb_strimwidth(getColumnFromTable("product_gauge", "product_gauge", $row_product['gauge']), 0, 30, '...') .
-                    '</a>
+                        . mb_strimwidth(
+                            getColumnFromTable(
+                                "product_gauge",
+                                "product_gauge",
+                                !empty($gauge_id) ? $gauge_id : $row_product['gauge']
+                            ),
+                            0, 30, '...'
+                        ) . '
+                    </a>
                 </td>
+
                 <td class="text-center">
                     <a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'
-                        . mb_strimwidth(getColumnFromTable("product_type", "product_type", $row_product['product_type']), 0, 30, '...') .
-                    '</a>
+                        . mb_strimwidth(
+                            getColumnFromTable(
+                                "product_type",
+                                "product_type",
+                                !empty($type_id) ? $type_id : $row_product['product_type']
+                            ),
+                            0, 30, '...'
+                        ) . '
+                    </a>
                 </td>
+
                 <td class="text-center">
                     <a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'
-                        . mb_strimwidth(getColumnFromTable("profile_type", "profile_type", $row_product['profile']), 0, 30, '...') .
-                    '</a>
+                        . mb_strimwidth(
+                            getColumnFromTable(
+                                "profile_type",
+                                "profile_type",
+                                !empty($profile_id) ? $profile_id : $row_product['profile']
+                            ),
+                            0, 30, '...'
+                        ) . '
+                    </a>
                 </td>
+
                 <td>
                     <div class="d-flex justify-content-center align-items-center">'.$stock_text.'</div>
                 </td>

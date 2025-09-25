@@ -740,8 +740,20 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
 <div class="modal" id="viewAvailableColormodal">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div id="viewAvailableColormodalBody" class="modal-content modal-content-demo">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Available Colors</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="viewAvailableColormodalBody"></div>
+            </div>
             
+            <div class="modal-footer">
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
         </div>
     </div>
 </div>
@@ -4785,6 +4797,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     fetch_available: "fetch_available"
                 },
                 success: function(response) {
+                    console.log(response);
                     $('#viewAvailableColormodalBody').html(response);
                     $('#viewAvailableColormodal').modal('show');
                 },
