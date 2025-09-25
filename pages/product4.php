@@ -254,28 +254,6 @@ function showCol($name) {
 
                                         <div class="col-md-4 hidden-field d-none">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <label class="form-label">Product Line</label>
-                                                <a href="?page=product_line" target="_blank" class="text-decoration-none">Edit</a>
-                                            </div>
-                                            <div class="mb-3">
-                                            <select id="product_line" class="form-control add-category calculate select2" name="product_line[]" multiple>
-                                                <option value="" >Select Line...</option>
-                                                <?php
-                                                $query_roles = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
-                                                $result_roles = mysqli_query($conn, $query_roles);            
-                                                while ($row_product_line = mysqli_fetch_array($result_roles)) {
-                                                    $selected = (($row['product_line'] ?? '') == $row_product_line['product_line_id']) ? 'selected' : '';
-                                                ?>
-                                                    <option value="<?= $row_product_line['product_line_id'] ?>" data-category="<?= $row_product_line['product_category'] ?>" <?= $selected ?>><?= $row_product_line['product_line'] ?></option>
-                                                <?php   
-                                                }
-                                                ?>
-                                            </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-md-4 hidden-field d-none">
-                                            <div class="d-flex justify-content-between align-items-center">
                                                 <label class="form-label">Product Type</label>
                                                 <a href="?page=product_type" target="_blank" class="text-decoration-none">Edit</a>
                                             </div>
