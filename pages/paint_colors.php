@@ -112,85 +112,116 @@ if ($permission === 'edit') {
               <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search">
               <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
           </div>
-          <div class="align-items-center">
-              <div class="position-relative w-100 px-1 mb-2">
-                  <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-category" data-filter="category" data-filter-name="Product Category">
-                      <option value="">All Categories</option>
-                      <optgroup label="Category">
-                          <?php
-                          $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                          $result_category = mysqli_query($conn, $query_category);
-                          while ($row_category = mysqli_fetch_array($result_category)) {
-                              $selected = ($category_id == $row_category['product_category_id']) ? 'selected' : '';
-                          ?>
-                              <option value="<?= $row_category['product_category'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
-                          <?php
-                          }
-                          ?>
-                      </optgroup>
-                  </select>
-              </div>
-              <div class="position-relative w-100 px-1 mb-2">
-                  <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-color-group" data-filter="color-group" data-filter-name="Color Group">
-                      <option value="">All Color Groups</option>
-                      <optgroup label="Color Groups">
-                          <?php
-                              $query_color_group = "
-                                  SELECT DISTINCT cgn.color_group_name_id, cgn.color_group_name 
-                                  FROM color_group_name cgn
-                                  INNER JOIN product_color pc ON cgn.color_group_name_id = pc.color
-                                  WHERE cgn.hidden = '0'
-                                  ORDER BY cgn.color_group_name
-                              ";
-
-                              $result_color_group = mysqli_query($conn, $query_color_group);
-                              while ($row_color_group = mysqli_fetch_array($result_color_group)) {
-                                  $selected = (($color_details['color_group'] ?? '') == $row_color_group['color_group_name_id']) ? 'selected' : '';
-                              ?>
-                                  <option value="<?= $row_color_group['color_group_name'] ?>" data-color-group="<?= $row_category['color_group_name'] ?>" <?= $selected ?>>
-                                      <?= $row_color_group['color_group_name'] ?>
-                                  </option>
-                              <?php
-                              }
-                              ?>
-                      </optgroup>
-                  </select>
-              </div>
-              <div class="position-relative w-100 px-1 mb-2">
-                  <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-provider" data-filter="provider" data-filter-name="Provider">
-                      <option value="">All Providers</option>
-                      <optgroup label="Provider">
-                          <?php
-                          $query_rows = "SELECT * FROM paint_providers";
-                          $result_rows = mysqli_query($conn, $query_rows);            
-                          while ($row_rows = mysqli_fetch_array($result_rows)) {
-                          $selected = ($row_rows['provider_id'] == ($color_details['provider_id'] ?? '')) ? 'selected' : '';
-                          ?>
-                              <option value="<?= $row_rows['provider_name'] ?>" data-provider="<?= $row_rows['provider_name'] ?>" <?= $selected ?>><?= $row_rows['provider_name'] ?></option>
-                          <?php   
-                          }
-                          ?>
-                      </optgroup>
-                  </select>
-              </div>
-              <div class="position-relative w-100 px-1 mb-2">
-                  <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-availability" data-filter="availability" data-filter-name="Product Availability">
-                      <option value="">All Availabilities</option>
-                      <optgroup label="Availability">
-                          <?php
-                          $query_availability = "SELECT * FROM product_availability";
-                          $result_availability = mysqli_query($conn, $query_availability);            
-                          while ($row_availability = mysqli_fetch_array($result_availability)) {
-                          $selected = ($row_availability['product_availability_id'] == ($color_details['stock_availability'] ?? '')) ? 'selected' : '';
-                          ?>
-                              <option value="<?= $row_availability['product_availability'] ?>" data-availability="<?= $row_availability['product_availability'] ?>" <?= $selected ?> ><?= $row_availability['product_availability'] ?></option>
-                          <?php   
-                          }
-                          ?>
-                      </optgroup>
-                  </select>
-              </div>
-          </div>
+            <div class="align-items-center">
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-category" data-filter="category" data-filter-name="Category">
+                        <option value="">All Categories</option>
+                        <optgroup label="Category">
+                            <?php
+                            $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                            $result_category = mysqli_query($conn, $query_category);
+                            while ($row_category = mysqli_fetch_array($result_category)) {
+                            ?>
+                                <option value="<?= $row_category['product_category_id'] ?>"><?= $row_category['product_category'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-profile" data-filter="profile" data-filter-name="Profile">
+                        <option value="">All Profiles</option>
+                        <optgroup label="Product Profiles">
+                            <?php
+                            $query_category = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1' ORDER BY `profile_type` ASC";
+                            $result_category = mysqli_query($conn, $query_category);
+                            while ($row_category = mysqli_fetch_array($result_category)) {
+                            ?>
+                                <option value="<?= $row_category['profile_type_id'] ?>"><?= $row_category['profile_type'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-color-group" data-filter="color-group" data-filter-name="Color Group">
+                        <option value="">All Color Groups</option>
+                        <optgroup label="Color Groups">
+                            <?php
+                                $query_color_group = "
+                                    SELECT * FROM product_color ORDER BY color_name ASC
+                                ";
+                                $result_color_group = mysqli_query($conn, $query_color_group);
+                                while ($row_color_group = mysqli_fetch_array($result_color_group)) {
+                                ?>
+                                    <option value="<?= $row_color_group['id'] ?>">
+                                        <?= $row_color_group['color_name'] ?>
+                                    </option>
+                                <?php
+                                }
+                                ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-grade" data-filter="grade" data-filter-name="Product Grade">
+                        <option value="">All Grades</option>
+                        <optgroup label="Product Grade">
+                            <?php
+                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
+                            $result_grade = mysqli_query($conn, $query_grade);
+                            while ($row_grade = mysqli_fetch_array($result_grade)) {
+                            ?>
+                                <option value="<?= $row_grade['product_grade_id'] ?>"><?= $row_grade['product_grade'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-gauge" data-filter="gauge" data-filter-name="Product Gauge">
+                        <option value="">All Gauges</option>
+                        <optgroup label="Product Gauges">
+                            <?php
+                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY product_gauge ASC";
+                                $result_gauge = mysqli_query($conn, $query_gauge);
+                                while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                ?>
+                                    <option value="<?= htmlspecialchars($row_gauge['product_gauge_id']) ?>"><?= htmlspecialchars($row_gauge['product_gauge']) ?></option>
+                                <?php
+                                }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-availability" data-filter="availability" data-filter-name="Product Availability">
+                        <option value="">All Availabilities</option>
+                        <optgroup label="Availability">
+                            <?php
+                            $query_availability = "SELECT * FROM product_availability";
+                            $result_availability = mysqli_query($conn, $query_availability);            
+                            while ($row_availability = mysqli_fetch_array($result_availability)) {
+                            $selected = ($row_availability['product_availability_id'] == ($color_details['stock_availability'] ?? '')) ? 'selected' : '';
+                            ?>
+                                <option value="<?= $row_availability['product_availability'] ?>" data-availability="<?= $row_availability['product_availability'] ?>" <?= $selected ?> ><?= $row_availability['product_availability'] ?></option>
+                            <?php   
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-status" data-filter="status" data-filter-name="Status">
+                        <option value="">All Availabilities</option>
+                        <option value="Assigned">Assigned</option>
+                        <option value="Pending">Pending</option>
+                    </select>
+                </div>
+            </div>
           <div class="px-3 mb-2"> 
               <input type="checkbox" id="toggleActive" checked> Show Active Only
           </div>
@@ -251,34 +282,33 @@ if ($permission === 'edit') {
 </div>
 
 <div class="modal fade" id="addColorModal" tabindex="-1" aria-labelledby="addColorModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
-      <div class="modal-content">
-          <div class="modal-header d-flex align-items-center">
-              <h4 class="modal-title" id="add-header">
-                  Add
-              </h4>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div class="card-body">
-              <form id="color_form" class="form-horizontal">
-                <div id="color_form_body">
-                </div>
-                <div class="form-actions modal-footer">
-                  <div class="card-body border-top ">
-                      <div class="row pt-2">
-                        <div class="col-6 text-start"></div>
-                        <div class="col-6 text-end">
-                          <button type="submit" class="btn btn-primary">Save</button>
-                        </div>
-                      </div>
-                  </div>
-                </div>
-              </form>
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="add-header">
+                    Add
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-          </div>
-      </div>
-  </div>
+            <div class="modal-body">
+                <form id="color_form" class="form-horizontal">
+                    <div id="color_form_body">
+
+                    </div>
+                    <div class="form-actions modal-footer">
+                        <div class="card-body border-top ">
+                            <div class="row pt-2">
+                                <div class="col-6 text-start"></div>
+                                <div class="col-6 text-end">
+                                <button type="submit" class="btn btn-primary">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade" id="downloadColorModal" tabindex="-1" aria-labelledby="downloadColorModalLabel" aria-hidden="true">
@@ -497,7 +527,7 @@ if ($permission === 'edit') {
           },
           success: function(response) {
             $('#color_form_body').html(response);
-            $(".select2").each(function () {
+            $(".select2-edit").each(function () {
                     $(this).select2({
                         width: '100%',
                         dropdownParent: $(this).parent()
@@ -783,25 +813,35 @@ if ($permission === 'edit') {
             });
         }
 
-        if (isActive) {
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                return $(table.row(dataIndex).node()).find('a .alert').text().trim() === 'Active';
-            });
-        }
-
         $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
             var row = $(table.row(dataIndex).node());
             var match = true;
 
             $('.filter-selection').each(function() {
-                var filterValue = $(this).val()?.toString().toLowerCase() || '';
-                var rowValue = row.data($(this).data('filter'))?.toString().toLowerCase() || '';
+                var filterValue = $(this).val();
+                if (!filterValue || filterValue === '/') return;
 
-                if (filterValue && filterValue !== '/') {
-                    if (!rowValue.includes(filterValue)) {
-                        match = false;
-                        return false;
+                var filterValues = Array.isArray(filterValue) ? filterValue : [filterValue];
+
+                var rawRowValue = row.data($(this).data('filter'));
+                var rowValues = [];
+
+                if (Array.isArray(rawRowValue)) {
+                    rowValues = rawRowValue.map(String);
+                } else if (rawRowValue !== undefined && rawRowValue !== null) {
+                    try {
+                        var parsed = JSON.parse(rawRowValue);
+                        rowValues = Array.isArray(parsed) ? parsed.map(String) : [String(parsed)];
+                    } catch (e) {
+                        rowValues = [String(rawRowValue)];
                     }
+                }
+
+                var hasMatch = filterValues.some(v => rowValues.includes(String(v)));
+
+                if (!hasMatch) {
+                    match = false;
+                    return false;
                 }
             });
 

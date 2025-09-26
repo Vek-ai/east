@@ -95,7 +95,7 @@ $permission = $_SESSION['permission'];
     <div class="card card-body">
         <div class="row">
             <div class="col-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
-                <button type="button" id="addProductModalLabel" class="btn btn-primary d-flex align-items-center view_color_btn" data-title="Add Color Group Multiplier" data-category="" data-id="0">
+                <button type="button" id="addProductModalLabel" class="btn btn-primary d-flex align-items-center view_color_btn" data-title="Add Color Group" data-category="" data-id="0">
                     <i class="ti ti-users text-white me-1 fs-5"></i> Add Color Group
                 </button>
                 <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
@@ -126,130 +126,7 @@ $permission = $_SESSION['permission'];
                 </div>
                 <form id="colorForm" method="POST" class="form-horizontal" enctype="multipart/form-data">
                     <div id="color_details_sec" class="modal-body">
-                        <div class="card">
-                            <div class="card-body">
-                                <input type="hidden" id="form_id" name="id" class="form-control"/>
-
-                                <div class="card shadow-sm rounded-3 mb-3">
-                                    <div class="card-header bg-light border-bottom">
-                                        <h5 class="mb-0 fw-bold">Color Group Identifiers</h5>
-                                    </div>
-                                    <div class="card-body border rounded p-3">
-                                        <div class="row">
-                                            <div class="col-md-4 mb-3">
-                                                <label class="form-label">Color Group Name</label>
-                                                <input type="text" class="form-control" name="color_name" id="color_name" value="<?=$row['color_name'] ?? ''?>">
-                                            </div>
-                                            <div class="col-md-4"></div>
-                                            <div class="col-md-4">
-                                                <label class="form-label">Product Category</label>
-                                                <div class="mb-3">
-                                                    <select id="product_category" class="form-control select2-filter" name="product_category[]" multiple>
-                                                        <?php
-                                                        $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                                                        $result_roles = mysqli_query($conn, $query_roles);            
-                                                        while ($row_product_category = mysqli_fetch_array($result_roles)) {
-                                                        ?>
-                                                            <option value="<?= $row_product_category['product_category_id'] ?>"
-                                                                    data-category="<?= $row_product_category['product_category'] ?>"
-                                                                    data-filename="<?= $row_product_category['color_group_filename'] ?>"
-                                                            ><?= $row_product_category['product_category'] ?></option>
-                                                        <?php   
-                                                        }
-                                                        ?>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-4">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <label class="form-label">Product Grade</label>
-                                                    <a href="?page=product_grade" target="_blank" class="text-decoration-none">Edit</a>
-                                                </div>
-                                                <div class="mb-3">
-                                                <select id="product_grade" class="form-control select2-filter add-category" name="grade[]" multiple>
-                                                    <?php
-                                                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY product_grade";
-                                                    $result_grade = mysqli_query($conn, $query_grade);
-                                                    while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                                        $selected = (($row['product_grade'] ?? '') == $row_grade['product_grade_id']) ? 'selected' : '';
-                                                    ?>
-                                                        <option value="<?= $row_grade['product_grade_id'] ?>" data-category="<?= $row_grade['product_category'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
-                                                    <?php
-                                                    }
-                                                    ?>
-                                                </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <label class="form-label">Product Gauge</label>
-                                                        <a href="?page=product_gauge" target="_blank" class="text-decoration-none">Edit</a>
-                                                    </div>
-                                                    <select id="gauge" class="form-control select2-filter" name="gauge[]" multiple>
-                                                        <?php
-                                                        $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1'";
-                                                        $result_gauge = mysqli_query($conn, $query_gauge);
-
-                                                        $existing_gauges = [];
-
-                                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                                                            if (!in_array($row_gauge['product_gauge'], $existing_gauges)) {
-                                                                $existing_gauges[] = $row_gauge['product_gauge'];
-                                                                $selected = (($row['gauge'] ?? '') == $row_gauge['product_gauge_id']) ? 'selected' : '';
-                                                                ?>
-                                                                <option value="<?= htmlspecialchars($row_gauge['product_gauge_id']) ?>" 
-                                                                        data-multiplier="<?= htmlspecialchars($row_gauge['multiplier']) ?>" 
-                                                                        <?= $selected ?>>
-                                                                    <?= htmlspecialchars($row_gauge['product_gauge']) ?>
-                                                                </option>
-                                                                <?php
-                                                            }
-                                                        }
-                                                        ?>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <label class="form-label">Product Profile</label>
-                                                        <a href="?page=profile_type" target="_blank" class="text-decoration-none">Edit</a>
-                                                    </div>
-                                                    <select id="profile" class="form-control select2-filter add-category" name="profile[]" multiple>
-                                                        <?php
-                                                        $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1'";
-                                                        $result_profile_type = mysqli_query($conn, $query_profile_type);            
-                                                        while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
-                                                            $selected = ($row['profile'] == $row_profile_type['profile_type_id']) ? 'selected' : '';
-                                                                        ?>
-                                                            <option value="<?= $row_profile_type['profile_type_id'] ?>" data-category="<?= $row_profile_type['product_category'] ?>"  <?= $selected ?>><?= $row_profile_type['profile_type'] ?></option>
-                                                        <?php   
-                                                        }
-                                                        ?>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                 <div class="card shadow-sm rounded-3 mb-3">
-                                    <div class="card-header bg-light border-bottom">
-                                        <h5 class="mb-0 fw-bold">Color Group Pricing</h5>
-                                    </div>
-                                    <div class="card-body border rounded p-3">
-                                        <div class="row">
-                                            <div class="col-md-4 mb-3 panel-fields" data-id="7">
-                                                <label class="form-label">Multiplier Value</label>
-                                                <input type="text" class="form-control" name="multiplier" id="multiplier" value="<?=$row['multiplier'] ?? ''?>">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        
                     </div>
                     <div class="modal-footer">
                         <div class="form-actions">
@@ -336,11 +213,10 @@ $permission = $_SESSION['permission'];
                             <select class="form-select select2" id="select-download-class" name="category">
                                 <option value="">All Classifications</option>
                                 <optgroup label="Classifications">
-                                    <option value="product_system">Product System</option>
+                                    <option value="product_category">Product Category</option>
+                                    <option value="product_profile">Product Profile</option>
                                     <option value="product_gauge">Product Gauge</option>
                                     <option value="product_grade">Product Grade</option>
-                                    <option value="product_coating">Product Coating</option>
-                                    <option value="color_group_name">Color Group Name</option>
                                 </optgroup>
                             </select>
                         </div>
@@ -442,31 +318,15 @@ $permission = $_SESSION['permission'];
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-system" data-filter="system" data-filter-name="Product System">
-                            <option value="">All Product System</option>
-                            <optgroup label="Product Systems">
+                        <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-profile" data-filter="profile" data-filter-name="Profile">
+                            <option value="">All Profiles</option>
+                            <optgroup label="Product Profiles">
                                 <?php
-                                $query_system = "SELECT DISTINCT product_system FROM product_system WHERE hidden = '0' AND status = '1' ORDER BY `product_system` ASC";
-                                $result_system = mysqli_query($conn, $query_system);
-                                while ($row_system = mysqli_fetch_array($result_system)) {
+                                $query_category = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1' ORDER BY `profile_type` ASC";
+                                $result_category = mysqli_query($conn, $query_category);
+                                while ($row_category = mysqli_fetch_array($result_category)) {
                                 ?>
-                                    <option value="<?= $row_system['product_system'] ?>"><?= $row_system['product_system'] ?></option>
-                                <?php
-                                }
-                                ?>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-color-multiplier" data-filter="multiplier" data-filter-name="Color Multiplier">
-                            <option value="">All Color Multipliers</option>
-                            <optgroup label="Product Color Multipliers">
-                                <?php
-                                $query_color_mult = "SELECT * FROM color_multiplier WHERE hidden = '0' AND status = '1'";
-                                $result_color_mult = mysqli_query($conn, $query_color_mult);
-                                while ($row_color_mult = mysqli_fetch_array($result_color_mult)) {
-                                ?>
-                                    <option value="<?= $row_color_mult['id'] ?>"><?= $row_color_mult['color'] ?></option>
+                                    <option value="<?= $row_category['profile_type_id'] ?>"><?= $row_category['profile_type'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -478,11 +338,11 @@ $permission = $_SESSION['permission'];
                             <option value="">All Grades</option>
                             <optgroup label="Product Grade">
                                 <?php
-                                $query_grade = "SELECT DISTINCT product_grade FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
+                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                                 $result_grade = mysqli_query($conn, $query_grade);
                                 while ($row_grade = mysqli_fetch_array($result_grade)) {
                                 ?>
-                                    <option value="<?= $row_grade['product_grade'] ?>"><?= $row_grade['product_grade'] ?></option>
+                                    <option value="<?= $row_grade['product_grade_id'] ?>"><?= $row_grade['product_grade'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -494,32 +354,14 @@ $permission = $_SESSION['permission'];
                             <option value="">All Gauges</option>
                             <optgroup label="Product Gauges">
                                 <?php
-                                    $query_gauge = "SELECT DISTINCT product_gauge FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY product_gauge ASC";
+                                    $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY product_gauge ASC";
                                     $result_gauge = mysqli_query($conn, $query_gauge);
                                     while ($row_gauge = mysqli_fetch_array($result_gauge)) {
                                     ?>
-                                        <option value="<?= htmlspecialchars($row_gauge['product_gauge']) ?>"><?= htmlspecialchars($row_gauge['product_gauge']) ?></option>
+                                        <option value="<?= htmlspecialchars($row_gauge['product_gauge_id']) ?>"><?= htmlspecialchars($row_gauge['product_gauge']) ?></option>
                                     <?php
                                     }
                                 ?>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-coating" data-filter="coating" data-filter-name="Product Coating">
-                            <option value="">All Coatings</option>
-                            <optgroup label="Category">
-                                <option value="bare">Bare</option>
-                                <option value="painted">Painted</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-surface" data-filter="surface" data-filter-name="Surface">
-                            <option value="">All Surfaces</option>
-                            <optgroup label="Surfaces">
-                                <option value="textured">Textured</option>
-                                <option value="smooth">Smooth</option>
                             </optgroup>
                         </select>
                     </div>
@@ -554,13 +396,9 @@ $permission = $_SESSION['permission'];
                                 ?>
                                     <tr class="search-items" 
                                         data-category="<?= $row_prod_color['product_category'] ?>"
-                                        data-system="<?= getProductSystemName($row_prod_color['product_system']) ?>"
-                                        data-multiplier="<?= $row_prod_color['color_mult_id'] ?>"
-                                        data-availability="<?= $row_prod_color['availability'] ?>"
-                                        data-coating="<?= strtolower($row_prod_color['coating']) ?>"
-                                        data-surface="<?= strtolower($row_prod_color['surface']) ?>"
-                                        data-grade="<?= getGradeName($row_prod_color['grade']) ?>"
-                                        data-gauge="<?= getGaugeName($row_prod_color['gauge']) ?>"
+                                        data-profile="<?= $row_prod_color['profile'] ?>"
+                                        data-grade="<?= $row_prod_color['grade'] ?>"
+                                        data-gauge="<?= $row_prod_color['gauge'] ?>"
                                         >
                                         <td>
                                             <?= $row_prod_color['color_name'] ?>
@@ -611,8 +449,17 @@ $permission = $_SESSION['permission'];
                                                 <?php                                                    
                                                 if ($permission === 'edit') {
                                                 ?>
-                                                <a href="#" title="View" class="view_color_btn" data-title="Update Color Group Multiplier" data-category="<?= $row_prod_color['product_category'] ?>" data-id="<?= $row_prod_color['id'] ?>">
+                                                <a href="#" title="View" class="view_color_btn" data-title="View Color Group" data-category="<?= $row_prod_color['product_category'] ?>" data-id="<?= $row_prod_color['id'] ?>">
                                                     <i class="ti ti-eye fs-7"></i>
+                                                </a>
+                                                <a href="#" title="Edit" class="edit_color_btn" data-title="Edit Color Group" data-category="<?= $row_prod_color['product_category'] ?>" data-id="<?= $row_prod_color['id'] ?>">
+                                                    <i class="ti ti-pencil fs-7"></i>
+                                                </a>
+                                                <a href="#" title="Copy" class="copy_color_btn" data-id="<?= $row_prod_color['id'] ?>">
+                                                    <i class="ti ti-copy fs-7"></i>
+                                                </a>
+                                                <a href="#" title="Delete" class="delete_color_btn" data-id="<?= $row_prod_color['id'] ?>">
+                                                    <i class="ti ti-trash fs-7"></i>
                                                 </a>
                                                 <?php                                                    
                                                 }
@@ -638,6 +485,33 @@ $permission = $_SESSION['permission'];
 <script src="includes/pricing_data.js"></script>
 
 <script>
+    function toggleFormEditable(formId, enable = true, hideBorders = false, hideControls = false) {
+        const $form = $("#" + formId);
+        if ($form.length === 0) return;
+
+        $form.find("input, select, textarea").each(function () {
+            const $element = $(this);
+            if (enable) {
+                $element.removeAttr("readonly").removeAttr("disabled");
+                $element.css("border", hideBorders ? "none" : "");
+                $element.css("background-color", "");
+                if ($element.is("select")) {
+                    $element.removeClass("hide-dropdown");
+                }
+            } else {
+                $element.attr("readonly", true).attr("disabled", true);
+                $element.css("border", hideBorders ? "none" : "1px solid #ccc");
+                $element.css("background-color", "#f8f9fa");
+                if ($element.is("select")) {
+                    $element.addClass("hide-dropdown");
+                }
+            }
+        });
+
+        $(".toggleElements").each(function () {
+            $(this).toggleClass("d-none", !enable);
+        });
+    }
     
     $(document).ready(function() {
         document.title = "<?= $page_title ?>";
@@ -675,17 +549,141 @@ $permission = $_SESSION['permission'];
             $('#modal_title').html(title);
 
             var id = $(this).data('id') || '';
-            $('#form_id').val(id);
 
-            console.log($('#form_id').val())
-
-            var product_category = $(this).data('category') || '';
-            $('#product_category').val(product_category);
-
-            updateSearchCategory();
-
-            $('#colorGroupModal').modal('show');
+            $.ajax({
+                url: "pages/product_color_ajax.php",
+                type: "POST",
+                data: {
+                    action: "fetch_modal_edit",
+                    id: id
+                },
+                success: function(response) {
+                    $('#color_details_sec').html(response);
+                    $(".select2-edit").each(function () {
+                        $(this).select2({
+                            width: '100%',
+                            dropdownParent: $(this).parent()
+                        });
+                    });
+                    toggleFormEditable("colorForm", false, true);
+                    $('#colorGroupModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                }
+            });
         });
+
+        $(document).on('click', '.edit_color_btn', function(event) {
+            event.preventDefault();
+            var title = $(this).data('title');
+            $('#modal_title').html(title);
+
+            var id = $(this).data('id') || '';
+
+            $.ajax({
+                url: "pages/product_color_ajax.php",
+                type: "POST",
+                data: {
+                    action: "fetch_modal_edit",
+                    id: id
+                },
+                success: function(response) {
+                    $('#color_details_sec').html(response);
+                    $(".select2-edit").each(function () {
+                        $(this).select2({
+                            width: '100%',
+                            dropdownParent: $(this).parent()
+                        });
+                    });
+                    updateSearchCategory();
+                    toggleFormEditable("colorForm", true, false);
+                    $('#colorGroupModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                }
+            });
+        });
+
+        $(document).on('click', '.copy_color_btn', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id') || '';
+
+            if (!confirm("Are you sure you want to copy this color group?")) {
+                return;
+            }
+
+            $.ajax({
+                url: "pages/product_color_ajax.php",
+                type: "POST",
+                data: {
+                    action: "copy_color",
+                    id: id
+                },
+                success: function(response) {
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Color Group updated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }  
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                }
+            });
+        });
+
+        $(document).on('click', '.delete_color_btn', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id') || '';
+
+            if (!confirm("Are you sure? \nDeleting this color group will remove it permanently.")) {
+                return;
+            }
+
+            $.ajax({
+                url: "pages/product_color_ajax.php",
+                type: "POST",
+                data: {
+                    action: "delete_color",
+                    id: id
+                },
+                success: function(response) {
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Color Group successfully copied.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }  
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                }
+            });
+        });
+
 
         $(document).on('submit', '#colorForm', function(event) {
             event.preventDefault(); 
@@ -883,10 +881,28 @@ $permission = $_SESSION['permission'];
                 var match = true;
 
                 $('.filter-selection').each(function() {
-                    var filterValue = $(this).val()?.toString() || '';
-                    var rowValue = row.data($(this).data('filter'))?.toString() || '';
+                    var filterValue = $(this).val();
+                    if (!filterValue || filterValue === '/') return;
 
-                    if (filterValue && filterValue !== '/' && rowValue !== filterValue) {
+                    var filterValues = Array.isArray(filterValue) ? filterValue : [filterValue];
+
+                    var rawRowValue = row.data($(this).data('filter'));
+                    var rowValues = [];
+
+                    if (Array.isArray(rawRowValue)) {
+                        rowValues = rawRowValue.map(String);
+                    } else if (rawRowValue !== undefined && rawRowValue !== null) {
+                        try {
+                            var parsed = JSON.parse(rawRowValue);
+                            rowValues = Array.isArray(parsed) ? parsed.map(String) : [String(parsed)];
+                        } catch (e) {
+                            rowValues = [String(rawRowValue)];
+                        }
+                    }
+
+                    var hasMatch = filterValues.some(v => rowValues.includes(String(v)));
+
+                    if (!hasMatch) {
                         match = false;
                         return false;
                     }
@@ -898,6 +914,7 @@ $permission = $_SESSION['permission'];
             table.draw();
             updateSelectedTags();
         }
+
 
         function updateSelectedTags() {
             var displayDiv = $('#selected-tags');

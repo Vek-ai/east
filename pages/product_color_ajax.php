@@ -93,6 +93,165 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
+    if ($action == "fetch_modal_edit") {
+        if (isset($_POST['id'])) {
+            $id = intval($_POST['id']);
+            $query = "SELECT * FROM product_color WHERE id = $id";
+            $result = mysqli_query($conn, $query);
+
+            if ($result && mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_assoc($result);
+            } else {
+                $row = [];
+            }
+        } else {
+            $row = [];
+        }
+        ?>
+        <div class="card">
+            <div class="card-body">
+                <input type="hidden" id="form_id" name="id" class="form-control" value="<?= $row['id'] ?? '' ?>"/>
+
+                <?php
+                $selected_categories = !empty($row['product_category']) ? json_decode($row['product_category'], true) : [];
+                $selected_grades     = !empty($row['grade']) ? json_decode($row['grade'], true) : [];
+                $selected_gauges     = !empty($row['gauge']) ? json_decode($row['gauge'], true) : [];
+                $selected_profiles   = !empty($row['profile']) ? json_decode($row['profile'], true) : [];
+
+                $selected_categories = is_array($selected_categories) ? $selected_categories : [];
+                $selected_grades     = is_array($selected_grades) ? $selected_grades : [];
+                $selected_gauges     = is_array($selected_gauges) ? $selected_gauges : [];
+                $selected_profiles   = is_array($selected_profiles) ? $selected_profiles : [];
+                ?>
+                <div class="card shadow-sm rounded-3 mb-3">
+                    <div class="card-header bg-light border-bottom">
+                        <h5 class="mb-0 fw-bold">Color Group Identifiers</h5>
+                    </div>
+                    <div class="card-body border rounded p-3">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Color Group Name</label>
+                                <input type="text" class="form-control" name="color_name" id="color_name" value="<?= $row['color_name'] ?? '' ?>">
+                            </div>
+
+                            <div class="col-md-4"></div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Product Category</label>
+                                <div class="mb-3">
+                                    <select id="product_category" class="form-control select2-edit" name="product_category[]" multiple>
+                                        <?php
+                                        $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                                        $result_roles = mysqli_query($conn, $query_roles);            
+                                        while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                                            $selected = in_array($row_product_category['product_category_id'], $selected_categories) ? 'selected' : '';
+                                            ?>
+                                            <option value="<?= $row_product_category['product_category_id'] ?>"
+                                                    data-category="<?= $row_product_category['product_category'] ?>"
+                                                    data-filename="<?= $row_product_category['color_group_filename'] ?>"
+                                                    <?= $selected ?>>
+                                                <?= $row_product_category['product_category'] ?>
+                                            </option>
+                                        <?php } ?>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label class="form-label">Product Grade</label>
+                                    <a href="?page=product_grade" target="_blank" class="text-decoration-none">Edit</a>
+                                </div>
+                                <div class="mb-3">
+                                    <select id="product_grade" class="form-control select2-edit add-category" name="grade[]" multiple>
+                                        <?php
+                                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY product_grade";
+                                        $result_grade = mysqli_query($conn, $query_grade);
+                                        while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                            $selected = in_array($row_grade['product_grade_id'], $selected_grades) ? 'selected' : '';
+                                            ?>
+                                            <option value="<?= $row_grade['product_grade_id'] ?>" 
+                                                    data-category="<?= $row_grade['product_category'] ?>" 
+                                                    <?= $selected ?>>
+                                                <?= $row_grade['product_grade'] ?>
+                                            </option>
+                                        <?php } ?>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="form-label">Product Gauge</label>
+                                        <a href="?page=product_gauge" target="_blank" class="text-decoration-none">Edit</a>
+                                    </div>
+                                    <select id="gauge" class="form-control select2-edit" name="gauge[]" multiple>
+                                        <?php
+                                        $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1'";
+                                        $result_gauge = mysqli_query($conn, $query_gauge);
+
+                                        $existing_gauges = [];
+                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            if (!in_array($row_gauge['product_gauge'], $existing_gauges)) {
+                                                $existing_gauges[] = $row_gauge['product_gauge'];
+                                                $selected = in_array($row_gauge['product_gauge_id'], $selected_gauges) ? 'selected' : '';
+                                                ?>
+                                                <option value="<?= htmlspecialchars($row_gauge['product_gauge_id']) ?>" 
+                                                        data-multiplier="<?= htmlspecialchars($row_gauge['multiplier']) ?>" 
+                                                        <?= $selected ?>>
+                                                    <?= htmlspecialchars($row_gauge['product_gauge']) ?>
+                                                </option>
+                                            <?php }
+                                        } ?>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="form-label">Product Profile</label>
+                                        <a href="?page=profile_type" target="_blank" class="text-decoration-none">Edit</a>
+                                    </div>
+                                    <select id="profile" class="form-control select2-edit add-category" name="profile[]" multiple>
+                                        <?php
+                                        $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1'";
+                                        $result_profile_type = mysqli_query($conn, $query_profile_type);            
+                                        while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
+                                            $selected = in_array($row_profile_type['profile_type_id'], $selected_profiles) ? 'selected' : '';
+                                            ?>
+                                            <option value="<?= $row_profile_type['profile_type_id'] ?>" 
+                                                    data-category="<?= $row_profile_type['product_category'] ?>"  
+                                                    <?= $selected ?>>
+                                                <?= $row_profile_type['profile_type'] ?>
+                                            </option>
+                                        <?php } ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm rounded-3 mb-3">
+                    <div class="card-header bg-light border-bottom">
+                        <h5 class="mb-0 fw-bold">Color Group Pricing</h5>
+                    </div>
+                    <div class="card-body border rounded p-3">
+                        <div class="row">
+                            <div class="col-md-4 mb-3 panel-fields" data-id="7">
+                                <label class="form-label">Multiplier Value</label>
+                                <input type="text" class="form-control" name="multiplier" id="multiplier" value="<?= $row['multiplier'] ?? '' ?>">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
     if ($action == "download_excel") {
         $includedColumns = array();
         $column_txt = '*';
@@ -100,17 +259,10 @@ if(isset($_REQUEST['action'])) {
         $includedColumns = [ 
             'id',
             'product_category',
-            'color',
-            'multiplier',
-            'product_system',
+            'profile',
+            'grade',
             'gauge',
-            'width',
-            'multiplier',
-            'price_per_sqft',
-            'calculated_markup',
-            'coating',
-            'coating_multiplier',
-            'width'
+            'multiplier'
         ];
 
         $column_txt = implode(', ', $includedColumns);
@@ -326,17 +478,10 @@ if(isset($_REQUEST['action'])) {
             $includedColumns = [ 
                 'id',
                 'product_category',
-                'color',
-                'multiplier',
-                'product_system',
+                'profile',
+                'grade',
                 'gauge',
-                'width',
-                'multiplier',
-                'price_per_sqft',
-                'calculated_markup',
-                'coating',
-                'coating_multiplier',
-                'width'
+                'multiplier'
             ];
     
             $columns = array_filter($columns, function ($col) use ($includedColumns) {
@@ -484,6 +629,54 @@ if(isset($_REQUEST['action'])) {
         unlink($filePath);
         exit;
     }
+
+    if ($action == "copy_color") {
+        $id = intval($_POST['id']);
+        $table = "product_color";
+
+        $cols = [];
+        $res = mysqli_query($conn, "SHOW COLUMNS FROM $table");
+        while ($row = mysqli_fetch_assoc($res)) {
+            if ($row['Key'] != 'PRI') {
+                $cols[] = $row['Field'];
+            }
+        }
+        $columns = implode(", ", $cols);
+        $selects = [];
+        foreach ($cols as $col) {
+            if ($col == 'color_name') {
+                $selects[] = "CONCAT('Copy - ', $col)";
+            } else {
+                $selects[] = $col;
+            }
+        }
+        $select = implode(", ", $selects);
+
+        $sql = "INSERT INTO $table ($columns) SELECT $select FROM $table WHERE id = $id";
+        $result = mysqli_query($conn, $sql);
+
+        if ($result) {
+            echo "success";
+        } else {
+            echo "Error: " . mysqli_error($conn);
+        }
+    }
+
+    if ($action == "delete_color") {
+        $id = intval($_POST['id']);
+        
+        $table = "product_color";
+
+        $sql = "DELETE FROM $table WHERE id = $id";
+        $result = mysqli_query($conn, $sql);
+
+        if ($result) {
+            echo "success_delete";
+        } else {
+            echo "Error: " . mysqli_error($conn);
+        }
+    }
+
     
     mysqli_close($conn);
 }

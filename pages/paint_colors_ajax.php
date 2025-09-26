@@ -12,34 +12,50 @@ if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-        $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
-        $color_name = mysqli_real_escape_string($conn, $_POST['color_name']);
-        $color_code = mysqli_real_escape_string($conn, $_POST['color_code']);
-        $color_group = mysqli_real_escape_string($conn, $_POST['color_group']);
-
-        $product_category = mysqli_real_escape_string($conn, json_encode(array_map('intval', $_POST['product_category'] ?? [])));
-        
-        $provider_id = mysqli_real_escape_string($conn, $_POST['provider']);
-        $ekm_color_code = mysqli_real_escape_string($conn, $_POST['ekm_color_code']);
-        $ekm_color_no = mysqli_real_escape_string($conn, $_POST['ekm_color_no']);
-        $ekm_paint_code = mysqli_real_escape_string($conn, $_POST['ekm_paint_code'] ?? '');
-        $color_abbreviation = mysqli_real_escape_string($conn, $_POST['color_abbreviation']);
-        $stock_availability = mysqli_real_escape_string($conn, $_POST['stock_availability']);
+        $color_id            = mysqli_real_escape_string($conn, $_POST['color_id']);
+        $color_name          = mysqli_real_escape_string($conn, $_POST['color_name'] ?? '');
+        $color_code          = mysqli_real_escape_string($conn, $_POST['color_code'] ?? '');
+        $color_group         = mysqli_real_escape_string($conn, $_POST['color_group'] ?? '');
+        $provider_id         = mysqli_real_escape_string($conn, $_POST['provider'] ?? '');
+        $ekm_color_code      = mysqli_real_escape_string($conn, $_POST['ekm_color_code'] ?? '');
+        $ekm_color_no        = mysqli_real_escape_string($conn, $_POST['ekm_color_no'] ?? '');
+        $ekm_paint_code      = mysqli_real_escape_string($conn, $_POST['ekm_paint_code'] ?? '');
+        $ekm_color_name      = mysqli_real_escape_string($conn, $_POST['ekm_color_name'] ?? '');
+        $color_abbreviation  = mysqli_real_escape_string($conn, $_POST['color_abbreviation'] ?? '');
+        $stock_availability  = mysqli_real_escape_string($conn, $_POST['stock_availability'] ?? '');
         $multiplier_category = mysqli_real_escape_string($conn, $_POST['multiplier_category'] ?? '');
-        $ranking = mysqli_real_escape_string($conn, $_POST['ranking'] ?? '');
-        $userid = mysqli_real_escape_string($conn, $_POST['userid']);
-    
+        $ranking             = mysqli_real_escape_string($conn, $_POST['ranking'] ?? '');
+        $userid              = mysqli_real_escape_string($conn, $_POST['userid']);
+        $use_ekm_color_name  = isset($_POST['use_ekm_color_name']) ? 1 : 0;
+
+        $product_category = mysqli_real_escape_string(
+            $conn, json_encode(array_map('intval', $_POST['product_category'] ?? []))
+        );
+        $grade = mysqli_real_escape_string(
+            $conn, json_encode(array_map('intval', $_POST['grade'] ?? []))
+        );
+        $gauge = mysqli_real_escape_string(
+            $conn, json_encode(array_map('intval', $_POST['gauge'] ?? []))
+        );
+        $profile = mysqli_real_escape_string(
+            $conn, json_encode(array_map('intval', $_POST['profile'] ?? []))
+        );
+
         $sql = "SELECT * FROM paint_colors WHERE color_id = '$color_id'";
         $result = mysqli_query($conn, $sql);
-    
+
         if (mysqli_num_rows($result) > 0) {
             $updateQuery = "UPDATE paint_colors SET 
                 color_name = '$color_name', 
                 color_code = '$color_code', 
                 ekm_color_no = '$ekm_color_no', 
                 ekm_paint_code = '$ekm_paint_code', 
+                ekm_color_name = '$ekm_color_name',
                 color_group = '$color_group', 
                 product_category = '$product_category', 
+                grade = '$grade',
+                gauge = '$gauge',
+                profile = '$profile',
                 provider_id = '$provider_id', 
                 last_edit = NOW(), 
                 edited_by = '$userid', 
@@ -47,123 +63,56 @@ if(isset($_REQUEST['action'])) {
                 color_abbreviation = '$color_abbreviation', 
                 stock_availability = '$stock_availability', 
                 multiplier_category = '$multiplier_category', 
-                ranking = '$ranking'  
+                ranking = '$ranking',
+                use_ekm_color_name = '$use_ekm_color_name'
                 WHERE color_id = '$color_id'";
-    
-            echo mysqli_query($conn, $updateQuery) ? "Paint color updated successfully." : "Error updating paint color: " . mysqli_error($conn);
+
+            echo mysqli_query($conn, $updateQuery) 
+                ? "Paint color updated successfully." 
+                : "Error updating paint color: " . mysqli_error($conn);
+
         } else {
+            // ✅ Insert
             $insertQuery = "INSERT INTO paint_colors 
-                (color_name, color_code, ekm_color_no, ekm_paint_code, color_group, product_category, provider_id, added_date, added_by, ekm_color_code, color_abbreviation, stock_availability, multiplier_category, ranking) 
+                (color_name, color_code, ekm_color_no, ekm_paint_code, ekm_color_name, color_group, product_category, grade, gauge, profile, provider_id, added_date, added_by, ekm_color_code, color_abbreviation, stock_availability, multiplier_category, ranking, use_ekm_color_name) 
                 VALUES 
-                ('$color_name', '$color_code', '$ekm_color_no', '$ekm_paint_code', '$color_group', '$product_category', '$provider_id', NOW(), '$userid', '$ekm_color_code', '$color_abbreviation', '$stock_availability', '$multiplier_category', '$ranking')";
-    
-            echo mysqli_query($conn, $insertQuery) ? "New paint color added successfully." : "Error adding paint color: " . mysqli_error($conn);
+                ('$color_name', '$color_code', '$ekm_color_no', '$ekm_paint_code', '$ekm_color_name', '$color_group', '$product_category', '$grade', '$gauge', '$profile', '$provider_id', NOW(), '$userid', '$ekm_color_code', '$color_abbreviation', '$stock_availability', '$multiplier_category', '$ranking', '$use_ekm_color_name')";
+
+            echo mysqli_query($conn, $insertQuery) 
+                ? "New paint color added successfully." 
+                : "Error adding paint color: " . mysqli_error($conn);
         }
-    }    
+    }
+   
 
     if ($action == "fetch_update_modal") {
         $color_id = mysqli_real_escape_string($conn, $_POST['id']);
         $color_details = getColorDetails($color_id);
-
-        $selected_categories = json_decode($color_details['product_category'] ?? '', true);
-        if (!is_array($selected_categories)) {
-            if ($selected_categories !== null) {
-                $selected_categories = [$selected_categories];
-            } else {
-                $selected_categories = [];
-            }
-        }
-        $selected_categories = array_map('intval', $selected_categories);
         ?>
         <input type="hidden" id="color_id" name="color_id" class="form-control" value="<?= $color_id ?>"/>
-        <div class="modal-body">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row pt-0">
-                        <div class="col-md-12">
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Paint Color Identifiers</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">EKM Color Name</label>
+                            <label class="form-label">Paint Color Name</label>
                             <input type="text" id="color_name" name="color_name" class="form-control"  value="<?= $color_details['color_name'] ?? '' ?>"/>
                         </div>
-                        </div>
-                        <div class="col-md-4">
+                    </div>
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label class="form-label">Hex Color Code</label>
                             <input type="color" id="color_code" name="color_code" class="form-control" value="<?= $color_details['color_code'] ?? '' ?>" />
                         </div>
-                        </div>
-                        <div class="col-md-4">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Provider</label>
                         <div class="mb-3">
-                            <label class="form-label">EKM Color Code</label>
-                            <input type="text" id="ekm_color_code" name="ekm_color_code" class="form-control" value="<?= $color_details['ekm_color_code'] ?? '' ?>" />
-                        </div>
-                        </div>
-                        <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label">EKM Color No</label>
-                            <input type="text" id="ekm_color_no" name="ekm_color_no" class="form-control" value="<?= $color_details['ekm_color_no'] ?? '' ?>" />
-                        </div>
-                        </div>
-                        <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label">Internal Color Scale Ranking</label>
-                            <input type="text" id="ranking" name="ranking" class="form-control" value="<?= $color_details['ranking'] ?? '' ?>" />
-                        </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Product Category</label>
-                            <div class="mb-3">
-                                <select id="product_category" class="form-control select2" name="product_category[]" multiple required>
-                                <?php
-                                $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                                $result_roles = mysqli_query($conn, $query_roles);
-                                while ($row_product_category = mysqli_fetch_array($result_roles)) {
-                                    $cat_id = intval($row_product_category['product_category_id']);
-                                    $selected = in_array($cat_id, $selected_categories) ? 'selected' : '';
-                                    ?>
-                                    <option value="<?= $cat_id ?>" <?= $selected ?>>
-                                        <?= htmlspecialchars($row_product_category['product_category']) ?>
-                                    </option>
-                                    <?php
-                                }
-                                ?>
-                            </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4 trim-field screw-fields panel-fields">
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <label class="form-label">Color Group</label>
-                                </div>
-                                <select id="color_group" class="form-control" name="color_group">
-                                    <option value="">Select Color Group...</option>
-                                    <?php
-                                    $query_color_group = "
-                                        SELECT DISTINCT cgn.color_group_name_id, cgn.color_group_name 
-                                        FROM color_group_name cgn
-                                        INNER JOIN product_color pc ON cgn.color_group_name_id = pc.color
-                                        WHERE cgn.hidden = '0'
-                                        ORDER BY cgn.color_group_name
-                                    ";
-
-                                    $result_color_group = mysqli_query($conn, $query_color_group);
-                                    while ($row_color_group = mysqli_fetch_array($result_color_group)) {
-                                        $selected = (($color_details['color_group'] ?? '') == $row_color_group['color_group_name_id']) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_color_group['color_group_name_id'] ?>" <?= $selected ?>>
-                                            <?= $row_color_group['color_group_name'] ?>
-                                        </option>
-                                    <?php
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label">Provider</label>
-                            <select id="provider" class="form-control" name="provider" required>
+                            <select id="provider" class="form-control select2-edit" name="provider" required>
                                 <option value="" >Select One...</option>
                                 <?php
                                 $query_rows = "SELECT * FROM paint_providers";
@@ -177,31 +126,190 @@ if(isset($_REQUEST['action'])) {
                                 ?>
                             </select>
                         </div>
-                        </div>
+                    </div>
 
-                        <div class="col-md-4">
+                    <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">Color Abbreviation</label>
-                            <input type="text" id="color_abbreviation" name="color_abbreviation" class="form-control" value="<?= $color_details['color_abbreviation'] ?? '' ?>" />
-                        </div>
-                        </div>
-                        <div class="col-md-4 opt_field" data-id="5">
-                            <label class="form-label">Availability</label>
-                            <div class="mb-3">
-                                <select id="stock_availability_add" class="form-control select2-add" name="stock_availability">
-                                    <option value="" >Select Availability...</option>
-                                    <?php
-                                    $query_availability = "SELECT * FROM product_availability";
-                                    $result_availability = mysqli_query($conn, $query_availability);            
-                                    while ($row_availability = mysqli_fetch_array($result_availability)) {
-                                    $selected = ($row_availability['product_availability_id'] == ($color_details['stock_availability'] ?? '')) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_availability['product_availability_id'] ?>" <?= $selected ?> ><?= $row_availability['product_availability'] ?></option>
-                                    <?php   
-                                    }
-                                    ?>
-                                </select>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-label">Color Group</label>
                             </div>
+                            <select id="color_group" class="form-control select2-edit" name="color_group">
+                                <option value="">Select Color Group...</option>
+                                <?php
+                                $query_color_group = "
+                                    SELECT * FROM product_color ORDER BY color_name ASC
+                                ";
+
+                                $result_color_group = mysqli_query($conn, $query_color_group);
+                                while ($row_color_group = mysqli_fetch_array($result_color_group)) {
+                                    $selected = (($color_details['color_group'] ?? '') == $row_color_group['id']) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_color_group['id'] ?>" <?= $selected ?>>
+                                        <?= $row_color_group['color_name'] ?>
+                                    </option>
+                                <?php
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4"></div>
+
+                    <div class="col-md-4 text-center">
+                        <label for="use_ekm_color_name" class="form-label d-block">Use EKM Color Name</label>
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="use_ekm_color_name" 
+                            name="use_ekm_color_name"
+                            value="1"
+                            <?= !empty($color_details['use_ekm_color_name']) && $color_details['use_ekm_color_name'] == 1 ? 'checked' : '' ?>>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">EKM Color Name</label>
+                            <input type="text" id="ekm_color_name" name="ekm_color_name" class="form-control"  value="<?= $color_details['ekm_color_name'] ?? '' ?>"/>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">EKM Color No</label>
+                            <input type="number" id="ekm_color_no" name="ekm_color_no" class="form-control" value="<?= $color_details['ekm_color_no'] ?? '' ?>" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <?php
+        $selected_categories = !empty($color_details['product_category']) ? json_decode($color_details['product_category'], true) : [];
+        $selected_grades     = !empty($color_details['grade']) ? json_decode($color_details['grade'], true) : [];
+        $selected_gauges     = !empty($color_details['gauge']) ? json_decode($color_details['gauge'], true) : [];
+        $selected_profiles   = !empty($color_details['profile']) ? json_decode($color_details['profile'], true) : [];
+
+        $selected_categories = is_array($selected_categories) ? $selected_categories : [];
+        $selected_grades     = is_array($selected_grades) ? $selected_grades : [];
+        $selected_gauges     = is_array($selected_gauges) ? $selected_gauges : [];
+        $selected_profiles   = is_array($selected_profiles) ? $selected_profiles : [];
+        ?>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Paint Color Availablity</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Availability</label>
+                        <div class="mb-3">
+                            <select id="stock_availability_add" class="form-control select2-edit" name="stock_availability">
+                                <option value="" >Select Availability...</option>
+                                <?php
+                                $query_availability = "SELECT * FROM product_availability";
+                                $result_availability = mysqli_query($conn, $query_availability);            
+                                while ($row_availability = mysqli_fetch_array($result_availability)) {
+                                $selected = ($row_availability['product_availability_id'] == ($color_details['stock_availability'] ?? '')) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_availability['product_availability_id'] ?>" <?= $selected ?> ><?= $row_availability['product_availability'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Product Category</label>
+                        <div class="mb-3">
+                            <select id="product_category" class="form-control select2-edit" name="product_category[]" multiple>
+                                <?php
+                                $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                                $result_roles = mysqli_query($conn, $query_roles);            
+                                while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                                    $selected = in_array($row_product_category['product_category_id'], $selected_categories) ? 'selected' : '';
+                                    ?>
+                                    <option value="<?= $row_product_category['product_category_id'] ?>"
+                                            data-category="<?= $row_product_category['product_category'] ?>"
+                                            data-filename="<?= $row_product_category['color_group_filename'] ?>"
+                                            <?= $selected ?>>
+                                        <?= $row_product_category['product_category'] ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Product Grade</label>
+                            <a href="?page=product_grade" target="_blank" class="text-decoration-none">Edit</a>
+                        </div>
+                        <div class="mb-3">
+                            <select id="product_grade" class="form-control select2-edit add-category" name="grade[]" multiple>
+                                <?php
+                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY product_grade";
+                                $result_grade = mysqli_query($conn, $query_grade);
+                                while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                    $selected = in_array($row_grade['product_grade_id'], $selected_grades) ? 'selected' : '';
+                                    ?>
+                                    <option value="<?= $row_grade['product_grade_id'] ?>" 
+                                            data-category="<?= $row_grade['product_category'] ?>" 
+                                            <?= $selected ?>>
+                                        <?= $row_grade['product_grade'] ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-label">Product Gauge</label>
+                                <a href="?page=product_gauge" target="_blank" class="text-decoration-none">Edit</a>
+                            </div>
+                            <select id="gauge" class="form-control select2-edit" name="gauge[]" multiple>
+                                <?php
+                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1'";
+                                $result_gauge = mysqli_query($conn, $query_gauge);
+
+                                $existing_gauges = [];
+                                while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                    if (!in_array($row_gauge['product_gauge'], $existing_gauges)) {
+                                        $existing_gauges[] = $row_gauge['product_gauge'];
+                                        $selected = in_array($row_gauge['product_gauge_id'], $selected_gauges) ? 'selected' : '';
+                                        ?>
+                                        <option value="<?= htmlspecialchars($row_gauge['product_gauge_id']) ?>" 
+                                                data-multiplier="<?= htmlspecialchars($row_gauge['multiplier']) ?>" 
+                                                <?= $selected ?>>
+                                            <?= htmlspecialchars($row_gauge['product_gauge']) ?>
+                                        </option>
+                                    <?php }
+                                } ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-label">Product Profile</label>
+                                <a href="?page=profile_type" target="_blank" class="text-decoration-none">Edit</a>
+                            </div>
+                            <select id="profile" class="form-control select2-edit add-category" name="profile[]" multiple>
+                                <?php
+                                $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1'";
+                                $result_profile_type = mysqli_query($conn, $query_profile_type);            
+                                while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
+                                    $selected = in_array($row_profile_type['profile_type_id'], $selected_profiles) ? 'selected' : '';
+                                    ?>
+                                    <option value="<?= $row_profile_type['profile_type_id'] ?>" 
+                                            data-category="<?= $row_profile_type['product_category'] ?>"  
+                                            <?= $selected ?>>
+                                        <?= $row_profile_type['profile_type'] ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
                         </div>
                     </div>
                 </div>
