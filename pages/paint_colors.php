@@ -114,7 +114,7 @@ if ($permission === 'edit') {
           </div>
             <div class="align-items-center">
                 <div class="position-relative w-100 px-1 mb-2">
-                    <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-category" data-filter="category" data-filter-name="Category">
+                    <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-category" data-filter="category" data-filter-name="Category">
                         <option value="">All Categories</option>
                         <optgroup label="Category">
                             <?php
@@ -130,7 +130,7 @@ if ($permission === 'edit') {
                     </select>
                 </div>
                 <div class="position-relative w-100 px-1 mb-2">
-                    <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-profile" data-filter="profile" data-filter-name="Profile">
+                    <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-profile" data-filter="profile" data-filter-name="Profile">
                         <option value="">All Profiles</option>
                         <optgroup label="Product Profiles">
                             <?php
@@ -166,7 +166,7 @@ if ($permission === 'edit') {
                     </select>
                 </div>
                 <div class="position-relative w-100 px-1 mb-2">
-                    <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-grade" data-filter="grade" data-filter-name="Product Grade">
+                    <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-grade" data-filter="grade" data-filter-name="Product Grade">
                         <option value="">All Grades</option>
                         <optgroup label="Product Grade">
                             <?php
@@ -182,7 +182,7 @@ if ($permission === 'edit') {
                     </select>
                 </div>
                 <div class="position-relative w-100 px-1 mb-2">
-                    <select class="form-control search-chat py-0 ps-5 select2-filter filter-selection" id="select-gauge" data-filter="gauge" data-filter-name="Product Gauge">
+                    <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-gauge" data-filter="gauge" data-filter-name="Product Gauge">
                         <option value="">All Gauges</option>
                         <optgroup label="Product Gauges">
                             <?php
@@ -216,14 +216,14 @@ if ($permission === 'edit') {
                 </div>
                 <div class="position-relative w-100 px-1 mb-2">
                     <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-status" data-filter="status" data-filter-name="Status">
-                        <option value="">All Availabilities</option>
+                        <option value="">All Status</option>
                         <option value="Assigned">Assigned</option>
                         <option value="Pending">Pending</option>
                     </select>
                 </div>
             </div>
           <div class="px-3 mb-2"> 
-              <input type="checkbox" id="toggleActive" checked> Show Active Only
+              <input type="checkbox" id="toggleActive" checked> Show Pending Only
           </div>
       </div>
       <div class="col-9">
@@ -237,17 +237,22 @@ if ($permission === 'edit') {
                 <div class="table-responsive">
                   <table id="display_paint_colors" class="table table-striped table-bordered text-wrap align-middle">
                     <thead>
-                      <tr>
-                        <th>EKM Color Name</th>
-                        <th>Hex Color Code</th>
-                        <th>Color Group</th>
-                        <th>Provider</th>
-                        <th>Category</th>
-                        <th>Availability</th>
-                        <th>Details</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
+                        <tr>
+                            <th>Paint Color Name</th>
+                            <th>Hex Color Code</th>
+                            <th>EKM Color Name</th>
+                            <th>Color Group</th>
+                            <th>EKM Color No</th>
+                            <th>Provider</th>
+                            <th>Availability</th>
+                            <th>Category</th>
+                            <th>Profile</th>
+                            <th>Grade</th>
+                            <th>Gauge</th>
+                            <th>Last Edit</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
                     </thead>
                     <tbody>
                     
@@ -438,6 +443,34 @@ if ($permission === 'edit') {
 </div>
 
 <script>
+function toggleFormEditable(formId, enable = true, hideBorders = false) {
+    const $form = $("#" + formId);
+    if ($form.length === 0) return;
+
+    $form.find("input, select, textarea").each(function () {
+        const $element = $(this);
+        if (enable) {
+            $element.removeAttr("readonly").removeAttr("disabled");
+            $element.css("border", hideBorders ? "none" : "");
+            $element.css("background-color", "");
+            if ($element.is("select")) {
+                $element.removeClass("hide-dropdown");
+            }
+        } else {
+            $element.attr("readonly", true).attr("disabled", true);
+            $element.css("border", hideBorders ? "none" : "1px solid #ccc");
+            $element.css("background-color", "#f8f9fa");
+            if ($element.is("select")) {
+                $element.addClass("hide-dropdown");
+            }
+        }
+    });
+
+    $form.find("button[type='submit'], input[type='submit']").toggle(enable);
+
+    $(".toggleElements").toggleClass("d-none", !enable);
+}
+
   $(document).ready(function() {
     document.title = "Paint Colors";
 
@@ -451,24 +484,28 @@ if ($permission === 'edit') {
         columns: [
             { data: 'color_name' },
             { data: 'color_code' },
+            { data: 'ekm_color_name' },
             { data: 'color_group' },
+            { data: 'ekm_color_no' },
             { data: 'provider' },
-            { data: 'product_category_name' },
             { data: 'availability' },
+            { data: 'product_category_names' },
+            { data: 'product_profile_names' },
+            { data: 'product_grade_names' },
+            { data: 'product_gauge_names' },
             { data: 'last_edit' },
             { data: 'status_html' },
             { data: 'action_html' }
         ],
         createdRow: function (row, data, dataIndex) {
-            $(row).attr('data-category', data.product_category_name);
-            $(row).attr('data-color-group', data.color_group);
-            $(row).attr('data-provider', data.provider);
-            $(row).attr('data-availability', data.availability);
+            $(row).attr('data-category', data.product_category || '');
+            $(row).attr('data-profile', data.profile || '');
+            $(row).attr('data-grade', data.grade || '');
+            $(row).attr('data-gauge', data.gauge || '');
+            $(row).attr('data-color-group', data.color_group || '');
+            $(row).attr('data-availability', data.availability || '');
+            $(row).attr('data-status', data.status || '');
         }
-    });
-
-    table.on('xhr', function (e, settings, json, xhr) {
-        console.log('Raw XHR response text:', xhr.responseText);
     });
 
     $('#display_paint_colors_filter').hide();
@@ -478,16 +515,6 @@ if ($permission === 'edit') {
             width: '100%',
             dropdownParent: $(this).parent()
         });
-    });
-    
-    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-        var status = $(table.row(dataIndex).node()).find('a .alert').text().trim();
-        var isActive = $('#toggleActive').is(':checked');
-
-        if (!isActive || status === 'Active') {
-            return true;
-        }
-        return false;
     });
 
     $('#toggleActive').on('change', function() {
@@ -514,6 +541,8 @@ if ($permission === 'edit') {
 
         if(type == 'edit'){
           $('#add-header').html('Update Paint Color');
+        }else if(type == 'view'){
+          $('#add-header').html('View Paint Color');
         }else{
           $('#add-header').html('Add Paint Color');
         }
@@ -528,11 +557,17 @@ if ($permission === 'edit') {
           success: function(response) {
             $('#color_form_body').html(response);
             $(".select2-edit").each(function () {
-                    $(this).select2({
-                        width: '100%',
-                        dropdownParent: $(this).parent()
-                    });
+                $(this).select2({
+                    width: '100%',
+                    dropdownParent: $(this).parent()
                 });
+            });
+
+            if(type == 'view'){
+                toggleFormEditable("color_form", false, true);
+            }else{
+                toggleFormEditable("color_form", true, false);
+            }
             $('#addColorModal').modal('show');
           },
           error: function (jqXHR, textStatus, errorThrown) {
@@ -813,6 +848,13 @@ if ($permission === 'edit') {
             });
         }
 
+        if (isActive) {
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                var rowData = table.row(dataIndex).data();
+                return rowData && rowData.status_assigned === "Pending";
+            });
+        }
+
         $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
             var row = $(table.row(dataIndex).node());
             var match = true;
@@ -923,5 +965,7 @@ if ($permission === 'edit') {
     }
 
     $(document).on('input change', '#text-srh, #toggleActive, .filter-selection', filterTable);
+
+    filterTable();
 });
 </script>

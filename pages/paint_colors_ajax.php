@@ -763,36 +763,61 @@ if(isset($_REQUEST['action'])) {
             } else {
                 $last_user_name = "";
             }
+
+            $last_edit = '';
+            if (!empty($row['last_edit'])) {
+                $dt = new DateTime($row['last_edit']);
+                $last_edit = $dt->format('d/m/Y');
+            }
     
-            $status_html = $row['color_status'] == '0'
-                ? "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-status='0'>
-                        <div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Inactive</div>
-                   </a>"
-                : "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-status='1'>
-                        <div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Active</div>
-                   </a>";
+            $status_html = "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-status='0'>
+                                <div id='status-alert$no' class='alert alert-warning bg-warning text-dark border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Inactive</div>
+                            </a>";
+            $status_assigned = 'Pending';
     
             $action_html = '';
             if ($permission === 'edit') {
-                $action_html = $row['color_status'] == '0'
-                    ? "<a href='javascript:void(0)' class='py-1 text-dark hidePaintColor' title='Archive' data-id='$no' data-row='$no' style='border-radius: 10%;'>
-                            <i class='text-danger ti ti-trash fs-7'></i>
-                    </a>"
-                    : "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='edit'>
+                $action_html .= "
+                    <a href='javascript:void(0)' id='addModalBtn' title='View' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='view'>
+                            <i class='ti ti-eye fs-7'></i>
+                    </a>
+                    <a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='edit'>
                             <i class='ti ti-pencil fs-7'></i>
+                    </a>
+                    <a href='javascript:void(0)' title='Copy' class='copy_color_btn ms-2' data-id='$no'>
+                        <i class='ti ti-copy fs-7'></i>
+                    </a>
+                    <a href='javascript:void(0)' title='Delete' class='delete_color_btn ms-2' data-id='$no'>
+                        <i class='ti ti-trash fs-7'></i>
                     </a>";
             }
+
+            $product_category_names = getColumnFromTable("product_category","product_category",$row['product_category']);
+            $product_profile_names = getColumnFromTable("profile_type","profile_type",$row['profile']);
+            $product_grade_names = getColumnFromTable("product_grade","product_grade",$row['grade']);
+            $product_gauge_names = getColumnFromTable("product_gauge","product_gauge",$row['gauge']);
     
             $data[] = [
                 'color_name' => $color_name,
                 'color_code' => $color_code,
+                'ekm_color_name' => $row['ekm_color_name'],
                 'color_group' => $color_group,
+                'ekm_color_no' => $row['ekm_color_no'],
                 'provider' => $provider,
-                'product_category_name' => $product_category,
                 'availability' => $availability,
-                'last_edit' => "Last Edited $last_edit by $last_user_name",
+                'product_category_names' => $product_category_names,
+                'product_profile_names' => $product_category_names,
+                'product_grade_names' => $product_grade_names,
+                'product_gauge_names' => $product_gauge_names,
+                'last_edit' => $last_edit,
+                'status' => $status_html,
                 'status_html' => $status_html,
-                'action_html' => $action_html
+                'action_html' => $action_html,
+                'product_category' => $row['product_category'],
+                'grade' => $row['grade'],
+                'gauge' => $row['gauge'],
+                'profile' => $row['profile'],
+                'status_assigned' => $status_assigned,
             ];
         }
     
