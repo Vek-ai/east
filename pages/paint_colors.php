@@ -95,6 +95,9 @@ if ($permission === 'edit') {
           <button type="button" id="uploadModalBtn" class="btn btn-primary d-flex align-items-center">
               <i class="ti ti-upload text-white me-1 fs-5"></i> Upload Colors
           </button>
+          <button type="button" id="assignColorModalBtn" class="btn btn-primary d-flex align-items-center">
+              <i class="ti ti-check text-white me-1 fs-5"></i> Assign Colors to Products
+          </button>
       </div>
     </div>
 </div>
@@ -217,8 +220,8 @@ if ($permission === 'edit') {
                 <div class="position-relative w-100 px-1 mb-2">
                     <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-status" data-filter="status" data-filter-name="Status">
                         <option value="">All Status</option>
-                        <option value="Assigned">Assigned</option>
-                        <option value="Pending">Pending</option>
+                        <option value="1">Assigned</option>
+                        <option value="0">Pending</option>
                     </select>
                 </div>
             </div>
@@ -238,6 +241,9 @@ if ($permission === 'edit') {
                   <table id="display_paint_colors" class="table table-striped table-bordered text-wrap align-middle">
                     <thead>
                         <tr>
+                            <th>
+                                <input type="checkbox" id="select-all">
+                            </th>
                             <th>Paint Color Name</th>
                             <th>Hex Color Code</th>
                             <th>EKM Color Name</th>
@@ -266,24 +272,52 @@ if ($permission === 'edit') {
   </div>
 </div>
 
-<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
-        <h4 id="responseHeader" class="m-0"></h4>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        
-        <p id="responseMsg"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
-          Close
-        </button>
-      </div>
+<div class="modal fade" id="assignColorModal" tabindex="-1" aria-labelledby="assignColorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="assignColorModalLabel">Assign Paint Colors</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form id="assignColorForm">
+                <div class="">
+                    <label for="select-category" class="form-label">Which Product Categories do you want to add the new Paint Color to?</label>
+                    <div class="mb-3">
+                        <select class="form-control search-chat py-0 ps-5 select2" id="assign-category" name="selectedCategories[]" multiple>
+                            <option value="">All Categories</option>
+                            <optgroup label="Category">
+                                <?php
+                                $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                                $result_category = mysqli_query($conn, $query_category);
+                                while ($row_category = mysqli_fetch_array($result_category)) {
+                                ?>
+                                    <option value="<?= $row_category['product_category_id'] ?>"><?= $row_category['product_category'] ?></option>
+                                <?php
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="select-datetime" class="form-label">When do you want the new Paint Colors added?</label>
+                    <input type="date" id="select-date" class="form-control" name="select_date">
+                </div>
+
+                <div class="mb-3">
+                    <label for="select-time" class="form-label">Select a Time:</label>
+                    <select id="select-time" class="form-control" name="select_time"></select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" form="assignColorForm" class="btn btn-primary">Assign</button>
+        </div>
+        </div>
     </div>
-  </div>
 </div>
 
 <div class="modal fade" id="addColorModal" tabindex="-1" aria-labelledby="addColorModalLabel" aria-hidden="true">
@@ -442,6 +476,26 @@ if ($permission === 'edit') {
   </div>
 </div>
 
+<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+        <h4 id="responseHeader" class="m-0"></h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        
+        <p id="responseMsg"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 function toggleFormEditable(formId, enable = true, hideBorders = false) {
     const $form = $("#" + formId);
@@ -471,17 +525,70 @@ function toggleFormEditable(formId, enable = true, hideBorders = false) {
     $(".toggleElements").toggleClass("d-none", !enable);
 }
 
-  $(document).ready(function() {
+function populateTimeSelect() {
+    const $timeSelect = $('#select-time');
+    $timeSelect.empty();
+
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    let closestOption = null;
+    let smallestDiff = Infinity;
+
+    for (let h = 0; h < 24; h++) {
+        for (let m = 0; m < 60; m += 30) {
+            const totalMinutes = h * 60 + m;
+            const diff = Math.abs(totalMinutes - currentMinutes);
+
+            const hourStr = h.toString().padStart(2, '0');
+            const minStr = m.toString().padStart(2, '0');
+            const ampm = h < 12 ? 'AM' : 'PM';
+            const displayHour = h % 12 === 0 ? 12 : h % 12;
+
+            const optionText = `${displayHour}:${minStr} ${ampm}`;
+            const optionValue = `${hourStr}:${minStr}`;
+
+            const $option = $('<option>', { value: optionValue, text: optionText });
+            $timeSelect.append($option);
+
+            if (diff < smallestDiff) {
+                smallestDiff = diff;
+                closestOption = optionValue;
+            }
+        }
+    }
+
+    $timeSelect.val(closestOption);
+}
+
+$(document).ready(function() {
     document.title = "Paint Colors";
+
+    var selectedIds = new Set();
 
     var table = $('#display_paint_colors').DataTable({
         pageLength: 100,
         ajax: {
             url: 'pages/paint_colors_ajax.php',
             type: 'POST',
-            data: { action: 'fetch_table' }
+            data: { action: 'fetch_table' },
+            error: function(xhr, status, error) {
+                console.error("XHR Error:", error);
+                console.log("Status:", status);
+                console.log("Raw Response Text:", xhr.responseText);
+                alert("AJAX error occurred. Check console for details.");
+            }
         },
         columns: [
+            {
+                data: 'color_id',
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    const checked = selectedIds.has(data) ? 'checked' : '';
+                    return '<input type="checkbox" class="row-checkbox" data-id="' + data + '" ' + checked + '>';
+                }
+            },
             { data: 'color_name' },
             { data: 'color_code' },
             { data: 'ekm_color_name' },
@@ -504,9 +611,57 @@ function toggleFormEditable(formId, enable = true, hideBorders = false) {
             $(row).attr('data-gauge', data.gauge || '');
             $(row).attr('data-color-group', data.color_group || '');
             $(row).attr('data-availability', data.availability || '');
-            $(row).attr('data-status', data.status || '');
+            $(row).attr('data-status', data.status_assigned || '');
         }
     });
+
+    $('#display_paint_colors').on('change', '.row-checkbox', function () {
+        const id = $(this).data('id');
+        if (this.checked) {
+            selectedIds.add(id);
+        } else {
+            selectedIds.delete(id);
+        }
+        updateSelectAllCheckbox();
+
+                //console.log(selectedIds);
+    });
+
+    $('#select-all').on('change', function () {
+        const isChecked = this.checked;
+
+        table.rows({ search: 'applied' }).every(function () {
+            const rowData = this.data();
+            const $checkbox = $(this.node()).find('.row-checkbox');
+
+            $checkbox.prop('checked', isChecked);
+
+            if (isChecked) {
+                selectedIds.add(rowData.color_id);
+            } else {
+                selectedIds.delete(rowData.color_id);
+            }
+        });
+    });
+
+    table.on('draw', function () {
+        updateSelectAllCheckbox();
+    });
+
+    function updateSelectAllCheckbox() {
+        var allVisibleRows = table.rows({ search: 'applied' }).data().toArray();
+        if (allVisibleRows.length === 0) {
+            $('#select-all').prop('checked', false).prop('indeterminate', false);
+            return;
+        }
+
+        var allSelected = allVisibleRows.every(row => selectedIds.has(row.color_id));
+        var someSelected = allVisibleRows.some(row => selectedIds.has(row.color_id));
+
+        $('#select-all')
+            .prop('checked', allSelected)
+            .prop('indeterminate', !allSelected && someSelected);
+    }
 
     $('#display_paint_colors_filter').hide();
 
@@ -840,34 +995,35 @@ function toggleFormEditable(formId, enable = true, hideBorders = false) {
         var textSearch = $('#text-srh').val().toLowerCase();
         var isActive = $('#toggleActive').is(':checked');
 
+        table.search(textSearch).draw();
+
         $.fn.dataTable.ext.search = [];
 
         if (textSearch) {
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                return Object.values(data).join(' ').toLowerCase().includes(textSearch);
             });
         }
 
         if (isActive) {
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                var rowData = table.row(dataIndex).data();
-                return rowData && rowData.status_assigned === "Pending";
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                let rowNode = table.row(dataIndex).node();
+                let rowStatus = $(rowNode).attr("data-status");
+                return rowStatus == 0;
             });
         }
 
-        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            var row = $(table.row(dataIndex).node());
+        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
             var match = true;
-
-            $('.filter-selection').each(function() {
+            $('.filter-selection').each(function () {
                 var filterValue = $(this).val();
                 if (!filterValue || filterValue === '/') return;
 
                 var filterValues = Array.isArray(filterValue) ? filterValue : [filterValue];
+                var field = $(this).data('filter');
+                var rawRowValue = data[field];
 
-                var rawRowValue = row.data($(this).data('filter'));
                 var rowValues = [];
-
                 if (Array.isArray(rawRowValue)) {
                     rowValues = rawRowValue.map(String);
                 } else if (rawRowValue !== undefined && rawRowValue !== null) {
@@ -880,7 +1036,6 @@ function toggleFormEditable(formId, enable = true, hideBorders = false) {
                 }
 
                 var hasMatch = filterValues.some(v => rowValues.includes(String(v)));
-
                 if (!hasMatch) {
                     match = false;
                     return false;
@@ -890,9 +1045,10 @@ function toggleFormEditable(formId, enable = true, hideBorders = false) {
             return match;
         });
 
-        table.draw();
+        table.draw('page');
         updateSelectedTags();
     }
+
 
     function updateSearchCategory() {
         let selectedCategory = $('#select-category option:selected').data('category');
@@ -963,6 +1119,50 @@ function toggleFormEditable(formId, enable = true, hideBorders = false) {
             $(this).parent().remove();
         });
     }
+
+    $(document).on('click', '#assignColorModalBtn', function() {
+        $('#assignColorModal').modal('show');
+        populateTimeSelect();
+    });
+
+    $('#assignColorForm').on('submit', function(e) {
+        e.preventDefault();
+
+        var formData = new FormData(this);
+
+        formData.append('selectedIds', JSON.stringify(Array.from(selectedIds)));
+        formData.append('action', 'assign_color');
+
+        $.ajax({
+            url: 'pages/paint_colors_ajax.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                response = response.trim();
+                if(response === 'success'){
+                    $('#assignColorModal').modal('hide');
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("Colors assigned successfully.");
+                    $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                    $('#response-modal').modal("show");
+                } else {
+                    $('#responseHeader').text("Failed");
+                    $('#responseMsg').text(response);
+                    $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', error);
+                $('#responseHeader').text("Error");
+                $('#responseMsg').text("An error occurred while processing your request.");
+                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                $('#response-modal').modal("show");
+            }
+        });
+    });
 
     $(document).on('input change', '#text-srh, #toggleActive, .filter-selection', filterTable);
 

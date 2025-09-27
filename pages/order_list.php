@@ -593,7 +593,7 @@ function showCol($name) {
                                                     }
                                                     ?>
 
-                                                    <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
+                                                    <a href="print_work_order.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
                                                         <i class="text-success fa fa-print fs-5"></i>
                                                     </a>
 
@@ -1143,7 +1143,7 @@ function showCol($name) {
             const pricing_id = $(this).data('id');
             const $iframe = $('#pdfFrame');
 
-            const baseUrl = 'print_order_product.php';
+            const baseUrl = 'print_work_order.php';
             const params = new URLSearchParams();
             params.set('id', print_order_id);
             params.set('pricing_id', pricing_id);

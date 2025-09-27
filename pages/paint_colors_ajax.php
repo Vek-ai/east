@@ -733,10 +733,21 @@ if(isset($_REQUEST['action'])) {
         $permission = $_SESSION['permission'];
         $query = "SELECT * FROM paint_colors WHERE hidden = 0";
         $result = mysqli_query($conn, $query);
+
+        $assignedColors = [];
+        $res = mysqli_query($conn, "SELECT DISTINCT color_id FROM product_color_assign");
+        while($r = mysqli_fetch_assoc($res)) {
+            $assignedColors[$r['color_id']] = true;
+        }
     
         $data = [];
         while ($row = mysqli_fetch_assoc($result)) {
             $no = $row['color_id'];
+
+            $isAssigned = isset($assignedColors[$no]);
+
+            
+
             $color_name = $row['color_name'];
             $color_code = $row['color_code'];
             $color_group = getColorGroupName($row['color_group']);
@@ -770,10 +781,14 @@ if(isset($_REQUEST['action'])) {
                 $last_edit = $dt->format('d/m/Y');
             }
     
-            $status_html = "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-status='0'>
-                                <div id='status-alert$no' class='alert alert-warning bg-warning text-dark border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Inactive</div>
-                            </a>";
-            $status_assigned = 'Pending';
+            if ($isAssigned) {
+                $status_html = "<div class='alert alert-success border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Assigned</div>";
+                $status_assigned = 1;
+            } else {
+                $status_html = "<div class='alert alert-warning border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Pending</div>";
+                $status_assigned = 0;
+            }
+
     
             $action_html = '';
             if ($permission === 'edit') {
@@ -798,6 +813,7 @@ if(isset($_REQUEST['action'])) {
             $product_gauge_names = getColumnFromTable("product_gauge","product_gauge",$row['gauge']);
     
             $data[] = [
+                'color_id' => $no,
                 'color_name' => $color_name,
                 'color_code' => $color_code,
                 'ekm_color_name' => $row['ekm_color_name'],
@@ -824,6 +840,64 @@ if(isset($_REQUEST['action'])) {
         echo json_encode(['data' => $data]);
         exit;
     }
+
+    if ($action == "assign_color") {
+        $assignedBy = $_SESSION['userid']; 
+
+        $selectedCategories = $_POST['selectedCategories'] ?? [];
+        $selectedDate = $_POST['select_date'] ?? '';
+        $selectedTime = $_POST['select_time'] ?? '';
+        $selectedColors = json_decode($_POST['selectedIds'], true);
+
+        if (empty($selectedCategories)) {
+            echo 'Please select categories first';
+            exit;
+        }
+
+        if (empty($selectedColors)) {
+            echo 'Please select colors first';
+            exit;
+        }
+
+        if (!empty($selectedCategories) && !empty($selectedColors)) {
+            $categoryIds = is_array($selectedCategories) ? $selectedCategories : [$selectedCategories];
+            $escapedIds = array_map('intval', $categoryIds);
+            $idsList = implode(',', $escapedIds);
+
+            $query = "SELECT product_id FROM product 
+                    WHERE product_category IN ($idsList)
+                    AND hidden = 0 AND status = 1";
+
+            $result = mysqli_query($conn, $query);
+
+            $productIds = [];
+            while ($row = mysqli_fetch_assoc($result)) {
+                $productIds[] = intval($row['product_id']);
+            }
+
+            if (empty($productIds)) {
+                echo 'No products found for the selected category/categories';
+                exit;
+            }
+
+            foreach ($productIds as $productId) {
+                foreach ($selectedColors as $colorId) {
+                    $colorId = intval($colorId);
+                    $queryInsert = "INSERT INTO product_color_assign 
+                        (product_id, color_id, `date`, `time`, assigned_by) 
+                        VALUES ($productId, $colorId, '$selectedDate', '$selectedTime', $assignedBy)";
+                    
+                    mysqli_query($conn, $queryInsert);
+                }
+            }
+
+            echo 'success';
+        } else {
+            echo 'No categories or colors selected';
+        }
+    }
+
+
 
     mysqli_close($conn);
 }
