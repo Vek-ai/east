@@ -1009,14 +1009,59 @@ if (isset($_POST['save_order'])) {
     $deliver_state = mysqli_real_escape_string($conn, $_POST['deliver_state'] ?? '');
     $deliver_zip = mysqli_real_escape_string($conn, $_POST['deliver_zip'] ?? '');
     $delivery_amt = mysqli_real_escape_string($conn, $_POST['delivery_amt'] ?? '');
-    $deliver_fname = mysqli_real_escape_string($conn, $_POST['deliver_fname'] ?? '');
-    $deliver_lname = mysqli_real_escape_string($conn, $_POST['deliver_lname'] ?? '');
+    
+    
+
     $pay_type = mysqli_real_escape_string($conn, $_POST['payment_method'] ?? '');
-    $customer_tax = mysqli_real_escape_string($conn, $_POST['customer_tax'] ?? '');
     $contractor_id = mysqli_real_escape_string($conn, $_POST['contractor_id'] ?? '');
     $truck = intval($_POST['truck']);
 
-    if (!isset($_SESSION['customer_id']) || empty($_SESSION['cart'])) {
+    $deliver_fname = mysqli_real_escape_string($conn, $_POST['deliver_fname'] ?? '');
+    $deliver_lname = mysqli_real_escape_string($conn, $_POST['deliver_lname'] ?? '');
+    $deliver_phone = mysqli_real_escape_string($conn, $_POST['deliver_phone'] ?? '');
+    $deliver_email = mysqli_real_escape_string($conn, $_POST['deliver_email'] ?? '');
+    $customer_tax = mysqli_real_escape_string($conn, $_POST['customer_tax'] ?? '');
+    $tax_exempt_number = mysqli_real_escape_string($conn, $_POST['tax_exempt_number'] ?? '');
+    $isAddingCustomer = mysqli_real_escape_string($conn, $_POST['isAddingCustomer'] ?? 0);
+
+    $customer_id = $_SESSION['customer_id'] ?? null;
+
+    if (empty($customer_id)) {
+        if ($isAddingCustomer == 1) {
+            $sql = "INSERT INTO customer (
+                        customer_first_name, 
+                        customer_last_name, 
+                        contact_email, 
+                        contact_phone, 
+                        tax_status, 
+                        tax_exempt_number, 
+                        created_at
+                    ) VALUES (
+                        '$deliver_fname', 
+                        '$deliver_lname', 
+                        '$deliver_email', 
+                        '$deliver_phone', 
+                        '$customer_tax', 
+                        '$tax_exempt_number', 
+                        NOW()
+                    )";
+
+            if (mysqli_query($conn, $sql)) {
+                $customer_id = mysqli_insert_id($conn);
+                $_SESSION['customer_id'] = $customer_id;
+            } else {
+                $response['error'] = "Failed to add new customer: " . mysqli_error($conn);
+                echo json_encode($response);
+                exit;
+            }
+        } else {
+            $response['error'] = "Customer ID ($isAddingCustomer) is not set and not adding new customer.";
+            echo json_encode($response);
+            exit;
+        }
+    }
+
+    if (!isset($customer_id) || empty($_SESSION['cart'])) {
         $response['error'] = "Customer ID or cart is not set.";
         echo json_encode($response);
         exit;

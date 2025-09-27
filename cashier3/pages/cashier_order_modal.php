@@ -41,6 +41,15 @@ if(isset($_POST['fetch_order'])){
     $delivery_price = getDeliveryCost();
     ?>
     <style>
+        .select-readonly {
+            pointer-events: none;
+            background-color: transparent;
+            border: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+                    appearance: none;
+        }
+
         #truck {
             appearance: none;
             -webkit-appearance: none;
@@ -176,7 +185,7 @@ if(isset($_POST['fetch_order'])){
                 <label>Customer Name</label>
                 <div class="input-group">
                     <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
-                    <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
+                    <a class="input-group-text rounded-right m-0 p-0 toggle_add_customer" href="javascript:void(0)" target="_blank">
                         <span class="input-group-text"> + </span>
                     </a>
                 </div>
@@ -304,7 +313,7 @@ if(isset($_POST['fetch_order'])){
                         <?php 
                         if (!empty($_SESSION["customer_id"])) {
                             ?>
-                            <a href="#" id="toggle_edit_info" class="text-primary">Edit Info</a>
+                            <a href="#" class="text-primary toggle_edit_info">Edit Info</a>
                             <?php
                         }
                         ?>
@@ -334,62 +343,69 @@ if(isset($_POST['fetch_order'])){
                             </div>
                         </div>
 
-                        <div id="edit_contact_info" class="d-none">
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <label for="order_deliver_fname" class="form-label">First Name</label>
-                                    <input type="text" id="order_deliver_fname" class="form-control" value="<?= $customer_details['customer_first_name'] ?>" placeholder="First Name">
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="order_deliver_lname" class="form-label">Last Name</label>
-                                    <input type="text" id="order_deliver_lname" class="form-control" value="<?= $customer_details['customer_last_name'] ?>" placeholder="Last Name">
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <label for="order_deliver_phone" class="form-label">Contact Phone</label>
-                                    <input type="text" id="order_deliver_phone" class="form-control" value="<?= $customer_details['contact_phone'] ?>" placeholder="Contact Phone">
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="order_deliver_email" class="form-label">Contact Email</label>
-                                    <input type="text" id="order_deliver_email" class="form-control" value="<?= $customer_details['contact_email'] ?>" placeholder="Contact Email">
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <label for="customer_tax" class="form-label">Tax Status</label>
-                                    <div class="mb-2">
-                                        <select class="form-control py-0 ps-5 select2" id="customer_tax">
-                                            <option value="">All Tax Status</option>
-                                            <?php
-                                                $query_tax_status = "SELECT * FROM customer_tax WHERE status = 1 ORDER BY tax_status_desc ASC";
-                                                $result_tax_status = mysqli_query($conn, $query_tax_status);
-                                                while ($row_tax_status = mysqli_fetch_array($result_tax_status)) {
-                                                    $selected = ($row_tax_status['taxid'] == $tax_status) ? 'selected' : '';
-                                                    ?>
-                                                    <option value="<?= $row_tax_status['taxid'] ?>" <?= $selected ?>>
-                                                        (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?>
-                                                    </option>
-                                                    <?php
-                                                }
-                                            ?>
-                                        </select>
-                                    </div>
-
-                                </div>
-                                <div class="col-md-9">
-                                    <label class="form-label mb-1">Tax Exempt Number</label>
-                                    <div class="form-control-plaintext ms-3" id="tax_exempt_number"><?= $tax_exempt_number ?></div>
-                                </div>
-                            </div>
-                        </div>
+                        
                     </div>
 
                     <?php
                     }
                     ?>
+
+                    <div id="edit_contact_info" class="d-none card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label for="order_deliver_fname" class="form-label">First Name</label>
+                                <input type="text" id="order_deliver_fname" class="form-control" value="<?= $customer_details['customer_first_name'] ?>" placeholder="First Name">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="order_deliver_lname" class="form-label">Last Name</label>
+                                <input type="text" id="order_deliver_lname" class="form-control" value="<?= $customer_details['customer_last_name'] ?>" placeholder="Last Name">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label for="order_deliver_phone" class="form-label">Contact Phone</label>
+                                <input type="text" id="order_deliver_phone" class="form-control" value="<?= $customer_details['contact_phone'] ?>" placeholder="Contact Phone">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="order_deliver_email" class="form-label">Contact Email</label>
+                                <input type="text" id="order_deliver_email" class="form-control" value="<?= $customer_details['contact_email'] ?>" placeholder="Contact Email">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label for="customer_tax" class="form-label">Tax Status</label>
+                                <div class="mb-2">
+                                    <select class="form-control py-0 ps-5 select2" id="customer_tax">
+                                        <option value="">All Tax Status</option>
+                                        <?php
+                                            $query_tax_status = "SELECT * FROM customer_tax WHERE status = 1 ORDER BY tax_status_desc ASC";
+                                            $result_tax_status = mysqli_query($conn, $query_tax_status);
+                                            while ($row_tax_status = mysqli_fetch_array($result_tax_status)) {
+                                                $selected = ($row_tax_status['taxid'] == $tax_status) ? 'selected' : '';
+                                                ?>
+                                                <option value="<?= $row_tax_status['taxid'] ?>" <?= $selected ?>>
+                                                    (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?>
+                                                </option>
+                                                <?php
+                                            }
+                                        ?>
+                                    </select>
+                                </div>
+
+                            </div>
+                            <div class="col-md-3">
+                                <label for="tax_exempt_number" class="form-label">Tax Exempt Number</label>
+                                <input type="text" id="tax_exempt_number" name="tax_exempt_number" class="form-control" 
+                                    value="<?= htmlspecialchars($tax_exempt_number) ?>">
+                            </div>
+                        </div>
+                        <div class="col-md-12 text-end">
+                            <button type="button" id="addCustomerFinalize" class="btn btn-secondary mb-3 text-end">Add New Customer</button>            
+                        </div>
+                        
+                    </div>
                 </div>
 
                 <!-- Job Details -->
@@ -600,61 +616,49 @@ if(isset($_POST['fetch_order'])){
                         <div id="paymentOptions">
                             <label class="form-label fw-bold">Select Payment Method</label><br>
 
-                            <?php if (!empty($customer_details['payment_pickup'])): ?>
-                            <div class="form-check form-check-inline">
+                            <div class="form-check form-check-inline <?= empty($customer_details['payment_pickup']) ? 'd-none' : '' ?>">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payPickup" value="pickup">
                                 <label class="form-check-label" for="payPickup">
                                     <i class="fa-solid fa-store me-1"></i>Pay at Pick-Up
                                 </label>
                             </div>
-                            <?php endif; ?>
 
-                            <?php if (!empty($customer_details['payment_delivery'])): ?>
-                            <div class="form-check form-check-inline">
+                            <div class="form-check form-check-inline <?= empty($customer_details['payment_delivery']) ? 'd-none' : '' ?>">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payDelivery" value="delivery">
                                 <label class="form-check-label" for="payDelivery">
                                     <i class="fa-solid fa-truck me-1"></i>Pay at Delivery
                                 </label>
                             </div>
-                            <?php endif; ?>
 
-                            <?php if (!empty($customer_details['payment_cash'])): ?>
-                            <div class="form-check form-check-inline">
+                            <div class="form-check form-check-inline <?= empty($customer_details['payment_cash']) ? 'd-none' : '' ?>">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payCash" value="cash">
                                 <label class="form-check-label" for="payCash">
                                     <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
                                 </label>
                             </div>
-                            <?php endif; ?>
 
-                            <?php if (!empty($customer_details['payment_check'])): ?>
-                            <div class="form-check form-check-inline">
+                            <div class="form-check form-check-inline <?= empty($customer_details['payment_check']) ? 'd-none' : '' ?>">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payCheck" value="check">
                                 <label class="form-check-label" for="payCheck">
                                     <i class="fa-solid fa-file-invoice-dollar me-1"></i>Check
                                 </label>
                             </div>
-                            <?php endif; ?>
 
-                            <?php if (!empty($customer_details['payment_card'])): ?>
-                            <div class="form-check form-check-inline">
+                            <div class="form-check form-check-inline <?= empty($customer_details['payment_card']) ? 'd-none' : '' ?>">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payCard" value="card">
                                 <label class="form-check-label" for="payCard">
                                     <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
                                 </label>
                             </div>
-                            <?php endif; ?>
 
-                            <?php if (!empty($customer_details['charge_net_30'])): ?>
-                            <div class="form-check form-check-inline">
+                            <div class="form-check form-check-inline <?= empty($customer_details['charge_net_30']) ? 'd-none' : '' ?>">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payNet30" value="net30">
                                 <label class="form-check-label" for="payNet30">
                                     <i class="fa-solid fa-calendar-check me-1"></i>Charge Net 30
                                 </label>
                             </div>
-                            <?php endif; ?>
-
                         </div>
+
                     </div>
 
                     <?php if (floatval($customer_details['store_credit']) > 0): ?>
@@ -892,7 +896,41 @@ if(isset($_POST['fetch_order'])){
                 email: $('#order_deliver_email').val()
             };
 
-            $('#toggle_edit_info').on('click', function (e) {
+            $('.toggle_add_customer').on('click', function(e) {
+                e.preventDefault();
+
+                const $editForm = $('#edit_contact_info');
+                const $displayForm = $('#display_contact_info');
+                const $paymentOptions = $('#paymentOptions .form-check');
+
+                const isEditing = $editForm.hasClass('d-none');
+
+                $editForm.toggleClass('d-none', !isEditing);
+                $displayForm.toggleClass('d-none', isEditing);
+
+                $editForm.find('input').prop('readonly', !isEditing)
+                                    .toggleClass('form-control', isEditing)
+                                    .toggleClass('form-control-plaintext', !isEditing);
+
+                $editForm.find('select').each(function() {
+                    const $select = $(this);
+                    if (isEditing) {
+                        if ($select.data('readonly')) {
+                            $select.select2();
+                            $select.removeClass('select-readonly');
+                            $select.data('readonly', false);
+                        }
+                    } else {
+                        if (!$select.data('readonly')) {
+                            $select.select2('destroy');
+                            $select.addClass('select-readonly');
+                            $select.data('readonly', true);
+                        }
+                    }
+                });
+            });
+
+            $('.toggle_edit_info').on('click', function (e) {
                 e.preventDefault();
 
                 if ($(this).text() === 'Edit Info') {

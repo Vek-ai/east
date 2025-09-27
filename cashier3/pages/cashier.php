@@ -4291,6 +4291,42 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             $('#save_order').click();
         });  
 
+        var isAddingCustomer = 0;
+        $(document).on('click', '#addCustomerFinalize', function() {
+            const $editForm = $('#edit_contact_info');
+            const $btn = $(this);
+
+            const isActive = !$editForm.find('input').first().prop('readonly'); // true if already editable
+
+            isAddingCustomer = !isActive ? 0 : 1;
+
+            $editForm.find('input').prop('readonly', isActive)
+                                .toggleClass('form-control', !isActive)
+                                .toggleClass('form-control-plaintext', isActive);
+
+            $editForm.find('select').each(function() {
+                const $select = $(this);
+                if (isActive) {
+                    if (!$select.data('readonly')) {
+                        $select.select2('destroy');
+                        $select.addClass('select-readonly');
+                        $select.data('readonly', true);
+                    }
+                } else {
+                    if ($select.data('readonly')) {
+                        $select.select2();
+                        $select.removeClass('select-readonly');
+                        $select.data('readonly', false);
+                    }
+                }
+            });
+
+            $('#paymentOptions .form-check').toggleClass('d-none', !isActive);
+
+            $btn.text(isActive ? 'Add New Customer' : 'Change New Customer');
+        });
+
+
         $(document).on('click', '#save_order', function(event) {
             event.preventDefault();
             var discount = $('#order_discount').val();
@@ -4307,7 +4343,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var deliver_zip = $('#order_deliver_zip').val();
             var deliver_fname = $('#order_deliver_fname').val();
             var deliver_lname = $('#order_deliver_lname').val();
+            var deliver_phone = $('#order_deliver_phone').val();
+            var deliver_email = $('#order_deliver_email').val();
             var customer_tax = $('#customer_tax').val();
+            var tax_exempt_number = $('#tax_exempt_number').val();
             var contractor_id = $('#constructor_id').val();
             var applyStoreCredit = $('#applyStoreCredit').is(':checked') ? $('#applyStoreCredit').val() : 0;
             var applyJobDeposit = $('#pay_via_job_deposit').is(':checked') ? $('#pay_via_job_deposit').val() : 0;
@@ -4316,6 +4355,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
             if(payment_method){
+
+                console.log(isAddingCustomer);
+
                 $.ajax({
                     url: 'pages/cashier_ajax.php',
                     type: 'POST',
@@ -4334,7 +4376,11 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         deliver_zip: deliver_zip,
                         deliver_fname: deliver_fname,
                         deliver_lname: deliver_lname,
+                        deliver_phone: deliver_phone,
+                        deliver_email: deliver_email,
                         customer_tax: customer_tax,
+                        tax_exempt_number: tax_exempt_number,
+                        isAddingCustomer: isAddingCustomer,
                         applyStoreCredit: applyStoreCredit,
                         applyJobDeposit: applyJobDeposit,
                         payment_method: payment_method,
