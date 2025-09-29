@@ -1057,12 +1057,7 @@ function getEstimateTotals($estimateid) {
     $query = "
         SELECT 
             SUM(
-                actual_price * quantity *
-                CASE 
-                    WHEN custom_length > 0 OR custom_length2 > 0 
-                    THEN (custom_length + (custom_length2 / 12))
-                    ELSE 1
-                END
+                actual_price
             ) AS total_actual_price
         FROM 
             estimate_prod
@@ -1090,12 +1085,7 @@ function getEstimateTotalsDiscounted($estimateid) {
     $query = "
         SELECT 
             SUM(
-                discounted_price * quantity *
-                CASE 
-                    WHEN custom_length > 0 OR custom_length2 > 0 
-                    THEN (custom_length + (custom_length2 / 12))
-                    ELSE 1
-                END
+                discounted_price 
             ) AS total_discounted_price
         FROM 
             estimate_prod

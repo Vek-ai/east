@@ -24,6 +24,7 @@ $drawingData = [
 ];
 $jsonDrawing = json_encode($drawingData, JSON_UNESCAPED_UNICODE);
 $drawing_str = htmlspecialchars($jsonDrawing, ENT_QUOTES, 'UTF-8');
+
 if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $product_details = getProductDetails($id);
@@ -35,7 +36,7 @@ if(isset($_POST['fetch_modal'])){
             $category_id = $product_details['product_category'];
         ?>
         <input type="hidden" id="product_id" name="id" value="<?= $id ?>" />
-        <input type="hidden" id="product_price" name="price" value="<?= $product_details['unit_price'] ?>" />
+        <input type="hidden" id="trim_unit_price" name="price" value="<?= $product_details['unit_price'] ?>" />
         <input type="hidden" id="custom_multiplier_trim" name="custom_multiplier" value="<?= $custom_multiplier ?>" />
         <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
         <input type="hidden" id="is_custom_trim" name="is_custom" value="0" />
@@ -121,55 +122,79 @@ if(isset($_POST['fetch_modal'])){
             </div>
 
             <div class="col-12"><hr class="w-100"></div>
-            
-            <div class="col-6">
-                <div class="mb-3">
-                    <label class="form-label" for="trim_quantity">Quantity</label>
-                    <input type="number" id="trim_qty" name="quantity" class="form-control mb-1" value="1" placeholder="Enter Quantity">
+
+            <div class="row justify-content-center">
+                <div class="col-3 text-center">
+                    <label class="fs-4 fw-semibold">Quantity</label>
+                </div>
+                <div class="col-3 text-center">
+                    <label class="fs-4 fw-semibold">Length</label>
+                </div>
+                <div class="col-3 notes-col text-center d-none">
+                    <label class="fs-4 fw-semibold">Notes</label>
                 </div>
             </div>
-            <div class="col-6">
-                <div class="mb-3">
-                    <label class="form-label" for="trim_length">Length</label>
-                    <select id="trim_length_select" class="form-control mb-1">
-                        <option value="0" selected>Select length</option>
-                        <?php
-                        $lengths = getInventoryLengths($id);
 
+            <div class="quantity-length-row row justify-content-center mb-1">
+                <div class="col-3 col-6-md">
+                    <input type="number" name="quantity[]" 
+                        class="form-control mb-0 trim_qty" 
+                        value="" placeholder="Enter Quantity">
+                </div>
+
+                <div class="col-3 col-6-md">
+                    <select class="form-control mb-0 trim_length_select">
+                        <option value="0" selected>Select Length</option>
+                        <?php
+                        $lengths = getProductAvailableLengths($id);
                         foreach ($lengths as $entry) {
-                            $length = htmlspecialchars($entry['length']);
-                            $feet = htmlspecialchars($entry['feet']);
-                            $selected = ($feet == 1.0) ? 'selected' : '';
-                            echo "<option value=\"$feet\" $selected>$length</option>";
+                            $product_length = htmlspecialchars($entry['length']);
+                            $length_in_feet = htmlspecialchars($entry['feet']);
+                            $selected = ($length_in_feet == 1.0) ? 'selected' : '';
+                            echo "<option value=\"$length_in_feet\" $selected>$product_length</option>";
                         }
                         ?>
                     </select>
+                    <input type="hidden" name="length[]" class="form-control mb-0 trim_length">
+                </div>
 
-                    <input type="hidden" id="trim_length" name="length" class="form-control mb-1">
+                <div class="col-3 col-6-md notes-col d-none">
+                    <input type="text" name="notes[]" class="form-control mb-1" placeholder="Enter Notes">
                 </div>
             </div>
 
+
+            <div class="col-9 text-end">
+                <a href="javascript:void(0)" type="button" id="duplicateTrimFields" class="text-end" title="Add Another">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
 
             <div class="col-12">
                 <div class="product_cost_display">
                     <h5 class="text-center pt-3 fs-5 fw-bold">Product Cost: $<span id="trim_price"><?= number_format(0,2) ?></span></h5>
                 </div>
             </div>
-        </div>  
-        <div class="modal-footer d-flex justify-content-between align-items-center px-0">
-            <button
-                class="btn btn-warning ripple btn-secondary"
-                id="trim_draw"
-                data-drawing='<?= $drawing_str ?>'
-                type="button"
-            >                        
-                Modify Trim
-            </button> 
-            <div class="d-flex justify-content-center">
-                <button id="btnCustomChart" class="btn btn-warning ripple btn-secondary" type="button" data-category="<?= $category_id ?>">Trim Profile</button>
-            </div>
-            <div class="d-flex justify-content-end">
-                <button id="saveDrawing" class="btn btn-success" type="submit">Save</button>
+            <div class="modal-footer d-flex justify-content-between align-items-center px-0">
+                <div class="d-flex justify-content-center">
+                    <button type="button" class="btn btn-secondary" id="toggleNotes">Add Notes</button>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button
+                        class="btn btn-warning ripple btn-secondary"
+                        id="trim_draw"
+                        data-drawing='<?= $drawing_str ?>'
+                        type="button"
+                    >                        
+                        Modify Trim
+                    </button>                
+                </div>
+                <div class="d-flex justify-content-center d-none">
+                    <button id="btnCustomChart" class="btn btn-primary ripple" type="button" data-category="<?= $category_id ?>">View Trim Profile</button>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button id="saveDrawing" class="btn btn-success" type="submit">Save</button>
+                </div>
             </div>
         </div>
         <?php
@@ -225,6 +250,44 @@ if(isset($_POST['fetch_modal'])){
                 $(document).on('change', '#trim-color, #trim-grade, #trim-gauge', function() {
                     fetchCoilStock();
                 });
+
+                $(document).on("keydown", ".trim-length-select", function(e) {
+                    if (e.key === "Tab" && !e.shiftKey) {
+                        e.preventDefault();
+
+                        let $currentRow = $(this).closest(".quantity-length-row");
+                        let $nextRow = $currentRow.next(".quantity-length-row");
+
+                        if ($nextRow.length) {
+                            $nextRow.find(".trim-qty").focus().select();
+                        } else {
+                            $(".quantity-length-row").first().find(".trim-qty").focus().select();
+                        }
+                    }
+                });
+
+                $(document).on("change", ".trim-length-select", function() {
+                    let val = $(this).val();
+                    $(this).closest(".quantity-length-row").find(".trim-length").val(val);
+                });
+
+                function duplicateTrimRow() {
+                    let $newRow = $(".quantity-length-row").first().clone();
+
+                    $newRow.find(".trim_qty").val("");
+                    $newRow.find(".trim_length_select").prop("selectedIndex", 0);
+                    $newRow.find(".trim_length").val("");
+
+                    $(".quantity-length-row").last().after($newRow);
+                }
+
+                $('#duplicateTrimFields').on("click", function() {
+                    duplicateTrimRow();
+                });
+
+                for (let i = 0; i < 4; i++) {
+                    duplicateTrimRow();
+                }
             });
         </script>
 <?php

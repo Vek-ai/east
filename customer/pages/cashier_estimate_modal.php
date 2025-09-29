@@ -14,11 +14,13 @@ if(isset($_POST['fetch_estimate'])){
     $discount = 0;
     $tax = 0;
     $customer_details_pricing = 0;
-    $customer_id = $_SESSION['customer_id'];
-    $customer_details = getCustomerDetails($customer_id);
-    $discount = floatval(getCustomerDiscount($customer_id)) / 100;
-    $tax = floatval(getCustomerTax($customer_id)) / 100;
-    $customer_details_pricing = $customer_details['customer_pricing'];
+    if(isset($_SESSION['customer_id'])){
+        $customer_id = $_SESSION['customer_id'];
+        $customer_details = getCustomerDetails($customer_id);
+        $discount = floatval(getCustomerDiscount($customer_id)) / 100;
+        $tax = floatval(getCustomerTax($customer_id)) / 100;
+        $customer_details_pricing = $customer_details['customer_pricing'];
+    }
     $delivery_price = getDeliveryCost();
     ?>
     <style>
@@ -113,6 +115,9 @@ if(isset($_POST['fetch_estimate'])){
             <div class="form-group row align-items-center">
                 <div class="col-6">
                     <label>Customer Name: <?= get_customer_name($_SESSION["customer_id"]); ?></label>
+                    <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="customer_change_est">
+                        <i class="fe fe-reload"></i> Change
+                    </button>
                     <div class="mt-1"> 
                         <div id="defaultDeliverDetailsEst">
                             <span class="fw-bold">Address: <?= getCustomerAddress($_SESSION["customer_id"]) ?></span>
@@ -184,7 +189,25 @@ if(isset($_POST['fetch_estimate'])){
                 </div>
             </div>
 
-            <?php } ?>
+            <?php } else {?>
+            
+            <div class="form-group row align-items-center">
+                <div class="col-3">
+                    <label>Customer Name</label>
+                    <div class="input-group">
+                        <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_estimate">
+                        <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
+                            <span class="input-group-text"> + </span>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <span class="fw-bold">Credit Limit:</span><br>
+                    <span class="text-primary fw-bold ms-3">Credit Limit: $0.00</span>
+                </div>
+            </div>
+            
+        <?php } ?>
         </div>
         <input type='hidden' id='customer_id_estimate' name="customer_id"/>
         <div class="card-body datatables">
@@ -215,9 +238,8 @@ if(isset($_POST['fetch_estimate'])){
                                 $timestamp = time();
                                 $no = $timestamp . 1;
                                 $total_weight = 0;
-                                $cart = getCartDataByCustomerId($customer_id);
-                                if (!empty($cart)) {
-                                    foreach ($cart as $keys => $values) {
+                                if (!empty($_SESSION["cart"])) {
+                                    foreach ($_SESSION["cart"] as $keys => $values) {
                                         $data_id = $values["product_id"];
                                         $product = getProductDetails($data_id);
                                         $totalstockquantity = $values["quantity_ttl"] + $values["quantity_in_stock"];
@@ -378,7 +400,7 @@ if(isset($_POST['fetch_estimate'])){
                                                         ?>
                                                         <fieldset class="border p-1 position-relative">
                                                             <div class="input-group d-flex align-items-center">
-                                                                <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
+                                                                <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"]; ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                                                 <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
                                                             </div>
                                                         </fieldset>
@@ -401,10 +423,11 @@ if(isset($_POST['fetch_estimate'])){
                                                     <span class="mx-1 text-center mb-1">X</span>
                                                     <fieldset class="border p-1 position-relative">
                                                         <div class="input-group d-flex align-items-center">
-                                                            <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
+                                                            <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"]; ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                                             <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
                                                         </div>
                                                     </fieldset>
+                                                </div>
                                             </td>
                                             <?php
                                             }else{
@@ -412,7 +435,7 @@ if(isset($_POST['fetch_estimate'])){
                                             <td class="text-center">
                                                 <fieldset class="border p-1 position-relative">
                                                     <div class="input-group d-flex align-items-center">
-                                                        <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"] ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
+                                                        <input class="form-control pr-0 pl-1 mr-1" type="number" value="<?= $values["estimate_length"]; ?>" step="0.001" placeholder="FT" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLength(this)">
                                                         <input class="form-control pr-0 pl-1" type="number" value="<?= $values["estimate_length_inch"]; ?>" step="0.001" placeholder="IN" size="5" style="color:#ffffff;" data-line="<?php echo $values["line"]; ?>" data-id="<?php echo $data_id; ?>" onchange="updateEstimateLengthInch(this)">
                                                     </div>
                                                 </fieldset>
@@ -450,6 +473,8 @@ if(isset($_POST['fetch_estimate'])){
                                         $total_weight += $values["weight"] * $values["quantity_cart"];
                                     }
                                 }
+                                $_SESSION["total_quantity"] = $totalquantity;
+                                $_SESSION["grandtotal"] = $total;
                                 ?>
                             </tbody>
 
@@ -498,7 +523,7 @@ if(isset($_POST['fetch_estimate'])){
                                     <form>
                                         <div>
                                             <label>Total Items:</label>
-                                            <span id="total_items"><?= $totalquantity ?? '0' ?></span>
+                                            <span id="total_items"><?= $_SESSION["total_quantity"] ?? '0' ?></span>
                                         </div>
                                         <div class="form-group">
                                             <label>Discount (%)</label>
@@ -548,7 +573,7 @@ if(isset($_POST['fetch_estimate'])){
                                                 <tr>
                                                     <th class="text-right border-bottom">Delivery($)</th>
                                                     <td class="text-right border-bottom">
-                                                        <input type="number" id="est_delivery_amt" name="est_delivery_amt" value="<?= number_format(0, 2) ?>" class="text-right form-control" placeholder="Delivery Amount">
+                                                        <input type="number" id="est_delivery_amt" name="est_delivery_amt" value="0" class="text-right form-control" placeholder="Delivery Amount">
                                                     </td>
                                                 </tr>
                                                 <tr>
@@ -575,7 +600,81 @@ if(isset($_POST['fetch_estimate'])){
             </form>
         </div>
     <script>
+        function init_select_estimate(){
+            $("#customer_select_estimate").autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "pages/cashier_ajax.php",
+                        type: 'post',
+                        dataType: "json",
+                        data: {
+                            search_customer: request.term
+                        },
+                        success: function(data) {
+                            response(data);
+                        },
+                        error: function(xhr, status, error) {
+                            console.log("Error: " + xhr.responseText);
+                        }
+                    });
+                },
+                select: function(event, ui) {
+                    $('#customer_select_estimate').val(ui.item.label);
+                    $('#customer_id_estimate').val(ui.item.value);
+                    return false;
+                },
+                focus: function(event, ui) {
+                    $('#customer_select_estimate').val(ui.item.label);
+                    return false;
+                },
+                appendTo: "#view_estimate_modal", 
+                open: function() {
+                    $(".ui-autocomplete").css("z-index", 1050);
+                }
+            });
+        }
         $(document).ready(function() {
+            init_select_estimate();
+
+            $(document).on('change', '#customer_select_estimate', function(event) {
+                var customer_id = $('#customer_id_estimate').val();
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        customer_id: customer_id,
+                        change_customer: "change_customer"
+                    },
+                    success: function(response) {
+                        if (response.trim() == 'success') {
+                            loadEstimateContents();
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            });
+
+            $(document).on('click', '#customer_change_est', function(event) {
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: {
+                        unset_customer: "unset_customer"
+                    },
+                    success: function(response) { 
+                        loadEstimateContents();
+                        $('#next_page_est').removeClass("d-none");
+                        $('#prev_page_est').addClass("d-none");
+                        $('#save_estimate').addClass("d-none");
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            });
+
             $(document).on('click', '#cancel_change_address_est', function(event) {
                 loadEstimateContents();
             });
@@ -590,6 +689,8 @@ if(isset($_POST['fetch_estimate'])){
                 $('#est_deliver_state').val('');
                 $('#est_deliver_zip').val('');
             });
+            
+            
 
             $(document).on('change', '#est_delivery_amt', function() {
                 var product_cost = parseFloat($('#est_total_amt').text()) || 0;

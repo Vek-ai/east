@@ -8,12 +8,15 @@ require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
 if(isset($_POST['fetch_order_list'])){
+    $customerid = mysqli_real_escape_string($conn, $_POST['customer_id']);
+    $orderid = mysqli_real_escape_string($conn, $_POST['orderid']);
     ?>
         <div class="card-body datatables">
             <div class="product-details table-responsive text-nowrap">
                 <table id="order_list_tbl" class="table table-hover mb-0 text-md-nowrap">
                     <thead>
                         <tr>
+                            <th class="d-none">Product Name (Hidden)</th>
                             <th>Customer</th>
                             <th>Total Price</th>
                             <th>Discounted Price</th>
@@ -25,22 +28,50 @@ if(isset($_POST['fetch_order_list'])){
                     <tbody>
                         <?php 
 
-                        $query = "SELECT * FROM orders WHERE status = '1'";
+                        $query = "
+                            SELECT o.*, CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name
+                            FROM orders AS o
+                            LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
+                            WHERE 1 = 1 AND o.status != 6
+                        ";
+
+                        if (!empty($customerid) && $customer_name != 'All Customers') {
+                            $query .= " AND o.customerid = '$customerid' ";
+                        }
+
+                        if (!empty($orderid)) {
+                            $query .= " AND orderid = '$orderid' ";
+                        }
+
+                        $query .= " ORDER BY o.order_date DESC";
+
                         $result = mysqli_query($conn, $query);
                     
                         if ($result && mysqli_num_rows($result) > 0) {
                             $response = array();
                             while ($row = mysqli_fetch_assoc($result)) {
+                                $orderid = $row['orderid'];
+
+                                $orderProducts = getReturnableProducts($orderid);
+                                $productNames = array_map(function($prod) {
+                                    return getProductName($prod['productid']);
+                                }, $orderProducts);
+
+                                $hiddenProductNames = implode(', ', $productNames);
+
                             ?>
                             <tr>
+                                <td class="d-none">
+                                    <?php echo htmlspecialchars($hiddenProductNames); ?>
+                                </td>
                                 <td>
                                     <?php echo get_customer_name($row["customerid"]) ?>
                                 </td>
                                 <td >
-                                    $ <?php echo number_format(getOrderTotals($row["orderid"]),2) ?>
+                                    $ <?php echo number_format(floatval(getOrderTotals($row["orderid"])),2) ?>
                                 </td>
                                 <td >
-                                    $ <?php echo number_format(getOrderTotalsDiscounted($row["orderid"]),2) ?>
+                                    $ <?php echo number_format(floatval(getOrderTotalsDiscounted($row["orderid"])),2) ?>
                                 </td>
                                 <td>
                                     <?php echo date("F d, Y", strtotime($row["order_date"])); ?>
@@ -54,12 +85,6 @@ if(isset($_POST['fetch_order_list'])){
                             </tr>
                             <?php
                             }
-                        } else {
-                        ?>
-                        <tr>
-                            <td colspan="6" class="text-center">No Orders found.</td>
-                        </tr>
-                        <?php
                         }
                         ?>
                     </tbody>
@@ -70,14 +95,17 @@ if(isset($_POST['fetch_order_list'])){
         $(document).ready(function() {
             $('#order_list_tbl').DataTable({
                 language: {
-                    emptyTable: "Orders List not found"
+                    emptyTable: "No products available for return"
                 },
+                columnDefs: [
+                    { targets: 0, visible: false },
+                    { width: "20%", targets: 1 },
+                    { width: "15%", targets: [2, 3, 4] },
+                    { width: "10%", targets: [5, 6] }
+                ],
                 autoWidth: false,
-                responsive: true
-            });
-
-            $('#view_order_list_modal').on('shown.bs.modal', function () {
-                $('#order_list_tbl').DataTable().columns.adjust().responsive.recalc();
+                responsive: true,
+                order: []
             });
         });
     </script>

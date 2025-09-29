@@ -39,6 +39,7 @@ if(isset($_POST['fetch_drawing'])){
                                 </div>
 
                                 <canvas id="drawingCanvas" width="1000" height="700" class="border rounded bg-white"></canvas>
+                                
                                 <div class="row mt-0">
                                     <div class="col-md-6 d-flex align-items-center gap-2">
                                         <!--

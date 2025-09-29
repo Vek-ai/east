@@ -21,37 +21,96 @@ if(isset($_POST['fetch_modal'])){
         <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
 
         <h3 class="text-center fw-bold mt-0"><?= $product_details['product_item'] ?></h3>
-        
-        <div class="row mt-4">
-            
-            <div class="col-6">
-                <div class="mb-3">
-                    <label class="form-label" for="custom_length_quantity">Quantity</label>
-                    <input type="number" id="custom_length_quantity" name="quantity" class="form-control mb-1" placeholder="Enter Quantity">
+
+        <div class="row">
+            <div class="row">
+                <div class="col-3">
+                    <label class="fs-4 fw-semibold">Quantity</label>
+                </div>
+                <div class="col-9">
+                    <label class="fs-4 fw-semibold">
+                        <?= ($category_id == 16) ? 'Pack' : 'Length'; ?>
+                    </label>
                 </div>
             </div>
-            <div class="col-6">
-                <label class="form-label">Length</label>
-                <div class="mb-3">
-                    <select id="custom_length" class="form-control">
-                        <option value="0">Select length</option>
-                        <?php
-                        $lengths = getInventoryLengths($id);
-                        foreach ($lengths as $entry) {
-                            $length = htmlspecialchars($entry['length']);
-                            $feet = htmlspecialchars($entry['feet']);
-                            echo "<option value=\"$feet\">$length</option>";
-                        }
-                        ?>
-                    </select>
+
+            <div class="custom-length-row row mt-1">
+                <div class="col-2 col-6-md">
+                    <input type="number" name="quantity[]" class="form-control mb-1 custom_length_quantity" value="1" placeholder="Enter Quantity">
+                </div>
+                <div class="col-3 col-6-md">
+                    <?php if ($category_id == 16): ?>
+                        <select class="form-control mb-1 custom_length_select select-2">
+                            <option value="0">Select Pack...</option>
+                            <?php
+                            $query_pack = "
+                                SELECT DISTINCT sp.id, sp.pack, sp.pack_abbreviation, sp.pack_count
+                                FROM inventory i
+                                INNER JOIN supplier_pack sp ON i.pack = sp.id
+                                WHERE i.product_id = '$id'
+                                AND i.pack IS NOT NULL
+                                ORDER BY sp.pack ASC
+                            ";
+                            $result_pack = mysqli_query($conn, $query_pack);
+                            while ($pack = mysqli_fetch_assoc($result_pack)) {
+                                $pack_label = $pack['pack'] . " - " . $pack['pack_count'];
+                                echo "<option value='{$pack['pack_count']}' data-feet='{$pack['pack_count']}'>
+                                        {$pack_label}
+                                    </option>";
+                            }
+                            ?>
+                        </select>
+                    <?php else: ?>
+                        <select class="form-control mb-1 custom_length_select">
+                            <option value="0">Select Length</option>
+                            <?php
+                            $lengths = getInventoryLengths($id);
+                            foreach ($lengths as $entry) {
+                                $length_in_feet = floatval($entry['feet']);
+                                $feet = floor($length_in_feet);
+                                $inch = round(($length_in_feet - $feet) * 12);
+
+                                if ($inch === 12) {
+                                    $feet += 1;
+                                    $inch = 0;
+                                }
+
+                                $selected = ($feet == 1 && $inch == 0) ? 'selected' : '';
+
+                                $display = '';
+                                if ($feet > 0) $display .= "{$feet}ft ";
+                                if ($inch > 0) $display .= "{$inch}in";
+                                $display = trim($display);
+
+                                echo "<option value=\"$length_in_feet\" data-feet=\"$feet\" data-inch=\"$inch\" $selected>
+                                        $display
+                                    </option>";
+                            }
+                            ?>
+                        </select>
+                    <?php endif; ?>
+
+                    <input type="hidden" name="length_feet[]" class="custom_length_feet">
+                    <input type="hidden" name="length_inch[]" class="custom_length_inch">
                 </div>
             </div>
+
+            <div class="col-5 text-end"> 
+                <a href="javascript:void(0)" type="button" id="duplicateCustomLengthFields" class="" title="Add Another">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+
             <div class="col-12">
                 <div class="product_cost_display">
                     <h5 class="text-center pt-3 fs-5 fw-bold">Product Cost: $<span id="price_display">0.00</span></h5>
                 </div>
             </div>
         </div>
+        
+        
+        
+
         <div class="modal-footer d-flex justify-content-end align-items-center px-0">
             <div class="d-flex justify-content-end">
                 <button class="btn btn-success ripple btn-secondary" type="submit">Add to Cart</button>
@@ -67,21 +126,57 @@ if(isset($_POST['fetch_modal'])){
 
         <script>
             $(document).ready(function() {
-                function updatePrice() {
+                function updateAllPrices() {
                     const basePrice = parseFloat($('#product_price').val()) || 0;
-                    const totalLength = parseFloat($('#custom_length').val()) || 0;
-                    const quantity = parseFloat($('#custom_length_quantity').val()) || 1;
+                    let grandTotal = 0;
 
-                    const finalPrice = (basePrice * totalLength * quantity).toFixed(2);
+                    $('.custom-length-row').each(function () {
+                        const $row = $(this);
 
-                    $('#total_price').val(finalPrice);
-                    $('#price_display').text(finalPrice);
+                        const feet = parseFloat($row.find('.custom_length_feet').val()) || 0;
+                        const inches = parseFloat($row.find('.custom_length_inch').val()) || 0;
+                        const quantity = parseFloat($row.find('.custom_length_quantity').val()) || 1;
+
+                        const totalLength = feet + (inches / 12);
+                        const multiplier = totalLength > 0 ? totalLength : 1;
+                        const rowPrice = basePrice * multiplier * quantity;
+
+                        grandTotal += rowPrice;
+                    });
+
+                    $('#price_display').text(grandTotal.toFixed(2));
                 }
 
-                $(document).on('change input', '#custom_length, #custom_length_quantity, #product_price', updatePrice);
+                $(document).on('change', '.custom_length_select', function () {
+                    let $row = $(this).closest('.custom-length-row');
+                    let feet = $(this).find(':selected').data('feet') || 0;
+                    let inch = $(this).find(':selected').data('inch') || 0;
 
-                updatePrice();
+                    $row.find('.custom_length_feet').val(feet);
+                    $row.find('.custom_length_inch').val(inch);
+
+                    updateAllPrices();
+                });
+
+                $(document).on('input', '.custom_length_quantity', function () {
+                    let $row = $(this).closest('.custom-length-row');
+                    updateAllPrices();
+                });
+
+                $('#duplicateCustomLengthFields').on("click", function() {
+                    let $newRow = $(".custom-length-row").first().clone();
+
+                    $newRow.find('.custom_length_quantity').val("1");
+                    $newRow.find('.custom_length_select').prop("selectedIndex", 0);
+                    $newRow.find('.custom_length_feet').val("");
+                    $newRow.find('.custom_length_inch').val("");
+
+                    $(".custom-length-row").last().after($newRow);
+                });
+
+                updateAllPrices();
             });
+
         </script>
 
 <?php

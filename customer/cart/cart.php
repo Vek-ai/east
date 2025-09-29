@@ -48,6 +48,138 @@
     </div>
 </div>
 
+<div class="modal" id="view_est_list_modal">
+    <div class="modal-dialog modal-fullscreen" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Estimates List</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="estimates-tbl">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="view_est_details_modal">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Estimate Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="estimates-details">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="view_order_list_modal">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Orders List</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row align-items-end g-2 mb-3">
+                    <div class="col-md-5">
+                        <label for="return_order_id" class="form-label">Invoice #</label>
+                        <input type="text" class="form-control" id="return_order_id" name="return_order_id" placeholder="Enter Order ID">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="return_customer_name" class="form-label">Customer Name</label>
+                        <input type="text" class="form-control" id="return_customer_name" name="return_customer_name" placeholder="Enter Customer Name">
+                        <input type="hidden" id="return_customer_id" name="return_customer_id">
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        <button type="button" class="btn btn-primary" id="return_search_button">
+                            <i class="fa fa-search mx-2"></i> Search
+                        </button>
+                    </div>
+                </div>
+                <div id="orders-tbl">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="view_order_details_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Order Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="order-details">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="return_stocking_fee_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Stocking Fee</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" class="form-control" id="return_id" name="return_id">
+                <input type="hidden" class="form-control" id="return_quantity" name="return_quantity">
+                <input type="hidden" class="form-control" id="price_to_return" name="price_to_return">
+                <input type="hidden" class="form-control" id="is_store_credited" name="is_store_credited">
+                <div class="col position-relative text-center">
+                    <label for="return_stock_fee" class="form-label">Stocking Fee (%)</label>
+                    <input type="number" class="form-control" id="return_stock_fee" name="return_stock_fee"
+                        placeholder="Enter Stocking Fee(%)" min="0" max="25">
+                    <div id="fee-warning" style="display:none; font-size:1.1em; color:red; font-weight:600; margin-top:5px;">
+                        25% is the maximum allowed.
+                    </div>
+                </div>
+                <div class="col mt-3 d-flex justify-content-between align-items-center">
+                    <p id="return_stock_fee_display"></p>
+                    <p id="return_price_display"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="return_finalize_btn">
+                    <i class="fa fa-undo mx-2"></i> Return
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal" id="view_estimate_modal">
     <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content modal-content-demo">
@@ -64,18 +196,102 @@
                 <button class="btn ripple btn-primary next" type="button" id="next_page_est">
                     <i class="fe fe-hard-drive"></i> Next
                 </button>
-                <button class="btn ripple btn-primary previous d-none" type="button" id="prev_page_est">
+                <button class="btn ripple btn-danger previous d-none" type="button" id="prev_page_est">
                     <i class="fe fe-hard-drive"></i> Previous
                 </button>
-                <button class="btn ripple btn-success d-none" type="button" id="save_estimate">
+                <button class="btn ripple btn-success d-none" type="button" id="save_estimate_modal">
                     <i class="fe fe-hard-drive"></i> Save
                 </button>
-                <a href="#" class="btn ripple btn-light text-dark d-none" type="button" id="print_estimate_category" target="_blank">
-                    <i class="fe fe-print"></i> Print Details
+                <a href="#" class="btn btn-light text-dark d-none" 
+                    type="button" id="print_estimate_category" target="_blank">
+                        <i class="fe fe-print"></i> Print Details
                 </a>
                 <a href="#" class="btn ripple btn-warning text-dark d-none" type="button" id="print_estimate" target="_blank">
-                    <i class="fe fe-print"></i> Print Total
+                    <i class="fe fe-print"></i> Print Summary Total
                 </a>
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="viewInStockmodal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Stock Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="viewInStockmodalBody">
+                    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="viewOutOfStockmodal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Stock Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="viewOutOfStockmodalBody">
+                    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="viewAvailablemodal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Stock Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="viewAvailablemodalBody">
+                    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="viewAvailableColormodal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Available Colors</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="viewAvailableColormodalBody"></div>
+            </div>
+            
+            <div class="modal-footer">
                 <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
@@ -95,44 +311,35 @@
                 <div id="order-tbl"></div>
             </div>
             <div class="modal-footer">
-                <button class="btn ripple px-3" type="button" id="btnApprovalModal" style="background-color: #800080; color: white;">
+                <!-- <button class="btn ripple px-3" type="button" id="btnApprovalModal" style="background-color: #800080; color: white;">
                     Submit Approval
-                </button>
+                </button> -->
                 <button class="btn ripple btn-warning next" type="button" id="save_estimate">
                     Save Estimate
                 </button>
                 <button class="btn ripple btn-success" type="button" id="save_order_alt">
                     Place Order
                 </button>
-                <button class="btn ripple btn-primary previous d-none" type="button" id="prev_page_order">
+                <button class="btn ripple btn-danger previous d-none" type="button" id="prev_page_order">
                     <i class="fe fe-hard-drive"></i> Previous
                 </button>
-                <button class="btn ripple btn-success d-none" type="button" id="save_order">
-                    <i class="fe fe-hard-drive"></i> Save
-                </button>
-                <a href="#" class="btn ripple btn-light text-dark d-none" type="button" id="print_order_category" target="_blank">
+                <a href="#" 
+                    class="btn btn-light" 
+                    style="color: #000 !important; background-color: #f8f9fa !important"
+                    type="button" 
+                    id="print_order_category" target="_blank">
                     <i class="fe fe-print"></i> Print Details
                 </a>
-                <a href="#" class="btn ripple btn-warning text-dark d-none" type="button" id="print_order" target="_blank">
+                <a href="#" class="btn btn-warning" style="color: #000 !important;" type="button" id="print_order" target="_blank">
                     <i class="fe fe-print"></i> Print Total
                 </a>
-                <a href="#" class="btn ripple btn-info d-none" type="button" id="print_deliver" target="_blank">
+                <a href="#" class="btn btn-info " type="button" id="print_deliver" target="_blank">
                     <i class="fe fe-print"></i> Print Delivery
                 </a>
             </div>
         </div>
     </div>
 </div>
-
-<div class="modal" id="viewDetailsModal"></div>
-
-<div class="modal" id="viewInStockmodal"></div>
-
-<div class="modal" id="viewOutOfStockmodal"></div>
-
-<div class="modal" id="viewAvailablemodal"></div>
-
-<div class="modal" id="viewAvailableColormodal"></div>
 
 <div class="modal fade" id="map1Modal" tabindex="-1" role="dialog" aria-labelledby="mapsModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
     <div class="modal-dialog modal-lg" role="document">
@@ -333,8 +540,24 @@
     </div>
 </div>
 
+<div class="modal fade" id="lumber_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <form id="lumber_form" class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="lumber_container"></div>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="screw_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <form id="screw_form" class="modal-content modal-content-demo">
             <div class="modal-header">
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
@@ -359,6 +582,22 @@
             </div>
             <div class="modal-body">
                 <div id="custom_length_container"></div>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="screw_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <form id="screw_form" class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="screw_container"></div>
             </div>
         </form>
         </div>
@@ -406,6 +645,156 @@
                 <button class="btn btn-danger ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="order_product_modal" tabindex="-1" data-bs-backdrop="static" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-fullscreen" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Products to Order</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body mt-0" id="order_product_container">
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple fw-bold text-white me-auto" type="button" id="view_order_product_list" 
+                    style="background-color: rgb(108, 111, 114); border-color:rgb(108, 111, 114);">
+                    <i class="fas fa-list" style="color: #E3F2FD;"></i> View Saved Orders
+                </button>
+                <button class="btn ripple fw-bold text-white" type="button" id="save_order_supplier" 
+                    style="background-color: #17A2B8; border-color: #138496;">
+                    <i class="fas fa-save" style="color: #E3F2FD;"></i> Save Order
+                </button>
+                <button class="btn btn-danger ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="view_order_product_list_modal" tabindex="-1" data-bs-backdrop="static" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Saved Orders List</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="orders-saved-tbl">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="view_order_product_details_modal" tabindex="-1" data-bs-backdrop="static" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Saved Order Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="order-saved-details">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="custom_chart_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h6 class="modal-title">Custom Chart Guide</h6>
+            <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="custom_chart_container"></div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="return_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+  <div class="modal-dialog modal-fullscreen modal-dialog-centered" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div id="return_modal_body">
+
+        </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="contractorModal" tabindex="-1" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Contractor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <select class="form-select" id="contractor_select">
+                    <?php
+                    $query = "SELECT * FROM customer WHERE is_contractor = 1";
+                    $result = mysqli_query($conn, $query);
+
+                    if (mysqli_num_rows($result) > 0) {
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            $id = $row['customer_id'];
+                            $name = get_customer_name($id);
+                            $contact = htmlspecialchars($row['contact_phone']);
+                            echo "<option value='{$id}' data-name='{$name}' data-contact='{$contact}'>{$name} ({$contact})</option>";
+                        }
+                    } else {
+                        echo "<option disabled selected>No contractors available</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="confirm_contractor">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="viewDetailsModal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">Product Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            <div class="card">
+                <div class="card-body mb-0" id="viewDetailsModalBody">
+                
+                </div>
+            </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
         </div>
     </div>
 </div>

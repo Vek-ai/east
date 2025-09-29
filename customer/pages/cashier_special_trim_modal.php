@@ -7,28 +7,32 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
+function findCartKey($cart, $product_id, $line) {
+    foreach ($cart as $key => $item) {
+        if ($item['product_id'] == $product_id && $item['line'] == $line) {
+            return $key;
+        }
+    }
+    return false;
+}
+
 if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
-    $customer_id = $_SESSION['customer_id'];
     $product_details = getProductDetails($id);
     $category_id = $product_details['product_category'];
 
-    $sql = "SELECT * FROM customer_cart 
-            WHERE customer_id = '$customer_id' 
-            AND product_id = '$id' 
-            AND line = '$line' 
-            LIMIT 1";
-    $result = mysqli_query($conn, $sql);
+    $key = findCartKey($_SESSION["cart"], $id, $line);
 
-    if ($result && mysqli_num_rows($result) > 0) {
-        $cart_item = mysqli_fetch_assoc($result);
-
+    if ($key !== false) {
+        $cart_item = $_SESSION["cart"][$key];
+    
         $price = $cart_item['unit_price'];
         $quantity = $cart_item['quantity_cart'];
         $length = $cart_item['estimate_length'];
-        $img = $cart_item['custom_img_src'];
+        $img = $cart_item['custom_trim_src'];
         $drawing_data = htmlspecialchars($cart_item['drawing_data'], ENT_QUOTES, 'UTF-8');
+
     }
     
     $hasImage = !empty($img);
@@ -74,7 +78,7 @@ if(isset($_POST['fetch_modal'])){
                             </div>
                             <div class="col-6">
                                 <div class="mb-3">
-                                    <label class="form-label" for="custom_trim_length">Length</label>
+                                    <label class="form-label">Length</label>
                                     <select id="custom_trim_length" class="form-control mb-1">
                                         <option value="0">Select length</option>
                                         <?php
@@ -90,7 +94,6 @@ if(isset($_POST['fetch_modal'])){
                                     </select>
                                 </div>
                             </div>
-
                             <div class="col-12">
                                 <div class="mb-3">
                                     <label class="form-label" for="truss_price">Price</label>
@@ -99,10 +102,7 @@ if(isset($_POST['fetch_modal'])){
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer d-flex justify-content-between align-items-center px-0">
-                        <div class="d-flex justify-content-start">
-                            <button id="btnCustomChart" class="btn btn-warning ripple btn-secondary" type="button" data-category="<?= $category_id ?>">Chart</button>
-                        </div>
+                    <div class="modal-footer d-flex justify-content-end align-items-center px-0">
                         <div class="d-flex justify-content-end">
                             <button id="saveDrawing" class="btn btn-success" type="submit">Save</button>
                         </div>
