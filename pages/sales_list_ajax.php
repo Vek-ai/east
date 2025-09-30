@@ -205,16 +205,16 @@ if(isset($_POST['fetch_order_details'])){
                                     <?php echo getProductName($product_id) ?>
                                 </td>
                                 <td>
-                                <div class="d-flex mb-0 gap-8">
-                                    <span class="rounded-circle d-block p-3" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_id)?>; width: 20px; height: 20px;"></span>
-                                    <?= getColorFromID($product_id); ?>
-                                </div>
+                                    <div class="d-flex mb-0 gap-8">
+                                        <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromColorID($row['custom_color'])?>"></a>
+                                        <?= getColorFromID($row['custom_color']); ?>
+                                    </div>
                                 </td>
                                 <td>
-                                    <?php echo getGradeFromID($product_id); ?>
+                                    <?= getGradeName($row['custom_grade']); ?>
                                 </td>
                                 <td>
-                                    <?php echo getProfileFromID($product_id); ?>
+                                    <?= getProfileTypeName($row['custom_profile']); ?>
                                 </td>
                                 <td>
                                     <?php echo $row['quantity']; ?>

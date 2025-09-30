@@ -120,16 +120,16 @@ if(isset($_REQUEST['action'])) {
                                                                 <?= $product_name ?>
                                                             </td>
                                                             <td>
-                                                            <div class="d-flex mb-0 gap-8">
-                                                                <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_details['color'])?>"></a>
-                                                                <?= getColorFromID($product_details['color']); ?>
-                                                            </div>
+                                                                <div class="d-flex mb-0 gap-8">
+                                                                    <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromColorID($row['custom_color'])?>"></a>
+                                                                    <?= getColorFromID($row['custom_color']); ?>
+                                                                </div>
                                                             </td>
                                                             <td>
-                                                                <?php echo getGradeName($product_details['grade']); ?>
+                                                                <?= getGradeName($row['custom_grade']); ?>
                                                             </td>
                                                             <td>
-                                                                <?php echo getProfileTypeName($product_details['profile']); ?>
+                                                                <?= getProfileTypeName($row['custom_profile']); ?>
                                                             </td>
                                                             <td><?= $row['quantity'] ?></td>
                                                             <td>
