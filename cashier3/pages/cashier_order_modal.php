@@ -377,7 +377,7 @@ if(isset($_POST['fetch_order'])){
                             <div class="col-md-3">
                                 <label for="customer_tax" class="form-label">Tax Status</label>
                                 <div class="mb-2">
-                                    <select class="form-control py-0 ps-5 select2" id="customer_tax">
+                                    <select class="form-control py-0 ps-5" id="customer_tax">
                                         <option value="">All Tax Status</option>
                                         <?php
                                             $query_tax_status = "SELECT * FROM customer_tax WHERE status = 1 ORDER BY tax_status_desc ASC";
@@ -878,15 +878,6 @@ if(isset($_POST['fetch_order'])){
                     }
                     return $.fn.select2.defaults.defaults.matcher(params, data);
                 }
-            });
-
-            $('#customer_tax').each(function () {
-                $(this).select2({
-                    width: '100%',
-                    placeholder: "Select Customer Tax...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $(this).parent()
-                });
             });
 
             var originalData = {
