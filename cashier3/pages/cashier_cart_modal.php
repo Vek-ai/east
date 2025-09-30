@@ -301,6 +301,7 @@ if(isset($_POST['fetch_cart'])){
                                 $productSystem = intval($product["product_system"]);
                                 $grade         = intval($product["grade"]);
                                 $gauge         = intval($product["gauge"]);
+                                $profile       = intval($values["custom_profile"]);
                                 $colorGroup    = intval($color_details['color_group']);
 
                                 $color_mult = fetchColorMultiplier($colorGroup, $productSystem, $grade, $gauge, $category_id);
@@ -391,7 +392,7 @@ if(isset($_POST['fetch_cart'])){
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    <?= getProfileFromID($product_id); ?>
+                                    <?= getProfileTypeName($profile); ?>
                                 </td>
                                 <td class="text-center">
                                     <?= $total_qty ?>

@@ -26,6 +26,19 @@ function findCartKey($cart, $product_id, $line) {
     return false;
 }
 
+function getLastValue($value) {
+    if (empty($value)) {
+        return null;
+    }
+
+    $decoded = json_decode($value, true);
+    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+        return !empty($decoded) ? end($decoded) : null;
+    }
+
+    return $value;
+}
+
 if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
     $product_id = (int)($_POST['product_id'] ?? 0);
     $line       = (int)($_POST['line'] ?? 0);
@@ -374,6 +387,21 @@ if (isset($_REQUEST['query'])) {
                 $btn_id = 'add-to-cart-btn';
             }
 
+            if (!empty($color_id)) {
+                $color_name = getColorName($color_id);
+                $color_html = '
+                    <div class="d-flex justify-content-center mb-0 gap-8 text-center">
+                        <a href="javascript:void(0)" id="view_available_color" data-id="'.$row_product['product_id'].'">'.$color_name.'</a>
+                    </div>
+                ';
+            }else{
+                $color_html = '
+                    <div class="d-flex justify-content-center mb-0 gap-8 text-center">
+                        <a href="javascript:void(0)" id="view_available_color" data-id="'.$row_product['product_id'].'">See Colors</a>
+                    </div>
+                ';
+            }
+
             $tableHTML .= '
             <tr>
                 <td class="text-start">
@@ -386,9 +414,7 @@ if (isset($_REQUEST['query'])) {
                     </a>
                 </td>
                 <td>
-                    <div class="d-flex justify-content-center mb-0 gap-8 text-center">
-                        <a href="javascript:void(0)" id="view_available_color" data-id="'.$row_product['product_id'].'">See Colors</a>
-                    </div>
+                    '.$color_html.'
                 </td>
                 <td class="text-center">
                     <a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'
@@ -2004,8 +2030,9 @@ if (isset($_POST['save_trim'])) {
                 'custom_color'      => $color,
                 'weight'            => 0,
                 'supplier_id'       => '',
-                'custom_grade'      => $grade,
-                'custom_profile'    => $row['profile'],
+                'custom_grade'   => !empty($grade) ? $grade : getLastValue($row['grade']),
+                'custom_gauge'   => !empty($gauge) ? $gauge : getLastValue($row['gauge']),
+                'custom_profile' => !empty($profile) ? $profile : getLastValue($row['profile']),
                 'custom_gauge'      => $gauge,
                 'is_pre_order'      => $is_pre_order,
                 'is_custom'         => $is_custom,
@@ -2818,9 +2845,9 @@ if (isset($_POST['add_to_cart'])) {
                     'panel_style'          => $panel_style_row,
                     'panel_drip_stop'     => $panel_drip_stop_row,
                     'weight'              => $weight,
-                    'custom_grade'        => !empty($grade) ? $grade : $row['grade'],
-                    'custom_gauge'        => !empty($gauge) ? $gauge : $row['gauge'],
-                    'custom_profile'      => !empty($profile) ? $profile : $row['profile'],
+                    'custom_grade'      => !empty($grade) ? $grade : getLastValue($row['grade']),
+                    'custom_gauge'      => !empty($gauge) ? $gauge : getLastValue($row['gauge']),
+                    'custom_profile'    => !empty($profile) ? $profile : getLastValue($row['profile']),
                     'stiff_board_batten'  => $stiff_board_batten,
                     'stiff_stand_seam'    => $stiff_stand_seam,
                     'is_pre_order'        => $is_pre_order,
