@@ -160,10 +160,10 @@ if(isset($_REQUEST['action'])) {
                                             </div>
                                             </td>
                                             <td>
-                                                <?php echo getGradeName($product_details['grade']); ?>
+                                                <?= getGradeName($row['custom_grade']); ?>
                                             </td>
                                             <td>
-                                                <?php echo getProfileTypeName($product_details['profile']); ?>
+                                                <?= getProfileTypeName($row['custom_profile']); ?>
                                             </td>
                                             <td><?= $row['quantity'] ?></td>
                                             <td>
