@@ -187,11 +187,12 @@ if (isset($_POST['deleteitem'])) {
 
 if (isset($_REQUEST['query'])) {
     $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
-    $color_id = isset($_REQUEST['color_id']) ? mysqli_real_escape_string($conn, $_REQUEST['color_id']) : '';
-    $grade_id = isset($_REQUEST['grade_id']) ? mysqli_real_escape_string($conn, $_REQUEST['grade_id']) : '';
-    $gauge_id = isset($_REQUEST['gauge_id']) ? mysqli_real_escape_string($conn, $_REQUEST['gauge_id']) : '';
-    $type_id = isset($_REQUEST['type_id']) ? mysqli_real_escape_string($conn, $_REQUEST['type_id']) : '';
-    $profile_id = isset($_REQUEST['profile_id']) ? mysqli_real_escape_string($conn, $_REQUEST['profile_id']) : '';
+    $color_id   = (int) ($_REQUEST['color_id'] ?? 0);
+    $grade      = (int) ($_REQUEST['grade'] ?? 0);
+    $gauge_id   = (int) ($_REQUEST['gauge_id'] ?? 0);
+    $type_id    = (int) ($_REQUEST['type_id'] ?? 0);
+    $profile_id = (int) ($_REQUEST['profile_id'] ?? 0);
+    $category_id = (int) ($_REQUEST['category_id'] ?? 0);
     $category_id = isset($_REQUEST['category_id']) ? mysqli_real_escape_string($conn, $_REQUEST['category_id']) : '';
     $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
     $onlyPromotions = isset($_REQUEST['onlyPromotions']) ? filter_var($_REQUEST['onlyPromotions'], FILTER_VALIDATE_BOOLEAN) : false;
@@ -200,11 +201,22 @@ if (isset($_REQUEST['query'])) {
     $query_product = "
         SELECT 
             p.*,
-            COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
+            COALESCE(
+                CASE 
+                    WHEN p.product_category IN (3,4) THEN 1  -- treat as always in stock
+                    ELSE SUM(i.quantity_ttl)
+                END, 0
+            ) AS total_quantity,
+            pt.profile_type as profile_type_name,
+            pg.product_grade as product_grade_name
         FROM 
             product AS p
         LEFT JOIN 
             inventory AS i ON p.product_id = i.product_id
+        LEFT JOIN 
+            profile_type AS pt ON p.profile = pt.profile_type_id
+        LEFT JOIN 
+            product_grade AS pg ON p.grade = pg.product_grade_id
         WHERE 
             p.hidden = '0' and p.status = '1'
     ";
@@ -213,24 +225,40 @@ if (isset($_REQUEST['query'])) {
         $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
     }
 
-    if (!empty($color_id)) {
-        $query_product .= " AND i.color_id = '$color_id'";
+    if (!empty($color_id)) { 
+        $query_product .= " AND i.color_id = '$color_id'"; 
     }
 
-    if (!empty($grade_id)) {
-        $query_product .= " AND p.grade = '$grade_id'";
+    if (!empty($grade)) {
+        $query_product .= " AND JSON_VALID(p.grade) 
+                            AND (
+                                JSON_CONTAINS(p.grade, '\"" . intval($grade) . "\"') 
+                                OR JSON_CONTAINS(p.grade, '" . intval($grade) . "')
+                            )";
     }
 
     if (!empty($gauge_id)) {
-        $query_product .= " AND p.gauge = '$gauge_id'";
+        $query_product .= " AND JSON_VALID(p.gauge) 
+                            AND (
+                                JSON_CONTAINS(p.gauge, '\"" . intval($gauge_id) . "\"') 
+                                OR JSON_CONTAINS(p.gauge, '" . intval($gauge_id) . "')
+                            )";
     }
 
     if (!empty($type_id)) {
-        $query_product .= " AND p.product_type = '$type_id'";
+        $query_product .= " AND JSON_VALID(p.product_type) 
+                            AND (
+                                JSON_CONTAINS(p.product_type, '\"" . intval($type_id) . "\"') 
+                                OR JSON_CONTAINS(p.product_type, '" . intval($type_id) . "')
+                            )";
     }
 
     if (!empty($profile_id)) {
-        $query_product .= " AND p.profile = '$profile_id'";
+        $query_product .= " AND JSON_VALID(p.profile) 
+                            AND (
+                                JSON_CONTAINS(p.profile, '\"" . intval($profile_id) . "\"') 
+                                OR JSON_CONTAINS(p.profile, '" . intval($profile_id) . "')
+                            )";
     }
 
     if (!empty($category_id)) {
@@ -260,7 +288,7 @@ if (isset($_REQUEST['query'])) {
     $query_product .= " GROUP BY p.product_id";
 
     if ($onlyInStock) {
-        $query_product .= " HAVING total_quantity > 1";
+        $query_product .= " HAVING total_quantity > 0";
     }
 
     $result_product = mysqli_query($conn, $query_product);
@@ -331,6 +359,7 @@ if (isset($_REQUEST['query'])) {
             ? "../" .$row_product['main_image']
             : $default_image;
 
+            $is_lumber = $row_product['product_category'] == $lumber_id ? true : false;
             $is_panel = $row_product['product_category'] == $panel_id ? true : false;
             $is_trim = $row_product['product_category'] == $trim_id ? true : false;
             $is_screw = $row_product['product_category'] == $screw_id ? true : false;
@@ -338,13 +367,14 @@ if (isset($_REQUEST['query'])) {
             $is_special_trim = $row_product['product_id'] == $special_trim_id ? true : false;
             $is_custom_length = $row_product['is_custom_length'] == 1 ? true : false;
 
-            $qty_input = !$is_panel  && !$is_custom_truss && !$is_special_trim && !$is_trim && !$is_custom_length && !$is_screw
-                ? ' <div class="input-group input-group-sm">
+            $qty_input = !$is_panel && !$is_custom_truss && !$is_special_trim && !$is_trim && !$is_custom_length && !$is_screw && !$is_lumber
+                ? ' <div class="input-group input-group-sm d-flex justify-content-center">
                         <button class="btn btn-outline-primary btn-minus" type="button" data-id="' . $row_product['product_id'] . '">-</button>
-                        <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1">
+                        <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1" style="max-width:70px;">
                         <button class="btn btn-outline-primary btn-plus" type="button" data-id="' . $row_product['product_id'] . '">+</button>
                     </div>'
                 : '';
+
 
             if($is_custom_truss){
                 $btn_id = 'add-to-cart-custom-truss-btn';
@@ -355,7 +385,9 @@ if (isset($_REQUEST['query'])) {
             }else if($is_trim){
                 $btn_id = 'add-to-cart-trim-btn';
             }else if($is_screw){
-                $btn_id = 'add-to-cart-custom-length-btn';
+                $btn_id = 'add-to-cart-screw-btn';
+            }else if($is_lumber){
+                $btn_id = 'add-to-cart-lumber-btn';
             }else if($is_custom_length){
                 $btn_id = 'add-to-cart-custom-length-btn';
             }else{
@@ -364,10 +396,9 @@ if (isset($_REQUEST['query'])) {
 
             $tableHTML .= '
             <tr>
-                <td>
-                    <a href="javascript:void(0);" id="view_product_details" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
+                <td class="text-start">
+                    <a href="javascript:void(0);" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center view_product_details">
                         <div class="d-flex align-items-center" >
-                            <img src="'.$picture_path.'" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                             <div class="ms-3">
                                 <h6 class="fw-semibold mb-0 fs-4">'. getProductName($row_product['product_id']) .' ' .$dimensions .'</h6>
                             </div>
@@ -375,16 +406,64 @@ if (isset($_REQUEST['query'])) {
                     </a>
                 </td>
                 <td>
-                    <div class="d-flex mb-0 gap-8">
+                    <div class="d-flex justify-content-center mb-0 gap-8 text-center">
                         <a href="javascript:void(0)" id="view_available_color" data-id="'.$row_product['product_id'].'">See Colors</a>
                     </div>
                 </td>
-                <td><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0">'. getGradeName($row_product['grade']) .'</a></td>
-                <td><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0">'. getGaugeName($row_product['gauge']) .'</a></td>
-                <td><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0">'. getProductTypeName($row_product['product_type']) .'</a></td>
-                <td><a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0">'. getProfileTypeName($row_product['profile']) .'</a></td>
+                <td class="text-center">
+                    <a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'
+                        . mb_strimwidth(
+                            getColumnFromTable(
+                                "product_grade",
+                                "product_grade",
+                                !empty($grade) ? $grade : $row_product['grade']
+                            ),
+                            0, 30, '...'
+                        ) . '
+                    </a>
+                </td>
+
+                <td class="text-center">
+                    <a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'
+                        . mb_strimwidth(
+                            getColumnFromTable(
+                                "product_gauge",
+                                "product_gauge",
+                                !empty($gauge_id) ? $gauge_id : $row_product['gauge']
+                            ),
+                            0, 30, '...'
+                        ) . '
+                    </a>
+                </td>
+
+                <td class="text-center">
+                    <a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'
+                        . mb_strimwidth(
+                            getColumnFromTable(
+                                "product_type",
+                                "product_type",
+                                !empty($type_id) ? $type_id : $row_product['product_type']
+                            ),
+                            0, 30, '...'
+                        ) . '
+                    </a>
+                </td>
+
+                <td class="text-center">
+                    <a href="javascript:void(0);" style="text-decoration: none; color: inherit;" class="mb-0 text-center">'
+                        . mb_strimwidth(
+                            getColumnFromTable(
+                                "profile_type",
+                                "profile_type",
+                                !empty($profile_id) ? $profile_id : $row_product['profile']
+                            ),
+                            0, 30, '...'
+                        ) . '
+                    </a>
+                </td>
+
                 <td>
-                    <div class="d-flex align-items-center">'.$stock_text.'</div>
+                    <div class="d-flex justify-content-center align-items-center">'.$stock_text.'</div>
                 </td>
                 <td>
                     '.$qty_input.'
@@ -398,6 +477,7 @@ if (isset($_REQUEST['query'])) {
         $tableHTML .= '<tr><td colspan="8" class="text-center">No products found</td></tr>';
     }
     
+    //echo $tableHTML;
     echo $tableHTML;
 }
 
