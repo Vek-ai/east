@@ -70,34 +70,34 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
                 switch ($highestProfile) {
                     case 14: // low-rib
-                        include "panel_layouts/low_rib.php";
+                        include "../../cashier33/pages/panel_layouts/low_rib.php";
                         break;
                     case 15: // hi-rib
-                        include "panel_layouts/hi_rib.php";
+                        include "../../cashier3/pages/panel_layouts/hi_rib.php";
                         break;
                     case 16: // corrugated
-                        include "panel_layouts/corrugated.php";
+                        include "../../cashier3/pages/panel_layouts/corrugated.php";
                         break;
                     case 17: // 5v
-                        include "panel_layouts/5v.php";
+                        include "../../cashier3/pages/panel_layouts/5v.php";
                         break;
                     case 18: // standing_seam
-                        include "panel_layouts/standing_seam.php";
+                        include "../../cashier3/pages/panel_layouts/standing_seam.php";
                         break;
                     case 19: // snap_lock
-                        include "panel_layouts/snap_lock.php";
+                        include "../../cashier3/pages/panel_layouts/snap_lock.php";
                         break;
                     case 20: // mechanical_seam
-                        include "panel_layouts/mechanical_seam.php";
+                        include "../../cashier3/pages/panel_layouts/mechanical_seam.php";
                         break;
                     case 21: // board_batten
-                        include "panel_layouts/board_batten.php";
+                        include "../../cashier3/pages/panel_layouts/board_batten.php";
                         break;
                     case 41: // flush_wall
-                        include "panel_layouts/flush_wall.php";
+                        include "../../cashier3/pages/panel_layouts/flush_wall.php";
                         break;
                     case 42: // plank panel
-                        include "panel_layouts/plank_panel.php";
+                        include "../../cashier3/pages/panel_layouts/plank_panel.php";
                         break;
                     default:
                         echo 'Profile '. $highestProfile .'<h5 class="text-center text-danger pt-3 fs-5 fw-bold">Product Profile is not set.</h5>';
@@ -188,7 +188,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
             const basePrice = <?= $basePrice; ?>;
 
             $.ajax({
-                url: 'pages/cashier_quantity_modal.php',
+                url: 'pages/cashier3_quantity_modal.php',
                 method: 'POST',
                 data: {
                     product_id: product_id,
@@ -221,7 +221,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
             }
 
             $.ajax({
-                url: 'pages/cashier_quantity_modal.php',
+                url: 'pages/cashier3_quantity_modal.php',
                 method: 'POST',
                 dataType: 'json',
                 data: {

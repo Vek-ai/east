@@ -245,7 +245,7 @@ if(isset($_POST['fetch_cart'])){
 
                             foreach ($items as $values) {
                                 $product_id = $values["product_id"];
-                                $line = $values["line"];
+                                $line = $values["id"];
                                 $product = getProductDetails($product_id);
                                 $totalstockquantity = getProductStockTotal($product_id);
                                 $category_id = $product["product_category"];
@@ -493,7 +493,7 @@ if(isset($_POST['fetch_cart'])){
                                 
 
                                 foreach ($bundle_items as $values) {
-                                    $line = $values["line"];
+                                    $line = $values["id"];
                                     $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 1;
                                     $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
 
@@ -810,7 +810,7 @@ if(isset($_POST['fetch_cart'])){
                         //non panels
                         foreach ($cart as $keys => $values) {
                             $data_id = $values["product_id"];
-                            $line = $values["line"];
+                            $line = $values["id"];
                             $product = getProductDetails($data_id);
                             $totalstockquantity = getProductStockTotal($data_id);
                             $category_id = $product["product_category"];

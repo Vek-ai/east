@@ -960,6 +960,7 @@ function duplicate_item(element) {
             duplicate_product: 'duplicate_product'
         },
         success: function(data) {
+            console.log(data);
             loadCart();
         },
         error: function(xhr, status, error) {
@@ -3663,6 +3664,7 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function (response) {
+                console.log(response);
                 $('.modal').modal("hide");
                 loadCart();
             },

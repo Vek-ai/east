@@ -48,6 +48,22 @@
     </div>
 </div>
 
+<div class="modal fade" id="special_trim_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Special Trim Configuration</h4>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <div id="special_trim_body">
+                    <!-- Content here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal" id="view_est_list_modal">
     <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content modal-content-demo">

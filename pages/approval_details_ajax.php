@@ -7,35 +7,35 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
-if(isset($_POST['fetch_available'])){
+if (isset($_POST['fetch_available'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
-    $app_prod_arr = getApprovalProductDetails($id);
-    $color_id = $app_prod_arr['custom_color'];
-    $grade = $app_prod_arr['custom_grade'];
-    $width = floatval($app_prod_arr['custom_width']);
-    $lengthFeet = !empty($app_prod_arr['custom_length']) ? floatval($app_prod_arr['custom_length']) : 0;
-    $lengthInch = !empty($app_prod_arr['custom_length2']) ? floatval($app_prod_arr['custom_length2']) : 0;
-    $quantity = !empty($app_prod_arr['quantity']) ? floatval($app_prod_arr['quantity']) : 1;
-    $total_ln_in_ft = $lengthFeet + ($lengthInch / 12);
-    $total_ln_in_ft = !empty($total_ln_in_ft) ? $total_ln_in_ft : 1;
-    $total_length = $total_ln_in_ft * $quantity;
+    $details = getApprovalProductDetails($id);
+
+    $color_id = $details['custom_color'];
+    $grade = $details['custom_grade'];
+    $width = floatval($details['custom_width']);
+    $lengthFeet = floatval($details['custom_length'] ?? 0);
+    $lengthInch = floatval($details['custom_length2'] ?? 0);
+    $quantity = floatval($details['quantity'] ?? 1);
+
+    $total_length = ($lengthFeet + ($lengthInch / 12)) * $quantity ?: 1;
+
+    $total_length_reached = 0;
+    $weighted_sum = 0;
+    $total_weight = 0;
     ?>
     <style>
-        .tooltip-inner {
-            background-color: white !important;
-            color: black !important;
-            font-size: calc(0.875rem + 2px) !important;
-        }
+        .tooltip-inner { background-color: white !important; color: black !important; font-size: calc(0.875rem + 2px) !important; }
     </style>
+
     <div class="card card-body datatables">
         <div class="product-details table-responsive text-wrap">
             <h4>Coils List</h4>
             <table id="coil_dtls_tbl" class="table table-hover mb-0 text-md-nowrap text-center">
                 <thead>
                     <tr>
-                        <th>
-                            <input type="checkbox" id="selectAll" >
-                        </th>
+                        <th></th>
+                        <th><input type="checkbox" id="selectAll"></th>
                         <th>Coil No</th>
                         <th class="text-center">Date</th>
                         <th class="text-left">Color</th>
@@ -44,201 +44,123 @@ if(isset($_POST['fetch_available'])){
                         <th class="text-right">Width</th>
                         <th class="text-right">Rem. Feet</th>
                         <th class="text-right">Price/In</th>
-                        <th class="text-right">Avg Price</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php 
-                    $query = "SELECT * FROM coil_product";
-                    $result = mysqli_query($conn, $query);
+                    $coils = getAvailableCoils($color_id, $grade, $width);
+                    foreach ($coils as $row) {
+                        $color_details = getColorDetails($row['color_sold_as']);
 
-                    $grouped_data = [];
-                    $all_rows = [];
+                        $weighted_sum += floatval($row['price']) * floatval($row['remaining_feet']);
+                        $total_weight += $row['remaining_feet'];
 
-                    if ($result && mysqli_num_rows($result) > 0) {
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $all_rows[] = $row;
-
-                            $group_key = $row['color_sold_as'] . '-' . $row['gauge'] . '-' . $row['year'] . '-' . $row['grade_no'];
-                            if (!isset($grouped_data[$group_key])) {
-                                $grouped_data[$group_key] = [
-                                    'total_price' => 0,
-                                    'count' => 0
-                                ];
-                            }
-                            
-                            $grouped_data[$group_key]['total_price'] += $row['price'];
-                            $grouped_data[$group_key]['count'] += 1;
+                        $is_checked = 0;
+                        if ($total_length_reached < $total_length) {
+                            $total_length_reached += $row['remaining_feet'];
+                            $is_checked = 1;
                         }
-                    }
-
-                    foreach ($grouped_data as $key => $data) {
-                        $grouped_data[$key]['average_price'] = $data['total_price'] / $data['count'];
-                    }
-
-                    $totalprice = 0;
-                    $no = 0;
-                    $group_count = count($grouped_data);
-                    $weighted_sum = 0;
-                    $total_weight = 0;
-
-                    foreach ($all_rows as $row) {
-                        if( $row['color_sold_as'] == $color_id &&
-                            $row['grade'] == $grade &&
-                            $row['width'] >= $width ){
-                        
-                            $color_details = getColorDetails($row['color_sold_as']);
-                            $group_key = $row['color_sold_as'] . '-' . $row['gauge'] . '-' . $row['year'] . '-' . $row['grade_no'];
-                            $average_price = $grouped_data[$group_key]['average_price'];
-
-                            $weighted_sum += $row['price'] * $row['remaining_feet'];
-                            $total_weight += $row['remaining_feet'];
-
-                            if ($total_weight > 0) {
-                                $weighted_average = $weighted_sum / $total_weight;
-                            }
-                            ?>
-                            <tr data-id="<?= $row['coil_id'] ?>">
-                                <td class="text-start">
-                                    <input type="checkbox" class="row-select" data-id="<?= $row['coil_id'] ?>">
-                                </td>
-                                <td class="text-wrap"> 
-                                    <?= $row['entry_no'] ?>
-                                </td>
-                                <td class="text-wrap"> 
-                                    <?= date("M d, Y", strtotime($row['date'])) ?>
-                                </td>
-                                <td class="text-left">
-                                    <div class="d-inline-flex align-items-center gap-2">
-                                        <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 20px; height: 20px;"></span>
-                                        <?= $color_details['color_name'] ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <?= getGradeName($row['grade']); ?>
-                                </td>
-                                <td>
-                                    <?= $row['thickness']; ?>
-                                </td>
-                                <td class="text-right">
-                                    <?= $row['width']; ?>
-                                </td>
-                                <td class="text-right">
-                                    <?= $row['remaining_feet']; ?>
-                                </td>
-                                <td class="text-right">
-                                    <?= number_format($row['price'], 2); ?>
-                                </td>
-                                <td class="text-right">
-                                    $<?= number_format($average_price, 2); ?>
-                                </td>
-                            </tr>
-                            <?php
-                            $totalprice += $average_price;
-                            $no++;
-                        }
-
-                        if ($total_weight > 0) {
-                            $weighted_average = $weighted_sum / $total_weight;
-                        }
-                    }
                     ?>
+                        <tr data-id="<?= $row['coil_id'] ?>" data-length="<?= $total_length ?>">
+                            <td><?= $is_checked ?></td>
+                            <td class="text-start">
+                                <input type="checkbox" class="row-select" data-id="<?= $row['coil_id'] ?>" <?= $is_checked ? 'checked' : '' ?>>
+                            </td>
+                            <td><?= $row['entry_no'] ?></td>
+                            <td><?= date("M d, Y", strtotime($row['date'])) ?></td>
+                            <td class="text-left">
+                                <div class="d-inline-flex align-items-center gap-2">
+                                    <span class="rounded-circle d-block" style="background-color:<?= $color_details['color_code'] ?>; width: 20px; height: 20px;"></span>
+                                    <?= $color_details['color_name'] ?>
+                                </div>
+                            </td>
+                            <td><?= getGradeName($row['grade']) ?></td>
+                            <td><?= $row['thickness'] ?></td>
+                            <td class="text-right"><?= $row['width'] ?></td>
+                            <td class="text-right"><?= $row['remaining_feet'] ?></td>
+                            <td class="text-right"><?= number_format(floatval($row['price']), 2) ?></td>
+                        </tr>
+                    <?php } ?>
                 </tbody>
-
                 <tfoot>
                     <tr>
                         <td colspan="9" class="text-right"><strong>Weighted Average Price:</strong></td>
-                        <td class="text-right"><strong>$<?= number_format($weighted_average, 2); ?></strong></td>
+                        <td class="text-right"><strong>$<?= number_format($total_weight > 0 ? $weighted_sum / $total_weight : 0, 2) ?></strong></td>
                     </tr>
                 </tfoot>
             </table>
         </div>
     </div>
-       
+
     <script>
-        $(document).ready(function() {
+        $(function () {
             let selectedCoils = [];
 
-            $(document).off('change', '.row-select').on('change', '.row-select', function () {
-                const coilId = $(this).data('id');
-
-                if ($(this).is(':checked')) {
-                    if (!selectedCoils.includes(coilId)) {
-                        selectedCoils.push(coilId);
-                    }
-                } else {
-                    selectedCoils = selectedCoils.filter(id => id !== coilId);
-                }
+            $('#coil_dtls_tbl').off('change', '.row-select').on('change', '.row-select', function () {
+                const id = $(this).data('id');
+                if (this.checked) selectedCoils.push(id);
+                else selectedCoils = selectedCoils.filter(i => i !== id);
             });
 
             $('#selectAll').off('change').on('change', function () {
-                const isChecked = $(this).is(':checked');
-                const table = $('#coil_dtls_tbl').DataTable();
-                const allRows = table.rows().nodes();
-
-                $(allRows).find('.row-select').prop('checked', isChecked).trigger('change');
+                const checked = this.checked;
+                $('#coil_dtls_tbl .row-select').prop('checked', checked).trigger('change');
             });
 
             $('#saveSelection').off('click').on('click', function () {
-                const table = $('#coil_dtls_tbl').DataTable();
-                const allRows = table.rows().nodes();
-
                 const id = <?= $id ?? 0 ?>;
-                
-                selectedCoils = [];
-
-                $(allRows).find('.row-select:checked').each(function () {
-                    selectedCoils.push($(this).data('id'));
-                });
-
-                const selectedCoilsJson = JSON.stringify(selectedCoils);
+                const table = $('#coil_dtls_tbl').DataTable();
+                const coils = $('input.row-select:checked', table.rows().nodes()).map(function () {
+                    return $(this).data('id');
+                }).get();
 
                 $.ajax({
-                    type: 'POST',
-                    url: 'pages/approval_details_ajax.php',
-                    data: { 
+                    url: 'pages/work_order_list_ajax.php',
+                    method: 'POST',
+                    data: {
                         id: id,
-                        selected_coils: selectedCoilsJson,
+                        selected_coils: JSON.stringify(coils),
                         assign_coil: 'assign_coil'
                     },
-                    success: function(response) {
-                        if (response.trim() == 'success') {
+                    success: function (res) {
+                        if (res.trim() === 'success') {
                             alert('Successfully Saved!');
+                            location.reload();
                         } else {
                             alert('Failed to Update!');
-                            console.log(response);
+                            console.log(res);
                         }
                     },
-                    error: function(xhr, status, error) {
-                        console.error('Response Text:', xhr.responseText);
+                    error: function (xhr, status, error) {
+                        alert('AJAX error occurred: ' + error);
+                        console.error('AJAX Error:', xhr.responseText);
                     }
                 });
             });
 
-            $('[data-toggle="tooltip"]').tooltip(); 
+            $.fn.dataTable.ext.type.order['custom-date-pre'] = function (d) {
+                const parts = d.split(' ');
+                return new Date(parts[2], ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(parts[0]), parseInt(parts[1])).getTime();
+            };
 
-            if ($.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
-                $('#coil_dtls_tbl').DataTable().draw();
-            } else {
+            if (!$.fn.DataTable.isDataTable('#coil_dtls_tbl')) {
                 $('#coil_dtls_tbl').DataTable({
-                    language: {
-                        emptyTable: "No Available Coils with the selected color"
-                    },
+                    language: { emptyTable: "No Available Coils with the selected color" },
                     autoWidth: false,
                     responsive: true,
                     columnDefs: [
-                        { targets: 0, width: "5%" }
-                    ]
+                        { targets: 0, visible: false },
+                        { targets: 1, width: "5%" },
+                        { targets: 3, type: 'custom-date' }
+                    ],
+                    order: [[0, 'desc'], [3, 'asc']]
                 });
             }
 
-            $('#view_available_modal').on('shown.bs.modal', function () {
-                $('#coil_dtls_tbl').DataTable().columns.adjust().responsive.recalc();
-            });
+            $('[data-toggle="tooltip"]').tooltip();
         });
     </script>
-    <?php
-}
+<?php }
 
 if(isset($_POST['chng_price'])){
     $id = mysqli_real_escape_string($conn, $_POST['approval_product_id']);
