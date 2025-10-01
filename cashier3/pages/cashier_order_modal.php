@@ -153,7 +153,7 @@ if(isset($_POST['fetch_order'])){
 
             $customer_name = get_customer_name($_SESSION["customer_id"]);
         ?>
-        <div class="form-group row align-items-center" style="color: #ffffff !important;">
+        <div class="form-group row align-items-center">
             <div class="d-flex flex-column gap-2">
                 <div>
                     <label>Customer Name: <?= $customer_name ?></label>
@@ -303,11 +303,11 @@ if(isset($_POST['fetch_order'])){
 
             <div class="row text-start">
                 <!-- Left Side -->
-                <div class="col-lg-8" style="color: #ffffff !important;">
+                <div class="col-lg-8">
                 
 
                 <!-- Contact Information -->
-                <div class="card mb-3" style="color: #ffffff !important;">
+                <div class="card mb-3">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <span><i class="fa fa-check-circle text-success me-2"></i>Contact Information</span>
                         <?php 
@@ -409,7 +409,7 @@ if(isset($_POST['fetch_order'])){
                 </div>
 
                 <!-- Job Details -->
-                <div class="card mb-3" style="color: #ffffff !important;">
+                <div class="card mb-3">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <span><i class="fa fa-check-circle text-success me-2"></i>Job Details</span>
                     </div>
@@ -500,7 +500,7 @@ if(isset($_POST['fetch_order'])){
                 </div>
 
                 <!-- Pickup Details -->
-                <div class="card mb-3" style="color: #ffffff !important;">
+                <div class="card mb-3">
                     <div class="card-header bg-white">
                     <i class="fa fa-check-circle text-success me-2"></i>Pickup Details
                     </div>
@@ -606,7 +606,7 @@ if(isset($_POST['fetch_order'])){
                 </div>
 
                 <!-- Payment -->
-                <div class="card mb-3" style="color: #ffffff !important;">
+                <div class="card mb-3">
                     <div class="card-header bg-white">
                     <i class="fa fa-check-circle text-success me-2"></i>Payment
                     </div>
@@ -677,7 +677,7 @@ if(isset($_POST['fetch_order'])){
 
                 <!-- Right Side (Order Summary) -->
                 <div class="col-lg-4">
-                <div class="card" style="color: #ffffff !important;">
+                <div class="card">
                     <div class="card-header bg-white">
                     <strong>Order Summary</strong>
                     </div>

@@ -501,7 +501,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                         data-bs-toggle="tooltip" 
                         data-bs-placement="bottom" 
                         data-bs-html="true"
-                        title="<h6 style='color: #ffffff;' class='mb-0'>Approved List</h6>">
+                        title="<h6 class='mb-0'>Approved List</h6>">
                         <i class="fa fa-check" aria-hidden="true"></i>
                     </a>
                   </li>
@@ -533,7 +533,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                         data-bs-toggle="tooltip" 
                         data-bs-placement="bottom" 
                         data-bs-html="true"
-                        title="<h6 style='color: #ffffff;' class='mb-0'>Order Products from Supplier</h6>">
+                        title="<h6 class='mb-0'>Order Products from Supplier</h6>">
                       <i class="fas fa-boxes-stacked"></i>
                     </a>
                   </li>

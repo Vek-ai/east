@@ -309,19 +309,19 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                                 <div class="ps-2">
                                     <div class="form-check mb-2 text-start">
                                         <input class="form-check-input" type="checkbox" id="toggleActive" checked>
-                                        <label class="form-check-label" for="toggleActive" style="color:#fff;">
+                                        <label class="form-check-label" for="toggleActive">
                                             Show only In Stock
                                         </label>
                                     </div>
                                     <div class="form-check mb-2 text-start">
                                         <input class="form-check-input" type="checkbox" id="onlyPromotions" value="true" data-filter="promotion" data-filter-name="On Promotions">
-                                        <label class="form-check-label" for="onlyPromotions" style="color:#fff;">
+                                        <label class="form-check-label" for="onlyPromotions">
                                             Show Promotions
                                         </label>
                                     </div>
                                     <div class="form-check mb-2 text-start">
                                         <input class="form-check-input" type="checkbox" id="onlyOnSale" value="true" data-filter="on-sale" data-filter-name="On Sale">
-                                        <label class="form-check-label" for="onlyOnSale" style="color:#fff;">
+                                        <label class="form-check-label" for="onlyOnSale">
                                             Show On Sale
                                         </label>
                                     </div>
