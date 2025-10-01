@@ -37,7 +37,7 @@ if(isset($_REQUEST['action'])) {
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <label class="form-label">Available Color Groups</label>
-                                <a href="?page=product_color" target="_blank" class="text-decoration-none">Edit</a>
+                                <a href="?page=color_group" target="_blank" class="text-decoration-none">Edit</a>
                             </div>
                             <select id="color" class="form-control calculate select2" name="color_group[]" multiple>
                                 <option value="">Select Color Group...</option>

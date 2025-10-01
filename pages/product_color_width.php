@@ -43,7 +43,7 @@ td.notes,  td.last-edit{
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
             <li class="breadcrumb-item">
-              <a class="text-muted text-decoration-none" href="?page=product_color">Color Group
+              <a class="text-muted text-decoration-none" href="?page=color_group">Color Group
               </a>
             </li>
             <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>

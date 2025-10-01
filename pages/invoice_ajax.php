@@ -122,7 +122,7 @@ if(isset($_REQUEST['action'])) {
                                                             <td>
                                                                 <div class="d-flex mb-0 gap-8">
                                                                     <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromColorID($row['custom_color'])?>"></a>
-                                                                    <?= getColorFromID($row['custom_color']); ?>
+                                                                    <?= getColorName($row['custom_color']); ?>
                                                                 </div>
                                                             </td>
                                                             <td>

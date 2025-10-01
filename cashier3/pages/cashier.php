@@ -21,6 +21,18 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
 ?>
 <style>
+    .readonly-select {
+        border: none !important;        
+        background: none !important;
+        box-shadow: none !important;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        pointer-events: none;
+        color: #212529;
+        padding-left: 0;
+    }
+
     #special_trim_modal {
         z-index: 11060;
     }
@@ -4302,20 +4314,16 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                                 .toggleClass('form-control', !isActive)
                                 .toggleClass('form-control-plaintext', isActive);
 
-            $editForm.find('select').each(function() {
+            $editForm.find('select').each(function () {
                 const $select = $(this);
                 if (isActive) {
-                    if (!$select.data('readonly')) {
-                        $select.select2('destroy');
-                        $select.addClass('select-readonly');
-                        $select.data('readonly', true);
-                    }
+                    $select.addClass("readonly-select")
+                        .on("mousedown.readonly keydown.readonly", function(e) {
+                            e.preventDefault();
+                        });
                 } else {
-                    if ($select.data('readonly')) {
-                        $select.select2();
-                        $select.removeClass('select-readonly');
-                        $select.data('readonly', false);
-                    }
+                    $select.removeClass("readonly-select")
+                        .off(".readonly");
                 }
             });
 

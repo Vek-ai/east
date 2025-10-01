@@ -778,7 +778,7 @@ if(isset($_REQUEST['action'])) {
             $last_edit = '';
             if (!empty($row['last_edit'])) {
                 $dt = new DateTime($row['last_edit']);
-                $last_edit = $dt->format('d/m/Y');
+                $last_edit = $dt->format('m/d/Y');
             }
     
             if ($isAssigned) {

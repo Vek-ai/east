@@ -95,7 +95,7 @@ $permission = $_SESSION['permission'];
     <div class="card card-body">
         <div class="row">
             <div class="col-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
-                <button type="button" id="addProductModalLabel" class="btn btn-primary d-flex align-items-center view_color_btn" data-title="Add Color Group" data-category="" data-id="0">
+                <button type="button" id="addProductModalLabel" class="btn btn-primary d-flex align-items-center add_color_btn" data-title="Add Color Group" data-category="" data-id="0">
                     <i class="ti ti-users text-white me-1 fs-5"></i> Add Color Group
                 </button>
                 <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
@@ -540,6 +540,37 @@ $permission = $_SESSION['permission'];
             $(this).select2({
                 width: '100%',
                 dropdownParent: $(this).parent()
+            });
+        });
+
+        $(document).on('click', '.add_color_btn', function(event) {
+            event.preventDefault();
+            var title = $(this).data('title');
+            $('#modal_title').html(title);
+
+            var id = $(this).data('id') || '';
+
+            $.ajax({
+                url: "pages/product_color_ajax.php",
+                type: "POST",
+                data: {
+                    action: "fetch_modal_edit",
+                    id: id
+                },
+                success: function(response) {
+                    $('#color_details_sec').html(response);
+                    $(".select2-edit").each(function () {
+                        $(this).select2({
+                            width: '100%',
+                            dropdownParent: $(this).parent()
+                        });
+                    });
+                    toggleFormEditable("colorForm", true, false);
+                    $('#colorGroupModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                }
             });
         });
 
