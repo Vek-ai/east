@@ -4,7 +4,7 @@
  * License - https://github.com/tabler/tabler-icons/blob/master/LICENSE
  */
 @font-face {
-  font-family: tabler-icons;
+  font-family: tabler-icons; 
   font-style: normal;
   font-weight: 400;
   src: url(../fonts/tabler-icons/fonts/tabler-icons.eot);
