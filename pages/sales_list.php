@@ -406,6 +406,7 @@ function showCol($name) {
     $(document).ready(function() {
         var pdfUrl = '';
         var isPrinting = false;
+        var print_order_id = '';
 
         document.title = "<?= $page_title ?>";
 
@@ -456,6 +457,8 @@ function showCol($name) {
         $(document).on('click', '.btn-show-pdf', function (e) {
             e.preventDefault();
 
+            print_order_id = $(this).data('id');
+
             pdfUrl = $(this).attr('href');
             document.getElementById('pdfFrame').src = pdfUrl;
             const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
@@ -468,6 +471,23 @@ function showCol($name) {
             if (type && type != 1) {
                 $(`.pricing-btn[data-id="${type}"]`).removeClass('d-none');
             }
+        });
+
+        $(document).on('click', '#view_customer_pricing', function(e) {
+            e.preventDefault();
+
+            const pricing_id = $(this).data('id');
+            const $iframe = $('#pdfFrame');
+
+            const baseUrl = 'print_order_product.php';
+            const params = new URLSearchParams();
+            params.set('id', print_order_id);
+            params.set('pricing_id', pricing_id);
+
+            const newSrc = baseUrl + '?' + params.toString();
+            $iframe.attr('src', newSrc);
+
+            console.log(newSrc);
         });
 
         $(document).on('click', '#downloadExcelBtn', function () {
