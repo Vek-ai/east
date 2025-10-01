@@ -331,7 +331,7 @@ function renderTrimCategory($pdf, $products, $conn) {
         $row = [
             $row_product['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
             getColorName($row_product['custom_color']),
-            $grade_details['product_grade'],
+            $grade_details['product_grade'] ?? '',
             $profile_details['profile_type'] ?? '',
             $row_product['quantity'],
             number_format($len, 2),
@@ -385,7 +385,7 @@ function renderLumberCategory($pdf, $products, $conn) {
         $row = [
             $row_product['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
             getColorName($row_product['custom_color']),
-            $grade_details['product_grade'],
+            $grade_details['product_grade'] ?? '',
             $profile_details['profile_type'] ?? '',
             $row_product['quantity'],
             number_format($len, 2),

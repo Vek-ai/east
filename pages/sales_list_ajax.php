@@ -72,7 +72,7 @@ if (isset($_POST['search_orders'])) {
     ];
 
     $query = "
-        SELECT o.*, CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name
+        SELECT o.*, CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name, customer_pricing
         FROM orders AS o
         LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
         WHERE o.status != 6
@@ -147,6 +147,7 @@ if (isset($_POST['search_orders'])) {
                 'formatted_time' => date("h:i A", strtotime($row['order_date'])),
                 'cashier' => get_staff_name($row['cashier']),
                 'customer_name' => $row['customer_name'],
+                'customer_pricing' => $row['customer_pricing'],
                 'amount' => number_format($row['discounted_price'], 2),
                 'status' => $status_html,
                 'payment_status'  => $payment_status,

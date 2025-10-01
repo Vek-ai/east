@@ -326,6 +326,25 @@ function showCol($name) {
             </div>
             </div>
         </div>
+
+        <?php
+        $sql = "SELECT id, pricing_name FROM customer_pricing WHERE status = 1 AND hidden = 0 ORDER BY pricing_name ASC";
+        $result = $conn->query($sql);
+
+        if ($result && $result->num_rows > 0) {
+            echo '<div class="mt-3 text-center">';
+            echo '<div class="d-flex flex-wrap justify-content-center">';
+            while ($row = $result->fetch_assoc()) {
+                echo '<button type="button" class="btn btn-outline-primary btn-sm mx-1 my-1 pricing-btn d-none" id="view_customer_pricing" data-id="' . $row['id'] . '">'
+                    . htmlspecialchars($row['pricing_name']) .
+                    '</button>';
+            }
+            echo '</div></div>';
+        } else {
+            echo '<p>No active pricing types found.</p>';
+        }
+        ?>
+
         <div class="mt-3 text-end">
             <button id="printBtn" class="btn btn-success me-2">Print</button>
             <button id="downloadBtn" class="btn btn-primary me-2">Download</button>
@@ -434,12 +453,21 @@ function showCol($name) {
             dropdownParent: $("#year_select").parent()
         });
 
-        $(document).on('click', '.btn-show-pdf', function(e) {
+        $(document).on('click', '.btn-show-pdf', function (e) {
             e.preventDefault();
+
             pdfUrl = $(this).attr('href');
             document.getElementById('pdfFrame').src = pdfUrl;
             const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
             modal.show();
+
+            const type = $(this).data('type');
+            $('.pricing-btn').addClass('d-none');
+            $('.pricing-btn[data-id="1"]').removeClass('d-none');
+
+            if (type && type != 1) {
+                $(`.pricing-btn[data-id="${type}"]`).removeClass('d-none');
+            }
         });
 
         $(document).on('click', '#downloadExcelBtn', function () {
@@ -613,7 +641,7 @@ function showCol($name) {
                                     </a>
                                     <a href="print_order_product.php?id=${order.orderid}" 
                                         class="btn-show-pdf btn btn-danger-gradient btn-sm p-0" 
-                                        data-id="${order.orderid}" data-bs-toggle="tooltip" 
+                                        data-id="${order.orderid}" data-type="${order.customer_pricing}" data-bs-toggle="tooltip" 
                                         title="Print/Download">
                                             <i class="text-success fa fa-print fs-5"></i>
                                     </a>
