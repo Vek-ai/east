@@ -3915,8 +3915,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         $(document).on('submit', '#specialTrimForm', function (event) {
             event.preventDefault();
 
-            var formData = new FormData(this);
+            var preselectedProfile = $('#select-profile').val();
+            const formData = new FormData(this);
             formData.append('save_trim', 'save_trim');
+            formData.append('profile', preselectedProfile);
 
             $.ajax({
                 url: 'pages/cashier_ajax.php',
@@ -3925,9 +3927,32 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    console.log(response);
+                    
                     loadCart();
                     $('#special_trim_modal').modal("hide");
+                },
+                error: function (xhr) {
+                    console.error('Error:', xhr.responseText);
+                }
+            });
+        });
+
+        $(document).on('submit', '#trim_form', function (event) {
+            event.preventDefault();
+            var preselectedProfile = $('#select-profile').val();
+            const formData = new FormData(this);
+            formData.append('save_trim', 'save_trim');
+            formData.append('profile', preselectedProfile);
+            
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    $('.modal').modal("hide");
+                    loadCart();
                 },
                 error: function (xhr) {
                     console.error('Error:', xhr.responseText);
@@ -4867,6 +4892,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             const panel_type = formData.get('panel_type');
             const panel_drip_stop = formData.get('panel_drip_stop');
 
+            var preselectedProfile = $('#select-profile').val();
+            formData.append('profile', preselectedProfile);
+
             const performAjax = (formData) => {
                 formData.append('add_to_cart', 'add_to_cart');
                 $.ajax({
@@ -4897,32 +4925,14 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             }
         });
 
-        $(document).on('submit', '#trim_form', function (event) {
-            event.preventDefault();
-
-            const formData = new FormData(this);
-            formData.append('save_trim', 'save_trim');
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    $('.modal').modal("hide");
-                    loadCart();
-                },
-                error: function (xhr) {
-                    console.error('Error:', xhr.responseText);
-                }
-            });
-        });
-
         $(document).on('submit', '#lumber_form', function (event) {
             event.preventDefault();
 
             const formData = new FormData(this);
             formData.append('save_custom_length', 'save_custom_length');
+            var preselectedProfile = $('#select-profile').val();
+            formData.append('profile', preselectedProfile);
+
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -4945,6 +4955,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
             const formData = new FormData(this);
             formData.append('save_custom_length', 'save_custom_length');
+            var preselectedProfile = $('#select-profile').val();
+            formData.append('profile', preselectedProfile);
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -4967,6 +4979,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
             const formData = new FormData(this);
             formData.append('save_custom_length', 'save_custom_length');
+            var preselectedProfile = $('#select-profile').val();
+            formData.append('profile', preselectedProfile);
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
