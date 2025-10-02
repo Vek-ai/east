@@ -713,6 +713,26 @@ if (mysqli_num_rows($result) > 0) {
         renderTableHeader($pdf, $columns);
 
         foreach ($productsByCategory as $categoryId => $products) {
+            if (!empty($pricing_id)) {
+                if ($pricing_id == 1) {
+                    foreach ($products as &$prod) {
+                        $tmp = $prod['discounted_price'];
+                        $prod['discounted_price'] = $prod['actual_price'];
+                        $prod['actual_price'] = $tmp;
+                    }
+                    unset($prod);
+                } else {
+                    $customer_details_pricing = $customerDetails['customer_pricing'];
+                    $customer_pricing = getPricingCategory($categoryId, $pricing_id) / 100;
+
+                    foreach ($products as &$prod) {
+                        $prod['discounted_price'] = $prod['discounted_price'] * (1 - $customer_pricing);
+                    }
+                    unset($prod);
+                }
+            }
+            
+
             if ($categoryId == $screw_id) {
                 [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $products, $conn);
             } elseif ($categoryId == $panel_id) {

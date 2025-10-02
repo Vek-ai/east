@@ -386,7 +386,7 @@ function showCol($name) {
                                                         <i class="text-primary fa fa-eye fs-5"></i>
                                                     </button>
 
-                                                    <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" title="Print/Download">
+                                                    <a href="print_order_product.php?id=<?= $row["orderid"]; ?>" data-type="<?= $customer_details['customer_pricing'] ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" title="Print/Download">
                                                         <i class="text-success fa fa-print fs-5"></i>
                                                     </a>
 
@@ -746,12 +746,23 @@ function showCol($name) {
             });
         });
 
-        $(document).on('click', '.btn-show-pdf', function(e) {
+        $(document).on('click', '.btn-show-pdf', function (e) {
             e.preventDefault();
+
+            print_order_id = $(this).data('id');
+
             pdfUrl = $(this).attr('href');
             document.getElementById('pdfFrame').src = pdfUrl;
             const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
             modal.show();
+
+            const type = $(this).data('type');
+            $('.pricing-btn').addClass('d-none');
+            $('.pricing-btn[data-id="1"]').removeClass('d-none');
+
+            if (type && type != 1) {
+                $(`.pricing-btn[data-id="${type}"]`).removeClass('d-none');
+            }
         });
 
         $(document).on('click', '#view_customer_pricing', function(e) {
@@ -759,11 +770,10 @@ function showCol($name) {
 
             const pricing_id = $(this).data('id');
             const $iframe = $('#pdfFrame');
-            let src = $iframe.attr('src');
 
-            const [baseUrl, queryString] = src.split('?');
-            const params = new URLSearchParams(queryString || '');
-
+            const baseUrl = 'print_order_product.php';
+            const params = new URLSearchParams();
+            params.set('id', print_order_id);
             params.set('pricing_id', pricing_id);
 
             const newSrc = baseUrl + '?' + params.toString();

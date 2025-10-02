@@ -486,8 +486,6 @@ function showCol($name) {
 
             const newSrc = baseUrl + '?' + params.toString();
             $iframe.attr('src', newSrc);
-
-            console.log(newSrc);
         });
 
         $(document).on('click', '#downloadExcelBtn', function () {
