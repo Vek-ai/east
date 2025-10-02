@@ -3622,6 +3622,9 @@ $(document).ready(function() {
         const panel_type = formData.get('panel_type');
         const panel_drip_stop = formData.get('panel_drip_stop');
 
+        var preselectedProfile = $('#select-profile').val();
+        formData.append('profile', preselectedProfile);
+
         const performAjax = (formData) => {
             formData.append('add_to_cart', 'add_to_cart');
             $.ajax({
@@ -3657,6 +3660,8 @@ $(document).ready(function() {
 
         const formData = new FormData(this);
         formData.append('save_trim', 'save_trim');
+        var preselectedProfile = $('#select-profile').val();
+        formData.append('profile', preselectedProfile);
         $.ajax({
             url: 'pages/cashier_ajax.php',
             type: 'POST',
@@ -3679,6 +3684,8 @@ $(document).ready(function() {
 
         const formData = new FormData(this);
         formData.append('save_custom_length', 'save_custom_length');
+        var preselectedProfile = $('#select-profile').val();
+        formData.append('profile', preselectedProfile);
         $.ajax({
             url: 'pages/cashier_ajax.php',
             type: 'POST',
@@ -3701,6 +3708,8 @@ $(document).ready(function() {
 
         const formData = new FormData(this);
         formData.append('save_custom_length', 'save_custom_length');
+        var preselectedProfile = $('#select-profile').val();
+        formData.append('profile', preselectedProfile);
         $.ajax({
             url: 'pages/cashier_ajax.php',
             type: 'POST',
@@ -3723,6 +3732,8 @@ $(document).ready(function() {
 
         const formData = new FormData(this);
         formData.append('save_custom_length', 'save_custom_length');
+        var preselectedProfile = $('#select-profile').val();
+        formData.append('profile', preselectedProfile);
         $.ajax({
             url: 'pages/cashier_ajax.php',
             type: 'POST',

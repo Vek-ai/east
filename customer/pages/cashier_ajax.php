@@ -180,7 +180,7 @@ if (isset($_POST['deleteitem'])) {
     $line = (int)$_POST['line'];
     $customer_id = (int)$_SESSION['customer_id'];
 
-    $query = "DELETE FROM customer_cart WHERE customer_id = $customer_id AND product_id = '$product_id' AND line = $line";
+    $query = "DELETE FROM customer_cart WHERE id = $line";
     mysqli_query($conn, $query);
 }
 
@@ -1255,6 +1255,7 @@ if (isset($_POST['save_trim'])) {
     $color  = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
     $grade  = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
     $gauge  = mysqli_real_escape_string($conn, $_POST['gauge'] ?? '');
+    $profile  = mysqli_real_escape_string($conn, $_POST['profile'] ?? '');
 
     $quantities = $_POST['quantity'] ?? [];
     $lengths    = $_POST['length'] ?? [];
@@ -1287,6 +1288,7 @@ if (isset($_POST['save_trim'])) {
              AND product_id = '$id'
              AND custom_grade = '$grade'
              AND custom_gauge = '$gauge'
+             AND custom_profile = '$profile'
              AND custom_color = '$color'
              AND note = '$note'
              LIMIT 1"
@@ -1315,7 +1317,7 @@ if (isset($_POST['save_trim'])) {
                 'weight'             => 0,
                 'supplier_id'        => $row['supplier_id'],
                 'custom_grade'       => $grade,
-                'custom_profile'     => $row['profile'],
+                'custom_profile'     => $profile,
                 'custom_gauge'       => $gauge,
                 'is_pre_order'       => $is_pre_order,
                 'is_custom'          => $is_custom,
@@ -1334,8 +1336,9 @@ if (isset($_POST['save_trim'])) {
 }
 
 if (isset($_POST['save_custom_length'])) {
-    $id   = mysqli_real_escape_string($conn, $_POST['id']);
-    $line = mysqli_real_escape_string($conn, $_POST['line'] ?? 1);
+    $id          = mysqli_real_escape_string($conn, $_POST['id']);
+    $profile     = mysqli_real_escape_string($conn, $_POST['profile'] ?? 1);
+    $customer_id = $_SESSION['customer_id'] ?? '';
 
     $quantities  = $_POST['quantity'] ?? [];
     $feet_list   = $_POST['length_feet'] ?? [];
@@ -1344,14 +1347,10 @@ if (isset($_POST['save_custom_length'])) {
     $color_id    = $_POST['color_id'] ?? [];
     $notes       = $_POST['notes'] ?? [];
 
-    if (!isset($_SESSION["cart"])) {
-        $_SESSION["cart"] = array();
-    }
-
     $query = "SELECT * FROM product WHERE product_id = '$id'";
     $result = mysqli_query($conn, $query);
 
-    if (mysqli_num_rows($result) > 0) {
+    if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
 
         foreach ($quantities as $idx => $qty) {
@@ -1362,44 +1361,37 @@ if (isset($_POST['save_custom_length'])) {
             $custom_color       = intval($color_id[$idx] ?? 0);
             $note               = $notes[$idx] ?? '';
 
-            if ($quantity <= 0) continue;
-
-            $found = false;
-            foreach ($_SESSION["cart"] as &$item) {
-                if (
-                    $item['product_id'] == $id &&
-                    $item['estimate_length'] == $estimate_length &&
-                    $item['estimate_length_inch'] == $estimate_length_in &&
-                    $item['custom_color'] == $custom_color
-                ) {
-                    // ✅ Update session
-                    $item['quantity_cart'] += $quantity;
-
-                    // ✅ Update DB
-                    updateCartRow(
-                        ['quantity_cart' => $item['quantity_cart']],
-                        [
-                            'product_id'          => $id,
-                            'estimate_length'     => $estimate_length,
-                            'estimate_length_inch'=> $estimate_length_in,
-                            'custom_color'        => $custom_color
-                        ]
-                    );
-
-                    $found = true;
-                    break;
-                }
+            if ($quantity <= 0 || ($estimate_length == 0 && $estimate_length_in == 0)) {
+                continue;
             }
-            unset($item);
 
-            if (!$found) {
-                $line_to_use = (count($_SESSION["cart"]) > 0) ? max(array_column($_SESSION["cart"], 'line')) + 1 : 1;
+            $noteEsc = mysqli_real_escape_string($conn, $note);
+            $checkSql = "SELECT id, quantity_cart 
+                         FROM customer_cart 
+                         WHERE customer_id = '$customer_id'
+                           AND product_id = '$id'
+                           AND estimate_length = '$estimate_length'
+                           AND estimate_length_inch = '$estimate_length_in'
+                           AND custom_profile = '$profile'
+                           AND custom_color = '$custom_color'
+                           AND note = '$noteEsc'
+                         LIMIT 1";
+            $checkRes = mysqli_query($conn, $checkSql);
 
+            if ($existing = mysqli_fetch_assoc($checkRes)) {
+                $newQty = $existing['quantity_cart'] + $quantity;
+                updateCartRow(
+                    ['quantity_cart' => $newQty],
+                    ['id' => $existing['id']]
+                );
+
+            } else {
                 $item_array = array(
+                    'customer_id'         => $customer_id,
                     'product_id'          => $row['product_id'],
                     'product_item'        => $row['product_item'],
                     'unit_price'          => $price,
-                    'line'                => $line_to_use,
+                    'line'                => 0,
                     'quantity_ttl'        => getProductStockTotal($row['product_id']),
                     'quantity_in_stock'   => 0,
                     'quantity_cart'       => $quantity,
@@ -1411,26 +1403,28 @@ if (isset($_POST['save_custom_length'])) {
                     'weight'              => 0,
                     'supplier_id'         => '',
                     'custom_grade'        => '',
-                    'custom_profile'      => 0,
+                    'custom_profile'      => $profile,
                     'custom_gauge'        => '',
                     'note'                => $note
                 );
 
-                // ✅ Insert to session
-                $_SESSION["cart"][] = $item_array;
-
-                // ✅ Insert to DB
-                insertCartRow($item_array);
+                $newId = insertCartRow($item_array);
+                if ($newId) {
+                    updateCartRow(
+                        ['line' => $newId],
+                        ['id' => $newId]
+                    );
+                }
             }
         }
+
+        echo json_encode(['success' => true]);
+        exit;
     } else {
         echo json_encode(['error' => "Trim Product not available"]);
         exit;
     }
-
-    echo json_encode(['success' => print_r($_SESSION["cart"], true)]);
 }
-
 
 if (isset($_POST['save_drawing'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
@@ -1851,94 +1845,73 @@ if (isset($_POST['add_to_cart'])) {
     $quantity       = $_POST['quantity_product'] ?? [];
     $quantity       = array_map(fn($qty) => empty($qty) ? 0 : $qty, $quantity);
 
-    $lengthFeet         = $_POST['length_feet'] ?? [];
-    $lengthInch         = $_POST['length_inch'] ?? [];
-    $lengthFraction     = $_POST['length_fraction'] ?? [];
-    $panel_types        = $_POST['panel_option'] ?? [];
-    $panel_styles       = $_POST['panel_style'] ?? [];
-    $panel_drip_stops   = $_POST['panel_drip_stop'] ?? [];
-    $bundle_names       = $_POST['bundle_name'] ?? [];
-    $notes              = $_POST['notes'] ?? [];
-    $customer_id        = $_SESSION['customer_id'] ?? '';
-    $product_id    = mysqli_real_escape_string($conn, $_POST['product_id']);
-    $is_pre_order  = mysqli_real_escape_string($conn, $_POST['is_pre_order'] ?? 0);
-    $color         = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
-    $grade         = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
-    $gauge         = mysqli_real_escape_string($conn, $_POST['gauge'] ?? '');
-    $profile       = mysqli_real_escape_string($conn, $_POST['profile'] ?? '');
+    $lengthFeet     = $_POST['length_feet'] ?? [];
+    $lengthInch     = $_POST['length_inch'] ?? [];
+    $panel_types    = $_POST['panel_option'] ?? [];
+    $panel_styles   = $_POST['panel_style'] ?? [];
+    $panel_drip_stops = $_POST['panel_drip_stop'] ?? [];
+    $bundle_names   = $_POST['bundle_name'] ?? [];
+    $notes          = $_POST['notes'] ?? [];
+
+    $customer_id    = $_SESSION['customer_id'] ?? '';
+    $product_id     = mysqli_real_escape_string($conn, $_POST['product_id']);
+    $is_pre_order   = mysqli_real_escape_string($conn, $_POST['is_pre_order'] ?? 0);
+    $color          = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
+    $grade          = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
+    $gauge          = mysqli_real_escape_string($conn, $_POST['gauge'] ?? '');
+    $profile        = mysqli_real_escape_string($conn, $_POST['profile'] ?? '');
     $stiff_board_batten = $_POST['stiff_board_batten'] ?? '';
     $stiff_stand_seam   = $_POST['stiff_stand_seam'] ?? '';
-    $bend_product       = floatval($_POST['bend_product'] ?? 0);
-    $hem_product        = floatval($_POST['hem_product'] ?? 0);
+    $bend_product   = floatval($_POST['bend_product'] ?? 0);
+    $hem_product    = floatval($_POST['hem_product'] ?? 0);
 
     $product_details = getProductDetails($product_id);
-
-    if (!isset($_SESSION["cart"])) {
-        $_SESSION["cart"] = [];
-    }
 
     foreach ($quantity as $index => $qty) {
         $length_feet = isset($lengthFeet[$index]) ? parseNumber($lengthFeet[$index]) : 0;
         $length_inch = isset($lengthInch[$index]) ? parseNumber($lengthInch[$index]) : 0;
-        $note   = $notes[$index] ?? '';
+        $note        = $notes[$index] ?? '';
 
-        if ($length_feet == 0 && $length_inch == 0 || ($qty == 0)) {
+        if (($length_feet == 0 && $length_inch == 0) || $qty == 0) {
             continue;
         }
-        
-        $panel_type_row  = $panel_types[$index]  ?? 'solid';
+
+        $panel_type_row  = $panel_types[$index] ?? 'solid';
         $panel_style_row = $panel_styles[$index] ?? 'regular';
         $panel_drip_stop_row = $panel_drip_stops[$index] ?? '';
         $bundle_name_row = $bundle_names[$index] ?? '';
 
         $quantityInStock = getProductStockInStock($product_id);
         $totalQuantity   = getProductStockTotal($product_id);
-        $totalStock      = $totalQuantity;
 
-        $key = false;
-        foreach ($_SESSION["cart"] as $cartKey => $item) {
-            if (
-                $item['product_id'] == $product_id &&
-                $item['custom_grade'] == $grade &&
-                $item['custom_gauge'] == $gauge &&
-                $item['custom_color'] == $color &&
-                $item['panel_type'] == $panel_type_row &&
-                $item['panel_drip_stop'] == $panel_drip_stop_row &&
-                $item['estimate_length'] == $length_feet &&
-                $item['estimate_length_inch'] == $length_inch &&
-                $item['note'] == $note
-            ) {
-                $key = $cartKey;
-                break;
-            }
-        }
+        $checkSql = "SELECT id, quantity_cart 
+                     FROM customer_cart 
+                     WHERE customer_id = '$customer_id'
+                       AND product_id = '$product_id'
+                       AND custom_grade = '$grade'
+                       AND custom_gauge = '$gauge'
+                       AND custom_color = '$color'
+                       AND custom_profile = '$profile'
+                       AND panel_type = '$panel_type_row'
+                       AND panel_drip_stop = '$panel_drip_stop_row'
+                       AND estimate_length = '$length_feet'
+                       AND estimate_length_inch = '$length_inch'
+                       AND note = '$note'";
+        $checkRes = mysqli_query($conn, $checkSql);
 
-        if ($key !== false) {
-            $requestedQuantity = max($qty, 1);
-            $_SESSION["cart"][$key]['quantity_cart'] += min($requestedQuantity, $totalStock);
+        if ($row = mysqli_fetch_assoc($checkRes)) {
+            $newQty = $row['quantity_cart'] + max($qty, 1);
+            $newQty = min($newQty, $totalQuantity);
 
             updateCartRow(
-                ['quantity_cart' => $_SESSION["cart"][$key]['quantity_cart']],
-                [
-                    'product_id'          => $product_id,
-                    'custom_grade'        => $grade,
-                    'custom_gauge'        => $gauge,
-                    'custom_color'        => $color,
-                    'panel_type'          => $panel_type_row,
-                    'panel_drip_stop'     => $panel_drip_stop_row,
-                    'estimate_length'     => $length_feet,
-                    'estimate_length_inch'=> $length_inch,
-                    'note'                => $note
-                ]
+                ['quantity_cart' => $newQty],
+                ['id' => $row['id']]
             );
 
         } else {
-            $query  = "SELECT * FROM product WHERE product_id = '$product_id'";
-            $result = mysqli_query($conn, $query);
-
-            if (mysqli_num_rows($result) > 0) {
-                $row           = mysqli_fetch_assoc($result);
-                $item_quantity = $qty;
+            $prodRes = mysqli_query($conn, "SELECT * FROM product WHERE product_id = '$product_id'");
+            if ($prodRes && mysqli_num_rows($prodRes) > 0) {
+                $prod = mysqli_fetch_assoc($prodRes);
 
                 $basePrice = floatval($product_details['unit_price'] ?? 0);
                 if (!empty($product_details['sold_by_feet']) && $product_details['sold_by_feet'] == '1') {
@@ -1953,44 +1926,43 @@ if (isset($_POST['add_to_cart'])) {
                     1,
                     0,
                     $panel_type_row,
-                    $row['sold_by_feet'],
+                    $prod['sold_by_feet'],
                     $bend_product,
                     $hem_product
                 );
 
-                $weight   = floatval($row['weight']);
-                $nextLine = empty($_SESSION['cart']) ? 1 : (max(array_keys($_SESSION['cart'])) + 1);
+                $weight = floatval($prod['weight']);
 
                 $item_array = [
                     'customer_id'         => $customer_id,
-                    'product_id'          => $row['product_id'],
-                    'product_item'        => getProductName($row['product_id']),
-                    'supplier_id'         => $row['supplier_id'],
+                    'product_id'          => $prod['product_id'],
+                    'product_item'        => getProductName($prod['product_id']),
+                    'supplier_id'         => $prod['supplier_id'],
                     'unit_price'          => $unit_price,
-                    'line'                => $nextLine,
-                    'quantity_ttl'        => $totalStock,
+                    'quantity_ttl'        => $totalQuantity,
                     'quantity_in_stock'   => $quantityInStock,
-                    'quantity_cart'       => $item_quantity,
-                    'estimate_width'      => $row['width'],
+                    'quantity_cart'       => $qty,
+                    'estimate_width'      => $prod['width'],
                     'estimate_length'     => $length_feet,
                     'estimate_length_inch'=> $length_inch,
                     'prod_usage'          => 0,
-                    'custom_color'        => !empty($color) ? $color : $row['color'],
+                    'custom_color'        => $color,
                     'panel_type'          => $panel_type_row,
                     'panel_style'         => $panel_style_row,
                     'panel_drip_stop'     => $panel_drip_stop_row,
                     'weight'              => $weight,
-                    'custom_grade'        => !empty($grade) ? $grade : $row['grade'],
-                    'custom_gauge'        => !empty($gauge) ? $gauge : $row['gauge'],
-                    'custom_profile'      => !empty($profile) ? $profile : $row['profile'],
+                    'custom_grade'        => $grade,
+                    'custom_gauge'        => $gauge,
+                    'custom_profile'      => $profile,
                     'stiff_board_batten'  => $stiff_board_batten,
                     'stiff_stand_seam'    => $stiff_stand_seam,
                     'is_pre_order'        => $is_pre_order,
                     'bundle_name'         => $bundle_name_row,
-                    'note'                => $note
+                    'note'                => $note,
+                    'bend_product'        => $bend_product,
+                    'hem_product'         => $hem_product
                 ];
 
-                $_SESSION['cart'][$nextLine] = $item_array;
                 insertCartRow($item_array);
             }
         }
