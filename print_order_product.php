@@ -763,7 +763,7 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->Cell(40, $lineheight, 'Customer Savings:', 1, 0, 'L', true);
 
         $pdf->SetFillColor(255, 255, 255);
-        $pdf->Cell(28, $lineheight, '$ ' . number_format($total_saved, 2), 1, 1, 'R', true);
+        $pdf->Cell(28, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 1, 1, 'R', true);
 
         $pdf->Ln(5);
 
