@@ -1964,14 +1964,14 @@ if (isset($_POST['save_trim'])) {
     $is_pre_order = (int)($_POST['is_pre_order'] ?? 0);
     $is_custom    = (int)($_POST['is_custom'] ?? 0);
 
-    $color  = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
-    $grade  = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
-    $gauge  = mysqli_real_escape_string($conn, $_POST['gauge'] ?? '');
-    $profile  = mysqli_real_escape_string($conn, $_POST['profile'] ?? '');
+    $color   = mysqli_real_escape_string($conn, $_POST['color'] ?? '');
+    $grade   = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
+    $gauge   = mysqli_real_escape_string($conn, $_POST['gauge'] ?? '');
+    $profile = mysqli_real_escape_string($conn, $_POST['profile'] ?? '');
 
     $quantities = $_POST['quantity'] ?? [];
     $lengths    = $_POST['length'] ?? [];
-    $notes    = $_POST['notes'] ?? [];
+    $notes      = $_POST['notes'] ?? [];
 
     if (!isset($_SESSION["cart"])) {
         $_SESSION["cart"] = [];
@@ -1989,13 +1989,18 @@ if (isset($_POST['save_trim'])) {
     foreach ($quantities as $i => $quantity) {
         $quantity = floatval($quantity);
         $length   = floatval($lengths[$i] ?? 0);
-        $note   = $notes[$i] ?? '';
+        $note     = $notes[$i] ?? '';
+
+        if ($quantity <= 0) continue;
 
         $feet        = floor($length);
         $decimalFeet = $length - $feet;
-        $inches      = $decimalFeet * 12;
+        $inches      = round($decimalFeet * 12);
 
-        if ($quantity <= 0) continue;
+        if ($inches >= 12) {
+            $feet++;
+            $inches = 0;
+        }
 
         $foundKey = false;
         foreach ($_SESSION["cart"] as $key => $item) {
@@ -2006,8 +2011,8 @@ if (isset($_POST['save_trim'])) {
                 $item['custom_profile'] == $profile &&
                 $item['custom_color'] == $color &&
                 $item['note'] == $note &&
-                $item['estimate_length'] == $feet &&
-                $item['estimate_length_inch'] == $inches
+                intval($item['estimate_length']) == $feet &&
+                intval($item['estimate_length_inch']) == $inches
             ) {
                 $foundKey = $key;
                 break;
@@ -2015,8 +2020,10 @@ if (isset($_POST['save_trim'])) {
         }
 
         if ($foundKey !== false) {
+            // If exists, just add quantity
             $_SESSION["cart"][$foundKey]['quantity_cart'] += $quantity;
         } else {
+            // Add as new line
             $newLine = empty($_SESSION['cart']) ? 1 : (max(array_keys($_SESSION['cart'])) + 1);
 
             $item_array = [
@@ -2034,10 +2041,9 @@ if (isset($_POST['save_trim'])) {
                 'custom_color'      => $color,
                 'weight'            => 0,
                 'supplier_id'       => '',
-                'custom_grade'   => !empty($grade) ? $grade : getLastValue($row['grade']),
-                'custom_gauge'   => !empty($gauge) ? $gauge : getLastValue($row['gauge']),
-                'custom_profile' => !empty($profile) ? $profile : getLastValue($row['profile']),
-                'custom_gauge'      => $gauge,
+                'custom_grade'      => !empty($grade) ? $grade : getLastValue($row['grade']),
+                'custom_gauge'      => !empty($gauge) ? $gauge : getLastValue($row['gauge']),
+                'custom_profile'    => !empty($profile) ? $profile : getLastValue($row['profile']),
                 'is_pre_order'      => $is_pre_order,
                 'is_custom'         => $is_custom,
                 'custom_trim_src'   => $img_src,
