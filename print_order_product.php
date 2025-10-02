@@ -721,7 +721,7 @@ if (mysqli_num_rows($result) > 0) {
                         $prod['actual_price'] = $tmp;
                     }
                     unset($prod);
-                } else {
+                } /* else {
                     $customer_details_pricing = $customerDetails['customer_pricing'];
                     $customer_pricing = getPricingCategory($categoryId, $pricing_id) / 100;
 
@@ -729,7 +729,7 @@ if (mysqli_num_rows($result) > 0) {
                         $prod['discounted_price'] = $prod['discounted_price'] * (1 - $customer_pricing);
                     }
                     unset($prod);
-                }
+                } */
             }
             
 
