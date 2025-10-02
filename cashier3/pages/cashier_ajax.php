@@ -1525,13 +1525,13 @@ if (isset($_POST['save_order'])) {
             $query = "INSERT INTO order_product (
                 orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem,
                 custom_length, custom_length2, actual_price, discounted_price, product_category,
-                custom_color, custom_grade, custom_profile, current_customer_discount, current_loyalty_discount,
+                custom_color, custom_grade, custom_gauge, custom_profile, current_customer_discount, current_loyalty_discount,
                 used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style, custom_img_src, bundle_id, note
             ) VALUES (
                 '$orderid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width',
                 '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch',
                 '$actual_price', '$discounted_price', '$product_category', '$custom_color',
-                '$custom_grade', '$custom_profile', '$curr_discount', '$loyalty_discount', '$used_discount',
+                '$custom_grade', '$custom_gauge', '$custom_profile', '$curr_discount', '$loyalty_discount', '$used_discount',
                 '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$panel_style', '$custom_img_src', '$bundle_id', '$note'
             )";
 
@@ -1558,6 +1558,7 @@ if (isset($_POST['save_order'])) {
                             product_category, 
                             custom_color, 
                             custom_grade, 
+                            custom_gauge, 
                             custom_profile,
                             current_customer_discount, 
                             current_loyalty_discount, 
@@ -1585,6 +1586,7 @@ if (isset($_POST['save_order'])) {
                             '$product_category', 
                             '$custom_color', 
                             '$custom_grade', 
+                            '$custom_gauge', 
                             '$custom_profile', 
                             '$curr_discount', 
                             '$loyalty_discount', 
