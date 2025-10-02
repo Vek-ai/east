@@ -143,7 +143,7 @@ if(isset($_POST['fetch_modal'])){
                 </div>
 
                 <div class="col-3 col-6-md">
-                    <select class="form-control mb-0 trim_length_select">
+                    <select class="form-control mb-0 trim_length_select" name="length[]">
                         <option value="0" selected>Select Length</option>
                         <?php
                         $lengths = getProductAvailableLengths($id);
@@ -155,7 +155,7 @@ if(isset($_POST['fetch_modal'])){
                         }
                         ?>
                     </select>
-                    <input type="hidden" name="length[]" class="form-control mb-0 trim_length">
+                    <input type="hidden" name="length_hidden[]" class="form-control mb-0 trim_length">
                 </div>
 
                 <div class="col-3 col-6-md notes-col d-none">
