@@ -2005,7 +2005,9 @@ if (isset($_POST['save_trim'])) {
                 $item['custom_gauge'] == $gauge &&
                 $item['custom_profile'] == $profile &&
                 $item['custom_color'] == $color &&
-                $item['note'] == $note
+                $item['note'] == $note &&
+                $item['estimate_length'] == $feet &&
+                $item['estimate_length_inch'] == $inches
             ) {
                 $foundKey = $key;
                 break;
