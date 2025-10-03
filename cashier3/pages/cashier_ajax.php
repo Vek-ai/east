@@ -1036,8 +1036,6 @@ if (isset($_POST['save_order'])) {
     $deliver_zip = mysqli_real_escape_string($conn, $_POST['deliver_zip'] ?? '');
     $delivery_amt = mysqli_real_escape_string($conn, $_POST['delivery_amt'] ?? '');
     
-    
-
     $pay_type = mysqli_real_escape_string($conn, $_POST['payment_method'] ?? '');
     $contractor_id = mysqli_real_escape_string($conn, $_POST['contractor_id'] ?? '');
     $truck = intval($_POST['truck']);

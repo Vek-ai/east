@@ -2937,10 +2937,13 @@ function getMultiplierValue($color_id, $grade_id, $gauge_id) {
     $gauge_id    = intval($gauge_id);
     $category_id = intval($category_id);
 
+    $color_details = getColorDetails($color_id);
+    $color_group = $color_details['color_group'];
+
     $multiplier = 1.0;
 
     if ($color_id > 0) {
-        $sql = "SELECT multiplier FROM product_color WHERE id = $color_id LIMIT 1";
+        $sql = "SELECT multiplier FROM product_color WHERE id = '$color_group' LIMIT 1";
         $res = $conn->query($sql);
         if ($res && $row = $res->fetch_assoc()) {
             $multiplier *= floatval($row['multiplier']);
@@ -2948,7 +2951,7 @@ function getMultiplierValue($color_id, $grade_id, $gauge_id) {
     }
 
     if ($grade_id > 0) {
-        $sql = "SELECT multiplier FROM product_grade WHERE product_grade_id = $grade_id LIMIT 1";
+        $sql = "SELECT multiplier FROM product_grade WHERE product_grade_id = '$grade_id' LIMIT 1";
         $res = $conn->query($sql);
         if ($res && $row = $res->fetch_assoc()) {
             $multiplier *= floatval($row['multiplier']);
@@ -2956,7 +2959,7 @@ function getMultiplierValue($color_id, $grade_id, $gauge_id) {
     }
 
     if ($gauge_id > 0) {
-        $sql = "SELECT multiplier FROM product_gauge WHERE product_gauge_id = $gauge_id LIMIT 1";
+        $sql = "SELECT multiplier FROM product_gauge WHERE product_gauge_id = '$gauge_id' LIMIT 1";
         $res = $conn->query($sql);
         if ($res && $row = $res->fetch_assoc()) {
             $multiplier *= floatval($row['multiplier']);

@@ -4386,9 +4386,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
             if(payment_method){
-
-                console.log(isAddingCustomer);
-
                 $.ajax({
                     url: 'pages/cashier_ajax.php',
                     type: 'POST',
@@ -4433,6 +4430,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         } else if (response.error) {
                             alert(response.error);
                         }
+
+                        console.log(response);
 
                         $('#btnApprovalModal').addClass('d-none');
                         $('#save_order').addClass('d-none');

@@ -254,8 +254,6 @@ if(isset($_POST['fetch_order'])){
                 $product_price += $product_price * $custom_multiplier;
             }
 
-            $color_id = $values["custom_color"];
-            $color_details = getColorDetails($color_id);
             if (isset($values["used_discount"])){
                 $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
             }
