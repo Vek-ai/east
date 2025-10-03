@@ -981,37 +981,6 @@ if(isset($_POST['fetch_cart'])){
                     dropdownParent: $('#cartTable')
                 });
             });
-
-            $(document).on('change', '.grade-cart', function () {
-                const selectedGrade = $(this).val();
-                const no = $(this).attr('id').replace('grade', '');
-                const colorSelect = $(`#color_cart${no}`);
-
-                if (colorSelect.length) {
-                    colorSelect.val(null).trigger('change');
-
-                    colorSelect.find('option').each(function () {
-                        const grade = String($(this).data('grade'));
-                        if (!selectedGrade || grade === String(selectedGrade)) {
-                            console.log('show')
-                            $(this).removeAttr('disabled').show();
-                        } else {
-                            console.log('hide')
-                            $(this).attr('disabled', 'disabled').hide();
-                        }
-                    });
-
-                    colorSelect.select2('destroy').select2({
-                        width: '300px',
-                        placeholder: "Select...",
-                        dropdownAutoWidth: true,
-                        dropdownParent: $('#cartTable'),
-                        templateResult: formatOption,
-                        templateSelection: formatSelected
-                    });
-                }
-            });
-
         });
     </script>
     <?php
