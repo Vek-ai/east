@@ -11,89 +11,6 @@ $trim_id = 4;
 $panel_id = 3;
 $screw_id = 16;
 
-function calculateCartItem($values) {
-    $customer_id = $_SESSION['customer_id'];
-    $customer_details = getCustomerDetails($customer_id);
-    $customer_details_pricing = $customer_details['customer_pricing'];
-
-    $data_id     = $values["product_id"];
-    $line        = $values["line"];
-    $product     = getProductDetails($data_id);
-    $stock_qty   = getProductStockTotal($data_id);
-    $category_id = $product["product_category"];
-
-    $stock_text = ($stock_qty > 0)
-        ? '<a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
-                <span class="text-bg-success p-1 rounded-circle"></span>
-                <span class="ms-2 fs-3">In Stock</span>
-           </a>'
-        : '<a href="javascript:void(0);" id="view_out_of_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
-                <span class="text-bg-danger p-1 rounded-circle"></span>
-                <span class="ms-2 fs-3">Out of Stock</span>
-           </a>';
-
-    $customer_pricing_rate = getPricingCategory($category_id, $customer_details_pricing) / 100;
-
-    $estimate_length      = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 1;
-    $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
-    $total_length = $estimate_length + ($estimate_length_inch / 12);
-    if ($total_length <= 0) $total_length = 1;
-
-    $amount_discount = isset($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
-    $quantity   = isset($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
-    $unit_price = isset($values["unit_price"]) ? floatval($values["unit_price"]) : 0;
-    $product_price = ($quantity * $unit_price * $total_length) - $amount_discount;
-
-    if (!empty($values["is_custom"])) {
-        $custom_multiplier = floatval(getCustomMultiplier($category_id));
-        $product_price += $product_price * $custom_multiplier;
-    }
-
-    $color_id = $values["custom_color"];
-    $grade    = intval($values["custom_grade"]);
-    $gauge    = intval($values["custom_gauge"]);
-    $profile  = intval($values["custom_profile"]);
-
-    $multiplier = getMultiplierValue($color_id, $grade, $gauge);
-    $product_price *= $multiplier;
-
-    $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
-
-    $subtotal       = $product_price;
-    $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing_rate);
-    $savings        = $product_price - $customer_price;
-
-    // add all useful fields
-    return [
-        "data_id"        => $data_id,
-        "line"           => $line,
-        "product"        => $product,
-        "category_id"    => $category_id,
-        "stock_qty"      => $stock_qty,
-        "stock_text"     => $stock_text,
-        "default_image"  => '../images/product/product.jpg',
-        "picture_path"   => !empty($product['main_image']) ? "../" . $product['main_image'] : "../images/product/product.jpg",
-        "images_directory" => "../images/drawing/",
-        "quantity"       => $quantity,
-        "unit_price"     => $unit_price,
-        "total_length"   => $total_length,
-        "amount_discount"=> $amount_discount,
-        "product_price"  => $product_price,
-        "subtotal"       => $subtotal,
-        "customer_price" => $customer_price,
-        "savings"        => $savings,
-        "color_id"       => $color_id,
-        "grade"          => $grade,
-        "gauge"          => $gauge,
-        "profile"        => $profile,
-        "discount"       => $discount,
-        "multiplier"     => $multiplier,
-        "customer_pricing_rate" => $customer_pricing_rate,
-        "sold_by_feet"   => $product["sold_by_feet"] ?? 0,
-        "drawing_data"   => $values["drawing_data"] ?? '',
-    ];
-}
-
 if(isset($_POST['fetch_cart'])){
     $discount = 0;
     $tax = 0;
@@ -539,86 +456,11 @@ if(isset($_POST['fetch_cart'])){
                                                 </button>
                                             </div>
                                         </td>
-                                        <?php 
-                                        if($category_id == $panel_id){ // Panels ID
-                                        ?>
                                         <td class="text-center">
                                             <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                                 <input class="form-control form-control-sm text-center px-1" 
                                                     type="text" 
-                                                    value="<?= $product['width']; ?>" 
-                                                    placeholder="W" 
-                                                    size="5" 
-                                                    style="width: 40px;" 
-                                                    data-line="<?= $line; ?>" 
-                                                    data-id="<?= $product_id; ?>" 
-                                                    <?= !empty($product['width']) ? 'readonly' : '' ?>>
-
-                                                <span class="mx-1">X</span>
-
-                                                <?php if ($sold_by_feet == 1): ?>
-                                                    <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
-                                                        <div class="input-group d-flex align-items-center flex-nowrap w-auto">
-                                                            <input class="form-control form-control-sm text-center px-1 mr-1" 
-                                                                type="text" 
-                                                                value="<?= round(floatval($values['estimate_length']),2) ?>" 
-                                                                step="0.001" 
-                                                                placeholder="FT" 
-                                                                size="5" 
-                                                                style="width: 40px;" 
-                                                                data-line="<?= $line; ?>" 
-                                                                data-id="<?= $product_id; ?>" 
-                                                                onchange="updateEstimateLength(this)">
-                                                            
-                                                            <input class="form-control form-control-sm text-center px-1" 
-                                                                type="text" 
-                                                                value="<?= round(floatval($values['estimate_length_inch']),2) ?>" 
-                                                                step="0.001" 
-                                                                placeholder="IN" 
-                                                                size="5" 
-                                                                style="width: 60px;" 
-                                                                data-line="<?= $line; ?>" 
-                                                                data-id="<?= $product_id; ?>" 
-                                                                onchange="updateEstimateLengthInch(this)">
-                                                        </div>
-                                                    </fieldset>
-                                                <?php else: ?>
-                                                    <input class="form-control form-control-sm text-center px-1" 
-                                                        type="text" 
-                                                        value="<?= round(floatval($values['estimate_length']),2) ?>" 
-                                                        placeholder="H" 
-                                                        size="5" 
-                                                        style="width: 70px;" 
-                                                        data-line="<?= $line; ?>" 
-                                                        data-id="<?= $product_id; ?>" 
-                                                        onchange="updateEstimateLength(this)">
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <?php
-                                        }else if($category_id == $screw_id){
-                                        ?>
-                                        <td>
-                                            <div class="d-flex flex-column align-items-center d-none">
-                                                <input class="form-control text-center mb-1" type="text" value="<?= isset($values["estimate_width"]) ? $values["estimate_width"] : $product["width"]; ?>" placeholder="Width" size="5" data-line="<?php echo $line; ?>" data-id="<?php echo $product_id; ?>" onchange="updateEstimateWidth(this)">
-                                                <span class="mx-1 text-center mb-1">X</span>
-                                                <fieldset class="border p-1 position-relative">
-                                                    <div class="input-group d-flex align-items-center">
-                                                        <input class="form-control pr-0 pl-1 mr-1" type="text" value="<?= round(floatval($values["estimate_length"]),2) ?>" step="0.001" placeholder="FT" size="5" data-line="<?php echo $line; ?>" data-id="<?php echo $product_id; ?>" onchange="updateEstimateLength(this)">
-                                                        <input class="form-control pr-0 pl-1" type="text" value="<?= round(floatval($values["estimate_length_inch"]),2) ?>" step="0.001" placeholder="IN" size="5" data-line="<?php echo $line; ?>" data-id="<?php echo $product_id; ?>" onchange="updateEstimateLengthInch(this)">
-                                                    </div>
-                                                </fieldset>
-                                            </div>
-                                            <?= $values["estimate_length"] ?> pack (<?= $values["estimate_length"] ?> pcs)
-                                        </td>
-                                        <?php
-                                        }else if($category_id == $trim_id){
-                                        ?>
-                                        <td class="text-center">
-                                            <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
-                                                <input class="form-control form-control-sm text-center px-1" 
-                                                    type="text" 
-                                                    value="<?= $product['width']; ?>" 
+                                                    value="<?= $product['width'] ?? ''; ?>" 
                                                     placeholder="W" 
                                                     size="5" 
                                                     style="width: 40px;" 
@@ -655,24 +497,6 @@ if(isset($_POST['fetch_cart'])){
                                                 </fieldset>
                                             </div>
                                         </td>
-                                        <?php
-                                        }else if(hasProductVariantLength($product_id)){
-                                        ?>
-                                        <td class="text-center">
-                                            <fieldset class="border p-1 position-relative">
-                                                <div class="input-group d-flex align-items-center">
-                                                    <input class="form-control pr-0 pl-1 mr-1" type="text" value="<?= round(floatval($values["estimate_length"]),2) ?>" placeholder="FT" size="5" data-line="<?php echo $line; ?>" data-id="<?php echo $product_id; ?>" onchange="updateEstimateLength(this)">
-                                                    <input class="form-control pr-0 pl-1" type="text" value="<?= round(floatval($values["estimate_length_inch"]),2) ?>" placeholder="IN" size="5" data-line="<?php echo $line; ?>" data-id="<?php echo $product_id; ?>" onchange="updateEstimateLengthInch(this)">
-                                                </div>
-                                            </fieldset>
-                                        </td>
-                                        <?php
-                                        }else{
-                                        ?>
-                                        <td></td>
-                                        <?php
-                                        }
-                                        ?>
                                         <td class="text-center">
                                             <select class="form-control panel_type_cart" name="panel_type" onchange="updatePanelType(this)" data-line="<?= $values['line']; ?>" data-id="<?= $product_id; ?>">
                                                 <option value="">Select...</option>

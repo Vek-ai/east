@@ -3008,4 +3008,220 @@ function getColumnFromTable($table, $column, $ids = null) {
 
     return implode(', ', $data);
 }
+
+function calculateCartItem($values) {
+    $customer_id = $_SESSION['customer_id'];
+    $customer_details = getCustomerDetails($customer_id);
+    $customer_details_pricing = $customer_details['customer_pricing'];
+
+    $data_id     = $values["product_id"];
+    $line        = $values["line"];
+    $product     = getProductDetails($data_id);
+    $stock_qty   = getProductStockTotal($data_id);
+    $category_id = $product["product_category"];
+
+    $stock_text = ($stock_qty > 0)
+        ? '<a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
+                <span class="text-bg-success p-1 rounded-circle"></span>
+                <span class="ms-2 fs-3">In Stock</span>
+           </a>'
+        : '<a href="javascript:void(0);" id="view_out_of_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
+                <span class="text-bg-danger p-1 rounded-circle"></span>
+                <span class="ms-2 fs-3">Out of Stock</span>
+           </a>';
+
+    $customer_pricing_rate = getPricingCategory($category_id, $customer_details_pricing) / 100;
+
+    $estimate_length      = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 1;
+    $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
+    $total_length = $estimate_length + ($estimate_length_inch / 12);
+    if ($total_length <= 0) $total_length = 1;
+
+    $amount_discount = isset($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
+    $quantity   = isset($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
+    $unit_price = isset($values["unit_price"]) ? floatval($values["unit_price"]) : 0;
+    $product_price = ($quantity * $unit_price * $total_length) - $amount_discount;
+
+    if (!empty($values["is_custom"])) {
+        $custom_multiplier = floatval(getCustomMultiplier($category_id));
+        $product_price += $product_price * $custom_multiplier;
+    }
+
+    $color_id = $values["custom_color"];
+    $grade    = intval($values["custom_grade"]);
+    $gauge    = intval($values["custom_gauge"]);
+    $profile  = intval($values["custom_profile"]);
+
+    $multiplier = getMultiplierValue($color_id, $grade, $gauge);
+    $product_price *= $multiplier;
+
+    $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
+
+    $subtotal       = $product_price;
+    $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing_rate);
+    $savings        = $product_price - $customer_price;
+
+    return [
+        "data_id"        => $data_id,
+        "line"           => $line,
+        "product"        => $product,
+        "category_id"    => $category_id,
+        "stock_qty"      => $stock_qty,
+        "stock_text"     => $stock_text,
+        "default_image"  => '../images/product/product.jpg',
+        "picture_path"   => !empty($product['main_image']) ? "../" . $product['main_image'] : "../images/product/product.jpg",
+        "images_directory" => "../images/drawing/",
+        "quantity"       => $quantity,
+        "unit_price"     => $unit_price,
+        "total_length"   => $total_length,
+        "amount_discount"=> $amount_discount,
+        "product_price"  => $product_price,
+        "subtotal"       => $subtotal,
+        "customer_price" => $customer_price,
+        "savings"        => $savings,
+        "color_id"       => $color_id,
+        "grade"          => $grade,
+        "gauge"          => $gauge,
+        "profile"        => $profile,
+        "discount"       => $discount,
+        "multiplier"     => $multiplier,
+        "customer_pricing_rate" => $customer_pricing_rate,
+        "sold_by_feet"   => $product["sold_by_feet"] ?? 0,
+        "drawing_data"   => $values["drawing_data"] ?? '',
+    ];
+}
+
+function createNet30Approval($customerid, $cashierid, $pay_type, $charge_net_30, $job_info = [], $delivery_info = [], $tax_rate = 0.0, $discount_default = 0.0) {
+    global $conn;
+
+    if ($pay_type !== 'net30') {
+        return ['success' => false, 'error' => 'Payment type is not net30.'];
+    }
+
+    $total_price = 0;
+    $total_discounted_price = 0;
+    $discount_percent = $discount_default;
+
+    if (empty($_SESSION['cart'])) {
+        return ['success' => false, 'error' => 'Cart is empty.'];
+    }
+
+    foreach ($_SESSION['cart'] as $cart_item) {
+        $calc = calculateCartItem($cart_item);
+
+        $discount = isset($cart_item['used_discount']) ? floatval($cart_item['used_discount']) / 100 : $discount_default;
+
+        $quantity = $calc['quantity'] ?? 0;
+        $total_length = $calc['total_length'] ?? 1;
+        $unit_price = $calc['product_price'] / $total_length / max($quantity,1);
+        $actual_price = $unit_price * $quantity * $total_length;
+
+        $price_after_discount = ($actual_price * (1 - $discount) * (1 - ($calc['customer_pricing_rate'] ?? 0))) - ($calc['amount_discount'] ?? 0);
+        $price_after_discount = max(0, $price_after_discount);
+
+        $discounted_price = $price_after_discount * (1 + $tax_rate);
+
+        $total_price += $actual_price;
+        $total_discounted_price += $discounted_price;
+    }
+
+    if ($charge_net_30 >= $total_discounted_price) {
+        return ['success' => true, 'message' => 'Net30 balance sufficient. No approval needed.'];
+    }
+
+    $job_po = mysqli_real_escape_string($conn, $job_info['job_po'] ?? '');
+    $job_name = mysqli_real_escape_string($conn, $job_info['job_name'] ?? '');
+    $deliver_address = mysqli_real_escape_string($conn, $delivery_info['deliver_address'] ?? '');
+    $deliver_city = mysqli_real_escape_string($conn, $delivery_info['deliver_city'] ?? '');
+    $deliver_state = mysqli_real_escape_string($conn, $delivery_info['deliver_state'] ?? '');
+    $deliver_zip = mysqli_real_escape_string($conn, $delivery_info['deliver_zip'] ?? '');
+    $delivery_amt = mysqli_real_escape_string($conn, $delivery_info['delivery_amt'] ?? '');
+    $deliver_fname = mysqli_real_escape_string($conn, $delivery_info['deliver_fname'] ?? '');
+    $deliver_lname = mysqli_real_escape_string($conn, $delivery_info['deliver_lname'] ?? '');
+
+    $insert_approval = "
+        INSERT INTO approval (
+            status, cashier, total_price, discounted_price, discount_percent,
+            cash_amt, disc_amount, submitted_date, customerid, originalcustomerid,
+            job_name, job_po, deliver_address, deliver_city, deliver_state,
+            deliver_zip, delivery_amt, deliver_fname, deliver_lname, type_approval, pay_type
+        ) VALUES (
+            1, '$cashierid', '$total_price', '$total_discounted_price', '$discount_percent',
+            0, 0, NOW(), '$customerid', '$customerid',
+            '$job_name', '$job_po', '$deliver_address', '$deliver_city', '$deliver_state',
+            '$deliver_zip', '$delivery_amt', '$deliver_fname', '$deliver_lname', 2 , '$pay_type'
+        )
+    ";
+
+    if (!mysqli_query($conn, $insert_approval)) {
+        return ['success' => false, 'error' => 'Approval insert failed: ' . mysqli_error($conn)];
+    }
+
+    $approval_id = mysqli_insert_id($conn);
+
+    foreach ($_SESSION['cart'] as $cart_item) {
+        $calc = calculateCartItem($cart_item);
+
+        $sql = "
+            INSERT INTO approval_product (
+                approval_id, productid, product_item, status, quantity, custom_color,
+                custom_grade, custom_profile, custom_width, custom_height, custom_bend, custom_hem,
+                custom_length, custom_length2, actual_price, discounted_price,
+                product_category, usageid, current_customer_discount, current_loyalty_discount,
+                used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style
+            ) VALUES (
+                '$approval_id',
+                '" . intval($calc['data_id']) . "',
+                '" . mysqli_real_escape_string($conn, $calc['product']['product_name']) . "',
+                0,
+                '" . mysqli_real_escape_string($conn, $calc['quantity']) . "',
+                '" . (isset($calc['color_id']) ? intval($calc['color_id']) : '') . "',
+                '" . (isset($calc['grade']) ? intval($calc['grade']) : '') . "',
+                '" . (isset($calc['profile']) ? intval($calc['profile']) : '') . "',
+                '" . mysqli_real_escape_string($conn, $calc['product']['width'] ?? '') . "',
+                '',
+                '',
+                '',
+                '" . mysqli_real_escape_string($conn, $calc['total_length']) . "',
+                '',
+                '" . floatval($calc['product_price']) . "',
+                '" . floatval($calc['customer_price']) . "',
+                '" . intval($calc['category_id']) . "',
+                0,
+                '',
+                '',
+                '" . (isset($calc['discount']) ? floatval($calc['discount'] * 100) : '') . "',
+                '" . intval($calc['product']['standing_seam'] ?? 0) . "',
+                '" . intval($calc['product']['board_batten'] ?? 0) . "',
+                '" . intval($calc['product']['panel_type'] ?? 0) . "',
+                '" . intval($calc['product']['panel_style'] ?? 0) . "'
+            )
+        ";
+
+        if (!mysqli_query($conn, $sql)) {
+            return [
+                'success' => false,
+                'error' => 'Product approval insert failed!',
+                'error_query' => mysqli_error($conn),
+            ];
+        }
+    }
+
+    $actorId = $cashierid;
+    $targetId = $approval_id;
+    $targetType = "Request Approval(Net Balance)";
+    $message = "Approval #$targetId requested due to insufficient Net balance";
+    $url = '?page=approval_list';
+    createNotification($actorId, 'request_approval', $targetId, $targetType, $message, 'admin', $url);
+
+    unset($_SESSION['cart']);
+
+    return [
+        'success' => true,
+        'approval_id' => $approval_id,
+        'total_price' => $total_price,
+        'total_discounted_price' => $total_discounted_price,
+        'message' => 'Approval request created due to insufficient Net balance.'
+    ];
+}
 ?>
