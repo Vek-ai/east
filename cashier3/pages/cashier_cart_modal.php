@@ -606,10 +606,11 @@ if(isset($_POST['fetch_cart'])){
                             $item = calculateCartItem($values);
                             $product = $item["product"];
                             $category_id = $item["category_id"];
+                            $multiplier = $item['multiplier'];
                             ?>
 
                             <?php if ($category_id != $panel_id): ?>
-                                <tr>
+                                <tr data-mult="<?= $multiplier ?>">
                                     <td data-color="<?= getColorName($item["color_id"]) ?>"
                                         data-pricing="<?= $item["customer_pricing_rate"] ?>"
                                         data-category="<?= $category_id ?>"

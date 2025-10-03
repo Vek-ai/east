@@ -207,6 +207,52 @@ if(isset($_POST['fetch_modal'])){
 
         <script>
             $(document).ready(function () {
+                function updatePrice() {
+                    const product_id = $('#product_id').val();
+                    const quantities = [];
+                    const lengthFeetArr = [];
+
+                    $('.quantity-length-row').each(function() {
+                        const qty = parseInt($(this).find('.trim_qty').val()) || 0;
+                        quantities.push(qty);
+
+                        const lengthFeet = parseFloat($(this).find('.trim_length_select').val()) || 0;
+                        lengthFeetArr.push(lengthFeet);
+                    });
+
+                    const color = parseInt($('#qty-color').val()) || 0;
+                    const grade = parseInt($('#qty-grade').val()) || 0;
+                    const gauge = parseInt($('#qty-gauge').val()) || 0;
+
+                    $.ajax({
+                        url: 'pages/cashier_trim_modal.php',
+                        method: 'POST',
+                        data: {
+                            product_id: product_id,
+                            quantity: quantities,
+                            lengthFeet: lengthFeetArr,
+                            color: color,
+                            grade: grade,
+                            gauge: gauge,
+                            fetch_price: 'fetch_price'
+                        },
+                        success: function(response) {
+                            $('#trim_price').text(response);
+                        }
+                    });
+                }
+
+
+                $(document).on('change', '.trim_length, .trim_qty, #qty-color, #qty-grade, #qty-gauge', function() {
+                    updatePrice();
+                });
+
+                $(document).on('change', '.trim_length_select', function() {
+                    var value = $(this).val();
+                    $('.trim_length').val(value);
+                    updatePrice();
+                });
+
                 function fetchCoilStock() {
                     const color = parseInt($('#trim-color').val()) || 0;
                     const grade = parseInt($('#trim-grade').val()) || 0;
@@ -291,6 +337,52 @@ if(isset($_POST['fetch_modal'])){
             });
         </script>
 <?php
+}
+
+if (isset($_POST['fetch_price'])) {
+    global $conn;
+
+    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+    $quantities = $_POST['quantity'] ?? [];
+    $lengthFeet = $_POST['lengthFeet'] ?? []; // match JS key
+
+    $color_id = isset($_POST['color']) ? intval($_POST['color']) : 0;
+    $grade    = isset($_POST['grade']) ? intval($_POST['grade']) : 0;
+    $gauge    = isset($_POST['gauge']) ? intval($_POST['gauge']) : 0;
+
+    $totalPrice = 0;
+
+    if ($product_id > 0) {
+        $product = getProductDetails($product_id);
+        $basePrice = floatval($product['unit_price']);
+        $soldByFeet = intval($product['sold_by_feet'] ?? 1);
+
+        foreach ($quantities as $index => $qty) {
+            if ($qty <= 0) continue;
+
+            $feet = isset($lengthFeet[$index]) && $lengthFeet[$index] !== '' ? floatval($lengthFeet[$index]) : 0;
+
+            if ($feet <= 0) continue;
+
+            $totalPrice += $qty * calculateUnitPrice(
+                $basePrice,
+                $feet,
+                '',
+                '',
+                '',
+                '',
+                '',
+                $color_id,
+                $grade,
+                $gauge
+            );
+
+            $totalPrice += $qty * $unitPrice;
+        }
+    }
+
+    echo number_format($totalPrice, 2);
+    
 }
 
 if (isset($_POST['fetch_stock_coil'])) {

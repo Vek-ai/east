@@ -1374,7 +1374,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     $('#est_lng').val(lng);
 
                     calculateDeliveryAmount();
-                    calculateDeliveryAmountEst();
 
                 } else {
                     console.error("Address not found for these coordinates.");
@@ -1539,39 +1538,11 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         $('#estimated_points').text('+' + estimated_points);
     }
 
-
     function number_format(number, decimals = 2) {
         return parseFloat(number).toLocaleString('en-US', {
             minimumFractionDigits: decimals,
             maximumFractionDigits: decimals
         });
-    }
-
-
-    function calculateDeliveryAmountEst() {
-        var customerLat = parseFloat($('#est_lat').val());
-        var customerLng = parseFloat($('#est_lng').val());
-        var lat2Float = parseFloat(lat2);
-        var lng2Float = parseFloat(lng2);
-
-        var deliver_method = $('#est_delivery_method').val();
-
-        if(deliver_method == 'pickup'){
-            $('#est_delivery_amt').val(0).trigger('change');
-        }else{
-            if (customerLat !== 0 && customerLng !== 0 && lat2Float !== 0 && lng2Float !== 0) {
-                const point1 = new google.maps.LatLng(customerLat, customerLng);
-                const point2 = new google.maps.LatLng(lat2Float, lng2Float);
-                const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
-                const distanceInMiles = distanceInMeters / 1609.34;
-                var deliveryAmount = amtPerMile * distanceInMiles;
-                deliveryAmount = deliveryAmount.toFixed(2);
-            } else {
-                deliveryAmount = amtDeliveryDefault.toFixed(2);
-            }
-
-            $('#est_delivery_amt').val(deliveryAmount).trigger('change');
-        }
     }
 
     function updateColor(element){
@@ -1876,28 +1847,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 calculateDeliveryAmount();
                 loadCartItemsHeader();
                 $('#prev_page_order').removeClass("d-none");
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    }
-
-    function loadEstimateContents(){
-        $.ajax({
-            url: 'pages/cashier_estimate_modal.php',
-            type: 'POST',
-            data: {
-                fetch_estimate: "fetch_estimate"
-            },
-            success: function(response) {
-                $('#estimate-tbl').html('');
-                $('#estimate-tbl').html(response);
-                calculateDeliveryAmountEst();
-                loadCartItemsHeader();
-                $('#next_page_est').removeClass("d-none");
-                $('#prev_page_est').addClass("d-none");
-                $('#save_estimate').addClass("d-none");
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -3311,39 +3260,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         );
         return $state;
     }
-
-    function updatePrice() {
-        const basePrice = parseFloat($('#trim_unit_price').val()) || 0;
-        const is_custom = parseInt($('#is_custom_trim').val()) || 0;
-        const custom_multiplier_trim = parseFloat($('#custom_multiplier_trim').val()) || 1;
-
-        let totalPrice = 0;
-
-        $('.quantity-length-row').each(function () {
-            const feet = parseFloat($(this).find('.trim_length').val()) || 0;
-            const qty = parseFloat($(this).find('.trim_qty').val()) || 0; // default 0
-
-            totalPrice += basePrice * feet * qty;
-        });
-
-        if (is_custom === 1) {
-            totalPrice *= custom_multiplier_trim;
-        }
- 
-        $('#trim_price').text(totalPrice.toFixed(2));
-    }
-
-    $(document).on('change', '.trim_length, .trim_qty', function() {
-        updatePrice();
-    });
-
-    $(document).on('change', '.trim_length_select', function() {
-        var value = $(this).val();
-        $('.trim_length').val(value);
-        updatePrice();
-    });
-
-    updatePrice();
     
     $(document).ready(function() {
         var panel_id = '<?= $panel_id ?>';
@@ -5023,10 +4939,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         });
 
         performSearch('');
-
-        $(document).on('change', '#est_delivery_method', function () {
-            calculateDeliveryAmountEst();
-        });
 
         $(document).on('change', 'input[name="order_delivery_method"]', function () {
             const selectedMethod = $(this).val();
