@@ -1,5 +1,5 @@
 <?php
-function calculateUnitPrice($basePrice, $lengthFeet, $lengthInch, $panelType, $soldByFeet, $bends, $hems) {
+function calculateUnitPrice($basePrice, $lengthFeet, $lengthInch, $panelType, $soldByFeet, $bends, $hems, $color = '', $grade = '', $gauge = '') {
     global $conn;
 
     $pricePerBend = getPaymentSetting('price_per_bend');
@@ -24,6 +24,9 @@ function calculateUnitPrice($basePrice, $lengthFeet, $lengthInch, $panelType, $s
 
     $totalPrice = $computedPrice + $bendCost + $hemCost;
 
+    $multiplier = getMultiplierValue($color, $grade, $gauge);
+    $totalPrice *= $multiplier;
+    
     return round($totalPrice, 2);
 }
 ?>

@@ -698,7 +698,7 @@ if (mysqli_num_rows($result) > 0) {
             SELECT p.product_category, op.* 
             FROM order_product AS op
             LEFT JOIN product AS p ON p.product_id = op.productid
-            WHERE orderid = '$orderid'
+            WHERE orderid = '$orderid' AND (op.product_category = '$trim_id' || op.product_category = '$panel_id')
             ORDER BY p.product_category
         ";
         $result_product = mysqli_query($conn, $query_product);

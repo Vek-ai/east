@@ -155,8 +155,6 @@ if(isset($_POST['fetch_details'])){
     ?>
     <style>
         .tooltip-inner {
-            background-color: white !important;
-            color: black !important;
             font-size: calc(0.875rem + 2px) !important;
         }
     </style>
@@ -342,8 +340,6 @@ if (isset($_POST['fetch_assigned'])) {
         ?>
         <style>
             .tooltip-inner {
-                background-color: white !important;
-                color: black !important;
                 font-size: calc(0.875rem + 2px) !important;
             }
         </style>

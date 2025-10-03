@@ -9154,7 +9154,8 @@
   color: #fff !important;
 }
 [data-bs-theme="dark"] .tooltip-inner {
-  color: #ffffff !important;
+  background-color: #f8f9fa !important;
+  color: #212529 !important;
 }
 [data-bs-theme="dark"] .bg-white {
   background-color: #192838 !important;

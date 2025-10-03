@@ -261,17 +261,12 @@ if(isset($_POST['fetch_order'])){
             }
 
             $color_id      = $values["custom_color"];
-            $color_details = getColorDetails($color_id);
+            $grade         = intval($product["custom_grade"]);
+            $gauge         = intval($product["custom_gauge"]);
+            $profile       = intval($values["custom_profile"]);
 
-            $category_id   = intval($product["product_category"]);
-            $productSystem = intval($product["product_system"]);
-            $grade         = intval($product["grade"]);
-            $gauge         = intval($product["gauge"]);
-            $colorGroup    = intval($color_details['color_group']);
-
-            $color_mult = fetchColorMultiplier($colorGroup, $productSystem, $grade, $gauge, $category_id);
-
-            $product_price *= $color_mult;
+            $multiplier = getMultiplierValue($color_id, $grade, $gauge);
+            $product_price *= $multiplier;
 
             $sold_by_feet = $product['sold_by_feet'];
 

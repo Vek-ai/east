@@ -288,25 +288,17 @@ if(isset($_POST['fetch_cart'])){
                                     $product_price += $product_price * $custom_multiplier;
                                 }
 
-                                $color_id = $values["custom_color"];
-                                $color_details = getColorDetails($color_id);
                                 if (isset($values["used_discount"])){
                                     $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
                                 }
 
                                 $color_id      = $values["custom_color"];
-                                $color_details = getColorDetails($color_id);
-
-                                $category_id   = intval($product["product_category"]);
-                                $productSystem = intval($product["product_system"]);
-                                $grade         = intval($product["grade"]);
-                                $gauge         = intval($product["gauge"]);
+                                $grade         = intval($product["custom_grade"]);
+                                $gauge         = intval($product["custom_gauge"]);
                                 $profile       = intval($values["custom_profile"]);
-                                $colorGroup    = intval($color_details['color_group']);
 
-                                $color_mult = fetchColorMultiplier($colorGroup, $productSystem, $grade, $gauge, $category_id);
-
-                                $product_price *= $color_mult;
+                                $multiplier = getMultiplierValue($color_id, $grade, $gauge);
+                                $product_price *= $multiplier;
                                 
                                 $total_qty += $values["quantity_cart"];
                                 $total_length_cart += $quantity * $total_length;
@@ -515,7 +507,7 @@ if(isset($_POST['fetch_cart'])){
                                     $customer_pricing = getPricingCategory($category_id, $customer_details_pricing) / 100;
                                     $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
 
-                                    $product_price *= $color_mult;
+                                    $product_price *= $multiplier;
 
                                     $bundle_actual_price += $product_price;
                                     $bundle_customer_price += $customer_price;
@@ -858,21 +850,13 @@ if(isset($_POST['fetch_cart'])){
                                     $product_price += $product_price * $custom_multiplier;
                                 }
 
-                                $color_id = $values["custom_color"];
-
                                 $color_id      = $values["custom_color"];
-                                $color_details = getColorDetails($color_id);
-
-                                $category_id   = intval($product["product_category"]);
-                                $productSystem = intval($product["product_system"]);
-                                $grade         = intval($product["grade"]);
-                                $gauge         = intval($product["gauge"]);
+                                $grade         = intval($product["custom_grade"]);
+                                $gauge         = intval($product["custom_gauge"]);
                                 $profile       = intval($values["custom_profile"]);
-                                $colorGroup    = intval($color_details['color_group']);
 
-                                $color_mult = fetchColorMultiplier($colorGroup, $productSystem, $grade, $gauge, $category_id);
-
-                                $product_price *= $color_mult;
+                                $multiplier = getMultiplierValue($color_id, $grade, $gauge);
+                                $product_price *= $multiplier;
                                 
                                 if (isset($values["used_discount"])){
                                     $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;

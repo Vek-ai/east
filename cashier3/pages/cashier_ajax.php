@@ -1137,6 +1137,14 @@ if (isset($_POST['save_order'])) {
         $estimate_length_inch = floatval($item['estimate_length_inch']);
         $amount_discount = !empty($item["amount_discount"]) ? floatval($item["amount_discount"]) : 0;
 
+        $custom_color = $item['custom_color'];
+        $custom_grade = $item['custom_grade'];
+        $custom_profile = $item['custom_profile'];
+        $custom_gauge = $item['custom_gauge'];
+        $multiplier = getMultiplierValue($custom_color, $custom_grade, $custom_gauge);
+
+        $unit_price *= $multiplier;
+
         $total_length = $estimate_length + ($estimate_length_inch / 12);
         if ($total_length == 0) {
             $total_length = 1;
@@ -1312,26 +1320,9 @@ if (isset($_POST['save_order'])) {
         $pay_type = 'job_deposit';
     }
 
-    /* 
-    if($credit_amt > 0){
-        $credit_available = $credit_limit - $credit_total;
-        if($credit_available <= 0){
-            $response['error'] = "Cannot pay via Credit! The Customer’s credit limit has been reached";
-            echo json_encode($response);
-            exit;
-        }
-        
-        if($credit_amt > $credit_limit){
-            $response['error'] = "Credit amount cannot exceed the customer's credit limit";
-            echo json_encode($response);
-            exit;
-        }
-    } 
-    */
-
     $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_method, deliver_fname, deliver_lname, pay_type, tax_status, tax_exempt_number, truck, contractor_id) 
               VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt', '$deliver_method' , '$deliver_fname' , '$deliver_lname', '$pay_type', '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id')";
-
+    
     if ($conn->query($query) === TRUE) {
         $orderid = $conn->insert_id;
 
@@ -1497,6 +1488,7 @@ if (isset($_POST['save_order'])) {
             $custom_grade = $item['custom_grade'];
             $custom_profile = $item['custom_profile'];
             $custom_gauge = $item['custom_gauge'];
+            $multiplier = getMultiplierValue($custom_color, $custom_grade, $custom_gauge);
 
             $total_length = $estimate_length + ($estimate_length_inch / 12);
             if ($total_length == 0) {
@@ -1509,6 +1501,8 @@ if (isset($_POST['save_order'])) {
             $price_after_discount = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
             $price_after_discount = max(0, $price_after_discount);
             $discounted_price = $price_after_discount;
+
+            $discounted_price *= $multiplier;
 
             $curr_discount = intval(getCustomerDiscountProfile($customerid));
             $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));

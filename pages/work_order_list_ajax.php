@@ -61,7 +61,9 @@ if (isset($_POST['fetch_available'])) {
     $total_weight = 0;
     ?>
     <style>
-        .tooltip-inner { background-color: white !important; color: black !important; font-size: calc(0.875rem + 2px) !important; }
+        .tooltip-inner { 
+            font-size: calc(0.875rem + 2px) !important; 
+        }
     </style>
 
     <div class="card card-body datatables">

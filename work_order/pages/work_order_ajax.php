@@ -36,8 +36,6 @@ if(isset($_POST['fetch_available'])){
     ?>
     <style>
         .tooltip-inner {
-            background-color: white !important;
-            color: black !important;
             font-size: calc(0.875rem + 2px) !important;
         }
     </style>
@@ -362,8 +360,6 @@ if(isset($_POST['fetch_view'])){
     ?>
     <style>
         .tooltip-inner {
-            background-color: white !important;
-            color: black !important;
             font-size: calc(0.875rem + 2px) !important;
         }
     </style>
@@ -788,8 +784,6 @@ if(isset($_POST['fetch_assigned'])){
     ?>
     <style>
         .tooltip-inner {
-            background-color: white !important;
-            color: black !important;
             font-size: calc(0.875rem + 2px) !important;
         }
     </style>
@@ -962,8 +956,6 @@ if (isset($_POST['fetch_coils'])) {
     ?>
     <style>
         .tooltip-inner {
-            background-color: white !important;
-            color: black !important;
             font-size: calc(0.875rem + 2px) !important;
         }
     </style>

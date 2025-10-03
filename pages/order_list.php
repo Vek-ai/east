@@ -24,6 +24,9 @@ if(isset($_REQUEST['customer_id'])){
     $customer_details = getCustomerDetails($customer_id);
 }
 
+$trim_id = 4;
+$panel_id = 3;
+
 $permission = $_SESSION['permission'];
 
 $staff_id = intval($_SESSION['userid']);
@@ -66,8 +69,6 @@ function showCol($name) {
     }
 
     .tooltip-inner {
-        background-color: #f8f9fa !important;
-        color: #212529 !important;
         border: 1px solid #ced4da;
         font-size: 0.875rem;
         padding: 6px 10px;
@@ -336,7 +337,7 @@ function showCol($name) {
         </div>
     </div>
 
-    <div class="card card-body">
+    <div class="card card-body d-none">
         <div class="text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
             <button type="button" id="btnTimerStatus" class="btn btn-primary d-flex align-items-center" data-id="">
                 <i class="ti ti-clock text-white me-1 fs-5"></i> Timer Status
@@ -491,7 +492,25 @@ function showCol($name) {
                                 <tbody>
                                     <?php 
 
-                                    $query = "SELECT * FROM orders WHERE status != 6 ORDER BY order_date DESC";
+                                    $query = "SELECT
+                                                o.*,
+                                                COUNT(op.id) AS total_count
+                                            FROM
+                                                orders o
+                                            LEFT JOIN order_product op ON
+                                                o.orderid = op.orderid AND(
+                                                    op.product_category = $trim_id OR op.product_category = $panel_id
+                                                )
+                                            WHERE
+                                                o.status != 6
+                                            GROUP BY
+                                                o.orderid
+                                            HAVING
+                                                total_count > 0
+                                            ORDER BY
+                                                o.order_date
+                                            DESC
+                                                ";
 
                                     if (isset($customer_id) && !empty($customer_id)) {
                                         $query .= " AND customerid = '$customer_id'";

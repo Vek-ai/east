@@ -2929,6 +2929,43 @@ function fetchColorMultiplier($colorGroup, $grade = 0, $gauge = 0, $category = 0
     return 1.0;
 }
 
+function getMultiplierValue($color_id, $grade_id, $gauge_id) {
+    global $conn;
+    
+    $color_id    = intval($color_id);
+    $grade_id    = intval($grade_id);
+    $gauge_id    = intval($gauge_id);
+    $category_id = intval($category_id);
+
+    $multiplier = 1.0;
+
+    if ($color_id > 0) {
+        $sql = "SELECT multiplier FROM product_color WHERE id = $color_id LIMIT 1";
+        $res = $conn->query($sql);
+        if ($res && $row = $res->fetch_assoc()) {
+            $multiplier *= floatval($row['multiplier']);
+        }
+    }
+
+    if ($grade_id > 0) {
+        $sql = "SELECT multiplier FROM product_grade WHERE product_grade_id = $grade_id LIMIT 1";
+        $res = $conn->query($sql);
+        if ($res && $row = $res->fetch_assoc()) {
+            $multiplier *= floatval($row['multiplier']);
+        }
+    }
+
+    if ($gauge_id > 0) {
+        $sql = "SELECT multiplier FROM product_gauge WHERE product_gauge_id = $gauge_id LIMIT 1";
+        $res = $conn->query($sql);
+        if ($res && $row = $res->fetch_assoc()) {
+            $multiplier *= floatval($row['multiplier']);
+        }
+    }
+
+    return $multiplier;
+}
+
 function indexToColumnLetter($index) {
     $letters = '';
     while ($index >= 0) {

@@ -48,8 +48,6 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
       }
 
       .tooltip-inner {
-          background-color: #f8f9fa !important;
-          color: #000 !important;
           border: 1px solid #ced4da;
           font-size: 0.875rem;
           padding: 6px 10px;

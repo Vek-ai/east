@@ -53,8 +53,6 @@ function showCol($name) {
     }
 
     .tooltip-inner {
-        background-color: #f8f9fa !important;
-        color: #212529 !important;
         border: 1px solid #ced4da;
         font-size: 0.875rem;
         padding: 6px 10px;

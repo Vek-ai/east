@@ -11,13 +11,15 @@ require '../includes/send_email.php';
 $emailSender = new EmailTemplates();
 
 $screw_id = 16;
+$trim_id = 4;
+$panel_id = 3;
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "fetch_view_modal") {
         $orderid = mysqli_real_escape_string($conn, $_POST['id']);
-        $query = "SELECT * FROM order_product WHERE orderid = '$orderid'";
+        $query = "SELECT * FROM order_product WHERE orderid = '$orderid' AND (product_category = '$trim_id' || product_category = '$panel_id')";
         $result = mysqli_query($conn, $query);
         
         if ($result && mysqli_num_rows($result) > 0) {
