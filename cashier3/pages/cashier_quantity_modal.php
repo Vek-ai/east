@@ -184,6 +184,8 @@ if(isset($_POST['fetch_prompt_quantity'])){
             const bends = parseInt($('#bend_product').val()) || 0;
             const hems = parseInt($('#hem_product').val()) || 0;
             const color = parseInt($('#qty-color').val()) || 0;
+            const grade = parseInt($('#qty-grade').val()) || 0;
+            const gauge = parseInt($('#qty-gauge').val()) || 0;
             const soldByFeet = <?= $sold_by_feet; ?>;
             const basePrice = <?= $basePrice; ?>;
 
@@ -201,6 +203,8 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     hems: hems,
                     basePrice: basePrice,
                     color: color,
+                    grade: grade,
+                    gauge: gauge,
                     fetch_price: 'fetch_price'
                 },
                 success: function(response) {
@@ -434,17 +438,12 @@ if (isset($_POST['fetch_price'])) {
     $panelDripStops  = $_POST['panel_drip_stop'] ?? [];
     $bends           = isset($_POST['bends']) ? intval($_POST['bends']) : 0;
     $hems            = isset($_POST['hems']) ? intval($_POST['hems']) : 0;
-    $color_id           = isset($_POST['color']) ? intval($_POST['color']) : 0;
 
     $product = getProductDetails($product_id);
-    $color_details = getColorDetails($color_id);
-    $category_id   = intval($product["product_category"]);
-    $productSystem = intval($product["product_system"]);
-    $grade         = intval($product["grade"]);
-    $gauge         = intval($product["gauge"]);
-    $colorGroup    = intval($color_details['color_group']);
 
-    $color_mult = fetchColorMultiplier($colorGroup, $productSystem, $grade, $gauge, $category_id);
+    $color_id      = intval($_POST['color']);
+    $grade         = intval($_POST["grade"]);
+    $gauge         = intval($_POST["gauge"]);
 
     $totalPrice = 0;
     if ($product_id > 0) {
@@ -468,12 +467,13 @@ if (isset($_POST['fetch_price'])) {
                 $panelType,
                 $soldByFeet,
                 $bends,
-                $hems
+                $hems,
+                $color_id,
+                $grade,
+                $gauge
             );
         }
     }
-
-    $totalPrice *= $color_mult;
 
     echo number_format($totalPrice, 2);
 }

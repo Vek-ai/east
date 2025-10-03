@@ -261,8 +261,8 @@ if(isset($_POST['fetch_order'])){
             }
 
             $color_id      = $values["custom_color"];
-            $grade         = intval($product["custom_grade"]);
-            $gauge         = intval($product["custom_gauge"]);
+            $grade         = intval($values["custom_grade"]);
+            $gauge         = intval($values["custom_gauge"]);
             $profile       = intval($values["custom_profile"]);
 
             $multiplier = getMultiplierValue($color_id, $grade, $gauge);

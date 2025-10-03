@@ -35,6 +35,8 @@ if(isset($_POST['fetch_cart'])){
     }
     $delivery_price = is_numeric(getDeliveryCost()) ? floatval(getDeliveryCost()) : 0;
     ?>
+
+    <script>console.log(<?= print_r($_SESSION['cart']) ?>)</script>
     
     <style>
         input[type="number"]::-webkit-inner-spin-button, 
@@ -293,8 +295,8 @@ if(isset($_POST['fetch_cart'])){
                                 }
 
                                 $color_id      = $values["custom_color"];
-                                $grade         = intval($product["custom_grade"]);
-                                $gauge         = intval($product["custom_gauge"]);
+                                $grade         = intval($values["custom_grade"]);
+                                $gauge         = intval($values["custom_gauge"]);
                                 $profile       = intval($values["custom_profile"]);
 
                                 $multiplier = getMultiplierValue($color_id, $grade, $gauge);
@@ -319,7 +321,7 @@ if(isset($_POST['fetch_cart'])){
                             : $default_image;
 
                             ?>
-                            <tr class="thick-border">
+                            <tr class="thick-border" data-mult="<?= $multiplier ?>">
                                 <td>
                                     <div class="align-items-center text-center w-100">
                                         <img src="<?= $picture_path ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
@@ -851,8 +853,8 @@ if(isset($_POST['fetch_cart'])){
                                 }
 
                                 $color_id      = $values["custom_color"];
-                                $grade         = intval($product["custom_grade"]);
-                                $gauge         = intval($product["custom_gauge"]);
+                                $grade         = intval($values["custom_grade"]);
+                                $gauge         = intval($values["custom_gauge"]);
                                 $profile       = intval($values["custom_profile"]);
 
                                 $multiplier = getMultiplierValue($color_id, $grade, $gauge);
