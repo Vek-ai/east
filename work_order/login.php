@@ -4,30 +4,36 @@ session_start();
 include "../includes/dbconn.php";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $redirect = isset($_REQUEST['redirect']) ? $_REQUEST['redirect'] : 'index.php';
-    $username = $conn->real_escape_string($username);
 
-    $sql = "SELECT userid, password FROM users WHERE username = '$username'";
-    $result = $conn->query($sql);
+  $username = $_POST['username'];
+  $password = $_POST['password'];
+  $redirect = !empty($_REQUEST['redirect']) ? urldecode($_REQUEST['redirect']) : 'index.php';
 
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $db_password = $row['password'];
-        $userid = $row['userid'];
+  $username = $conn->real_escape_string($username);
 
-        if ($db_password == $password) {
-            $_SESSION['work_order_user_id'] = $userid;
-            setcookie("work_order_user_id", $userid, time() + (86400 * 30), "/");
-            header("Location: $redirect");
-            exit();
-        } else {
-            $error = 'Invalid username or password.';
-        }
-    } else {
-        $error = 'Invalid username or password.';
-    }
+  $require_role_check = false;
+
+  $sql = "SELECT staff_id, password, role FROM staff WHERE username = '$username'";
+  $result = $conn->query($sql);
+
+  if ($result->num_rows > 0) {
+      $row = $result->fetch_assoc();
+      $db_password = $row['password'];
+      $staff_id = $row['staff_id'];
+      $role = $row['role'];
+
+      if ($db_password == $password) {
+          $_SESSION['work_order_user_id'] = $staff_id;
+
+          header("Location: $redirect");
+          exit();
+      } else {
+          $error = 'Incorrect password. Please try again.';
+      }
+  } else {
+      $error = 'Incorrect username or password. Please try again.';
+  }
+
 }
 ?>
 
