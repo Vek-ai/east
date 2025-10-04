@@ -498,7 +498,7 @@ if(isset($_POST['fetch_cart'])){
                                             </div>
                                         </td>
                                         <td class="text-center">
-                                            <select class="form-control panel_type_cart" name="panel_type" onchange="updatePanelType(this)" data-line="<?= $values['line']; ?>" data-id="<?= $product_id; ?>">
+                                            <select class="form-control panel_type_cart" name="panel_type" onchange="updatePanelType(this)" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
                                                 <option value="">Select...</option>
                                                 <option value="solid" <?= $values['panel_type'] == 'solid' ? 'selected' : '' ?>>Solid</option>
                                                 <option value="vented" <?= $values['panel_type'] == 'vented' ? 'selected' : '' ?>>Vented</option>
@@ -511,7 +511,7 @@ if(isset($_POST['fetch_cart'])){
                                             $board_batten  = $product["board_batten"];
                                             ?>
 
-                                            <select class="form-control panel_style_cart" name="panel_style" onchange="updatePanelStyle(this)" data-line="<?= $values['line']; ?>" data-id="<?= $product_id; ?>">
+                                            <select class="form-control panel_style_cart" name="panel_style" onchange="updatePanelStyle(this)" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
                                                 <?php if (!empty($standing_seam)): ?>
                                                     <option value="striated" <?= $values['panel_style'] == 'striated' ? 'selected' : '' ?>>Striated</option>
                                                     <option value="flat" <?= $values['panel_style'] == 'flat' ? 'selected' : '' ?>>Flat</option>

@@ -3039,21 +3039,37 @@ function calculateCartItem($values) {
 
     $amount_discount = isset($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
     $quantity   = isset($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
-    $unit_price = isset($values["unit_price"]) ? floatval($values["unit_price"]) : 0;
-    $product_price = ($quantity * $unit_price * $total_length) - $amount_discount;
+
+    $color_id = $values["custom_color"] ?? '';
+    $grade    = intval($values["custom_grade"] ?? 0);
+    $gauge    = intval($values["custom_gauge"] ?? 0);
+    $profile  = intval($values["custom_profile"] ?? 0);
+
+    $panel_type = $values["panel_type"] ?? '';
+    $bends      = intval($values["bends"] ?? 0);
+    $hems       = intval($values["hems"] ?? 0);
+
+    $unit_price = calculateUnitPrice(
+        $product["unit_price"] ?? 0,
+        $estimate_length,
+        $estimate_length_inch,
+        $panel_type,
+        $product["sold_by_feet"] ?? 0,
+        $bends,
+        $hems,
+        $color_id,
+        $grade,
+        $gauge
+    );
+
+    $product_price = ($quantity * $unit_price) - $amount_discount;
 
     if (!empty($values["is_custom"])) {
         $custom_multiplier = floatval(getCustomMultiplier($category_id));
         $product_price += $product_price * $custom_multiplier;
     }
 
-    $color_id = $values["custom_color"];
-    $grade    = intval($values["custom_grade"]);
-    $gauge    = intval($values["custom_gauge"]);
-    $profile  = intval($values["custom_profile"]);
-
     $multiplier = getMultiplierValue($color_id, $grade, $gauge);
-    $product_price *= $multiplier;
 
     $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
 
@@ -3088,6 +3104,9 @@ function calculateCartItem($values) {
         "customer_pricing_rate" => $customer_pricing_rate,
         "sold_by_feet"   => $product["sold_by_feet"] ?? 0,
         "drawing_data"   => $values["drawing_data"] ?? '',
+        "panel_type"     => $panel_type,
+        "bends"          => $bends,
+        "hems"           => $hems,
     ];
 }
 

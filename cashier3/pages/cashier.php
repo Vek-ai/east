@@ -1591,6 +1591,147 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         });
     }
 
+    function updateEstimateLength(element){
+        var length = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: {
+                length: length,
+                id: id,
+                line: line,
+                set_estimate_length: "set_estimate_length"
+            },
+            success: function(response) {
+                loadCart();
+                loadEstimateContents();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updateEstimateLengthInch(element){
+        var length_inch = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: {
+                length_inch: length_inch,
+                id: id,
+                line: line,
+                set_estimate_length_inch: "set_estimate_length_inch"
+            },
+            success: function(response) {
+                console.log(length_inch);
+                loadCart();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updateEstimateHeight(element){
+        var height = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: {
+                height: height,
+                id: id,
+                line: line,
+                set_estimate_height: "set_estimate_height"
+            },
+            success: function(response) {
+                console.log(response);
+                loadCart();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updateEstimateWidth(element){
+        var width = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: {
+                width: width,
+                id: id,
+                line: line,
+                set_estimate_width: "set_estimate_width"
+            },
+            success: function(response) {
+                console.log(response);
+                loadCart();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updatePanelType(element){
+        var type = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: {
+                type: type,
+                id: id,
+                line: line,
+                set_panel_type: "set_panel_type"
+            },
+            success: function(response) {
+                console.log(response);
+                loadCart();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updatePanelStyle(element){
+        var style = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: {
+                style: style,
+                id: id,
+                line: line,
+                set_panel_style: "set_panel_style"
+            },
+            success: function(response) {
+                console.log(response);
+                loadCart();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
     function updateUsage(element){
         var usage = $(element).val();
         var id = $(element).data('id');

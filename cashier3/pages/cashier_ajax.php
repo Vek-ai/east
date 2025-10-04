@@ -571,6 +571,30 @@ if (isset($_POST['set_estimate_length_inch'])) {
     echo "Length-inch ID: $product_id, Line: $line, Key: $key";
 }
 
+if (isset($_POST['set_panel_type'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $type = mysqli_real_escape_string($conn, $_POST['type']);
+
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['panel_type'] = !empty($type) ? $type : "";
+    }
+    echo "ID: $product_id, Line: $line, Key: $key";
+}
+
+if (isset($_POST['set_panel_style'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $style = mysqli_real_escape_string($conn, $_POST['style']);
+
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['panel_style'] = !empty($style) ? $style : "";
+    }
+    echo "ID: $product_id, Line: $line, Key: $key";
+}
+
 if (isset($_POST['set_color'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
