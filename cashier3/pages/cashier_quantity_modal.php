@@ -178,7 +178,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 lengthFeetArr.push(parseFloat($(this).find('.length_feet').val()) || 0);
                 lengthInchArr.push($(this).find('.length_inch').val() || 0);
 
-                panelOptionArr.push($(this).find('select[name="panel_option"]').val() || 'solid');
+                panelOptionArr.push($(this).find('select[name="panel_option[]"]').val() || '');
             });
 
             const bends = parseInt($('#bend_product').val()) || 0;
@@ -284,7 +284,6 @@ if(isset($_POST['fetch_prompt_quantity'])){
             let bundleCount = 1;
             let bundleVisible = false;
             let product_system = <?= !empty($product_system) ? $product_system : 'null' ?>;
-            
 
             $(document).on('change', '#qty-color, #qty-grade, #qty-gauge', function() {
                 fetchCoilStock();
@@ -476,6 +475,7 @@ if (isset($_POST['fetch_price'])) {
     }
 
     echo number_format($totalPrice, 2);
+    //echo print_r($panelTypes);
 }
 
 if (isset($_POST['fetch_stock_coil'])) {

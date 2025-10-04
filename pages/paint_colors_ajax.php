@@ -153,7 +153,12 @@ if(isset($_REQUEST['action'])) {
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-4"></div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Color Abbreviation</label>
+                            <input type="text" id="color_abbreviation" name="color_abbreviation" class="form-control"  value="<?= $color_details['color_abbreviation'] ?? '' ?>"/>
+                        </div>
+                    </div>
                     <div class="col-md-4"></div>
 
                     <div class="col-md-4 text-center">
@@ -747,7 +752,7 @@ if(isset($_REQUEST['action'])) {
             $isAssigned = isset($assignedColors[$no]);
 
             
-
+            $color_abbreviation = $row['color_abbreviation'];
             $color_name = $row['color_name'];
             $color_code = $row['color_code'];
             $color_group = getColorGroupName($row['color_group']);
@@ -814,6 +819,7 @@ if(isset($_REQUEST['action'])) {
     
             $data[] = [
                 'color_id' => $no,
+                'color_abbreviation' => $color_abbreviation,
                 'color_name' => $color_name,
                 'color_code' => $color_code,
                 'ekm_color_name' => $row['ekm_color_name'],

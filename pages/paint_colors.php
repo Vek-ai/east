@@ -250,6 +250,7 @@ if ($permission === 'edit') {
                                     <input type="checkbox" id="select-all">
                                 </th>
                                 <th>Paint Color Name</th>
+                                <th>Abbr.</th>
                                 <th>Hex Color Code</th>
                                 <th>EKM Color Name</th>
                                 <th>Color Group</th>
@@ -595,6 +596,7 @@ $(document).ready(function() {
                 }
             },
             { data: 'color_name' },
+            { data: 'color_abbreviation' },
             { data: 'color_code' },
             { data: 'ekm_color_name' },
             { data: 'color_group' },
