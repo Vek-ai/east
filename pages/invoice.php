@@ -359,7 +359,13 @@ function showCol($name) {
                                             <?php endif; ?>
                                             <?php if (showCol('scheduled_delivery')): ?>
                                                 <td style="color: #ffffff !important;">
-                                                    
+                                                    <?php 
+                                                        if (isset($row["scheduled_date"]) && !empty($row["scheduled_date"]) && $row["delivered_date"] !== '0000-00-00 00:00:00') {
+                                                            echo date("F d, Y h:i A", strtotime($row["scheduled_date"]));
+                                                        } else {
+                                                            echo '';
+                                                        }
+                                                    ?>
                                                 </td>
                                             <?php endif; ?>
                                             <?php if (showCol('completed_delivery')): ?>
