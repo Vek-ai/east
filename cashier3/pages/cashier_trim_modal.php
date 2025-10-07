@@ -35,7 +35,7 @@ if(isset($_POST['fetch_modal'])){
         if (!empty($product_details)) {
             $category_id = $product_details['product_category'];
         ?>
-        <input type="hidden" id="product_id" name="id" value="<?= $id ?>" />
+        <input type="hidden" id="trim_product_id" name="id" value="<?= $id ?>" />
         <input type="hidden" id="trim_unit_price" name="price" value="<?= $product_details['unit_price'] ?>" />
         <input type="hidden" id="custom_multiplier_trim" name="custom_multiplier" value="<?= $custom_multiplier ?>" />
         <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
@@ -208,7 +208,7 @@ if(isset($_POST['fetch_modal'])){
         <script>
             $(document).ready(function () {
                 function updatePrice() {
-                    const product_id = $('#product_id').val();
+                    const product_id = $('#trim_product_id').val();
                     const quantities = [];
                     const lengthFeetArr = [];
 
